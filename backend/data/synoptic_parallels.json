@@ -1,0 +1,726 @@
+{
+  "description": "Synoptic Gospel parallel passages (Matthew, Mark, Luke)",
+  "version": "1.0",
+  "parallels": [
+    {
+      "id": 1,
+      "name_zh": "施洗約翰宣道",
+      "name_en": "John the Baptist's Preaching",
+      "matthew": {"chapter": 3, "verse_start": 1, "verse_end": 12},
+      "mark": {"chapter": 1, "verse_start": 1, "verse_end": 8},
+      "luke": {"chapter": 3, "verse_start": 1, "verse_end": 18}
+    },
+    {
+      "id": 2,
+      "name_zh": "耶穌受洗",
+      "name_en": "Baptism of Jesus",
+      "matthew": {"chapter": 3, "verse_start": 13, "verse_end": 17},
+      "mark": {"chapter": 1, "verse_start": 9, "verse_end": 11},
+      "luke": {"chapter": 3, "verse_start": 21, "verse_end": 22}
+    },
+    {
+      "id": 3,
+      "name_zh": "耶穌受試探",
+      "name_en": "Temptation of Jesus",
+      "matthew": {"chapter": 4, "verse_start": 1, "verse_end": 11},
+      "mark": {"chapter": 1, "verse_start": 12, "verse_end": 13},
+      "luke": {"chapter": 4, "verse_start": 1, "verse_end": 13}
+    },
+    {
+      "id": 4,
+      "name_zh": "呼召四個門徒",
+      "name_en": "Calling the First Disciples",
+      "matthew": {"chapter": 4, "verse_start": 18, "verse_end": 22},
+      "mark": {"chapter": 1, "verse_start": 16, "verse_end": 20},
+      "luke": {"chapter": 5, "verse_start": 1, "verse_end": 11}
+    },
+    {
+      "id": 5,
+      "name_zh": "醫治痲瘋病人",
+      "name_en": "Healing a Leper",
+      "matthew": {"chapter": 8, "verse_start": 1, "verse_end": 4},
+      "mark": {"chapter": 1, "verse_start": 40, "verse_end": 45},
+      "luke": {"chapter": 5, "verse_start": 12, "verse_end": 16}
+    },
+    {
+      "id": 6,
+      "name_zh": "醫治癱子",
+      "name_en": "Healing a Paralytic",
+      "matthew": {"chapter": 9, "verse_start": 1, "verse_end": 8},
+      "mark": {"chapter": 2, "verse_start": 1, "verse_end": 12},
+      "luke": {"chapter": 5, "verse_start": 17, "verse_end": 26}
+    },
+    {
+      "id": 7,
+      "name_zh": "呼召馬太",
+      "name_en": "Calling of Matthew/Levi",
+      "matthew": {"chapter": 9, "verse_start": 9, "verse_end": 13},
+      "mark": {"chapter": 2, "verse_start": 13, "verse_end": 17},
+      "luke": {"chapter": 5, "verse_start": 27, "verse_end": 32}
+    },
+    {
+      "id": 8,
+      "name_zh": "論禁食",
+      "name_en": "Question about Fasting",
+      "matthew": {"chapter": 9, "verse_start": 14, "verse_end": 17},
+      "mark": {"chapter": 2, "verse_start": 18, "verse_end": 22},
+      "luke": {"chapter": 5, "verse_start": 33, "verse_end": 39}
+    },
+    {
+      "id": 9,
+      "name_zh": "安息日的爭論",
+      "name_en": "Lord of the Sabbath",
+      "matthew": {"chapter": 12, "verse_start": 1, "verse_end": 8},
+      "mark": {"chapter": 2, "verse_start": 23, "verse_end": 28},
+      "luke": {"chapter": 6, "verse_start": 1, "verse_end": 5}
+    },
+    {
+      "id": 10,
+      "name_zh": "在安息日治病",
+      "name_en": "Healing on the Sabbath",
+      "matthew": {"chapter": 12, "verse_start": 9, "verse_end": 14},
+      "mark": {"chapter": 3, "verse_start": 1, "verse_end": 6},
+      "luke": {"chapter": 6, "verse_start": 6, "verse_end": 11}
+    },
+    {
+      "id": 11,
+      "name_zh": "揀選十二使徒",
+      "name_en": "Choosing the Twelve Apostles",
+      "matthew": {"chapter": 10, "verse_start": 1, "verse_end": 4},
+      "mark": {"chapter": 3, "verse_start": 13, "verse_end": 19},
+      "luke": {"chapter": 6, "verse_start": 12, "verse_end": 16}
+    },
+    {
+      "id": 12,
+      "name_zh": "山上寶訓/平原寶訓",
+      "name_en": "Sermon on the Mount/Plain",
+      "matthew": {"chapter": 5, "verse_start": 1, "verse_end": 12},
+      "mark": null,
+      "luke": {"chapter": 6, "verse_start": 20, "verse_end": 26}
+    },
+    {
+      "id": 13,
+      "name_zh": "愛仇敵",
+      "name_en": "Love Your Enemies",
+      "matthew": {"chapter": 5, "verse_start": 38, "verse_end": 48},
+      "mark": null,
+      "luke": {"chapter": 6, "verse_start": 27, "verse_end": 36}
+    },
+    {
+      "id": 14,
+      "name_zh": "不要論斷人",
+      "name_en": "Do Not Judge",
+      "matthew": {"chapter": 7, "verse_start": 1, "verse_end": 5},
+      "mark": null,
+      "luke": {"chapter": 6, "verse_start": 37, "verse_end": 42}
+    },
+    {
+      "id": 15,
+      "name_zh": "百夫長的信心",
+      "name_en": "Faith of the Centurion",
+      "matthew": {"chapter": 8, "verse_start": 5, "verse_end": 13},
+      "mark": null,
+      "luke": {"chapter": 7, "verse_start": 1, "verse_end": 10}
+    },
+    {
+      "id": 16,
+      "name_zh": "平靜風浪",
+      "name_en": "Calming the Storm",
+      "matthew": {"chapter": 8, "verse_start": 23, "verse_end": 27},
+      "mark": {"chapter": 4, "verse_start": 35, "verse_end": 41},
+      "luke": {"chapter": 8, "verse_start": 22, "verse_end": 25}
+    },
+    {
+      "id": 17,
+      "name_zh": "格拉森被鬼附的人",
+      "name_en": "Gadarene/Gerasene Demoniacs",
+      "matthew": {"chapter": 8, "verse_start": 28, "verse_end": 34},
+      "mark": {"chapter": 5, "verse_start": 1, "verse_end": 20},
+      "luke": {"chapter": 8, "verse_start": 26, "verse_end": 39}
+    },
+    {
+      "id": 18,
+      "name_zh": "醫治血漏的女人與睚魯的女兒",
+      "name_en": "Jairus's Daughter and Bleeding Woman",
+      "matthew": {"chapter": 9, "verse_start": 18, "verse_end": 26},
+      "mark": {"chapter": 5, "verse_start": 21, "verse_end": 43},
+      "luke": {"chapter": 8, "verse_start": 40, "verse_end": 56}
+    },
+    {
+      "id": 19,
+      "name_zh": "差遣十二使徒",
+      "name_en": "Sending Out the Twelve",
+      "matthew": {"chapter": 10, "verse_start": 5, "verse_end": 15},
+      "mark": {"chapter": 6, "verse_start": 7, "verse_end": 13},
+      "luke": {"chapter": 9, "verse_start": 1, "verse_end": 6}
+    },
+    {
+      "id": 20,
+      "name_zh": "施洗約翰之死",
+      "name_en": "Death of John the Baptist",
+      "matthew": {"chapter": 14, "verse_start": 1, "verse_end": 12},
+      "mark": {"chapter": 6, "verse_start": 14, "verse_end": 29},
+      "luke": {"chapter": 9, "verse_start": 7, "verse_end": 9}
+    },
+    {
+      "id": 21,
+      "name_zh": "餵飽五千人",
+      "name_en": "Feeding the Five Thousand",
+      "matthew": {"chapter": 14, "verse_start": 13, "verse_end": 21},
+      "mark": {"chapter": 6, "verse_start": 30, "verse_end": 44},
+      "luke": {"chapter": 9, "verse_start": 10, "verse_end": 17}
+    },
+    {
+      "id": 22,
+      "name_zh": "耶穌履海",
+      "name_en": "Walking on Water",
+      "matthew": {"chapter": 14, "verse_start": 22, "verse_end": 33},
+      "mark": {"chapter": 6, "verse_start": 45, "verse_end": 52},
+      "luke": null
+    },
+    {
+      "id": 23,
+      "name_zh": "論潔淨與污穢",
+      "name_en": "Teaching about Purity",
+      "matthew": {"chapter": 15, "verse_start": 1, "verse_end": 20},
+      "mark": {"chapter": 7, "verse_start": 1, "verse_end": 23},
+      "luke": null
+    },
+    {
+      "id": 24,
+      "name_zh": "迦南婦人的信心",
+      "name_en": "Faith of the Canaanite Woman",
+      "matthew": {"chapter": 15, "verse_start": 21, "verse_end": 28},
+      "mark": {"chapter": 7, "verse_start": 24, "verse_end": 30},
+      "luke": null
+    },
+    {
+      "id": 25,
+      "name_zh": "餵飽四千人",
+      "name_en": "Feeding the Four Thousand",
+      "matthew": {"chapter": 15, "verse_start": 32, "verse_end": 39},
+      "mark": {"chapter": 8, "verse_start": 1, "verse_end": 10},
+      "luke": null
+    },
+    {
+      "id": 26,
+      "name_zh": "彼得認耶穌為基督",
+      "name_en": "Peter's Confession",
+      "matthew": {"chapter": 16, "verse_start": 13, "verse_end": 20},
+      "mark": {"chapter": 8, "verse_start": 27, "verse_end": 30},
+      "luke": {"chapter": 9, "verse_start": 18, "verse_end": 21}
+    },
+    {
+      "id": 27,
+      "name_zh": "耶穌預言受難",
+      "name_en": "First Prediction of the Passion",
+      "matthew": {"chapter": 16, "verse_start": 21, "verse_end": 28},
+      "mark": {"chapter": 8, "verse_start": 31, "verse_end": 38},
+      "luke": {"chapter": 9, "verse_start": 22, "verse_end": 27}
+    },
+    {
+      "id": 28,
+      "name_zh": "登山變像",
+      "name_en": "Transfiguration",
+      "matthew": {"chapter": 17, "verse_start": 1, "verse_end": 13},
+      "mark": {"chapter": 9, "verse_start": 2, "verse_end": 13},
+      "luke": {"chapter": 9, "verse_start": 28, "verse_end": 36}
+    },
+    {
+      "id": 29,
+      "name_zh": "醫治被鬼附的孩子",
+      "name_en": "Healing a Boy with an Unclean Spirit",
+      "matthew": {"chapter": 17, "verse_start": 14, "verse_end": 21},
+      "mark": {"chapter": 9, "verse_start": 14, "verse_end": 29},
+      "luke": {"chapter": 9, "verse_start": 37, "verse_end": 43}
+    },
+    {
+      "id": 30,
+      "name_zh": "第二次預言受難",
+      "name_en": "Second Prediction of the Passion",
+      "matthew": {"chapter": 17, "verse_start": 22, "verse_end": 23},
+      "mark": {"chapter": 9, "verse_start": 30, "verse_end": 32},
+      "luke": {"chapter": 9, "verse_start": 43, "verse_end": 45}
+    },
+    {
+      "id": 31,
+      "name_zh": "誰為大",
+      "name_en": "Who Is the Greatest",
+      "matthew": {"chapter": 18, "verse_start": 1, "verse_end": 5},
+      "mark": {"chapter": 9, "verse_start": 33, "verse_end": 37},
+      "luke": {"chapter": 9, "verse_start": 46, "verse_end": 48}
+    },
+    {
+      "id": 32,
+      "name_zh": "論休妻",
+      "name_en": "Teaching about Divorce",
+      "matthew": {"chapter": 19, "verse_start": 1, "verse_end": 12},
+      "mark": {"chapter": 10, "verse_start": 1, "verse_end": 12},
+      "luke": null
+    },
+    {
+      "id": 33,
+      "name_zh": "為小孩祝福",
+      "name_en": "Blessing the Children",
+      "matthew": {"chapter": 19, "verse_start": 13, "verse_end": 15},
+      "mark": {"chapter": 10, "verse_start": 13, "verse_end": 16},
+      "luke": {"chapter": 18, "verse_start": 15, "verse_end": 17}
+    },
+    {
+      "id": 34,
+      "name_zh": "富有的少年人",
+      "name_en": "The Rich Young Man",
+      "matthew": {"chapter": 19, "verse_start": 16, "verse_end": 30},
+      "mark": {"chapter": 10, "verse_start": 17, "verse_end": 31},
+      "luke": {"chapter": 18, "verse_start": 18, "verse_end": 30}
+    },
+    {
+      "id": 35,
+      "name_zh": "第三次預言受難",
+      "name_en": "Third Prediction of the Passion",
+      "matthew": {"chapter": 20, "verse_start": 17, "verse_end": 19},
+      "mark": {"chapter": 10, "verse_start": 32, "verse_end": 34},
+      "luke": {"chapter": 18, "verse_start": 31, "verse_end": 34}
+    },
+    {
+      "id": 36,
+      "name_zh": "雅各與約翰的請求",
+      "name_en": "Request of James and John",
+      "matthew": {"chapter": 20, "verse_start": 20, "verse_end": 28},
+      "mark": {"chapter": 10, "verse_start": 35, "verse_end": 45},
+      "luke": null
+    },
+    {
+      "id": 37,
+      "name_zh": "醫治瞎子",
+      "name_en": "Healing Blind Bartimaeus",
+      "matthew": {"chapter": 20, "verse_start": 29, "verse_end": 34},
+      "mark": {"chapter": 10, "verse_start": 46, "verse_end": 52},
+      "luke": {"chapter": 18, "verse_start": 35, "verse_end": 43}
+    },
+    {
+      "id": 38,
+      "name_zh": "榮進耶路撒冷",
+      "name_en": "Triumphal Entry into Jerusalem",
+      "matthew": {"chapter": 21, "verse_start": 1, "verse_end": 11},
+      "mark": {"chapter": 11, "verse_start": 1, "verse_end": 11},
+      "luke": {"chapter": 19, "verse_start": 28, "verse_end": 44}
+    },
+    {
+      "id": 39,
+      "name_zh": "潔淨聖殿",
+      "name_en": "Cleansing the Temple",
+      "matthew": {"chapter": 21, "verse_start": 12, "verse_end": 17},
+      "mark": {"chapter": 11, "verse_start": 15, "verse_end": 19},
+      "luke": {"chapter": 19, "verse_start": 45, "verse_end": 48}
+    },
+    {
+      "id": 40,
+      "name_zh": "咒詛無花果樹",
+      "name_en": "Cursing the Fig Tree",
+      "matthew": {"chapter": 21, "verse_start": 18, "verse_end": 22},
+      "mark": {"chapter": 11, "verse_start": 12, "verse_end": 14},
+      "luke": null
+    },
+    {
+      "id": 41,
+      "name_zh": "質問耶穌的權柄",
+      "name_en": "Question about Authority",
+      "matthew": {"chapter": 21, "verse_start": 23, "verse_end": 27},
+      "mark": {"chapter": 11, "verse_start": 27, "verse_end": 33},
+      "luke": {"chapter": 20, "verse_start": 1, "verse_end": 8}
+    },
+    {
+      "id": 42,
+      "name_zh": "兇惡園戶的比喻",
+      "name_en": "Parable of the Wicked Tenants",
+      "matthew": {"chapter": 21, "verse_start": 33, "verse_end": 46},
+      "mark": {"chapter": 12, "verse_start": 1, "verse_end": 12},
+      "luke": {"chapter": 20, "verse_start": 9, "verse_end": 19}
+    },
+    {
+      "id": 43,
+      "name_zh": "納稅給該撒",
+      "name_en": "Paying Taxes to Caesar",
+      "matthew": {"chapter": 22, "verse_start": 15, "verse_end": 22},
+      "mark": {"chapter": 12, "verse_start": 13, "verse_end": 17},
+      "luke": {"chapter": 20, "verse_start": 20, "verse_end": 26}
+    },
+    {
+      "id": 44,
+      "name_zh": "復活的問題",
+      "name_en": "Question about Resurrection",
+      "matthew": {"chapter": 22, "verse_start": 23, "verse_end": 33},
+      "mark": {"chapter": 12, "verse_start": 18, "verse_end": 27},
+      "luke": {"chapter": 20, "verse_start": 27, "verse_end": 40}
+    },
+    {
+      "id": 45,
+      "name_zh": "最大的誡命",
+      "name_en": "The Greatest Commandment",
+      "matthew": {"chapter": 22, "verse_start": 34, "verse_end": 40},
+      "mark": {"chapter": 12, "verse_start": 28, "verse_end": 34},
+      "luke": {"chapter": 10, "verse_start": 25, "verse_end": 28}
+    },
+    {
+      "id": 46,
+      "name_zh": "基督是誰的子孫",
+      "name_en": "Question about David's Son",
+      "matthew": {"chapter": 22, "verse_start": 41, "verse_end": 46},
+      "mark": {"chapter": 12, "verse_start": 35, "verse_end": 37},
+      "luke": {"chapter": 20, "verse_start": 41, "verse_end": 44}
+    },
+    {
+      "id": 47,
+      "name_zh": "寡婦的奉獻",
+      "name_en": "The Widow's Offering",
+      "matthew": null,
+      "mark": {"chapter": 12, "verse_start": 41, "verse_end": 44},
+      "luke": {"chapter": 21, "verse_start": 1, "verse_end": 4}
+    },
+    {
+      "id": 48,
+      "name_zh": "末世的預言",
+      "name_en": "Olivet Discourse - Signs of the End",
+      "matthew": {"chapter": 24, "verse_start": 1, "verse_end": 35},
+      "mark": {"chapter": 13, "verse_start": 1, "verse_end": 31},
+      "luke": {"chapter": 21, "verse_start": 5, "verse_end": 33}
+    },
+    {
+      "id": 49,
+      "name_zh": "最後的晚餐",
+      "name_en": "The Last Supper",
+      "matthew": {"chapter": 26, "verse_start": 17, "verse_end": 30},
+      "mark": {"chapter": 14, "verse_start": 12, "verse_end": 26},
+      "luke": {"chapter": 22, "verse_start": 7, "verse_end": 23}
+    },
+    {
+      "id": 50,
+      "name_zh": "客西馬尼園禱告",
+      "name_en": "Prayer in Gethsemane",
+      "matthew": {"chapter": 26, "verse_start": 36, "verse_end": 46},
+      "mark": {"chapter": 14, "verse_start": 32, "verse_end": 42},
+      "luke": {"chapter": 22, "verse_start": 39, "verse_end": 46}
+    },
+    {
+      "id": 51,
+      "name_zh": "逮捕耶穌",
+      "name_en": "Arrest of Jesus",
+      "matthew": {"chapter": 26, "verse_start": 47, "verse_end": 56},
+      "mark": {"chapter": 14, "verse_start": 43, "verse_end": 52},
+      "luke": {"chapter": 22, "verse_start": 47, "verse_end": 53}
+    },
+    {
+      "id": 52,
+      "name_zh": "在大祭司面前受審",
+      "name_en": "Before the Sanhedrin",
+      "matthew": {"chapter": 26, "verse_start": 57, "verse_end": 68},
+      "mark": {"chapter": 14, "verse_start": 53, "verse_end": 65},
+      "luke": {"chapter": 22, "verse_start": 54, "verse_end": 71}
+    },
+    {
+      "id": 53,
+      "name_zh": "彼得不認主",
+      "name_en": "Peter's Denial",
+      "matthew": {"chapter": 26, "verse_start": 69, "verse_end": 75},
+      "mark": {"chapter": 14, "verse_start": 66, "verse_end": 72},
+      "luke": {"chapter": 22, "verse_start": 55, "verse_end": 62}
+    },
+    {
+      "id": 54,
+      "name_zh": "在彼拉多面前受審",
+      "name_en": "Before Pilate",
+      "matthew": {"chapter": 27, "verse_start": 1, "verse_end": 26},
+      "mark": {"chapter": 15, "verse_start": 1, "verse_end": 15},
+      "luke": {"chapter": 23, "verse_start": 1, "verse_end": 25}
+    },
+    {
+      "id": 55,
+      "name_zh": "兵丁戲弄耶穌",
+      "name_en": "Soldiers Mock Jesus",
+      "matthew": {"chapter": 27, "verse_start": 27, "verse_end": 31},
+      "mark": {"chapter": 15, "verse_start": 16, "verse_end": 20},
+      "luke": null
+    },
+    {
+      "id": 56,
+      "name_zh": "釘十字架",
+      "name_en": "Crucifixion",
+      "matthew": {"chapter": 27, "verse_start": 32, "verse_end": 44},
+      "mark": {"chapter": 15, "verse_start": 21, "verse_end": 32},
+      "luke": {"chapter": 23, "verse_start": 26, "verse_end": 43}
+    },
+    {
+      "id": 57,
+      "name_zh": "耶穌之死",
+      "name_en": "Death of Jesus",
+      "matthew": {"chapter": 27, "verse_start": 45, "verse_end": 56},
+      "mark": {"chapter": 15, "verse_start": 33, "verse_end": 41},
+      "luke": {"chapter": 23, "verse_start": 44, "verse_end": 49}
+    },
+    {
+      "id": 58,
+      "name_zh": "安葬耶穌",
+      "name_en": "Burial of Jesus",
+      "matthew": {"chapter": 27, "verse_start": 57, "verse_end": 61},
+      "mark": {"chapter": 15, "verse_start": 42, "verse_end": 47},
+      "luke": {"chapter": 23, "verse_start": 50, "verse_end": 56}
+    },
+    {
+      "id": 59,
+      "name_zh": "空墳墓",
+      "name_en": "Empty Tomb",
+      "matthew": {"chapter": 28, "verse_start": 1, "verse_end": 10},
+      "mark": {"chapter": 16, "verse_start": 1, "verse_end": 8},
+      "luke": {"chapter": 24, "verse_start": 1, "verse_end": 12}
+    },
+    {
+      "id": 60,
+      "name_zh": "大使命",
+      "name_en": "Great Commission",
+      "matthew": {"chapter": 28, "verse_start": 16, "verse_end": 20},
+      "mark": {"chapter": 16, "verse_start": 14, "verse_end": 18},
+      "luke": null
+    },
+    {
+      "id": 61,
+      "name_zh": "撒種的比喻",
+      "name_en": "Parable of the Sower",
+      "matthew": {"chapter": 13, "verse_start": 1, "verse_end": 23},
+      "mark": {"chapter": 4, "verse_start": 1, "verse_end": 20},
+      "luke": {"chapter": 8, "verse_start": 4, "verse_end": 15}
+    },
+    {
+      "id": 62,
+      "name_zh": "芥菜種的比喻",
+      "name_en": "Parable of the Mustard Seed",
+      "matthew": {"chapter": 13, "verse_start": 31, "verse_end": 32},
+      "mark": {"chapter": 4, "verse_start": 30, "verse_end": 32},
+      "luke": {"chapter": 13, "verse_start": 18, "verse_end": 19}
+    },
+    {
+      "id": 63,
+      "name_zh": "迷羊的比喻",
+      "name_en": "Parable of the Lost Sheep",
+      "matthew": {"chapter": 18, "verse_start": 12, "verse_end": 14},
+      "mark": null,
+      "luke": {"chapter": 15, "verse_start": 3, "verse_end": 7}
+    },
+    {
+      "id": 64,
+      "name_zh": "葡萄園工人的比喻",
+      "name_en": "Parable of the Workers in the Vineyard",
+      "matthew": {"chapter": 20, "verse_start": 1, "verse_end": 16},
+      "mark": null,
+      "luke": null
+    },
+    {
+      "id": 65,
+      "name_zh": "兩個兒子的比喻",
+      "name_en": "Parable of the Two Sons",
+      "matthew": {"chapter": 21, "verse_start": 28, "verse_end": 32},
+      "mark": null,
+      "luke": null
+    },
+    {
+      "id": 66,
+      "name_zh": "娶親筵席的比喻",
+      "name_en": "Parable of the Wedding Feast",
+      "matthew": {"chapter": 22, "verse_start": 1, "verse_end": 14},
+      "mark": null,
+      "luke": {"chapter": 14, "verse_start": 16, "verse_end": 24}
+    },
+    {
+      "id": 67,
+      "name_zh": "十個童女的比喻",
+      "name_en": "Parable of the Ten Virgins",
+      "matthew": {"chapter": 25, "verse_start": 1, "verse_end": 13},
+      "mark": null,
+      "luke": null
+    },
+    {
+      "id": 68,
+      "name_zh": "按才幹授責任的比喻",
+      "name_en": "Parable of the Talents",
+      "matthew": {"chapter": 25, "verse_start": 14, "verse_end": 30},
+      "mark": null,
+      "luke": {"chapter": 19, "verse_start": 11, "verse_end": 27}
+    },
+    {
+      "id": 69,
+      "name_zh": "最後的審判",
+      "name_en": "Judgment of the Nations",
+      "matthew": {"chapter": 25, "verse_start": 31, "verse_end": 46},
+      "mark": null,
+      "luke": null
+    },
+    {
+      "id": 70,
+      "name_zh": "主禱文",
+      "name_en": "The Lord's Prayer",
+      "matthew": {"chapter": 6, "verse_start": 9, "verse_end": 13},
+      "mark": null,
+      "luke": {"chapter": 11, "verse_start": 2, "verse_end": 4}
+    },
+    {
+      "id": 71,
+      "name_zh": "天國八福",
+      "name_en": "The Beatitudes",
+      "matthew": {"chapter": 5, "verse_start": 3, "verse_end": 12},
+      "mark": null,
+      "luke": {"chapter": 6, "verse_start": 20, "verse_end": 23}
+    },
+    {
+      "id": 72,
+      "name_zh": "醫治彼得的岳母",
+      "name_en": "Healing Peter's Mother-in-law",
+      "matthew": {"chapter": 8, "verse_start": 14, "verse_end": 15},
+      "mark": {"chapter": 1, "verse_start": 29, "verse_end": 31},
+      "luke": {"chapter": 4, "verse_start": 38, "verse_end": 39}
+    },
+    {
+      "id": 73,
+      "name_zh": "醫治被鬼附的人",
+      "name_en": "Healing a Demon-Possessed Man",
+      "matthew": null,
+      "mark": {"chapter": 1, "verse_start": 21, "verse_end": 28},
+      "luke": {"chapter": 4, "verse_start": 31, "verse_end": 37}
+    },
+    {
+      "id": 74,
+      "name_zh": "醫治枯手的人",
+      "name_en": "Healing a Man with a Withered Hand",
+      "matthew": {"chapter": 12, "verse_start": 9, "verse_end": 14},
+      "mark": {"chapter": 3, "verse_start": 1, "verse_end": 6},
+      "luke": {"chapter": 6, "verse_start": 6, "verse_end": 11}
+    },
+    {
+      "id": 75,
+      "name_zh": "耶穌的真家人",
+      "name_en": "Jesus' True Family",
+      "matthew": {"chapter": 12, "verse_start": 46, "verse_end": 50},
+      "mark": {"chapter": 3, "verse_start": 31, "verse_end": 35},
+      "luke": {"chapter": 8, "verse_start": 19, "verse_end": 21}
+    },
+    {
+      "id": 76,
+      "name_zh": "誰是我的鄰舍",
+      "name_en": "Parable of the Good Samaritan",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 10, "verse_start": 25, "verse_end": 37}
+    },
+    {
+      "id": 77,
+      "name_zh": "馬大與馬利亞",
+      "name_en": "Mary and Martha",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 10, "verse_start": 38, "verse_end": 42}
+    },
+    {
+      "id": 78,
+      "name_zh": "浪子的比喻",
+      "name_en": "Parable of the Prodigal Son",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 15, "verse_start": 11, "verse_end": 32}
+    },
+    {
+      "id": 79,
+      "name_zh": "財主與拉撒路",
+      "name_en": "Parable of the Rich Man and Lazarus",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 16, "verse_start": 19, "verse_end": 31}
+    },
+    {
+      "id": 80,
+      "name_zh": "法利賽人和稅吏的比喻",
+      "name_en": "Parable of the Pharisee and Tax Collector",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 18, "verse_start": 9, "verse_end": 14}
+    },
+    {
+      "id": 81,
+      "name_zh": "撒該",
+      "name_en": "Zacchaeus",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 19, "verse_start": 1, "verse_end": 10}
+    },
+    {
+      "id": 82,
+      "name_zh": "耶穌誕生",
+      "name_en": "Birth of Jesus",
+      "matthew": {"chapter": 1, "verse_start": 18, "verse_end": 25},
+      "mark": null,
+      "luke": {"chapter": 2, "verse_start": 1, "verse_end": 20}
+    },
+    {
+      "id": 83,
+      "name_zh": "博士來朝",
+      "name_en": "Visit of the Magi",
+      "matthew": {"chapter": 2, "verse_start": 1, "verse_end": 12},
+      "mark": null,
+      "luke": null
+    },
+    {
+      "id": 84,
+      "name_zh": "逃往埃及",
+      "name_en": "Flight to Egypt",
+      "matthew": {"chapter": 2, "verse_start": 13, "verse_end": 23},
+      "mark": null,
+      "luke": null
+    },
+    {
+      "id": 85,
+      "name_zh": "少年耶穌在聖殿",
+      "name_en": "Boy Jesus at the Temple",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 2, "verse_start": 41, "verse_end": 52}
+    },
+    {
+      "id": 86,
+      "name_zh": "天使報喜",
+      "name_en": "Annunciation",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 1, "verse_start": 26, "verse_end": 38}
+    },
+    {
+      "id": 87,
+      "name_zh": "牧羊人與天使",
+      "name_en": "Shepherds and Angels",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 2, "verse_start": 8, "verse_end": 20}
+    },
+    {
+      "id": 88,
+      "name_zh": "西面的頌歌",
+      "name_en": "Simeon's Song",
+      "matthew": null,
+      "mark": null,
+      "luke": {"chapter": 2, "verse_start": 25, "verse_end": 35}
+    },
+    {
+      "id": 89,
+      "name_zh": "在拿撒勒被棄",
+      "name_en": "Rejection at Nazareth",
+      "matthew": {"chapter": 13, "verse_start": 53, "verse_end": 58},
+      "mark": {"chapter": 6, "verse_start": 1, "verse_end": 6},
+      "luke": {"chapter": 4, "verse_start": 16, "verse_end": 30}
+    },
+    {
+      "id": 90,
+      "name_zh": "用香膏抹主",
+      "name_en": "Anointing at Bethany",
+      "matthew": {"chapter": 26, "verse_start": 6, "verse_end": 13},
+      "mark": {"chapter": 14, "verse_start": 3, "verse_end": 9},
+      "luke": {"chapter": 7, "verse_start": 36, "verse_end": 50}
+    }
+  ]
+}
