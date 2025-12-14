@@ -1222,7 +1222,6 @@ curl -X POST http://localhost:8000/api/v1/query \
 2. **錯誤處理**：統一處理 4xx/5xx 錯誤
 3. **Loading 狀態**：RAG 查詢可能需要 3-10 秒，需顯示載入狀態
 4. **分頁處理**：經文列表使用 `skip`/`limit` 實作無限捲動
-5. **圖譜視覺化**：使用 vis-network 或 D3.js 呈現關係圖
 
 ### C. 版本歷史
 
