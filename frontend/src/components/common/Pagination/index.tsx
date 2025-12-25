@@ -82,8 +82,7 @@ const buttonBaseClass = cn(
   'transition-colors duration-200',
   'focus-visible:outline-none focus-visible:ring-2',
   'focus-visible:ring-primary-500 focus-visible:ring-offset-2',
-  'dark:focus-visible:ring-offset-gray-900'
-);
+  );
 
 export function Pagination({
   currentPage,
@@ -118,9 +117,9 @@ export function Pagination({
         aria-label="上一頁"
         className={cn(
           buttonBaseClass,
-          'text-gray-600 dark:text-gray-300',
+          'text-gray-600',
           canGoPrevious
-            ? 'hover:bg-gray-100 dark:hover:bg-gray-800'
+            ? 'hover:bg-gray-100'
             : 'opacity-50 cursor-not-allowed'
         )}
       >
@@ -133,7 +132,7 @@ export function Pagination({
           return (
             <span
               key={`ellipsis-${index}`}
-              className="inline-flex items-center justify-center min-w-[2.5rem] h-10 text-gray-400 dark:text-gray-500"
+              className="inline-flex items-center justify-center min-w-[2.5rem] h-10 text-gray-400"
               aria-hidden="true"
             >
               <MoreHorizontal className="w-5 h-5" />
@@ -153,10 +152,10 @@ export function Pagination({
             className={cn(
               buttonBaseClass,
               isCurrentPage
-                ? 'bg-primary-600 text-white dark:bg-primary-500'
+                ? 'bg-primary-600 text-white'
                 : cn(
-                    'text-gray-600 dark:text-gray-300',
-                    'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    'text-gray-600',
+                    'hover:bg-gray-100'
                   )
             )}
           >
@@ -173,9 +172,9 @@ export function Pagination({
         aria-label="下一頁"
         className={cn(
           buttonBaseClass,
-          'text-gray-600 dark:text-gray-300',
+          'text-gray-600',
           canGoNext
-            ? 'hover:bg-gray-100 dark:hover:bg-gray-800'
+            ? 'hover:bg-gray-100'
             : 'opacity-50 cursor-not-allowed'
         )}
       >

@@ -69,8 +69,8 @@ export function SearchBar({
         className={cn(
           'flex items-center gap-2',
           'rounded-xl shadow-lg',
-          'bg-white dark:bg-gray-800',
-          'border border-gray-200 dark:border-gray-700',
+          'bg-white',
+          'border border-gray-200',
           'transition-all duration-200',
           'focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent'
         )}
@@ -90,8 +90,8 @@ export function SearchBar({
             'flex-1',
             'text-lg py-4 px-5',
             'bg-transparent',
-            'text-gray-900 dark:text-gray-100',
-            'placeholder:text-gray-500 dark:placeholder:text-gray-400',
+            'text-gray-900',
+            'placeholder:text-gray-500',
             'border-none outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50'
           )}

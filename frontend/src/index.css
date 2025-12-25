@@ -118,6 +118,31 @@
 
 html {
   scroll-behavior: smooth;
+  /* Force light mode - ignore system dark mode preference */
+  color-scheme: light only;
+}
+
+/*
+ * Force Light Mode Only
+ * Override system dark mode preference completely.
+ * This makes all dark: variants ineffective.
+ */
+@media (prefers-color-scheme: dark) {
+  /* Reset color-scheme to light */
+  :root {
+    color-scheme: light;
+  }
+
+  /* Force light background on main containers */
+  html, body {
+    background-color: #F9FAFB !important;
+    color: #111827 !important;
+  }
+}
+
+/* Ensure dark: classes have no effect by making them identical to light styles */
+* {
+  --tw-dark-mode: 0;
 }
 
 body {

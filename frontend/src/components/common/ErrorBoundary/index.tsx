@@ -96,21 +96,21 @@ export class ErrorBoundary extends Component<
         <div className="min-h-[400px] flex items-center justify-center p-4">
           <Card padding="lg" className="max-w-md w-full text-center">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-error-light dark:bg-error-dark/20 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-error-light flex items-center justify-center">
                 <AlertTriangle className="w-8 h-8 text-error" />
               </div>
 
               <div className="space-y-2">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="text-xl font-semibold text-gray-900">
                   發生錯誤
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600">
                   很抱歉，頁面發生了一些問題。請嘗試重新載入。
                 </p>
               </div>
 
               {import.meta.env.DEV && error && (
-                <div className="w-full mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-left">
+                <div className="w-full mt-4 p-3 bg-gray-100 rounded-lg text-left">
                   <p className="text-sm font-mono text-error break-all">
                     {error.message}
                   </p>

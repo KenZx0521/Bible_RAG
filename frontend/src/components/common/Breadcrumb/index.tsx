@@ -33,7 +33,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
             <li key={index} className="flex items-center gap-1">
               {index > 0 && (
                 <ChevronRight
-                  className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
+                  className="w-4 h-4 text-gray-400 flex-shrink-0"
                   aria-hidden="true"
                 />
               )}
@@ -43,8 +43,8 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                   className={cn(
                     'font-medium',
                     isLast
-                      ? 'text-gray-900 dark:text-gray-100'
-                      : 'text-gray-500 dark:text-gray-400'
+                      ? 'text-gray-900'
+                      : 'text-gray-500'
                   )}
                   aria-current={isLast ? 'page' : undefined}
                 >
@@ -54,8 +54,8 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                 <Link
                   to={item.href}
                   className={cn(
-                    'text-gray-500 dark:text-gray-400',
-                    'hover:text-gray-700 dark:hover:text-gray-200',
+                    'text-gray-500',
+                    'hover:text-gray-700',
                     'transition-colors duration-200',
                     'focus-visible:outline-none focus-visible:ring-2',
                     'focus-visible:ring-primary-500 focus-visible:rounded'

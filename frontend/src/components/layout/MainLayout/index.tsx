@@ -28,7 +28,7 @@ import { Sidebar } from '../Sidebar';
 /** Main layout component */
 export function MainLayout() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50 transition-colors duration-200">
       {/* Header */}
       <Header />
 

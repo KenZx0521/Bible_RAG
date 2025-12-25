@@ -50,10 +50,10 @@ function BookButton({ book, isSelected, onClick }: BookButtonProps) {
         isOT
           ? isSelected
             ? 'bg-bible-ot text-white'
-            : 'bg-bible-ot/10 text-bible-ot hover:bg-bible-ot/20 dark:bg-bible-ot/20 dark:text-bible-ot-light dark:hover:bg-bible-ot/30'
+            : 'bg-bible-ot/10 text-bible-ot hover:bg-bible-ot/20'
           : isSelected
             ? 'bg-bible-nt text-white'
-            : 'bg-bible-nt/10 text-bible-nt hover:bg-bible-nt/20 dark:bg-bible-nt/20 dark:text-bible-nt-light dark:hover:bg-bible-nt/30'
+            : 'bg-bible-nt/10 text-bible-nt hover:bg-bible-nt/20'
       )}
       title={book.name_zh}
       aria-label={book.name_zh}
@@ -87,14 +87,12 @@ function SectionHeader({ title, count, testament }: SectionHeaderProps) {
       <h3
         className={cn(
           'text-sm font-semibold',
-          isOT
-            ? 'text-bible-ot dark:text-bible-ot-light'
-            : 'text-bible-nt dark:text-bible-nt-light'
+          isOT ? 'text-bible-ot' : 'text-bible-nt'
         )}
       >
         {title}
       </h3>
-      <span className="text-xs text-gray-500 dark:text-gray-400">
+      <span className="text-xs text-gray-500">
         ({count} 卷)
       </span>
     </div>
@@ -164,10 +162,10 @@ export function Sidebar() {
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Mobile Header with Close Button */}
-      <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
-          <Book className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <Book className="h-5 w-5 text-primary-600" />
+          <span className="font-semibold text-gray-900">
             聖經目錄
           </span>
         </div>
@@ -176,8 +174,8 @@ export function Sidebar() {
           onClick={toggleSidebar}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-500 dark:text-gray-400',
-            'hover:bg-gray-100 dark:hover:bg-gray-700',
+            'text-gray-500',
+            'hover:bg-gray-100',
             'transition-colors duration-200'
           )}
           aria-label="關閉側邊欄"
@@ -187,9 +185,9 @@ export function Sidebar() {
       </div>
 
       {/* Desktop Header */}
-      <div className="hidden lg:flex items-center gap-2 p-4 border-b border-gray-200 dark:border-gray-700">
-        <Book className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-        <span className="font-semibold text-gray-900 dark:text-white">
+      <div className="hidden lg:flex items-center gap-2 p-4 border-b border-gray-200">
+        <Book className="h-5 w-5 text-primary-600" />
+        <span className="font-semibold text-gray-900">
           聖經目錄
         </span>
       </div>
@@ -264,8 +262,8 @@ export function Sidebar() {
       <aside
         className={cn(
           // Base styles
-          'bg-white dark:bg-gray-900',
-          'border-r border-gray-200 dark:border-gray-700',
+          'bg-white',
+          'border-r border-gray-200',
           'transition-transform duration-300 ease-in-out',
 
           // Desktop styles

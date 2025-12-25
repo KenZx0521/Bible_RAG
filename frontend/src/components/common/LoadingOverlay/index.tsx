@@ -34,17 +34,17 @@ export function LoadingOverlay({ isLoading, message }: LoadingOverlayProps) {
       className={cn(
         'fixed inset-0 z-50',
         'flex flex-col items-center justify-center gap-4',
-        'bg-black/50 dark:bg-black/70',
+        'bg-black/50',
         'animate-in fade-in duration-200'
       )}
       role="status"
       aria-live="polite"
       aria-label="載入中"
     >
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl flex flex-col items-center gap-4">
+      <div className="bg-white rounded-xl p-6 shadow-xl flex flex-col items-center gap-4">
         <LoadingSpinner size="lg" />
         {message && (
-          <p className="text-gray-700 dark:text-gray-300 text-center font-medium">
+          <p className="text-gray-700 text-center font-medium">
             {message}
           </p>
         )}
