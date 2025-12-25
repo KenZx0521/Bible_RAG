@@ -62,7 +62,7 @@ class Settings(BaseSettings):
 
     # Security
     ADMIN_API_KEY: str = "change-me-in-production"
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000", "http://localhost"]
 
     # Logging
     LOG_LEVEL: str = "INFO"
