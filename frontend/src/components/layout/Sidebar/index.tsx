@@ -270,8 +270,10 @@ export function Sidebar() {
 
           // Desktop styles
           'lg:relative lg:z-0',
-          'lg:w-64 lg:flex-shrink-0',
-          sidebarOpen ? 'lg:translate-x-0' : 'lg:-translate-x-full lg:w-0 lg:border-0',
+          'lg:flex-shrink-0',
+          sidebarOpen
+            ? 'lg:w-64 lg:translate-x-0'
+            : 'lg:w-0 lg:overflow-hidden lg:border-0',
 
           // Mobile styles - overlay drawer
           'fixed inset-y-0 left-0 z-50',
