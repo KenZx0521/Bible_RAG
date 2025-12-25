@@ -6,13 +6,6 @@ import type { QueryMode } from './enums';
 import type { GraphEdge, GraphNode } from './api.types';
 
 // =============================================================================
-// Theme
-// =============================================================================
-
-/** Theme setting */
-export type Theme = 'light' | 'dark' | 'system';
-
-// =============================================================================
 // App State
 // =============================================================================
 
@@ -21,8 +14,6 @@ export interface AppState {
   // UI State
   /** Sidebar open status */
   sidebarOpen: boolean;
-  /** Theme setting */
-  theme: Theme;
 
   // Current Selection
   /** Selected book ID */
@@ -35,8 +26,6 @@ export interface AppState {
   // Actions
   /** Toggle sidebar */
   toggleSidebar: () => void;
-  /** Set theme */
-  setTheme: (theme: Theme) => void;
   /** Select book */
   selectBook: (bookId: number | null) => void;
   /** Select chapter */

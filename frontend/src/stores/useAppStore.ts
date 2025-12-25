@@ -6,13 +6,12 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AppState, Theme } from '@/types';
+import type { AppState } from '@/types';
 import { STORAGE_KEYS } from '@/utils/constants';
 
 /** Initial state */
 const initialState = {
   sidebarOpen: true,
-  theme: 'system' as Theme,
   selectedBookId: null,
   selectedChapter: null,
   selectedPericopeId: null,
@@ -28,8 +27,6 @@ export const useAppStore = create<AppState>()(
       // Actions
       toggleSidebar: () =>
         set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-
-      setTheme: (theme: Theme) => set({ theme }),
 
       selectBook: (bookId: number | null) =>
         set({
@@ -50,9 +47,8 @@ export const useAppStore = create<AppState>()(
       reset: () => set(initialState),
     }),
     {
-      name: STORAGE_KEYS.THEME,
+      name: STORAGE_KEYS.APP_STATE,
       partialize: (state) => ({
-        theme: state.theme,
         sidebarOpen: state.sidebarOpen,
       }),
     }

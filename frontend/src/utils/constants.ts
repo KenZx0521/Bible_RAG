@@ -47,7 +47,7 @@ export const BOOK_CATEGORIES = {
 
 /** Local Storage Keys */
 export const STORAGE_KEYS = {
-  THEME: 'bible-rag-theme',
+  APP_STATE: 'bible-rag-app-state',
   SEARCH_HISTORY: 'bible-rag-search-history',
 } as const;
 

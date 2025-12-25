@@ -79,16 +79,6 @@ const NODE_COLORS: Record<string, string> = {
   DEFAULT: '#90A4AE', // Gray
 };
 
-/** Node colors for dark mode */
-const NODE_COLORS_DARK: Record<string, string> = {
-  PERSON: '#EF5350', // Brighter red
-  PLACE: '#42A5F5', // Brighter blue
-  GROUP: '#AB47BC', // Brighter purple
-  EVENT: '#FFA726', // Brighter orange
-  TOPIC: '#66BB6A', // Brighter green
-  DEFAULT: '#78909C', // Gray
-};
-
 /** Legend items */
 const LEGEND_ITEMS = [
   { type: 'PERSON', label: '人物', color: '#E57373' },
@@ -116,23 +106,6 @@ export function GraphViewer({
   const simulationRef = useRef<d3.Simulation<SimulationNode, SimulationEdge> | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
   const [hoveredNode, setHoveredNode] = useState<SimulationNode | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Check for dark mode
-  useEffect(() => {
-    const checkDarkMode = () => {
-      setIsDarkMode(document.documentElement.classList.contains('dark'));
-    };
-    checkDarkMode();
-
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   // Update dimensions on resize
   useEffect(() => {
@@ -152,13 +125,9 @@ export function GraphViewer({
   }, [height]);
 
   // Get node color based on type
-  const getNodeColor = useCallback(
-    (type: string) => {
-      const colors = isDarkMode ? NODE_COLORS_DARK : NODE_COLORS;
-      return colors[type.toUpperCase()] || colors.DEFAULT;
-    },
-    [isDarkMode]
-  );
+  const getNodeColor = useCallback((type: string) => {
+    return NODE_COLORS[type.toUpperCase()] || NODE_COLORS.DEFAULT;
+  }, []);
 
   // Get node radius based on whether it's the center node
   const getNodeRadius = useCallback(
@@ -205,7 +174,7 @@ export function GraphViewer({
       .attr('xoverflow', 'visible')
       .append('svg:path')
       .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-      .attr('fill', isDarkMode ? '#6B7280' : '#9CA3AF')
+      .attr('fill', '#9CA3AF')
       .style('stroke', 'none');
 
     // Prepare simulation data
@@ -251,7 +220,7 @@ export function GraphViewer({
       .data(simulationEdges)
       .join('line')
       .attr('class', 'link')
-      .attr('stroke', isDarkMode ? '#4B5563' : '#D1D5DB')
+      .attr('stroke', '#D1D5DB')
       .attr('stroke-opacity', 0.7)
       .attr('stroke-width', 1.5)
       .attr('marker-end', 'url(#arrowhead)');
@@ -265,7 +234,7 @@ export function GraphViewer({
       .join('text')
       .attr('class', 'link-label')
       .attr('font-size', '10px')
-      .attr('fill', isDarkMode ? '#9CA3AF' : '#6B7280')
+      .attr('fill', '#6B7280')
       .attr('text-anchor', 'middle')
       .attr('dy', -5)
       .text((d) => d.type.replace(/_/g, ' '));
@@ -300,7 +269,7 @@ export function GraphViewer({
       .attr('dy', (d) => getNodeRadius(d.id) + 15)
       .attr('font-size', '12px')
       .attr('font-weight', (d) => (d.id === centerNodeId ? '600' : '400'))
-      .attr('fill', isDarkMode ? '#E5E7EB' : '#374151')
+      .attr('fill', '#374151')
       .text((d) => d.label);
 
     // Drag behavior
@@ -401,7 +370,7 @@ export function GraphViewer({
     return () => {
       simulation.stop();
     };
-  }, [nodes, edges, dimensions, centerNodeId, onNodeClick, getNodeColor, getNodeRadius, isDarkMode]);
+  }, [nodes, edges, dimensions, centerNodeId, onNodeClick, getNodeColor, getNodeRadius]);
 
   // Empty state
   if (nodes.length === 0) {
@@ -409,13 +378,13 @@ export function GraphViewer({
       <div
         className={cn(
           'flex items-center justify-center rounded-lg border-2 border-dashed',
-          'border-gray-300 dark:border-gray-700',
-          'bg-gray-50 dark:bg-gray-800/50',
+          'border-gray-300',
+          'bg-gray-50',
           className
         )}
         style={{ width, height }}
       >
-        <div className="text-center text-gray-500 dark:text-gray-400">
+        <div className="text-center text-gray-500">
           <svg
             className="mx-auto h-12 w-12 mb-4"
             fill="none"
@@ -443,7 +412,7 @@ export function GraphViewer({
         ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
-        className="bg-gray-50 dark:bg-gray-900/50 rounded-lg"
+        className="bg-gray-50 rounded-lg"
         style={{ width, height }}
       />
 
@@ -452,8 +421,8 @@ export function GraphViewer({
         <div
           className={cn(
             'absolute top-4 left-4 z-10',
-            'bg-white dark:bg-gray-800',
-            'border border-gray-200 dark:border-gray-700',
+            'bg-white',
+            'border border-gray-200',
             'rounded-lg shadow-lg p-3',
             'max-w-xs'
           )}
@@ -463,11 +432,11 @@ export function GraphViewer({
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: getNodeColor(hoveredNode.type) }}
             />
-            <span className="font-medium text-gray-900 dark:text-gray-100">
+            <span className="font-medium text-gray-900">
               {hoveredNode.label}
             </span>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500">
             {hoveredNode.type === 'PERSON' ? '人物' : null}
             {hoveredNode.type === 'PLACE' ? '地點' : null}
             {hoveredNode.type === 'GROUP' ? '群體' : null}
@@ -475,7 +444,7 @@ export function GraphViewer({
             {hoveredNode.type === 'TOPIC' ? '主題' : null}
           </p>
           {typeof hoveredNode.properties?.description === 'string' && hoveredNode.properties.description && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-xs text-gray-400 mt-1">
               {hoveredNode.properties.description}
             </p>
           )}
@@ -486,13 +455,13 @@ export function GraphViewer({
       <div
         className={cn(
           'absolute bottom-4 left-4 z-10',
-          'bg-white/90 dark:bg-gray-800/90',
+          'bg-white/90',
           'backdrop-blur-sm',
-          'border border-gray-200 dark:border-gray-700',
+          'border border-gray-200',
           'rounded-lg shadow-sm p-3'
         )}
       >
-        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">圖例</p>
+        <p className="text-xs font-medium text-gray-700 mb-2">圖例</p>
         <div className="flex flex-wrap gap-3">
           {LEGEND_ITEMS.map((item) => (
             <div key={item.type} className="flex items-center gap-1.5">
@@ -500,7 +469,7 @@ export function GraphViewer({
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="text-xs text-gray-600 dark:text-gray-400">{item.label}</span>
+              <span className="text-xs text-gray-600">{item.label}</span>
             </div>
           ))}
         </div>
@@ -510,13 +479,13 @@ export function GraphViewer({
       <div
         className={cn(
           'absolute bottom-4 right-4 z-10',
-          'bg-white/90 dark:bg-gray-800/90',
+          'bg-white/90',
           'backdrop-blur-sm',
-          'border border-gray-200 dark:border-gray-700',
+          'border border-gray-200',
           'rounded-lg shadow-sm px-3 py-2'
         )}
       >
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500">
           滑鼠拖曳移動節點 | 滾輪縮放 | 點擊查看詳情
         </p>
       </div>
