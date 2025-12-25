@@ -1,68 +1,633 @@
+/**
+ * Bible RAG - Global Styles
+ * Using Tailwind CSS v4
+ */
+
+@import "tailwindcss";
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* =============================================================================
+   Tailwind v4 Theme Configuration
+   ============================================================================= */
+
+@theme {
+  /* Primary Colors */
+  --color-primary-50: #EFF6FF;
+  --color-primary-100: #DBEAFE;
+  --color-primary-200: #BFDBFE;
+  --color-primary-300: #93C5FD;
+  --color-primary-400: #60A5FA;
+  --color-primary-500: #3B82F6;
+  --color-primary-600: #2563EB;
+  --color-primary-700: #1D4ED8;
+  --color-primary-800: #1E40AF;
+  --color-primary-900: #1E3A8A;
+
+  /* Bible Colors */
+  --color-bible-ot: #8B4513;
+  --color-bible-ot-light: #D2B48C;
+  --color-bible-ot-dark: #5D2E0C;
+  --color-bible-nt: #1E3A5F;
+  --color-bible-nt-light: #4A6B8A;
+  --color-bible-nt-dark: #0F1D2F;
+  --color-bible-gold: #B8860B;
+  --color-bible-gold-light: #DAA520;
+  --color-bible-gold-dark: #8B6914;
+  --color-bible-parchment: #FDF5E6;
+  --color-bible-parchment-dark: #2D2A24;
+
+  /* Semantic Colors */
+  --color-success: #22C55E;
+  --color-success-light: #DCFCE7;
+  --color-success-dark: #166534;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-warning-dark: #92400E;
+  --color-error: #EF4444;
+  --color-error-light: #FEE2E2;
+  --color-error-dark: #991B1B;
+  --color-info: #3B82F6;
+  --color-info-light: #DBEAFE;
+  --color-info-dark: #1E40AF;
+
+  /* Font Families */
+  --font-sans: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  --font-serif: 'Noto Serif TC', 'Songti TC', serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Animations */
+  --animate-fade-in: fadeIn 0.3s ease-in-out;
+  --animate-slide-in: slideIn 0.3s ease-out;
+  --animate-slide-in-right: slideInRight 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* =============================================================================
+   CSS Variables (for JS access)
+   ============================================================================= */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --background: 249 250 251;
+  --foreground: 17 24 39;
+  --card: 255 255 255;
+  --card-foreground: 17 24 39;
+  --primary: 37 99 235;
+  --primary-foreground: 255 255 255;
+  --border: 229 231 235;
+  --ring: 59 130 246;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+.dark {
+  --background: 17 24 39;
+  --foreground: 243 244 246;
+  --card: 31 41 55;
+  --card-foreground: 243 244 246;
+  --border: 55 65 81;
 }
-a:hover {
-  color: #535bf2;
+
+/* =============================================================================
+   Base Styles
+   ============================================================================= */
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-sans);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.dark body {
+  background-color: var(--color-gray-900);
+  color: var(--color-gray-100);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-500);
+}
+
+/* =============================================================================
+   Button Styles
+   ============================================================================= */
+
+.btn-primary {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary-600);
+  color: white;
+  border-radius: 0.5rem;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: background-color 0.2s;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.btn-primary:hover {
+  background-color: var(--color-primary-700);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary-500);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-gray-300);
+  color: var(--color-gray-700);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-gray-50);
+}
+
+.dark .btn-secondary {
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-200);
+}
+
+.dark .btn-secondary:hover {
+  background-color: var(--color-gray-700);
+}
+
+.btn-ghost {
+  padding: 0.5rem 1rem;
+  color: var(--color-gray-600);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-ghost:hover {
+  background-color: var(--color-gray-100);
+}
+
+.dark .btn-ghost {
+  color: var(--color-gray-300);
+}
+
+.dark .btn-ghost:hover {
+  background-color: var(--color-gray-800);
+}
+
+.btn-danger {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-error);
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: #DC2626;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* =============================================================================
+   Input Styles
+   ============================================================================= */
+
+.input-base {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 0.5rem;
+  background-color: white;
+  color: var(--color-gray-900);
+  transition: box-shadow 0.2s;
+}
+
+.input-base::placeholder {
+  color: var(--color-gray-400);
+}
+
+.input-base:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-500);
+  border-color: transparent;
+}
+
+.input-base:disabled {
+  background-color: var(--color-gray-100);
+  cursor: not-allowed;
+}
+
+.dark .input-base {
+  border-color: var(--color-gray-600);
+  background-color: var(--color-gray-800);
+  color: var(--color-gray-100);
+}
+
+.dark .input-base::placeholder {
+  color: var(--color-gray-500);
+}
+
+.dark .input-base:disabled {
+  background-color: var(--color-gray-700);
+}
+
+.input-error {
+  border-color: var(--color-error);
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 2px var(--color-error);
+}
+
+.input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-700);
+  margin-bottom: 0.25rem;
+}
+
+.dark .input-label {
+  color: var(--color-gray-300);
+}
+
+.input-error-message {
+  font-size: 0.875rem;
+  color: var(--color-error);
+  margin-top: 0.25rem;
+}
+
+/* =============================================================================
+   Card Styles
+   ============================================================================= */
+
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border: 1px solid var(--color-gray-200);
+}
+
+.dark .card {
+  background-color: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+}
+
+.card-hover {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.card-hover:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border-color: var(--color-gray-300);
+}
+
+.dark .card-hover:hover {
+  border-color: var(--color-gray-600);
+}
+
+.card-scripture {
+  background-color: var(--color-bible-parchment);
+  border-radius: 0.5rem;
+  border: 1px solid rgb(184 134 11 / 0.3);
+  padding: 1.5rem;
+}
+
+.dark .card-scripture {
+  background-color: var(--color-gray-800);
+}
+
+.card-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.dark .card-header {
+  border-color: var(--color-gray-700);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.dark .card-footer {
+  border-color: var(--color-gray-700);
+}
+
+/* =============================================================================
+   Tag Styles
+   ============================================================================= */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tag-primary {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+
+.dark .tag-primary {
+  background-color: var(--color-primary-900);
+  color: var(--color-primary-300);
+}
+
+.tag-success {
+  background-color: #DCFCE7;
+  color: #15803D;
+}
+
+.dark .tag-success {
+  background-color: #14532D;
+  color: #86EFAC;
+}
+
+.tag-warning {
+  background-color: #FEF3C7;
+  color: #A16207;
+}
+
+.dark .tag-warning {
+  background-color: #78350F;
+  color: #FDE047;
+}
+
+.tag-error {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+}
+
+.dark .tag-error {
+  background-color: #7F1D1D;
+  color: #FCA5A5;
+}
+
+.tag-ot {
+  background-color: rgb(139 69 19 / 0.1);
+  color: var(--color-bible-ot);
+}
+
+.dark .tag-ot {
+  background-color: rgb(139 69 19 / 0.2);
+  color: var(--color-bible-ot-light);
+}
+
+.tag-nt {
+  background-color: rgb(30 58 95 / 0.1);
+  color: var(--color-bible-nt);
+}
+
+.dark .tag-nt {
+  background-color: rgb(30 58 95 / 0.2);
+  color: var(--color-bible-nt-light);
+}
+
+/* =============================================================================
+   Scripture Styles
+   ============================================================================= */
+
+.verse-container {
+  background-color: var(--color-bible-parchment);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.dark .verse-container {
+  background-color: var(--color-gray-800);
+}
+
+.verse-text {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 2;
+  letter-spacing: 0.05em;
+  color: var(--color-gray-800);
+}
+
+.dark .verse-text {
+  color: var(--color-gray-200);
+}
+
+.verse-number {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-bible-gold);
+  vertical-align: super;
+  margin-right: 0.25rem;
+}
+
+.verse-reference {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  margin-top: 0.5rem;
+}
+
+.dark .verse-reference {
+  color: var(--color-gray-400);
+}
+
+/* =============================================================================
+   Layout Styles
+   ============================================================================= */
+
+.container-app {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 80rem;
+}
+
+@media (min-width: 640px) {
+  .container-app {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
-  a:hover {
-    color: #747bff;
+}
+
+@media (min-width: 1024px) {
+  .container-app {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.dark .page-title {
+  color: var(--color-gray-100);
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.dark .section-title {
+  color: var(--color-gray-200);
+}
+
+/* =============================================================================
+   Scrollbar Styles
+   ============================================================================= */
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-gray-100);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background-color: var(--color-gray-800);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-300);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-600);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-400);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-500);
+}
+
+/* =============================================================================
+   Prose Styles
+   ============================================================================= */
+
+.prose-bible {
+  max-width: none;
+}
+
+.prose-bible h1,
+.prose-bible h2,
+.prose-bible h3,
+.prose-bible h4,
+.prose-bible h5,
+.prose-bible h6 {
+  color: var(--color-gray-900);
+}
+
+.dark .prose-bible h1,
+.dark .prose-bible h2,
+.dark .prose-bible h3,
+.dark .prose-bible h4,
+.dark .prose-bible h5,
+.dark .prose-bible h6 {
+  color: var(--color-gray-100);
+}
+
+.prose-bible p {
+  color: var(--color-gray-700);
+}
+
+.dark .prose-bible p {
+  color: var(--color-gray-300);
+}
+
+.prose-bible a {
+  color: var(--color-primary-600);
+}
+
+.dark .prose-bible a {
+  color: var(--color-primary-400);
+}
+
+.prose-bible strong {
+  color: var(--color-gray-900);
+}
+
+.dark .prose-bible strong {
+  color: var(--color-gray-100);
+}
+
+.prose-bible code {
+  color: var(--color-primary-600);
+  background-color: var(--color-gray-100);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.dark .prose-bible code {
+  color: var(--color-primary-400);
+  background-color: var(--color-gray-800);
+}
+
+.prose-bible pre {
+  background-color: var(--color-gray-900);
+}
+
+.dark .prose-bible pre {
+  background-color: #030712;
 }
