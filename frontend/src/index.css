@@ -51,6 +51,14 @@
   --color-info-light: #DBEAFE;
   --color-info-dark: #1E40AF;
 
+  /* Graph Node Colors */
+  --color-graph-person: #E57373;
+  --color-graph-place: #64B5F6;
+  --color-graph-group: #BA68C8;
+  --color-graph-event: #FFB74D;
+  --color-graph-topic: #81C784;
+  --color-graph-default: #90A4AE;
+
   /* Font Families */
   --font-sans: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   --font-serif: 'Noto Serif TC', 'Songti TC', serif;

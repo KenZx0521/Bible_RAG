@@ -121,7 +121,7 @@ export function ChapterGrid({
         </span>
       </div>
       <div
-        className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
+        className="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2"
         role="group"
         aria-label={`${bookName} chapters`}
       >

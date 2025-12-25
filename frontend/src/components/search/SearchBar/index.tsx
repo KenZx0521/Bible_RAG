@@ -91,7 +91,7 @@ export function SearchBar({
             'text-lg py-4 px-5',
             'bg-transparent',
             'text-gray-900 dark:text-gray-100',
-            'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+            'placeholder:text-gray-500 dark:placeholder:text-gray-400',
             'border-none outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50'
           )}

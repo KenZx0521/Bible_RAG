@@ -37,8 +37,8 @@ export function LoadingOverlay({ isLoading, message }: LoadingOverlayProps) {
         'bg-black/50 dark:bg-black/70',
         'animate-in fade-in duration-200'
       )}
-      role="dialog"
-      aria-modal="true"
+      role="status"
+      aria-live="polite"
       aria-label="載入中"
     >
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl flex flex-col items-center gap-4">

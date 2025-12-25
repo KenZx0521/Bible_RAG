@@ -66,26 +66,60 @@ interface SimulationEdge {
 }
 
 // =============================================================================
-// Constants
+// Constants & Utilities
 // =============================================================================
 
-/** Node colors by type */
-const NODE_COLORS: Record<string, string> = {
-  PERSON: '#E57373', // Red
-  PLACE: '#64B5F6', // Blue
-  GROUP: '#BA68C8', // Purple
-  EVENT: '#FFB74D', // Orange
-  TOPIC: '#81C784', // Green
-  DEFAULT: '#90A4AE', // Gray
+/** CSS variable names for graph node colors */
+const NODE_COLOR_VARS: Record<string, string> = {
+  PERSON: '--color-graph-person',
+  PLACE: '--color-graph-place',
+  GROUP: '--color-graph-group',
+  EVENT: '--color-graph-event',
+  TOPIC: '--color-graph-topic',
+  DEFAULT: '--color-graph-default',
 };
 
-/** Legend items */
-const LEGEND_ITEMS = [
-  { type: 'PERSON', label: '人物', color: '#E57373' },
-  { type: 'PLACE', label: '地點', color: '#64B5F6' },
-  { type: 'GROUP', label: '群體', color: '#BA68C8' },
-  { type: 'EVENT', label: '事件', color: '#FFB74D' },
-  { type: 'TOPIC', label: '主題', color: '#81C784' },
+/** Fallback colors in case CSS variables are not available */
+const NODE_COLOR_FALLBACKS: Record<string, string> = {
+  PERSON: '#E57373',
+  PLACE: '#64B5F6',
+  GROUP: '#BA68C8',
+  EVENT: '#FFB74D',
+  TOPIC: '#81C784',
+  DEFAULT: '#90A4AE',
+};
+
+/**
+ * Get color from CSS variable with fallback
+ * @param varName - CSS variable name (e.g., '--color-graph-person')
+ * @param fallback - Fallback color if variable is not defined
+ * @returns The color value
+ */
+function getCSSVariableColor(varName: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value || fallback;
+}
+
+/**
+ * Get all graph node colors from CSS variables
+ * @returns Record of node type to color
+ */
+function getNodeColors(): Record<string, string> {
+  const colors: Record<string, string> = {};
+  for (const [type, varName] of Object.entries(NODE_COLOR_VARS)) {
+    colors[type] = getCSSVariableColor(varName, NODE_COLOR_FALLBACKS[type]);
+  }
+  return colors;
+}
+
+/** Legend items with labels */
+const LEGEND_ITEMS_CONFIG = [
+  { type: 'PERSON', label: '人物' },
+  { type: 'PLACE', label: '地點' },
+  { type: 'GROUP', label: '群體' },
+  { type: 'EVENT', label: '事件' },
+  { type: 'TOPIC', label: '主題' },
 ];
 
 // =============================================================================
@@ -106,6 +140,12 @@ export function GraphViewer({
   const simulationRef = useRef<d3.Simulation<SimulationNode, SimulationEdge> | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
   const [hoveredNode, setHoveredNode] = useState<SimulationNode | null>(null);
+  const [nodeColors, setNodeColors] = useState<Record<string, string>>(NODE_COLOR_FALLBACKS);
+
+  // Initialize node colors from CSS variables
+  useEffect(() => {
+    setNodeColors(getNodeColors());
+  }, []);
 
   // Update dimensions on resize
   useEffect(() => {
@@ -126,8 +166,8 @@ export function GraphViewer({
 
   // Get node color based on type
   const getNodeColor = useCallback((type: string) => {
-    return NODE_COLORS[type.toUpperCase()] || NODE_COLORS.DEFAULT;
-  }, []);
+    return nodeColors[type.toUpperCase()] || nodeColors.DEFAULT;
+  }, [nodeColors]);
 
   // Get node radius based on whether it's the center node
   const getNodeRadius = useCallback(
@@ -186,7 +226,15 @@ export function GraphViewer({
       fy: null,
     }));
 
-    const simulationEdges: SimulationEdge[] = edges.map((edge) => ({
+    // Build a set of node IDs for efficient lookup
+    const nodeIds = new Set(simulationNodes.map((n) => n.id));
+
+    // Filter edges to only include those where both source and target nodes exist
+    const validEdges = edges.filter(
+      (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)
+    );
+
+    const simulationEdges: SimulationEdge[] = validEdges.map((edge) => ({
       source: edge.source,
       target: edge.target,
       type: edge.type,
@@ -463,11 +511,11 @@ export function GraphViewer({
       >
         <p className="text-xs font-medium text-gray-700 mb-2">圖例</p>
         <div className="flex flex-wrap gap-3">
-          {LEGEND_ITEMS.map((item) => (
+          {LEGEND_ITEMS_CONFIG.map((item) => (
             <div key={item.type} className="flex items-center gap-1.5">
               <span
                 className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: item.color }}
+                style={{ backgroundColor: nodeColors[item.type] }}
               />
               <span className="text-xs text-gray-600">{item.label}</span>
             </div>

@@ -399,7 +399,7 @@ export function GraphPage() {
               'bg-white dark:bg-gray-800',
               'border-t border-gray-200 dark:border-gray-700',
               'rounded-t-2xl shadow-2xl',
-              'max-h-[60vh] overflow-hidden',
+              'max-h-[50vh] overflow-hidden',
               'animate-slide-up'
             )}
           >
@@ -409,7 +409,7 @@ export function GraphPage() {
             </div>
 
             {/* Panel Content */}
-            <div className="overflow-y-auto max-h-[calc(60vh-2rem)]">
+            <div className="overflow-y-auto max-h-[calc(50vh-2rem)]">
               {entityId ? (
                 <EntityPanel
                   entityId={entityId}

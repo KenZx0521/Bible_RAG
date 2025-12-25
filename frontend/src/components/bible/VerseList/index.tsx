@@ -15,12 +15,15 @@
  * />
  */
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { VerseItem } from '@/types';
+
+/** Threshold for showing verse jump selector */
+const VERSE_JUMP_THRESHOLD = 20;
 
 export interface VerseListProps {
   /** Book ID */
@@ -150,6 +153,7 @@ export function VerseList({
 }: VerseListProps) {
   const navigate = useNavigate();
   const parentRef = useRef<HTMLDivElement>(null);
+  const verseRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Virtualization for long chapters (e.g., Psalm 119 with 176 verses)
   const virtualizer = useVirtualizer({
@@ -182,6 +186,58 @@ export function VerseList({
 
   const virtualItems = virtualizer.getVirtualItems();
 
+  // Whether to show verse jump selector
+  const showVerseJump = verses.length > VERSE_JUMP_THRESHOLD;
+
+  // Build verse number to index map for quick lookup
+  const verseIndexMap = useMemo(() => {
+    const map = new Map<number, number>();
+    verses.forEach((v, index) => {
+      map.set(v.verse, index);
+    });
+    return map;
+  }, [verses]);
+
+  // Scroll to a specific verse number
+  const scrollToVerse = useCallback(
+    (verseNumber: number) => {
+      if (useVirtual) {
+        // For virtualized list, use virtualizer's scrollToIndex
+        const index = verseIndexMap.get(verseNumber);
+        if (index !== undefined) {
+          virtualizer.scrollToIndex(index, { align: 'start', behavior: 'smooth' });
+        }
+      } else {
+        // For regular list, use scrollIntoView
+        const element = verseRefs.current.get(verseNumber);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    },
+    [useVirtual, verseIndexMap, virtualizer]
+  );
+
+  // Handle verse jump selection change
+  const handleVerseJumpChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const verseNumber = Number(event.target.value);
+      if (verseNumber > 0) {
+        scrollToVerse(verseNumber);
+      }
+    },
+    [scrollToVerse]
+  );
+
+  // Set ref for a verse element (used in non-virtualized mode)
+  const setVerseRef = useCallback((verseNumber: number, element: HTMLDivElement | null) => {
+    if (element) {
+      verseRefs.current.set(verseNumber, element);
+    } else {
+      verseRefs.current.delete(verseNumber);
+    }
+  }, []);
+
   if (verses.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -201,6 +257,41 @@ export function VerseList({
           共 {verses.length} 節
         </span>
       </header>
+
+      {/* Verse Jump Selector - only show for long chapters */}
+      {showVerseJump && (
+        <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <label
+            htmlFor="verse-jump"
+            className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap"
+          >
+            跳至：
+          </label>
+          <select
+            id="verse-jump"
+            onChange={handleVerseJumpChange}
+            className={cn(
+              'flex-1 max-w-[180px] px-3 py-1.5 rounded-md',
+              'text-sm text-gray-700 dark:text-gray-300',
+              'bg-white dark:bg-gray-700',
+              'border border-gray-300 dark:border-gray-600',
+              'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+              'cursor-pointer'
+            )}
+            aria-label="選擇經文節數跳轉"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              選擇節數...
+            </option>
+            {verses.map((v) => (
+              <option key={v.verse} value={v.verse}>
+                第 {v.verse} 節
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Verse container with parchment background */}
       <div
@@ -250,7 +341,12 @@ export function VerseList({
           // Regular list for shorter chapters
           <div className="space-y-1">
             {verses.map((verse) => (
-              <div key={verse.id} role="listitem">
+              <div
+                key={verse.id}
+                role="listitem"
+                ref={(el) => setVerseRef(verse.verse, el)}
+                data-verse-number={verse.verse}
+              >
                 <VerseRow
                   verse={verse}
                   isHighlighted={verse.id === highlightVerseId}
