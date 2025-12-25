@@ -52,7 +52,7 @@ export const graphApi = {
     params: EntitySearchParams
   ): Promise<EntitySearchResponse> => {
     const response = await apiClient.get<EntitySearchResponse>(
-      '/graph/entities/search',
+      '/graph/entity/search',
       { params }
     );
     return response.data;
@@ -65,7 +65,7 @@ export const graphApi = {
    */
   getEntity: async (entityId: number): Promise<EntityDetail> => {
     const response = await apiClient.get<EntityDetail>(
-      `/graph/entities/${entityId}`
+      `/graph/entity/${entityId}`
     );
     return response.data;
   },
@@ -79,7 +79,7 @@ export const graphApi = {
     params: TopicSearchParams
   ): Promise<TopicSearchResponse> => {
     const response = await apiClient.get<TopicSearchResponse>(
-      '/graph/topics/search',
+      '/graph/topic/search',
       { params }
     );
     return response.data;
@@ -92,7 +92,7 @@ export const graphApi = {
    */
   getTopic: async (topicId: number): Promise<TopicDetail> => {
     const response = await apiClient.get<TopicDetail>(
-      `/graph/topics/${topicId}`
+      `/graph/topic/${topicId}`
     );
     return response.data;
   },
@@ -104,7 +104,7 @@ export const graphApi = {
    */
   getRelatedTopics: async (topicId: number): Promise<RelatedTopicsResponse> => {
     const response = await apiClient.get<RelatedTopicsResponse>(
-      `/graph/topics/${topicId}/related`
+      `/graph/topic/${topicId}/related`
     );
     return response.data;
   },
@@ -131,7 +131,7 @@ export const graphApi = {
    */
   getVerseEntities: async (verseId: number): Promise<VerseEntitiesResponse> => {
     const response = await apiClient.get<VerseEntitiesResponse>(
-      `/graph/verses/${verseId}/entities`
+      `/graph/verse/${verseId}/entities`
     );
     return response.data;
   },
@@ -145,7 +145,7 @@ export const graphApi = {
     verseId: number
   ): Promise<CrossReferencesResponse> => {
     const response = await apiClient.get<CrossReferencesResponse>(
-      `/graph/verses/${verseId}/cross-references`
+      `/graph/verse/${verseId}/cross-references`
     );
     return response.data;
   },
@@ -157,7 +157,7 @@ export const graphApi = {
    */
   getProphecies: async (verseId: number): Promise<PropheciesResponse> => {
     const response = await apiClient.get<PropheciesResponse>(
-      `/graph/verses/${verseId}/prophecies`
+      `/graph/verse/${verseId}/prophecies`
     );
     return response.data;
   },
@@ -169,7 +169,7 @@ export const graphApi = {
    */
   getParallels: async (pericopeId: number): Promise<ParallelsResponse> => {
     const response = await apiClient.get<ParallelsResponse>(
-      `/graph/pericopes/${pericopeId}/parallels`
+      `/graph/pericope/${pericopeId}/parallels`
     );
     return response.data;
   },
