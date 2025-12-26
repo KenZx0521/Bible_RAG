@@ -152,7 +152,7 @@ curl -X POST http://localhost:8000/api/v1/query \
     "query_type": "TOPIC_QUESTION",
     "used_retrievers": ["sparse", "dense", "graph"],
     "total_processing_time_ms": 3542,
-    "llm_model": "qwen2"
+    "llm_model": "gemm3:4b"
   },
   "graph_context": {
     "related_topics": ["饒恕", "恩典", "憐憫"],

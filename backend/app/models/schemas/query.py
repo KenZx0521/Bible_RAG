@@ -113,7 +113,7 @@ class QueryResponse(BaseModel):
                         "query_type": "TOPIC_QUESTION",
                         "used_retrievers": ["sparse", "dense"],
                         "total_processing_time_ms": 3542,
-                        "llm_model": "qwen2",
+                        "llm_model": "gemm3:4b",
                     },
                     "graph_context": None,
                 }

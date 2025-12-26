@@ -7,7 +7,7 @@
 - **Web 框架**: FastAPI + Uvicorn
 - **資料庫**: PostgreSQL + pgvector (向量檢索)
 - **圖資料庫**: Neo4j (知識圖譜)
-- **LLM**: Ollama (qwen2)
+- **LLM**: Ollama (gemm3:4b)
 - **Embeddings**: FlagEmbedding bge-m3 (1024 維度)
 
 ## 快速開始 (給前端開發者)
@@ -16,7 +16,7 @@
 
 - Docker + Docker Compose
 - Python 3.11+ (建議使用 uv)
-- Ollama 已安裝並拉取 `qwen2` 模型
+- Ollama 已安裝並拉取 `gemm3:4b` 模型
 
 ### 1. 啟動後端服務 (一鍵啟動)
 
@@ -147,7 +147,7 @@ curl -X POST http://localhost:8000/api/v1/query \
     "query_type": "TOPIC_QUESTION",
     "used_retrievers": ["dense", "sparse", "graph"],
     "total_processing_time_ms": 2500,
-    "llm_model": "qwen2"
+    "llm_model": "gemm3:4b"
   },
   "graph_context": {
     "related_topics": ["饒恕", "恩典", "憐憫"],
@@ -602,7 +602,7 @@ backend/
     │
     ▼
 ┌─────────────┐
-│  LLM 生成   │ ← Ollama (qwen2)
+│  LLM 生成   │ ← Ollama (gemm3:4b)
 └─────────────┘
     │
     ▼
@@ -620,7 +620,7 @@ backend/
 | `NEO4J_USER` | `neo4j` | Neo4j 使用者 |
 | `NEO4J_PASSWORD` | `password` | Neo4j 密碼 |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API URL |
-| `LLM_MODEL_NAME` | `qwen2` | LLM 模型名稱 |
+| `LLM_MODEL_NAME` | `gemm3:4b` | LLM 模型名稱 |
 | `EMBEDDING_MODEL_NAME` | `BAAI/bge-m3` | 嵌入模型 |
 | `RRF_K` | `60` | RRF 參數 |
 | `TOP_K_PERICOPES` | `5` | 預設回傳段落數 |

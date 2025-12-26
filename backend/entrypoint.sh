@@ -21,27 +21,33 @@ echo "  Migrations completed!"
 
 # 3. Check if index needs to be built
 echo "[3/6] Checking database status..."
-VERSE_COUNT=$(python -c "
-import asyncio
-from sqlalchemy import text
-from app.core.database import async_engine
 
-async def count_verses():
-    async with async_engine.connect() as conn:
-        result = await conn.execute(text('SELECT COUNT(*) FROM verses'))
-        return result.scalar()
+# Helper function to query table count using psql (more reliable than Python)
+check_table_count() {
+    local table=$1
+    PGPASSWORD="${POSTGRES_PASSWORD:-bible_password}" psql \
+        -h "${POSTGRES_HOST:-postgres}" \
+        -p "${POSTGRES_PORT:-5432}" \
+        -U "${POSTGRES_USER:-bible_user}" \
+        -d "${POSTGRES_DB:-bible_rag}" \
+        -t -c "SELECT COUNT(*) FROM $table" 2>/dev/null | tr -d ' \n'
+}
 
-try:
-    count = asyncio.run(count_verses())
-    print(count)
-except Exception as e:
-    print('0')
-" 2>/dev/null || echo "0")
+# Get counts using psql
+BOOK_COUNT=$(check_table_count "books" || echo "0")
+VERSE_COUNT=$(check_table_count "verses" || echo "0")
 
-if [ "$VERSE_COUNT" -eq "0" ] || [ "$VERSE_COUNT" = "0" ]; then
+# Handle empty results (table might not exist yet)
+[ -z "$BOOK_COUNT" ] && BOOK_COUNT="0"
+[ -z "$VERSE_COUNT" ] && VERSE_COUNT="0"
+
+echo "  Found $BOOK_COUNT books and $VERSE_COUNT verses in database."
+
+# Determine action based on database state
+if [ "$BOOK_COUNT" -eq "0" ] && [ "$VERSE_COUNT" -eq "0" ]; then
+    # Fresh install - normal import
     echo "  Database is empty. Building index (this may take 10-15 minutes)..."
 
-    # Check if PDF exists
     if [ -f "pdf/cmn-cu89t_a4.pdf" ]; then
         python -m scripts.build_index --pdf pdf/cmn-cu89t_a4.pdf
         echo "  Index built successfully!"
@@ -49,6 +55,19 @@ if [ "$VERSE_COUNT" -eq "0" ] || [ "$VERSE_COUNT" = "0" ]; then
         echo "  WARNING: PDF file not found at pdf/cmn-cu89t_a4.pdf"
         echo "  Skipping index build. Please run manually:"
         echo "  docker compose exec backend python -m scripts.build_index --pdf pdf/cmn-cu89t_a4.pdf"
+    fi
+elif [ "$BOOK_COUNT" -gt "0" ] && [ "$VERSE_COUNT" -eq "0" ]; then
+    # Partial import state - need to clear and rebuild
+    echo "  Detected partial import state (books exist but no verses)."
+    echo "  Clearing existing data and rebuilding index..."
+
+    if [ -f "pdf/cmn-cu89t_a4.pdf" ]; then
+        python -m scripts.build_index --pdf pdf/cmn-cu89t_a4.pdf --drop-existing
+        echo "  Index rebuilt successfully!"
+    else
+        echo "  WARNING: PDF file not found at pdf/cmn-cu89t_a4.pdf"
+        echo "  Skipping index build. Please run manually:"
+        echo "  docker compose exec backend python -m scripts.build_index --pdf pdf/cmn-cu89t_a4.pdf --drop-existing"
     fi
 else
     echo "  Database already has $VERSE_COUNT verses. Skipping index build."
@@ -97,23 +116,9 @@ fi
 echo "[5/6] Knowledge graph status..."
 
 if [ "$NEO4J_AVAILABLE" = true ]; then
-    # Check if entities already exist in PostgreSQL
-    ENTITY_COUNT=$(python -c "
-import asyncio
-from sqlalchemy import text
-from app.core.database import async_engine
-
-async def count_entities():
-    async with async_engine.connect() as conn:
-        result = await conn.execute(text('SELECT COUNT(*) FROM entities'))
-        return result.scalar()
-
-try:
-    count = asyncio.run(count_entities())
-    print(count)
-except Exception as e:
-    print('0')
-" 2>/dev/null || echo "0")
+    # Check if entities already exist in PostgreSQL (reuse check_table_count function)
+    ENTITY_COUNT=$(check_table_count "entities" || echo "0")
+    [ -z "$ENTITY_COUNT" ] && ENTITY_COUNT="0"
 
     if [ "$ENTITY_COUNT" -eq "0" ] || [ "$ENTITY_COUNT" = "0" ]; then
         echo "  No entities found. Starting knowledge graph build..."

@@ -60,6 +60,17 @@ async def import_from_json(
     verbose: bool = False,
 ) -> None:
     """Import parsed Bible data from JSON to PostgreSQL."""
+    # Check for existing data to prevent duplicate key errors
+    result = await session.execute(text("SELECT COUNT(*) FROM books"))
+    existing_books = result.scalar()
+
+    if existing_books > 0:
+        raise ValueError(
+            f"Database already contains {existing_books} books. "
+            "Use --drop-existing flag to clear existing data first, "
+            "or the data import will fail due to unique constraint violations."
+        )
+
     print(f"Loading data from {json_path}...")
 
     with open(json_path, "r", encoding="utf-8") as f:

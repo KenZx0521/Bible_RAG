@@ -44,7 +44,7 @@ class Settings(BaseSettings):
 
     # Ollama LLM
     OLLAMA_BASE_URL: str = "http://localhost:11434"
-    LLM_MODEL_NAME: str = "qwen2"
+    LLM_MODEL_NAME: str = "gemm3:4b"
     LLM_TEMPERATURE: float = 0.7
     LLM_MAX_TOKENS: int = 2048
 
