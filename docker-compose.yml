@@ -60,6 +60,13 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+
+    command: >
+      sh -c "
+        ollama serve &
+        sleep 5 &&
+        ollama pull gemma3:4b &&
+        wait"
     restart: unless-stopped
     networks:
       - bible_rag_network
@@ -81,6 +88,7 @@ services:
       - NEO4J_PASSWORD=${NEO4J_PASSWORD:-neo4j_password}
       - OLLAMA_BASE_URL=http://ollama:11434
       - LLM_MODEL_NAME=${LLM_MODEL_NAME:-gemma3:4b}
+      - NVIDIA_VISIBLE_DEVICES=all
     ports:
       - "8000:8000"
     volumes:
@@ -88,6 +96,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     restart: unless-stopped
     networks:
       - bible_rag_network

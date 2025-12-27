@@ -188,7 +188,7 @@ flowchart LR
 
 * LLM 推論：
 
-  * Ollama（本地安裝），預設支持如 `llama3`, `gemm3:4b` 等開源模型。
+  * Ollama（本地安裝），預設支持如 `llama3`, `gemma3:4b` 等開源模型。
   * 後端透過 HTTP（`/api/chat` 或 `/api/generate`）與 Ollama 溝通。
 
 * Embeddings：

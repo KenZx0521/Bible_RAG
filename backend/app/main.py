@@ -73,7 +73,7 @@ def custom_openapi(app: FastAPI):
 - **向量檢索**: PostgreSQL + pgvector (bge-m3 embeddings)
 - **全文檢索**: PostgreSQL Full-Text Search
 - **知識圖譜**: Neo4j
-- **LLM**: Ollama (gemm3:4b)
+- **LLM**: Ollama (gemma3:4b)
 
 ### Postman 使用說明
 

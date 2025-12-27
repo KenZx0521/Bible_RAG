@@ -122,7 +122,7 @@ class Settings(BaseSettings):
 
     # Ollama LLM 設定
     OLLAMA_HOST: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "gemm3:4b"
+    OLLAMA_MODEL: str = "gemma3:4b"
 
     # Embedding 設定
     EMBEDDING_MODEL: str = "BAAI/bge-m3"
@@ -1578,7 +1578,7 @@ async def generate_summaries():
 │                                                                 │
 │  System: 你是一個專業的聖經解答助手...                            │
 │  Prompt: 問題 + 上下文                                           │
-│  Model: Ollama gemm3:4b                                            │
+│  Model: Ollama gemma3:4b                                            │
 │                                                                 │
 │  輸出: 結構化的答案                                               │
 └─────────────────────────────────────────────────────────────────┘
@@ -1594,7 +1594,7 @@ async def generate_summaries():
 │      "query_type": "TOPIC_QUESTION",                            │
 │      "used_retrievers": ["dense", "sparse", "graph"],           │
 │      "total_processing_time_ms": 3542,                          │
-│      "llm_model": "gemm3:4b"                                       │
+│      "llm_model": "gemma3:4b"                                       │
 │    }                                                            │
 │  }                                                              │
 └─────────────────────────────────────────────────────────────────┘
@@ -1736,7 +1736,7 @@ async def generate_summaries():
 | **ORM** | SQLAlchemy 2.0 (Async) |
 | **資料庫** | PostgreSQL 15+ with pgvector |
 | **圖資料庫** | Neo4j 5.x |
-| **LLM** | Ollama (gemm3:4b) |
+| **LLM** | Ollama (gemma3:4b) |
 | **嵌入模型** | BAAI/bge-m3 (1024 維) |
 | **向量索引** | IVFFlat (100 lists) |
 | **全文搜尋** | PostgreSQL TSVECTOR + GIN |
