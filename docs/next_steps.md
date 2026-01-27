@@ -4,7 +4,8 @@
 
 - [x] Hierarchical Chunking（Book → Chapter → Pericope → Chunk）
 - [x] JSONL 輸出（7 個檔案）
-
+### 指令
+python scripts/process_bible.py --input-dir bible_md --output-dir output
 ---
 
 ## Step 1: 實體抽取
@@ -22,8 +23,7 @@
 | Object | 物件（約櫃、會幕） |
 | Theme | 主題（救贖、恩典、信心） |
 
-### 指令
-python scripts/process_bible.py --input-dir bible_md --output-dir output
+
 
 ### 輸出
 - `output/entities.jsonl`
