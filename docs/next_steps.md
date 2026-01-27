@@ -22,6 +22,9 @@
 | Object | 物件（約櫃、會幕） |
 | Theme | 主題（救贖、恩典、信心） |
 
+### 指令
+python scripts/process_bible.py --input-dir bible_md --output-dir output
+
 ### 輸出
 - `output/entities.jsonl`
 - `output/entity_mentions.jsonl`
