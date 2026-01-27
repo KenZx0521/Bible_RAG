@@ -23,7 +23,12 @@ python scripts/process_bible.py --input-dir bible_md --output-dir output
 | Object | 物件（約櫃、會幕） |
 | Theme | 主題（救贖、恩典、信心） |
 
+### 指令
+# NER-only (無 API 成本)
+python scripts/extract_entities.py --ner-only
 
+# 完整抽取 (需設定 API key)
+python scripts/extract_entities.py
 
 ### 輸出
 - `output/entities.jsonl`
