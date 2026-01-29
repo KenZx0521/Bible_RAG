@@ -36,7 +36,7 @@ python scripts/extract_entities.py
 
 ---
 
-## Step 2: Embeddings 生成
+## Step 2: Embeddings 生成 ✅
 
 ### 輸入
 - `output/embedding_queue.jsonl`（3,041 筆）
@@ -46,12 +46,17 @@ python scripts/extract_entities.py
 - 維度：1024
 - 最大 tokens：8192
 
+### 指令
+```bash
+python scripts/generate_embeddings.py --batch-size 32
+```
+
 ### 輸出
-- `output/embeddings.jsonl`（或直接寫入向量資料庫）
+- `output/embeddings.jsonl`（3,041 筆，每筆 1024 維向量）
 
 ---
 
-## Step 3: 匯入 PostgreSQL
+## Step 3: 匯入 PostgreSQL ✅
 
 ### 匯入資料
 - `output/books.jsonl`
@@ -61,9 +66,23 @@ python scripts/extract_entities.py
 - `output/entities.jsonl`
 - `output/entity_mentions.jsonl`
 
+### 指令
+```bash
+python scripts/import_postgres.py
+```
+
+### 結果
+- books: 66 records
+- chapters: 1,189 records
+- pericopes: 2,779 records
+- chunks: 431 records
+- entities: 14,845 records
+- entity_mentions: 80,912 records
+- **總計: 100,222 records**
+
 ---
 
-## Step 4: 匯入 Qdrant
+## Step 4: 匯入 Qdrant ✅
 
 ### 匯入資料
 - Embeddings（from Step 2）
@@ -72,9 +91,16 @@ python scripts/extract_entities.py
 ### Collection 設計
 - `bible_embeddings`（pericope + chunk embeddings）
 
+### 指令
+```bash
+python scripts/import_qdrant.py
+```
+
+### 結果
+- Vectors: 3,041 (1024 維度)
 ---
 
-## Step 5: 匯入 Neo4j
+## Step 5: 匯入 Neo4j ✅
 
 ### 匯入資料
 - `output/neo4j_nodes.jsonl`（4,465 筆）
@@ -89,3 +115,31 @@ python scripts/extract_entities.py
 - CONTAINS、NEXT、NEXT_BOOK
 - CROSS_REFERENCES
 - MENTIONS（實體出現）
+
+### 指令
+```bash
+python scripts/import_neo4j.py
+```
+
+### 結果
+- Total nodes: 19,310
+- Total relationships: 57,877
+
+---
+
+## 資料庫啟動指令
+
+```bash
+# 啟動所有資料庫
+docker compose up -d
+
+# 停止資料庫
+docker compose down
+```
+
+### 服務端點
+| 服務 | 端點 |
+|------|------|
+| PostgreSQL | localhost:5432 |
+| Qdrant | http://localhost:6333/dashboard |
+| Neo4j | http://localhost:7474 |
