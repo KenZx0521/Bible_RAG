@@ -109,6 +109,29 @@ def load_embedding_metadata(output_dir: Path) -> dict:
                     "content_preview": record.get("content_for_embedding", "")[:200],
                 }
 
+    # Build verse metadata from pericopes' verses arrays
+    # Verse IDs have format: book:chapter:pericope_index:v:verse_num
+    if pericopes_file.exists():
+        for record in read_jsonl(pericopes_file):
+            pericope_id = record.get("id")
+            meta = record.get("metadata", {})
+            verses = record.get("verses", [])
+            if not pericope_id or not verses:
+                continue
+            for v in verses:
+                v_num = v.get("num", "")
+                verse_id = f"{pericope_id}:v:{v_num}"
+                metadata_map[verse_id] = {
+                    "type": "verse",
+                    "book_id": meta.get("book_id"),
+                    "book_name": meta.get("book_name"),
+                    "chapter_num": meta.get("chapter_num"),
+                    "title": record.get("title"),
+                    "verse_range": v_num,
+                    "parent_pericope_id": pericope_id,
+                    "content_preview": v.get("text", "")[:200],
+                }
+
     return metadata_map
 
 
@@ -134,19 +157,24 @@ def import_embeddings(
         meta = metadata_map.get(record_id, {})
         
         # Create point with metadata payload
+        payload = {
+            "record_id": record_id,
+            "type": meta.get("type", record.get("type", "unknown")),
+            "book_id": meta.get("book_id"),
+            "book_name": meta.get("book_name"),
+            "chapter_num": meta.get("chapter_num"),
+            "title": meta.get("title"),
+            "verse_range": meta.get("verse_range"),
+            "content_preview": meta.get("content_preview", ""),
+        }
+        # Add parent_pericope_id for verse-level embeddings
+        if meta.get("parent_pericope_id"):
+            payload["parent_pericope_id"] = meta["parent_pericope_id"]
+
         point = models.PointStruct(
             id=point_id,
             vector=embedding,
-            payload={
-                "record_id": record_id,
-                "type": meta.get("type", record.get("type", "unknown")),
-                "book_id": meta.get("book_id"),
-                "book_name": meta.get("book_name"),
-                "chapter_num": meta.get("chapter_num"),
-                "title": meta.get("title"),
-                "verse_range": meta.get("verse_range"),
-                "content_preview": meta.get("content_preview", ""),
-            },
+            payload=payload,
         )
         
         points_batch.append(point)

@@ -38,6 +38,10 @@ from bible_chunking.models import (
     Neo4jNode,
     Neo4jRelationship,
 )
+from bible_chunking.nt_cross_references import (
+    SUPPLEMENTARY_CROSS_REFS,
+    resolve_pericope_id,
+)
 
 
 class BibleProcessor:
@@ -149,6 +153,94 @@ class BibleProcessor:
         logging.info(f"  Pericopes requiring chunking: {self.stats['pericopes_requiring_chunking']}")
         logging.info(f"  Total chunks created: {self.stats['total_chunks']}")
 
+    def _build_verse_lookup(self) -> Dict[str, str]:
+        """
+        Build a lookup table: (book_id:chapter:verse_num) -> pericope_id.
+        Used to upgrade chapter-level cross-references to pericope-level.
+        """
+        lookup: Dict[str, str] = {}
+        for book in self.books:
+            for chapter in book.chapters:
+                for pericope in chapter.pericopes:
+                    for verse in pericope.verses:
+                        for v_num in range(verse.verse_start, verse.verse_end + 1):
+                            key = f"{book.id}:{chapter.chapter_num}:{v_num}"
+                            lookup[key] = pericope.id
+        return lookup
+
+    def _resolve_to_pericope(self, verse_lookup: Dict[str, str],
+                              book_id: str, chapter: int,
+                              verse_start: int | None) -> str | None:
+        """Resolve a (book, chapter, verse) to its pericope ID using the lookup."""
+        if verse_start:
+            key = f"{book_id}:{chapter}:{verse_start}"
+            return verse_lookup.get(key)
+        # Fallback: return first pericope in that chapter
+        key_prefix = f"{book_id}:{chapter}:"
+        for k, v in verse_lookup.items():
+            if k.startswith(key_prefix):
+                return v
+        return None
+
+    def _supplement_cross_references(self, neo4j_relationships: List[Dict],
+                                      verse_lookup: Dict[str, str]) -> int:
+        """
+        Add supplementary NT→OT cross-references from the curated list.
+        Returns the number of supplementary relationships added.
+        """
+        count = 0
+        all_pericope_ids = set()
+        for book in self.books:
+            for chapter in book.chapters:
+                for pericope in chapter.pericopes:
+                    all_pericope_ids.add(pericope.id)
+
+        for ref in SUPPLEMENTARY_CROSS_REFS:
+            source_id = ref.source_pericope_id
+
+            # Resolve target pericope: use first target verse to find actual pericope
+            target_base = ref.target_pericope_id  # e.g. "isa:28:0"
+            parts = target_base.split(":")
+            if len(parts) >= 2:
+                t_book_id = parts[0]
+                t_chapter = int(parts[1])
+                # Parse first target verse
+                t_verse = None
+                if ref.target_verses:
+                    first_v = ref.target_verses.split(",")[0].split("-")[0].strip()
+                    if first_v.isdigit():
+                        t_verse = int(first_v)
+                resolved_target = self._resolve_to_pericope(
+                    verse_lookup, t_book_id, t_chapter, t_verse
+                )
+            else:
+                resolved_target = None
+
+            target_id = resolved_target or target_base
+
+            # Only add if both source and target exist as nodes
+            if source_id not in all_pericope_ids:
+                continue
+            if target_id not in all_pericope_ids:
+                # Fall back to chapter-level if pericope not found
+                target_id = f"{parts[0]}:{parts[1]}" if len(parts) >= 2 else target_id
+
+            neo4j_relationships.append({
+                "start": source_id,
+                "end": target_id,
+                "type": "CROSS_REFERENCES",
+                "properties": {
+                    "source": "supplementary",
+                    "ref_type": ref.ref_type,
+                    "source_verses": ref.source_verses,
+                    "target_verses": ref.target_verses,
+                    "description": ref.description,
+                },
+            })
+            count += 1
+
+        return count
+
     def _export_jsonl(self) -> None:
         """Export all data to JSONL files."""
         books_data: List[Dict] = []
@@ -159,7 +251,12 @@ class BibleProcessor:
         neo4j_nodes: List[Dict] = []
         neo4j_relationships: List[Dict] = []
 
+        # Build verse lookup for pericope-level cross-reference resolution
+        verse_lookup = self._build_verse_lookup()
+        logging.info(f"  Built verse lookup with {len(verse_lookup)} entries")
+
         prev_book_id = None
+        verse_embed_count = 0
 
         for book in self.books:
             # Export book
@@ -224,21 +321,23 @@ class BibleProcessor:
                         })
                     prev_pericope_id = pericope.id
 
-                    # Cross-references
+                    # Cross-references (upgraded to pericope-level when possible)
                     for cr in pericope.cross_references:
                         if cr.book_id and cr.chapter:
-                            # Create potential target ID
-                            # Note: We can't resolve exact pericope ID without full parsing
-                            # So we create a relationship to the chapter level
-                            target_chapter_id = f"{cr.book_id}:{cr.chapter}"
+                            # Try to resolve to pericope-level
+                            resolved = self._resolve_to_pericope(
+                                verse_lookup, cr.book_id, cr.chapter, cr.verse_start
+                            )
+                            target_id = resolved or f"{cr.book_id}:{cr.chapter}"
                             neo4j_relationships.append({
                                 "start": pericope.id,
-                                "end": target_chapter_id,
+                                "end": target_id,
                                 "type": "CROSS_REFERENCES",
                                 "properties": {
                                     "ref_text": cr.reference_text,
                                     "verse_start": cr.verse_start,
                                     "verse_end": cr.verse_end,
+                                    "source": "markdown",
                                 },
                             })
 
@@ -283,6 +382,28 @@ class BibleProcessor:
                                 text=pericope.content_for_embedding,
                             ).model_dump_jsonl()
                         )
+
+                    # Verse-level embeddings for every verse in the pericope
+                    for verse in pericope.verses:
+                        verse_id = f"{pericope.id}:v:{verse.num}"
+                        verse_text = (
+                            f"{book.name} 第{chapter.chapter_num}章 "
+                            f"{pericope.title} 第{verse.num}節："
+                            f"{verse.text}"
+                        )
+                        embedding_queue.append(
+                            EmbeddingQueueItem(
+                                id=verse_id,
+                                type="verse",
+                                text=verse_text,
+                            ).model_dump_jsonl()
+                        )
+                        verse_embed_count += 1
+
+        # Add supplementary cross-references
+        supp_count = self._supplement_cross_references(neo4j_relationships, verse_lookup)
+        logging.info(f"  Added {supp_count} supplementary cross-references")
+        logging.info(f"  Added {verse_embed_count} verse-level embeddings")
 
         # Write all JSONL files
         self._write_jsonl("books.jsonl", books_data)
@@ -384,16 +505,21 @@ class BibleProcessor:
         print(f"  Neo4j relationships:          {self.stats['total_neo4j_relationships']}")
         print("=" * 60)
 
-        # Verify embedding queue count
-        expected_embeds = (
+        # Count total verses for verification
+        total_verses = sum(b.total_verses for b in self.books)
+        expected_pericope_embeds = (
             self.stats["total_pericopes"]
             - self.stats["pericopes_requiring_chunking"]
             + self.stats["total_chunks"]
         )
-        if self.stats["total_embedding_items"] == expected_embeds:
+        expected_total = expected_pericope_embeds + total_verses
+        print(f"  Pericope/chunk embeddings:    {expected_pericope_embeds}")
+        print(f"  Verse embeddings:             {total_verses}")
+        if self.stats["total_embedding_items"] == expected_total:
             print("  Embedding queue count verified!")
         else:
-            print(f"  WARNING: Embedding queue mismatch (expected {expected_embeds})")
+            print(f"  WARNING: Embedding queue mismatch "
+                  f"(expected {expected_total}, got {self.stats['total_embedding_items']})")
 
 
 def main():
