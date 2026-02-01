@@ -1,0 +1,1476 @@
+{
+  "metadata": {
+    "total_questions": 100,
+    "question_types": {
+      "VERSE_LOOKUP": 20,
+      "TOPIC_QUESTION": 20,
+      "PERSON_QUESTION": 20,
+      "EVENT_QUESTION": 20,
+      "GENERAL_BIBLE_QUESTION": 20
+    },
+    "description": "Ground truth dataset for Bible GraphRAG evaluation"
+  },
+  "questions": [
+    {
+      "question_id": "VERSE_LOOKUP_001",
+      "question": "根據約翰福音3:16，神如何表達祂對世人的愛？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "約翰福音",
+      "reference": "約翰福音 3:16",
+      "expected_answer_points": [
+        "神愛世人，甚至將祂的獨生子賜給他們",
+        "叫一切信祂的，不至滅亡，反得永生"
+      ],
+      "reference_answer": "神愛世人，甚至將他的獨生子賜給他們，叫一切信他的，不致滅亡，反得永生。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_002",
+      "question": "根據創世記1:27，神如何創造人？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "創世記",
+      "reference": "創世記 1:27",
+      "expected_answer_points": [
+        "神照著自己的形像造人",
+        "造男造女"
+      ],
+      "reference_answer": "神就照著自己的形像造人，乃是照著他的形像造男造女。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_003",
+      "question": "根據詩篇23:1-3，耶和華作為牧者如何照顧大衛？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "詩篇",
+      "reference": "詩篇 23:1-3",
+      "expected_answer_points": [
+        "耶和華是我的牧者，我必不致缺乏",
+        "使我躺臥在青草地上",
+        "領我在可安歇的水邊",
+        "使我的靈魂甦醒"
+      ],
+      "reference_answer": "耶和華是我的牧者，我必不致缺乏。他使我躺臥在青草地上，領我在可安歇的水邊。他使我的靈魂甦醒，為自己的名引導我走義路。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_004",
+      "question": "根據以賽亞書53:5，受苦的僕人為我們承受了什麼？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "以賽亞書",
+      "reference": "以賽亞書 53:5",
+      "expected_answer_points": [
+        "他為我們的過犯受害",
+        "為我們的罪孽壓傷",
+        "因他受的刑罰我們得平安",
+        "因他受的鞭傷我們得醫治"
+      ],
+      "reference_answer": "哪知他為我們的過犯受害，為我們的罪孽壓傷。因他受的刑罰，我們得平安；因他受的鞭傷，我們得醫治。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_005",
+      "question": "根據羅馬書3:23-24，保羅如何描述世人的光景和神的救贖？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "羅馬書",
+      "reference": "羅馬書 3:23-24",
+      "expected_answer_points": [
+        "世人都犯了罪，虧缺了神的榮耀",
+        "蒙神的恩典，因基督耶穌的救贖，就白白地稱義"
+      ],
+      "reference_answer": "因為世人都犯了罪，虧缺了神的榮耀；如今卻蒙神的恩典，因基督耶穌的救贖，就白白地稱義。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_006",
+      "question": "根據馬太福音5:3-6，耶穌在登山寶訓中說哪些人是有福的？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "馬太福音",
+      "reference": "馬太福音 5:3-6",
+      "expected_answer_points": [
+        "虛心的人有福了，因為天國是他們的",
+        "哀慟的人有福了",
+        "溫柔的人有福了",
+        "飢渴慕義的人有福了"
+      ],
+      "reference_answer": "虛心的人有福了！因為天國是他們的。哀慟的人有福了！因為他們必得安慰。溫柔的人有福了！因為他們必承受地土。飢渴慕義的人有福了！因為他們必得飽足。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_007",
+      "question": "根據加拉太書5:22-23，聖靈所結的果子包括哪些？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "加拉太書",
+      "reference": "加拉太書 5:22-23",
+      "expected_answer_points": [
+        "仁愛、喜樂、和平",
+        "忍耐、恩慈、良善",
+        "信實、溫柔、節制"
+      ],
+      "reference_answer": "聖靈所結的果子，就是仁愛、喜樂、和平、忍耐、恩慈、良善、信實、溫柔、節制。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_008",
+      "question": "根據約翰福音14:6，耶穌說祂是什麼？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "約翰福音",
+      "reference": "約翰福音 14:6",
+      "expected_answer_points": [
+        "耶穌說我就是道路、真理、生命",
+        "若不藉著祂，沒有人能到父那裏去"
+      ],
+      "reference_answer": "耶穌說「我就是道路、真理、生命；若不藉著我，沒有人能到父那裏去。」"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_009",
+      "question": "根據以弗所書2:8-9，人是如何得救的？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "以弗所書",
+      "reference": "以弗所書 2:8-9",
+      "expected_answer_points": [
+        "得救是本乎恩，也因著信",
+        "不是出於自己，乃是神所賜的",
+        "不是出於行為，免得有人自誇"
+      ],
+      "reference_answer": "你們得救是本乎恩，也因著信；這並不是出於自己，乃是神所賜的；也不是出於行為，免得有人自誇。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_010",
+      "question": "根據箴言3:5-6，信靠耶和華的人應該如何行？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "箴言",
+      "reference": "箴言 3:5-6",
+      "expected_answer_points": [
+        "專心仰賴耶和華，不可倚靠自己的聰明",
+        "在一切所行的事上都要認定祂",
+        "祂必指引你的路"
+      ],
+      "reference_answer": "你要專心仰賴耶和華，不可倚靠自己的聰明，在你一切所行的事上都要認定他，他必指引你的路。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_011",
+      "question": "根據哥林多前書13:4-7，愛的特質有哪些？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "哥林多前書",
+      "reference": "哥林多前書 13:4-7",
+      "expected_answer_points": [
+        "愛是恆久忍耐，又有恩慈",
+        "愛是不嫉妒，不自誇，不張狂",
+        "凡事包容，凡事相信，凡事盼望，凡事忍耐"
+      ],
+      "reference_answer": "愛是恆久忍耐，又有恩慈；愛是不嫉妒；愛是不自誇，不張狂，不做害羞的事，不求自己的益處，不輕易發怒，不計算人的惡，不喜歡不義，只喜歡真理；凡事包容，凡事相信，凡事盼望，凡事忍耐。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_012",
+      "question": "根據腓立比書4:6-7，保羅教導信徒如何面對憂慮？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "腓立比書",
+      "reference": "腓立比書 4:6-7",
+      "expected_answer_points": [
+        "應當一無掛慮",
+        "凡事藉著禱告、祈求和感謝，將所要的告訴神",
+        "神所賜出人意外的平安必保守你們的心懷意念"
+      ],
+      "reference_answer": "應當一無掛慮，只要凡事藉著禱告、祈求，和感謝，將你們所要的告訴神。神所賜、出人意外的平安必在基督耶穌裏保守你們的心懷意念。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_013",
+      "question": "根據希伯來書11:1，信是什麼？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "希伯來書",
+      "reference": "希伯來書 11:1",
+      "expected_answer_points": [
+        "信就是所望之事的實底",
+        "是未見之事的確據"
+      ],
+      "reference_answer": "信就是所望之事的實底，是未見之事的確據。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_014",
+      "question": "根據雅各書1:2-4，信徒遇到試煉時應該有什麼態度？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "雅各書",
+      "reference": "雅各書 1:2-4",
+      "expected_answer_points": [
+        "落在百般試煉中，都要以為大喜樂",
+        "信心經過試驗，就生忍耐",
+        "忍耐也當成功，使你們成全、完備"
+      ],
+      "reference_answer": "我的弟兄們，你們落在百般試煉中，都要以為大喜樂；因為知道你們的信心經過試驗，就生忍耐。但忍耐也當成功，使你們成全、完備，毫無缺欠。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_015",
+      "question": "根據彼得前書5:7，信徒應該如何處理憂慮？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "彼得前書",
+      "reference": "彼得前書 5:7",
+      "expected_answer_points": [
+        "你們要將一切的憂慮卸給神",
+        "因為祂顧念你們"
+      ],
+      "reference_answer": "你們要將一切的憂慮卸給神，因為他顧念你們。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_016",
+      "question": "根據約翰一書1:9，信徒如何得到罪的赦免？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "約翰一書",
+      "reference": "約翰一書 1:9",
+      "expected_answer_points": [
+        "我們若認自己的罪",
+        "神是信實的，是公義的",
+        "必要赦免我們的罪，洗淨我們一切的不義"
+      ],
+      "reference_answer": "我們若認自己的罪，神是信實的，是公義的，必要赦免我們的罪，洗淨我們一切的不義。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_017",
+      "question": "根據啟示錄3:20，耶穌對老底嘉教會說了什麼應許？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "啟示錄",
+      "reference": "啟示錄 3:20",
+      "expected_answer_points": [
+        "看哪，我站在門外叩門",
+        "若有聽見我聲音就開門的",
+        "我要進到他那裏去，與他一同坐席"
+      ],
+      "reference_answer": "看哪，我站在門外叩門，若有聽見我聲音就開門的，我要進到他那裏去，我與他他與我一同坐席。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_018",
+      "question": "根據提摩太後書3:16-17，聖經有什麼功用？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "提摩太後書",
+      "reference": "提摩太後書 3:16-17",
+      "expected_answer_points": [
+        "聖經都是神所默示的",
+        "於教訓、督責、使人歸正、教導人學義都是有益的",
+        "叫屬神的人得以完全，預備行各樣的善事"
+      ],
+      "reference_answer": "聖經都是神所默示的，於教訓、督責、使人歸正、教導人學義都是有益的，叫屬神的人得以完全，預備行各樣的善事。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_019",
+      "question": "根據耶利米書29:11，耶和華對被擄之民有什麼應許？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "耶利米書",
+      "reference": "耶利米書 29:11",
+      "expected_answer_points": [
+        "我知道我向你們所懷的意念",
+        "是賜平安的意念，不是降災禍的意念",
+        "要叫你們末後有指望"
+      ],
+      "reference_answer": "耶和華說：我知道我向你們所懷的意念是賜平安的意念，不是降災禍的意念，要叫你們末後有指望。"
+    },
+    {
+      "question_id": "VERSE_LOOKUP_020",
+      "question": "根據以賽亞書40:31，等候耶和華的人會得到什麼？",
+      "question_type": "VERSE_LOOKUP",
+      "book_name": "以賽亞書",
+      "reference": "以賽亞書 40:31",
+      "expected_answer_points": [
+        "等候耶和華的必重新得力",
+        "他們必如鷹展翅上騰",
+        "奔跑卻不困倦，行走卻不疲乏"
+      ],
+      "reference_answer": "但那等候耶和華的必從新得力。他們必如鷹展翅上騰；他們奔跑卻不困倦，行走卻不疲乏。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_001",
+      "question": "根據羅馬書第8章，保羅如何描述信徒在患難中仍有盼望的原因？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "羅馬書",
+      "reference": "羅馬書 8:18-39",
+      "expected_answer_points": [
+        "現在的苦楚與將來的榮耀相比不足介意",
+        "萬事互相效力叫愛神的人得益處",
+        "靠著愛我們的主已經得勝有餘",
+        "什麼都不能使我們與神的愛隔絕"
+      ],
+      "reference_answer": "保羅說現在的苦楚與將來的榮耀相比不足介意，萬事互相效力叫愛神的人得益處，且沒有任何事物能使我們與神的愛隔絕，靠著愛我們的主已經得勝有餘。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_002",
+      "question": "根據詩篇第51篇，大衛如何表達真實悔改與認罪的心？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "詩篇",
+      "reference": "詩篇 51:1-17",
+      "expected_answer_points": [
+        "求神按慈愛憐恤，塗抹過犯",
+        "我的罪常在我面前，惟獨得罪了你",
+        "求神為我造清潔的心",
+        "神所要的祭是憂傷痛悔的心"
+      ],
+      "reference_answer": "大衛承認自己的罪常在面前，惟獨得罪了神，求神按慈愛塗抹過犯，為他造清潔的心。他明白神所要的祭是憂傷痛悔的心。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_003",
+      "question": "根據以弗所書第6章，保羅如何描述信徒在屬靈爭戰中需要的裝備？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "以弗所書",
+      "reference": "以弗所書 6:10-18",
+      "expected_answer_points": [
+        "與屬靈氣的惡魔爭戰",
+        "真理束腰、公義護心",
+        "福音鞋、信德藤牌",
+        "救恩頭盔、聖靈寶劍就是神的道"
+      ],
+      "reference_answer": "保羅說信徒的爭戰是屬靈的，要穿戴神的全副軍裝：真理束腰、公義護心、福音鞋、信德藤牌、救恩頭盔、聖靈寶劍就是神的道，並要隨時多方禱告。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_004",
+      "question": "根據馬太福音第6章，耶穌如何教導正確的敬虔生活？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "馬太福音 6:1-18",
+      "expected_answer_points": [
+        "施捨要暗中行，不張揚",
+        "禱告要進內屋關門，不用重複話",
+        "禁食要梳頭洗臉",
+        "在暗中行善讓父報答"
+      ],
+      "reference_answer": "耶穌教導施捨要暗中行，不張揚；禱告要進內屋關門，不用重複話；禁食要梳頭洗臉，不讓人知道。核心是在暗中行善，讓在暗中察看的父報答。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_005",
+      "question": "根據雅各書第3章，雅各如何描述言語的影響力？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "雅各書",
+      "reference": "雅各書 3:1-12",
+      "expected_answer_points": [
+        "舌頭雖小卻能說大話",
+        "舌頭如火能污穢全身",
+        "各類動物可制伏，舌頭沒有人能制伏",
+        "頌讚咒詛從同一口出來是不應當的"
+      ],
+      "reference_answer": "雅各用比喻說明舌頭雖小卻能說大話，如火能點燃樹林，污穢全身。各類動物都可制伏，惟獨舌頭沒有人能制伏。頌讚咒詛從同一口出來是不應當的。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_006",
+      "question": "根據腓立比書第2章，保羅如何描述基督謙卑順服的榜樣？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "腓立比書",
+      "reference": "腓立比書 2:5-11",
+      "expected_answer_points": [
+        "基督本有神的形像卻虛己",
+        "取奴僕形像成為人",
+        "自己卑微順服至死在十字架",
+        "神將祂升為至高"
+      ],
+      "reference_answer": "保羅說基督本有神的形像，卻虛己取奴僕形像成為人，自己卑微順服至死在十字架。因此神將祂升為至高，賜給祂超乎萬名之上的名。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_007",
+      "question": "根據約翰福音第15章，耶穌如何用比喻說明與祂聯結的重要？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "約翰福音",
+      "reference": "約翰福音 15:1-8",
+      "expected_answer_points": [
+        "我是真葡萄樹，父是栽培的人",
+        "枝子必須常在樹上才能結果子",
+        "離了我什麼都不能做",
+        "常在我裏面就能多結果子"
+      ],
+      "reference_answer": "耶穌說祂是真葡萄樹，父是栽培的人。枝子必須常在樹上才能結果子，離了祂什麼都不能做。信徒要常在祂裏面，讓祂的話常在心中，就能多結果子。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_008",
+      "question": "根據希伯來書第11章，作者如何描述舊約聖徒憑信心生活的見證？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "希伯來書",
+      "reference": "希伯來書 11:4-40",
+      "expected_answer_points": [
+        "亞伯因信獻更美的祭",
+        "挪亞因信預備方舟",
+        "亞伯拉罕因信出去不知往哪裏",
+        "摩西因信不肯稱為法老女兒之子"
+      ],
+      "reference_answer": "作者列舉舊約聖徒的信心榜樣：亞伯獻更美的祭，挪亞預備方舟，亞伯拉罕出去不知往哪裏去，摩西不肯稱為法老女兒之子。他們因信得了美好證據。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_009",
+      "question": "根據哥林多後書第4章，保羅如何描述在逼迫中仍有盼望的秘訣？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "哥林多後書",
+      "reference": "哥林多後書 4:7-18",
+      "expected_answer_points": [
+        "有寶貝在瓦器裏顯明能力出於神",
+        "四面受敵卻不被困住",
+        "外體毀壞內心卻一天新似一天",
+        "至暫至輕的苦楚要成就極重無比的榮耀"
+      ],
+      "reference_answer": "保羅說我們有寶貝在瓦器裏，雖四面受敵卻不被困住，打倒了卻不至死亡。外體毀壞內心卻一天新似一天，至暫至輕的苦楚要成就極重無比永遠的榮耀。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_010",
+      "question": "根據彼得前書第2章，彼得如何描述信徒的身份和使命？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "彼得前書",
+      "reference": "彼得前書 2:4-10",
+      "expected_answer_points": [
+        "是活石被建造成靈宮",
+        "被揀選的族類、君尊的祭司",
+        "聖潔的國度、屬神的子民",
+        "宣揚召你們出黑暗入光明者的美德"
+      ],
+      "reference_answer": "彼得說信徒是活石被建造成靈宮，是被揀選的族類、君尊的祭司、聖潔的國度、屬神的子民。使命是宣揚召他們出黑暗入光明者的美德。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_011",
+      "question": "根據約翰一書第4章，使徒約翰如何描述神的愛和信徒相愛的關係？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "約翰一書",
+      "reference": "約翰一書 4:7-21",
+      "expected_answer_points": [
+        "神就是愛，住在愛裏面的就住在神裏面",
+        "神差獨生子為我們的罪作挽回祭",
+        "我們愛因為神先愛我們",
+        "不愛弟兄就不能愛神"
+      ],
+      "reference_answer": "約翰說神就是愛，神差獨生子為我們的罪作挽回祭。我們愛因為神先愛我們。若說愛神卻恨弟兄就是說謊的，因為不愛看得見的弟兄，怎能愛看不見的神呢？"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_012",
+      "question": "根據歌羅西書第3章，保羅如何教導信徒在基督裏的新生活？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "歌羅西書",
+      "reference": "歌羅西書 3:1-14",
+      "expected_answer_points": [
+        "求上面的事，思念上面的事",
+        "治死地上的邪情私慾",
+        "脫去舊人穿上新人",
+        "存憐憫恩慈謙虛溫柔忍耐的心"
+      ],
+      "reference_answer": "保羅教導信徒要思念上面的事，治死地上的邪情私慾，脫去舊人穿上新人。要存憐憫恩慈謙虛溫柔忍耐的心，又要存著愛心，愛心是聯絡全德的。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_013",
+      "question": "根據詩篇第139篇，大衛如何描述神對人全面的認識和同在？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "詩篇",
+      "reference": "詩篇 139:1-16",
+      "expected_answer_points": [
+        "神已經鑒察認識我",
+        "我坐下起來你都曉得",
+        "往哪裏去都不能躲避神的面",
+        "在母腹中神已覆庇我"
+      ],
+      "reference_answer": "大衛說神完全認識他，知道他坐下起來和一切意念。無論往天上陰間海極，神都在那裡。神在母腹中就覆庇他，受造奇妙可畏。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_014",
+      "question": "根據以賽亞書第55章，先知如何呼召人來就近神？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "以賽亞書",
+      "reference": "以賽亞書 55:1-11",
+      "expected_answer_points": [
+        "乾渴的都當就近水來",
+        "當趁可尋找的時候尋找神",
+        "神的意念道路高過人的意念道路",
+        "神的話決不徒然返回"
+      ],
+      "reference_answer": "以賽亞呼召乾渴的人來就近水，當趁可尋找的時候尋找神。神說祂的意念道路高過人的意念道路，祂口所出的話決不徒然返回，必成就祂所喜悅的。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_015",
+      "question": "根據帖撒羅尼迦前書第4章，保羅如何描述主再來時的情景？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "帖撒羅尼迦前書",
+      "reference": "帖撒羅尼迦前書 4:13-18",
+      "expected_answer_points": [
+        "主必親自從天降臨",
+        "在基督裏死了的人必先復活",
+        "活著的人要一同被提到雲裏",
+        "在空中與主相遇永遠同在"
+      ],
+      "reference_answer": "保羅說若信耶穌死而復活，在基督裏死了的人必先復活。主親自從天降臨時，活著的人要和他們一同被提到雲裏，在空中與主相遇，永遠與主同在。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_016",
+      "question": "根據馬可福音第4章，耶穌用撒種的比喻如何說明人心對神話語的回應？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "馬可福音",
+      "reference": "馬可福音 4:1-20",
+      "expected_answer_points": [
+        "路旁的被撒但奪去",
+        "石頭地的沒有根遇難就跌倒",
+        "荊棘裏的被世慮錢財擠住",
+        "好土的聽道結實三十六十一百倍"
+      ],
+      "reference_answer": "耶穌解釋四種土壤代表四種心：路旁的被撒但奪去，石頭地的沒有根遇難就跌倒，荊棘裏的被世慮錢財擠住，好土的聽道領受結實三十六十一百倍。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_017",
+      "question": "根據創世記第1章，神如何按次序創造天地萬物？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "創世記",
+      "reference": "創世記 1:1-31",
+      "expected_answer_points": [
+        "第一日造光",
+        "第二日造空氣",
+        "第三日造旱地和植物",
+        "第四日造日月星",
+        "第五日造水中生物和飛鳥",
+        "第六日造陸地動物和人"
+      ],
+      "reference_answer": "神六日創造：第一日造光，第二日造空氣分開諸水，第三日造旱地和植物，第四日造日月星，第五日造水中生物和飛鳥，第六日造陸地動物和照自己形像造人。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_018",
+      "question": "根據啟示錄第21章，使徒約翰如何描述新天新地的景象？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "啟示錄",
+      "reference": "啟示錄 21:1-27",
+      "expected_answer_points": [
+        "新天新地，先前的天地已過去",
+        "聖城新耶路撒冷從天降下",
+        "神的帳幕在人間與人同住",
+        "不再有死亡悲哀哭號疼痛"
+      ],
+      "reference_answer": "約翰看見新天新地和聖城新耶路撒冷從天降下。神的帳幕在人間與人同住，擦去眼淚，不再有死亡悲哀哭號疼痛。城內不需日月因有神的榮耀光照。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_019",
+      "question": "根據傳道書第3章，作者如何表達人生各樣經歷都有定時？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "傳道書",
+      "reference": "傳道書 3:1-11",
+      "expected_answer_points": [
+        "凡事都有定期，天下萬務都有定時",
+        "生有時死有時",
+        "哭有時笑有時",
+        "神造萬物各按其時成為美好"
+      ],
+      "reference_answer": "傳道者說凡事都有定期，天下萬務都有定時，包括生死、栽種拔出、殺戮醫治、拆毀建造、哭笑哀樂等，神造萬物各按其時成為美好。"
+    },
+    {
+      "question_id": "TOPIC_QUESTION_020",
+      "question": "根據哥林多前書第12章，保羅如何說明教會肢體的合一與多元？",
+      "question_type": "TOPIC_QUESTION",
+      "book_name": "哥林多前書",
+      "reference": "哥林多前書 12:4-27",
+      "expected_answer_points": [
+        "恩賜有分別，聖靈卻是一位",
+        "身子是一個卻有許多肢體",
+        "從一位聖靈受洗成一個身體",
+        "肢體彼此相顧"
+      ],
+      "reference_answer": "保羅用身體的比喻說明教會雖有多元恩賜，卻是一個身體。各肢體彼此需要，不分猶太人希臘人都從一位聖靈受洗成為一體，神配搭身子使肢體彼此相顧。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_001",
+      "question": "亞伯拉罕、以撒、雅各三代之間的關係和神的應許如何延續？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "創世記",
+      "reference": "創世記 12-35章",
+      "expected_answer_points": [
+        "亞伯拉罕是以撒的父親，以撒是雅各的父親",
+        "神與亞伯拉罕立約應許後裔如天上的星",
+        "以撒繼承亞伯拉罕的應許",
+        "雅各從以撒得祝福繼承應許",
+        "神稱為亞伯拉罕、以撒、雅各的神"
+      ],
+      "reference_answer": "亞伯拉罕生以撒，以撒生雅各，形成以色列先祖三代。神與亞伯拉罕立約，應許後裔如天上的星，這約延續到以撒和雅各。神稱為亞伯拉罕、以撒、雅各的神。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_002",
+      "question": "雅各、以掃與利百加、拉班之間的關係如何影響雅各的一生？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "創世記",
+      "reference": "創世記 25-31章",
+      "expected_answer_points": [
+        "雅各和以掃是雙胞胎兄弟",
+        "利百加是他們的母親，偏愛雅各",
+        "雅各騙取以掃的長子名分和祝福",
+        "雅各逃往舅舅拉班家",
+        "拉班是利百加的哥哥",
+        "雅各在拉班家娶了拉結和利亞"
+      ],
+      "reference_answer": "雅各以掃是雙胞胎，母親利百加偏愛雅各。雅各騙取長子名分和祝福後逃往舅舅拉班家。拉班是利百加的哥哥，雅各在那裏服事二十年，娶了拉班的女兒拉結和利亞。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_003",
+      "question": "約瑟與他的兄弟猶大、便雅憫之間的關係在埃及如何發展？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "創世記",
+      "reference": "創世記 37-45章",
+      "expected_answer_points": [
+        "約瑟是雅各和拉結的兒子",
+        "便雅憫是約瑟的同母弟弟",
+        "猶大曾建議將約瑟賣給商人",
+        "約瑟在埃及試驗兄弟們",
+        "猶大願意替便雅憫留下為奴",
+        "約瑟與兄弟相認並饒恕"
+      ],
+      "reference_answer": "約瑟和便雅憫是拉結所生的兒子。猶大當年建議賣約瑟，後來在埃及願意替便雅憫為奴。約瑟看見猶大的改變就與兄弟相認饒恕他們。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_004",
+      "question": "摩西、亞倫、米利暗三兄妹在出埃及中各扮演什麼角色？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "出埃及記",
+      "reference": "出埃及記 2-15章; 民數記 12章",
+      "expected_answer_points": [
+        "摩西是領導者，帶領以色列人出埃及",
+        "亞倫是摩西的哥哥，作他的發言人",
+        "米利暗是他們的姐姐",
+        "亞倫成為大祭司",
+        "米利暗因毀謗摩西而長大痲瘋",
+        "三人是利未支派"
+      ],
+      "reference_answer": "摩西、亞倫、米利暗是利未支派的三兄妹。摩西領導出埃及，亞倫作發言人後成為大祭司，米利暗是女先知。米利暗和亞倫曾毀謗摩西，米利暗長大痲瘋後經摩西代求得醫治。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_005",
+      "question": "摩西與葉忒羅的關係如何影響以色列人的治理？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "出埃及記",
+      "reference": "出埃及記 2-4章, 18章",
+      "expected_answer_points": [
+        "葉忒羅是米甸祭司",
+        "摩西逃到米甸時葉忒羅收留他",
+        "摩西娶葉忒羅的女兒西坡拉",
+        "葉忒羅建議摩西設立審判官",
+        "避免摩西一人承擔所有爭訟"
+      ],
+      "reference_answer": "葉忒羅是米甸祭司，摩西逃離埃及時被他收留並娶其女西坡拉。出埃及後葉忒羅來訪，見摩西獨自審判百姓，建議設立千夫長百夫長等審判官，這成為以色列治理制度。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_006",
+      "question": "路得、拿俄米、波阿斯三人之間的關係如何發展？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "路得記",
+      "reference": "路得記 1-4章",
+      "expected_answer_points": [
+        "路得是拿俄米的摩押媳婦",
+        "路得堅持跟隨拿俄米回伯利恆",
+        "波阿斯是拿俄米亡夫的親族",
+        "波阿斯恩待路得並娶她為妻",
+        "路得生俄備得成為大衛的曾祖母"
+      ],
+      "reference_answer": "路得是拿俄米的摩押媳婦，堅持跟隨婆婆回伯利恆。波阿斯是拿俄米親族，恩待在田間拾穗的路得並盡至近親屬本分娶她。路得生俄備得，是大衛的曾祖母。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_007",
+      "question": "撒母耳、以利、哈拿三人之間的關係如何？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "撒母耳記上",
+      "reference": "撒母耳記上 1-3章",
+      "expected_answer_points": [
+        "哈拿是撒母耳的母親",
+        "哈拿因不能生育在聖殿禱告",
+        "祭司以利起初誤會哈拿後祝福她",
+        "撒母耳出生後被獻給神服事以利",
+        "神藉撒母耳宣告對以利家的審判"
+      ],
+      "reference_answer": "哈拿不能生育在殿中禱告求子，祭司以利祝福她。哈拿生撒母耳後將他獻給神，在以利面前服事。神呼召撒母耳，卻託他宣告對以利家的審判。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_008",
+      "question": "大衛、掃羅、約拿單三人之間的關係有何張力？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "撒母耳記上",
+      "reference": "撒母耳記上 16-20章",
+      "expected_answer_points": [
+        "掃羅是以色列第一個王",
+        "約拿單是掃羅的兒子",
+        "大衛被撒母耳膏立為王",
+        "約拿單與大衛結盟立約深相契合",
+        "掃羅嫉妒大衛要殺他",
+        "約拿單保護大衛違背父親"
+      ],
+      "reference_answer": "掃羅是以色列首任王，約拿單是他的兒子。大衛被膏立後，約拿單與他深相契合結盟。掃羅因嫉妒多次要殺大衛，約拿單夾在父親和朋友之間，選擇保護大衛。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_009",
+      "question": "大衛、拔示巴、烏利亞、拿單之間發生了什麼事？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "撒母耳記下",
+      "reference": "撒母耳記下 11-12章",
+      "expected_answer_points": [
+        "大衛與烏利亞的妻子拔示巴犯罪",
+        "大衛設計使烏利亞陣亡",
+        "先知拿單用比喻責備大衛",
+        "大衛認罪說得罪耶和華了",
+        "大衛後來娶拔示巴生所羅門"
+      ],
+      "reference_answer": "大衛看見烏利亞的妻子拔示巴沐浴，與她同房導致懷孕。大衛設計使烏利亞陣亡後娶拔示巴。先知拿單用比喻責備大衛，大衛認罪悔改。後來拔示巴生所羅門。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_010",
+      "question": "大衛、所羅門、押沙龍之間的父子關係如何發展？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "撒母耳記下",
+      "reference": "撒母耳記下 13-18章; 列王紀上 1-2章",
+      "expected_answer_points": [
+        "所羅門和押沙龍都是大衛的兒子",
+        "押沙龍因暗嫩事件殺兄逃亡",
+        "押沙龍回來後叛變奪王位",
+        "押沙龍戰敗被約押殺死",
+        "大衛為押沙龍哀哭",
+        "所羅門後來繼承大衛的王位"
+      ],
+      "reference_answer": "所羅門和押沙龍都是大衛的兒子。押沙龍殺暗嫩後逃亡，回來又叛變奪王位，戰敗被約押殺死。大衛痛哭願替他死。後來所羅門繼承王位，成就大衛之約。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_011",
+      "question": "以利亞、以利沙師徒之間的關係如何？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "列王紀上",
+      "reference": "列王紀上 19章; 列王紀下 2章",
+      "expected_answer_points": [
+        "以利亞用外衣搭在以利沙身上呼召他",
+        "以利沙跟隨以利亞服事他",
+        "以利沙求感動以利亞的靈加倍感動他",
+        "以利亞乘旋風升天",
+        "以利沙拾起以利亞的外衣繼承先知職分"
+      ],
+      "reference_answer": "以利亞用外衣呼召以利沙，以利沙跟隨服事他。以利亞升天前以利沙求靈加倍感動他。以利亞乘旋風升天，以利沙拾起外衣繼承先知職分，行了許多神蹟。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_012",
+      "question": "以利亞與亞哈、耶洗別之間的對抗如何發展？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "列王紀上",
+      "reference": "列王紀上 17-19章",
+      "expected_answer_points": [
+        "亞哈是以色列王，耶洗別是他的妻子",
+        "耶洗別引誘亞哈拜巴力",
+        "以利亞宣告旱災審判",
+        "以利亞在迦密山對決巴力先知",
+        "耶洗別威脅要殺以利亞",
+        "以利亞逃往曠野"
+      ],
+      "reference_answer": "亞哈是以色列王，娶西頓公主耶洗別引進巴力崇拜。以利亞宣告旱災，後在迦密山挑戰巴力先知獲勝。耶洗別威脅以利亞，他逃往曠野求死。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_013",
+      "question": "但以理與尼布甲尼撒、伯沙撒、大利烏三位王的關係如何？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "但以理書",
+      "reference": "但以理書 1-6章",
+      "expected_answer_points": [
+        "但以理被尼布甲尼撒擄到巴比倫",
+        "但以理為尼布甲尼撒解夢得重用",
+        "但以理為伯沙撒解讀牆上的字",
+        "大利烏立但以理為首席總長",
+        "但以理被扔進獅子坑蒙神保守"
+      ],
+      "reference_answer": "但以理被尼布甲尼撒擄到巴比倫，為王解夢得重用。為伯沙撒解讀牆上字。大利烏王立他為首席總長，被嫉妒者陷害扔進獅子坑，神保守他毫髮無傷。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_014",
+      "question": "沙得拉、米煞、亞伯尼歌與尼布甲尼撒之間發生了什麼事？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "但以理書",
+      "reference": "但以理書 3章",
+      "expected_answer_points": [
+        "三人是但以理的同伴",
+        "尼布甲尼撒造金像命眾人敬拜",
+        "三人拒絕拜像",
+        "被扔進烈火窯中",
+        "火中出現第四人像神子",
+        "三人毫髮無損出來"
+      ],
+      "reference_answer": "沙得拉、米煞、亞伯尼歌是但以理的同伴。尼布甲尼撒立金像命眾人敬拜，三人拒絕被扔進燒熱七倍的火窯。王看見火中有四人像神子，三人出來毫髮無損。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_015",
+      "question": "以斯帖、末底改、哈曼、亞哈隨魯王之間的關係如何發展？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "以斯帖記",
+      "reference": "以斯帖記 2-7章",
+      "expected_answer_points": [
+        "以斯帖是末底改的堂妹",
+        "以斯帖成為亞哈隨魯王的王后",
+        "哈曼因末底改不跪拜而恨惡他",
+        "哈曼謀害猶太全族",
+        "以斯帖冒死見王揭發哈曼",
+        "哈曼被掛在自己預備的木架上"
+      ],
+      "reference_answer": "以斯帖是末底改堂妹，成為亞哈隨魯王后。哈曼因末底改不跪拜而謀害猶太人。末底改求以斯帖冒死見王，以斯帖揭發哈曼陰謀，哈曼被掛在他為末底改預備的木架上。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_016",
+      "question": "耶穌與彼得、約翰、雅各三位核心門徒的關係如何？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "馬太福音 17章, 26章; 約翰福音 21章",
+      "expected_answer_points": [
+        "彼得、約翰、雅各是核心三門徒",
+        "三人見證耶穌登山變像",
+        "三人陪耶穌在客西馬尼園禱告",
+        "約翰是耶穌所愛的門徒",
+        "雅各是約翰的哥哥",
+        "彼得三次不認主後被恢復"
+      ],
+      "reference_answer": "彼得、約翰、雅各是耶穌的核心門徒。雅各和約翰是兄弟，約翰是耶穌所愛的門徒。三人見證登山變像，陪耶穌在客西馬尼禱告。彼得三次不認主後被耶穌恢復使命。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_017",
+      "question": "耶穌與馬大、馬利亞、拉撒路的關係如何？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "約翰福音",
+      "reference": "路加福音 10章; 約翰福音 11-12章",
+      "expected_answer_points": [
+        "馬大、馬利亞、拉撒路是姊弟",
+        "他們住在伯大尼",
+        "耶穌素來愛這一家人",
+        "馬利亞用香膏抹耶穌的腳",
+        "耶穌使拉撒路從死裏復活"
+      ],
+      "reference_answer": "馬大、馬利亞、拉撒路是住在伯大尼的姊弟，耶穌素來愛他們。馬利亞常坐在耶穌腳前聽道，用香膏抹耶穌。拉撒路死後耶穌使他復活，顯出神的榮耀。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_018",
+      "question": "保羅與巴拿巴、西拉、提摩太的同工關係如何發展？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "使徒行傳",
+      "reference": "使徒行傳 9章, 13-16章",
+      "expected_answer_points": [
+        "巴拿巴接待保羅引薦給使徒",
+        "保羅和巴拿巴一同宣教",
+        "因馬可的緣故二人分開",
+        "保羅揀選西拉同行",
+        "保羅在路司得帶提摩太同去",
+        "提摩太成為保羅的屬靈兒子"
+      ],
+      "reference_answer": "巴拿巴接待初信的保羅並引薦給使徒，二人同工宣教。因馬可事件分開，保羅揀選西拉同行。在路司得遇見提摩太帶他同去，提摩太成為保羅的屬靈兒子和親密同工。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_019",
+      "question": "彼得與哥尼流的相遇如何改變教會？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "使徒行傳",
+      "reference": "使徒行傳 10章",
+      "expected_answer_points": [
+        "哥尼流是羅馬百夫長敬畏神的人",
+        "天使指示哥尼流請彼得來",
+        "彼得見異象不可稱俗物為不潔",
+        "彼得向哥尼流一家傳福音",
+        "聖靈降在外邦人身上",
+        "外邦人也能受洗歸主"
+      ],
+      "reference_answer": "哥尼流是敬畏神的羅馬百夫長。彼得見異象不可稱俗物不潔後，去向哥尼流傳福音。聖靈降在外邦人身上，他們受洗歸主。這事確立外邦人不需先成為猶太人就能得救。"
+    },
+    {
+      "question_id": "PERSON_QUESTION_020",
+      "question": "保羅在宣教中與百基拉、亞居拉、亞波羅的關係如何？",
+      "question_type": "PERSON_QUESTION",
+      "book_name": "使徒行傳",
+      "reference": "使徒行傳 18章",
+      "expected_answer_points": [
+        "百基拉和亞居拉是夫妻",
+        "他們與保羅同業製造帳棚",
+        "保羅住在他們家同工",
+        "亞波羅是有口才能講解聖經的人",
+        "百基拉和亞居拉私下栽培亞波羅",
+        "亞波羅後來大有能力為主作見證"
+      ],
+      "reference_answer": "百基拉和亞居拉是製帳棚的夫妻，保羅住他們家同工。亞波羅有口才能講聖經但只知施洗約翰的洗禮，百基拉亞居拉私下栽培他。亞波羅後來大有能力在各處為主作見證。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_001",
+      "question": "根據創世記，大洪水事件的起因、過程和結局為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "創世記",
+      "reference": "創世記 6-9章",
+      "expected_answer_points": [
+        "神見人罪惡很大決定用洪水滅世",
+        "神吩咐挪亞造方舟",
+        "挪亞一家八口和動物進入方舟",
+        "大雨四十晝夜",
+        "方舟停在亞拉臘山",
+        "挪亞獻祭神以彩虹立約"
+      ],
+      "reference_answer": "神因人罪惡決定降洪水，吩咐挪亞造方舟。挪亞一家和動物進入後，大雨四十晝夜。水退後方舟停在亞拉臘山，挪亞出來獻祭，神立約以彩虹為記不再用洪水滅地。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_002",
+      "question": "巴別塔事件的起因和結果為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "創世記",
+      "reference": "創世記 11:1-9",
+      "expected_answer_points": [
+        "當時天下人的口音言語都一樣",
+        "人們要建造城和塔頂通天的塔",
+        "為要傳揚自己的名免得分散",
+        "神變亂他們的口音",
+        "他們彼此不能溝通停工分散"
+      ],
+      "reference_answer": "當時天下人口音言語相同，在示拿地要建城和通天塔傳揚自己的名。神變亂他們口音使他們彼此不能溝通，人們分散各地，那城名叫巴別。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_003",
+      "question": "十災事件的順序和法老的反應為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "出埃及記",
+      "reference": "出埃及記 7-12章",
+      "expected_answer_points": [
+        "十災順序：水變血、蛙、虱、蠅、畜疫、瘡、雹、蝗、黑暗、殺長子",
+        "法老起初心硬拒絕",
+        "有些災後法老暫時讓步但隨即反悔",
+        "殺長子之災後法老才放行"
+      ],
+      "reference_answer": "十災依序為：水變血、蛙、虱、蠅、畜疫、瘡、雹、蝗、黑暗、殺長子。法老起初心硬拒絕，災後偶有讓步但隨即反悔。直到殺長子之災，法老才催促以色列人離開。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_004",
+      "question": "過紅海事件的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "出埃及記",
+      "reference": "出埃及記 14章",
+      "expected_answer_points": [
+        "法老後悔追趕以色列人",
+        "以色列人懼怕埋怨摩西",
+        "摩西舉杖神用東風分開海水",
+        "以色列人走乾地過海",
+        "埃及人追下去被水淹沒"
+      ],
+      "reference_answer": "法老追趕以色列人到紅海邊，百姓懼怕埋怨。摩西舉杖，神用東風分開海水成乾地，水在左右成牆垣。以色列人過去後，埃及人追下去被回流的水淹沒。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_005",
+      "question": "曠野漂流四十年是因為什麼事件？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "民數記",
+      "reference": "民數記 13-14章",
+      "expected_answer_points": [
+        "摩西派十二探子窺探迦南地",
+        "十個探子報惡信說敵人高大",
+        "迦勒約書亞說足能得勝",
+        "會眾哭號埋怨要打死二人",
+        "神宣告這代人要在曠野飄流四十年"
+      ],
+      "reference_answer": "摩西派十二探子窺探迦南，十人報惡信說敵人高大。迦勒約書亞說足能得勝，會眾卻哭號埋怨。神宣告除迦勒約書亞外這代人都要在曠野飄流四十年，不得進迦南。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_006",
+      "question": "征服迦南時耶利哥城是如何被攻取的？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "約書亞記",
+      "reference": "約書亞記 6章",
+      "expected_answer_points": [
+        "神吩咐以色列人繞城",
+        "六日每日繞城一次",
+        "七祭司拿羊角走在約櫃前",
+        "第七日繞城七次",
+        "祭司吹角百姓呼喊",
+        "城牆塌陷"
+      ],
+      "reference_answer": "神吩咐以色列人六日每日繞城一次，七祭司拿羊角走在約櫃前。繞城時不可出聲。第七日繞城七次，祭司吹角時百姓大聲呼喊，城牆塌陷，以色列人攻取耶利哥。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_007",
+      "question": "基甸三百人擊敗米甸人的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "士師記",
+      "reference": "士師記 7章",
+      "expected_answer_points": [
+        "神說跟隨的人過多",
+        "用舔水方式選出三百人",
+        "分三隊各人拿角和空瓶",
+        "三更吹角打破瓶喊叫",
+        "米甸軍驚亂自相殘殺"
+      ],
+      "reference_answer": "神怕以色列人自誇，讓基甸減少軍隊到三百人。基甸分三隊，各人拿角和藏火把的空瓶。三更吹角打破瓶喊叫耶和華和基甸的刀，米甸軍驚亂自相殘殺。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_008",
+      "question": "王國分裂是如何發生的？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "列王紀上",
+      "reference": "列王紀上 12章",
+      "expected_answer_points": [
+        "所羅門死後羅波安繼位",
+        "百姓求減輕重擔",
+        "羅波安聽年輕人建議反要加重",
+        "北方十支派反叛",
+        "耶羅波安作北國王",
+        "只剩猶大便雅憫跟隨羅波安"
+      ],
+      "reference_answer": "所羅門死後羅波安繼位，百姓求減輕重擔。羅波安聽年輕人建議要加重，北方十支派反叛立耶羅波安為王。從此分裂為北國以色列和南國猶大。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_009",
+      "question": "被擄巴比倫和歸回重建的過程為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "以斯拉記",
+      "reference": "以斯拉記; 尼希米記",
+      "expected_answer_points": [
+        "巴比倫攻破耶路撒冷",
+        "聖殿被毀百姓被擄",
+        "七十年後波斯王古列下令允許歸回",
+        "所羅巴伯帶領第一批人歸回",
+        "以斯拉帶領第二批歸回教導律法",
+        "尼希米歸回重建城牆"
+      ],
+      "reference_answer": "巴比倫攻破耶路撒冷，聖殿被毀百姓被擄。七十年後波斯王古列允許歸回。所羅巴伯帶領首批人重建聖殿，以斯拉歸回教導律法，尼希米重建城牆。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_010",
+      "question": "耶穌降生的事件經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "馬太福音 1-2章; 路加福音 1-2章",
+      "expected_answer_points": [
+        "天使向馬利亞報信",
+        "馬利亞從聖靈懷孕",
+        "約瑟原想休她但天使在夢中顯現",
+        "該撒下令報名上冊",
+        "耶穌生在伯利恆客店馬槽",
+        "牧羊人和博士來朝拜"
+      ],
+      "reference_answer": "天使向馬利亞報信從聖靈懷孕，約瑟在夢中受指示娶她。因報名上冊去伯利恆，耶穌生在客店馬槽。天使向牧羊人報喜，東方博士隨星而來朝拜。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_011",
+      "question": "登山寶訓的主要內容包括哪些？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "馬太福音 5-7章",
+      "expected_answer_points": [
+        "八福：虛心、哀慟、溫柔、飢渴慕義等人有福",
+        "論律法：怒氣等同殺人、淫念等同犯姦淫",
+        "施捨禱告禁食要暗中行",
+        "不要憂慮先求神的國和義",
+        "論論斷人和進窄門"
+      ],
+      "reference_answer": "登山寶訓包括八福、論律法的內在要求（怒氣淫念）、敬虔生活（施捨禱告禁食要暗中）、不要憂慮先求神國、不論斷人、進窄門、兩種根基等教導。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_012",
+      "question": "五餅二魚神蹟的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "約翰福音",
+      "reference": "約翰福音 6:1-14; 馬太福音 14:13-21",
+      "expected_answer_points": [
+        "眾人跟隨耶穌到曠野",
+        "天晚了門徒請耶穌打發眾人去買食物",
+        "安得烈找到有五餅二魚的孩童",
+        "耶穌祝謝擘開分給眾人",
+        "五千人吃飽還剩十二籃子"
+      ],
+      "reference_answer": "眾人跟隨耶穌到曠野，天晚門徒想打發他們去買食物。一孩童有五餅二魚，耶穌祝謝擘開分給眾人。五千人吃飽還剩十二籃零碎。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_013",
+      "question": "拉撒路復活神蹟的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "約翰福音",
+      "reference": "約翰福音 11章",
+      "expected_answer_points": [
+        "拉撒路病了姊妹打發人告訴耶穌",
+        "耶穌故意等了兩天才去",
+        "到時拉撒路已死了四天",
+        "馬大馬利亞說若耶穌在弟弟必不死",
+        "耶穌哭了",
+        "耶穌叫拉撒路出來從死裏復活"
+      ],
+      "reference_answer": "拉撒路病了，耶穌故意等兩天才去，到時已死四天。馬大馬利亞說若主在弟弟必不死，耶穌看見她們哭就悲傷哭泣。耶穌在墳前叫拉撒路出來，他就復活走出來。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_014",
+      "question": "最後的晚餐發生了哪些重要的事？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "約翰福音",
+      "reference": "約翰福音 13章; 路加福音 22章",
+      "expected_answer_points": [
+        "耶穌為門徒洗腳",
+        "耶穌預言將被出賣",
+        "設立聖餐擘餅遞杯",
+        "餅代表身體杯代表血立新約",
+        "猶大出去",
+        "耶穌賜下新命令彼此相愛"
+      ],
+      "reference_answer": "最後晚餐耶穌為門徒洗腳示範謙卑服事。預言被出賣後設立聖餐，擘餅代表身體、杯代表血立新約。猶大出去，耶穌賜下彼此相愛的新命令。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_015",
+      "question": "客西馬尼禱告的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "馬太福音 26:36-56; 路加福音 22:39-53",
+      "expected_answer_points": [
+        "晚餐後耶穌和門徒到客西馬尼園",
+        "帶彼得雅各約翰同去禱告",
+        "耶穌極其傷痛汗珠如血點",
+        "三次禱告求父挪去這杯但願父旨意成就",
+        "門徒三次睡著",
+        "猶大帶人來捉拿耶穌"
+      ],
+      "reference_answer": "晚餐後耶穌帶彼得雅各約翰到客西馬尼園禱告。耶穌極其傷痛汗如血點，三次禱告求挪去這杯但願父旨意成就。門徒三次睡著。後猶大帶人來捉拿耶穌。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_016",
+      "question": "耶穌受難被釘十字架的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "馬太福音 26-27章",
+      "expected_answer_points": [
+        "在大祭司該亞法和公會受審",
+        "被解到彼拉多面前",
+        "彼拉多查不出罪來想釋放",
+        "眾人要求釋放巴拉巴釘耶穌",
+        "耶穌被鞭打戴荊棘冠冕",
+        "被帶到各各他釘十字架"
+      ],
+      "reference_answer": "耶穌在該亞法和公會受審被定褻瀆罪，解到彼拉多面前。彼拉多查不出罪想釋放，眾人卻要求釘十字架。耶穌被鞭打戴荊棘冠冕，被帶到各各他釘十字架。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_017",
+      "question": "耶穌復活當天發生了哪些事？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "路加福音",
+      "reference": "路加福音 24章; 約翰福音 20章",
+      "expected_answer_points": [
+        "七日第一日清早婦女到墳墓",
+        "石頭已經滾開墳墓是空的",
+        "天使說祂不在這裏已經復活了",
+        "抹大拉的馬利亞遇見復活的耶穌",
+        "耶穌在以馬忤斯路上向兩門徒顯現",
+        "當晚向聚集的門徒顯現"
+      ],
+      "reference_answer": "七日第一日清早婦女到空墳墓，天使說耶穌已復活。抹大拉的馬利亞遇見復活的主。耶穌在以馬忤斯路向兩門徒顯現講解聖經，當晚向聚集的門徒顯現賜下平安。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_018",
+      "question": "五旬節聖靈降臨的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "使徒行傳",
+      "reference": "使徒行傳 2章",
+      "expected_answer_points": [
+        "門徒聚集在一處",
+        "天上有如大風的響聲",
+        "舌頭如火焰落在各人頭上",
+        "被聖靈充滿說起別國話",
+        "各地猶太人都聽見自己的鄉談",
+        "彼得講道約三千人受洗"
+      ],
+      "reference_answer": "五旬節門徒聚集時，天上有如大風的響聲，舌頭如火焰落在各人頭上。他們被聖靈充滿說起別國話，各地猶太人都聽見自己的鄉談而驚奇。彼得講道後約三千人悔改受洗。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_019",
+      "question": "保羅歸主的經過為何？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "使徒行傳",
+      "reference": "使徒行傳 9章",
+      "expected_answer_points": [
+        "掃羅往大馬士革捉拿信徒",
+        "途中有光從天照他仆倒在地",
+        "聽見聲音說你為甚麼逼迫我",
+        "主說我是你所逼迫的耶穌",
+        "掃羅眼瞎被領進城三日不吃喝",
+        "亞拿尼亞按手他眼睛復明受洗"
+      ],
+      "reference_answer": "掃羅往大馬士革捉拿信徒途中，有光從天照他，主問他為甚麼逼迫我。掃羅眼瞎被領進城三日不吃喝。主差亞拿尼亞按手，掃羅眼睛復明受洗，開始傳耶穌是神的兒子。"
+    },
+    {
+      "question_id": "EVENT_QUESTION_020",
+      "question": "浪子的比喻講述了什麼故事？",
+      "question_type": "EVENT_QUESTION",
+      "book_name": "路加福音",
+      "reference": "路加福音 15:11-32",
+      "expected_answer_points": [
+        "小兒子要求分家業後離家揮霍",
+        "淪落到放豬後醒悟決定回家",
+        "父親遠遠看見就跑去擁抱他",
+        "父親設宴慶祝",
+        "大兒子生氣不肯進去",
+        "父親解釋失而復得要歡喜"
+      ],
+      "reference_answer": "小兒子分了家業後離家揮霍，淪落放豬後醒悟回家。父親遠遠看見就跑去擁抱他，設宴慶祝。大兒子生氣抱怨父親偏心。父親解釋弟弟失而復得要歡喜。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_001",
+      "question": "以賽亞書的以馬內利預言如何在馬太福音應驗？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "以賽亞書 7:14; 馬太福音 1:18-25",
+      "expected_answer_points": [
+        "以賽亞7:14預言童女懷孕生子名以馬內利",
+        "以馬內利意思是神與我們同在",
+        "馬太福音1:23引用此預言",
+        "馬利亞從聖靈懷孕生耶穌",
+        "耶穌的降生實現神與人同在的應許"
+      ],
+      "reference_answer": "以賽亞7:14預言童女懷孕生子名以馬內利，意思是神與我們同在。馬太1:23引用此預言說明馬利亞從聖靈懷孕生耶穌正應驗這話。耶穌的降生實現神與人同在的應許。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_002",
+      "question": "羅馬書和加拉太書如何用亞伯拉罕的例子論述因信稱義？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "羅馬書",
+      "reference": "羅馬書 4章; 加拉太書 3章; 創世記 15:6",
+      "expected_answer_points": [
+        "兩書都引用創15:6亞伯拉罕信神算為義",
+        "強調義不是靠行律法乃是因信",
+        "羅馬書強調亞伯拉罕在割禮前就稱義",
+        "加拉太書說基督是應許的子孫",
+        "亞伯拉罕是一切信之人的父"
+      ],
+      "reference_answer": "兩書都引用創15:6證明亞伯拉罕因信稱義不靠律法。羅馬書強調亞伯拉罕在割禮前就稱義，是一切信的人的父。加拉太書強調基督是應許的子孫，律法只是看守到基督來。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_003",
+      "question": "神的羔羊意象如何從以賽亞書延伸到約翰福音和啟示錄？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "啟示錄",
+      "reference": "以賽亞書 53:7; 約翰福音 1:29; 啟示錄 5章",
+      "expected_answer_points": [
+        "以賽亞53:7受苦僕人像羊羔被殺",
+        "約翰福音1:29施洗約翰說看哪神的羔羊",
+        "啟示錄5章羔羊被殺過但活著",
+        "羔羊用血買贖萬民",
+        "羔羊形象貫穿預言到永恆得勝"
+      ],
+      "reference_answer": "以賽亞53說受苦僕人像羊羔被殺。約翰福音說耶穌是除去世人罪孽的神的羔羊。啟示錄5章羔羊被殺過但活著，用血買贖萬民配展開書卷。羔羊形象貫穿預言、應驗到永恆得勝。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_004",
+      "question": "約翰福音1章如何呼應創世記1章的創造敘事？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "約翰福音",
+      "reference": "約翰福音 1:1-14; 創世記 1:1-5",
+      "expected_answer_points": [
+        "創世記1:1起初神創造，約翰1:1太初有道",
+        "創世記神說有光，約翰說道是真光",
+        "創世記神藉話語創造萬物",
+        "約翰說萬物是藉著道造的",
+        "道成肉身住在我們中間"
+      ],
+      "reference_answer": "創世記1:1說起初神創造，約翰福音1:1呼應說太初有道。創世記神說有光，約翰說道是真光照在黑暗裏。創世記神藉話語創造萬物，約翰說萬物是藉著道造的。道成肉身住在人間。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_005",
+      "question": "希伯來書如何說明基督的祭司職分比亞倫的祭司更美？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "希伯來書",
+      "reference": "希伯來書 7-10章",
+      "expected_answer_points": [
+        "基督照麥基洗德等次永遠為祭司",
+        "亞倫祭司會死需更換，基督永遠活著",
+        "舊約祭司每日獻祭，基督只一次獻上自己",
+        "舊約用牛羊血，基督用自己的血進真聖所",
+        "舊約律法是影兒，基督成就更美之約"
+      ],
+      "reference_answer": "希伯來書說基督照麥基洗德等次永遠為祭司，不像亞倫祭司會死更換。基督只一次獻上自己成永遠贖罪祭，用自己的血進入真聖所。舊約律法只是影兒，基督成就了更美之約。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_006",
+      "question": "耶利米書的新約預言如何在希伯來書得到應用？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "希伯來書",
+      "reference": "耶利米書 31:31-34; 希伯來書 8章",
+      "expected_answer_points": [
+        "耶利米31:31-34預言神要立新約",
+        "新約不像在埃及領他們出來時的約",
+        "律法要放在裏面寫在心上",
+        "都必認識神罪得赦免",
+        "希伯來書8章說基督是新約中保"
+      ],
+      "reference_answer": "耶利米31章預言神立新約，律法寫在心上，都必認識神，罪得赦免。希伯來書8章引用此預言說明基督是新約中保，既稱為新約就以舊約為舊，舊的漸漸歸無有。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_007",
+      "question": "詩篇22篇的描述如何在耶穌受難中應驗？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "詩篇",
+      "reference": "詩篇 22篇; 馬太福音 27:35-46",
+      "expected_answer_points": [
+        "詩篇22:1我的神為何離棄我是耶穌十架呼喊",
+        "詩篇22:7-8嗤笑搖頭是眾人嘲諷",
+        "詩篇22:16扎手扎腳是釘十架",
+        "詩篇22:18分外衣拈鬮被兵丁應驗"
+      ],
+      "reference_answer": "詩篇22篇大衛的呼求成為彌賽亞受苦預言：我的神為何離棄我是耶穌十架呼喊，嗤笑搖頭是眾人嘲諷，扎手扎腳是釘十架，分外衣為裏衣拈鬮被兵丁應驗。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_008",
+      "question": "撒迦利亞書的預言如何在受難週應驗？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "撒迦利亞書 9:9; 11:12-13; 12:10; 馬太福音 21章, 27章",
+      "expected_answer_points": [
+        "撒迦利亞9:9王騎驢駒進城",
+        "馬太21章耶穌騎驢進耶路撒冷應驗",
+        "撒迦利亞11:12-13三十塊錢",
+        "馬太27章猶大以此價出賣主",
+        "撒迦利亞12:10仰望被扎的"
+      ],
+      "reference_answer": "撒迦利亞9:9預言王騎驢駒來，馬太21章耶穌進城應驗。撒迦利亞提到三十塊錢，馬太27章猶大以此價出賣主。撒迦利亞說仰望被扎的，約翰19章兵丁扎耶穌肋旁應驗。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_009",
+      "question": "出埃及記的嗎哪如何預表約翰福音的生命糧？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "約翰福音",
+      "reference": "出埃及記 16章; 約翰福音 6:30-58",
+      "expected_answer_points": [
+        "出埃及記神降嗎哪餵養以色列人",
+        "約翰6章猶太人提起祖宗吃嗎哪",
+        "耶穌說那不是摩西給的是父從天降的真糧",
+        "祖宗吃嗎哪還是死了",
+        "耶穌是生命的糧吃的永遠活著"
+      ],
+      "reference_answer": "出埃及記神降嗎哪餵養以色列人。約翰福音6章猶太人提嗎哪，耶穌說那不是摩西給的，父從天降真糧。吃嗎哪的死了，耶穌是生命糧，吃的永遠活著。嗎哪是基督的預表。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_010",
+      "question": "使徒行傳2章彼得如何引用舊約證明耶穌是彌賽亞？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "使徒行傳",
+      "reference": "使徒行傳 2:14-36; 約珥書 2章; 詩篇 16, 110篇",
+      "expected_answer_points": [
+        "引用約珥書解釋聖靈澆灌",
+        "引用詩篇16說大衛預言基督復活不見朽壞",
+        "引用詩篇110說主坐在神右邊",
+        "證明耶穌是神所立的基督"
+      ],
+      "reference_answer": "彼得引用約珥書解釋聖靈澆灌應驗末後預言。引用詩篇16說大衛預言基督復活不見朽壞。引用詩篇110說主坐在神右邊。彼得藉舊約經文證明耶穌就是神所立的基督。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_011",
+      "question": "申命記18章關於先知的預言如何應用於耶穌？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "使徒行傳",
+      "reference": "申命記 18:15-19; 使徒行傳 3:22-26; 7:37",
+      "expected_answer_points": [
+        "申命記18:15摩西預言神要興起像他的先知",
+        "要聽從那先知",
+        "使徒行傳3:22-23彼得引用指向耶穌",
+        "使徒行傳7:37司提反也引用"
+      ],
+      "reference_answer": "申命記18章摩西預言神要興起像他的先知，要聽從祂。使徒行傳3章彼得引用指向耶穌，不聽從必滅絕。使徒行傳7章司提反也引用，說明以色列人拒絕摩西如同拒絕耶穌。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_012",
+      "question": "彼得前書如何引用以賽亞書論房角石？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "彼得前書",
+      "reference": "以賽亞書 28:16; 詩篇 118:22; 彼得前書 2:4-8",
+      "expected_answer_points": [
+        "以賽亞28:16神在錫安立房角石",
+        "詩篇118:22匠人所棄成房角頭塊石",
+        "彼得前書引用指向基督",
+        "信靠的不羞愧不信的被絆跌",
+        "信徒如活石被建成靈宮"
+      ],
+      "reference_answer": "以賽亞28章預言神立房角石，詩篇118說匠人所棄成房角頭塊石。彼得前書引用說明基督是被棄卻蒙揀選的活石，信靠的不羞愧，不信的被絆跌。信徒也如活石被建成靈宮。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_013",
+      "question": "哥林多前書15章如何回應創世記關於死亡的敘述？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "哥林多前書",
+      "reference": "創世記 2:17; 3:19; 哥林多前書 15:20-57",
+      "expected_answer_points": [
+        "創世記說犯罪的日子必定死",
+        "死因亞當進入世界",
+        "哥林多前書15說死因一人來復活也因一人來",
+        "在亞當裏眾人死在基督裏眾人復活",
+        "末後亞當基督成了叫人活的靈"
+      ],
+      "reference_answer": "創世記說犯罪的日子必定死，死因亞當進入世界。哥林多前書15說死因一人來，復活也因一人來。在亞當裏眾人死，在基督裏眾人復活。末後亞當基督成了叫人活的靈，死被得勝吞滅。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_014",
+      "question": "以弗所書如何說明外邦人得以進入神的約？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "以弗所書",
+      "reference": "創世記 12:1-3; 以弗所書 2:11-22",
+      "expected_answer_points": [
+        "創世記12章神應許萬族因亞伯拉罕得福",
+        "以弗所書說外邦人從前與諸約無關",
+        "如今靠基督的血得親近",
+        "基督拆毀隔牆將兩下合一",
+        "外邦人成為同國同蒙應許的人"
+      ],
+      "reference_answer": "創世記12章神應許萬族因亞伯拉罕得福。以弗所書2章說外邦人從前與諸約無關，如今靠基督的血得親近。基督拆毀隔牆將兩下合一，外邦人成為同國同蒙應許的人。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_015",
+      "question": "約拿在魚腹中的經歷如何預表基督的死與復活？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "約拿書 1:17-2:10; 馬太福音 12:38-41",
+      "expected_answer_points": [
+        "法利賽人求神蹟耶穌說只給約拿的神蹟",
+        "約拿三日三夜在魚腹",
+        "人子也要三日三夜在地裏",
+        "尼尼微人聽約拿就悔改",
+        "比約拿更大的耶穌在這裏"
+      ],
+      "reference_answer": "法利賽人求神蹟，耶穌說只給約拿的神蹟。約拿三日三夜在魚腹，人子也要三日三夜在地裏。尼尼微人聽約拿就悔改，比約拿更大的耶穌在這裏。約拿的經歷預表基督死而復活。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_016",
+      "question": "哥林多後書如何對比摩西和新約的職事？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "哥林多後書",
+      "reference": "出埃及記 34:29-35; 哥林多後書 3章",
+      "expected_answer_points": [
+        "舊約刻在石版，新約寫在心版",
+        "摩西的是定罪職事，新約是稱義職事",
+        "摩西臉上榮光漸退，新約榮光更大",
+        "摩西蒙帕子，以色列人心有帕子",
+        "歸向主帕子就除去"
+      ],
+      "reference_answer": "保羅說舊約刻在石版，新約寫在心版。摩西的是定罪職事，新約是稱義職事。摩西臉上榮光漸退，新約榮光更大。摩西蒙帕子，以色列人讀舊約心有帕子，歸向主帕子就除去。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_017",
+      "question": "羅馬書9-11章如何引用舊約說明神對以色列和外邦人的計劃？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "羅馬書",
+      "reference": "羅馬書 9-11章; 何西阿書 2:23; 以賽亞書 10:22-23",
+      "expected_answer_points": [
+        "引用何西阿說不是我子民的要稱為我的子民",
+        "引用以賽亞說以色列得救的是餘數",
+        "以色列失腳讓救恩臨到外邦人",
+        "外邦如野橄欖接上本樹",
+        "外邦人數目滿了以色列全家要得救"
+      ],
+      "reference_answer": "保羅引用何西阿說不是我子民的要稱為我的子民，引用以賽亞說以色列得救的是餘數。以色列失腳讓救恩臨到外邦人，外邦如野橄欖接上本樹。外邦人數目滿了以色列全家要得救。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_018",
+      "question": "啟示錄的新耶路撒冷如何呼應創世記的伊甸園？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "啟示錄",
+      "reference": "創世記 2:8-17; 3:22-24; 啟示錄 21:1-22:5",
+      "expected_answer_points": [
+        "創世記伊甸有生命樹和河",
+        "人犯罪被趕出伊甸園",
+        "啟示錄新耶路撒冷有生命樹和生命水河",
+        "神與人同住不再有咒詛",
+        "信徒可吃生命樹果子",
+        "從失樂園到新天新地救贖計劃完成"
+      ],
+      "reference_answer": "創世記伊甸有生命樹和河，人犯罪被趕出。啟示錄新耶路撒冷有生命樹和生命水河，神與人同住，不再有咒詛，信徒可吃生命樹果子。從失樂園到新天新地，救贖計劃完成。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_019",
+      "question": "以賽亞書53章的受苦僕人預言如何在新約應驗？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "以賽亞書",
+      "reference": "以賽亞書 53章; 使徒行傳 8:26-35",
+      "expected_answer_points": [
+        "他被藐視被人厭棄",
+        "他為我們的過犯受害為我們的罪孽壓傷",
+        "像羊羔被牽到宰殺之地",
+        "他被列在罪犯之中",
+        "腓利向太監講解這段指向耶穌"
+      ],
+      "reference_answer": "以賽亞53預言受苦僕人被藐視厭棄，為我們過犯受害罪孽壓傷，像羊羔被殺，被列在罪犯中。使徒行傳8章腓利向太監講解這段經文，說明這是指耶穌。"
+    },
+    {
+      "question_id": "GENERAL_BIBLE_QUESTION_020",
+      "question": "大使命如何連結創世記的祝福和啟示錄的異象？",
+      "question_type": "GENERAL_BIBLE_QUESTION",
+      "book_name": "馬太福音",
+      "reference": "創世記 12:1-3; 馬太福音 28:18-20; 啟示錄 7:9-10",
+      "expected_answer_points": [
+        "創世記12章萬族要因亞伯拉罕得福",
+        "馬太28章大使命要使萬民作門徒",
+        "啟示錄7章各族各民在寶座前敬拜羔羊",
+        "從應許到命令到實現",
+        "神的心意是萬族得救"
+      ],
+      "reference_answer": "創世記12章神應許萬族因亞伯拉罕得福。馬太28章大使命要使萬民作門徒。啟示錄7章看見各族各民在寶座前敬拜羔羊。從應許到命令到實現，神的心意是萬族得救。"
+    }
+  ]
+}
