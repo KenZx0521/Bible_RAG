@@ -1,0 +1,28 @@
+.venv/
+backend/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data files
+output/
+bible_pdf/
+bible_md/
+docs/
+
+# Git
+.git/
+.gitignore
+
+# IDE / tools
+.claude/
+.agents/
+.vscode/
+.idea/
+
+# Environment (loaded via docker-compose env_file)
+.env
+
+# Misc
+*.md
