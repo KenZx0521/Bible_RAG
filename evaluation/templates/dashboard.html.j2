@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible RAG Evaluation Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h2 {
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--accent);
+        }
+        .subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+
+        /* Metric cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+        .card .title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        .card .desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Chart sections */
+        .chart-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Failure table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--bg);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        tr:hover { background: rgba(59, 130, 246, 0.05); }
+        .score-low { color: var(--danger); font-weight: 600; }
+        .score-mid { color: var(--warning); font-weight: 600; }
+        .score-high { color: var(--success); font-weight: 600; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: var(--accent); color: var(--text); }
+        .tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Bible RAG Evaluation Dashboard</h1>
+    <p class="subtitle">RAG 系統評估報告 — 100 個 Ground Truth 問題</p>
+
+    <!-- Navigation tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('overview')">總覽</div>
+        <div class="tab" onclick="showTab('retrieval')">檢索效能</div>
+        <div class="tab" onclick="showTab('generation')">生成品質</div>
+        <div class="tab" onclick="showTab('context')">Context 指標</div>
+        <div class="tab" onclick="showTab('heatmap')">問題類型分析</div>
+        <div class="tab" onclick="showTab('details')">問題詳細列表</div>
+    </div>
+
+    <!-- Tab 1: Overview -->
+    <div id="tab-overview" class="tab-content active">
+        <h2>重點指標</h2>
+        <div class="cards">
+            {% for card in cards %}
+            <div class="card">
+                <div class="value">{{ card.value }}</div>
+                <div class="title">{{ card.title }}</div>
+                <div class="desc">{{ card.desc }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="chart-section">
+            {{ charts.radar | safe }}
+        </div>
+    </div>
+
+    <!-- Tab 2: Retrieval -->
+    <div id="tab-retrieval" class="tab-content">
+        <h2>檢索效能</h2>
+        <div class="chart-section">
+            {{ charts.retrieval_bar | safe }}
+        </div>
+    </div>
+
+    <!-- Tab 3: Generation -->
+    <div id="tab-generation" class="tab-content">
+        <h2>生成品質</h2>
+        <div class="chart-section">
+            {{ charts.generation_bar | safe }}
+        </div>
+    </div>
+
+    <!-- Tab 4: Context -->
+    <div id="tab-context" class="tab-content">
+        <h2>Context 相關指標</h2>
+        <div class="chart-section">
+            {{ charts.context_bar | safe }}
+        </div>
+    </div>
+
+    <!-- Tab 5: Heatmap -->
+    <div id="tab-heatmap" class="tab-content">
+        <h2>問題類型 × 指標分析</h2>
+        <div class="chart-section">
+            {{ charts.heatmap | safe }}
+        </div>
+    </div>
+
+    <!-- Tab 6: Question Details -->
+    <div id="tab-details" class="tab-content">
+        <h2>問題詳細列表</h2>
+        <p class="subtitle" style="margin-bottom:1rem;">共 {{ question_details | length }} 題，依問題類型分組排列</p>
+        <div class="chart-section" style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Question ID</th>
+                        <th>類型</th>
+                        <th>狀態</th>
+                        <th>Avg Score</th>
+                        <th>Hit Rate</th>
+                        <th>Faithfulness</th>
+                        <th>Answer Rel.</th>
+                        <th>Ctx Prec.</th>
+                        <th>Ctx Recall</th>
+                        <th>Point Cov.</th>
+                        <th>Similarity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in question_details %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ item.question_id }}</td>
+                        <td>{{ type_labels.get(item.question_type, item.question_type) }}</td>
+                        <td>{% if item.status == 'success' %}<span style="color:var(--success);">&#10003;</span>{% else %}<span style="color:var(--danger);">&#10007;</span>{% endif %}</td>
+                        <td class="{% if item.avg_score < 0.3 %}score-low{% elif item.avg_score < 0.6 %}score-mid{% else %}score-high{% endif %}">
+                            {{ "%.4f" | format(item.avg_score) }}
+                        </td>
+                        <td>{% if item.hit_rate is not none %}{{ "%.2f" | format(item.hit_rate) }}{% else %}-{% endif %}</td>
+                        <td>{% if item.ragas_faithfulness is not none %}{{ "%.2f" | format(item.ragas_faithfulness) }}{% else %}-{% endif %}</td>
+                        <td>{% if item.ragas_answer_relevancy is not none %}{{ "%.2f" | format(item.ragas_answer_relevancy) }}{% else %}-{% endif %}</td>
+                        <td>{% if item.ragas_context_precision is not none %}{{ "%.2f" | format(item.ragas_context_precision) }}{% else %}-{% endif %}</td>
+                        <td>{% if item.ragas_context_recall is not none %}{{ "%.2f" | format(item.ragas_context_recall) }}{% else %}-{% endif %}</td>
+                        <td>{% if item.answer_point_coverage is not none %}{{ "%.2f" | format(item.answer_point_coverage) }}{% else %}-{% endif %}</td>
+                        <td>{% if item.semantic_similarity is not none %}{{ "%.2f" | format(item.semantic_similarity) }}{% else %}-{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+    // Trigger Plotly resize for hidden charts
+    window.dispatchEvent(new Event('resize'));
+}
+</script>
+</body>
+</html>

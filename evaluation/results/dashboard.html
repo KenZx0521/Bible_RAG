@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible RAG Evaluation Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h2 {
+            font-size: 1.4rem;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--accent);
+        }
+        .subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+
+        /* Metric cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+        .card .title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        .card .desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Chart sections */
+        .chart-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Failure table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--bg);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        tr:hover { background: rgba(59, 130, 246, 0.05); }
+        .score-low { color: var(--danger); font-weight: 600; }
+        .score-mid { color: var(--warning); font-weight: 600; }
+        .score-high { color: var(--success); font-weight: 600; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: var(--accent); color: var(--text); }
+        .tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Bible RAG Evaluation Dashboard</h1>
+    <p class="subtitle">RAG 系統評估報告 — 100 個 Ground Truth 問題</p>
+
+    <!-- Navigation tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('overview')">總覽</div>
+        <div class="tab" onclick="showTab('retrieval')">檢索效能</div>
+        <div class="tab" onclick="showTab('generation')">生成品質</div>
+        <div class="tab" onclick="showTab('context')">Context 指標</div>
+        <div class="tab" onclick="showTab('heatmap')">問題類型分析</div>
+        <div class="tab" onclick="showTab('details')">問題詳細列表</div>
+    </div>
+
+    <!-- Tab 1: Overview -->
+    <div id="tab-overview" class="tab-content active">
+        <h2>重點指標</h2>
+        <div class="cards">
+            
+            <div class="card">
+                <div class="value">92.00%</div>
+                <div class="title">Hit Rate</div>
+                <div class="desc">檢索命中率</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">79.98%</div>
+                <div class="title">MRR</div>
+                <div class="desc">平均倒數排名</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">83.45%</div>
+                <div class="title">NDCG@k</div>
+                <div class="desc">歸一化折損累積增益</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">61.51%</div>
+                <div class="title">Faithfulness</div>
+                <div class="desc">回答忠實度</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">0.00%</div>
+                <div class="title">Answer Relevancy</div>
+                <div class="desc">回答相關性</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">56.37%</div>
+                <div class="title">Context Precision</div>
+                <div class="desc">Context 精確度</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">71.85%</div>
+                <div class="title">Context Recall</div>
+                <div class="desc">Context 召回率</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">49.35%</div>
+                <div class="title">Point Coverage</div>
+                <div class="desc">答案要點覆蓋率</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">77.37%</div>
+                <div class="title">Similarity</div>
+                <div class="desc">語意相似度</div>
+            </div>
+            
+            <div class="card">
+                <div class="value">65.29%</div>
+                <div class="title">BERTScore</div>
+                <div class="desc">BERT 相似度</div>
+            </div>
+            
+        </div>
+        <div class="chart-section">
+            <div>                            <div id="880b3472-86bc-452d-9c09-afbf276c7bcf" class="plotly-graph-div" style="height:450px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("880b3472-86bc-452d-9c09-afbf276c7bcf")) {                    Plotly.newPlot(                        "880b3472-86bc-452d-9c09-afbf276c7bcf",                        [{"fill":"toself","line":{"color":"#636EFA"},"name":"Overall","r":[0.7076714285714286,0.14472000000000002,0.4854,0.7737,0.7076714285714286],"theta":["檢索效能","參考指標","LLM 評估","語意相似度","檢索效能"],"type":"scatterpolar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"polar":{"radialaxis":{"visible":true,"range":[0,1]}},"title":{"text":"總覽：四大類指標平均"},"height":450},                        {"responsive": true}                    )                };            </script>        </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: Retrieval -->
+    <div id="tab-retrieval" class="tab-content">
+        <h2>檢索效能</h2>
+        <div class="chart-section">
+            <div>                            <div id="50c61e76-938f-4852-981e-67832a7bc8b9" class="plotly-graph-div" style="height:500px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("50c61e76-938f-4852-981e-67832a7bc8b9")) {                    Plotly.newPlot(                        "50c61e76-938f-4852-981e-67832a7bc8b9",                        [{"alignmentgroup":"True","hovertemplate":"Question Type=經文查詢\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"經文查詢","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"經文查詢","offsetgroup":"經文查詢","orientation":"v","showlegend":true,"textposition":"auto","x":["precision_at_k","recall_at_k","f1_at_k","mrr","map_at_k","ndcg_at_k","hit_rate"],"xaxis":"x","y":{"dtype":"f8","bdata":"mpmZmZmZyT8AAAAAAADwP2lv8IXJVNU\u002fAAAAAAAA8D8AAAAAAADwPwAAAAAAAPA\u002fAAAAAAAA8D8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=主題問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"主題問題","marker":{"color":"#EF553B","pattern":{"shape":""}},"name":"主題問題","offsetgroup":"主題問題","orientation":"v","showlegend":true,"textposition":"auto","x":["precision_at_k","recall_at_k","f1_at_k","mrr","map_at_k","ndcg_at_k","hit_rate"],"xaxis":"x","y":{"dtype":"f8","bdata":"7FG4HoXr0T8AAAAAAADwP86I0t7gC9s\u002ff\u002fs6cM6I7D9LyAc9m1XtP9v5fmq8dO8\u002fAAAAAAAA8D8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=人物問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"人物問題","marker":{"color":"#00cc96","pattern":{"shape":""}},"name":"人物問題","offsetgroup":"人物問題","orientation":"v","showlegend":true,"textposition":"auto","x":["precision_at_k","recall_at_k","f1_at_k","mrr","map_at_k","ndcg_at_k","hit_rate"],"xaxis":"x","y":{"dtype":"f8","bdata":"FK5H4XoU5j8YldQJaCLuP4iFWtO84+g\u002fH4XrUbge7T8bnl4pyxDtP52AJsKGp+0\u002fAAAAAAAA8D8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=事件問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"事件問題","marker":{"color":"#ab63fa","pattern":{"shape":""}},"name":"事件問題","offsetgroup":"事件問題","orientation":"v","showlegend":true,"textposition":"auto","x":["precision_at_k","recall_at_k","f1_at_k","mrr","map_at_k","ndcg_at_k","hit_rate"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAA0D9mZmZmZmbmP8sQx7q4jdY\u002fp3nHKTqS3z8ibHh6pSzfP\u002fCnxks3ieE\u002fAAAAAAAA6D8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=綜合問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"綜合問題","marker":{"color":"#FFA15A","pattern":{"shape":""}},"name":"綜合問題","offsetgroup":"綜合問題","orientation":"v","showlegend":true,"textposition":"auto","x":["precision_at_k","recall_at_k","f1_at_k","mrr","map_at_k","ndcg_at_k","hit_rate"],"xaxis":"x","y":{"dtype":"f8","bdata":"j8L1KFyP0j\u002fNzMzMzMziP0i\u002ffR04Z9g\u002ff\u002fs6cM6I5j85tMh2vp\u002fePx3J5T+k3+Y\u002fMzMzMzMz6z8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=總體\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"總體","marker":{"color":"#19d3f3","pattern":{"shape":""}},"name":"總體","offsetgroup":"總體","orientation":"v","showlegend":true,"textposition":"auto","x":["precision_at_k","recall_at_k","f1_at_k","mrr","map_at_k","ndcg_at_k","hit_rate"],"xaxis":"x","y":{"dtype":"f8","bdata":"F9nO91Pj1T8bnl4pyxDrP6AaL90kBt0\u002f1edqK\u002faX6T+KH2PuWkLoP05iEFg5tOo\u002fcT0K16Nw7T8="},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Metric"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Value"},"range":[0,1]},"legend":{"title":{"text":"Question Type"},"tracegroupgap":0},"title":{"text":"檢索效能指標 (by Question Type)"},"barmode":"group","height":500},                        {"responsive": true}                    )                };            </script>        </div>
+        </div>
+    </div>
+
+    <!-- Tab 3: Generation -->
+    <div id="tab-generation" class="tab-content">
+        <h2>生成品質</h2>
+        <div class="chart-section">
+            <div>                            <div id="483dcc0c-7fd0-4a57-962c-f20bd6a17a8d" class="plotly-graph-div" style="height:500px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("483dcc0c-7fd0-4a57-962c-f20bd6a17a8d")) {                    Plotly.newPlot(                        "483dcc0c-7fd0-4a57-962c-f20bd6a17a8d",                        [{"alignmentgroup":"True","hovertemplate":"Question Type=經文查詢\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"經文查詢","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"經文查詢","offsetgroup":"經文查詢","orientation":"v","showlegend":true,"textposition":"auto","x":["bleu","rouge1","rouge2","rougeL","bertscore","ragas_faithfulness","ragas_answer_relevancy","ragas_answer_correctness","answer_point_coverage","semantic_similarity"],"xaxis":"x","y":{"dtype":"f8","bdata":"kX77OnDOuD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADaG3xhMlXmP5eQD3o2q94\u002fAAAAAAAAAAC7uI0G8BbkPzMzMzMzM+8\u002fWKg1zTtO6T8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=主題問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"主題問題","marker":{"color":"#EF553B","pattern":{"shape":""}},"name":"主題問題","offsetgroup":"主題問題","orientation":"v","showlegend":true,"textposition":"auto","x":["bleu","rouge1","rouge2","rougeL","bertscore","ragas_faithfulness","ragas_answer_relevancy","ragas_answer_correctness","answer_point_coverage","semantic_similarity"],"xaxis":"x","y":{"dtype":"f8","bdata":"sb\u002fsnjwslD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC4HoXrUbjkP9CzWfW52uo\u002fAAAAAAAAAABhMlUwKqnhP+VhodY07+Q\u002feqUsQxzr6D8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=人物問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"人物問題","marker":{"color":"#00cc96","pattern":{"shape":""}},"name":"人物問題","offsetgroup":"人物問題","orientation":"v","showlegend":true,"textposition":"auto","x":["bleu","rouge1","rouge2","rougeL","bertscore","ragas_faithfulness","ragas_answer_relevancy","ragas_answer_correctness","answer_point_coverage","semantic_similarity"],"xaxis":"x","y":{"dtype":"f8","bdata":"Iv32deCcgT8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAnwoanV8rkPz0s1JrmHeE\u002fAAAAAAAAAAB3LSEf9GzeP+xRuB6F69E\u002fXf5D+u3r6D8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=事件問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"事件問題","marker":{"color":"#ab63fa","pattern":{"shape":""}},"name":"事件問題","offsetgroup":"事件問題","orientation":"v","showlegend":true,"textposition":"auto","x":["bleu","rouge1","rouge2","rougeL","bertscore","ragas_faithfulness","ragas_answer_relevancy","ragas_answer_correctness","answer_point_coverage","semantic_similarity"],"xaxis":"x","y":{"dtype":"f8","bdata":"bHh6pSxDfD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACFfNCzWfXjP0a28\u002f3UeOc\u002fAAAAAAAAAADHuriNBvDeP8X+snvysNQ\u002fZ9Xnaiv25z8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=綜合問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"綜合問題","marker":{"color":"#FFA15A","pattern":{"shape":""}},"name":"綜合問題","offsetgroup":"綜合問題","orientation":"v","showlegend":true,"textposition":"auto","x":["bleu","rouge1","rouge2","rougeL","bertscore","ragas_faithfulness","ragas_answer_relevancy","ragas_answer_correctness","answer_point_coverage","semantic_similarity"],"xaxis":"x","y":{"dtype":"f8","bdata":"0gDeAgmKfz9B8WPMXUu4PzAqqRPQRJg\u002fQfFjzF1LuD\u002fwhclUwajkP7Kd76fGS98\u002fAAAAAAAAAADzH9JvXwfePxSuR+F6FM4\u002fW0I+6Nms6D8="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=總體\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"總體","marker":{"color":"#19d3f3","pattern":{"shape":""}},"name":"總體","offsetgroup":"總體","orientation":"v","showlegend":true,"textposition":"auto","x":["bleu","rouge1","rouge2","rougeL","bertscore","ragas_faithfulness","ragas_answer_relevancy","ragas_answer_correctness","answer_point_coverage","semantic_similarity"],"xaxis":"x","y":{"dtype":"f8","bdata":"eekmMQisnD\u002fb+X5qvHSTP1XBqKROQHM\u002f2\u002fl+arx0kz9q3nGKjuTkP5Cg+DHmruM\u002fAAAAAAAAAADF\u002frJ78rDgPy\u002fdJAaBld8\u002fUkmdgCbC6D8="},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Metric"},"tickangle":45},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Value"},"range":[0,1]},"legend":{"title":{"text":"Question Type"},"tracegroupgap":0},"title":{"text":"生成品質指標"},"barmode":"group","height":500},                        {"responsive": true}                    )                };            </script>        </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: Context -->
+    <div id="tab-context" class="tab-content">
+        <h2>Context 相關指標</h2>
+        <div class="chart-section">
+            <div>                            <div id="25a68698-6add-4603-a9d6-1b6eb223cea2" class="plotly-graph-div" style="height:450px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("25a68698-6add-4603-a9d6-1b6eb223cea2")) {                    Plotly.newPlot(                        "25a68698-6add-4603-a9d6-1b6eb223cea2",                        [{"alignmentgroup":"True","hovertemplate":"Question Type=經文查詢\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"經文查詢","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"經文查詢","offsetgroup":"經文查詢","orientation":"v","showlegend":true,"textposition":"auto","x":["ragas_context_precision","ragas_context_recall"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAA8D8AAAAAAADwPw=="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=主題問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"主題問題","marker":{"color":"#EF553B","pattern":{"shape":""}},"name":"主題問題","offsetgroup":"主題問題","orientation":"v","showlegend":true,"textposition":"auto","x":["ragas_context_precision","ragas_context_recall"],"xaxis":"x","y":{"dtype":"f8","bdata":"G55eKcsQ6T8AAAAAAADwPw=="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=人物問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"人物問題","marker":{"color":"#00cc96","pattern":{"shape":""}},"name":"人物問題","offsetgroup":"人物問題","orientation":"v","showlegend":true,"textposition":"auto","x":["ragas_context_precision","ragas_context_recall"],"xaxis":"x","y":{"dtype":"f8","bdata":"6bevA+eM0D+M22gAb4HiPw=="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=事件問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"事件問題","marker":{"color":"#ab63fa","pattern":{"shape":""}},"name":"事件問題","offsetgroup":"事件問題","orientation":"v","showlegend":true,"textposition":"auto","x":["ragas_context_precision","ragas_context_recall"],"xaxis":"x","y":{"dtype":"f8","bdata":"2qz6XG3F1j\u002f5MeauJeTfPw=="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=綜合問題\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"綜合問題","marker":{"color":"#FFA15A","pattern":{"shape":""}},"name":"綜合問題","offsetgroup":"綜合問題","orientation":"v","showlegend":true,"textposition":"auto","x":["ragas_context_precision","ragas_context_recall"],"xaxis":"x","y":{"dtype":"f8","bdata":"AwmKH2Pu2j+M22gAb4HgPw=="},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"Question Type=總體\u003cbr\u003eMetric=%{x}\u003cbr\u003eValue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"總體","marker":{"color":"#19d3f3","pattern":{"shape":""}},"name":"總體","offsetgroup":"總體","orientation":"v","showlegend":true,"textposition":"auto","x":["ragas_context_precision","ragas_context_recall"],"xaxis":"x","y":{"dtype":"f8","bdata":"mSoYldQJ4j\u002fLoUW28\u002f3mPw=="},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Metric"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Value"},"range":[0,1]},"legend":{"title":{"text":"Question Type"},"tracegroupgap":0},"title":{"text":"Context 相關指標"},"barmode":"group","height":450},                        {"responsive": true}                    )                };            </script>        </div>
+        </div>
+    </div>
+
+    <!-- Tab 5: Heatmap -->
+    <div id="tab-heatmap" class="tab-content">
+        <h2>問題類型 × 指標分析</h2>
+        <div class="chart-section">
+            <div>                            <div id="1d150817-0d58-41c8-96ba-136793531098" class="plotly-graph-div" style="height:400px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("1d150817-0d58-41c8-96ba-136793531098")) {                    Plotly.newPlot(                        "1d150817-0d58-41c8-96ba-136793531098",                        [{"colorscale":[[0.0,"rgb(165,0,38)"],[0.1,"rgb(215,48,39)"],[0.2,"rgb(244,109,67)"],[0.3,"rgb(253,174,97)"],[0.4,"rgb(254,224,139)"],[0.5,"rgb(255,255,191)"],[0.6,"rgb(217,239,139)"],[0.7,"rgb(166,217,106)"],[0.8,"rgb(102,189,99)"],[0.9,"rgb(26,152,80)"],[1.0,"rgb(0,104,55)"]],"text":[["0.97","0.70","0.10","0.33","1.00","1.00","1.00","1.00","0.20","0.63","0.00","1.00","1.00","0.48","1.00","0.00","0.00","0.00","0.79"],["0.65","0.65","0.02","0.42","1.00","0.92","0.89","0.98","0.28","0.55","0.00","0.78","1.00","0.84","1.00","0.00","0.00","0.00","0.78"],["0.28","0.65","0.01","0.78","1.00","0.91","0.91","0.93","0.69","0.48","0.00","0.26","0.58","0.53","0.94","0.00","0.00","0.00","0.78"],["0.32","0.62","0.01","0.35","0.75","0.49","0.49","0.55","0.25","0.48","0.00","0.36","0.50","0.73","0.70","0.00","0.00","0.00","0.75"],["0.23","0.65","0.01","0.38","0.85","0.48","0.70","0.71","0.29","0.47","0.00","0.42","0.52","0.49","0.59","0.09","0.02","0.09","0.77"]],"texttemplate":"%{text}","x":["answer_point_coverage","bertscore","bleu","f1_at_k","hit_rate","map_at_k","mrr","ndcg_at_k","precision_at_k","ragas_answer_correctness","ragas_answer_relevancy","ragas_context_precision","ragas_context_recall","ragas_faithfulness","recall_at_k","rouge1","rouge2","rougeL","semantic_similarity"],"y":["經文查詢","主題問題","人物問題","事件問題","綜合問題"],"z":[[0.975,0.6979,0.0969,0.3333,1.0,1.0,1.0,1.0,0.2,0.6278,0.0,1.0,1.0,0.4792,1.0,0.0,0.0,0.0,0.7908],[0.6542,0.6475,0.0197,0.4226,1.0,0.9167,0.8917,0.983,0.28,0.5519,0.0,0.7833,1.0,0.8392,1.0,0.0,0.0,0.0,0.7787],[0.28,0.6497,0.0086,0.7778,1.0,0.9083,0.91,0.9267,0.69,0.4754,0.0,0.2586,0.5783,0.5349,0.9417,0.0,0.0,0.0,0.7788],[0.3233,0.6237,0.0069,0.3524,0.75,0.4871,0.4933,0.548,0.25,0.4834,0.0,0.3558,0.4983,0.7335,0.7,0.0,0.0,0.0,0.7488],[0.235,0.6456,0.0077,0.3813,0.85,0.4785,0.7042,0.7148,0.29,0.4692,0.0,0.4208,0.5158,0.489,0.5875,0.0949,0.0237,0.0949,0.7711]],"zmax":1,"zmin":0,"type":"heatmap"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"tickangle":45},"title":{"text":"問題類型 × 指標 熱力圖"},"height":400},                        {"responsive": true}                    )                };            </script>        </div>
+        </div>
+    </div>
+
+    <!-- Tab 6: Question Details -->
+    <div id="tab-details" class="tab-content">
+        <h2>問題詳細列表</h2>
+        <p class="subtitle" style="margin-bottom:1rem;">共 100 題，依平均分數由低到高排序</p>
+        <div class="chart-section" style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Question ID</th>
+                        <th>類型</th>
+                        <th>狀態</th>
+                        <th>Avg Score</th>
+                        <th>Hit Rate</th>
+                        <th>Faithfulness</th>
+                        <th>Answer Rel.</th>
+                        <th>Ctx Prec.</th>
+                        <th>Ctx Recall</th>
+                        <th>Point Cov.</th>
+                        <th>Similarity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td>1</td>
+                        <td>EVENT_QUESTION_019</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.0956
+                        </td>
+                        <td>0.00</td>
+                        <td>0.26</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.70</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>2</td>
+                        <td>EVENT_QUESTION_011</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.0983
+                        </td>
+                        <td>0.00</td>
+                        <td>0.20</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.72</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>3</td>
+                        <td>GENERAL_BIBLE_QUESTION_020</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.1013
+                        </td>
+                        <td>0.00</td>
+                        <td>0.14</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.71</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>4</td>
+                        <td>GENERAL_BIBLE_QUESTION_006</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.1091
+                        </td>
+                        <td>0.00</td>
+                        <td>0.19</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.70</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>5</td>
+                        <td>GENERAL_BIBLE_QUESTION_008</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.1126
+                        </td>
+                        <td>0.00</td>
+                        <td>0.26</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.62</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>6</td>
+                        <td>EVENT_QUESTION_008</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.1441
+                        </td>
+                        <td>0.00</td>
+                        <td>0.40</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.61</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>7</td>
+                        <td>EVENT_QUESTION_004</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.1502
+                        </td>
+                        <td>0.00</td>
+                        <td>0.81</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>0.00</td>
+                        <td>0.73</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>8</td>
+                        <td>EVENT_QUESTION_017</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.1855
+                        </td>
+                        <td>0.00</td>
+                        <td>0.94</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.67</td>
+                        <td>0.17</td>
+                        <td>0.75</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>9</td>
+                        <td>PERSON_QUESTION_004</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-low">
+                            0.2869
+                        </td>
+                        <td>1.00</td>
+                        <td>0.55</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.20</td>
+                        <td>0.17</td>
+                        <td>0.81</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>10</td>
+                        <td>EVENT_QUESTION_014</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3273
+                        </td>
+                        <td>1.00</td>
+                        <td>0.57</td>
+                        <td>0.00</td>
+                        <td>0.25</td>
+                        <td>0.33</td>
+                        <td>0.33</td>
+                        <td>0.82</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>11</td>
+                        <td>EVENT_QUESTION_013</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3578
+                        </td>
+                        <td>1.00</td>
+                        <td>0.84</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>0.33</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>12</td>
+                        <td>GENERAL_BIBLE_QUESTION_019</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3642
+                        </td>
+                        <td>1.00</td>
+                        <td>0.19</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>0.20</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>13</td>
+                        <td>GENERAL_BIBLE_QUESTION_011</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3673
+                        </td>
+                        <td>1.00</td>
+                        <td>0.34</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>0.33</td>
+                        <td>0.50</td>
+                        <td>0.77</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>14</td>
+                        <td>GENERAL_BIBLE_QUESTION_005</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3690
+                        </td>
+                        <td>1.00</td>
+                        <td>0.65</td>
+                        <td>0.00</td>
+                        <td>0.75</td>
+                        <td>0.33</td>
+                        <td>0.00</td>
+                        <td>0.76</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>15</td>
+                        <td>EVENT_QUESTION_016</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3696
+                        </td>
+                        <td>1.00</td>
+                        <td>0.67</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.67</td>
+                        <td>0.33</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>16</td>
+                        <td>GENERAL_BIBLE_QUESTION_007</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3850
+                        </td>
+                        <td>1.00</td>
+                        <td>0.33</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.00</td>
+                        <td>0.25</td>
+                        <td>0.69</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>17</td>
+                        <td>EVENT_QUESTION_005</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3886
+                        </td>
+                        <td>1.00</td>
+                        <td>0.70</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.33</td>
+                        <td>0.00</td>
+                        <td>0.69</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>18</td>
+                        <td>PERSON_QUESTION_016</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.3899
+                        </td>
+                        <td>1.00</td>
+                        <td>0.60</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>0.33</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>19</td>
+                        <td>GENERAL_BIBLE_QUESTION_012</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4045
+                        </td>
+                        <td>1.00</td>
+                        <td>0.94</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>0.67</td>
+                        <td>0.40</td>
+                        <td>0.81</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>20</td>
+                        <td>GENERAL_BIBLE_QUESTION_013</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4078
+                        </td>
+                        <td>1.00</td>
+                        <td>0.63</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.75</td>
+                        <td>0.00</td>
+                        <td>0.77</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>21</td>
+                        <td>EVENT_QUESTION_006</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4124
+                        </td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.00</td>
+                        <td>0.25</td>
+                        <td>0.33</td>
+                        <td>0.67</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>22</td>
+                        <td>EVENT_QUESTION_020</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4251
+                        </td>
+                        <td>1.00</td>
+                        <td>0.81</td>
+                        <td>0.00</td>
+                        <td>0.25</td>
+                        <td>1.00</td>
+                        <td>0.67</td>
+                        <td>0.66</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>23</td>
+                        <td>GENERAL_BIBLE_QUESTION_010</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4288
+                        </td>
+                        <td>1.00</td>
+                        <td>0.53</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.85</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>24</td>
+                        <td>GENERAL_BIBLE_QUESTION_003</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4463
+                        </td>
+                        <td>1.00</td>
+                        <td>0.36</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>0.20</td>
+                        <td>0.81</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>25</td>
+                        <td>PERSON_QUESTION_018</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4473
+                        </td>
+                        <td>1.00</td>
+                        <td>0.21</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>0.33</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>26</td>
+                        <td>GENERAL_BIBLE_QUESTION_018</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4554
+                        </td>
+                        <td>1.00</td>
+                        <td>0.35</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>27</td>
+                        <td>PERSON_QUESTION_015</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4564
+                        </td>
+                        <td>1.00</td>
+                        <td>0.68</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.80</td>
+                        <td>0.17</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>28</td>
+                        <td>PERSON_QUESTION_020</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4597
+                        </td>
+                        <td>1.00</td>
+                        <td>0.28</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.25</td>
+                        <td>0.33</td>
+                        <td>0.76</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>29</td>
+                        <td>PERSON_QUESTION_010</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4602
+                        </td>
+                        <td>1.00</td>
+                        <td>0.19</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.17</td>
+                        <td>0.17</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>30</td>
+                        <td>EVENT_QUESTION_015</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4654
+                        </td>
+                        <td>1.00</td>
+                        <td>0.85</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.00</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>31</td>
+                        <td>EVENT_QUESTION_009</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4706
+                        </td>
+                        <td>1.00</td>
+                        <td>0.93</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.20</td>
+                        <td>0.00</td>
+                        <td>0.72</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>32</td>
+                        <td>GENERAL_BIBLE_QUESTION_015</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4708
+                        </td>
+                        <td>1.00</td>
+                        <td>0.25</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>0.75</td>
+                        <td>0.20</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>33</td>
+                        <td>TOPIC_QUESTION_011</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4723
+                        </td>
+                        <td>1.00</td>
+                        <td>0.88</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>0.25</td>
+                        <td>0.71</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>34</td>
+                        <td>PERSON_QUESTION_005</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4735
+                        </td>
+                        <td>1.00</td>
+                        <td>0.31</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>0.00</td>
+                        <td>0.74</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>35</td>
+                        <td>GENERAL_BIBLE_QUESTION_017</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4815
+                        </td>
+                        <td>1.00</td>
+                        <td>0.79</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.40</td>
+                        <td>0.00</td>
+                        <td>0.74</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>36</td>
+                        <td>TOPIC_QUESTION_003</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4847
+                        </td>
+                        <td>1.00</td>
+                        <td>0.63</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.84</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>37</td>
+                        <td>EVENT_QUESTION_003</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4861
+                        </td>
+                        <td>1.00</td>
+                        <td>0.70</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>0.00</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>38</td>
+                        <td>GENERAL_BIBLE_QUESTION_016</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.4926
+                        </td>
+                        <td>1.00</td>
+                        <td>0.58</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.72</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>39</td>
+                        <td>PERSON_QUESTION_012</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5031
+                        </td>
+                        <td>1.00</td>
+                        <td>0.61</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.33</td>
+                        <td>0.17</td>
+                        <td>0.72</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>40</td>
+                        <td>GENERAL_BIBLE_QUESTION_004</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5052
+                        </td>
+                        <td>1.00</td>
+                        <td>0.32</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.20</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>41</td>
+                        <td>EVENT_QUESTION_007</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5069
+                        </td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.00</td>
+                        <td>0.37</td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.68</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>42</td>
+                        <td>TOPIC_QUESTION_001</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5101
+                        </td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.72</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>43</td>
+                        <td>PERSON_QUESTION_003</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5114
+                        </td>
+                        <td>1.00</td>
+                        <td>0.68</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.17</td>
+                        <td>0.77</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>44</td>
+                        <td>GENERAL_BIBLE_QUESTION_014</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5115
+                        </td>
+                        <td>1.00</td>
+                        <td>0.96</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.67</td>
+                        <td>0.40</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>45</td>
+                        <td>PERSON_QUESTION_002</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5184
+                        </td>
+                        <td>1.00</td>
+                        <td>0.52</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.40</td>
+                        <td>0.00</td>
+                        <td>0.75</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>46</td>
+                        <td>EVENT_QUESTION_010</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5317
+                        </td>
+                        <td>1.00</td>
+                        <td>0.88</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>0.50</td>
+                        <td>0.75</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>47</td>
+                        <td>PERSON_QUESTION_008</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5339
+                        </td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.00</td>
+                        <td>0.58</td>
+                        <td>0.50</td>
+                        <td>0.33</td>
+                        <td>0.77</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>48</td>
+                        <td>TOPIC_QUESTION_015</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5343
+                        </td>
+                        <td>1.00</td>
+                        <td>0.90</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>49</td>
+                        <td>PERSON_QUESTION_001</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5472
+                        </td>
+                        <td>1.00</td>
+                        <td>0.59</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.20</td>
+                        <td>0.82</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>50</td>
+                        <td>GENERAL_BIBLE_QUESTION_002</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5490
+                        </td>
+                        <td>1.00</td>
+                        <td>0.80</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.67</td>
+                        <td>0.40</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>51</td>
+                        <td>VERSE_LOOKUP_008</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5512
+                        </td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>52</td>
+                        <td>TOPIC_QUESTION_008</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5526
+                        </td>
+                        <td>1.00</td>
+                        <td>0.91</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.25</td>
+                        <td>0.76</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>53</td>
+                        <td>TOPIC_QUESTION_017</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5527
+                        </td>
+                        <td>1.00</td>
+                        <td>0.61</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.33</td>
+                        <td>0.86</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>54</td>
+                        <td>VERSE_LOOKUP_017</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5540
+                        </td>
+                        <td>1.00</td>
+                        <td>0.04</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.70</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>55</td>
+                        <td>TOPIC_QUESTION_020</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5585
+                        </td>
+                        <td>1.00</td>
+                        <td>0.77</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>0.25</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>56</td>
+                        <td>PERSON_QUESTION_013</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5586
+                        </td>
+                        <td>1.00</td>
+                        <td>0.72</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.67</td>
+                        <td>0.40</td>
+                        <td>0.74</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>57</td>
+                        <td>PERSON_QUESTION_019</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5610
+                        </td>
+                        <td>1.00</td>
+                        <td>0.59</td>
+                        <td>0.00</td>
+                        <td>0.64</td>
+                        <td>0.75</td>
+                        <td>0.33</td>
+                        <td>0.76</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>58</td>
+                        <td>PERSON_QUESTION_007</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5621
+                        </td>
+                        <td>1.00</td>
+                        <td>0.41</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.76</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>59</td>
+                        <td>EVENT_QUESTION_001</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5633
+                        </td>
+                        <td>1.00</td>
+                        <td>0.81</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>0.60</td>
+                        <td>0.83</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>60</td>
+                        <td>PERSON_QUESTION_009</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5634
+                        </td>
+                        <td>1.00</td>
+                        <td>0.70</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>61</td>
+                        <td>EVENT_QUESTION_018</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5675
+                        </td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.67</td>
+                        <td>0.83</td>
+                        <td>0.77</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>62</td>
+                        <td>TOPIC_QUESTION_014</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5682
+                        </td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.73</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>63</td>
+                        <td>TOPIC_QUESTION_005</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5685
+                        </td>
+                        <td>1.00</td>
+                        <td>0.74</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>64</td>
+                        <td>VERSE_LOOKUP_005</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5718
+                        </td>
+                        <td>1.00</td>
+                        <td>0.37</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>65</td>
+                        <td>VERSE_LOOKUP_016</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5725
+                        </td>
+                        <td>1.00</td>
+                        <td>0.29</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.76</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>66</td>
+                        <td>TOPIC_QUESTION_013</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5736
+                        </td>
+                        <td>1.00</td>
+                        <td>0.82</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.72</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>67</td>
+                        <td>TOPIC_QUESTION_009</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5737
+                        </td>
+                        <td>1.00</td>
+                        <td>0.90</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.69</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>68</td>
+                        <td>GENERAL_BIBLE_QUESTION_009</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5756
+                        </td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.20</td>
+                        <td>0.81</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>69</td>
+                        <td>PERSON_QUESTION_011</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5768
+                        </td>
+                        <td>1.00</td>
+                        <td>0.58</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>0.67</td>
+                        <td>0.20</td>
+                        <td>0.70</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>70</td>
+                        <td>VERSE_LOOKUP_015</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5777
+                        </td>
+                        <td>1.00</td>
+                        <td>0.36</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>71</td>
+                        <td>VERSE_LOOKUP_020</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5782
+                        </td>
+                        <td>1.00</td>
+                        <td>0.31</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>72</td>
+                        <td>VERSE_LOOKUP_002</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5795
+                        </td>
+                        <td>1.00</td>
+                        <td>0.47</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>73</td>
+                        <td>TOPIC_QUESTION_012</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5800
+                        </td>
+                        <td>1.00</td>
+                        <td>0.89</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.77</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>74</td>
+                        <td>TOPIC_QUESTION_019</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5838
+                        </td>
+                        <td>1.00</td>
+                        <td>0.80</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>75</td>
+                        <td>VERSE_LOOKUP_001</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5839
+                        </td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.82</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>76</td>
+                        <td>VERSE_LOOKUP_018</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5839
+                        </td>
+                        <td>1.00</td>
+                        <td>0.48</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>77</td>
+                        <td>TOPIC_QUESTION_010</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5845
+                        </td>
+                        <td>1.00</td>
+                        <td>0.71</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.82</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>78</td>
+                        <td>VERSE_LOOKUP_019</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5846
+                        </td>
+                        <td>1.00</td>
+                        <td>0.38</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>79</td>
+                        <td>EVENT_QUESTION_012</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5849
+                        </td>
+                        <td>1.00</td>
+                        <td>0.96</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.40</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>80</td>
+                        <td>VERSE_LOOKUP_004</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5908
+                        </td>
+                        <td>1.00</td>
+                        <td>0.43</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>81</td>
+                        <td>VERSE_LOOKUP_009</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5919
+                        </td>
+                        <td>1.00</td>
+                        <td>0.45</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>82</td>
+                        <td>TOPIC_QUESTION_006</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5934
+                        </td>
+                        <td>1.00</td>
+                        <td>0.88</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>83</td>
+                        <td>PERSON_QUESTION_014</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5938
+                        </td>
+                        <td>1.00</td>
+                        <td>0.96</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>0.50</td>
+                        <td>0.82</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>84</td>
+                        <td>VERSE_LOOKUP_006</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5961
+                        </td>
+                        <td>1.00</td>
+                        <td>0.47</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>85</td>
+                        <td>VERSE_LOOKUP_013</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5966
+                        </td>
+                        <td>1.00</td>
+                        <td>0.60</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.84</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>86</td>
+                        <td>PERSON_QUESTION_006</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5969
+                        </td>
+                        <td>1.00</td>
+                        <td>0.63</td>
+                        <td>0.00</td>
+                        <td>0.95</td>
+                        <td>0.67</td>
+                        <td>0.20</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>87</td>
+                        <td>TOPIC_QUESTION_007</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-mid">
+                            0.5999
+                        </td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.82</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>88</td>
+                        <td>TOPIC_QUESTION_002</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6009
+                        </td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.78</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>89</td>
+                        <td>TOPIC_QUESTION_018</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6045
+                        </td>
+                        <td>1.00</td>
+                        <td>0.67</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.73</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>90</td>
+                        <td>VERSE_LOOKUP_003</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6052
+                        </td>
+                        <td>1.00</td>
+                        <td>0.58</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.74</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>91</td>
+                        <td>VERSE_LOOKUP_011</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6061
+                        </td>
+                        <td>1.00</td>
+                        <td>0.71</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>92</td>
+                        <td>TOPIC_QUESTION_004</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6064
+                        </td>
+                        <td>1.00</td>
+                        <td>0.97</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>93</td>
+                        <td>VERSE_LOOKUP_012</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6068
+                        </td>
+                        <td>1.00</td>
+                        <td>0.64</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.75</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>94</td>
+                        <td>VERSE_LOOKUP_014</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6090
+                        </td>
+                        <td>1.00</td>
+                        <td>0.58</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.80</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>95</td>
+                        <td>EVENT_QUESTION_002</td>
+                        <td>事件問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6107
+                        </td>
+                        <td>1.00</td>
+                        <td>0.85</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.82</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>96</td>
+                        <td>VERSE_LOOKUP_010</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6206
+                        </td>
+                        <td>1.00</td>
+                        <td>0.73</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.85</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>97</td>
+                        <td>PERSON_QUESTION_017</td>
+                        <td>人物問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6299
+                        </td>
+                        <td>1.00</td>
+                        <td>0.48</td>
+                        <td>0.00</td>
+                        <td>0.50</td>
+                        <td>1.00</td>
+                        <td>0.80</td>
+                        <td>0.83</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>98</td>
+                        <td>VERSE_LOOKUP_007</td>
+                        <td>經文查詢</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6301
+                        </td>
+                        <td>1.00</td>
+                        <td>0.88</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.84</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>99</td>
+                        <td>TOPIC_QUESTION_016</td>
+                        <td>主題問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6327
+                        </td>
+                        <td>1.00</td>
+                        <td>0.71</td>
+                        <td>0.00</td>
+                        <td>0.83</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.79</td>
+                    </tr>
+                    
+                    <tr>
+                        <td>100</td>
+                        <td>GENERAL_BIBLE_QUESTION_001</td>
+                        <td>綜合問題</td>
+                        <td><span style="color:var(--success);">&#10003;</span></td>
+                        <td class="score-high">
+                            0.6457
+                        </td>
+                        <td>1.00</td>
+                        <td>0.67</td>
+                        <td>0.00</td>
+                        <td>1.00</td>
+                        <td>1.00</td>
+                        <td>0.60</td>
+                        <td>0.88</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+    // Trigger Plotly resize for hidden charts
+    window.dispatchEvent(new Event('resize'));
+}
+</script>
+</body>
+</html>
