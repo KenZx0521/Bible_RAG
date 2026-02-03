@@ -67,14 +67,28 @@ async def collect_responses(
 
     logger.info("Starting fresh collection for %d questions", total)
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=120.0) as client:
         for idx, gt in enumerate(questions, 1):
             console.rule(f"[bold cyan][{idx}/{total}] {gt.question_id}")
             console.print(f"  [dim]Q:[/dim] {gt.question[:80]}")
 
             try:
-                # --- Step 1: Call RAG API ---
-                resp = await query_rag(gt.question, client=client)
+                # --- Step 1: Call RAG API (retry up to 3 times) ---
+                max_retries = 3
+                resp = None
+                for attempt in range(1, max_retries + 1):
+                    try:
+                        resp = await query_rag(gt.question, client=client)
+                        break
+                    except Exception as e:
+                        logger.warning("[%s] RAG API attempt %d/%d failed: %s",
+                                       gt.question_id, attempt, max_retries, e)
+                        console.print(f"  [yellow]RAG API attempt {attempt}/{max_retries} failed: {e}[/yellow]")
+                        if attempt < max_retries:
+                            await asyncio.sleep(2 * attempt)
+                        else:
+                            raise
+
                 answer = resp.get("answer", "")
                 sources = parse_sources(resp.get("sources", []))
 
