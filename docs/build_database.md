@@ -56,6 +56,28 @@ python scripts/generate_embeddings.py --batch-size 32
 
 ---
 
+## Step 2.1: Sparse Vectors 生成（Hybrid Search）
+
+### 說明
+為 Hybrid Search 生成 BM25-based sparse vectors，使用 CKIP 進行中文斷詞。
+
+### 輸入
+- `output/embedding_queue.jsonl`
+
+### 指令
+```bash
+python scripts/generate_sparse_vectors.py --batch-size 32
+
+# 使用 GPU 加速 CKIP
+python scripts/generate_sparse_vectors.py --batch-size 32 --use-gpu
+```
+
+### 輸出
+- `output/sparse_vectors.jsonl`（每筆包含 sparse vector indices 和 values）
+- `output/bm25_vocabulary.json`（BM25 詞彙表和 IDF 值）
+
+---
+
 ## Step 3: 匯入 PostgreSQL ✅
 
 ### 匯入資料
@@ -98,6 +120,38 @@ python scripts/import_qdrant.py
 
 ### 結果
 - Vectors: 3,041 (1024 維度)
+
+---
+
+## Step 4.1: 匯入 Qdrant Hybrid Collection
+
+### 說明
+建立包含 dense + sparse vectors 的 hybrid collection，支援 RRF 混合檢索。
+
+### 匯入資料
+- `output/embeddings.jsonl`（dense vectors）
+- `output/sparse_vectors.jsonl`（sparse vectors）
+- Metadata（from pericopes/chunks）
+
+### Collection 設計
+- `bible_embeddings_hybrid`
+  - dense: 1024D BGE-M3 向量（COSINE distance）
+  - sparse: BM25-based sparse 向量
+
+### 指令
+```bash
+python scripts/import_qdrant_hybrid.py
+```
+
+### 結果
+- Points: 3,041（每個點包含 dense + sparse vectors）
+
+### 啟用 Hybrid Search
+在 `.env` 中設定：
+```bash
+HYBRID_SEARCH_ENABLED=true
+```
+
 ---
 
 ## Step 5: 匯入 Neo4j ✅

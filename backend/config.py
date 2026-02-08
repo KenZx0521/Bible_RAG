@@ -26,9 +26,28 @@ class Settings(BaseSettings):
     neo4j_user: str = "neo4j"
     neo4j_password: str = "neo4j_password"
 
+    # LLM Provider: ollama | claude | openai | gemini
+    llm_provider: str = "ollama"
+
     # Ollama
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "gemma3:4b"
+
+    # Claude (Anthropic)
+    anthropic_api_key: str = ""
+    claude_model: str = "claude-haiku-4-5"
+
+    # OpenAI
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
+
+    # Gemini (Google)
+    google_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
+
+    # LLM generation settings
+    llm_max_tokens: int = 100000
+    llm_temperature: float = 0.1
 
     # Model settings
     embedding_model: str = "BAAI/bge-m3"
@@ -39,6 +58,13 @@ class Settings(BaseSettings):
     default_top_k: int = 5
     semantic_search_top_k: int = 20
     reranker_top_k: int = 5
+
+    # Hybrid Search settings
+    hybrid_search_enabled: bool = False
+    qdrant_hybrid_collection: str = "bible_embeddings_hybrid"
+    bm25_vocabulary_path: str = "output/bm25_vocabulary.json"
+    hybrid_prefetch_limit: int = 50
+    hybrid_fusion_method: str = "rrf"
 
     model_config = {
         "env_file": str(Path(__file__).resolve().parent.parent / ".env"),

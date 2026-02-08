@@ -1,5 +1,5 @@
 """
-Custom LLM-as-Judge evaluation using Anthropic SDK directly.
+Custom LLM-as-Judge evaluation using the configured eval LLM provider.
 
 Metrics:
   - Answer Point Coverage: checks if each expected_answer_point is covered by the RAG answer
@@ -13,25 +13,23 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 
-import anthropic
 from rich.console import Console
 
 from ..config import settings
 from ..models import EvalSample, MetricResult
+from ..llm import judge_completion
 
 console = Console()
 logger = logging.getLogger(__name__)
 
 
 async def _judge_point_coverage(
-    client: anthropic.AsyncAnthropic,
     question: str,
     rag_answer: str,
     point: str,
 ) -> bool:
-    """Ask Claude to judge if a single answer point is covered."""
+    """Ask the eval LLM to judge if a single answer point is covered."""
     prompt = f"""你是一個嚴格的評估員。請判斷以下 RAG 系統的回答是否涵蓋了指定的答案要點。
 
 問題：{question}
@@ -45,28 +43,13 @@ RAG 回答：{rag_answer}
 - NO：回答中未包含這個要點，或只是模糊提及"""
 
     try:
-        logger.info("[Claude API] POST messages  model=%s  point=%r",
-                     settings.claude_model, point[:40])
-        t0 = time.perf_counter()
-        raw_resp = await client.messages.with_raw_response.create(
-            model=settings.claude_model,
-            max_tokens=10,
-            temperature=0.0,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        elapsed = time.perf_counter() - t0
-        resp = raw_resp.parse()
-        answer = resp.content[0].text.strip().upper()
-        covered = answer.startswith("YES")
-        logger.info("[Claude API] %d  %.2fs  answer=%s  usage: in=%d out=%d",
-                     raw_resp.status_code, elapsed, answer,
-                     resp.usage.input_tokens, resp.usage.output_tokens)
+        logger.info("[Eval LLM] Judging point: %r", point[:40])
+        answer = await judge_completion(prompt, max_tokens=10, temperature=0.0)
+        covered = answer.upper().startswith("YES")
+        logger.info("[Eval LLM] answer=%s  covered=%s", answer, covered)
         return covered
-    except anthropic.APIStatusError as e:
-        logger.error("[Claude API] %d  %s", e.status_code, e.message)
-        return False
     except Exception as e:
-        logger.error("[Claude API] Request failed: %s", e)
+        logger.error("[Eval LLM] Judge request failed: %s", e)
         return False
 
 
@@ -80,12 +63,11 @@ async def evaluate_point_coverage_async(sample: EvalSample) -> float:
     if not points or not sample.rag_answer:
         return 0.0
 
-    client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-
-    logger.info("[%s] Evaluating %d answer points with Claude", sample.question_id, len(points))
+    provider = settings.eval_llm_provider
+    logger.info("[%s] Evaluating %d answer points with %s", sample.question_id, len(points), provider)
     results: list[bool] = []
     for i, point in enumerate(points, 1):
-        result = await _judge_point_coverage(client, sample.question, sample.rag_answer, point)
+        result = await _judge_point_coverage(sample.question, sample.rag_answer, point)
         results.append(result)
 
     covered = sum(results)
@@ -100,7 +82,8 @@ def compute_llm_judge_metrics(samples: list[EvalSample]) -> dict[str, list[Metri
 
     Returns: { question_id: [MetricResult, ...] }
     """
-    console.print("[bold]Running Answer Point Coverage evaluation with Claude...[/bold]")
+    provider = settings.eval_llm_provider
+    console.print(f"[bold]Running Answer Point Coverage evaluation with {provider}...[/bold]")
 
     async def _run_all() -> dict[str, float]:
         scores: dict[str, float] = {}

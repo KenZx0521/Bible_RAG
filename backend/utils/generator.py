@@ -1,30 +1,32 @@
 """
-Answer generator using gemma3:4b via Ollama REST API.
+Answer generator using the configured LLM provider.
 Constructs context prompt from retrieved passages and generates response.
 """
 
 import logging
 
-import httpx
-
 from config import settings
+from utils.llm import get_llm_client
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """你是一位精通聖經的助手，專門回答聖經相關問題。
-請根據提供的經文內容來回答問題。回答時請：
-1. 直接引用相關經文段落
-2. 提供清楚的解釋
-3. 如果提供的經文不足以完整回答，請說明
-4. 回答使用繁體中文"""
+SYSTEM_PROMPT = """你是一位聖經問答助手。你必須嚴格遵守以下規則：
 
-CONTEXT_TEMPLATE = """以下是相關經文段落：
+規則：
+1. 只能使用「提供的經文段落」中的資訊來回答，禁止使用經文以外的任何知識
+2. 回答時必須引用具體的經文出處（書卷、章節）
+3. 將相關經文內容整理成連貫的回答
+4. 如果提供的經文不足以回答問題，直接回答「根據提供的經文，無法回答此問題」
+5. 不要加入經文中沒有提到的推論、解讀或額外資訊
+6. 回答使用繁體中文"""
+
+CONTEXT_TEMPLATE = """以下是提供的經文段落（你只能使用這些內容來回答）：
 
 {context}
 
 ---
 
-請根據以上經文回答以下問題：
+嚴格根據以上經文段落的內容，回答以下問題。不要添加經文中沒有的資訊：
 {question}"""
 
 
@@ -51,7 +53,7 @@ def _build_context(sources: list[dict]) -> str:
 
 async def generate_answer(question: str, sources: list[dict]) -> str:
     """
-    Generate an answer using gemma3:4b via Ollama API.
+    Generate an answer using the configured LLM provider.
 
     Args:
         question: User's question.
@@ -67,43 +69,17 @@ async def generate_answer(question: str, sources: list[dict]) -> str:
     prompt = CONTEXT_TEMPLATE.format(context=context, question=question)
 
     try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            resp = await client.post(
-                f"{settings.ollama_base_url}/api/chat",
-                json={
-                    "model": settings.ollama_model,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "stream": False,
-                    "options": {
-                        "temperature": 0.3,
-                        "num_predict": 1024,
-                    },
-                },
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("message", {}).get("content", "生成回答時發生錯誤。")
+        llm = get_llm_client()
+        answer = await llm.chat(
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=settings.llm_temperature,
+            max_tokens=settings.llm_max_tokens,
+        )
+        return answer or "生成回答時發生錯誤。"
 
-    except httpx.TimeoutException:
-        logger.error("Ollama request timed out")
-        return "回答生成超時，請稍後再試。"
     except Exception as e:
-        logger.error(f"Ollama generation failed: {e}")
+        logger.error(f"LLM generation failed: {e}")
         return f"生成回答時發生錯誤：{e}"
-
-
-async def check_ollama() -> bool:
-    """Check if Ollama is accessible and the model is available."""
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(f"{settings.ollama_base_url}/api/tags")
-            resp.raise_for_status()
-            data = resp.json()
-            models = [m.get("name", "") for m in data.get("models", [])]
-            model_base = settings.ollama_model.split(":")[0]
-            return any(model_base in m for m in models)
-    except Exception:
-        return False

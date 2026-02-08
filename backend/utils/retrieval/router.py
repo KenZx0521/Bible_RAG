@@ -1,6 +1,8 @@
 """
 Multi-strategy retrieval router.
 Orchestrates parallel retrieval, fusion, dedup, and reranking.
+
+Supports both semantic-only and hybrid (dense + sparse) retrieval modes.
 """
 
 import asyncio
@@ -15,6 +17,18 @@ from utils import reranker as reranker_mod
 from config import settings
 
 logger = logging.getLogger(__name__)
+
+# Lazy import for hybrid retriever
+_hybrid_retriever = None
+
+
+def _get_hybrid_retriever():
+    """Lazy load hybrid retriever module."""
+    global _hybrid_retriever
+    if _hybrid_retriever is None:
+        from utils.retrieval import hybrid_retriever
+        _hybrid_retriever = hybrid_retriever
+    return _hybrid_retriever
 
 
 async def retrieve_and_rerank(
@@ -51,9 +65,16 @@ async def retrieve_and_rerank(
     strategies_used: list[str] = []
     tasks: list[asyncio.Task] = []
 
-    # Semantic retrieval
-    tasks.append(asyncio.create_task(retrieve_semantic(query)))
-    strategies_used.append("semantic")
+    # Choose retrieval strategy based on configuration
+    if settings.hybrid_search_enabled:
+        # Hybrid retrieval (dense + sparse with RRF)
+        hybrid_mod = _get_hybrid_retriever()
+        tasks.append(asyncio.create_task(hybrid_mod.retrieve_hybrid(query)))
+        strategies_used.append("hybrid")
+    else:
+        # Semantic retrieval (dense only)
+        tasks.append(asyncio.create_task(retrieve_semantic(query)))
+        strategies_used.append("semantic")
 
     # Graph retrieval if entities detected
     if entity_names:

@@ -5,7 +5,7 @@ Health check endpoint.
 from fastapi import APIRouter
 
 from database import postgres, qdrant_db, neo4j_db
-from utils.generator import check_ollama
+from utils.llm import get_llm_client
 from models.response import HealthResponse
 
 router = APIRouter(prefix="/api/v1", tags=["health"])
@@ -17,13 +17,13 @@ async def health_check():
     pg = await postgres.health_check()
     qdrant = qdrant_db.health_check()
     neo4j = await neo4j_db.health_check()
-    ollama = await check_ollama()
+    llm = await get_llm_client().health_check()
 
     services = {
         "postgres": pg,
         "qdrant": qdrant,
         "neo4j": neo4j,
-        "ollama": ollama,
+        "llm": llm,
     }
 
     all_ok = all(services.values())

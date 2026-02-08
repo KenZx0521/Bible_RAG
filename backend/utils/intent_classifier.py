@@ -1,14 +1,12 @@
 """
-Intent classifier using gemma3:4b via Ollama.
+Intent classifier using the configured LLM provider.
 Hybrid approach: regex for verse refs + LLM for semantic intent.
 """
 
 import json
 import logging
 
-import httpx
-
-from config import settings
+from utils.llm import get_llm_client
 from utils.verse_parser import parse_verse_references, VerseRef
 
 logger = logging.getLogger(__name__)
@@ -76,30 +74,23 @@ async def classify_intent(question: str) -> dict:
     keywords: list[str] = []
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
-                f"{settings.ollama_base_url}/api/generate",
-                json={
-                    "model": settings.ollama_model,
-                    "prompt": CLASSIFICATION_PROMPT + f'問題: "{question}"',
-                    "stream": False,
-                    "options": {
-                        "temperature": 0.1,
-                        "num_predict": 256,
-                    },
-                },
-            )
-            resp.raise_for_status()
-            response_text = resp.json().get("response", "")
+        llm = get_llm_client()
+        response_text = await llm.chat(
+            messages=[
+                {"role": "user", "content": CLASSIFICATION_PROMPT + f'問題: "{question}"'},
+            ],
+            temperature=0.1,
+            max_tokens=256,
+        )
 
-            # Parse JSON from response
-            parsed = _extract_json(response_text)
-            if parsed:
-                raw_intent = parsed.get("intent", "topic")
-                if raw_intent in INTENT_TYPES:
-                    intent_type = raw_intent
-                entities = parsed.get("entities", [])
-                keywords = parsed.get("keywords", [])
+        # Parse JSON from response
+        parsed = _extract_json(response_text)
+        if parsed:
+            raw_intent = parsed.get("intent", "topic")
+            if raw_intent in INTENT_TYPES:
+                intent_type = raw_intent
+            entities = parsed.get("entities", [])
+            keywords = parsed.get("keywords", [])
 
     except Exception as e:
         logger.warning(f"LLM intent classification failed: {e}")

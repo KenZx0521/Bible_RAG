@@ -52,10 +52,19 @@ class MetricResult(BaseModel):
     category: str  # retrieval | reference_based | llm_judge | context | semantic
 
 
+class Rationale(BaseModel):
+    """LLM judge rationale explanations for evaluation."""
+    faithfulness: str = ""   # 回答對檢索內容的忠實度解釋
+    relevance: str = ""      # 回答與問題的相關性解釋
+    overall: str = ""        # 整體評價解釋
+    context: str = ""        # 上下文品質解釋
+
+
 class EvalReport(BaseModel):
     question_id: str
     question_type: str
     metrics: list[MetricResult] = []
+    rationale: Rationale | None = None
 
 
 class AggregatedReport(BaseModel):

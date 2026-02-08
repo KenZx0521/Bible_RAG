@@ -1,0 +1,65 @@
+"""
+LangChain ChatModel factory for RAGAS evaluation.
+Creates the appropriate ChatModel based on eval_llm_provider setting.
+"""
+
+from __future__ import annotations
+
+import logging
+
+from ..config import settings
+
+logger = logging.getLogger(__name__)
+
+
+def create_langchain_llm():
+    """Create a LangChain ChatModel for the configured eval LLM provider."""
+    provider = settings.eval_llm_provider.lower()
+
+    if provider == "claude":
+        from langchain_anthropic import ChatAnthropic
+
+        logger.info("[LangChain] Creating ChatAnthropic model=%s", settings.claude_model)
+        return ChatAnthropic(
+            model=settings.claude_model,
+            anthropic_api_key=settings.anthropic_api_key,
+            temperature=0.0,
+            max_tokens=settings.llm_max_tokens,
+        )
+
+    elif provider == "openai":
+        from langchain_openai import ChatOpenAI
+
+        logger.info("[LangChain] Creating ChatOpenAI model=%s", settings.openai_model)
+        return ChatOpenAI(
+            model=settings.openai_model,
+            api_key=settings.openai_api_key,
+            temperature=0.0,
+            max_tokens=settings.llm_max_tokens,
+        )
+
+    elif provider == "gemini":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        logger.info("[LangChain] Creating ChatGoogleGenerativeAI model=%s", settings.gemini_model)
+        return ChatGoogleGenerativeAI(
+            model=settings.gemini_model,
+            google_api_key=settings.google_api_key,
+            temperature=0.0,
+            max_output_tokens=settings.llm_max_tokens,
+        )
+
+    elif provider == "ollama":
+        from langchain_ollama import ChatOllama
+
+        logger.info("[LangChain] Creating ChatOllama model=%s", settings.ollama_model)
+        return ChatOllama(
+            model=settings.ollama_model,
+            base_url=settings.ollama_base_url,
+            temperature=0.0,
+            num_predict=settings.llm_max_tokens,
+        )
+
+    else:
+        raise ValueError(f"Unknown eval LLM provider: {provider!r}. "
+                         f"Choose from: claude, openai, gemini, ollama")

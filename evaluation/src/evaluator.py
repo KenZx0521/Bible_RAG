@@ -19,7 +19,7 @@ from rich.console import Console
 from rich.table import Table
 
 from .config import settings
-from .models import EvalSample, MetricResult, EvalReport, AggregatedReport
+from .models import EvalSample, MetricResult, EvalReport, AggregatedReport, Rationale
 from .data_loader import load_ground_truth
 from .collector import collect_responses
 
@@ -49,16 +49,20 @@ def _merge_metrics(
 def _aggregate(
     samples: list[EvalSample],
     all_metrics: dict[str, list[MetricResult]],
+    rationales: dict[str, Rationale] | None = None,
 ) -> AggregatedReport:
     """Build aggregated report: overall averages and by question_type."""
     # Per-sample reports
     reports: list[EvalReport] = []
     for sample in samples:
-        reports.append(EvalReport(
+        report = EvalReport(
             question_id=sample.question_id,
             question_type=sample.question_type,
             metrics=all_metrics.get(sample.question_id, []),
-        ))
+        )
+        if rationales and sample.question_id in rationales:
+            report.rationale = rationales[sample.question_id]
+        reports.append(report)
 
     # Collect all metric names
     all_names: set[str] = set()
@@ -174,9 +178,9 @@ def run_evaluation(
     console.print("\n[bold cyan]3/4 Semantic Similarity[/bold cyan]")
     semantic = compute_semantic_similarity(samples)
 
-    # 4. RAGAS (LLM judge)
+    # 4. RAGAS (LLM judge) - extracts rationales from traces
     console.print("\n[bold cyan]4/4 RAGAS Evaluation[/bold cyan]")
-    ragas = compute_ragas_metrics(samples)
+    ragas, rationales = compute_ragas_metrics(samples)
 
     # Use inline point coverage if provided, otherwise compute in batch
     if inline_metrics is None:
@@ -189,8 +193,19 @@ def run_evaluation(
         question_ids, retrieval, reference, semantic, ragas, inline_metrics
     )
 
+    # Log rationale statistics
+    has_rationales = any(
+        r.faithfulness or r.relevance or r.context or r.overall
+        for r in rationales.values()
+    ) if rationales else False
+
+    if has_rationales:
+        console.print("[green]Rationales extracted from RAGAS traces.[/green]")
+    else:
+        console.print("[yellow]No rationales found in RAGAS traces.[/yellow]")
+
     # Aggregate
-    report = _aggregate(samples, all_metrics)
+    report = _aggregate(samples, all_metrics, rationales)
     _print_summary(report)
 
     # Save
