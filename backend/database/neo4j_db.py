@@ -166,6 +166,50 @@ async def get_event_related_content(entity_id: str, limit: int = 10) -> list[dic
         return [dict(record) for record in await result.data()]
 
 
+async def get_place_related_content(entity_id: str, limit: int = 10) -> list[dict]:
+    """Get content related to a Place entity through MENTIONS relationships."""
+    driver = get_driver()
+    async with driver.session() as session:
+        result = await session.run(
+            """
+            MATCH (e:Place {entity_id: $entity_id})-[:MENTIONS]-(p)
+            WHERE p:Pericope OR p:Chunk
+            RETURN p.id AS id,
+                   labels(p) AS labels,
+                   p.title AS title,
+                   p.book_name AS book_name,
+                   p.chapter_num AS chapter_num,
+                   p.verse_range AS verse_range
+            LIMIT $limit
+            """,
+            entity_id=entity_id,
+            limit=limit,
+        )
+        return [dict(record) for record in await result.data()]
+
+
+async def find_events_by_keyword(keyword: str, limit: int = 5) -> list[dict]:
+    """Search Event nodes whose canonical_name or aliases contain the keyword."""
+    driver = get_driver()
+    async with driver.session() as session:
+        result = await session.run(
+            """
+            MATCH (e:Event)
+            WHERE e.canonical_name CONTAINS $keyword
+               OR any(a IN e.aliases WHERE a CONTAINS $keyword)
+            RETURN e.entity_id AS entity_id,
+                   e.canonical_name AS canonical_name,
+                   e.description AS description,
+                   e.mention_count AS mention_count
+            ORDER BY e.mention_count DESC
+            LIMIT $limit
+            """,
+            keyword=keyword,
+            limit=limit,
+        )
+        return [dict(record) for record in await result.data()]
+
+
 async def find_related_entities(entity_id: str, limit: int = 10) -> list[dict]:
     """Find entities related to the given entity through shared pericopes."""
     driver = get_driver()

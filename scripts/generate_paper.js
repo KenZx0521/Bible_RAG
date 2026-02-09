@@ -88,10 +88,7 @@ function tableCell(text, opts = {}) {
   });
 }
 
-// Table 1 column widths (fits single column ~5094 DXA)
-const T1_W = 5000;
-const T1_COL = [720, 1280, 780, 780, 640]; // category, metric, claude, gemma, delta = 4200 total
-// Adjust to fit: sum = 4200, but we have 5000 total width
+// Metrics table column widths (5 columns: category, metric, claude, gemma, delta)
 const T1_COLS = [820, 1500, 820, 820, 1040];
 
 function t1Row(cat, metric, claude, gemma, delta, opts = {}) {
@@ -107,7 +104,7 @@ function t1Row(cat, metric, claude, gemma, delta, opts = {}) {
   });
 }
 
-// Table 2 column widths (4 columns for per-type breakdown)
+// Per-type table column widths (4 columns)
 const T2_COLS = [1800, 1000, 1000, 1200];
 
 function t2Row(type, claude, gemma, delta, opts = {}) {
@@ -122,6 +119,24 @@ function t2Row(type, claude, gemma, delta, opts = {}) {
   });
 }
 
+// Route table column widths (6 columns: route, signal, SQL, Sem., Graph, XRef)
+const RT_COLS = [450, 1350, 600, 600, 600, 600];
+
+function rtRow(route, signal, sql, sem, graph, xref, opts = {}) {
+  const borders = opts.borders || noAllBorders;
+  const ctr = AlignmentType.CENTER;
+  return new TableRow({
+    children: [
+      tableCell(route, { width: RT_COLS[0], borders, bold: opts.headerBold, size: opts.size || PT7 }),
+      tableCell(signal, { width: RT_COLS[1], borders, bold: opts.headerBold, size: opts.size || PT7 }),
+      tableCell(sql, { width: RT_COLS[2], borders, bold: opts.headerBold, alignment: ctr, size: opts.size || PT7 }),
+      tableCell(sem, { width: RT_COLS[3], borders, bold: opts.headerBold, alignment: ctr, size: opts.size || PT7 }),
+      tableCell(graph, { width: RT_COLS[4], borders, bold: opts.headerBold, alignment: ctr, size: opts.size || PT7 }),
+      tableCell(xref, { width: RT_COLS[5], borders, bold: opts.headerBold, alignment: ctr, size: opts.size || PT7 }),
+    ],
+  });
+}
+
 // ── Section I content (single-column: title, authors, abstract) ──────
 const titleSection = [
   // Title
@@ -129,7 +144,7 @@ const titleSection = [
     alignment: AlignmentType.CENTER,
     spacing: { after: 80, before: 0, line: 260 },
     children: [new TextRun({
-      text: "LLM Graph RAG Design, Deployment, and Evaluation \u2014 Bible as an Example",
+      text: "Signal-Driven Graph RAG for Domain QA: Design, Deployment, and Evaluation",
       font: FONT, size: PT14, bold: true,
     })],
   }),
@@ -152,7 +167,7 @@ const titleSection = [
   }),
   // Abstract body
   p([{
-    text: "Domain-specific question answering with large language models (LLMs) incurs high API costs and raises data-privacy concerns, while smaller models often lack sufficient domain knowledge. We design, deploy, and evaluate a multi-strategy Graph RAG architecture for Traditional Chinese Bible QA, integrating PostgreSQL, Qdrant, and Neo4j with four parallel retrieval strategies. On a 100-question benchmark spanning five question types and 19 metrics, a locally-deployed Gemma 3 4B model matches Claude Haiku 4.5 within <1% on all 12 generation metrics. These results demonstrate that a well-designed RAG pipeline effectively decouples answer quality from model scale, enabling cost-free, privacy-preserving deployment with no measurable quality loss.",
+    text: "Domain-specific question answering with large language models (LLMs) incurs high API costs and raises data-privacy concerns. We design, deploy, and evaluate a signal-driven Graph RAG architecture for Traditional Chinese Bible QA, integrating PostgreSQL, Qdrant, and Neo4j with a 6-route retrieval system that selects optimal engine combinations based on query signal features. On a 100-question benchmark spanning five question types and 19 metrics, a locally-deployed Gemma 3 4B model achieves comparable performance to Claude Haiku 4.5, with 9 of 12 generation metrics differing by less than 4 percentage points and neither model dominating overall. Claude leads on faithfulness (0.887 vs. 0.849) while Gemma leads on answer relevancy (0.658 vs. 0.592). These results demonstrate that well-designed retrieval substantially reduces the impact of model scale, enabling cost-free, privacy-preserving deployment with competitive quality.",
     italics: true,
   }], { after: 60, line: 216, size: PT9 }),
 ];
@@ -162,25 +177,22 @@ const titleSection = [
 // I. INTRODUCTION
 const introContent = [
   sectionHead("I. Introduction"),
-  // P1 - Problem motivation
   p([
     "Large language models (LLMs) achieve impressive performance on general question answering, yet deploying them for domain-specific tasks presents two challenges: (1) commercial API costs scale linearly with query volume, and (2) non-English specialized corpora\u2014such as Traditional Chinese biblical texts\u2014receive limited coverage during pre-training, leading to factual gaps regardless of model size. This raises a practical question: ",
     { text: "can a well-designed retrieval pipeline make the choice of LLM nearly irrelevant?", italics: true },
   ], { after: 60 }),
-  // P2 - Related work and gap
   p([
     "Retrieval-Augmented Generation (RAG) [1] supplements LLM generation with retrieved evidence, reducing hallucination and enabling domain adaptation without fine-tuning. Knowledge graph-enhanced RAG [2] further captures entity relationships, offering complementary signals to dense passage retrieval [9] and lexical methods [10]. Recent surveys [3] catalogue diverse RAG architectures, yet most evaluations compare retrieval strategies under a single model. A critical gap remains: ",
     { text: "when the retrieval component is held constant, how much does model scale affect answer quality?", italics: true },
   ], { after: 60 }),
-  // P3 - Contributions
   p(["Our contributions are threefold:"], { after: 20 }),
   p([
     { text: "1) ", bold: true },
-    "A multi-database, multi-strategy Graph RAG architecture integrating PostgreSQL, Qdrant, and Neo4j with four parallel retrieval strategies and a dual-path query router.",
+    "A signal-driven 6-route Graph RAG architecture integrating PostgreSQL, Qdrant, and Neo4j, where a decision-tree router selects optimal engine combinations based on six query signal features.",
   ], { after: 20, indent: { left: 180 } }),
   p([
     { text: "2) ", bold: true },
-    "Empirical evidence that Gemma 3 4B [6] (locally deployed, zero API cost) matches Claude Haiku 4.5 [7] within <1% on all 12 generation metrics under identical retrieval conditions.",
+    "Empirical evidence that Gemma 3 4B [6] (locally deployed, zero API cost) achieves comparable performance to Claude Haiku 4.5 [7], with complementary strengths across 12 generation metrics.",
   ], { after: 20, indent: { left: 180 } }),
   p([
     { text: "3) ", bold: true },
@@ -192,70 +204,96 @@ const introContent = [
 const archContent = [
   sectionHead("II. System Architecture"),
 
-  // Figure 1 - compact text-based architecture diagram
+  // Figure 1 - updated architecture diagram
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { before: 60, after: 0, line: 200 },
-    children: [new TextRun({ text: "66 Books (Traditional Chinese Bible)", font: "Courier New", size: PT7 })],
+    children: [new TextRun({ text: "Query \u2192 Verse Parser (regex) + Intent Classifier", font: "Courier New", size: PT7 })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 0, line: 200 },
-    children: [new TextRun({ text: "\u2193 Chunking \u2192 NER \u2192 Embedding", font: "Courier New", size: PT7 })],
+    children: [new TextRun({ text: "\u2193 Signal Detector (6 boolean signals)", font: "Courier New", size: PT7 })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 0, line: 200 },
-    children: [new TextRun({ text: "PostgreSQL(100K) | Qdrant(3K) | Neo4j(19K/58K)", font: "Courier New", size: PT7 })],
+    children: [new TextRun({ text: "\u2193 Decision Tree: R1>R2>R5>R3>R4>R6>FB", font: "Courier New", size: PT7 })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 0, line: 200 },
-    children: [new TextRun({ text: "\u2193 Verse | Semantic | Graph | CrossRef", font: "Courier New", size: PT7 })],
+    children: [new TextRun({ text: "PostgreSQL | Qdrant(BGE-M3) | Neo4j(KG)", font: "Courier New", size: PT7 })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 20, line: 200 },
-    children: [new TextRun({ text: "Fusion \u2192 Dedup \u2192 Rerank \u2192 LLM \u2192 Answer", font: "Courier New", size: PT7 })],
+    children: [new TextRun({ text: "Dedup \u2192 BGE-Reranker-v2-M3 \u2192 LLM \u2192 Answer", font: "Courier New", size: PT7 })],
   }),
-  // Figure caption
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 80, line: 200 },
     children: [
       new TextRun({ text: "Fig. 1. ", font: FONT, size: PT8, bold: true }),
-      new TextRun({ text: "System architecture overview.", font: FONT, size: PT8 }),
+      new TextRun({ text: "Signal-driven 6-route RAG pipeline.", font: FONT, size: PT8 }),
     ],
   }),
 
   // A. Data Processing
   subHead("A. Data Processing Pipeline"),
   p([
-    "Scripture is processed through hierarchical chunking: Book (66) \u2192 Chapter (1,189) \u2192 Pericope (2,779) \u2192 Chunk (431), with token-aware splitting (512\u20131024 tokens) respecting verse boundaries. CKIP Transformers [8] perform Chinese NER with LLM validation, extracting 14,845 entities (6 types) with 80,912 mentions. BGE-M3 [4] generates 1024-dim embeddings for 3,041 vectors.",
+    "The 66 books of the Traditional Chinese Bible are processed through hierarchical chunking: Book (66) \u2192 Chapter (1,189) \u2192 Pericope (2,779) \u2192 Chunk (438), with token-aware splitting (512\u20131024 tokens) respecting verse boundaries. CKIP Transformers [8] perform Chinese NER with LLM validation, extracting 14,845 entities across 6 types (Person, Place, Event, Theme, Object, Group) linked to text via 49,668 MENTIONS edges. BGE-M3 [4] generates 1024-dim embeddings for 3,041 vectors stored in Qdrant.",
   ]),
 
   // B. Triple-Database
   subHead("B. Triple-Database Architecture"),
   p([
-    "PostgreSQL stores structured verse/chapter/book data (100,222 records) for exact lookup. Qdrant provides dense vector search via cosine similarity over 3,041 embedding points. Neo4j maintains a knowledge graph with 19,310 nodes and 57,877 relationships (CONTAINS, MENTIONS, CROSS_REFERENCES, NEXT).",
+    "PostgreSQL stores structured verse/chapter/book data (100,222 records) for exact lookup. Qdrant provides dense vector search via cosine similarity over 3,041 embedding points. Neo4j maintains a knowledge graph with 19,317 nodes and 58,031 relationships across 5 edge types: MENTIONS (49,668), CONTAINS (4,406), NEXT (2,980), CROSS_REFERENCES (912), and NEXT_BOOK (65).",
   ]),
 
-  // C. Multi-Strategy Retrieval
-  subHead("C. Multi-Strategy Retrieval"),
+  // C. Signal-Driven 6-Route Retrieval
+  subHead("C. Signal-Driven 6-Route Retrieval"),
   p([
-    "A dual-path router classifies queries: the ",
-    { text: "fast path", italics: true },
-    " handles verse lookups via PostgreSQL exact match (~20\u201350ms), while the ",
-    { text: "normal path", italics: true },
-    " (~810ms) executes four strategies in parallel: (1) Verse Direct \u2192 PostgreSQL, (2) Semantic \u2192 BGE-M3 query embedding \u2192 Qdrant cosine search, (3) Graph \u2192 entity name matching \u2192 Neo4j MENTIONS traversal, (4) Cross-Reference \u2192 conditional Neo4j CROSS_REFERENCES. Results undergo ID-based deduplication with highest-weight retention, followed by BGE-Reranker-v2-M3 reranking [4].",
+    "Each query first undergoes verse reference parsing (regex) and LLM intent classification to extract entity names and keywords. A ",
+    { text: "signal detector", italics: true },
+    " then analyzes the query for six boolean features: (1) book+chapter:verse reference, (2) book+chapter-only reference, (3) \u22652 book names, (4) \u22652 person entities, (5) event keyword, and (6) place name\u2014detected via regex patterns and dictionary substring matching against person, place, and event entity lists derived from the knowledge graph.",
+  ], { after: 40 }),
+  p([
+    "A priority-ordered decision tree (Table I) selects among seven routes, each combining a specific subset of four engines\u2014SQL (PostgreSQL), Semantic (Qdrant), Graph (Neo4j entity traversal), and Cross-Reference (Neo4j CROSS_REFERENCES)\u2014with configurable weights. R1 handles exact verse lookups via SQL direct match, bypassing reranking. R2 adds semantic search to chapter-filtered SQL results. R3\u2013R6 leverage Neo4j graph traversal for person, event, cross-reference, and place queries respectively, combined with semantic search and SQL supplements. After retrieval, results undergo ID-based deduplication (highest-weight retention) and BGE-Reranker-v2-M3 [4] reranking.",
   ]),
+
+  // Table I caption - Route Overview
+  new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 60, after: 30, line: 200 },
+    children: [new TextRun({ text: "TABLE I", font: FONT, size: PT8, bold: true })],
+  }),
+  new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 30, line: 200 },
+    children: [new TextRun({ text: "Signal-Driven Route Overview and Engine Weight Matrix", font: FONT, size: PT8 })],
+  }),
+
+  // Table I - Route Overview (weight matrix)
+  new Table({
+    width: { size: RT_COLS.reduce((a, b) => a + b, 0), type: WidthType.DXA },
+    columnWidths: RT_COLS,
+    rows: [
+      rtRow("Route", "Signal", "SQL", "Sem.", "Graph", "XRef", { borders: topBottomBorders, headerBold: true }),
+      rtRow("R1", "book+ch:v", "1.00", "\u2014", "\u2014", "\u2014"),
+      rtRow("R2", "book+ch", "0.90", "0.60", "\u2014", "\u2014"),
+      rtRow("R3", "\u22652 persons", "0.50", "0.70", "0.90", "\u2014"),
+      rtRow("R4", "event kw", "0.50", "0.70", "0.85", "\u2014"),
+      rtRow("R5", "\u22652 books", "0.40", "0.65", "0.75", "0.85"),
+      rtRow("R6", "place", "0.50", "0.70", "0.85", "\u2014"),
+      rtRow("FB", "(else)", "\u2014", "1.00", "\u2014", "\u2014", { borders: bottomOnlyBorders }),
+    ],
+  }),
 
   // D. Pluggable LLM
   subHead("D. Pluggable LLM Generation"),
   p([
-    "A factory pattern supports multiple providers (Claude, Gemini, OpenAI, Ollama). An identical evidence-first system prompt enforces strict citation. Critically, ",
-    { text: "only the LLM differs between experiments", italics: true },
-    "\u2014ensuring a controlled comparison of model capability.",
+    "A factory pattern supports multiple providers (Claude, Gemini, OpenAI, Ollama). An identical evidence-first system prompt enforces strict citation. Note that the LLM also performs intent classification (Step 1), so switching models can introduce minor routing differences for complex query types\u2014a design trade-off we analyze in Section IV.",
   ]),
 ];
 
@@ -264,62 +302,62 @@ const expContent = [
   sectionHead("III. Experiments"),
   p([
     { text: "Setup. ", bold: true },
-    "We curated 100 questions across 5 types (20 each): VERSE_LOOKUP, TOPIC, PERSON, EVENT, and GENERAL. We compare Claude Haiku 4.5 (commercial API) [7] against Gemma 3 4B (local Ollama) [6], sharing an identical retrieval pipeline (temperature=0.1, top_k=5). We employ 19 metrics in 4 categories: retrieval (7), reference-based (4), semantic (1), and LLM-judged (7, via RAGAS [5]).",
+    "We curated 100 questions across 5 types (20 each): VERSE_LOOKUP, TOPIC, PERSON, EVENT, and GENERAL, mapped to routes R1\u2013R5 respectively. We compare Claude Haiku 4.5 (commercial API) [7] against Gemma 3 4B (local Ollama) [6] sharing the same retrieval codebase (temperature=0.1, top_k=5). We employ 19 metrics in 4 categories: retrieval (7), reference-based (5), semantic (1), and LLM-judged (6, via RAGAS [5]).",
   ], { after: 40 }),
 
-  // Table I caption
+  // Table II caption
   new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { before: 40, after: 40, line: 200 },
-    children: [new TextRun({ text: "TABLE I", font: FONT, size: PT8, bold: true })],
+    spacing: { before: 40, after: 30, line: 200 },
+    children: [new TextRun({ text: "TABLE II", font: FONT, size: PT8, bold: true })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { before: 0, after: 40, line: 200 },
+    spacing: { before: 0, after: 30, line: 200 },
     children: [new TextRun({ text: "Overall Performance Comparison (Selected Metrics)", font: FONT, size: PT8 })],
   }),
 
-  // Table I (9 rows)
+  // Table II
   new Table({
     width: { size: T1_COLS.reduce((a, b) => a + b, 0), type: WidthType.DXA },
     columnWidths: T1_COLS,
     rows: [
       t1Row("Category", "Metric", "Claude", "Gemma", "\u0394", { borders: topBottomBorders, headerBold: true }),
-      t1Row("Retrieval", "Hit Rate", "0.920", "0.920", "0.000", { catItalics: true }),
-      t1Row("", "Recall@5", "0.846", "0.846", "0.000"),
-      t1Row("", "MRR", "0.800", "0.800", "0.000", { borders: bottomOnlyBorders }),
-      t1Row("LLM Judge", "Faithfulness", "0.607", "0.607", "+0.001", { catItalics: true }),
-      t1Row("", "Ans. Relevancy", "0.727", "0.733", "+0.006"),
-      t1Row("", "Ctx. Recall", "0.721", "0.727", "+0.006"),
-      t1Row("", "Ans. Correctness", "0.522", "0.522", "+0.001", { borders: bottomOnlyBorders }),
-      t1Row("Semantic", "Similarity", "0.769", "0.768", "\u22120.001", { catItalics: true, borders: bottomOnlyBorders }),
-      t1Row("Ref-based", "BERTScore", "0.653", "0.652", "\u22120.001", { catItalics: true, borders: bottomOnlyBorders }),
+      t1Row("Retrieval", "Hit Rate", "0.790", "0.820", "+0.030", { catItalics: true }),
+      t1Row("", "Recall@5", "0.746", "0.761", "+0.015"),
+      t1Row("", "MRR", "0.753", "0.782", "+0.029", { borders: bottomOnlyBorders }),
+      t1Row("LLM Judge", "Faithfulness", "0.887", "0.849", "\u22120.039", { catItalics: true }),
+      t1Row("", "Ans. Relevancy", "0.592", "0.658", "+0.066"),
+      t1Row("", "Ctx. Recall", "0.678", "0.712", "+0.034"),
+      t1Row("", "Ans. Correctness", "0.572", "0.557", "\u22120.015", { borders: bottomOnlyBorders }),
+      t1Row("Semantic", "Similarity", "0.738", "0.729", "\u22120.009", { catItalics: true, borders: bottomOnlyBorders }),
+      t1Row("Ref-based", "BERTScore", "0.663", "0.685", "+0.022", { catItalics: true, borders: bottomOnlyBorders }),
     ],
   }),
 
-  // Table II caption
+  // Table III caption
   new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { before: 80, after: 40, line: 200 },
-    children: [new TextRun({ text: "TABLE II", font: FONT, size: PT8, bold: true })],
+    spacing: { before: 60, after: 30, line: 200 },
+    children: [new TextRun({ text: "TABLE III", font: FONT, size: PT8, bold: true })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { before: 0, after: 40, line: 200 },
-    children: [new TextRun({ text: "Answer Correctness by Question Type", font: FONT, size: PT8 })],
+    spacing: { before: 0, after: 30, line: 200 },
+    children: [new TextRun({ text: "Answer Correctness by Question Type (Route)", font: FONT, size: PT8 })],
   }),
 
-  // Table II
+  // Table III
   new Table({
     width: { size: T2_COLS.reduce((a, b) => a + b, 0), type: WidthType.DXA },
     columnWidths: T2_COLS,
     rows: [
-      t2Row("Type", "Claude", "Gemma", "\u0394", { borders: topBottomBorders, headerBold: true }),
-      t2Row("VERSE_LOOKUP", "0.614", "0.629", "+0.014", { typeItalics: false }),
-      t2Row("TOPIC", "0.578", "0.547", "\u22120.031"),
-      t2Row("PERSON", "0.453", "0.473", "+0.020"),
-      t2Row("EVENT", "0.480", "0.467", "\u22120.013"),
-      t2Row("GENERAL", "0.482", "0.495", "+0.013", { borders: bottomOnlyBorders }),
+      t2Row("Type (Route)", "Claude", "Gemma", "\u0394", { borders: topBottomBorders, headerBold: true }),
+      t2Row("VERSE (R1)", "0.841", "0.886", "+0.044", { typeItalics: false }),
+      t2Row("TOPIC (R2)", "0.657", "0.622", "\u22120.036"),
+      t2Row("PERSON (R3)", "0.440", "0.418", "\u22120.022"),
+      t2Row("EVENT (R4)", "0.457", "0.440", "\u22120.017"),
+      t2Row("GENERAL (R5)", "0.416", "0.370", "\u22120.047", { borders: bottomOnlyBorders }),
     ],
   }),
 ];
@@ -328,19 +366,19 @@ const expContent = [
 const resultsContent = [
   sectionHead("IV. Results and Discussion"),
 
-  subHead("Finding 1: RAG Equalizes Model Differences"),
+  subHead("Finding 1: Complementary Model Strengths"),
   p([
-    "Table I confirms that all retrieval metrics are identical (shared pipeline), validating experimental control. Crucially, all 12 generation metrics differ by <1%\u2014the maximum delta is 0.98% (point coverage, not shown). This implies that when high-quality context is provided, the LLM\u2019s role reduces to surface-level synthesis from evidence, making model scale far less critical than retrieval design. A free, locally-deployed 4B model is functionally indistinguishable from a commercial API.",
+    "Table II shows that 9 of 12 generation metrics differ by less than 4 percentage points. The models exhibit complementary strengths: Claude achieves higher faithfulness (0.887 vs. 0.849), indicating stricter citation behavior, while Gemma leads on answer relevancy (0.658 vs. 0.592), suggesting more comprehensive responses. Retrieval metrics are identical for signal-deterministic routes (R1, R2) but diverge slightly for R3\u2013R5, where LLM-dependent intent classification affects entity extraction and thus graph traversal inputs. This confirms that when high-quality context is provided, model differences manifest as generation style rather than fundamental quality gaps.",
   ]),
 
-  subHead("Finding 2: Per-Type Analysis"),
+  subHead("Finding 2: Route-Specific Analysis"),
   p([
-    "Table II reveals type-specific patterns. VERSE_LOOKUP scores highest (0.614/0.629) because fast-path retrieval supplies exact verses from PostgreSQL. EVENT scores lowest for both models (0.480/0.467), with hit_rate=0.75\u2014confirming retrieval, not model capability, is the bottleneck; event narratives span multiple chapters, challenging fixed-window chunking. PERSON questions benefit from Neo4j graph traversal (MENTIONS edges connect entities directly). Interestingly, Claude leads on TOPIC (\u22120.031) while Gemma leads on VERSE (+0.014) and PERSON (+0.020), suggesting complementary generation biases even under identical context.",
+    "Table III reveals clear route-dependent patterns. VERSE (R1) scores highest (0.841/0.886) because SQL direct match provides exact evidence; Gemma\u2019s stronger BLEU (0.547 vs. 0.173) on this route suggests closer lexical alignment with reference answers. GENERAL (R5) scores lowest (0.416/0.370) as the cross-reference path\u2014the most complex 4-engine route\u2014faces sparser CROSS_REFERENCES edges (912 total). EVENT (R4) also challenges both models (0.457/0.440) since multi-chapter narratives strain fixed-window chunking. Claude leads on TOPIC and GENERAL; Gemma leads on VERSE, indicating complementary biases tied to route complexity.",
   ]),
 
   subHead("Finding 3: Cost-Quality Tradeoff"),
   p([
-    "Gemma 3 4B runs locally via Ollama with zero API cost and full data privacy\u2014critical for sensitive corpora. Given the <1% gap, the key investment shifts from model selection to retrieval infrastructure. Low ROUGE/BLEU (<0.03) reflect paraphrased generation rather than failure; semantic similarity (0.769) and BERTScore (0.653) confirm actual quality, exposing the limitation of lexical metrics for generative QA. This architecture generalizes to any domain with structured, entity-rich corpora.",
+    "Gemma 3 4B runs locally via Ollama with zero API cost and full data privacy\u2014critical for sensitive corpora. Despite moderate per-metric gaps, neither model dominates overall, making the local option viable. The key investment shifts from model selection to retrieval infrastructure: the signal-driven router ensures each query type receives an optimized engine combination rather than a one-size-fits-all strategy. Low ROUGE (<0.03) reflects paraphrased generation; semantic similarity (0.738/0.729) and BERTScore (0.663/0.685) confirm actual quality.",
   ]),
 ];
 
@@ -348,7 +386,7 @@ const resultsContent = [
 const conclusionContent = [
   sectionHead("V. Conclusion"),
   p([
-    "We designed, deployed, and evaluated a Graph RAG architecture for Traditional Chinese Bible QA integrating three databases and four retrieval strategies. A locally-deployed Gemma 3 4B matches Claude Haiku 4.5 within <1% on all generation metrics, confirming that retrieval quality\u2014not model scale\u2014determines domain QA performance. Future work includes hybrid dense-sparse retrieval [10], multilingual evaluation across Bible translations, and prompt optimization for small language models.",
+    "We designed, deployed, and evaluated a signal-driven Graph RAG architecture for Traditional Chinese Bible QA, featuring a 6-route decision-tree router that selects optimal engine combinations from PostgreSQL, Qdrant, and Neo4j based on query signal features. A locally-deployed Gemma 3 4B achieves comparable performance to Claude Haiku 4.5, with 9 of 12 generation metrics within 4 percentage points and complementary model strengths. These results confirm that retrieval design\u2014not model scale\u2014is the primary determinant of domain QA quality. Future work includes hybrid dense-sparse retrieval [10], adaptive route weight tuning, and multilingual evaluation across Bible translations.",
   ]),
 ];
 

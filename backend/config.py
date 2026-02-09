@@ -59,6 +59,15 @@ class Settings(BaseSettings):
     semantic_search_top_k: int = 20
     reranker_top_k: int = 5
 
+    # Route weights per route type
+    route_weights: dict = {
+        "R2": {"sql": 0.9, "semantic": 0.6},
+        "R3": {"graph": 0.9, "semantic": 0.7, "sql": 0.5},
+        "R4": {"graph": 0.85, "semantic": 0.7, "sql": 0.5},
+        "R5": {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql": 0.4},
+        "R6": {"graph": 0.85, "semantic": 0.7, "sql": 0.5},
+    }
+
     # Hybrid Search settings
     hybrid_search_enabled: bool = False
     qdrant_hybrid_collection: str = "bible_embeddings_hybrid"

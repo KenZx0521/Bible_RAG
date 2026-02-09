@@ -25,6 +25,7 @@ class RetrievalStats(BaseModel):
     strategies_used: list[str] = []
     total_candidates: int = 0
     reranked_top_k: int = 0
+    route_used: str = ""
 
 
 class QueryResponse(BaseModel):

@@ -1,19 +1,31 @@
 """
-Multi-strategy retrieval router.
-Orchestrates parallel retrieval, fusion, dedup, and reranking.
+Multi-strategy retrieval router with 6-route signal-driven architecture.
 
-Supports both semantic-only and hybrid (dense + sparse) retrieval modes.
+Routes:
+    R1: Exact verse reference (book+chapter+verse) → SQL direct lookup
+    R2: Chapter + semantic (book+chapter, no verse) → SQL chapter filter + Semantic
+    R3: Person graph (≥2 persons) → Graph(person) + Semantic + SQL supplement
+    R4: Event search (event keyword) → Graph(event) + Semantic + SQL supplement
+    R5: Cross-reference (≥2 books) → Semantic seed + Cross-Ref ∥ Graph + SQL
+    R6: Place search (place name) → Graph(place) + Semantic + SQL supplement
+    Fallback: Semantic only
 """
 
 import asyncio
 import logging
 
 from utils.verse_parser import VerseRef
+from utils.signal_detector import detect_signals, QuerySignals
 from utils.retrieval.verse_retriever import retrieve_by_verse_refs
 from utils.retrieval.semantic_retriever import retrieve_semantic
-from utils.retrieval.graph_retriever import retrieve_by_entities
+from utils.retrieval.graph_retriever import (
+    retrieve_by_entities,
+    retrieve_by_events,
+    retrieve_by_places,
+)
 from utils.retrieval.cross_ref_retriever import retrieve_cross_references
 from utils import reranker as reranker_mod
+from database import postgres
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -31,91 +43,62 @@ def _get_hybrid_retriever():
     return _hybrid_retriever
 
 
+# ---------------------------------------------------------------------------
+# Public entry point
+# ---------------------------------------------------------------------------
+
 async def retrieve_and_rerank(
     query: str,
     verse_refs: list[VerseRef],
     intent_type: str,
     entity_names: list[str],
     top_k: int | None = None,
+    keywords: list[str] | None = None,
 ) -> tuple[list[dict], dict]:
     """
-    Execute parallel multi-strategy retrieval, fuse, dedup, and rerank.
+    Signal-driven multi-strategy retrieval with 6 routes.
 
     Returns:
         (top_k_results, retrieval_stats)
     """
     k = top_k or settings.default_top_k
 
-    # Fast path: verse refs detected → direct lookup only, skip semantic & rerank
-    if verse_refs:
-        try:
-            candidates = await retrieve_by_verse_refs(verse_refs)
-        except Exception as e:
-            logger.warning(f"Verse direct retrieval failed: {e}")
-            candidates = []
+    # Detect signals and select route
+    signals = detect_signals(
+        query=query,
+        verse_refs=verse_refs,
+        intent_type=intent_type,
+        entity_names=entity_names,
+        keywords=keywords,
+    )
 
-        stats = {
-            "strategies_used": ["verse_direct"],
-            "total_candidates": len(candidates),
-            "reranked_top_k": len(candidates),
-        }
-        return candidates[:k], stats
+    route = signals.route
 
-    # Normal path: no explicit verse refs → multi-strategy retrieval
-    strategies_used: list[str] = []
-    tasks: list[asyncio.Task] = []
-
-    # Choose retrieval strategy based on configuration
-    if settings.hybrid_search_enabled:
-        # Hybrid retrieval (dense + sparse with RRF)
-        hybrid_mod = _get_hybrid_retriever()
-        tasks.append(asyncio.create_task(hybrid_mod.retrieve_hybrid(query)))
-        strategies_used.append("hybrid")
-    else:
-        # Semantic retrieval (dense only)
-        tasks.append(asyncio.create_task(retrieve_semantic(query)))
-        strategies_used.append("semantic")
-
-    # Graph retrieval if entities detected
-    if entity_names:
-        tasks.append(asyncio.create_task(retrieve_by_entities(entity_names)))
-        strategies_used.append("graph")
-
-    # Wait for all retrievals
-    all_results = await asyncio.gather(*tasks, return_exceptions=True)
-
-    # Collect all candidates
-    all_candidates: list[dict] = []
-    for result in all_results:
-        if isinstance(result, Exception):
-            logger.warning(f"Retrieval strategy failed: {result}")
-            continue
-        all_candidates.extend(result)
-
-    # Dedup by ID, keeping highest weight.
-    deduped: dict[str, dict] = {}
-    for c in all_candidates:
-        cid = c["id"]
-        if cid not in deduped or c["weight"] > deduped[cid]["weight"]:
-            deduped[cid] = c
-    candidates = list(deduped.values())
+    # Dispatch to route handler
+    route_handlers = {
+        "R1": _route_r1,
+        "R2": _route_r2,
+        "R3": _route_r3,
+        "R4": _route_r4,
+        "R5": _route_r5,
+        "R6": _route_r6,
+        "fallback": _route_fallback,
+    }
+    handler = route_handlers.get(route, _route_fallback)
+    candidates, strategies_used = await handler(
+        query=query,
+        verse_refs=verse_refs,
+        entity_names=entity_names,
+        signals=signals,
+        k=k,
+    )
 
     total_candidates = len(candidates)
 
-    # Cross-reference retrieval if applicable
-    if intent_type == "cross_reference" and candidates:
-        source_pericope_ids = [c["id"] for c in candidates[:5] if ":" in c["id"]]
-        if source_pericope_ids:
-            cross_refs = await retrieve_cross_references(source_pericope_ids, top_k=10)
-            for cr in cross_refs:
-                if cr["id"] not in deduped:
-                    deduped[cr["id"]] = cr
-                    candidates.append(cr)
-            strategies_used.append("cross_reference")
-            total_candidates = len(candidates)
-
-    # Rerank if we have candidates
-    if candidates:
+    # Rerank (skip for R1 which returns direct matches)
+    if route == "R1":
+        ranked = candidates[:k]
+    elif candidates:
         try:
             ranked = reranker_mod.rerank(query, candidates, top_k=k, text_key="content")
         except Exception as e:
@@ -128,6 +111,395 @@ async def retrieve_and_rerank(
         "strategies_used": strategies_used,
         "total_candidates": total_candidates,
         "reranked_top_k": len(ranked),
+        "route_used": route,
     }
 
     return ranked, stats
+
+
+# ---------------------------------------------------------------------------
+# Shared utilities
+# ---------------------------------------------------------------------------
+
+async def _get_semantic(query: str) -> list[dict]:
+    """Get semantic/hybrid results based on configuration."""
+    if settings.hybrid_search_enabled:
+        hybrid_mod = _get_hybrid_retriever()
+        return await hybrid_mod.retrieve_hybrid(query)
+    return await retrieve_semantic(query)
+
+
+def _dedup(candidates: list[dict]) -> list[dict]:
+    """Deduplicate candidates by ID, keeping highest weight."""
+    seen: dict[str, dict] = {}
+    for c in candidates:
+        cid = c["id"]
+        if cid not in seen or c["weight"] > seen[cid]["weight"]:
+            seen[cid] = c
+    return list(seen.values())
+
+
+def _extract_book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
+    """Extract unique (book_id, chapter_num) pairs from candidates."""
+    pairs: set[tuple[str, int]] = set()
+    for c in candidates:
+        book = c.get("book_name", "")
+        ch = c.get("chapter_num")
+        if book and ch is not None:
+            # Build book_id from candidate id
+            parts = c.get("id", "").split(":")
+            if parts:
+                book_id = parts[0]
+                pairs.add((book_id, int(ch)))
+    return list(pairs)
+
+
+async def _sql_supplement(book_chapters: list[tuple[str, int]], existing_ids: set[str], limit: int = 5) -> list[dict]:
+    """Fetch additional pericopes from specific chapters as supplement."""
+    supplements: list[dict] = []
+    for book_id, chapter_num in book_chapters[:3]:  # limit to 3 chapters
+        pericopes = await postgres.search_pericopes_by_verse_ref(
+            book_id=book_id, chapter_num=chapter_num, verse_num=None,
+        )
+        for p in pericopes:
+            if p["id"] not in existing_ids and len(supplements) < limit:
+                existing_ids.add(p["id"])
+                supplements.append({
+                    "id": p["id"],
+                    "content": p["content"],
+                    "title": p["title"],
+                    "book_name": p["book_name"],
+                    "chapter_num": p["chapter_num"],
+                    "verse_range": p.get("verse_range", ""),
+                    "source_strategy": "sql_supplement",
+                    "weight": 0.5,
+                })
+    return supplements
+
+
+def _apply_weights(candidates: list[dict], weight: float) -> list[dict]:
+    """Apply a weight to candidates that don't already have a higher weight."""
+    for c in candidates:
+        if c.get("weight", 0) < weight:
+            c["weight"] = weight
+    return candidates
+
+
+# ---------------------------------------------------------------------------
+# Route handlers
+# ---------------------------------------------------------------------------
+
+async def _route_r1(
+    query: str,
+    verse_refs: list[VerseRef],
+    entity_names: list[str],
+    signals: QuerySignals,
+    k: int,
+) -> tuple[list[dict], list[str]]:
+    """R1: Exact verse reference → SQL direct lookup, skip reranking.
+
+    Fallback to R2 if no results found.
+    """
+    try:
+        candidates = await retrieve_by_verse_refs(verse_refs)
+    except Exception as e:
+        logger.warning(f"R1 verse retrieval failed: {e}")
+        candidates = []
+
+    if candidates:
+        return candidates, ["verse_direct"]
+
+    # Fallback to R2
+    logger.info("R1 empty, falling back to R2")
+    return await _route_r2(query, verse_refs, entity_names, signals, k)
+
+
+async def _route_r2(
+    query: str,
+    verse_refs: list[VerseRef],
+    entity_names: list[str],
+    signals: QuerySignals,
+    k: int,
+) -> tuple[list[dict], list[str]]:
+    """R2: Chapter + semantic → SQL chapter filter (0.9) + Semantic (0.6)."""
+    strategies: list[str] = []
+    all_candidates: list[dict] = []
+    weights = settings.route_weights.get("R2", {"sql": 0.9, "semantic": 0.6})
+
+    # SQL chapter retrieval
+    if verse_refs:
+        try:
+            chapter_results = await retrieve_by_verse_refs(verse_refs)
+            _apply_weights(chapter_results, weights["sql"])
+            for c in chapter_results:
+                c["source_strategy"] = "sql_chapter"
+            all_candidates.extend(chapter_results)
+            strategies.append("sql_chapter")
+        except Exception as e:
+            logger.warning(f"R2 SQL chapter retrieval failed: {e}")
+
+    # Semantic retrieval
+    try:
+        sem_results = await _get_semantic(query)
+        _apply_weights(sem_results, weights["semantic"])
+        all_candidates.extend(sem_results)
+        strategies.append("semantic")
+    except Exception as e:
+        logger.warning(f"R2 semantic retrieval failed: {e}")
+
+    return _dedup(all_candidates), strategies
+
+
+async def _route_r3(
+    query: str,
+    verse_refs: list[VerseRef],
+    entity_names: list[str],
+    signals: QuerySignals,
+    k: int,
+) -> tuple[list[dict], list[str]]:
+    """R3: Person graph (≥2 persons) → Graph(0.9) + Semantic(0.7) + SQL(0.5)."""
+    strategies: list[str] = []
+    weights = settings.route_weights.get("R3", {"graph": 0.9, "semantic": 0.7, "sql": 0.5})
+
+    # Use detected persons for graph retrieval, fall back to entity_names
+    person_names = signals.detected_persons or entity_names
+
+    # Parallel: graph + semantic
+    graph_task = asyncio.create_task(retrieve_by_entities(person_names))
+    sem_task = asyncio.create_task(_get_semantic(query))
+
+    results = await asyncio.gather(graph_task, sem_task, return_exceptions=True)
+
+    all_candidates: list[dict] = []
+
+    # Graph results
+    if not isinstance(results[0], Exception) and results[0]:
+        _apply_weights(results[0], weights["graph"])
+        for c in results[0]:
+            c["source_strategy"] = "graph_person"
+        all_candidates.extend(results[0])
+        strategies.append("graph_person")
+    elif isinstance(results[0], Exception):
+        logger.warning(f"R3 graph retrieval failed: {results[0]}")
+
+    # Semantic results
+    if not isinstance(results[1], Exception) and results[1]:
+        _apply_weights(results[1], weights["semantic"])
+        all_candidates.extend(results[1])
+        strategies.append("semantic")
+    elif isinstance(results[1], Exception):
+        logger.warning(f"R3 semantic retrieval failed: {results[1]}")
+
+    deduped = _dedup(all_candidates)
+
+    # SQL supplement from relevant chapters
+    existing_ids = {c["id"] for c in deduped}
+    book_chapters = _extract_book_chapters(deduped)
+    if book_chapters:
+        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+        _apply_weights(supplements, weights["sql"])
+        deduped.extend(supplements)
+        if supplements:
+            strategies.append("sql_supplement")
+
+    return deduped, strategies
+
+
+async def _route_r4(
+    query: str,
+    verse_refs: list[VerseRef],
+    entity_names: list[str],
+    signals: QuerySignals,
+    k: int,
+) -> tuple[list[dict], list[str]]:
+    """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + SQL(0.5)."""
+    strategies: list[str] = []
+    weights = settings.route_weights.get("R4", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
+
+    event_keywords = signals.detected_events
+
+    # Parallel: graph event + semantic
+    tasks = [asyncio.create_task(_get_semantic(query))]
+    if event_keywords:
+        tasks.insert(0, asyncio.create_task(retrieve_by_events(event_keywords)))
+    else:
+        tasks.insert(0, asyncio.create_task(asyncio.sleep(0)))  # placeholder
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    all_candidates: list[dict] = []
+
+    # Graph event results
+    if event_keywords and not isinstance(results[0], Exception) and results[0]:
+        _apply_weights(results[0], weights["graph"])
+        all_candidates.extend(results[0])
+        strategies.append("graph_event")
+    elif event_keywords and isinstance(results[0], Exception):
+        logger.warning(f"R4 graph event retrieval failed: {results[0]}")
+
+    # Semantic results
+    if not isinstance(results[1], Exception) and results[1]:
+        _apply_weights(results[1], weights["semantic"])
+        all_candidates.extend(results[1])
+        strategies.append("semantic")
+    elif isinstance(results[1], Exception):
+        logger.warning(f"R4 semantic retrieval failed: {results[1]}")
+
+    deduped = _dedup(all_candidates)
+
+    # SQL supplement
+    existing_ids = {c["id"] for c in deduped}
+    book_chapters = _extract_book_chapters(deduped)
+    if book_chapters:
+        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+        _apply_weights(supplements, weights["sql"])
+        deduped.extend(supplements)
+        if supplements:
+            strategies.append("sql_supplement")
+
+    return deduped, strategies
+
+
+async def _route_r5(
+    query: str,
+    verse_refs: list[VerseRef],
+    entity_names: list[str],
+    signals: QuerySignals,
+    k: int,
+) -> tuple[list[dict], list[str]]:
+    """R5: Cross-reference → Semantic seed + Cross-Ref(0.85) ∥ Graph(0.75) + SQL(0.4)."""
+    strategies: list[str] = []
+    weights = settings.route_weights.get(
+        "R5", {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql": 0.4}
+    )
+
+    all_candidates: list[dict] = []
+
+    # First: get semantic seed results
+    try:
+        sem_results = await _get_semantic(query)
+        _apply_weights(sem_results, weights["semantic"])
+        all_candidates.extend(sem_results)
+        strategies.append("semantic")
+    except Exception as e:
+        logger.warning(f"R5 semantic retrieval failed: {e}")
+        sem_results = []
+
+    deduped = _dedup(all_candidates)
+
+    # Parallel: cross-reference from seed + graph (if entities)
+    parallel_tasks = []
+
+    # Cross-reference from top semantic seed
+    source_ids = [c["id"] for c in deduped[:5] if ":" in c["id"]]
+    if source_ids:
+        parallel_tasks.append(("cross_ref", asyncio.create_task(
+            retrieve_cross_references(source_ids, top_k=10)
+        )))
+
+    # Graph retrieval if entities available
+    if entity_names:
+        parallel_tasks.append(("graph", asyncio.create_task(
+            retrieve_by_entities(entity_names)
+        )))
+
+    if parallel_tasks:
+        task_results = await asyncio.gather(
+            *[t[1] for t in parallel_tasks], return_exceptions=True
+        )
+        for (label, _), result in zip(parallel_tasks, task_results):
+            if isinstance(result, Exception):
+                logger.warning(f"R5 {label} retrieval failed: {result}")
+                continue
+            if result:
+                w = weights.get(label, weights.get("cross_ref", 0.85))
+                _apply_weights(result, w)
+                all_candidates.extend(result)
+                strategies.append(label if label != "cross_ref" else "cross_reference")
+
+    deduped = _dedup(all_candidates)
+
+    # SQL supplement
+    existing_ids = {c["id"] for c in deduped}
+    book_chapters = _extract_book_chapters(deduped)
+    if book_chapters:
+        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+        _apply_weights(supplements, weights["sql"])
+        deduped.extend(supplements)
+        if supplements:
+            strategies.append("sql_supplement")
+
+    return deduped, strategies
+
+
+async def _route_r6(
+    query: str,
+    verse_refs: list[VerseRef],
+    entity_names: list[str],
+    signals: QuerySignals,
+    k: int,
+) -> tuple[list[dict], list[str]]:
+    """R6: Place search → Graph_Place(0.85) + Semantic(0.7) + SQL(0.5)."""
+    strategies: list[str] = []
+    weights = settings.route_weights.get("R6", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
+
+    place_names = signals.detected_places
+
+    # Parallel: graph place + semantic
+    tasks = [asyncio.create_task(_get_semantic(query))]
+    if place_names:
+        tasks.insert(0, asyncio.create_task(retrieve_by_places(place_names)))
+    else:
+        tasks.insert(0, asyncio.create_task(asyncio.sleep(0)))  # placeholder
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    all_candidates: list[dict] = []
+
+    # Graph place results
+    if place_names and not isinstance(results[0], Exception) and results[0]:
+        _apply_weights(results[0], weights["graph"])
+        all_candidates.extend(results[0])
+        strategies.append("graph_place")
+    elif place_names and isinstance(results[0], Exception):
+        logger.warning(f"R6 graph place retrieval failed: {results[0]}")
+
+    # Semantic results
+    if not isinstance(results[1], Exception) and results[1]:
+        _apply_weights(results[1], weights["semantic"])
+        all_candidates.extend(results[1])
+        strategies.append("semantic")
+    elif isinstance(results[1], Exception):
+        logger.warning(f"R6 semantic retrieval failed: {results[1]}")
+
+    deduped = _dedup(all_candidates)
+
+    # SQL supplement
+    existing_ids = {c["id"] for c in deduped}
+    book_chapters = _extract_book_chapters(deduped)
+    if book_chapters:
+        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+        _apply_weights(supplements, weights["sql"])
+        deduped.extend(supplements)
+        if supplements:
+            strategies.append("sql_supplement")
+
+    return deduped, strategies
+
+
+async def _route_fallback(
+    query: str,
+    verse_refs: list[VerseRef],
+    entity_names: list[str],
+    signals: QuerySignals,
+    k: int,
+) -> tuple[list[dict], list[str]]:
+    """Fallback: Semantic only."""
+    strategy_name = "hybrid" if settings.hybrid_search_enabled else "semantic"
+    try:
+        candidates = await _get_semantic(query)
+    except Exception as e:
+        logger.warning(f"Fallback semantic retrieval failed: {e}")
+        candidates = []
+
+    return _dedup(candidates), [strategy_name]

@@ -19,6 +19,7 @@ RUN uv sync --frozen --no-dev
 WORKDIR /app
 COPY backend/ ./backend/
 COPY bible_chunking/ ./bible_chunking/
+COPY scripts/ ./scripts/
 
 ENV PYTHONUNBUFFERED=1
 
