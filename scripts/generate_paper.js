@@ -167,7 +167,7 @@ const titleSection = [
   }),
   // Abstract body
   p([{
-    text: "Domain-specific question answering with large language models (LLMs) incurs high API costs and raises data-privacy concerns. We design, deploy, and evaluate a signal-driven Graph RAG architecture for Traditional Chinese Bible QA, integrating PostgreSQL, Qdrant, and Neo4j with a 6-route retrieval system that selects optimal engine combinations based on query signal features. On a 100-question benchmark spanning five question types and 19 metrics, a locally-deployed Gemma 3 4B model achieves comparable performance to Claude Haiku 4.5, with 9 of 12 generation metrics differing by less than 4 percentage points and neither model dominating overall. Claude leads on faithfulness (0.887 vs. 0.849) while Gemma leads on answer relevancy (0.658 vs. 0.592). These results demonstrate that well-designed retrieval substantially reduces the impact of model scale, enabling cost-free, privacy-preserving deployment with competitive quality.",
+    text: "Can a small, locally-deployed language model match a commercial large model on domain-specific question answering when supported by well-designed retrieval? We investigate this question through a signal-driven Graph RAG architecture for Traditional Chinese Bible QA, integrating PostgreSQL, Qdrant, and Neo4j with a 6-route retrieval system that selects optimal engine combinations based on six query signal features. On a 100-question benchmark spanning five question types and 19 metrics, Gemma 3 4B (local, zero API cost) achieves comparable performance to Claude Haiku 4.5 (commercial API): 9 of 12 generation metrics differ by less than 4 percentage points, with complementary strengths\u2014Claude leads on faithfulness (0.887 vs. 0.849) while Gemma leads on answer relevancy (0.658 vs. 0.592). Our results demonstrate that retrieval architecture design, rather than model scale, is the primary determinant of domain QA quality, simultaneously reducing cost and compensating for the limited domain knowledge of smaller models.",
     italics: true,
   }], { after: 60, line: 216, size: PT9 }),
 ];
@@ -178,12 +178,12 @@ const titleSection = [
 const introContent = [
   sectionHead("I. Introduction"),
   p([
-    "Large language models (LLMs) achieve impressive performance on general question answering, yet deploying them for domain-specific tasks presents two challenges: (1) commercial API costs scale linearly with query volume, and (2) non-English specialized corpora\u2014such as Traditional Chinese biblical texts\u2014receive limited coverage during pre-training, leading to factual gaps regardless of model size. This raises a practical question: ",
-    { text: "can a well-designed retrieval pipeline make the choice of LLM nearly irrelevant?", italics: true },
+    "Large language models (LLMs) achieve impressive performance on general question answering, yet deploying them for domain-specific tasks presents two challenges: (1) commercial API costs scale linearly with query volume\u2014making small, locally-deployed models attractive\u2014and (2) non-English specialized corpora such as Traditional Chinese biblical texts receive limited coverage during pre-training, leaving both large and small models with factual gaps that cannot be resolved by scaling alone. This raises a practical question: ",
+    { text: "can a well-designed retrieval pipeline close the quality gap between a 4B-parameter local model and a commercial large model?", italics: true },
   ], { after: 60 }),
   p([
-    "Retrieval-Augmented Generation (RAG) [1] supplements LLM generation with retrieved evidence, reducing hallucination and enabling domain adaptation without fine-tuning. Knowledge graph-enhanced RAG [2] further captures entity relationships, offering complementary signals to dense passage retrieval [9] and lexical methods [10]. Recent surveys [3] catalogue diverse RAG architectures, yet most evaluations compare retrieval strategies under a single model. A critical gap remains: ",
-    { text: "when the retrieval component is held constant, how much does model scale affect answer quality?", italics: true },
+    "Retrieval-Augmented Generation (RAG) [1] supplements LLM generation with retrieved evidence, reducing hallucination and enabling domain adaptation without fine-tuning. Knowledge graph-enhanced RAG [2] further captures entity relationships that complement dense passage retrieval [9] and lexical methods [10]. While recent surveys [3] catalogue diverse RAG architectures, most evaluations compare retrieval strategies under a single model, leaving a critical gap: ",
+    { text: "when the retrieval component is held constant, how much does model scale actually affect answer quality?", italics: true },
   ], { after: 60 }),
   p(["Our contributions are threefold:"], { after: 20 }),
   p([
@@ -259,7 +259,21 @@ const archContent = [
     " then analyzes the query for six boolean features: (1) book+chapter:verse reference, (2) book+chapter-only reference, (3) \u22652 book names, (4) \u22652 person entities, (5) event keyword, and (6) place name\u2014detected via regex patterns and dictionary substring matching against person, place, and event entity lists derived from the knowledge graph.",
   ], { after: 40 }),
   p([
-    "A priority-ordered decision tree (Table I) selects among seven routes, each combining a specific subset of four engines\u2014SQL (PostgreSQL), Semantic (Qdrant), Graph (Neo4j entity traversal), and Cross-Reference (Neo4j CROSS_REFERENCES)\u2014with configurable weights. R1 handles exact verse lookups via SQL direct match, bypassing reranking. R2 adds semantic search to chapter-filtered SQL results. R3\u2013R6 leverage Neo4j graph traversal for person, event, cross-reference, and place queries respectively, combined with semantic search and SQL supplements. After retrieval, results undergo ID-based deduplication (highest-weight retention) and BGE-Reranker-v2-M3 [4] reranking.",
+    "A priority-ordered decision tree (Table I) selects among seven routes. ",
+    { text: "R1 (Exact Verse)", bold: true },
+    " performs a direct SQL lookup by book+chapter:verse and returns the match without reranking, falling back to R2 if empty. ",
+    { text: "R2 (Chapter + Semantic)", bold: true },
+    " combines SQL chapter-filtered pericopes (weight 0.9) with Qdrant dense vector search (0.6) for chapter-level references. ",
+    { text: "R3 (Person Graph)", bold: true },
+    " launches parallel Neo4j Person\u2192MENTIONS traversal (0.9) and semantic search (0.7) when \u22652 person entities are detected, supplemented by SQL chapter pericopes (0.5). ",
+    { text: "R4 (Event Graph)", bold: true },
+    " traverses Event\u2192MENTIONS edges (0.85) in parallel with semantic search (0.7) upon event keyword detection, aggregating multi-chapter narratives across graph hops. ",
+    { text: "R5 (Cross-Reference)", bold: true },
+    " activates when \u22652 books are mentioned or the LLM classifies the intent as cross-reference, employing a two-phase strategy: semantic search first produces seed passages (0.65), whose IDs then feed parallel CROSS_REFERENCES traversal (0.85) and entity graph retrieval (0.75). ",
+    { text: "R6 (Place Graph)", bold: true },
+    " triggers parallel Place\u2192MENTIONS traversal (0.85) and semantic search (0.7) for place-name queries. The ",
+    { text: "Fallback", bold: true },
+    " route defaults to pure semantic search when no signal fires. After retrieval, all routes except R1 undergo ID-based deduplication (highest-weight retention) and BGE-Reranker-v2-M3 [4] cross-encoder reranking.",
   ]),
 
   // Table I caption - Route Overview
@@ -284,7 +298,7 @@ const archContent = [
       rtRow("R2", "book+ch", "0.90", "0.60", "\u2014", "\u2014"),
       rtRow("R3", "\u22652 persons", "0.50", "0.70", "0.90", "\u2014"),
       rtRow("R4", "event kw", "0.50", "0.70", "0.85", "\u2014"),
-      rtRow("R5", "\u22652 books", "0.40", "0.65", "0.75", "0.85"),
+      rtRow("R5", "\u22652 books/xref", "0.40", "0.65", "0.75", "0.85"),
       rtRow("R6", "place", "0.50", "0.70", "0.85", "\u2014"),
       rtRow("FB", "(else)", "\u2014", "1.00", "\u2014", "\u2014", { borders: bottomOnlyBorders }),
     ],
@@ -378,7 +392,7 @@ const resultsContent = [
 
   subHead("Finding 3: Cost-Quality Tradeoff"),
   p([
-    "Gemma 3 4B runs locally via Ollama with zero API cost and full data privacy\u2014critical for sensitive corpora. Despite moderate per-metric gaps, neither model dominates overall, making the local option viable. The key investment shifts from model selection to retrieval infrastructure: the signal-driven router ensures each query type receives an optimized engine combination rather than a one-size-fits-all strategy. Low ROUGE (<0.03) reflects paraphrased generation; semantic similarity (0.738/0.729) and BERTScore (0.663/0.685) confirm actual quality.",
+    "Gemma 3 4B runs locally via Ollama with zero API cost and full data privacy\u2014critical for sensitive corpora. Despite moderate per-metric gaps, neither model dominates overall, making the local option viable for production deployment. This finding reframes the cost-quality tradeoff: the key investment shifts from model scale to retrieval infrastructure, where the signal-driven router ensures each query type receives an optimized engine combination rather than a one-size-fits-all strategy. Moreover, RAG compensates for the smaller model\u2019s limited domain knowledge by supplying structured evidence that both models lack from pre-training. Low ROUGE (<0.03) reflects paraphrased generation; semantic similarity (0.738/0.729) and BERTScore (0.663/0.685) confirm that retrieval design\u2014not model scale\u2014is the primary determinant of answer quality.",
   ]),
 ];
 
@@ -386,7 +400,7 @@ const resultsContent = [
 const conclusionContent = [
   sectionHead("V. Conclusion"),
   p([
-    "We designed, deployed, and evaluated a signal-driven Graph RAG architecture for Traditional Chinese Bible QA, featuring a 6-route decision-tree router that selects optimal engine combinations from PostgreSQL, Qdrant, and Neo4j based on query signal features. A locally-deployed Gemma 3 4B achieves comparable performance to Claude Haiku 4.5, with 9 of 12 generation metrics within 4 percentage points and complementary model strengths. These results confirm that retrieval design\u2014not model scale\u2014is the primary determinant of domain QA quality. Future work includes hybrid dense-sparse retrieval [10], adaptive route weight tuning, and multilingual evaluation across Bible translations.",
+    "We designed, deployed, and evaluated a signal-driven Graph RAG architecture for Traditional Chinese Bible QA, featuring a 6-route decision-tree router that selects optimal engine combinations from PostgreSQL, Qdrant, and Neo4j based on query signal features. A locally-deployed Gemma 3 4B achieves comparable performance to Claude Haiku 4.5, with 9 of 12 generation metrics within 4 percentage points and complementary model strengths. These results affirm that a well-designed retrieval architecture can close the quality gap between a small local model and a commercial large model, simultaneously eliminating API costs and compensating for limited domain knowledge in pre-training. Future work includes hybrid dense-sparse retrieval [10], adaptive route weight tuning, and multilingual evaluation across Bible translations.",
   ]),
 ];
 
