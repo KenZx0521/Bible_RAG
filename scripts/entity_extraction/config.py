@@ -42,6 +42,9 @@ class LLMConfig:
         elif provider == "openai":
             api_key = os.getenv("OPENAI_API_KEY")
             model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        elif provider == "ollama":
+            api_key = None
+            model = os.getenv("OLLAMA_MODEL", "gpt-oss:120b")
         else:
             raise ValueError(f"Unknown LLM provider: {provider}")
         
