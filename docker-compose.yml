@@ -91,11 +91,13 @@ services:
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
+    stop_grace_period: 30s
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 10
+      start_period: 30s
 
 volumes:
   postgres_data:
