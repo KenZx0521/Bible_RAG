@@ -416,6 +416,7 @@ class BibleProcessor:
 
         # Update statistics
         self.stats["total_embedding_items"] = len(embedding_queue)
+        self.stats["verse_embed_count"] = verse_embed_count
         self.stats["total_neo4j_nodes"] = len(neo4j_nodes)
         self.stats["total_neo4j_relationships"] = len(neo4j_relationships)
 
@@ -505,16 +506,15 @@ class BibleProcessor:
         print(f"  Neo4j relationships:          {self.stats['total_neo4j_relationships']}")
         print("=" * 60)
 
-        # Count total verses for verification
-        total_verses = sum(b.total_verses for b in self.books)
+        # Verify embedding queue count
         expected_pericope_embeds = (
             self.stats["total_pericopes"]
             - self.stats["pericopes_requiring_chunking"]
             + self.stats["total_chunks"]
         )
-        expected_total = expected_pericope_embeds + total_verses
+        expected_total = expected_pericope_embeds + self.stats["verse_embed_count"]
         print(f"  Pericope/chunk embeddings:    {expected_pericope_embeds}")
-        print(f"  Verse embeddings:             {total_verses}")
+        print(f"  Verse embeddings:             {self.stats['verse_embed_count']}")
         if self.stats["total_embedding_items"] == expected_total:
             print("  Embedding queue count verified!")
         else:
