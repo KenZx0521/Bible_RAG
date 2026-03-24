@@ -192,7 +192,7 @@ class OpenAIClient(BaseLLMClient):
         return response.choices[0].message.content
 
 
-def create_llm_client(config: LLMConfig) -> BaseLLMClient:
+def create_llm_client(config) -> BaseLLMClient:
     """Factory function to create LLM client based on provider."""
     if config.provider == "claude":
         return ClaudeClient(config)
@@ -200,6 +200,9 @@ def create_llm_client(config: LLMConfig) -> BaseLLMClient:
         return GeminiClient(config)
     elif config.provider == "openai":
         return OpenAIClient(config)
+    elif config.provider == "ollama":
+        from .ollama_client import OllamaClient
+        return OllamaClient(config)
     else:
         raise ValueError(f"Unknown LLM provider: {config.provider}")
 

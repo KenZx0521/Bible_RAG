@@ -23,6 +23,24 @@ class ExtractionMethod(str, Enum):
     NER = "ner"
     LLM = "llm"
     DICTIONARY = "dictionary"
+    PERICOPE_TITLE = "pericope_title"
+    POS_TAG = "pos_tag"
+    RULE = "rule"
+    GROUNDED_LLM = "grounded_llm"
+
+
+@dataclass
+class EntityCandidate:
+    """A candidate entity extracted from bible_md, pending classification."""
+    name: str
+    proposed_type: Optional[EntityType] = None
+    source_ids: List[str] = field(default_factory=list)
+    grounding_text: str = ""
+    confidence: float = 0.0
+    extraction_phase: int = 0
+    pos_tag: str = ""
+    frequency: int = 1
+    evidence: str = ""
 
 
 @dataclass
