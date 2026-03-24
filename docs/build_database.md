@@ -1,11 +1,19 @@
 # Bible RAG 後續步驟
 
+## 環境設定
+
+使用 uv 管理 scripts 的 Python 依賴：
+```bash
+# 在專案根目錄執行，安裝所有 scripts 依賴
+uv sync --project scripts
+```
+
 ## 目前完成
 
 - [x] Hierarchical Chunking（Book → Chapter → Pericope → Chunk）
 - [x] JSONL 輸出（7 個檔案）
 ### 指令
-python scripts/process_bible.py --input-dir bible_md --output-dir output
+uv run --project scripts python scripts/process_bible.py --input-dir bible_md --output-dir output
 ---
 
 ## Step 1: 實體抽取
@@ -24,11 +32,13 @@ python scripts/process_bible.py --input-dir bible_md --output-dir output
 | Theme | 主題（救贖、恩典、信心） |
 
 ### 指令
+```bash
 # NER-only (無 API 成本)
-python scripts/extract_entities.py --ner-only
+uv run --project scripts python scripts/extract_entities.py --ner-only
 
 # 完整抽取 (需設定 API key)
-python scripts/extract_entities.py
+uv run --project scripts python scripts/extract_entities.py
+```
 
 ### 輸出
 - `output/entities.jsonl`
@@ -48,7 +58,7 @@ python scripts/extract_entities.py
 
 ### 指令
 ```bash
-python scripts/generate_embeddings.py --batch-size 32
+uv run --project scripts python scripts/generate_embeddings.py --batch-size 32
 ```
 
 ### 輸出
@@ -66,10 +76,10 @@ python scripts/generate_embeddings.py --batch-size 32
 
 ### 指令
 ```bash
-python scripts/generate_sparse_vectors.py --batch-size 32
+uv run --project scripts python scripts/generate_sparse_vectors.py --batch-size 32
 
 # 使用 GPU 加速 CKIP
-python scripts/generate_sparse_vectors.py --batch-size 32 --use-gpu
+uv run --project scripts python scripts/generate_sparse_vectors.py --batch-size 32 --use-gpu
 ```
 
 ### 輸出
@@ -90,7 +100,7 @@ python scripts/generate_sparse_vectors.py --batch-size 32 --use-gpu
 
 ### 指令
 ```bash
-python scripts/import_postgres.py
+uv run --project scripts python scripts/import_postgres.py
 ```
 
 ### 結果
@@ -115,7 +125,7 @@ python scripts/import_postgres.py
 
 ### 指令
 ```bash
-python scripts/import_qdrant.py
+uv run --project scripts python scripts/import_qdrant.py
 ```
 
 ### 結果
@@ -140,7 +150,7 @@ python scripts/import_qdrant.py
 
 ### 指令
 ```bash
-python scripts/import_qdrant_hybrid.py
+uv run --project scripts python scripts/import_qdrant_hybrid.py
 ```
 
 ### 結果
@@ -172,7 +182,7 @@ HYBRID_SEARCH_ENABLED=true
 
 ### 指令
 ```bash
-python scripts/import_neo4j.py
+uv run --project scripts python scripts/import_neo4j.py
 ```
 
 ### 結果
