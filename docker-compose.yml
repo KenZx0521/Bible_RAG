@@ -79,6 +79,7 @@ services:
     image: neo4j:5.15-community
     container_name: bible_rag_neo4j
     restart: unless-stopped
+    entrypoint: ["bash", "-c", "rm -f /var/lib/neo4j/run/neo4j.pid && exec /startup/docker-entrypoint.sh neo4j"]
     environment:
       NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4j_password}
       NEO4J_PLUGINS: '["apoc"]'
