@@ -84,18 +84,26 @@ class GroundedClassifier:
             source_groups.setdefault(key, []).append(c)
 
         classified: List[EntityCandidate] = []
-        total = len(candidates)
-        done = 0
 
+        # Flatten all batches for progress tracking
+        all_batches = []
         for source_id, group in source_groups.items():
-            # Process in sub-batches
             for i in range(0, len(group), batch_size):
-                batch = group[i : i + batch_size]
-                results = self._classify_group(batch)
-                classified.extend(results)
-                done += len(batch)
-                if done % 20 == 0:
-                    logger.info(f"Phase 4 progress: {done}/{total}")
+                all_batches.append(group[i : i + batch_size])
+
+        try:
+            from tqdm import tqdm
+            batch_iter = tqdm(
+                all_batches,
+                desc="Phase 4 LLM Classification",
+                unit="batch",
+            )
+        except ImportError:
+            batch_iter = all_batches
+
+        for batch in batch_iter:
+            results = self._classify_group(batch)
+            classified.extend(results)
 
         logger.info(f"Phase 4: classified {len(classified)} candidates via LLM")
         return classified

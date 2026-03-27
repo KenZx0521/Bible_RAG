@@ -53,6 +53,7 @@ class CkipPosExtractor:
         from ckip_transformers.nlp import CkipWordSegmenter, CkipPosTagger
 
         device = 0 if self.use_gpu else -1
+        logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
         logger.info("Loading CKIP WS + POS models...")
         self._ws = CkipWordSegmenter(model="bert-base", device=device)
         self._pos = CkipPosTagger(model="bert-base", device=device)
