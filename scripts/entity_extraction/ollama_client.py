@@ -24,7 +24,7 @@ class OllamaClient(BaseLLMClient):
     def call(self, system_prompt: str, user_prompt: str) -> str:
         self.rate_limit()
 
-        with httpx.Client(timeout=120.0) as client:
+        with httpx.Client(timeout=600.0) as client:
             resp = client.post(
                 f"{self._base_url}/api/chat",
                 json={
