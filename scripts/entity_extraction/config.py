@@ -72,6 +72,7 @@ class EntityExtractLLMConfig:
     rate_limit_delay: float = 0.5
     max_retries: int = 3
     retry_delay: float = 2.0
+    num_ctx: int = 8192
 
     @classmethod
     def from_env(cls) -> "EntityExtractLLMConfig":
@@ -121,6 +122,7 @@ class EntityExtractLLMConfig:
             rate_limit_delay=float(os.getenv("ENTITY_EXTRACT_RATE_LIMIT_DELAY", "0.5")),
             max_retries=int(os.getenv("LLM_MAX_RETRIES", "3")),
             retry_delay=float(os.getenv("LLM_RETRY_DELAY", "2.0")),
+            num_ctx=int(os.getenv("ENTITY_EXTRACT_NUM_CTX", "8192")),
         )
 
 

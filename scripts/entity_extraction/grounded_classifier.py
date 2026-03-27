@@ -149,6 +149,9 @@ class GroundedClassifier:
         return None
 
     def _parse_json(self, content: str) -> Optional[Dict]:
+        if not content or not content.strip():
+            logger.warning("LLM returned empty response (likely num_ctx too small)")
+            return None
         try:
             if "```json" in content:
                 start = content.find("```json") + 7

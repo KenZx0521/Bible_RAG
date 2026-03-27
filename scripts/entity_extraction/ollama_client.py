@@ -37,6 +37,7 @@ class OllamaClient(BaseLLMClient):
                     "options": {
                         "temperature": self.config.temperature,
                         "num_predict": self.config.max_tokens,
+                        "num_ctx": getattr(self.config, "num_ctx", 8192),
                     },
                 },
             )
