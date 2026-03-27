@@ -44,4 +44,13 @@ class OllamaClient(BaseLLMClient):
             )
             resp.raise_for_status()
             data = resp.json()
-            return data.get("message", {}).get("content", "")
+            content = data.get("message", {}).get("content", "")
+            tokens_eval = data.get("eval_count", "?")
+            tokens_prompt = data.get("prompt_eval_count", "?")
+            duration_s = data.get("total_duration", 0) / 1e9
+            logger.info(
+                f"Ollama response: prompt_tokens={tokens_prompt}, "
+                f"eval_tokens={tokens_eval}, duration={duration_s:.1f}s, "
+                f"content_len={len(content)}"
+            )
+            return content
