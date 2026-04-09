@@ -139,13 +139,18 @@ class GroundedClassifier:
         for attempt in range(self.config.max_retries):
             try:
                 content = self.client.call(SYSTEM_PROMPT, user_prompt)
-                return self._parse_json(content)
+                parsed = self._parse_json(content)
+                if parsed is not None:
+                    return parsed
+                logger.warning(
+                    f"LLM returned unparseable response (attempt {attempt + 1}/{self.config.max_retries})"
+                )
             except Exception as e:
                 logger.warning(
-                    f"LLM call failed (attempt {attempt + 1}): {e}"
+                    f"LLM call failed (attempt {attempt + 1}/{self.config.max_retries}): {e}"
                 )
-                if attempt < self.config.max_retries - 1:
-                    time.sleep(self.config.retry_delay * (attempt + 1))
+            if attempt < self.config.max_retries - 1:
+                time.sleep(self.config.retry_delay * (attempt + 1))
         return None
 
     def _parse_json(self, content: str) -> Optional[Dict]:
