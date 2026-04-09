@@ -35,6 +35,7 @@ class OllamaClient(BaseLLMClient):
                     ],
                     "stream": False,
                     "format": "json",
+                    "think": False,
                     "options": {
                         "temperature": self.config.temperature,
                         "num_predict": self.config.max_tokens,

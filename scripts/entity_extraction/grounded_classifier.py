@@ -186,9 +186,9 @@ class GroundedClassifier:
         classifications = result.get("classifications", [])
 
         for item in classifications:
-            name = item.get("name", "").strip()
+            name = (item.get("name") or "").strip()
             type_str = item.get("type")
-            evidence = item.get("evidence", "").strip()
+            evidence = (item.get("evidence") or "").strip()
 
             if name not in by_name:
                 continue  # LLM hallucinated a name
