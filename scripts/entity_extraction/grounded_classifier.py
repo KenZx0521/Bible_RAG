@@ -143,7 +143,8 @@ class GroundedClassifier:
                 if parsed is not None:
                     return parsed
                 logger.warning(
-                    f"LLM returned unparseable response (attempt {attempt + 1}/{self.config.max_retries})"
+                    f"LLM returned unparseable response (attempt {attempt + 1}/{self.config.max_retries}), "
+                    f"raw content (first 500 chars): {repr(content[:500]) if content else '<empty>'}"
                 )
             except Exception as e:
                 logger.warning(
@@ -155,7 +156,7 @@ class GroundedClassifier:
 
     def _parse_json(self, content: str) -> Optional[Dict]:
         if not content or not content.strip():
-            logger.warning("LLM returned empty response (likely num_ctx too small)")
+            logger.warning(f"LLM returned empty response, raw repr: {repr(content)}")
             return None
         try:
             if "```json" in content:

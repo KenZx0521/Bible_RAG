@@ -48,9 +48,16 @@ class OllamaClient(BaseLLMClient):
             tokens_eval = data.get("eval_count", "?")
             tokens_prompt = data.get("prompt_eval_count", "?")
             duration_s = data.get("total_duration", 0) / 1e9
+            done_reason = data.get("done_reason", "?")
             logger.info(
                 f"Ollama response: prompt_tokens={tokens_prompt}, "
                 f"eval_tokens={tokens_eval}, duration={duration_s:.1f}s, "
-                f"content_len={len(content)}"
+                f"done_reason={done_reason}, content_len={len(content)}"
             )
+            if not content or not content.strip():
+                logger.warning(
+                    f"Ollama returned empty content! Full response keys: {list(data.keys())}, "
+                    f"done={data.get('done')}, done_reason={done_reason}, "
+                    f"message={data.get('message')}"
+                )
             return content
