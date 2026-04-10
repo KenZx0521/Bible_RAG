@@ -57,7 +57,7 @@ services:
 
   # Qdrant vector database for embeddings
   qdrant:
-    image: qdrant/qdrant:v1.7.4
+    image: qdrant/qdrant:v1.13.2
     container_name: bible_rag_qdrant
     restart: unless-stopped
     ports:
