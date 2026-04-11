@@ -40,11 +40,11 @@ async def _claude_completion(prompt: str, max_tokens: int, temperature: float) -
     import anthropic
 
     client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-    logger.info("[Claude API] POST messages  model=%s", settings.claude_model)
+    logger.info("[Claude API] POST messages  model=%s", settings.eval_claude_model)
     t0 = time.perf_counter()
 
     raw_resp = await client.messages.with_raw_response.create(
-        model=settings.claude_model,
+        model=settings.eval_claude_model,
         max_tokens=max_tokens,
         temperature=temperature,
         messages=[{"role": "user", "content": prompt}],
@@ -63,11 +63,11 @@ async def _openai_completion(prompt: str, max_tokens: int, temperature: float) -
     from openai import AsyncOpenAI
 
     client = AsyncOpenAI(api_key=settings.openai_api_key)
-    logger.info("[OpenAI API] POST completions  model=%s", settings.openai_model)
+    logger.info("[OpenAI API] POST completions  model=%s", settings.eval_openai_model)
     t0 = time.perf_counter()
 
     resp = await client.chat.completions.create(
-        model=settings.openai_model,
+        model=settings.eval_openai_model,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=max_tokens,
         temperature=temperature,
@@ -87,11 +87,11 @@ async def _gemini_completion(prompt: str, max_tokens: int, temperature: float) -
     from google.genai import types
 
     client = genai.Client(api_key=settings.google_api_key)
-    logger.info("[Gemini API] POST generate  model=%s", settings.gemini_model)
+    logger.info("[Gemini API] POST generate  model=%s", settings.eval_gemini_model)
     t0 = time.perf_counter()
 
     resp = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+        model=settings.eval_gemini_model,
         contents=prompt,
         config=types.GenerateContentConfig(
             temperature=temperature,
@@ -108,14 +108,14 @@ async def _gemini_completion(prompt: str, max_tokens: int, temperature: float) -
 async def _ollama_completion(prompt: str, max_tokens: int, temperature: float) -> str:
     import httpx
 
-    logger.info("[Ollama API] POST generate  model=%s", settings.ollama_model)
+    logger.info("[Ollama API] POST generate  model=%s", settings.eval_ollama_model)
     t0 = time.perf_counter()
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         resp = await client.post(
             f"{settings.ollama_base_url}/api/generate",
             json={
-                "model": settings.ollama_model,
+                "model": settings.eval_ollama_model,
                 "prompt": prompt,
                 "stream": False,
                 "options": {

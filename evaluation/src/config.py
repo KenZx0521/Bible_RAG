@@ -21,19 +21,19 @@ class Settings(BaseSettings):
 
     # Anthropic
     anthropic_api_key: str = ""
-    claude_model: str = "claude-haiku-4-5"
+    eval_claude_model: str = "claude-haiku-4-5"
 
     # OpenAI
     openai_api_key: str = ""
-    openai_model: str = "gpt-4o-mini"
+    eval_openai_model: str = "gpt-4o-mini"
 
     # Gemini (Google)
     google_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    eval_gemini_model: str = "gemini-2.0-flash"
 
     # Ollama
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "gemma3:4b"
+    eval_ollama_model: str = "gemma3:4b"
 
     # LLM generation settings
     llm_max_tokens: int = 10000
