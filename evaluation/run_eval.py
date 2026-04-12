@@ -58,6 +58,7 @@ def main() -> None:
         run_evaluation,
         load_results,
         load_samples_from_checkpoint,
+        export_csv,
     )
     from src.visualizer import generate_dashboard
 
@@ -71,6 +72,8 @@ def main() -> None:
         samples = load_samples_from_checkpoint()
         console.print(f"Loaded {len(samples)} samples from raw_responses.json.")
         report = run_evaluation(samples)
+        csv_path = export_csv(report)
+        console.print(f"[bold green]CSV exported to {csv_path}[/bold green]")
         generate_dashboard(report)
 
     elif args.visualize_only:
@@ -90,8 +93,12 @@ def main() -> None:
         console.rule("[bold cyan]Step 2: Run Batch Evaluation Metrics")
         report = run_evaluation(samples, inline_metrics=inline_metrics)
 
-        # Step 3: Visualize
-        console.rule("[bold cyan]Step 3: Generate Dashboard")
+        # Step 3: Export CSV
+        csv_path = export_csv(report)
+        console.print(f"[bold green]CSV exported to {csv_path}[/bold green]")
+
+        # Step 4: Visualize
+        console.rule("[bold cyan]Step 4: Generate Dashboard")
         generate_dashboard(report)
 
         console.print("\n[bold green]Evaluation complete![/bold green]")

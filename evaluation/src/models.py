@@ -44,6 +44,8 @@ class EvalSample(BaseModel):
     sources: list[SourceInfo] = []
     ground_truth: GroundTruthItem
     reference_answer: str = ""
+    route_used: str = ""
+    strategies_used: list[str] = []
 
 
 class MetricResult(BaseModel):
@@ -65,6 +67,8 @@ class EvalReport(BaseModel):
     question_type: str
     metrics: list[MetricResult] = []
     rationale: Rationale | None = None
+    route_used: str = ""
+    strategies_used: list[str] = []
 
 
 class AggregatedReport(BaseModel):

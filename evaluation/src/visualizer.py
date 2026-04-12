@@ -213,6 +213,8 @@ def _make_question_detail_table(report: AggregatedReport) -> list[dict]:
         row = {
             "question_id": sample.question_id,
             "question_type": sample.question_type,
+            "route_used": sample.route_used or "-",
+            "strategies_used": ", ".join(sample.strategies_used) if sample.strategies_used else "-",
             "status": "success" if has_answer else "fail",
             "avg_score": avg,
         }

@@ -11,6 +11,7 @@ Coordinates:
 from __future__ import annotations
 
 import asyncio
+import csv
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -59,6 +60,8 @@ def _aggregate(
             question_id=sample.question_id,
             question_type=sample.question_type,
             metrics=all_metrics.get(sample.question_id, []),
+            route_used=sample.route_used,
+            strategies_used=sample.strategies_used,
         )
         if rationales and sample.question_id in rationales:
             report.rationale = rationales[sample.question_id]
@@ -251,6 +254,44 @@ def load_samples_from_checkpoint() -> list[EvalSample]:
             sources=[SourceInfo(**s) for s in item.get("sources", [])],
             ground_truth=gt,
             reference_answer=gt.reference_answer,
+            route_used=item.get("route_used", ""),
+            strategies_used=item.get("strategies_used", []),
         ))
 
     return samples
+
+
+def export_csv(report: AggregatedReport) -> Path:
+    """Export per-question evaluation results to CSV."""
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = RESULTS_DIR / "evaluation_results.csv"
+
+    # Collect all metric names across samples
+    all_metric_names: list[str] = []
+    seen: set[str] = set()
+    for sample in report.samples:
+        for m in sample.metrics:
+            if m.name not in seen:
+                all_metric_names.append(m.name)
+                seen.add(m.name)
+
+    fieldnames = [
+        "question_id", "question_type", "route_used", "strategies_used",
+    ] + all_metric_names
+
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for sample in report.samples:
+            metric_map = {m.name: m.value for m in sample.metrics}
+            row = {
+                "question_id": sample.question_id,
+                "question_type": sample.question_type,
+                "route_used": sample.route_used,
+                "strategies_used": "|".join(sample.strategies_used),
+            }
+            for name in all_metric_names:
+                row[name] = metric_map.get(name, "")
+            writer.writerow(row)
+
+    return out_path

@@ -92,6 +92,11 @@ async def collect_responses(
                 answer = resp.get("answer", "")
                 sources = parse_sources(resp.get("sources", []))
 
+                # Extract routing info from retrieval_stats
+                stats = resp.get("retrieval_stats", {})
+                route_used = stats.get("route_used", "")
+                strategies_used = stats.get("strategies_used", [])
+
                 # --- Step 2: Fetch context from PostgreSQL ---
                 source_ids = [s.id for s in sources]
                 contexts = await fetch_contexts(pool, source_ids)
@@ -107,6 +112,8 @@ async def collect_responses(
                     sources=sources,
                     ground_truth=gt,
                     reference_answer=gt.reference_answer,
+                    route_used=route_used,
+                    strategies_used=strategies_used,
                 )
                 samples.append(sample)
 
@@ -122,6 +129,11 @@ async def collect_responses(
                 console.print(
                     f"  [green]=> Point coverage: {coverage:.2%}[/green]"
                 )
+                if route_used:
+                    strats = ", ".join(strategies_used) if strategies_used else "none"
+                    console.print(
+                        f"  [dim]Route: {route_used} | Strategies: {strats}[/dim]"
+                    )
 
                 # Save raw response
                 collected_raw.append({
@@ -130,6 +142,8 @@ async def collect_responses(
                     "rag_answer": answer,
                     "contexts": contexts,
                     "sources": [s.model_dump() for s in sources],
+                    "route_used": route_used,
+                    "strategies_used": strategies_used,
                 })
                 _save_responses(collected_raw)
 

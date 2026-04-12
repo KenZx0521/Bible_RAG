@@ -209,6 +209,8 @@
                         <th>#</th>
                         <th>Question ID</th>
                         <th>類型</th>
+                        <th>Route</th>
+                        <th>Strategies</th>
                         <th>狀態</th>
                         <th>Avg Score</th>
                         <th>Hit Rate</th>
@@ -226,6 +228,8 @@
                         <td>{{ loop.index }}</td>
                         <td>{{ item.question_id }}</td>
                         <td>{{ type_labels.get(item.question_type, item.question_type) }}</td>
+                        <td><code style="font-size:0.8em;">{{ item.route_used }}</code></td>
+                        <td style="font-size:0.75em;">{{ item.strategies_used }}</td>
                         <td>{% if item.status == 'success' %}<span style="color:var(--success);">&#10003;</span>{% else %}<span style="color:var(--danger);">&#10007;</span>{% endif %}</td>
                         <td class="{% if item.avg_score < 0.3 %}score-low{% elif item.avg_score < 0.6 %}score-mid{% else %}score-high{% endif %}">
                             {{ "%.4f" | format(item.avg_score) }}
