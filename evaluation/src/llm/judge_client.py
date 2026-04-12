@@ -118,6 +118,7 @@ async def _ollama_completion(prompt: str, max_tokens: int, temperature: float) -
                 "model": settings.eval_ollama_model,
                 "prompt": prompt,
                 "stream": False,
+                "think": False,
                 "options": {
                     "temperature": temperature,
                     "num_predict": max_tokens,
