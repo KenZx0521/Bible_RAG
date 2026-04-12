@@ -118,6 +118,7 @@ def compute_ragas_metrics(
         LLMContextRecall,
         AnswerCorrectness,
     )
+    from ragas.run_config import RunConfig
     from langchain_huggingface import HuggingFaceEmbeddings
 
     provider = settings.eval_llm_provider
@@ -189,7 +190,16 @@ def compute_ragas_metrics(
         "answer_correctness": "answer_correctness",
     }
 
-    logger.info("[RAGAS] Starting evaluation with %d metrics...", len(metrics))
+    # Ollama runs inference serially; limit concurrency to avoid queue-induced timeouts.
+    is_ollama = settings.eval_llm_provider.lower() == "ollama"
+    run_config = RunConfig(
+        timeout=600 if is_ollama else 180,
+        max_workers=2 if is_ollama else 16,
+        max_retries=3,
+        max_wait=30,
+    )
+    logger.info("[RAGAS] Starting evaluation with %d metrics (timeout=%ds, workers=%d)...",
+                len(metrics), run_config.timeout, run_config.max_workers)
 
     try:
         result = evaluate(
@@ -197,6 +207,7 @@ def compute_ragas_metrics(
             metrics=metrics,
             llm=llm,
             embeddings=embeddings,
+            run_config=run_config,
         )
 
         df = result.to_pandas()
