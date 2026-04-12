@@ -13,6 +13,7 @@ dependencies = [
     # LLM integration
     "langchain-anthropic>=0.3.0",
     "langchain-huggingface>=0.1.0",
+    "langchain-ollama>=0.3.0",
     "anthropic>=0.40.0",
     # Reference-based metrics
     "sacrebleu>=2.4.0",
