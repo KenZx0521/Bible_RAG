@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 async def judge_completion(
     prompt: str,
-    max_tokens: int = 10,
+    max_tokens: int = 1024,
     temperature: float = 0.0,
 ) -> str:
     """
