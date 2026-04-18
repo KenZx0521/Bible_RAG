@@ -96,6 +96,7 @@ async def collect_responses(
                 stats = resp.get("retrieval_stats", {})
                 route_used = stats.get("route_used", "")
                 strategies_used = stats.get("strategies_used", [])
+                strategy_errors = stats.get("strategy_errors", {}) or {}
 
                 # --- Step 2: Fetch context from PostgreSQL ---
                 source_ids = [s.id for s in sources]
@@ -114,6 +115,7 @@ async def collect_responses(
                     reference_answer=gt.reference_answer,
                     route_used=route_used,
                     strategies_used=strategies_used,
+                    strategy_errors=strategy_errors,
                 )
                 samples.append(sample)
 
@@ -144,6 +146,7 @@ async def collect_responses(
                     "sources": [s.model_dump() for s in sources],
                     "route_used": route_used,
                     "strategies_used": strategies_used,
+                    "strategy_errors": strategy_errors,
                 })
                 _save_responses(collected_raw)
 

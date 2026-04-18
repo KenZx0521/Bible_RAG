@@ -16,3 +16,6 @@ output/
 
 # Agents
 .agents/
+
+# Backup
+*.bak

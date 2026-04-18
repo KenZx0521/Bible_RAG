@@ -26,6 +26,7 @@ class RetrievalStats(BaseModel):
     total_candidates: int = 0
     reranked_top_k: int = 0
     route_used: str = ""
+    strategy_errors: dict[str, str] = {}
 
 
 class QueryResponse(BaseModel):

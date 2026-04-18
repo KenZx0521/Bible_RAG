@@ -46,6 +46,7 @@ class EvalSample(BaseModel):
     reference_answer: str = ""
     route_used: str = ""
     strategies_used: list[str] = []
+    strategy_errors: dict[str, str] = {}
 
 
 class MetricResult(BaseModel):
@@ -69,6 +70,7 @@ class EvalReport(BaseModel):
     rationale: Rationale | None = None
     route_used: str = ""
     strategies_used: list[str] = []
+    strategy_errors: dict[str, str] = {}
 
 
 class AggregatedReport(BaseModel):

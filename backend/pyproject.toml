@@ -16,6 +16,7 @@ dependencies = [
     "sentence-transformers>=3.0.0",
     "numpy>=1.24.0",
     "anthropic>=0.40.0",
+    "ckip-transformers>=0.3.0",
 ]
 
 [build-system]

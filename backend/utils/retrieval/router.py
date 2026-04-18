@@ -85,7 +85,7 @@ async def retrieve_and_rerank(
         "fallback": _route_fallback,
     }
     handler = route_handlers.get(route, _route_fallback)
-    candidates, strategies_used = await handler(
+    candidates, strategies_used, strategy_errors = await handler(
         query=query,
         verse_refs=verse_refs,
         entity_names=entity_names,
@@ -103,6 +103,7 @@ async def retrieve_and_rerank(
             ranked = reranker_mod.rerank(query, candidates, top_k=k, text_key="content")
         except Exception as e:
             logger.warning(f"Reranker failed, falling back to weight-based sorting: {e}")
+            strategy_errors["rerank"] = repr(e)[:200]
             ranked = sorted(candidates, key=lambda x: x.get("weight", 0), reverse=True)[:k]
     else:
         ranked = []
@@ -112,6 +113,7 @@ async def retrieve_and_rerank(
         "total_candidates": total_candidates,
         "reranked_top_k": len(ranked),
         "route_used": route,
+        "strategy_errors": strategy_errors,
     }
 
     return ranked, stats
@@ -195,23 +197,29 @@ async def _route_r1(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], dict[str, str]]:
     """R1: Exact verse reference → SQL direct lookup, skip reranking.
 
     Fallback to R2 if no results found.
     """
+    errors: dict[str, str] = {}
     try:
         candidates = await retrieve_by_verse_refs(verse_refs)
     except Exception as e:
         logger.warning(f"R1 verse retrieval failed: {e}")
+        errors["verse_direct"] = repr(e)[:200]
         candidates = []
 
     if candidates:
-        return candidates, ["verse_direct"]
+        return candidates, ["verse_direct"], errors
 
     # Fallback to R2
     logger.info("R1 empty, falling back to R2")
-    return await _route_r2(query, verse_refs, entity_names, signals, k)
+    r2_candidates, r2_strategies, r2_errors = await _route_r2(
+        query, verse_refs, entity_names, signals, k
+    )
+    errors.update(r2_errors)
+    return r2_candidates, r2_strategies, errors
 
 
 async def _route_r2(
@@ -220,9 +228,10 @@ async def _route_r2(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], dict[str, str]]:
     """R2: Chapter + semantic → SQL chapter filter (0.9) + Semantic (0.6)."""
     strategies: list[str] = []
+    errors: dict[str, str] = {}
     all_candidates: list[dict] = []
     weights = settings.route_weights.get("R2", {"sql": 0.9, "semantic": 0.6})
 
@@ -237,6 +246,7 @@ async def _route_r2(
             strategies.append("sql_chapter")
         except Exception as e:
             logger.warning(f"R2 SQL chapter retrieval failed: {e}")
+            errors["sql_chapter"] = repr(e)[:200]
 
     # Semantic retrieval
     try:
@@ -246,8 +256,9 @@ async def _route_r2(
         strategies.append("semantic")
     except Exception as e:
         logger.warning(f"R2 semantic retrieval failed: {e}")
+        errors["semantic"] = repr(e)[:200]
 
-    return _dedup(all_candidates), strategies
+    return _dedup(all_candidates), strategies, errors
 
 
 async def _route_r3(
@@ -256,9 +267,10 @@ async def _route_r3(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], dict[str, str]]:
     """R3: Person graph (≥2 persons) → Graph(0.9) + Semantic(0.7) + SQL(0.5)."""
     strategies: list[str] = []
+    errors: dict[str, str] = {}
     weights = settings.route_weights.get("R3", {"graph": 0.9, "semantic": 0.7, "sql": 0.5})
 
     # Use detected persons for graph retrieval, fall back to entity_names
@@ -281,6 +293,7 @@ async def _route_r3(
         strategies.append("graph_person")
     elif isinstance(results[0], Exception):
         logger.warning(f"R3 graph retrieval failed: {results[0]}")
+        errors["graph_person"] = repr(results[0])[:200]
 
     # Semantic results
     if not isinstance(results[1], Exception) and results[1]:
@@ -289,6 +302,7 @@ async def _route_r3(
         strategies.append("semantic")
     elif isinstance(results[1], Exception):
         logger.warning(f"R3 semantic retrieval failed: {results[1]}")
+        errors["semantic"] = repr(results[1])[:200]
 
     deduped = _dedup(all_candidates)
 
@@ -296,13 +310,17 @@ async def _route_r3(
     existing_ids = {c["id"] for c in deduped}
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
-        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
-        _apply_weights(supplements, weights["sql"])
-        deduped.extend(supplements)
-        if supplements:
-            strategies.append("sql_supplement")
+        try:
+            supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+            _apply_weights(supplements, weights["sql"])
+            deduped.extend(supplements)
+            if supplements:
+                strategies.append("sql_supplement")
+        except Exception as e:
+            logger.warning(f"R3 sql_supplement failed: {e}")
+            errors["sql_supplement"] = repr(e)[:200]
 
-    return deduped, strategies
+    return deduped, strategies, errors
 
 
 async def _route_r4(
@@ -311,9 +329,10 @@ async def _route_r4(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], dict[str, str]]:
     """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + SQL(0.5)."""
     strategies: list[str] = []
+    errors: dict[str, str] = {}
     weights = settings.route_weights.get("R4", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
 
     event_keywords = signals.detected_events
@@ -336,6 +355,7 @@ async def _route_r4(
         strategies.append("graph_event")
     elif event_keywords and isinstance(results[0], Exception):
         logger.warning(f"R4 graph event retrieval failed: {results[0]}")
+        errors["graph_event"] = repr(results[0])[:200]
 
     # Semantic results
     if not isinstance(results[1], Exception) and results[1]:
@@ -344,6 +364,7 @@ async def _route_r4(
         strategies.append("semantic")
     elif isinstance(results[1], Exception):
         logger.warning(f"R4 semantic retrieval failed: {results[1]}")
+        errors["semantic"] = repr(results[1])[:200]
 
     deduped = _dedup(all_candidates)
 
@@ -351,13 +372,17 @@ async def _route_r4(
     existing_ids = {c["id"] for c in deduped}
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
-        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
-        _apply_weights(supplements, weights["sql"])
-        deduped.extend(supplements)
-        if supplements:
-            strategies.append("sql_supplement")
+        try:
+            supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+            _apply_weights(supplements, weights["sql"])
+            deduped.extend(supplements)
+            if supplements:
+                strategies.append("sql_supplement")
+        except Exception as e:
+            logger.warning(f"R4 sql_supplement failed: {e}")
+            errors["sql_supplement"] = repr(e)[:200]
 
-    return deduped, strategies
+    return deduped, strategies, errors
 
 
 async def _route_r5(
@@ -366,9 +391,10 @@ async def _route_r5(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], dict[str, str]]:
     """R5: Cross-reference → Semantic seed + Cross-Ref(0.85) ∥ Graph(0.75) + SQL(0.4)."""
     strategies: list[str] = []
+    errors: dict[str, str] = {}
     weights = settings.route_weights.get(
         "R5", {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql": 0.4}
     )
@@ -383,6 +409,7 @@ async def _route_r5(
         strategies.append("semantic")
     except Exception as e:
         logger.warning(f"R5 semantic retrieval failed: {e}")
+        errors["semantic"] = repr(e)[:200]
         sem_results = []
 
     deduped = _dedup(all_candidates)
@@ -410,6 +437,7 @@ async def _route_r5(
         for (label, _), result in zip(parallel_tasks, task_results):
             if isinstance(result, Exception):
                 logger.warning(f"R5 {label} retrieval failed: {result}")
+                errors[label if label != "cross_ref" else "cross_reference"] = repr(result)[:200]
                 continue
             if result:
                 w = weights.get(label, weights.get("cross_ref", 0.85))
@@ -423,13 +451,17 @@ async def _route_r5(
     existing_ids = {c["id"] for c in deduped}
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
-        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
-        _apply_weights(supplements, weights["sql"])
-        deduped.extend(supplements)
-        if supplements:
-            strategies.append("sql_supplement")
+        try:
+            supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+            _apply_weights(supplements, weights["sql"])
+            deduped.extend(supplements)
+            if supplements:
+                strategies.append("sql_supplement")
+        except Exception as e:
+            logger.warning(f"R5 sql_supplement failed: {e}")
+            errors["sql_supplement"] = repr(e)[:200]
 
-    return deduped, strategies
+    return deduped, strategies, errors
 
 
 async def _route_r6(
@@ -438,9 +470,10 @@ async def _route_r6(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], dict[str, str]]:
     """R6: Place search → Graph_Place(0.85) + Semantic(0.7) + SQL(0.5)."""
     strategies: list[str] = []
+    errors: dict[str, str] = {}
     weights = settings.route_weights.get("R6", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
 
     place_names = signals.detected_places
@@ -463,6 +496,7 @@ async def _route_r6(
         strategies.append("graph_place")
     elif place_names and isinstance(results[0], Exception):
         logger.warning(f"R6 graph place retrieval failed: {results[0]}")
+        errors["graph_place"] = repr(results[0])[:200]
 
     # Semantic results
     if not isinstance(results[1], Exception) and results[1]:
@@ -471,6 +505,7 @@ async def _route_r6(
         strategies.append("semantic")
     elif isinstance(results[1], Exception):
         logger.warning(f"R6 semantic retrieval failed: {results[1]}")
+        errors["semantic"] = repr(results[1])[:200]
 
     deduped = _dedup(all_candidates)
 
@@ -478,13 +513,17 @@ async def _route_r6(
     existing_ids = {c["id"] for c in deduped}
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
-        supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
-        _apply_weights(supplements, weights["sql"])
-        deduped.extend(supplements)
-        if supplements:
-            strategies.append("sql_supplement")
+        try:
+            supplements = await _sql_supplement(book_chapters, existing_ids, limit=3)
+            _apply_weights(supplements, weights["sql"])
+            deduped.extend(supplements)
+            if supplements:
+                strategies.append("sql_supplement")
+        except Exception as e:
+            logger.warning(f"R6 sql_supplement failed: {e}")
+            errors["sql_supplement"] = repr(e)[:200]
 
-    return deduped, strategies
+    return deduped, strategies, errors
 
 
 async def _route_fallback(
@@ -493,13 +532,15 @@ async def _route_fallback(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], dict[str, str]]:
     """Fallback: Semantic only."""
     strategy_name = "hybrid" if settings.hybrid_search_enabled else "semantic"
+    errors: dict[str, str] = {}
     try:
         candidates = await _get_semantic(query)
     except Exception as e:
         logger.warning(f"Fallback semantic retrieval failed: {e}")
+        errors[strategy_name] = repr(e)[:200]
         candidates = []
 
-    return _dedup(candidates), [strategy_name]
+    return _dedup(candidates), [strategy_name], errors

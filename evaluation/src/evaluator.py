@@ -256,6 +256,7 @@ def load_samples_from_checkpoint() -> list[EvalSample]:
             reference_answer=gt.reference_answer,
             route_used=item.get("route_used", ""),
             strategies_used=item.get("strategies_used", []),
+            strategy_errors=item.get("strategy_errors", {}),
         ))
 
     return samples

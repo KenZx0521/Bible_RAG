@@ -1,0 +1,25 @@
+[
+  {
+    "question_id": "VERSE_LOOKUP_001",
+    "question": "根據約翰福音3:16，神如何表達祂對世人的愛？",
+    "rag_answer": "根據約翰福音第3章第16節，上帝表達祂對世人的愛，是「將他的獨生子賜給他們」（約翰福音 3:16）。這樣做的目的是「叫一切信他的，不致滅亡，反得永生」（約翰福音 3:16）。",
+    "contexts": [
+      "16. 「上帝愛世人，甚至將他的獨生子賜給他們，叫一切信他的，不致滅亡，反得永生。"
+    ],
+    "sources": [
+      {
+        "id": "jhn:3:16",
+        "book": "約翰福音",
+        "chapter": 3,
+        "title": "耶穌與尼哥德慕",
+        "verse_range": "16",
+        "score": null
+      }
+    ],
+    "route_used": "R1",
+    "strategies_used": [
+      "verse_direct"
+    ],
+    "strategy_errors": {}
+  }
+]
