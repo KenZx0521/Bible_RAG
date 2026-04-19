@@ -57,8 +57,8 @@ def create_langchain_llm():
             model=settings.eval_ollama_model,
             base_url=settings.ollama_base_url,
             temperature=0.0,
-            num_predict=1024,
-            num_ctx=8192,
+            num_predict=8192,
+            num_ctx=16384,
             format="json",
             keep_alive="60m",
         )
