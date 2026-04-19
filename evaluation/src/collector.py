@@ -1,8 +1,8 @@
 """
-Collector: send questions to RAG API, fetch contexts, evaluate per-question with Claude.
+Collector: send questions to RAG API and fetch contexts.
 
-Each execution starts fresh (no resume). After each RAG response, immediately calls
-Claude API for Answer Point Coverage so both API calls are logged together.
+Each execution starts fresh (no resume). Saves raw_responses.json after each
+question for crash recovery.
 """
 
 from __future__ import annotations
@@ -19,7 +19,6 @@ from .config import settings
 from .models import EvalSample, GroundTruthItem, MetricResult, SourceInfo
 from .rag_client import query_rag, parse_sources
 from .content_fetcher import get_pool, fetch_contexts
-from .metrics.llm_judge import evaluate_point_coverage_async
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -49,13 +48,12 @@ async def collect_responses(
     For each ground truth question:
       1. Call the RAG API
       2. Fetch context content from PostgreSQL
-      3. Immediately call Claude API for Answer Point Coverage
-      4. Build an EvalSample
+      3. Build an EvalSample
 
     Always starts fresh. Saves raw_responses.json after each question.
 
     Returns: (samples, inline_metrics)
-      - inline_metrics: { question_id: [MetricResult] } for point coverage
+      - inline_metrics: kept as empty dict for run_evaluation() signature compat.
     """
     _clear_previous_results()
 
@@ -119,18 +117,6 @@ async def collect_responses(
                 )
                 samples.append(sample)
 
-                # --- Step 3: Immediately evaluate with Claude API ---
-                coverage = await evaluate_point_coverage_async(sample)
-                inline_metrics[gt.question_id] = [
-                    MetricResult(
-                        name="answer_point_coverage",
-                        value=round(coverage, 4),
-                        category="llm_judge",
-                    )
-                ]
-                console.print(
-                    f"  [green]=> Point coverage: {coverage:.2%}[/green]"
-                )
                 if route_used:
                     strats = ", ".join(strategies_used) if strategies_used else "none"
                     console.print(

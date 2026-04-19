@@ -25,7 +25,6 @@ from .data_loader import load_ground_truth
 from .collector import collect_responses
 
 from .metrics.retrieval import compute_retrieval_metrics
-from .metrics.reference_based import compute_reference_metrics
 from .metrics.ragas_eval import compute_ragas_metrics
 from .metrics.semantic_similarity import compute_semantic_similarity
 
@@ -73,14 +72,15 @@ def _aggregate(
         for m in ms:
             all_names.add(m.name)
 
-    # Overall averages
+    # Overall averages. Skip metrics flagged invalid (e.g. RAGAS timeout) so
+    # failed samples do not coerce into 0.0 and drag the mean down.
     overall: dict[str, float] = {}
     for name in sorted(all_names):
         vals = [
             m.value
             for ms in all_metrics.values()
             for m in ms
-            if m.name == name
+            if m.name == name and m.valid
         ]
         overall[name] = round(sum(vals) / len(vals), 4) if vals else 0.0
 
@@ -97,7 +97,7 @@ def _aggregate(
                 m.value
                 for qid in qids
                 for m in all_metrics.get(qid, [])
-                if m.name == name
+                if m.name == name and m.valid
             ]
             type_avgs[name] = round(sum(vals) / len(vals), 4) if vals else 0.0
         by_type[qtype] = type_avgs
@@ -164,36 +164,27 @@ def run_evaluation(
     """
     Step 2: Run batch metrics on collected samples.
 
-    inline_metrics: pre-computed per-question metrics (e.g. point coverage from collection phase).
+    inline_metrics: kept for signature compatibility; currently unused after
+    answer_point_coverage was removed for cost reduction.
     """
     console.print("[bold]Starting batch evaluation pipeline...[/bold]")
     question_ids = [s.question_id for s in samples]
 
     # 1. Retrieval metrics (fast, no LLM)
-    console.print("\n[bold cyan]1/4 Retrieval Metrics[/bold cyan]")
+    console.print("\n[bold cyan]1/3 Retrieval Metrics[/bold cyan]")
     retrieval = compute_retrieval_metrics(samples, k=settings.top_k)
 
-    # 2. Reference-based metrics (BLEU, ROUGE, BERTScore)
-    console.print("\n[bold cyan]2/4 Reference-Based Metrics[/bold cyan]")
-    reference = compute_reference_metrics(samples)
-
-    # 3. Semantic similarity
-    console.print("\n[bold cyan]3/4 Semantic Similarity[/bold cyan]")
+    # 2. Semantic similarity
+    console.print("\n[bold cyan]2/3 Semantic Similarity[/bold cyan]")
     semantic = compute_semantic_similarity(samples)
 
-    # 4. RAGAS (LLM judge) - extracts rationales from traces
-    console.print("\n[bold cyan]4/4 RAGAS Evaluation[/bold cyan]")
+    # 3. RAGAS (LLM judge) - extracts rationales from traces
+    console.print("\n[bold cyan]3/3 RAGAS Evaluation[/bold cyan]")
     ragas, rationales = compute_ragas_metrics(samples)
-
-    # Use inline point coverage if provided, otherwise compute in batch
-    if inline_metrics is None:
-        from .metrics.llm_judge import compute_llm_judge_metrics
-        console.print("\n[bold cyan]Extra: Answer Point Coverage[/bold cyan]")
-        inline_metrics = compute_llm_judge_metrics(samples)
 
     # Merge all metrics
     all_metrics = _merge_metrics(
-        question_ids, retrieval, reference, semantic, ragas, inline_metrics
+        question_ids, retrieval, semantic, ragas
     )
 
     # Log rationale statistics

@@ -4,7 +4,6 @@ RAGAS framework evaluation using the configured eval LLM provider as judge.
 Metrics:
   - Faithfulness
   - Answer Relevancy
-  - Context Precision
   - Context Recall
   - Answer Correctness
 
@@ -114,7 +113,6 @@ def compute_ragas_metrics(
     from ragas.metrics import (
         Faithfulness,
         ResponseRelevancy,
-        LLMContextPrecisionWithoutReference,
         LLMContextRecall,
         AnswerCorrectness,
     )
@@ -127,8 +125,11 @@ def compute_ragas_metrics(
     # Setup LLM and embeddings
     logger.info("[RAGAS] Initializing LangChain LLM (provider=%s)", provider)
     llm = create_langchain_llm()
-    logger.info("[RAGAS] Initializing HuggingFaceEmbeddings model=BAAI/bge-m3")
-    embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+    logger.info("[RAGAS] Initializing HuggingFaceEmbeddings model=BAAI/bge-m3 (device=cpu)")
+    embeddings = HuggingFaceEmbeddings(
+        model_name="BAAI/bge-m3",
+        model_kwargs={"device": "cpu"},
+    )
 
     # Build RAGAS dataset
     ragas_samples = []
@@ -159,7 +160,6 @@ def compute_ragas_metrics(
     metrics = [
         Faithfulness(),
         ResponseRelevancy(),
-        LLMContextPrecisionWithoutReference(),
         LLMContextRecall(),
         AnswerCorrectness(),
     ]
@@ -167,7 +167,6 @@ def compute_ragas_metrics(
     metric_names = [
         "faithfulness",
         "answer_relevancy",
-        "context_precision",
         "context_recall",
         "answer_correctness",
     ]
@@ -176,7 +175,6 @@ def compute_ragas_metrics(
     col_map = {
         "faithfulness": "faithfulness",
         "answer_relevancy": "answer_relevancy",
-        "context_precision": "llm_context_precision_without_reference",
         "context_recall": "context_recall",
         "answer_correctness": "answer_correctness",
     }
@@ -185,17 +183,20 @@ def compute_ragas_metrics(
     trace_keys = {
         "faithfulness": "faithfulness",
         "answer_relevancy": "answer_relevancy",
-        "context_precision": "llm_context_precision_without_reference",
         "context_recall": "context_recall",
         "answer_correctness": "answer_correctness",
     }
 
-    # Ollama runs inference serially; limit concurrency to avoid queue-induced timeouts.
+    # Ollama serializes inference per model. max_workers=1 prevents the second
+    # worker's asyncio.wait_for clock from starting while it sits in the semaphore
+    # queue. timeout covers multi-call metrics (Faithfulness chains 2 LLM calls,
+    # ContextPrecision fires one per retrieved context). max_retries=1 because
+    # retrying a 30-minute-worst-case slow judge only compounds the delay.
     is_ollama = settings.eval_llm_provider.lower() == "ollama"
     run_config = RunConfig(
-        timeout=600 if is_ollama else 180,
-        max_workers=2 if is_ollama else 16,
-        max_retries=3,
+        timeout=1800 if is_ollama else 180,
+        max_workers=1 if is_ollama else 16,
+        max_retries=1 if is_ollama else 3,
         max_wait=30,
     )
     logger.info("[RAGAS] Starting evaluation with %d metrics (timeout=%ds, workers=%d)...",
@@ -240,15 +241,22 @@ def compute_ragas_metrics(
                 break
             row = df.iloc[i]
 
-            # Extract scores
+            # Extract scores. Timeout / LLM failure surfaces as NaN in the
+            # DataFrame; we tag those with valid=False so aggregation can skip
+            # them instead of coercing to 0.0 (which would drag category means).
             metric_results = []
             for name in metric_names:
                 col = col_map.get(name, name)
-                val = row.get(col, 0.0)
-                if val is None or (isinstance(val, float) and val != val):
-                    val = 0.0
+                val = row.get(col, None)
+                is_nan = isinstance(val, float) and val != val
+                is_valid = val is not None and not is_nan
                 metric_results.append(
-                    MetricResult(name=f"ragas_{name}", value=round(float(val), 4), category="llm_judge")
+                    MetricResult(
+                        name=f"ragas_{name}",
+                        value=round(float(val), 4) if is_valid else 0.0,
+                        category="llm_judge",
+                        valid=is_valid,
+                    )
                 )
             results[qid] = metric_results
 
@@ -279,9 +287,7 @@ def compute_ragas_metrics(
                 _extract_reason_from_trace(trace, trace_keys["answer_relevancy"])
             )
             context_reason = (
-                get_df_reason("context_precision") or
                 get_df_reason("context_recall") or
-                _extract_reason_from_trace(trace, trace_keys["context_precision"]) or
                 _extract_reason_from_trace(trace, trace_keys["context_recall"])
             )
             overall_reason = (

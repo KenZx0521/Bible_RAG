@@ -52,7 +52,8 @@ class EvalSample(BaseModel):
 class MetricResult(BaseModel):
     name: str
     value: float
-    category: str  # retrieval | reference_based | llm_judge | context | semantic
+    category: str  # retrieval | llm_judge | semantic
+    valid: bool = True  # False when the metric could not be computed (e.g. RAGAS timeout)
 
 
 class Rationale(BaseModel):

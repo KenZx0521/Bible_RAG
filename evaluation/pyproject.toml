@@ -15,11 +15,6 @@ dependencies = [
     "langchain-huggingface>=0.1.0",
     "langchain-ollama>=0.3.0",
     "anthropic>=0.40.0",
-    # Reference-based metrics
-    "sacrebleu>=2.4.0",
-    "rouge-score>=0.1.2",
-    "bert-score>=0.3.13",
-    "ckip-transformers>=0.3.0",
     # Semantic similarity
     "sentence-transformers>=3.0.0",
     # Visualization

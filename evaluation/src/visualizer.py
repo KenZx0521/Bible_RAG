@@ -27,11 +27,9 @@ RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
 RETRIEVAL_METRICS = [
     "precision_at_k", "recall_at_k", "f1_at_k", "mrr", "map_at_k", "ndcg_at_k", "hit_rate"
 ]
-REFERENCE_METRICS = ["bleu", "rouge1", "rouge2", "rougeL", "bertscore"]
 LLM_JUDGE_METRICS = [
-    "ragas_faithfulness", "ragas_answer_relevancy", "ragas_context_precision",
+    "ragas_faithfulness", "ragas_answer_relevancy",
     "ragas_context_recall", "ragas_answer_correctness",
-    "answer_point_coverage",
 ]
 SEMANTIC_METRICS = ["semantic_similarity"]
 
@@ -50,8 +48,8 @@ QUESTION_TYPE_LABELS = {
 
 
 def _make_radar_chart(report: AggregatedReport) -> str:
-    """Create a radar chart showing 4 category averages."""
-    categories = ["檢索效能", "參考指標", "LLM 評估", "語意相似度"]
+    """Create a radar chart showing 3 category averages."""
+    categories = ["檢索效能", "LLM 評估", "語意相似度"]
 
     def _avg(names: list[str]) -> float:
         vals = [report.overall.get(n, 0.0) for n in names if n in report.overall]
@@ -59,7 +57,6 @@ def _make_radar_chart(report: AggregatedReport) -> str:
 
     values = [
         _avg(RETRIEVAL_METRICS),
-        _avg(REFERENCE_METRICS),
         _avg(LLM_JUDGE_METRICS),
         _avg(SEMANTIC_METRICS),
     ]
@@ -108,9 +105,9 @@ def _make_retrieval_bar(report: AggregatedReport) -> str:
 
 def _make_generation_bar(report: AggregatedReport) -> str:
     """Bar chart for generation quality metrics."""
-    gen_metrics = REFERENCE_METRICS + [
+    gen_metrics = [
         "ragas_faithfulness", "ragas_answer_relevancy", "ragas_answer_correctness",
-        "answer_point_coverage", "semantic_similarity",
+        "semantic_similarity",
     ]
     rows = []
     for qtype in QUESTION_TYPES:
@@ -142,7 +139,7 @@ def _make_generation_bar(report: AggregatedReport) -> str:
 def _make_context_bar(report: AggregatedReport) -> str:
     """Bar chart for context-related metrics."""
     ctx_metrics = [
-        "ragas_context_precision", "ragas_context_recall",
+        "ragas_context_recall",
     ]
     rows = []
     for qtype in QUESTION_TYPES:
@@ -199,8 +196,7 @@ def _make_question_detail_table(report: AggregatedReport) -> list[dict]:
     """Build a detail row for every question, sorted by avg_score ascending."""
     KEY_COLS = [
         "hit_rate", "ragas_faithfulness", "ragas_answer_relevancy",
-        "ragas_context_precision", "ragas_context_recall",
-        "answer_point_coverage", "semantic_similarity",
+        "ragas_context_recall", "semantic_similarity",
     ]
     rows = []
     for sample in report.samples:
@@ -235,11 +231,9 @@ def _make_metric_cards(report: AggregatedReport) -> list[dict]:
         ("ndcg_at_k", "NDCG@k", "歸一化折損累積增益"),
         ("ragas_faithfulness", "Faithfulness", "回答忠實度"),
         ("ragas_answer_relevancy", "Answer Relevancy", "回答相關性"),
-        ("ragas_context_precision", "Context Precision", "Context 精確度"),
         ("ragas_context_recall", "Context Recall", "Context 召回率"),
-        ("answer_point_coverage", "Point Coverage", "答案要點覆蓋率"),
+        ("ragas_answer_correctness", "Answer Correctness", "綜合正確性"),
         ("semantic_similarity", "Similarity", "語意相似度"),
-        ("bertscore", "BERTScore", "BERT 相似度"),
     ]
     cards = []
     for key, title, desc in key_metrics:

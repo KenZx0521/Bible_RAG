@@ -20,9 +20,7 @@ evaluation/
 │   ├── visualizer.py            # Plotly 視覺化
 │   └── metrics/
 │       ├── retrieval.py         # 7 個檢索指標
-│       ├── reference_based.py   # BLEU, ROUGE, BERTScore
 │       ├── ragas_eval.py        # RAGAS 框架指標
-│       ├── llm_judge.py         # 自訂 Answer Point Coverage
 │       └── semantic_similarity.py
 ├── templates/
 │   └── dashboard.html.j2       # 儀表板模板
@@ -70,22 +68,13 @@ uv run python run_eval.py --visualize-only    # 只產生視覺化（需先評�
 | NDCG@k | 歸一化折損累積增益（分級相關性） |
 | Hit Rate | 是否至少有一個相關結果 |
 
-### 參考指標（套件）
-| 指標 | 說明 |
-|------|------|
-| BLEU | 基於 n-gram 的翻譯品質 |
-| ROUGE-1/2/L | 基於 n-gram 的摘要品質 |
-| BERTScore | BERT 嵌入的語意相似度 |
-
 ### LLM 評估指標
 | 指標 | 框架 | 說明 |
 |------|------|------|
 | Faithfulness | RAGAS | 回答是否忠於 context |
 | Answer Relevancy | RAGAS | 回答是否切題 |
-| Context Precision | RAGAS | 相關 context 排序品質 |
 | Context Recall | RAGAS | context 的完整性 |
 | Answer Correctness | RAGAS | 綜合正確性 |
-| Answer Point Coverage | 自訂 | 答案要點覆蓋率 |
 
 ### 語意指標
 | 指標 | 說明 |
