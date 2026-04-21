@@ -56,10 +56,11 @@ def create_langchain_llm():
         return ChatOllama(
             model=settings.eval_ollama_model,
             base_url=settings.ollama_base_url,
-            temperature=0.0,
+            temperature=0.3,
             num_predict=8192,
             num_ctx=16384,
-            format="json",
+            top_p=0.9,
+            reasoning=False,
             keep_alive="60m",
         )
 
