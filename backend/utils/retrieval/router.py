@@ -116,6 +116,18 @@ async def retrieve_and_rerank(
     else:
         ranked = []
 
+    # Chapter-pin: when the user specified A書N章, guarantee ≥min_pins pericopes
+    # from that (book_id, chapter) survive in top-k. R1 is skipped because it
+    # already returns exact verse matches without rerank.
+    if route != "R1" and ranked:
+        ranked = _pin_chapter_candidates(
+            ranked=ranked,
+            candidates=candidates,
+            verse_refs=verse_refs,
+            top_k=k,
+            min_pins=2,
+        )
+
     stats = {
         "strategies_used": strategies_used,
         "total_candidates": total_candidates,
@@ -163,6 +175,81 @@ def _extract_book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
                 book_id = parts[0]
                 pairs.add((book_id, int(ch)))
     return list(pairs)
+
+
+def _pin_chapter_candidates(
+    ranked: list[dict],
+    candidates: list[dict],
+    verse_refs: list[VerseRef],
+    top_k: int,
+    min_pins: int = 2,
+) -> list[dict]:
+    """Guarantee chapter-specified pericopes survive rerank by pinning them into top-k.
+
+    When a user specifies a chapter (e.g. 馬太福音第6章), SQL retrieval weights the
+    matching pericopes at 0.85+ but the reranker can still drop them in favour of
+    semantically adjacent chapters. For each chapter-only VerseRef we ensure at
+    least min_pins pericopes from that (book_id, chapter) survive in the returned
+    top-k, pulling extras from the pre-rerank pool when needed. Only candidates
+    with weight >= 0.85 are eligible (floors out semantic noise). Pinned entries
+    get a synthetic rerank_score just above the current max so routers/query.py
+    does not emit null scores.
+    """
+    targets: set[tuple[str, int]] = {
+        (vr.book_id, vr.chapter) for vr in verse_refs if vr.verse_start is None
+    }
+    if not targets or not ranked:
+        return ranked
+
+    effective_min = min(min_pins, top_k)
+
+    def _match(c: dict, book_id: str, chapter: int) -> bool:
+        cid = c.get("id", "")
+        parts = cid.split(":") if cid else []
+        if not parts or parts[0] != book_id:
+            return False
+        return c.get("chapter_num") == chapter
+
+    result: list[dict] = list(ranked)
+    existing_ids: set[str] = {c["id"] for c in result}
+
+    for book_id, chapter in targets:
+        present = sum(1 for c in result if _match(c, book_id, chapter))
+        if present >= effective_min:
+            continue
+        needed = effective_min - present
+        pool_matches = [
+            c for c in candidates
+            if c.get("id") not in existing_ids
+            and _match(c, book_id, chapter)
+            and c.get("weight", 0) >= 0.85
+        ]
+        pool_matches.sort(key=lambda c: (-c.get("weight", 0), c.get("id", "")))
+        to_pin = pool_matches[:needed]
+        if not to_pin:
+            continue
+
+        existing_scores = [c.get("rerank_score") for c in result if c.get("rerank_score") is not None]
+        base_score = max(existing_scores) if existing_scores else 1.0
+        for c in to_pin:
+            c["rerank_score"] = base_score + 0.01
+            existing_ids.add(c["id"])
+
+        result = to_pin + result
+
+    if len(result) > top_k:
+        protected: list[dict] = []
+        evictable: list[dict] = []
+        for c in result:
+            if any(_match(c, book_id, chapter) for book_id, chapter in targets):
+                protected.append(c)
+            else:
+                evictable.append(c)
+        keep_non_protected = max(0, top_k - len(protected))
+        result = protected + evictable[:keep_non_protected]
+        result = result[:top_k]
+
+    return result
 
 
 async def _sql_supplement(book_chapters: list[tuple[str, int]], existing_ids: set[str], limit: int = 5) -> list[dict]:
@@ -426,15 +513,19 @@ async def _route_r5(
     k: int,
     use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """R5: Cross-reference → Semantic seed + Cross-Ref(0.85) ∥ Graph(0.75) + SQL(0.4).
+    """R5: Cross-reference → Semantic + SQL_Chapter(0.85) + Cross-Ref(0.85) ∥ Graph(0.75) + SQL(0.4).
+
+    When verse_refs has chapter-only refs (e.g. multi-book query with 哥林多前書15章),
+    the specified chapter is pulled via sql_chapter BEFORE the parallel cross-ref/graph
+    block so it wins dedup ties and is eligible for chapter-pin in retrieve_and_rerank.
 
     When use_graph=False, both cross_reference and graph are skipped;
-    route degrades to pure semantic + SQL supplement.
+    route degrades to pure semantic + sql_chapter (if any) + SQL supplement.
     """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     weights = settings.route_weights.get(
-        "R5", {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql": 0.4}
+        "R5", {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql_chapter": 0.85, "sql": 0.4}
     )
 
     all_candidates: list[dict] = []
@@ -449,6 +540,22 @@ async def _route_r5(
         logger.warning(f"R5 semantic retrieval failed: {e}")
         errors["semantic"] = repr(e)[:200]
         sem_results = []
+
+    # SQL chapter retrieval for chapter-only verse_refs. Runs before cross-ref/graph
+    # so dedup (strict-greater weight) keeps the sql_chapter entry on ties.
+    if verse_refs and any(vr.verse_start is None for vr in verse_refs):
+        try:
+            chapter_results = await retrieve_by_verse_refs(verse_refs)
+            sql_chapter_weight = weights.get("sql_chapter", 0.85)
+            _apply_weights(chapter_results, sql_chapter_weight)
+            for c in chapter_results:
+                c["source_strategy"] = "sql_chapter"
+            all_candidates.extend(chapter_results)
+            if chapter_results:
+                strategies.append("sql_chapter")
+        except Exception as e:
+            logger.warning(f"R5 SQL chapter retrieval failed: {e}")
+            errors["sql_chapter"] = repr(e)[:200]
 
     deduped = _dedup(all_candidates)
 

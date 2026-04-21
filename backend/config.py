@@ -64,7 +64,7 @@ class Settings(BaseSettings):
         "R2": {"sql": 0.9, "semantic": 0.6},
         "R3": {"graph": 0.9, "semantic": 0.7, "sql": 0.5},
         "R4": {"graph": 0.85, "semantic": 0.7, "sql": 0.5},
-        "R5": {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql": 0.4},
+        "R5": {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql_chapter": 0.85, "sql": 0.4},
         "R6": {"graph": 0.85, "semantic": 0.7, "sql": 0.5},
     }
 

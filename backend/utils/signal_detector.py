@@ -132,10 +132,18 @@ def detect_signals(
 def select_route(signals: QuerySignals, intent_type: str = "") -> str:
     """Decision tree: select the best route based on signals.
 
-    Priority order: R1 > R2 > R5 > R3 > R4 > R6 > fallback
+    Priority order:
+        R1 > R5(multi-book+chapter) > R2 > R5(default) > R3 > R4 > R6 > fallback
+
+    Rationale for the R5(multi-book+chapter) branch: queries like
+    "哥林多前書15章如何回應創世記關於死亡的敘述？" set both has_book_chapter=True
+    and has_multi_book=True. Under the old priority, R2 would win and R5's
+    cross-reference logic would never execute, losing the second book's content.
     """
     if signals.has_book_chapter_verse:
         return "R1"
+    if signals.has_book_chapter and signals.has_multi_book:
+        return "R5"
     if signals.has_book_chapter:
         return "R2"
     if signals.has_multi_book or intent_type == "cross_reference":
