@@ -3,10 +3,12 @@ Configuration management - reads from ../.env
 """
 
 from pathlib import Path
+from pydantic import PrivateAttr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 _ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
+_EVAL_ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
@@ -15,6 +17,10 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    # Run mode state: set by CLI at startup (not an env var).
+    # None → results/, True → results_graph/, False → results_no_graph/
+    _graph_mode: bool | None = PrivateAttr(default=None)
 
     # Evaluation LLM Provider: claude | openai | gemini | ollama
     eval_llm_provider: str = "claude"
@@ -60,6 +66,19 @@ class Settings(BaseSettings):
             f"postgresql://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+    def set_graph_mode(self, use_graph: bool | None) -> None:
+        """Set run-mode flag. Controls `results_dir` output target."""
+        self._graph_mode = use_graph
+
+    @property
+    def results_dir(self) -> Path:
+        """Resolve output directory based on graph mode set by CLI."""
+        if self._graph_mode is True:
+            return _EVAL_ROOT / "results_graph"
+        if self._graph_mode is False:
+            return _EVAL_ROOT / "results_no_graph"
+        return _EVAL_ROOT / "results"
 
 
 settings = Settings()

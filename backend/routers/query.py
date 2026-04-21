@@ -48,6 +48,7 @@ async def rag_query(req: QueryRequest):
         entity_names=intent["entities"],
         top_k=req.top_k,
         keywords=intent.get("keywords"),
+        use_graph=req.use_graph,
     )
 
     # Step 6-7: Generate answer

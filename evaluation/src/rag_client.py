@@ -19,18 +19,25 @@ async def query_rag(
     question: str,
     client: httpx.AsyncClient | None = None,
     top_k: int | None = None,
+    use_graph: bool | None = None,
 ) -> dict:
     """
     Send a question to POST /api/v1/query and return the parsed response.
 
+    Args:
+        use_graph: Per-request override for backend RAG_USE_GRAPH. None = use
+            backend default; True/False explicitly forces graph on/off.
+
     Returns dict with keys: answer, sources, intent, retrieval_stats
     """
     k = top_k or settings.top_k
-    payload = {
+    payload: dict = {
         "question": question,
         "top_k": k,
         "include_sources": True,
     }
+    if use_graph is not None:
+        payload["use_graph"] = use_graph
     url = f"{settings.backend_url}/api/v1/query"
 
     own_client = client is None

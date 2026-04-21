@@ -3,10 +3,14 @@
 Bible RAG Evaluation CLI
 
 Usage:
-    uv run python run_eval.py                 # Full pipeline
+    uv run python run_eval.py                 # Full pipeline (uses backend RAG_USE_GRAPH)
     uv run python run_eval.py --collect-only  # Only collect RAG responses + inline eval
     uv run python run_eval.py --eval-only     # Only run batch evaluation (needs responses)
     uv run python run_eval.py --visualize-only # Only generate dashboard
+
+    Graph-retrieval A/B (backend does NOT need restart between runs):
+        uv run python run_eval.py --graph       # results_graph/
+        uv run python run_eval.py --no-graph    # results_no_graph/
 """
 
 from __future__ import annotations
@@ -43,13 +47,28 @@ def main() -> None:
     group.add_argument("--collect-only", action="store_true", help="Only collect RAG responses + inline eval")
     group.add_argument("--eval-only", action="store_true", help="Only run batch evaluation metrics")
     group.add_argument("--visualize-only", action="store_true", help="Only generate dashboard")
+    parser.add_argument(
+        "--graph",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Enable (--graph) or disable (--no-graph) graph retrieval for this run. "
+             "Default: use backend RAG_USE_GRAPH env. Also routes output to "
+             "results_graph/ or results_no_graph/ (vs plain results/).",
+    )
     args = parser.parse_args()
 
     _setup_logging()
 
+    # Configure evaluation output dir based on graph mode. Must happen before any
+    # function below reads settings.results_dir.
+    from src.config import settings
+    settings.set_graph_mode(args.graph)
+
+    mode_label = {True: "graph", False: "no-graph", None: "default (backend env)"}[args.graph]
     console.print(Panel.fit(
         "[bold blue]Bible RAG Evaluation System[/bold blue]\n"
-        "[dim]RAGAS + Custom Metrics[/dim]",
+        f"[dim]RAGAS + Custom Metrics | Graph mode: {mode_label}[/dim]\n"
+        f"[dim]Output dir: {settings.results_dir}[/dim]",
         border_style="blue",
     ))
 
@@ -64,7 +83,7 @@ def main() -> None:
 
     if args.collect_only:
         console.print("[bold]Mode: Collect Only[/bold]")
-        samples, inline_metrics = asyncio.run(run_collection())
+        samples, inline_metrics = asyncio.run(run_collection(use_graph=args.graph))
         console.print("[green]Collection complete. Run with --eval-only to run batch metrics.[/green]")
 
     elif args.eval_only:
@@ -87,7 +106,7 @@ def main() -> None:
 
         # Step 1: Collect + inline Claude eval
         console.rule("[bold cyan]Step 1: Collect RAG Responses + Claude Point Coverage")
-        samples, inline_metrics = asyncio.run(run_collection())
+        samples, inline_metrics = asyncio.run(run_collection(use_graph=args.graph))
 
         # Step 2: Batch evaluate (pass inline metrics so point coverage isn't re-run)
         console.rule("[bold cyan]Step 2: Run Batch Evaluation Metrics")
@@ -102,7 +121,7 @@ def main() -> None:
         generate_dashboard(report)
 
         console.print("\n[bold green]Evaluation complete![/bold green]")
-        console.print("Open [cyan]results/dashboard.html[/cyan] to view the dashboard.")
+        console.print(f"Open [cyan]{settings.results_dir / 'dashboard.html'}[/cyan] to view the dashboard.")
 
 
 if __name__ == "__main__":

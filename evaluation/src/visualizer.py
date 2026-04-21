@@ -16,12 +16,12 @@ import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 from rich.console import Console
 
+from .config import settings
 from .models import AggregatedReport
 
 console = Console()
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
-RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
 
 # Metric groupings for display
 RETRIEVAL_METRICS = [
@@ -270,8 +270,9 @@ def generate_dashboard(report: AggregatedReport) -> Path:
         type_labels=QUESTION_TYPE_LABELS,
     )
 
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = RESULTS_DIR / "dashboard.html"
+    results_dir = settings.results_dir
+    results_dir.mkdir(parents=True, exist_ok=True)
+    out_path = results_dir / "dashboard.html"
     out_path.write_text(html, encoding="utf-8")
 
     console.print(f"[bold green]Dashboard saved to {out_path}[/bold green]")

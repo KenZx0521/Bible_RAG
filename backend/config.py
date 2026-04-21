@@ -75,6 +75,10 @@ class Settings(BaseSettings):
     hybrid_prefetch_limit: int = 50
     hybrid_fusion_method: str = "rrf"
 
+    # Graph retrieval toggle (gates Neo4j-backed graph_retriever + cross_ref_retriever).
+    # Can be overridden per-request via the `use_graph` payload field.
+    rag_use_graph: bool = True
+
     model_config = {
         "env_file": str(Path(__file__).resolve().parent.parent / ".env"),
         "env_file_encoding": "utf-8",

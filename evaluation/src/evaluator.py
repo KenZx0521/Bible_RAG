@@ -30,8 +30,6 @@ from .metrics.semantic_similarity import compute_semantic_similarity
 
 console = Console()
 
-RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
-
 
 def _merge_metrics(
     question_ids: list[str],
@@ -107,8 +105,9 @@ def _aggregate(
 
 def _save_results(report: AggregatedReport) -> Path:
     """Save evaluation results to JSON."""
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = RESULTS_DIR / "evaluation_results.json"
+    results_dir = settings.results_dir
+    results_dir.mkdir(parents=True, exist_ok=True)
+    out_path = results_dir / "evaluation_results.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(report.model_dump(), f, ensure_ascii=False, indent=2)
     return out_path
@@ -146,15 +145,21 @@ def _print_summary(report: AggregatedReport) -> None:
         console.print(type_table)
 
 
-async def run_collection() -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
+async def run_collection(
+    use_graph: bool | None = None,
+) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
     Step 1: Collect RAG responses + inline Claude evaluation.
+
+    Args:
+        use_graph: Per-request override for backend graph retrieval.
+            None = use backend RAG_USE_GRAPH env default.
 
     Returns: (samples, inline_point_coverage_metrics)
     """
     questions = load_ground_truth()
     console.print(f"[bold]Loaded {len(questions)} ground truth questions.[/bold]")
-    return await collect_responses(questions)
+    return await collect_responses(questions, use_graph=use_graph)
 
 
 def run_evaluation(
@@ -211,7 +216,7 @@ def run_evaluation(
 
 def load_results() -> AggregatedReport:
     """Load previously saved evaluation results."""
-    path = RESULTS_DIR / "evaluation_results.json"
+    path = settings.results_dir / "evaluation_results.json"
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     return AggregatedReport(**data)
@@ -221,7 +226,7 @@ def load_samples_from_checkpoint() -> list[EvalSample]:
     """Reconstruct EvalSample list from raw_responses.json + ground_truth.json."""
     from .models import SourceInfo
 
-    raw_path = RESULTS_DIR / "raw_responses.json"
+    raw_path = settings.results_dir / "raw_responses.json"
     if not raw_path.exists():
         raise FileNotFoundError(f"No checkpoint found at {raw_path}")
 
@@ -255,8 +260,9 @@ def load_samples_from_checkpoint() -> list[EvalSample]:
 
 def export_csv(report: AggregatedReport) -> Path:
     """Export per-question evaluation results to CSV."""
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = RESULTS_DIR / "evaluation_results.csv"
+    results_dir = settings.results_dir
+    results_dir.mkdir(parents=True, exist_ok=True)
+    out_path = results_dir / "evaluation_results.csv"
 
     # Collect all metric names across samples
     all_metric_names: list[str] = []

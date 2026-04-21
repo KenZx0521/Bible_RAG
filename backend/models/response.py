@@ -27,6 +27,7 @@ class RetrievalStats(BaseModel):
     reranked_top_k: int = 0
     route_used: str = ""
     strategy_errors: dict[str, str] = {}
+    use_graph: bool = True
 
 
 class QueryResponse(BaseModel):

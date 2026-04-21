@@ -54,14 +54,21 @@ async def retrieve_and_rerank(
     entity_names: list[str],
     top_k: int | None = None,
     keywords: list[str] | None = None,
+    use_graph: bool | None = None,
 ) -> tuple[list[dict], dict]:
     """
     Signal-driven multi-strategy retrieval with 6 routes.
+
+    Args:
+        use_graph: Per-request override for graph retrieval. None falls back to
+            settings.rag_use_graph. When False, graph_retriever and
+            cross_ref_retriever calls are skipped in R3/R4/R5/R6.
 
     Returns:
         (top_k_results, retrieval_stats)
     """
     k = top_k or settings.default_top_k
+    effective_use_graph = use_graph if use_graph is not None else settings.rag_use_graph
 
     # Detect signals and select route
     signals = detect_signals(
@@ -91,6 +98,7 @@ async def retrieve_and_rerank(
         entity_names=entity_names,
         signals=signals,
         k=k,
+        use_graph=effective_use_graph,
     )
 
     total_candidates = len(candidates)
@@ -114,6 +122,7 @@ async def retrieve_and_rerank(
         "reranked_top_k": len(ranked),
         "route_used": route,
         "strategy_errors": strategy_errors,
+        "use_graph": effective_use_graph,
     }
 
     return ranked, stats
@@ -197,6 +206,7 @@ async def _route_r1(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
+    use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R1: Exact verse reference → SQL direct lookup, skip reranking.
 
@@ -216,7 +226,7 @@ async def _route_r1(
     # Fallback to R2
     logger.info("R1 empty, falling back to R2")
     r2_candidates, r2_strategies, r2_errors = await _route_r2(
-        query, verse_refs, entity_names, signals, k
+        query, verse_refs, entity_names, signals, k, use_graph
     )
     errors.update(r2_errors)
     return r2_candidates, r2_strategies, errors
@@ -228,8 +238,12 @@ async def _route_r2(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
+    use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """R2: Chapter + semantic → SQL chapter filter (0.9) + Semantic (0.6)."""
+    """R2: Chapter + semantic → SQL chapter filter (0.9) + Semantic (0.6).
+
+    Graph-agnostic route; use_graph has no effect here.
+    """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     all_candidates: list[dict] = []
@@ -267,33 +281,47 @@ async def _route_r3(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
+    use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """R3: Person graph (≥2 persons) → Graph(0.9) + Semantic(0.7) + SQL(0.5)."""
+    """R3: Person graph (≥2 persons) → Graph(0.9) + Semantic(0.7) + SQL(0.5).
+
+    When use_graph=False, graph_person is skipped; falls back to semantic + SQL supplement.
+    """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     weights = settings.route_weights.get("R3", {"graph": 0.9, "semantic": 0.7, "sql": 0.5})
 
     # Use detected persons for graph retrieval, fall back to entity_names
     person_names = signals.detected_persons or entity_names
+    graph_enabled = bool(use_graph and person_names)
 
-    # Parallel: graph + semantic
-    graph_task = asyncio.create_task(retrieve_by_entities(person_names))
-    sem_task = asyncio.create_task(_get_semantic(query))
+    # Parallel: graph (if enabled) + semantic. Placeholder keeps index[0] stable.
+    if graph_enabled:
+        tasks = [
+            asyncio.create_task(retrieve_by_entities(person_names)),
+            asyncio.create_task(_get_semantic(query)),
+        ]
+    else:
+        tasks = [
+            asyncio.create_task(asyncio.sleep(0)),
+            asyncio.create_task(_get_semantic(query)),
+        ]
 
-    results = await asyncio.gather(graph_task, sem_task, return_exceptions=True)
+    results = await asyncio.gather(*tasks, return_exceptions=True)
 
     all_candidates: list[dict] = []
 
-    # Graph results
-    if not isinstance(results[0], Exception) and results[0]:
-        _apply_weights(results[0], weights["graph"])
-        for c in results[0]:
-            c["source_strategy"] = "graph_person"
-        all_candidates.extend(results[0])
-        strategies.append("graph_person")
-    elif isinstance(results[0], Exception):
-        logger.warning(f"R3 graph retrieval failed: {results[0]}")
-        errors["graph_person"] = repr(results[0])[:200]
+    # Graph results (only when graph_enabled)
+    if graph_enabled:
+        if not isinstance(results[0], Exception) and results[0]:
+            _apply_weights(results[0], weights["graph"])
+            for c in results[0]:
+                c["source_strategy"] = "graph_person"
+            all_candidates.extend(results[0])
+            strategies.append("graph_person")
+        elif isinstance(results[0], Exception):
+            logger.warning(f"R3 graph retrieval failed: {results[0]}")
+            errors["graph_person"] = repr(results[0])[:200]
 
     # Semantic results
     if not isinstance(results[1], Exception) and results[1]:
@@ -329,17 +357,22 @@ async def _route_r4(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
+    use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + SQL(0.5)."""
+    """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + SQL(0.5).
+
+    When use_graph=False, graph_event is skipped.
+    """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     weights = settings.route_weights.get("R4", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
 
     event_keywords = signals.detected_events
+    graph_enabled = bool(use_graph and event_keywords)
 
-    # Parallel: graph event + semantic
+    # Parallel: graph event (if enabled) + semantic
     tasks = [asyncio.create_task(_get_semantic(query))]
-    if event_keywords:
+    if graph_enabled:
         tasks.insert(0, asyncio.create_task(retrieve_by_events(event_keywords)))
     else:
         tasks.insert(0, asyncio.create_task(asyncio.sleep(0)))  # placeholder
@@ -349,11 +382,11 @@ async def _route_r4(
     all_candidates: list[dict] = []
 
     # Graph event results
-    if event_keywords and not isinstance(results[0], Exception) and results[0]:
+    if graph_enabled and not isinstance(results[0], Exception) and results[0]:
         _apply_weights(results[0], weights["graph"])
         all_candidates.extend(results[0])
         strategies.append("graph_event")
-    elif event_keywords and isinstance(results[0], Exception):
+    elif graph_enabled and isinstance(results[0], Exception):
         logger.warning(f"R4 graph event retrieval failed: {results[0]}")
         errors["graph_event"] = repr(results[0])[:200]
 
@@ -391,8 +424,13 @@ async def _route_r5(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
+    use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """R5: Cross-reference → Semantic seed + Cross-Ref(0.85) ∥ Graph(0.75) + SQL(0.4)."""
+    """R5: Cross-reference → Semantic seed + Cross-Ref(0.85) ∥ Graph(0.75) + SQL(0.4).
+
+    When use_graph=False, both cross_reference and graph are skipped;
+    route degrades to pure semantic + SQL supplement.
+    """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     weights = settings.route_weights.get(
@@ -414,21 +452,22 @@ async def _route_r5(
 
     deduped = _dedup(all_candidates)
 
-    # Parallel: cross-reference from seed + graph (if entities)
+    # Parallel: cross-reference from seed + graph (if entities). Both gated on use_graph.
     parallel_tasks = []
 
-    # Cross-reference from top semantic seed
-    source_ids = [c["id"] for c in deduped[:5] if ":" in c["id"]]
-    if source_ids:
-        parallel_tasks.append(("cross_ref", asyncio.create_task(
-            retrieve_cross_references(source_ids, top_k=10)
-        )))
+    if use_graph:
+        # Cross-reference from top semantic seed
+        source_ids = [c["id"] for c in deduped[:5] if ":" in c["id"]]
+        if source_ids:
+            parallel_tasks.append(("cross_ref", asyncio.create_task(
+                retrieve_cross_references(source_ids, top_k=10)
+            )))
 
-    # Graph retrieval if entities available
-    if entity_names:
-        parallel_tasks.append(("graph", asyncio.create_task(
-            retrieve_by_entities(entity_names)
-        )))
+        # Graph retrieval if entities available
+        if entity_names:
+            parallel_tasks.append(("graph", asyncio.create_task(
+                retrieve_by_entities(entity_names)
+            )))
 
     if parallel_tasks:
         task_results = await asyncio.gather(
@@ -470,17 +509,22 @@ async def _route_r6(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
+    use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """R6: Place search → Graph_Place(0.85) + Semantic(0.7) + SQL(0.5)."""
+    """R6: Place search → Graph_Place(0.85) + Semantic(0.7) + SQL(0.5).
+
+    When use_graph=False, graph_place is skipped.
+    """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     weights = settings.route_weights.get("R6", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
 
     place_names = signals.detected_places
+    graph_enabled = bool(use_graph and place_names)
 
-    # Parallel: graph place + semantic
+    # Parallel: graph place (if enabled) + semantic
     tasks = [asyncio.create_task(_get_semantic(query))]
-    if place_names:
+    if graph_enabled:
         tasks.insert(0, asyncio.create_task(retrieve_by_places(place_names)))
     else:
         tasks.insert(0, asyncio.create_task(asyncio.sleep(0)))  # placeholder
@@ -490,11 +534,11 @@ async def _route_r6(
     all_candidates: list[dict] = []
 
     # Graph place results
-    if place_names and not isinstance(results[0], Exception) and results[0]:
+    if graph_enabled and not isinstance(results[0], Exception) and results[0]:
         _apply_weights(results[0], weights["graph"])
         all_candidates.extend(results[0])
         strategies.append("graph_place")
-    elif place_names and isinstance(results[0], Exception):
+    elif graph_enabled and isinstance(results[0], Exception):
         logger.warning(f"R6 graph place retrieval failed: {results[0]}")
         errors["graph_place"] = repr(results[0])[:200]
 
@@ -532,8 +576,9 @@ async def _route_fallback(
     entity_names: list[str],
     signals: QuerySignals,
     k: int,
+    use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """Fallback: Semantic only."""
+    """Fallback: Semantic only. Graph-agnostic."""
     strategy_name = "hybrid" if settings.hybrid_search_enabled else "semantic"
     errors: dict[str, str] = {}
     try:

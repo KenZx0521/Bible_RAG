@@ -23,26 +23,31 @@ from .content_fetcher import get_pool, fetch_contexts
 console = Console()
 logger = logging.getLogger(__name__)
 
-RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
-RAW_RESPONSES_PATH = RESULTS_DIR / "raw_responses.json"
+
+def _raw_responses_path() -> Path:
+    """Resolve the raw_responses.json path based on current graph mode."""
+    return settings.results_dir / "raw_responses.json"
 
 
 def _clear_previous_results() -> None:
     """Delete previous run's checkpoint so we always start fresh."""
-    if RAW_RESPONSES_PATH.exists():
-        RAW_RESPONSES_PATH.unlink()
-        logger.info("Cleared previous raw_responses.json")
+    path = _raw_responses_path()
+    if path.exists():
+        path.unlink()
+        logger.info("Cleared previous raw_responses.json at %s", path)
 
 
 def _save_responses(collected: list[dict]) -> None:
     """Persist collected responses."""
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(RAW_RESPONSES_PATH, "w", encoding="utf-8") as f:
+    results_dir = settings.results_dir
+    results_dir.mkdir(parents=True, exist_ok=True)
+    with open(_raw_responses_path(), "w", encoding="utf-8") as f:
         json.dump(collected, f, ensure_ascii=False, indent=2)
 
 
 async def collect_responses(
     questions: list[GroundTruthItem],
+    use_graph: bool | None = None,
 ) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
     For each ground truth question:
@@ -51,6 +56,11 @@ async def collect_responses(
       3. Build an EvalSample
 
     Always starts fresh. Saves raw_responses.json after each question.
+
+    Args:
+        use_graph: Per-request override for backend graph retrieval.
+            None = use backend RAG_USE_GRAPH env default.
+            True/False = force graph on/off for every request in this run.
 
     Returns: (samples, inline_metrics)
       - inline_metrics: kept as empty dict for run_evaluation() signature compat.
@@ -63,7 +73,7 @@ async def collect_responses(
     inline_metrics: dict[str, list[MetricResult]] = {}
     total = len(questions)
 
-    logger.info("Starting fresh collection for %d questions", total)
+    logger.info("Starting fresh collection for %d questions (use_graph=%s)", total, use_graph)
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         for idx, gt in enumerate(questions, 1):
@@ -76,7 +86,7 @@ async def collect_responses(
                 resp = None
                 for attempt in range(1, max_retries + 1):
                     try:
-                        resp = await query_rag(gt.question, client=client)
+                        resp = await query_rag(gt.question, client=client, use_graph=use_graph)
                         break
                     except Exception as e:
                         logger.warning("[%s] RAG API attempt %d/%d failed: %s",
@@ -133,6 +143,7 @@ async def collect_responses(
                     "route_used": route_used,
                     "strategies_used": strategies_used,
                     "strategy_errors": strategy_errors,
+                    "use_graph": stats.get("use_graph", True),
                 })
                 _save_responses(collected_raw)
 
