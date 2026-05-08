@@ -55,6 +55,7 @@ async def retrieve_and_rerank(
     top_k: int | None = None,
     keywords: list[str] | None = None,
     use_graph: bool | None = None,
+    semantic_only: bool = False,
 ) -> tuple[list[dict], dict]:
     """
     Signal-driven multi-strategy retrieval with 6 routes.
@@ -63,6 +64,9 @@ async def retrieve_and_rerank(
         use_graph: Per-request override for graph retrieval. None falls back to
             settings.rag_use_graph. When False, graph_retriever and
             cross_ref_retriever calls are skipped in R3/R4/R5/R6.
+        semantic_only: When True, bypass signal detection + route dispatch and
+            run pure semantic (or hybrid) retrieval only. Skips SQL/graph/cross-ref
+            and chapter-pinning. Rerank still applies.
 
     Returns:
         (top_k_results, retrieval_stats)
@@ -70,36 +74,51 @@ async def retrieve_and_rerank(
     k = top_k or settings.default_top_k
     effective_use_graph = use_graph if use_graph is not None else settings.rag_use_graph
 
-    # Detect signals and select route
-    signals = detect_signals(
-        query=query,
-        verse_refs=verse_refs,
-        intent_type=intent_type,
-        entity_names=entity_names,
-        keywords=keywords,
-    )
+    if semantic_only:
+        # Bypass signal detection + route dispatch: pure semantic baseline.
+        # Always use retrieve_semantic() (BGE-M3 + Qdrant) even if hybrid search
+        # is enabled elsewhere, so this mode is a clean semantic-only baseline.
+        strategy_errors: dict[str, str] = {}
+        try:
+            raw = await retrieve_semantic(query)
+        except Exception as e:
+            logger.warning(f"Semantic-only retrieval failed: {e}")
+            strategy_errors["semantic"] = repr(e)[:200]
+            raw = []
+        candidates = _dedup(raw)
+        strategies_used = ["semantic"]
+        route = "semantic_only"
+    else:
+        # Detect signals and select route
+        signals = detect_signals(
+            query=query,
+            verse_refs=verse_refs,
+            intent_type=intent_type,
+            entity_names=entity_names,
+            keywords=keywords,
+        )
 
-    route = signals.route
+        route = signals.route
 
-    # Dispatch to route handler
-    route_handlers = {
-        "R1": _route_r1,
-        "R2": _route_r2,
-        "R3": _route_r3,
-        "R4": _route_r4,
-        "R5": _route_r5,
-        "R6": _route_r6,
-        "fallback": _route_fallback,
-    }
-    handler = route_handlers.get(route, _route_fallback)
-    candidates, strategies_used, strategy_errors = await handler(
-        query=query,
-        verse_refs=verse_refs,
-        entity_names=entity_names,
-        signals=signals,
-        k=k,
-        use_graph=effective_use_graph,
-    )
+        # Dispatch to route handler
+        route_handlers = {
+            "R1": _route_r1,
+            "R2": _route_r2,
+            "R3": _route_r3,
+            "R4": _route_r4,
+            "R5": _route_r5,
+            "R6": _route_r6,
+            "fallback": _route_fallback,
+        }
+        handler = route_handlers.get(route, _route_fallback)
+        candidates, strategies_used, strategy_errors = await handler(
+            query=query,
+            verse_refs=verse_refs,
+            entity_names=entity_names,
+            signals=signals,
+            k=k,
+            use_graph=effective_use_graph,
+        )
 
     total_candidates = len(candidates)
 
@@ -118,8 +137,9 @@ async def retrieve_and_rerank(
 
     # Chapter-pin: when the user specified A書N章, guarantee ≥min_pins pericopes
     # from that (book_id, chapter) survive in top-k. R1 is skipped because it
-    # already returns exact verse matches without rerank.
-    if route != "R1" and ranked:
+    # already returns exact verse matches without rerank; semantic_only is
+    # skipped because it bypasses signal detection and has no chapter context.
+    if route not in ("R1", "semantic_only") and ranked:
         ranked = _pin_chapter_candidates(
             ranked=ranked,
             candidates=candidates,

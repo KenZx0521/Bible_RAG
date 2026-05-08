@@ -11,6 +11,7 @@ Usage:
     Graph-retrieval A/B (backend does NOT need restart between runs):
         uv run python run_eval.py --graph       # results_graph/
         uv run python run_eval.py --no-graph    # results_no_graph/
+        uv run python run_eval.py --semantic    # results_semantic/ (pure semantic baseline)
 """
 
 from __future__ import annotations
@@ -55,7 +56,16 @@ def main() -> None:
              "Default: use backend RAG_USE_GRAPH env. Also routes output to "
              "results_graph/ or results_no_graph/ (vs plain results/).",
     )
+    parser.add_argument(
+        "--semantic",
+        action="store_true",
+        help="Semantic-only mode: bypass R1-R6 routing + SQL + graph + cross-ref; "
+             "run pure semantic retrieval + rerank. Outputs to results_semantic/.",
+    )
     args = parser.parse_args()
+
+    if args.semantic and args.graph is not None:
+        parser.error("--semantic cannot be combined with --graph / --no-graph")
 
     _setup_logging()
 
@@ -63,8 +73,12 @@ def main() -> None:
     # function below reads settings.results_dir.
     from src.config import settings
     settings.set_graph_mode(args.graph)
+    settings.set_semantic_mode(args.semantic)
 
-    mode_label = {True: "graph", False: "no-graph", None: "default (backend env)"}[args.graph]
+    if args.semantic:
+        mode_label = "semantic-only"
+    else:
+        mode_label = {True: "graph", False: "no-graph", None: "default (backend env)"}[args.graph]
     console.print(Panel.fit(
         "[bold blue]Bible RAG Evaluation System[/bold blue]\n"
         f"[dim]RAGAS + Custom Metrics | Graph mode: {mode_label}[/dim]\n"
@@ -83,7 +97,9 @@ def main() -> None:
 
     if args.collect_only:
         console.print("[bold]Mode: Collect Only[/bold]")
-        samples, inline_metrics = asyncio.run(run_collection(use_graph=args.graph))
+        samples, inline_metrics = asyncio.run(
+            run_collection(use_graph=args.graph, semantic_only=args.semantic)
+        )
         console.print("[green]Collection complete. Run with --eval-only to run batch metrics.[/green]")
 
     elif args.eval_only:
@@ -106,7 +122,9 @@ def main() -> None:
 
         # Step 1: Collect + inline Claude eval
         console.rule("[bold cyan]Step 1: Collect RAG Responses + Claude Point Coverage")
-        samples, inline_metrics = asyncio.run(run_collection(use_graph=args.graph))
+        samples, inline_metrics = asyncio.run(
+            run_collection(use_graph=args.graph, semantic_only=args.semantic)
+        )
 
         # Step 2: Batch evaluate (pass inline metrics so point coverage isn't re-run)
         console.rule("[bold cyan]Step 2: Run Batch Evaluation Metrics")

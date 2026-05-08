@@ -37,8 +37,12 @@ async def rag_query(req: QueryRequest):
     """
     question = req.question
 
-    # Step 1 & 2: Intent classification (includes verse ref detection)
-    intent = await classify_intent(question)
+    # Step 1 & 2: Intent classification (includes verse ref detection).
+    # Skipped in semantic_only mode to save a classifier LLM call.
+    if req.semantic_only:
+        intent = {"type": "semantic_only", "entities": [], "verse_refs": [], "keywords": []}
+    else:
+        intent = await classify_intent(question)
 
     # Step 3-5: Retrieval + fusion + rerank
     results, stats = await retrieve_and_rerank(
@@ -49,6 +53,7 @@ async def rag_query(req: QueryRequest):
         top_k=req.top_k,
         keywords=intent.get("keywords"),
         use_graph=req.use_graph,
+        semantic_only=req.semantic_only,
     )
 
     # Step 6-7: Generate answer

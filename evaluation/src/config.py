@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     # Run mode state: set by CLI at startup (not an env var).
     # None → results/, True → results_graph/, False → results_no_graph/
     _graph_mode: bool | None = PrivateAttr(default=None)
+    # When True, overrides graph mode and routes output to results_semantic/.
+    _semantic_only: bool = PrivateAttr(default=False)
 
     # Evaluation LLM Provider: claude | openai | gemini | ollama
     eval_llm_provider: str = "claude"
@@ -71,9 +73,15 @@ class Settings(BaseSettings):
         """Set run-mode flag. Controls `results_dir` output target."""
         self._graph_mode = use_graph
 
+    def set_semantic_mode(self, semantic_only: bool) -> None:
+        """Set semantic-only flag. When True, overrides graph mode for results_dir."""
+        self._semantic_only = semantic_only
+
     @property
     def results_dir(self) -> Path:
-        """Resolve output directory based on graph mode set by CLI."""
+        """Resolve output directory based on graph/semantic mode set by CLI."""
+        if self._semantic_only:
+            return _EVAL_ROOT / "results_semantic"
         if self._graph_mode is True:
             return _EVAL_ROOT / "results_graph"
         if self._graph_mode is False:

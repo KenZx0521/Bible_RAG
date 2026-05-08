@@ -20,6 +20,7 @@ async def query_rag(
     client: httpx.AsyncClient | None = None,
     top_k: int | None = None,
     use_graph: bool | None = None,
+    semantic_only: bool = False,
 ) -> dict:
     """
     Send a question to POST /api/v1/query and return the parsed response.
@@ -27,6 +28,8 @@ async def query_rag(
     Args:
         use_graph: Per-request override for backend RAG_USE_GRAPH. None = use
             backend default; True/False explicitly forces graph on/off.
+        semantic_only: When True, bypass backend routing / SQL / graph /
+            cross-ref and run pure semantic retrieval only.
 
     Returns dict with keys: answer, sources, intent, retrieval_stats
     """
@@ -38,6 +41,8 @@ async def query_rag(
     }
     if use_graph is not None:
         payload["use_graph"] = use_graph
+    if semantic_only:
+        payload["semantic_only"] = True
     url = f"{settings.backend_url}/api/v1/query"
 
     own_client = client is None

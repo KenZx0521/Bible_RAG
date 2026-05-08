@@ -13,3 +13,7 @@ class QueryRequest(BaseModel):
         default=None,
         description="覆寫 RAG_USE_GRAPH 預設值;None 表示沿用 backend 設定",
     )
+    semantic_only: bool = Field(
+        default=False,
+        description="僅用 semantic search,bypass R1-R6 routing、SQL、graph、cross-ref",
+    )

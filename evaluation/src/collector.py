@@ -48,6 +48,7 @@ def _save_responses(collected: list[dict]) -> None:
 async def collect_responses(
     questions: list[GroundTruthItem],
     use_graph: bool | None = None,
+    semantic_only: bool = False,
 ) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
     For each ground truth question:
@@ -61,6 +62,8 @@ async def collect_responses(
         use_graph: Per-request override for backend graph retrieval.
             None = use backend RAG_USE_GRAPH env default.
             True/False = force graph on/off for every request in this run.
+        semantic_only: When True, bypass backend routing / SQL / graph /
+            cross-ref and run pure semantic retrieval only.
 
     Returns: (samples, inline_metrics)
       - inline_metrics: kept as empty dict for run_evaluation() signature compat.
@@ -73,7 +76,8 @@ async def collect_responses(
     inline_metrics: dict[str, list[MetricResult]] = {}
     total = len(questions)
 
-    logger.info("Starting fresh collection for %d questions (use_graph=%s)", total, use_graph)
+    logger.info("Starting fresh collection for %d questions (use_graph=%s, semantic_only=%s)",
+                total, use_graph, semantic_only)
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         for idx, gt in enumerate(questions, 1):
@@ -86,7 +90,10 @@ async def collect_responses(
                 resp = None
                 for attempt in range(1, max_retries + 1):
                     try:
-                        resp = await query_rag(gt.question, client=client, use_graph=use_graph)
+                        resp = await query_rag(
+                            gt.question, client=client,
+                            use_graph=use_graph, semantic_only=semantic_only,
+                        )
                         break
                     except Exception as e:
                         logger.warning("[%s] RAG API attempt %d/%d failed: %s",
