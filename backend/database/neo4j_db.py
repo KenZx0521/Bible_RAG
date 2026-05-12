@@ -144,6 +144,40 @@ async def get_cross_references(pericope_id: str, limit: int = 10) -> list[dict]:
         return [dict(record) for record in await result.data()]
 
 
+async def get_cross_references_multi_hop(
+    pericope_ids: list[str], max_hops: int = 2, limit: int = 30
+) -> list[dict]:
+    """Traverse CROSS_REFERENCES up to `max_hops` steps from any seed pericope.
+
+    Used by retrieve_via_cross_references() to surface neighbouring pericopes
+    along the 916 hand-curated cross-book edges. Returns DISTINCT targets only,
+    excluding the seed set itself. `hop_distance` reflects the shortest path
+    length back to a seed.
+    """
+    if not pericope_ids or max_hops < 1:
+        return []
+    hops = max(1, min(int(max_hops), 4))
+    driver = get_driver()
+    cypher = (
+        "MATCH (seed:Pericope) WHERE seed.id IN $ids "
+        f"MATCH path = (seed)-[:CROSS_REFERENCES*1..{hops}]-(target:Pericope) "
+        "WHERE NOT target.id IN $ids "
+        "WITH target, min(length(path)) AS hop_distance "
+        "RETURN target.id AS id, "
+        "       labels(target) AS labels, "
+        "       target.title AS title, "
+        "       target.book_name AS book_name, "
+        "       target.chapter_num AS chapter_num, "
+        "       target.verse_range AS verse_range, "
+        "       hop_distance "
+        "ORDER BY hop_distance ASC "
+        "LIMIT $limit"
+    )
+    async with driver.session() as session:
+        result = await session.run(cypher, ids=pericope_ids, limit=limit)
+        return [dict(record) for record in await result.data()]
+
+
 async def get_event_related_content(entity_id: str, limit: int = 10) -> list[dict]:
     """Get content related to an Event entity through various relationships."""
     driver = get_driver()

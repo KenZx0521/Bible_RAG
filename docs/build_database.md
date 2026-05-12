@@ -191,6 +191,133 @@ uv run --project scripts python scripts/import_neo4j.py
 
 ---
 
+## Step 6: 關係抽取（Grounded RE）
+
+### 說明
+為 Entity 之間補上語意關係邊（FATHER_OF、RULED、BORN_IN 等 37 種），修復對照論文 *Graph RAG Survey* 後發現的「Entity↔Entity 邊 = 0」最大缺口。LLM 受限於 yaml schema 候選池（不能自由生成關係名稱），且 `evidence_span` 必須是上下文子字串才會被接受。
+
+### 前提
+- Step 5 完成（Entity / Pericope / MENTIONS 已在 Neo4j）
+- Postgres `pericopes.content` 可讀（用於 grounding text）
+- Ollama 已 pull `gemma4:31b-it-q8_0`（或加 `--no-llm` 跳過 Phase R4）
+
+### 輸入
+- `config/relations/biblical_relations.yaml`（37 個敘事級關係本體）
+- `config/relations/biblical_priors.yaml`（~70 條黃金族譜先驗）
+- Neo4j（Entity + Pericope + MENTIONS）
+- Postgres `pericopes.content`
+
+### Grounded 4-Phase Pipeline
+| Phase | 動作 |
+|------|------|
+| R1 Pair Mining | 同 pericope 共現 entity 對（schema type-allowed 才保留） |
+| R2 Rule Classifier | yaml `prompt_signals` regex/keyword 命中（高信心走規則） |
+| R3 Domain Priors | yaml priors 直接賦邊（專家共識，bypass LLM） |
+| R4 Grounded LLM | gemma4:31b-it-q8_0 從候選池選一個或回 NONE，evidence 必須是子字串 |
+| R5 Inverse Materializer | FATHER_OF↔SON_OF 自動雙向 |
+
+### 指令
+```bash
+# 完整抽取（估 10-20 小時離線；支援 --resume）
+uv run --project scripts python -m scripts.relation_extraction.extract_relations --resume
+
+# 規則 + priors only（無 LLM，適合快速驗證）
+uv run --project scripts python -m scripts.relation_extraction.extract_relations --no-llm
+
+# 限定 pericope 範圍 debug
+uv run --project scripts python -m scripts.relation_extraction.extract_relations --limit-pericopes 30
+```
+
+### 輸出
+- `output/relations.jsonl`（最終 triples）
+- `output/relations_checkpoint.jsonl`（resumable state；`--resume` 讀此檔跳過已處理對）
+- `output/relations_unclassified.jsonl`（LLM 回 NONE 的對，事後分析是否擴張 schema）
+
+---
+
+## Step 6.1: 匯入關係到 Neo4j
+
+### 說明
+將 Step 6 抽出的 triples MERGE 到 Neo4j（idempotent，可重複執行）。透過 APOC `apoc.merge.relationship` 建立動態邊型（FATHER_OF、RULED 等）。
+
+### 輸入
+- `output/relations.jsonl`（from Step 6）
+
+### 邊屬性
+- `confidence`、`evidence_span`（截斷 512 字）、`source_pericope_id`、`extraction_phase`、`head_canonical`、`tail_canonical`、`notes`
+
+### 指令
+```bash
+uv run --project scripts python scripts/import_relations_neo4j.py output/relations.jsonl
+```
+
+### 結果（規模視 Step 6 抽取結果而定）
+- Entity↔Entity 邊跨 ~37 種關係類型
+- 統計輸出：每種 relation 邊數 + Top 25 排行
+
+---
+
+## Step 7: Entity 描述補完
+
+### 說明
+Person/Place/Group 三類 entity 中有 ~4,223 個 `description` 欄位空白（Object/Event/Theme 已有 description）。使用較小的 `gemma4:e4b-it-q8_0` 模型（11GB，描述生成不需要 31B）為這些 entity 從其 mentioning pericope titles 推導 ≤80 字 grounded description。
+
+### 前提
+- Step 5 完成
+- Ollama 已 pull `gemma4:e4b-it-q8_0`
+
+### 指令
+```bash
+# 預設處理 Person、Place、Group
+uv run --project scripts python -m scripts.relation_extraction.desc_generator
+
+# 限定類型 + dry-run（不寫 Neo4j）
+uv run --project scripts python -m scripts.relation_extraction.desc_generator \
+  --target-types Person,Place \
+  --dry-run
+
+# 限量（debug）
+uv run --project scripts python -m scripts.relation_extraction.desc_generator --limit 100
+```
+
+### 輸出
+- 寫回 Neo4j `Entity.description` 欄位
+- 失敗者跳過（log warning），不阻擋整體流程
+
+---
+
+## Step 8: Entity 向量化
+
+### 說明
+為每個 Entity 生成 BGE-M3 1024 維向量，寫入新 Qdrant collection `bible_entities`，啟用模糊實體查詢（例：「亞伯拉罕的兒子」→ 命中 Isaac entity）。文字組合 `{name}({aliases})。{description}。常見於：{titles}`，截斷 200 字以避免 text embedding collapse。
+
+### 前提
+- Step 5 完成
+- **建議先跑 Step 7**（Person/Place/Group 若 description 為空會降低嵌入質量）
+
+### Collection 設計
+- `bible_entities`（1024 維 BGE-M3，COSINE distance）
+- payload：`{entity_id, type, canonical_name, aliases, description, pericope_titles, pericope_ids}`
+- point id：由 `entity_id` 經 UUID5 衍生（idempotent upsert）
+
+### 指令
+```bash
+# 標準
+uv run --project scripts python scripts/embed_entities.py --batch-size 64
+
+# GPU 加速
+uv run --project scripts python scripts/embed_entities.py --batch-size 64 --device cuda
+
+# 重建 collection（清掉舊向量）
+uv run --project scripts python scripts/embed_entities.py --recreate
+```
+
+### 結果
+- Points: ~9,120（每個 entity 一個 vector）
+- 後續 backend `entity_path_retriever.retrieve_by_entity_query()` 讀此 collection
+
+---
+
 ## 資料庫啟動指令
 
 ```bash

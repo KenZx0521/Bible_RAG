@@ -1,0 +1,112 @@
+# Biblical Relation Priors — High-confidence canonical relations from biblical
+# scholarship. Loaded by scripts/relation_extraction/priors_loader.py during
+# Phase R3 to bypass LLM classification for facts that are universally agreed.
+#
+# This file is INTENTIONALLY a starter set (~60 relations spanning patriarchs,
+# Davidic line, gospel/apostolic figures). It is *additive* — extend it with
+# additional consensus relations as needed. Treated as oracle by the
+# evaluation harness (precision/recall against priors).
+#
+# Schema:
+#   - head_canonical : canonical_name on the head Entity in Neo4j
+#   - relation       : must exist in biblical_relations.yaml
+#   - tail_canonical : canonical_name on the tail Entity in Neo4j
+#   - source         : Bible reference, audit only (not used by extraction logic)
+#   - notes          : optional remarks
+#
+# Resolution:
+#   priors_loader.py looks up canonical_name -> entity_id via Neo4j.
+#   If either side is missing, the prior is logged and skipped (not an error).
+
+version: "1.0"
+description: "Biblical scholarship priors (genealogy, kingdoms, apostolic figures)"
+
+priors:
+
+  # Genesis patriarchs
+  - {head_canonical: "他拉",     relation: FATHER_OF,   tail_canonical: "亞伯拉罕", source: "創 11:26"}
+  - {head_canonical: "亞伯拉罕", relation: FATHER_OF,   tail_canonical: "以撒",     source: "創 21:3"}
+  - {head_canonical: "亞伯拉罕", relation: FATHER_OF,   tail_canonical: "以實瑪利", source: "創 16:15"}
+  - {head_canonical: "亞伯拉罕", relation: SPOUSE_OF,   tail_canonical: "撒拉",     source: "創 11:29"}
+  - {head_canonical: "撒拉",     relation: MOTHER_OF,   tail_canonical: "以撒",     source: "創 21:3"}
+  - {head_canonical: "夏甲",     relation: MOTHER_OF,   tail_canonical: "以實瑪利", source: "創 16:15"}
+  - {head_canonical: "以撒",     relation: SPOUSE_OF,   tail_canonical: "利百加",   source: "創 24:67"}
+  - {head_canonical: "以撒",     relation: FATHER_OF,   tail_canonical: "雅各",     source: "創 25:26"}
+  - {head_canonical: "以撒",     relation: FATHER_OF,   tail_canonical: "以掃",     source: "創 25:25"}
+  - {head_canonical: "利百加",   relation: MOTHER_OF,   tail_canonical: "雅各",     source: "創 25:26"}
+  - {head_canonical: "雅各",     relation: SIBLING_OF,  tail_canonical: "以掃",     source: "創 25:24"}
+  - {head_canonical: "雅各",     relation: SPOUSE_OF,   tail_canonical: "利亞",     source: "創 29:23"}
+  - {head_canonical: "雅各",     relation: SPOUSE_OF,   tail_canonical: "拉結",     source: "創 29:28"}
+  - {head_canonical: "雅各",     relation: FATHER_OF,   tail_canonical: "約瑟",     source: "創 30:24"}
+  - {head_canonical: "雅各",     relation: FATHER_OF,   tail_canonical: "便雅憫",   source: "創 35:18"}
+  - {head_canonical: "雅各",     relation: FATHER_OF,   tail_canonical: "猶大",     source: "創 29:35"}
+  - {head_canonical: "雅各",     relation: FATHER_OF,   tail_canonical: "流便",     source: "創 29:32"}
+  - {head_canonical: "拉結",     relation: MOTHER_OF,   tail_canonical: "約瑟",     source: "創 30:24"}
+  - {head_canonical: "拉結",     relation: MOTHER_OF,   tail_canonical: "便雅憫",   source: "創 35:18"}
+
+  # Mosaic family and Exodus leadership
+  - {head_canonical: "暗蘭",     relation: FATHER_OF,   tail_canonical: "摩西",     source: "出 6:20"}
+  - {head_canonical: "暗蘭",     relation: FATHER_OF,   tail_canonical: "亞倫",     source: "出 6:20"}
+  - {head_canonical: "摩西",     relation: SIBLING_OF,  tail_canonical: "亞倫",     source: "出 4:14"}
+  - {head_canonical: "摩西",     relation: SIBLING_OF,  tail_canonical: "米利暗",   source: "民 26:59"}
+  - {head_canonical: "摩西",     relation: LEADER_OF,   tail_canonical: "以色列人", source: "出 14:31"}
+  - {head_canonical: "摩西",     relation: INITIATED,   tail_canonical: "出埃及",   source: "出 12:51"}
+  - {head_canonical: "摩西",     relation: RECEIVED,    tail_canonical: "法版",     source: "出 31:18"}
+  - {head_canonical: "摩西",     relation: DIED_IN,     tail_canonical: "尼波山",   source: "申 34:5"}
+  - {head_canonical: "摩西",     relation: SUCCEEDED_BY, tail_canonical: "約書亞", source: "申 34:9"}
+
+  # Davidic dynasty
+  - {head_canonical: "耶西",     relation: FATHER_OF,   tail_canonical: "大衛",     source: "撒上 16:18"}
+  - {head_canonical: "大衛",     relation: SPOUSE_OF,   tail_canonical: "拔示巴",   source: "撒下 11:27"}
+  - {head_canonical: "大衛",     relation: FATHER_OF,   tail_canonical: "所羅門",   source: "撒下 12:24"}
+  - {head_canonical: "大衛",     relation: FATHER_OF,   tail_canonical: "押沙龍",   source: "撒下 3:3"}
+  - {head_canonical: "拔示巴",   relation: MOTHER_OF,   tail_canonical: "所羅門",   source: "撒下 12:24"}
+  - {head_canonical: "大衛",     relation: SUCCEEDED_BY, tail_canonical: "所羅門", source: "王上 2:12"}
+  - {head_canonical: "所羅門",   relation: BUILT,       tail_canonical: "聖殿",     source: "王上 6:14"}
+  - {head_canonical: "所羅門",   relation: RULED,       tail_canonical: "以色列",   source: "王上 4:1"}
+  - {head_canonical: "大衛",     relation: RULED,       tail_canonical: "希伯崙",   source: "撒下 5:5"}
+  - {head_canonical: "大衛",     relation: RULED,       tail_canonical: "耶路撒冷", source: "撒下 5:5"}
+  - {head_canonical: "掃羅",     relation: ENEMY_OF,    tail_canonical: "大衛",     source: "撒上 18:29"}
+  - {head_canonical: "約拿單",   relation: ALLY_OF,     tail_canonical: "大衛",     source: "撒上 18:3"}
+
+  # Kings era
+  - {head_canonical: "所羅門",   relation: SUCCEEDED_BY, tail_canonical: "羅波安", source: "王上 11:43"}
+  - {head_canonical: "羅波安",   relation: SUCCEEDED_BY, tail_canonical: "亞比央", source: "王上 14:31"}
+  - {head_canonical: "亞哈",     relation: SPOUSE_OF,   tail_canonical: "耶洗別",   source: "王上 16:31"}
+  - {head_canonical: "希西家",   relation: DESTROYED,   tail_canonical: "銅蛇",     source: "王下 18:4"}
+
+  # Exile and return
+  - {head_canonical: "但以理",   relation: EXILED_TO,   tail_canonical: "巴比倫",   source: "但 1:6"}
+  - {head_canonical: "尼希米",   relation: RETURNED_FROM, tail_canonical: "巴比倫", source: "尼 2:11"}
+  - {head_canonical: "以斯拉",   relation: RETURNED_FROM, tail_canonical: "巴比倫", source: "拉 7:9"}
+
+  # Gospels: Jesus and disciples
+  - {head_canonical: "耶穌",     relation: BORN_IN,     tail_canonical: "伯利恆",   source: "太 2:1"}
+  - {head_canonical: "馬利亞",   relation: MOTHER_OF,   tail_canonical: "耶穌",     source: "太 1:25"}
+  - {head_canonical: "馬利亞",   relation: SPOUSE_OF,   tail_canonical: "約瑟",     source: "太 1:24", notes: "Mary's husband Joseph (NT), distinct from OT Joseph"}
+  - {head_canonical: "彼得",     relation: DISCIPLE_OF, tail_canonical: "耶穌",     source: "太 4:18"}
+  - {head_canonical: "安得烈",   relation: DISCIPLE_OF, tail_canonical: "耶穌",     source: "太 4:18"}
+  - {head_canonical: "雅各",     relation: DISCIPLE_OF, tail_canonical: "耶穌",     source: "太 4:21"}
+  - {head_canonical: "約翰",     relation: DISCIPLE_OF, tail_canonical: "耶穌",     source: "太 4:21"}
+  - {head_canonical: "彼得",     relation: SIBLING_OF,  tail_canonical: "安得烈",   source: "太 4:18"}
+  - {head_canonical: "施洗約翰", relation: TEACHER_OF,  tail_canonical: "耶穌",     source: "太 3:13", notes: "Forerunner role; closest mapping under narrative-only ontology"}
+
+  # Acts: Paul
+  - {head_canonical: "保羅",     relation: MEMBER_OF,   tail_canonical: "便雅憫支派", source: "腓 3:5"}
+  - {head_canonical: "保羅",     relation: VISITED,     tail_canonical: "雅典",     source: "徒 17:16"}
+  - {head_canonical: "保羅",     relation: VISITED,     tail_canonical: "哥林多",   source: "徒 18:1"}
+  - {head_canonical: "保羅",     relation: VISITED,     tail_canonical: "羅馬",     source: "徒 28:16"}
+  - {head_canonical: "保羅",     relation: VISITED,     tail_canonical: "以弗所",   source: "徒 19:1"}
+  - {head_canonical: "保羅",     relation: FOUNDED,     tail_canonical: "哥林多教會", source: "徒 18:11"}
+  - {head_canonical: "保羅",     relation: TEACHER_OF,  tail_canonical: "提摩太",   source: "腓 2:22"}
+  - {head_canonical: "提摩太",   relation: DISCIPLE_OF, tail_canonical: "保羅",     source: "腓 2:22"}
+  - {head_canonical: "巴拿巴",   relation: ALLY_OF,     tail_canonical: "保羅",     source: "徒 13:2"}
+
+  # Place geography
+  - {head_canonical: "伯利恆",   relation: LOCATED_IN,  tail_canonical: "猶太",     source: "太 2:1"}
+  - {head_canonical: "拿撒勒",   relation: LOCATED_IN,  tail_canonical: "加利利",   source: "路 1:26"}
+  - {head_canonical: "迦百農",   relation: LOCATED_IN,  tail_canonical: "加利利",   source: "太 4:13"}
+  - {head_canonical: "伯大尼",   relation: NEAR,        tail_canonical: "耶路撒冷", source: "約 11:18"}
+
+  # Groups
+  - {head_canonical: "以色列人", relation: SETTLED_IN,  tail_canonical: "迦南地",   source: "書 11:23"}

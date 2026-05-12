@@ -22,6 +22,8 @@ dependencies = [
     # Utilities
     "python-dotenv>=1.0.0",
     "tqdm>=4.65.0",
+    # Relation extraction schema/priors loader
+    "pyyaml>=6.0",
 ]
 
 [tool.uv]

@@ -23,9 +23,13 @@ from utils.retrieval.graph_retriever import (
     retrieve_by_events,
     retrieve_by_places,
 )
-from utils.retrieval.cross_ref_retriever import retrieve_cross_references
+from utils.retrieval.cross_ref_retriever import (
+    retrieve_cross_references,
+    retrieve_via_cross_references,
+)
+from utils.retrieval.entity_path_retriever import retrieve_by_entity_path
 from utils import reranker as reranker_mod
-from database import postgres
+from database import neo4j_db, postgres
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -272,6 +276,109 @@ def _pin_chapter_candidates(
     return result
 
 
+async def _resolve_entity_ids(
+    names: list[str],
+    type_filter: str | None = None,
+    per_name_limit: int = 3,
+) -> list[str]:
+    """Map entity names → entity_ids via Neo4j. Optional `type_filter` keeps
+    only entities whose labels include the given type (e.g. 'Person')."""
+    if not names:
+        return []
+    ids: list[str] = []
+    seen: set[str] = set()
+    for name in names:
+        try:
+            entities = await neo4j_db.find_entity_by_name(name, limit=per_name_limit)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("entity_path: name lookup failed for %r: %s", name, e)
+            continue
+        for entity in entities:
+            if type_filter and type_filter not in (entity.get("labels") or []):
+                continue
+            eid = entity.get("entity_id")
+            if eid and eid not in seen:
+                seen.add(eid)
+                ids.append(eid)
+    return ids
+
+
+async def _expand_via_entity_path(
+    entity_names: list[str],
+    use_graph: bool,
+    errors: dict[str, str],
+    route_label: str,
+    type_filter: str | None = None,
+) -> list[dict]:
+    """Expand candidate pool via Entity-Entity edges (FATHER_OF, RULED, ...).
+
+    Skipped silently when use_graph=False, settings.rag_use_entity_path=False,
+    or when no Entity-Entity edges have been imported yet (the Cypher returns
+    empty in that case, costing one query).
+    """
+    if not use_graph or not settings.rag_use_entity_path or not entity_names:
+        return []
+    entity_ids = await _resolve_entity_ids(entity_names, type_filter=type_filter)
+    if not entity_ids:
+        return []
+    try:
+        return await retrieve_by_entity_path(
+            entity_ids,
+            max_hops=settings.rag_entity_path_max_hops,
+            limit=settings.rag_entity_path_limit,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("%s entity_path expansion failed: %s", route_label, e)
+        errors["entity_path"] = repr(e)[:200]
+        return []
+
+
+async def _expand_via_cross_ref_seeds(
+    candidates: list[dict],
+    existing_ids: set[str],
+    use_graph: bool,
+    errors: dict[str, str],
+    route_label: str,
+) -> list[dict]:
+    """Expand candidate pool via N-hop CROSS_REFERENCES from top-N seeds.
+
+    Picks the highest-weight pericope candidates as seeds, traverses
+    CROSS_REFERENCES up to settings.rag_cross_ref_max_hops, and returns the
+    neighbouring pericopes as new candidates. Caller is responsible for
+    merging into the dedup pool.
+
+    Skips silently when use_graph=False, settings.rag_use_cross_ref_expand=False,
+    or no pericope-style seeds are available.
+    """
+    if not use_graph or not settings.rag_use_cross_ref_expand or not candidates:
+        return []
+
+    # Pericope IDs follow "<book>:<chapter>:<pericope>" pattern; chunks/verse
+    # IDs include extra segments. Filter to entries that look like pericopes.
+    sorted_candidates = sorted(candidates, key=lambda c: c.get("weight", 0), reverse=True)
+    seed_ids: list[str] = []
+    for c in sorted_candidates:
+        cid = c.get("id", "")
+        if cid and ":" in cid and cid not in seed_ids:
+            seed_ids.append(cid)
+        if len(seed_ids) >= settings.rag_cross_ref_top_seeds:
+            break
+
+    if not seed_ids:
+        return []
+
+    try:
+        return await retrieve_via_cross_references(
+            seed_ids,
+            max_hops=settings.rag_cross_ref_max_hops,
+            limit=settings.rag_cross_ref_expand_limit,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"{route_label} cross_ref_expand failed: {e}")
+        errors["cross_ref_expand"] = repr(e)[:200]
+        return []
+
+
 async def _sql_supplement(book_chapters: list[tuple[str, int]], existing_ids: set[str], limit: int = 5) -> list[dict]:
     """Fetch additional pericopes from specific chapters as supplement."""
     supplements: list[dict] = []
@@ -441,8 +548,33 @@ async def _route_r3(
 
     deduped = _dedup(all_candidates)
 
-    # SQL supplement from relevant chapters
+    # Entity-path expansion: walk Person-relations to find pericopes about
+    # related family members or allies. No-op until Entity-Entity edges are
+    # imported.
     existing_ids = {c["id"] for c in deduped}
+    if person_names:
+        entity_expand = await _expand_via_entity_path(
+            person_names, use_graph, errors, "R3", type_filter="Person",
+        )
+        if entity_expand:
+            new_entity = [c for c in entity_expand if c["id"] not in existing_ids]
+            existing_ids.update(c["id"] for c in new_entity)
+            deduped.extend(new_entity)
+            strategies.append("entity_path")
+
+    # Cross-ref 2-hop expansion: surface neighbouring pericopes along
+    # CROSS_REFERENCES edges from the strongest seeds. Activates the 916
+    # hand-curated cross-book edges in the pre-rerank candidate pool.
+    expand = await _expand_via_cross_ref_seeds(
+        deduped, existing_ids, use_graph, errors, "R3"
+    )
+    if expand:
+        new_expand = [c for c in expand if c["id"] not in existing_ids]
+        existing_ids.update(c["id"] for c in new_expand)
+        deduped.extend(new_expand)
+        strategies.append("cross_ref_expand")
+
+    # SQL supplement from relevant chapters
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
         try:
@@ -508,8 +640,18 @@ async def _route_r4(
 
     deduped = _dedup(all_candidates)
 
-    # SQL supplement
+    # Cross-ref 2-hop expansion (see _route_r3 for rationale).
     existing_ids = {c["id"] for c in deduped}
+    expand = await _expand_via_cross_ref_seeds(
+        deduped, existing_ids, use_graph, errors, "R4"
+    )
+    if expand:
+        new_expand = [c for c in expand if c["id"] not in existing_ids]
+        existing_ids.update(c["id"] for c in new_expand)
+        deduped.extend(new_expand)
+        strategies.append("cross_ref_expand")
+
+    # SQL supplement
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
         try:
@@ -583,12 +725,25 @@ async def _route_r5(
     parallel_tasks = []
 
     if use_graph:
-        # Cross-reference from top semantic seed
-        source_ids = [c["id"] for c in deduped[:5] if ":" in c["id"]]
+        # Cross-reference expansion from top semantic seeds. Upgraded to
+        # multi-hop when settings.rag_use_cross_ref_expand is True; falls back
+        # to legacy 1-hop retrieve_cross_references otherwise (preserves
+        # behaviour for callers that explicitly disable the expand flag).
+        seed_count = settings.rag_cross_ref_top_seeds
+        source_ids = [c["id"] for c in deduped[:seed_count] if ":" in c["id"]]
         if source_ids:
-            parallel_tasks.append(("cross_ref", asyncio.create_task(
-                retrieve_cross_references(source_ids, top_k=10)
-            )))
+            if settings.rag_use_cross_ref_expand:
+                parallel_tasks.append(("cross_ref", asyncio.create_task(
+                    retrieve_via_cross_references(
+                        source_ids,
+                        max_hops=settings.rag_cross_ref_max_hops,
+                        limit=settings.rag_cross_ref_expand_limit,
+                    )
+                )))
+            else:
+                parallel_tasks.append(("cross_ref", asyncio.create_task(
+                    retrieve_cross_references(source_ids, top_k=10)
+                )))
 
         # Graph retrieval if entities available
         if entity_names:
@@ -680,8 +835,29 @@ async def _route_r6(
 
     deduped = _dedup(all_candidates)
 
-    # SQL supplement
+    # Entity-path expansion (Place-rooted): walk LOCATED_IN, NEAR, RULED-by-Person, etc.
     existing_ids = {c["id"] for c in deduped}
+    if place_names:
+        entity_expand = await _expand_via_entity_path(
+            place_names, use_graph, errors, "R6", type_filter="Place",
+        )
+        if entity_expand:
+            new_entity = [c for c in entity_expand if c["id"] not in existing_ids]
+            existing_ids.update(c["id"] for c in new_entity)
+            deduped.extend(new_entity)
+            strategies.append("entity_path")
+
+    # Cross-ref 2-hop expansion (see _route_r3 for rationale).
+    expand = await _expand_via_cross_ref_seeds(
+        deduped, existing_ids, use_graph, errors, "R6"
+    )
+    if expand:
+        new_expand = [c for c in expand if c["id"] not in existing_ids]
+        existing_ids.update(c["id"] for c in new_expand)
+        deduped.extend(new_expand)
+        strategies.append("cross_ref_expand")
+
+    # SQL supplement
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
         try:

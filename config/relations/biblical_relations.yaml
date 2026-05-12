@@ -1,0 +1,461 @@
+# Biblical Relation Ontology — Closed-set schema for grounded RE extraction.
+#
+# Used by scripts/relation_extraction/schema_loader.py.
+# The grounded LLM classifier is constrained to choose ONE relation from the
+# subset that matches the candidate pair's (head_type, tail_type), or NONE.
+# It cannot invent new relation names. Domain/range filters reject mismatched
+# type pairs (e.g. Person FATHER_OF Place) before LLM calls.
+#
+# Field reference:
+#   domain_types     : entity types allowed as the head (subject)
+#   range_types      : entity types allowed as the tail (object)
+#   direction        : directed | undirected
+#   inverse          : relation written automatically in reverse direction (or null)
+#   description_zh   : human-readable Chinese semantics
+#   prompt_signals   : surface-form keywords used by Phase R2 rule classifier
+#   examples         : grounding examples used in few-shot prompt
+#   confidence_priors: defaults applied per extraction phase
+
+version: "1.0"
+description: "聖經敘事級關係本體 (詮釋學/typology 留 P3 擴張)"
+
+relations:
+
+  # =============================
+  # Person x Person (13)
+  # =============================
+  FATHER_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: SON_OF
+    description_zh: "X 是 Y 的父親 (生育意義上)"
+    prompt_signals: ["生", "之父", "為...父", "父親"]
+    examples:
+      - {head: "亞伯拉罕", tail: "以撒", sentence: "亞伯拉罕生以撒"}
+      - {head: "大衛", tail: "所羅門", sentence: "大衛王娶拔示巴生所羅門"}
+    confidence_priors: {rule_match: 0.95, prior: 0.99, llm_class: 0.80}
+
+  MOTHER_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: SON_OF
+    description_zh: "X 是 Y 的母親"
+    prompt_signals: ["母親", "其母", "生子"]
+    examples:
+      - {head: "撒拉", tail: "以撒", sentence: "撒拉懷孕,給亞伯拉罕生了一個兒子"}
+    confidence_priors: {rule_match: 0.95, prior: 0.99, llm_class: 0.80}
+
+  SON_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: FATHER_OF
+    description_zh: "X 是 Y 的兒子"
+    prompt_signals: ["...的兒子", "屬...", "之子"]
+    examples:
+      - {head: "以撒", tail: "亞伯拉罕", sentence: "以撒,亞伯拉罕的兒子"}
+    confidence_priors: {rule_match: 0.92, prior: 0.99, llm_class: 0.78}
+
+  DAUGHTER_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: FATHER_OF
+    description_zh: "X 是 Y 的女兒"
+    prompt_signals: ["...的女兒", "之女"]
+    examples:
+      - {head: "底拿", tail: "雅各", sentence: "雅各的女兒底拿"}
+    confidence_priors: {rule_match: 0.92, prior: 0.99, llm_class: 0.78}
+
+  SIBLING_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: undirected
+    inverse: null
+    description_zh: "X 與 Y 是兄弟姊妹 (同父或同母)"
+    prompt_signals: ["兄弟", "姊妹", "他哥哥", "他兄弟", "胞兄", "胞弟"]
+    examples:
+      - {head: "該隱", tail: "亞伯", sentence: "該隱與兄弟亞伯說話"}
+      - {head: "雅各", tail: "以掃", sentence: "雅各與他哥哥以掃"}
+    confidence_priors: {rule_match: 0.90, prior: 0.95, llm_class: 0.75}
+
+  SPOUSE_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: undirected
+    inverse: null
+    description_zh: "X 與 Y 是夫妻"
+    prompt_signals: ["娶...為妻", "他的妻子", "嫁給", "丈夫"]
+    examples:
+      - {head: "亞伯拉罕", tail: "撒拉", sentence: "亞伯拉罕的妻子撒拉"}
+      - {head: "以撒", tail: "利百加", sentence: "以撒娶利百加為妻"}
+    confidence_priors: {rule_match: 0.93, prior: 0.99, llm_class: 0.80}
+
+  ANCESTOR_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: DESCENDANT_OF
+    description_zh: "X 是 Y 的祖先 (隔代以上)"
+    prompt_signals: ["祖宗", "先祖", "列祖", "之後裔"]
+    examples:
+      - {head: "亞伯拉罕", tail: "大衛", sentence: "大衛屬於亞伯拉罕的後裔"}
+    confidence_priors: {rule_match: 0.85, prior: 0.95, llm_class: 0.70}
+
+  DESCENDANT_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: ANCESTOR_OF
+    description_zh: "X 是 Y 的後裔"
+    prompt_signals: ["後裔", "...之後", "屬...的家"]
+    examples:
+      - {head: "大衛", tail: "亞伯拉罕", sentence: "大衛是亞伯拉罕的後裔"}
+    confidence_priors: {rule_match: 0.85, prior: 0.95, llm_class: 0.70}
+
+  TEACHER_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: DISCIPLE_OF
+    description_zh: "X 是 Y 的拉比/師傅 (教導關係)"
+    prompt_signals: ["拉比", "夫子", "教導", "師傅"]
+    examples:
+      - {head: "耶穌", tail: "彼得", sentence: "耶穌教導門徒彼得"}
+    confidence_priors: {rule_match: 0.80, prior: 0.95, llm_class: 0.70}
+
+  DISCIPLE_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: TEACHER_OF
+    description_zh: "X 是 Y 的門徒/跟隨者"
+    prompt_signals: ["門徒", "跟從", "事奉", "跟隨"]
+    examples:
+      - {head: "彼得", tail: "耶穌", sentence: "彼得跟從耶穌"}
+      - {head: "提摩太", tail: "保羅", sentence: "提摩太事奉保羅"}
+    confidence_priors: {rule_match: 0.82, prior: 0.95, llm_class: 0.72}
+
+  ENEMY_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: undirected
+    inverse: null
+    description_zh: "X 與 Y 為敵 (敵對/迫害關係)"
+    prompt_signals: ["敵人", "攻打", "追殺", "逼迫", "與...為敵"]
+    examples:
+      - {head: "掃羅", tail: "大衛", sentence: "掃羅追殺大衛"}
+    confidence_priors: {rule_match: 0.75, prior: 0.90, llm_class: 0.65}
+
+  ALLY_OF:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: undirected
+    inverse: null
+    description_zh: "X 與 Y 結盟/同夥"
+    prompt_signals: ["結盟", "同盟", "聯合", "同夥", "幫助"]
+    examples:
+      - {head: "約拿單", tail: "大衛", sentence: "約拿單與大衛立約"}
+    confidence_priors: {rule_match: 0.75, prior: 0.85, llm_class: 0.65}
+
+  SUCCEEDED_BY:
+    domain_types: [Person]
+    range_types: [Person]
+    direction: directed
+    inverse: null
+    description_zh: "X 將王位/職位傳給 Y"
+    prompt_signals: ["接續...作王", "繼任", "接位"]
+    examples:
+      - {head: "大衛", tail: "所羅門", sentence: "所羅門接續他父親大衛作王"}
+    confidence_priors: {rule_match: 0.88, prior: 0.95, llm_class: 0.75}
+
+  # =============================
+  # Person x Place (7)
+  # =============================
+  BORN_IN:
+    domain_types: [Person]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 出生於 Y 地"
+    prompt_signals: ["生於", "降生在", "出於"]
+    examples:
+      - {head: "耶穌", tail: "伯利恆", sentence: "耶穌生於伯利恆"}
+    confidence_priors: {rule_match: 0.92, prior: 0.98, llm_class: 0.78}
+
+  DIED_IN:
+    domain_types: [Person]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 死於 Y 地"
+    prompt_signals: ["死於", "卒於", "葬於"]
+    examples:
+      - {head: "摩西", tail: "尼波山", sentence: "摩西死在尼波山"}
+    confidence_priors: {rule_match: 0.90, prior: 0.98, llm_class: 0.76}
+
+  RULED:
+    domain_types: [Person]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 統治 Y 地 (王權/管轄)"
+    prompt_signals: ["作王", "統治", "管轄", "王於"]
+    examples:
+      - {head: "大衛", tail: "希伯崙", sentence: "大衛在希伯崙作王"}
+      - {head: "希律", tail: "猶太", sentence: "希律王治理猶太地"}
+    confidence_priors: {rule_match: 0.90, prior: 0.95, llm_class: 0.75}
+
+  VISITED:
+    domain_types: [Person]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 曾到過 Y 地"
+    prompt_signals: ["到了", "去到", "進入", "前往"]
+    examples:
+      - {head: "保羅", tail: "雅典", sentence: "保羅在雅典等候"}
+    confidence_priors: {rule_match: 0.70, prior: 0.85, llm_class: 0.62}
+
+  EXILED_TO:
+    domain_types: [Person]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 被擄/流放至 Y 地"
+    prompt_signals: ["被擄到", "擄至", "流放", "被遷至"]
+    examples:
+      - {head: "但以理", tail: "巴比倫", sentence: "但以理被擄至巴比倫"}
+    confidence_priors: {rule_match: 0.88, prior: 0.95, llm_class: 0.75}
+
+  RETURNED_FROM:
+    domain_types: [Person]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 從 Y 地歸回"
+    prompt_signals: ["從...回來", "歸回", "回到"]
+    examples:
+      - {head: "尼希米", tail: "巴比倫", sentence: "尼希米從巴比倫歸回耶路撒冷"}
+    confidence_priors: {rule_match: 0.85, prior: 0.95, llm_class: 0.72}
+
+  BUILT:
+    domain_types: [Person]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 建造 Y (城/聖殿/壇)"
+    prompt_signals: ["建造", "築", "建立"]
+    examples:
+      - {head: "所羅門", tail: "聖殿", sentence: "所羅門建造耶和華的殿"}
+    confidence_priors: {rule_match: 0.88, prior: 0.95, llm_class: 0.75}
+
+  # =============================
+  # Person x Object (4)
+  # =============================
+  POSSESSED:
+    domain_types: [Person]
+    range_types: [Object]
+    direction: directed
+    inverse: null
+    description_zh: "X 擁有/持有 Y (物件)"
+    prompt_signals: ["擁有", "他的...", "拿著", "手中的"]
+    examples:
+      - {head: "摩西", tail: "杖", sentence: "摩西手中的杖"}
+    confidence_priors: {rule_match: 0.75, prior: 0.85, llm_class: 0.65}
+
+  RECEIVED:
+    domain_types: [Person]
+    range_types: [Object]
+    direction: directed
+    inverse: null
+    description_zh: "X 領受 Y (從上帝或他人)"
+    prompt_signals: ["領受", "得了", "獲賜"]
+    examples:
+      - {head: "摩西", tail: "法版", sentence: "摩西領受法版"}
+    confidence_priors: {rule_match: 0.82, prior: 0.92, llm_class: 0.70}
+
+  GAVE:
+    domain_types: [Person]
+    range_types: [Object]
+    direction: directed
+    inverse: null
+    description_zh: "X 給予 Y (轉交物件)"
+    prompt_signals: ["賜給", "交給", "獻上", "送給"]
+    examples:
+      - {head: "亞伯", tail: "祭物", sentence: "亞伯獻上頭生的羊"}
+    confidence_priors: {rule_match: 0.75, prior: 0.85, llm_class: 0.65}
+
+  DESTROYED:
+    domain_types: [Person]
+    range_types: [Object]
+    direction: directed
+    inverse: null
+    description_zh: "X 毀壞 Y (物件)"
+    prompt_signals: ["拆毀", "焚燒", "打碎", "毀壞"]
+    examples:
+      - {head: "希西家", tail: "銅蛇", sentence: "希西家打碎摩西所造的銅蛇"}
+    confidence_priors: {rule_match: 0.82, prior: 0.90, llm_class: 0.70}
+
+  # =============================
+  # Person x Event (3)
+  # =============================
+  PARTICIPATED_IN:
+    domain_types: [Person]
+    range_types: [Event]
+    direction: directed
+    inverse: null
+    description_zh: "X 參與了事件 Y"
+    prompt_signals: ["參與", "在", "於...時"]
+    examples:
+      - {head: "彼得", tail: "五旬節", sentence: "五旬節到了,彼得站起來"}
+    confidence_priors: {rule_match: 0.65, prior: 0.85, llm_class: 0.60}
+
+  INITIATED:
+    domain_types: [Person]
+    range_types: [Event]
+    direction: directed
+    inverse: null
+    description_zh: "X 發起/主導了事件 Y"
+    prompt_signals: ["發動", "領導", "起首", "施行"]
+    examples:
+      - {head: "摩西", tail: "出埃及", sentence: "摩西帶領以色列人出埃及"}
+    confidence_priors: {rule_match: 0.78, prior: 0.92, llm_class: 0.68}
+
+  VICTIM_OF:
+    domain_types: [Person]
+    range_types: [Event]
+    direction: directed
+    inverse: null
+    description_zh: "X 是事件 Y 的受害者"
+    prompt_signals: ["遭受", "被害", "受...之苦"]
+    examples:
+      - {head: "亞伯", tail: "兇殺", sentence: "亞伯被該隱所殺"}
+    confidence_priors: {rule_match: 0.75, prior: 0.90, llm_class: 0.65}
+
+  # =============================
+  # Person x Group (3)
+  # =============================
+  MEMBER_OF:
+    domain_types: [Person]
+    range_types: [Group]
+    direction: directed
+    inverse: null
+    description_zh: "X 屬於群體 Y"
+    prompt_signals: ["屬...支派", "屬...的", "其中一個"]
+    examples:
+      - {head: "保羅", tail: "便雅憫支派", sentence: "保羅屬便雅憫支派"}
+    confidence_priors: {rule_match: 0.85, prior: 0.95, llm_class: 0.72}
+
+  LEADER_OF:
+    domain_types: [Person]
+    range_types: [Group]
+    direction: directed
+    inverse: null
+    description_zh: "X 領導群體 Y"
+    prompt_signals: ["領袖", "首領", "帶領"]
+    examples:
+      - {head: "摩西", tail: "以色列人", sentence: "摩西帶領以色列人"}
+    confidence_priors: {rule_match: 0.80, prior: 0.92, llm_class: 0.70}
+
+  FOUNDED:
+    domain_types: [Person]
+    range_types: [Group]
+    direction: directed
+    inverse: null
+    description_zh: "X 創立群體 Y"
+    prompt_signals: ["建立", "創立", "設立"]
+    examples:
+      - {head: "保羅", tail: "哥林多教會", sentence: "保羅建立哥林多教會"}
+    confidence_priors: {rule_match: 0.78, prior: 0.92, llm_class: 0.68}
+
+  # =============================
+  # Place x Place (2)
+  # =============================
+  LOCATED_IN:
+    domain_types: [Place]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "X 地理上位於 Y 之內"
+    prompt_signals: ["在...境內", "屬於", "之中"]
+    examples:
+      - {head: "伯利恆", tail: "猶太", sentence: "猶太地的伯利恆"}
+    confidence_priors: {rule_match: 0.85, prior: 0.95, llm_class: 0.72}
+
+  NEAR:
+    domain_types: [Place]
+    range_types: [Place]
+    direction: undirected
+    inverse: null
+    description_zh: "X 鄰近 Y"
+    prompt_signals: ["靠近", "在...旁邊", "毗鄰"]
+    examples:
+      - {head: "伯大尼", tail: "耶路撒冷", sentence: "伯大尼離耶路撒冷不遠"}
+    confidence_priors: {rule_match: 0.75, prior: 0.85, llm_class: 0.65}
+
+  # =============================
+  # Event x Place (1)
+  # =============================
+  OCCURRED_IN:
+    domain_types: [Event]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "事件 X 發生於地點 Y"
+    prompt_signals: ["發生在", "在...發生", "於...地方"]
+    examples:
+      - {head: "五旬節", tail: "耶路撒冷", sentence: "五旬節到了,他們都在耶路撒冷"}
+    confidence_priors: {rule_match: 0.80, prior: 0.92, llm_class: 0.70}
+
+  # =============================
+  # Event x Event (2)
+  # =============================
+  PRECEDED_BY:
+    domain_types: [Event]
+    range_types: [Event]
+    direction: directed
+    inverse: null
+    description_zh: "事件 X 發生在 Y 之前"
+    prompt_signals: ["先於", "之前", "在...以前"]
+    examples:
+      - {head: "創世", tail: "洪水", sentence: "創世之後不久便有洪水"}
+    confidence_priors: {rule_match: 0.65, prior: 0.85, llm_class: 0.58}
+
+  CAUSED:
+    domain_types: [Event]
+    range_types: [Event]
+    direction: directed
+    inverse: null
+    description_zh: "事件 X 引發/導致事件 Y"
+    prompt_signals: ["因此", "以致", "導致", "引起"]
+    examples:
+      - {head: "犯罪", tail: "被逐出伊甸園", sentence: "因犯罪被逐出伊甸園"}
+    confidence_priors: {rule_match: 0.70, prior: 0.85, llm_class: 0.62}
+
+  # =============================
+  # Group x Place (2)
+  # =============================
+  ORIGINATED_FROM:
+    domain_types: [Group]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "群體 X 起源於地點 Y"
+    prompt_signals: ["起源於", "出於", "源自"]
+    examples:
+      - {head: "迦南人", tail: "迦南地", sentence: "迦南人住在迦南地"}
+    confidence_priors: {rule_match: 0.78, prior: 0.90, llm_class: 0.68}
+
+  SETTLED_IN:
+    domain_types: [Group]
+    range_types: [Place]
+    direction: directed
+    inverse: null
+    description_zh: "群體 X 定居於地點 Y"
+    prompt_signals: ["居住", "定居", "住在", "聚居"]
+    examples:
+      - {head: "以色列人", tail: "迦南地", sentence: "以色列人住在迦南地"}
+    confidence_priors: {rule_match: 0.80, prior: 0.92, llm_class: 0.70}
