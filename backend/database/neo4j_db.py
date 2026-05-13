@@ -96,6 +96,54 @@ async def get_entity_related_pericopes(entity_id: str, limit: int = 10) -> list[
         return [dict(record) for record in await result.data()]
 
 
+async def get_pericopes_for_entities_hub_aware(
+    entity_ids: list[str],
+    hub_threshold: int = 50,
+    hub_cap: int = 3,
+    normal_cap: int = 5,
+) -> list[dict]:
+    """Batch fetch pericopes for multiple entities via MENTIONS, with
+    hub-aware cap to prevent topic-pollution from well-connected entities.
+
+    For each entity_id, returns up to hub_cap pericopes if the entity has
+    >= hub_threshold MENTIONS edges (e.g. 摩西 with 256 mentions), otherwise
+    up to normal_cap. One Cypher call handles all entities.
+
+    Returns flat list of records; caller groups by entity_id. Each record
+    carries the entity's total_mentions so callers can mark hub provenance.
+    """
+    if not entity_ids:
+        return []
+    driver = get_driver()
+    async with driver.session() as session:
+        result = await session.run(
+            """
+            UNWIND $entity_ids AS eid
+            MATCH (e {entity_id: eid})
+            OPTIONAL MATCH (e)-[:MENTIONS]-(p)
+            WHERE p:Pericope OR p:Chunk
+            WITH eid, collect(p) AS all_p
+            WHERE size(all_p) > 0
+            WITH eid, all_p, size(all_p) AS total,
+                 CASE WHEN size(all_p) >= $hub_threshold
+                      THEN $hub_cap ELSE $normal_cap END AS cap
+            UNWIND all_p[0..cap] AS p
+            RETURN eid AS entity_id,
+                   total AS total_mentions,
+                   p.id AS id,
+                   p.title AS title,
+                   p.book_name AS book_name,
+                   p.chapter_num AS chapter_num,
+                   p.verse_range AS verse_range
+            """,
+            entity_ids=entity_ids,
+            hub_threshold=hub_threshold,
+            hub_cap=hub_cap,
+            normal_cap=normal_cap,
+        )
+        return [dict(record) for record in await result.data()]
+
+
 async def get_entities_shared_pericopes(entity_ids: list[str], limit: int = 10) -> list[dict]:
     """Find pericopes that mention multiple entities (shared context)."""
     driver = get_driver()

@@ -95,6 +95,19 @@ class Settings(BaseSettings):
     rag_entity_path_limit: int = 15
     qdrant_entity_collection: str = "bible_entities"
 
+    # Entity-Query retriever (R4 only) — replaces retrieve_by_events with BGE-M3
+    # query → bible_entities vector match → payload.pericope_ids. Event entity
+    # canonical_names are fine-grained action descriptions (e.g. "以色列人要求立王"),
+    # whereas EVENT_KEYWORDS dictionary uses textbook-level names (e.g. "登山寶訓"),
+    # so substring matching fails on 52.9% of R4 queries. Entity-agnostic vector
+    # match (no type filter) recovers 88.9% on the 9 R4 failure cases.
+    rag_use_entity_query: bool = False
+    rag_entity_query_top_k: int = 5
+    rag_entity_query_score_threshold: float = 0.5
+    rag_entity_query_hub_threshold: int = 50
+    rag_entity_query_pericopes_per_entity_normal: int = 5
+    rag_entity_query_pericopes_per_entity_hub: int = 3
+
     model_config = {
         "env_file": str(Path(__file__).resolve().parent.parent / ".env"),
         "env_file_encoding": "utf-8",

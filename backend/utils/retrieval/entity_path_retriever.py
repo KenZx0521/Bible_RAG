@@ -114,11 +114,28 @@ async def retrieve_by_entity_path(
 
 async def retrieve_by_entity_query(
     query_text: str,
-    top_k_entities: int = 10,
-    max_hops: int = 2,
-    pericope_limit: int = 20,
+    top_k_entities: int = 5,
+    score_threshold: float = 0.5,
+    hub_threshold: int = 50,
+    pericopes_per_entity_normal: int = 5,
+    pericopes_per_entity_hub: int = 3,
     qdrant_collection: Optional[str] = None,
 ) -> list[dict]:
+    """Entity-agnostic vector pivot: query → bible_entities top-k entities →
+    Neo4j MENTIONS → pericope candidates. No type filter (Event-only is too
+    restrictive — see module docstring).
+
+    Why Neo4j (not Qdrant payload.pericope_ids): embed_entities.py writes only
+    an unsorted top-5 sample of pericope_ids into payload (Cypher LIMIT 5,
+    storage order). For hub entities like 掃羅 (69 mentions), the correct
+    pericopes (e.g. act:9:* for 保羅歸主) often miss that sample. Going through
+    Neo4j MENTIONS directly returns the full mention set with deterministic
+    hub-aware capping.
+
+    Hub entities (>= hub_threshold MENTIONS edges) are capped at
+    pericopes_per_entity_hub to prevent topic-pollution from well-connected
+    entities such as 摩西 (256 mentions) or 聖靈 (146).
+    """
     if not query_text:
         return []
 
@@ -129,9 +146,9 @@ async def retrieve_by_entity_query(
         logger.warning("qdrant_client missing — entity_query disabled")
         return []
 
-    collection_name = qdrant_collection or "bible_entities"
+    collection_name = qdrant_collection or settings.qdrant_entity_collection
 
-    query_vector = embedder.encode_query(query_text).tolist()
+    query_vector = embedder.encode_query(query_text)
 
     client = QdrantClient(host=settings.qdrant_host, port=settings.qdrant_http_port)
     try:
@@ -146,13 +163,84 @@ async def retrieve_by_entity_query(
             collection_name=collection_name,
             query_vector=query_vector,
             limit=top_k_entities,
+            score_threshold=score_threshold,
         )
     finally:
         client.close()
 
-    entity_ids = [hit.payload.get("entity_id") for hit in results if hit.payload]
-    entity_ids = [e for e in entity_ids if e]
-    if not entity_ids:
+    if not results:
         return []
 
-    return await retrieve_by_entity_path(entity_ids, max_hops=max_hops, limit=pericope_limit)
+    # Build entity_id → metadata map (preserves Qdrant ranking order)
+    entity_meta: dict[str, dict] = {}
+    ordered_eids: list[str] = []
+    for hit in results:
+        payload = hit.payload or {}
+        eid = payload.get("entity_id")
+        if eid and eid not in entity_meta:
+            entity_meta[eid] = {
+                "score": float(hit.score),
+                "canonical_name": payload.get("canonical_name"),
+                "type": payload.get("type"),
+            }
+            ordered_eids.append(eid)
+
+    if not entity_meta:
+        return []
+
+    # Batch fetch real MENTIONS pericopes via Neo4j (replaces payload sampling).
+    records = await neo4j_db.get_pericopes_for_entities_hub_aware(
+        ordered_eids,
+        hub_threshold=hub_threshold,
+        hub_cap=pericopes_per_entity_hub,
+        normal_cap=pericopes_per_entity_normal,
+    )
+
+    # Group by entity, preserve Neo4j result order (used as pericope_rank)
+    by_entity: dict[str, list[dict]] = {}
+    for rec in records:
+        by_entity.setdefault(rec["entity_id"], []).append(rec)
+
+    candidates: list[dict] = []
+    seen_pids: set[str] = set()
+    for eid in ordered_eids:
+        info = entity_meta[eid]
+        entity_records = by_entity.get(eid, [])
+        if not entity_records:
+            continue
+        total_mentions = entity_records[0].get("total_mentions", 0) or 0
+        is_hub = total_mentions >= hub_threshold
+        for i, rec in enumerate(entity_records):
+            pid = rec.get("id")
+            if not pid or pid in seen_pids:
+                continue
+            seen_pids.add(pid)
+            content_data = await postgres.get_content_by_id(pid)
+            if not content_data:
+                continue
+            weight = info["score"] * (0.9 ** i)
+            candidates.append({
+                "id": pid,
+                "content": content_data.get("content", ""),
+                "title": content_data.get("title", rec.get("title", "")),
+                "book_name": content_data.get("book_name", rec.get("book_name", "")),
+                "chapter_num": content_data.get("chapter_num", rec.get("chapter_num")),
+                "verse_range": content_data.get("metadata", {}).get(
+                    "verse_range", rec.get("verse_range", "")
+                ),
+                "source_strategy": "entity_query",
+                "via_entity_id": eid,
+                "via_entity_name": info["canonical_name"],
+                "via_entity_type": info["type"],
+                "via_entity_score": info["score"],
+                "via_total_mentions": total_mentions,
+                "is_hub": is_hub,
+                "pericope_rank": i,
+                "weight": weight,
+            })
+
+    logger.info(
+        "entity_query: %d candidates from %d entities (top_k=%d, threshold=%.2f)",
+        len(candidates), len(results), top_k_entities, score_threshold,
+    )
+    return candidates

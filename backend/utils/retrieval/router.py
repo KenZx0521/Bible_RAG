@@ -27,7 +27,10 @@ from utils.retrieval.cross_ref_retriever import (
     retrieve_cross_references,
     retrieve_via_cross_references,
 )
-from utils.retrieval.entity_path_retriever import retrieve_by_entity_path
+from utils.retrieval.entity_path_retriever import (
+    retrieve_by_entity_path,
+    retrieve_by_entity_query,
+)
 from utils import reranker as reranker_mod
 from database import neo4j_db, postgres
 from config import settings
@@ -600,7 +603,13 @@ async def _route_r4(
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + SQL(0.5).
 
-    When use_graph=False, graph_event is skipped.
+    When settings.rag_use_entity_query=True, retrieve_by_events is replaced by
+    retrieve_by_entity_query (BGE-M3 vector match against bible_entities, no
+    type filter). Rationale: Event entity canonical_names are fine-grained
+    action descriptions that fail substring match against textbook-level
+    keywords like 巴別塔/登山寶訓, causing 52.9% R4 graph_event miss rate.
+
+    When use_graph=False, graph branch is skipped regardless of flag.
     """
     strategies: list[str] = []
     errors: dict[str, str] = {}
@@ -608,26 +617,39 @@ async def _route_r4(
 
     event_keywords = signals.detected_events
     graph_enabled = bool(use_graph and event_keywords)
+    use_entity_query = settings.rag_use_entity_query
 
-    # Parallel: graph event (if enabled) + semantic
+    # Parallel: graph (entity_query or graph_event) + semantic
     tasks = [asyncio.create_task(_get_semantic(query))]
-    if graph_enabled:
+    if graph_enabled and use_entity_query:
+        tasks.insert(0, asyncio.create_task(retrieve_by_entity_query(
+            query,
+            top_k_entities=settings.rag_entity_query_top_k,
+            score_threshold=settings.rag_entity_query_score_threshold,
+            hub_threshold=settings.rag_entity_query_hub_threshold,
+            pericopes_per_entity_normal=settings.rag_entity_query_pericopes_per_entity_normal,
+            pericopes_per_entity_hub=settings.rag_entity_query_pericopes_per_entity_hub,
+        )))
+        graph_strategy_label = "entity_query"
+    elif graph_enabled:
         tasks.insert(0, asyncio.create_task(retrieve_by_events(event_keywords)))
+        graph_strategy_label = "graph_event"
     else:
         tasks.insert(0, asyncio.create_task(asyncio.sleep(0)))  # placeholder
+        graph_strategy_label = None
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
     all_candidates: list[dict] = []
 
-    # Graph event results
+    # Graph results (entity_query when flag is on, otherwise graph_event)
     if graph_enabled and not isinstance(results[0], Exception) and results[0]:
         _apply_weights(results[0], weights["graph"])
         all_candidates.extend(results[0])
-        strategies.append("graph_event")
+        strategies.append(graph_strategy_label)
     elif graph_enabled and isinstance(results[0], Exception):
-        logger.warning(f"R4 graph event retrieval failed: {results[0]}")
-        errors["graph_event"] = repr(results[0])[:200]
+        logger.warning(f"R4 {graph_strategy_label} retrieval failed: {results[0]}")
+        errors[graph_strategy_label] = repr(results[0])[:200]
 
     # Semantic results
     if not isinstance(results[1], Exception) and results[1]:
