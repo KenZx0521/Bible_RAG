@@ -59,13 +59,15 @@ class Settings(BaseSettings):
     semantic_search_top_k: int = 20
     reranker_top_k: int = 5
 
-    # Route weights per route type
+    # Route weights per route type.
+    # entity_query is supplement-only (always below semantic) so it never
+    # displaces a high-scoring semantic chunk from the pre-rerank pool.
     route_weights: dict = {
         "R2": {"sql": 0.9, "semantic": 0.6},
-        "R3": {"graph": 0.9, "semantic": 0.7, "sql": 0.5},
-        "R4": {"graph": 0.85, "semantic": 0.7, "sql": 0.5},
-        "R5": {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql_chapter": 0.85, "sql": 0.4},
-        "R6": {"graph": 0.85, "semantic": 0.7, "sql": 0.5},
+        "R3": {"graph": 0.9, "semantic": 0.7, "entity_query": 0.6, "sql": 0.5},
+        "R4": {"graph": 0.85, "semantic": 0.7, "entity_query": 0.6, "sql": 0.5},
+        "R5": {"cross_ref": 0.85, "graph": 0.75, "semantic": 0.65, "sql_chapter": 0.85, "entity_query": 0.6, "sql": 0.4},
+        "R6": {"graph": 0.85, "semantic": 0.7, "entity_query": 0.6, "sql": 0.5},
     }
 
     # Hybrid Search settings
@@ -95,18 +97,20 @@ class Settings(BaseSettings):
     rag_entity_path_limit: int = 15
     qdrant_entity_collection: str = "bible_entities"
 
-    # Entity-Query retriever (R4 only) — replaces retrieve_by_events with BGE-M3
-    # query → bible_entities vector match → payload.pericope_ids. Event entity
-    # canonical_names are fine-grained action descriptions (e.g. "以色列人要求立王"),
-    # whereas EVENT_KEYWORDS dictionary uses textbook-level names (e.g. "登山寶訓"),
-    # so substring matching fails on 52.9% of R4 queries. Entity-agnostic vector
-    # match (no type filter) recovers 88.9% on the 9 R4 failure cases.
-    rag_use_entity_query: bool = False
-    rag_entity_query_top_k: int = 5
-    rag_entity_query_score_threshold: float = 0.5
+    # Entity-Query retriever (supplement-only across R3/R4/R5/R6) — BGE-M3 query
+    # → bible_entities vector match → Neo4j MENTIONS pericopes. Adds candidates
+    # that semantic embedding misses (e.g. "王國分裂" → 列王紀上12 via Event
+    # entity「北方的支派反叛」). Simulation on 100-question eval recovers ≥1
+    # ground-truth chapter on 8/10 failure cases that pure semantic missed.
+    # Weight 0.6 (below semantic 0.7) ensures supplement candidates do not
+    # displace high-scoring semantic chunks pre-rerank.
+    rag_use_entity_query: bool = True
+    rag_entity_query_top_k: int = 8
+    rag_entity_query_score_threshold: float = 0.4
     rag_entity_query_hub_threshold: int = 50
     rag_entity_query_pericopes_per_entity_normal: int = 5
     rag_entity_query_pericopes_per_entity_hub: int = 3
+    rag_entity_query_supplement_cap: int = 5
 
     model_config = {
         "env_file": str(Path(__file__).resolve().parent.parent / ".env"),

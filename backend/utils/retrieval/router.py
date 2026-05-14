@@ -382,6 +382,46 @@ async def _expand_via_cross_ref_seeds(
         return []
 
 
+async def _expand_via_entity_query(
+    query: str,
+    existing_ids: set[str],
+    use_graph: bool,
+    errors: dict[str, str],
+    route_label: str,
+) -> list[dict]:
+    """Supplement candidate pool via Qdrant bible_entities vector match.
+
+    Runs BGE-M3 query → bible_entities top-K entities → Neo4j MENTIONS pericopes
+    (via retrieve_by_entity_query). Returns ONLY pericopes not already in
+    `existing_ids`, capped at settings.rag_entity_query_supplement_cap. Purely
+    additive — does not displace existing high-weight semantic candidates.
+
+    Recovers EVENT/PERSON failure cases where dense semantic embedding maps to
+    wrong topic (e.g. "王國分裂" → 但以理書 instead of 列王紀上12). Skipped
+    silently when use_graph=False or settings.rag_use_entity_query=False.
+    """
+    if not use_graph or not settings.rag_use_entity_query or not query:
+        return []
+    try:
+        results = await retrieve_by_entity_query(
+            query,
+            top_k_entities=settings.rag_entity_query_top_k,
+            score_threshold=settings.rag_entity_query_score_threshold,
+            hub_threshold=settings.rag_entity_query_hub_threshold,
+            pericopes_per_entity_normal=settings.rag_entity_query_pericopes_per_entity_normal,
+            pericopes_per_entity_hub=settings.rag_entity_query_pericopes_per_entity_hub,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"{route_label} entity_query failed: {e}")
+        errors["entity_query"] = repr(e)[:200]
+        return []
+    if not results:
+        return []
+    cap = settings.rag_entity_query_supplement_cap
+    new_candidates = [c for c in results if c["id"] not in existing_ids][:cap]
+    return new_candidates
+
+
 async def _sql_supplement(book_chapters: list[tuple[str, int]], existing_ids: set[str], limit: int = 5) -> list[dict]:
     """Fetch additional pericopes from specific chapters as supplement."""
     supplements: list[dict] = []
@@ -577,6 +617,17 @@ async def _route_r3(
         deduped.extend(new_expand)
         strategies.append("cross_ref_expand")
 
+    # Entity-query supplement: BGE-M3 query → bible_entities → Neo4j MENTIONS.
+    # Adds pericopes that graph_person + semantic missed, e.g. recovers
+    # 出埃及記6 摩西亞倫族譜 for PERSON_QUESTION_004 when entity_path noise
+    # otherwise displaces it. Supplement-only; weight 0.6 stays below semantic.
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R3")
+    if eq_supplement:
+        _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
+        existing_ids.update(c["id"] for c in eq_supplement)
+        deduped.extend(eq_supplement)
+        strategies.append("entity_query")
+
     # SQL supplement from relevant chapters
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
@@ -601,15 +652,16 @@ async def _route_r4(
     k: int,
     use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + SQL(0.5).
+    """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + EntityQuery(0.6) + SQL(0.5).
 
-    When settings.rag_use_entity_query=True, retrieve_by_events is replaced by
-    retrieve_by_entity_query (BGE-M3 vector match against bible_entities, no
-    type filter). Rationale: Event entity canonical_names are fine-grained
-    action descriptions that fail substring match against textbook-level
-    keywords like 巴別塔/登山寶訓, causing 52.9% R4 graph_event miss rate.
+    graph_event runs whenever event keywords are detected. entity_query runs as
+    a separate supplement step (see _expand_via_entity_query) so it never
+    displaces semantic top-K. Earlier exclusive design (entity_query OR
+    graph_event) was reverted because simulation showed supplement-only
+    captures unique recoveries (e.g. EVENT_008 王國分裂) without breaking
+    EVENT_014 / 020 where graph_event/semantic already work.
 
-    When use_graph=False, graph branch is skipped regardless of flag.
+    When use_graph=False, both graph_event and entity_query are skipped.
     """
     strategies: list[str] = []
     errors: dict[str, str] = {}
@@ -617,39 +669,26 @@ async def _route_r4(
 
     event_keywords = signals.detected_events
     graph_enabled = bool(use_graph and event_keywords)
-    use_entity_query = settings.rag_use_entity_query
 
-    # Parallel: graph (entity_query or graph_event) + semantic
+    # Parallel: graph_event + semantic
     tasks = [asyncio.create_task(_get_semantic(query))]
-    if graph_enabled and use_entity_query:
-        tasks.insert(0, asyncio.create_task(retrieve_by_entity_query(
-            query,
-            top_k_entities=settings.rag_entity_query_top_k,
-            score_threshold=settings.rag_entity_query_score_threshold,
-            hub_threshold=settings.rag_entity_query_hub_threshold,
-            pericopes_per_entity_normal=settings.rag_entity_query_pericopes_per_entity_normal,
-            pericopes_per_entity_hub=settings.rag_entity_query_pericopes_per_entity_hub,
-        )))
-        graph_strategy_label = "entity_query"
-    elif graph_enabled:
+    if graph_enabled:
         tasks.insert(0, asyncio.create_task(retrieve_by_events(event_keywords)))
-        graph_strategy_label = "graph_event"
     else:
         tasks.insert(0, asyncio.create_task(asyncio.sleep(0)))  # placeholder
-        graph_strategy_label = None
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
     all_candidates: list[dict] = []
 
-    # Graph results (entity_query when flag is on, otherwise graph_event)
+    # Graph_event results
     if graph_enabled and not isinstance(results[0], Exception) and results[0]:
         _apply_weights(results[0], weights["graph"])
         all_candidates.extend(results[0])
-        strategies.append(graph_strategy_label)
+        strategies.append("graph_event")
     elif graph_enabled and isinstance(results[0], Exception):
-        logger.warning(f"R4 {graph_strategy_label} retrieval failed: {results[0]}")
-        errors[graph_strategy_label] = repr(results[0])[:200]
+        logger.warning(f"R4 graph_event retrieval failed: {results[0]}")
+        errors["graph_event"] = repr(results[0])[:200]
 
     # Semantic results
     if not isinstance(results[1], Exception) and results[1]:
@@ -672,6 +711,17 @@ async def _route_r4(
         existing_ids.update(c["id"] for c in new_expand)
         deduped.extend(new_expand)
         strategies.append("cross_ref_expand")
+
+    # Entity-query supplement: BGE-M3 query → bible_entities → Neo4j MENTIONS.
+    # Critical for EVENT cases where dense embedding misses the right book —
+    # e.g. "王國分裂" semantically maps to 但以理書 "破裂", but entity
+    # 「北方的支派反叛」→ 列王紀上12 is recovered here. Supplement-only.
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R4")
+    if eq_supplement:
+        _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
+        existing_ids.update(c["id"] for c in eq_supplement)
+        deduped.extend(eq_supplement)
+        strategies.append("entity_query")
 
     # SQL supplement
     book_chapters = _extract_book_chapters(deduped)
@@ -790,8 +840,19 @@ async def _route_r5(
 
     deduped = _dedup(all_candidates)
 
-    # SQL supplement
+    # Entity-query supplement: helps cross-book theology queries by surfacing
+    # pericopes via shared Theme/Event entities (e.g. theme:xinyue 連結 耶利米書31
+    # 與 希伯來書8). Supplement-only after the parallel cross_ref/graph block so
+    # it never displaces semantic seeds.
     existing_ids = {c["id"] for c in deduped}
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R5")
+    if eq_supplement:
+        _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
+        existing_ids.update(c["id"] for c in eq_supplement)
+        deduped.extend(eq_supplement)
+        strategies.append("entity_query")
+
+    # SQL supplement
     book_chapters = _extract_book_chapters(deduped)
     if book_chapters:
         try:
@@ -878,6 +939,16 @@ async def _route_r6(
         existing_ids.update(c["id"] for c in new_expand)
         deduped.extend(new_expand)
         strategies.append("cross_ref_expand")
+
+    # Entity-query supplement: e.g. mis-routed PERSON_QUESTION_005 葉忒羅 题
+    # ended up here (R6 place route) due to 米甸 → R6. EQ supplement recovers
+    # 出埃及記3/4/18 via Person/Theme entities the place graph misses.
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R6")
+    if eq_supplement:
+        _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
+        existing_ids.update(c["id"] for c in eq_supplement)
+        deduped.extend(eq_supplement)
+        strategies.append("entity_query")
 
     # SQL supplement
     book_chapters = _extract_book_chapters(deduped)
