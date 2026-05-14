@@ -155,6 +155,22 @@ async def retrieve_and_rerank(
             min_pins=2,
         )
 
+    # Entity-query pin: protect high-confidence EQ candidates from rerank
+    # erasure. BGE-reranker is a lexical-semantic surface matcher and gets
+    # fooled when modern Chinese question vocab (登山寶訓, 王國分裂) does
+    # not appear in ancient Bible text — empirically mat:5:0 scored 13×
+    # lower than psa:104:0 for "登山寶訓". EQ is the only retrieval signal
+    # that bridges modern→ancient via named entities; without this pin the
+    # bridge is erased downstream. Skipped on R1 and semantic_only for the
+    # same reasons as chapter-pin.
+    if route not in ("R1", "semantic_only") and ranked:
+        ranked = _pin_entity_query_candidates(
+            ranked=ranked,
+            candidates=candidates,
+            top_k=k,
+            max_pins=2,
+        )
+
     stats = {
         "strategies_used": strategies_used,
         "total_candidates": total_candidates,
@@ -279,6 +295,74 @@ def _pin_chapter_candidates(
     return result
 
 
+def _pin_entity_query_candidates(
+    ranked: list[dict],
+    candidates: list[dict],
+    top_k: int,
+    max_pins: int = 2,
+    score_threshold: float = 0.5,
+    allowed_types: tuple[str, ...] = ("Event", "Person"),
+) -> list[dict]:
+    """Guarantee high-confidence entity_query candidates survive rerank.
+
+    BGE-reranker is a lexical-semantic surface matcher: when modern Chinese
+    question vocabulary (登山寶訓, 王國分裂) does not appear in ancient Bible
+    text, the reranker prefers literally-matching but topically-wrong
+    pericopes. entity_query is the only retrieval signal that bridges
+    modern→ancient via named entity embeddings; this pin keeps its
+    high-confidence outputs from being erased downstream.
+
+    Eligibility: via_entity_score is not None (EQ-specific metadata) AND
+    via_entity_score > score_threshold AND via_entity_type in allowed_types
+    AND not already in `ranked`. Note: `_expand_via_entity_query` injects
+    these metadata fields back into deduped candidates that semantic/graph
+    already retrieved, so EQ-validated pericopes can still be recognised
+    here even when source_strategy is not "entity_query".
+
+    Selection priority: Event-typed entities first (events anchor the
+    action), then Person-typed; within a type, sort by via_entity_score
+    desc (preserves EQ's confidence ranking, not weight which decays with
+    pericope_rank).
+
+    Synthetic rerank_score uses base+0.005 (vs chapter-pin's base+0.01) so
+    chapter-pin still wins on conflicts. Pinned entries replace the lowest
+    rerank entries when truncating to top_k.
+    """
+    if not ranked or not candidates:
+        return ranked
+
+    existing_ids = {c["id"] for c in ranked}
+    eligible = [
+        c for c in candidates
+        if c.get("via_entity_score") is not None
+        and c.get("via_entity_score", 0) > score_threshold
+        and c.get("via_entity_type") in allowed_types
+        and c.get("id") not in existing_ids
+    ]
+    if not eligible:
+        return ranked
+
+    type_priority = {"Event": 0, "Person": 1}
+    eligible.sort(key=lambda c: (
+        type_priority.get(c.get("via_entity_type", ""), 99),
+        -c.get("via_entity_score", 0),
+    ))
+    to_pin = eligible[:max_pins]
+    if not to_pin:
+        return ranked
+
+    existing_scores = [c.get("rerank_score") for c in ranked if c.get("rerank_score") is not None]
+    base_score = max(existing_scores) if existing_scores else 1.0
+    for i, c in enumerate(to_pin):
+        c["rerank_score"] = base_score + 0.005 * (len(to_pin) - i)
+
+    pinned_via = [(c["id"], c.get("via_entity_name"), c.get("via_entity_type")) for c in to_pin]
+    logger.info("entity_pin: pinned %d EQ candidates: %s", len(to_pin), pinned_via)
+
+    result = to_pin + ranked
+    return result[:top_k]
+
+
 async def _resolve_entity_ids(
     names: list[str],
     type_filter: str | None = None,
@@ -382,12 +466,23 @@ async def _expand_via_cross_ref_seeds(
         return []
 
 
+_EQ_METADATA_KEYS = (
+    "via_entity_id",
+    "via_entity_name",
+    "via_entity_type",
+    "via_entity_score",
+    "via_total_mentions",
+    "is_hub",
+)
+
+
 async def _expand_via_entity_query(
     query: str,
     existing_ids: set[str],
     use_graph: bool,
     errors: dict[str, str],
     route_label: str,
+    deduped: list[dict] | None = None,
 ) -> list[dict]:
     """Supplement candidate pool via Qdrant bible_entities vector match.
 
@@ -399,6 +494,14 @@ async def _expand_via_entity_query(
     Recovers EVENT/PERSON failure cases where dense semantic embedding maps to
     wrong topic (e.g. "王國分裂" → 但以理書 instead of 列王紀上12). Skipped
     silently when use_graph=False or settings.rag_use_entity_query=False.
+
+    When `deduped` is provided, EQ metadata (via_entity_score etc.) is also
+    injected into already-existing candidates that EQ recognised. This lets
+    downstream entity-pin recognise EQ-validated pericopes even when they
+    were originally retrieved by semantic/graph and EQ skipped them as
+    duplicates. Without this, mat:5:0 (登山寶訓) attached to entity
+    "山上寶訓" gets pulled by semantic, EQ skips it as duplicate, and
+    entity-pin can no longer see it.
     """
     if not use_graph or not settings.rag_use_entity_query or not query:
         return []
@@ -417,6 +520,17 @@ async def _expand_via_entity_query(
         return []
     if not results:
         return []
+
+    if deduped is not None:
+        existing_index = {c["id"]: c for c in deduped}
+        for r in results:
+            existing = existing_index.get(r["id"])
+            if existing is None:
+                continue
+            for k in _EQ_METADATA_KEYS:
+                if k in r and existing.get(k) is None:
+                    existing[k] = r[k]
+
     cap = settings.rag_entity_query_supplement_cap
     new_candidates = [c for c in results if c["id"] not in existing_ids][:cap]
     return new_candidates
@@ -621,7 +735,7 @@ async def _route_r3(
     # Adds pericopes that graph_person + semantic missed, e.g. recovers
     # 出埃及記6 摩西亞倫族譜 for PERSON_QUESTION_004 when entity_path noise
     # otherwise displaces it. Supplement-only; weight 0.6 stays below semantic.
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R3")
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R3", deduped=deduped)
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
@@ -716,7 +830,7 @@ async def _route_r4(
     # Critical for EVENT cases where dense embedding misses the right book —
     # e.g. "王國分裂" semantically maps to 但以理書 "破裂", but entity
     # 「北方的支派反叛」→ 列王紀上12 is recovered here. Supplement-only.
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R4")
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R4", deduped=deduped)
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
@@ -845,7 +959,7 @@ async def _route_r5(
     # 與 希伯來書8). Supplement-only after the parallel cross_ref/graph block so
     # it never displaces semantic seeds.
     existing_ids = {c["id"] for c in deduped}
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R5")
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R5", deduped=deduped)
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
@@ -943,7 +1057,7 @@ async def _route_r6(
     # Entity-query supplement: e.g. mis-routed PERSON_QUESTION_005 葉忒羅 题
     # ended up here (R6 place route) due to 米甸 → R6. EQ supplement recovers
     # 出埃及記3/4/18 via Person/Theme entities the place graph misses.
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R6")
+    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R6", deduped=deduped)
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
