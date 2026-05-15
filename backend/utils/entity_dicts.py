@@ -34,9 +34,9 @@ EVENT_KEYWORDS: set[str] = {
     # 被擄 / 歸回
     "被擄", "巴比倫之囚", "歸回", "重建聖殿", "重建城牆",
     # 新約 - 耶穌生平
-    "道成肉身", "耶穌降生", "受洗", "受試探", "登山寶訓",
-    "五餅二魚", "變像", "最後的晚餐", "客西馬尼園禱告",
-    "釘十字架", "復活", "升天",
+    "道成肉身", "耶穌降生", "受洗", "受試探", "登山寶訓", "山上寶訓",
+    "八福", "五餅二魚", "變像", "最後的晚餐", "客西馬尼園禱告",
+    "受難週", "釘十字架", "復活", "升天", "大使命",
     # 新約 - 教會
     "五旬節", "聖靈降臨", "司提反殉道", "保羅歸主",
     "第一次宣教旅程", "耶路撒冷大會",
@@ -108,13 +108,30 @@ def count_books_in_text(text: str) -> int:
     Only considers book names with ≥2 characters to avoid
     false positives from single-character abbreviations.
     """
-    found_book_ids: set[str] = set()
+    return len(match_books_in_text(text))
+
+
+def match_books_in_text(text: str) -> list[str]:
+    """Return canonical Chinese names of Bible books mentioned in text.
+
+    Returns full names (e.g. '撒迦利亞書', '馬太福音'), not abbreviations.
+    Only considers ≥2-char tokens to avoid single-char false positives
+    (利, 伯, 拉 etc.). Order follows first appearance in text.
+    """
     from utils.verse_parser import _resolve_book
+
+    seen_ids: set[str] = set()
+    book_names: list[str] = []
     for name in sorted(_BOOK_NAMES, key=len, reverse=True):
         if len(name) < 2:
-            continue  # skip single-char abbreviations (利, 伯, 拉, etc.)
+            continue
         if name in text:
             resolved = _resolve_book(name)
-            if resolved:
-                found_book_ids.add(resolved[0])
-    return len(found_book_ids)
+            if not resolved:
+                continue
+            book_id, full_name = resolved
+            if book_id in seen_ids:
+                continue
+            seen_ids.add(book_id)
+            book_names.append(full_name)
+    return book_names

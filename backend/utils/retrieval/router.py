@@ -171,6 +171,18 @@ async def retrieve_and_rerank(
             max_pins=2,
         )
 
+    # Graph/book-anchor pin: when reranker is uncertain (top1 < 0.3) and the
+    # query named a book or hit a graph anchor (Event/Person/Place), pin those
+    # candidates so the BGE-reranker can't erase the only topical signal we
+    # have. Skipped on R1/semantic_only for the same reasons as the pins above.
+    if route not in ("R1", "semantic_only") and ranked:
+        ranked = _pin_graph_candidates(
+            ranked=ranked,
+            candidates=candidates,
+            top_k=k,
+            max_pins=2,
+        )
+
     stats = {
         "strategies_used": strategies_used,
         "total_candidates": total_candidates,
@@ -440,12 +452,15 @@ async def _expand_via_cross_ref_seeds(
     errors: dict[str, str],
     route_label: str,
 ) -> list[dict]:
-    """Expand candidate pool via N-hop CROSS_REFERENCES from top-N seeds.
+    """Expand candidate pool via N-hop CROSS_REFERENCES from a diversified
+    set of seed pericopes.
 
-    Picks the highest-weight pericope candidates as seeds, traverses
-    CROSS_REFERENCES up to settings.rag_cross_ref_max_hops, and returns the
-    neighbouring pericopes as new candidates. Caller is responsible for
-    merging into the dedup pool.
+    Seeds are picked round-robin across source_strategy buckets so a single
+    high-weight strategy (e.g. book_anchor 0.9) doesn't monopolize all
+    seed slots. This is critical for cross-book questions: 受難週 graph_event
+    anchors must keep at least one seed slot so triumphal-entry mat:21:0
+    can cross-ref to 撒9:9. Otherwise book_anchor's 撒迦利亞書 picks displace
+    all NT seeds and no Zechariah→Matthew bridge is traversed.
 
     Skips silently when use_graph=False, settings.rag_use_cross_ref_expand=False,
     or no pericope-style seeds are available.
@@ -453,15 +468,39 @@ async def _expand_via_cross_ref_seeds(
     if not use_graph or not settings.rag_use_cross_ref_expand or not candidates:
         return []
 
-    # Pericope IDs follow "<book>:<chapter>:<pericope>" pattern; chunks/verse
-    # IDs include extra segments. Filter to entries that look like pericopes.
-    sorted_candidates = sorted(candidates, key=lambda c: c.get("weight", 0), reverse=True)
-    seed_ids: list[str] = []
-    for c in sorted_candidates:
+    # Bucket candidates by strategy; within each bucket keep weight-desc order.
+    by_strategy: dict[str, list[dict]] = {}
+    for c in sorted(candidates, key=lambda x: x.get("weight", 0), reverse=True):
         cid = c.get("id", "")
-        if cid and ":" in cid and cid not in seed_ids:
+        if not cid or ":" not in cid:
+            continue
+        by_strategy.setdefault(c.get("source_strategy", "") or "_unknown", []).append(c)
+
+    # Strategy priority for picking the "first" seed in each round.
+    strategy_order = [
+        "book_anchor", "graph_event", "graph_person", "graph_place", "graph",
+        "cross_reference", "cross_ref_expand", "semantic", "hybrid",
+        "sql_chapter", "sql_supplement", "entity_query", "entity_path", "_unknown",
+    ]
+    buckets = [by_strategy.get(s, []) for s in strategy_order if by_strategy.get(s)]
+
+    seed_ids: list[str] = []
+    target = settings.rag_cross_ref_top_seeds
+    # Round-robin draw from each non-empty bucket until we hit target.
+    while buckets and len(seed_ids) < target:
+        progressed = False
+        for bucket in buckets:
+            if not bucket:
+                continue
+            c = bucket.pop(0)
+            cid = c.get("id", "")
+            if cid in seed_ids:
+                continue
             seed_ids.append(cid)
-        if len(seed_ids) >= settings.rag_cross_ref_top_seeds:
+            progressed = True
+            if len(seed_ids) >= target:
+                break
+        if not progressed:
             break
 
     if not seed_ids:
@@ -578,6 +617,129 @@ def _apply_weights(candidates: list[dict], weight: float) -> list[dict]:
         if c.get("weight", 0) < weight:
             c["weight"] = weight
     return candidates
+
+
+async def _expand_via_book_anchor(
+    query: str,
+    book_names: list[str],
+    existing_ids: set[str],
+    errors: dict[str, str],
+    route_label: str,
+    weight: float = 0.9,
+    top_k: int = 10,
+) -> list[dict]:
+    """Pull additional semantic candidates restricted to the user-named book(s).
+
+    BGE-M3 dense embedding routinely misses the canonical chapter when a query
+    pairs `<書名>` with a theme word (e.g. 「耶利米書的新約預言」 ranks 耶26/28/32
+    above 耶31, even though 耶31:31-34 is the only place defining 新約). This
+    helper runs a Qdrant search with `book_name` filter so the named book always
+    contributes seed candidates; they're tagged source_strategy='book_anchor'
+    and weighted just below cross_ref so the reranker pin can recover them.
+    """
+    if not book_names or not query:
+        return []
+    try:
+        results = await retrieve_semantic(query, top_k=top_k, book_filter=book_names)
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"{route_label} book_anchor retrieval failed: {e}")
+        errors["book_anchor"] = repr(e)[:200]
+        return []
+    if not results:
+        return []
+    new_candidates: list[dict] = []
+    for c in results:
+        if c["id"] in existing_ids:
+            continue
+        c["source_strategy"] = "book_anchor"
+        if c.get("weight", 0) < weight:
+            c["weight"] = weight
+        new_candidates.append(c)
+    return new_candidates
+
+
+_GRAPH_STRATEGIES = ("graph", "graph_person", "graph_event", "graph_place")
+_BOOK_ANCHOR_STRATEGY = "book_anchor"
+
+
+def _pin_graph_candidates(
+    ranked: list[dict],
+    candidates: list[dict],
+    top_k: int,
+    max_pins: int = 2,
+    rerank_confidence_threshold: float = 0.3,
+) -> list[dict]:
+    """Pin graph and book_anchor candidates when their topical signal would
+    otherwise be erased by the BGE reranker.
+
+    Two regimes:
+
+    * `book_anchor`: pinned UNCONDITIONALLY when present and not already in
+      ranked. Rationale — the user explicitly named a book; BGE reranker
+      will still prefer same-surname decoys (e.g. Luke 1's priest 撒迦利亞
+      over 撒迦利亞書 9:9), so we must guarantee at least one chunk from the
+      named book(s) survives. Up to `max_pins` book_anchor entries pinned.
+
+    * graph_* (graph_event/graph_person/graph_place/graph): pinned ONLY when
+      `ranked[0].rerank_score < rerank_confidence_threshold`. Same EQ-pin
+      gate logic — when reranker is confident, trust it; when uncertain,
+      let graph traversal anchors win. Up to `max_pins` graph entries pinned.
+
+    Synthetic rerank_score is base+0.003 for graph and base+0.004 for
+    book_anchor, so chapter-pin (+0.01) and EQ-pin (+0.005) still win.
+    """
+    if not ranked or not candidates:
+        return ranked
+
+    existing_ids = {c["id"] for c in ranked}
+    existing_scores = [c.get("rerank_score") for c in ranked if c.get("rerank_score") is not None]
+    base_score = max(existing_scores) if existing_scores else 1.0
+
+    pinned_total: list[dict] = []
+
+    # Book-anchor: unconditional
+    book_eligible = [
+        c for c in candidates
+        if c.get("source_strategy") == _BOOK_ANCHOR_STRATEGY
+        and c.get("id") not in existing_ids
+    ]
+    book_eligible.sort(key=lambda c: -c.get("semantic_score", c.get("weight", 0)))
+    for i, c in enumerate(book_eligible[:max_pins]):
+        c["rerank_score"] = base_score + 0.004 * (max_pins - i)
+        existing_ids.add(c["id"])
+        pinned_total.append(c)
+
+    # Graph: gated on reranker uncertainty
+    top1_score = ranked[0].get("rerank_score", 0) or 0
+    if top1_score < rerank_confidence_threshold:
+        graph_eligible = [
+            c for c in candidates
+            if c.get("source_strategy") in _GRAPH_STRATEGIES
+            and c.get("id") not in existing_ids
+        ]
+        strategy_priority = {
+            "graph_event": 1, "graph_person": 2, "graph_place": 3, "graph": 4,
+        }
+        graph_eligible.sort(key=lambda c: (
+            strategy_priority.get(c.get("source_strategy", ""), 99),
+            -c.get("weight", 0),
+        ))
+        for i, c in enumerate(graph_eligible[:max_pins]):
+            c["rerank_score"] = base_score + 0.003 * (max_pins - i)
+            existing_ids.add(c["id"])
+            pinned_total.append(c)
+
+    if not pinned_total:
+        return ranked
+
+    logger.info(
+        "graph_pin: pinned %d candidates: %s",
+        len(pinned_total),
+        [(c["id"], c.get("source_strategy")) for c in pinned_total],
+    )
+
+    result = pinned_total + ranked
+    return result[:top_k]
 
 
 # ---------------------------------------------------------------------------
@@ -718,10 +880,21 @@ async def _route_r3(
 
     deduped = _dedup(all_candidates)
 
+    # Book-anchor: when the query names a book, pull per-book filtered semantic
+    # so the reranker pin can later guarantee the named book is represented.
+    existing_ids = {c["id"] for c in deduped}
+    if signals.detected_book_names:
+        anchor = await _expand_via_book_anchor(
+            query, signals.detected_book_names, existing_ids, errors, "R3",
+        )
+        if anchor:
+            existing_ids.update(c["id"] for c in anchor)
+            deduped.extend(anchor)
+            strategies.append("book_anchor")
+
     # Entity-path expansion: walk Person-relations to find pericopes about
     # related family members or allies. No-op until Entity-Entity edges are
     # imported.
-    existing_ids = {c["id"] for c in deduped}
     if person_names:
         entity_expand = await _expand_via_entity_path(
             person_names, use_graph, errors, "R3", type_filter="Person",
@@ -828,8 +1001,20 @@ async def _route_r4(
 
     deduped = _dedup(all_candidates)
 
-    # Cross-ref 2-hop expansion (see _route_r3 for rationale).
+    # Book-anchor: when query names a book (e.g. 撒迦利亞書 in EVENT context),
+    # pull per-book filtered semantic before cross-ref expansion so seeds skew
+    # toward the named book.
     existing_ids = {c["id"] for c in deduped}
+    if signals.detected_book_names:
+        anchor = await _expand_via_book_anchor(
+            query, signals.detected_book_names, existing_ids, errors, "R4",
+        )
+        if anchor:
+            existing_ids.update(c["id"] for c in anchor)
+            deduped.extend(anchor)
+            strategies.append("book_anchor")
+
+    # Cross-ref 2-hop expansion (see _route_r3 for rationale).
     expand = await _expand_via_cross_ref_seeds(
         deduped, existing_ids, use_graph, errors, "R4"
     )
@@ -920,6 +1105,21 @@ async def _route_r5(
 
     deduped = _dedup(all_candidates)
 
+    # Book-anchor: for multi-book queries this is critical — the cross-ref
+    # graph only finds Hebrews 8 from Jeremiah 31 if 耶31 is a seed, but BGE
+    # semantic routinely picks 耶26/28/32 instead. Pull per-book filtered
+    # semantic so each named book contributes seeds.
+    existing_ids = {c["id"] for c in deduped}
+    if signals.detected_book_names:
+        anchor = await _expand_via_book_anchor(
+            query, signals.detected_book_names, existing_ids, errors, "R5",
+        )
+        if anchor:
+            existing_ids.update(c["id"] for c in anchor)
+            deduped.extend(anchor)
+            strategies.append("book_anchor")
+            all_candidates.extend(anchor)
+
     # Parallel: cross-reference from seed + graph (if entities). Both gated on use_graph.
     parallel_tasks = []
 
@@ -948,6 +1148,15 @@ async def _route_r5(
         if entity_names:
             parallel_tasks.append(("graph", asyncio.create_task(
                 retrieve_by_entities(entity_names)
+            )))
+
+        # Graph_event for detected event keywords (e.g. 大使命 in a multi-book
+        # creation→great-commission→revelation query). R5 by default only walks
+        # cross-ref + entity graph; without this branch, new Events like 大使命
+        # are never reached even though they exist as graph anchors.
+        if signals.detected_events:
+            parallel_tasks.append(("graph_event", asyncio.create_task(
+                retrieve_by_events(signals.detected_events)
             )))
 
     if parallel_tasks:
@@ -1045,8 +1254,20 @@ async def _route_r6(
 
     deduped = _dedup(all_candidates)
 
-    # Entity-path expansion (Place-rooted): walk LOCATED_IN, NEAR, RULED-by-Person, etc.
+    # Book-anchor: catches single-book queries (e.g. 撒迦利亞書 在受難週應驗)
+    # that route to R6 via a place mention; without this, only place-graph
+    # candidates would represent the named book.
     existing_ids = {c["id"] for c in deduped}
+    if signals.detected_book_names:
+        anchor = await _expand_via_book_anchor(
+            query, signals.detected_book_names, existing_ids, errors, "R6",
+        )
+        if anchor:
+            existing_ids.update(c["id"] for c in anchor)
+            deduped.extend(anchor)
+            strategies.append("book_anchor")
+
+    # Entity-path expansion (Place-rooted): walk LOCATED_IN, NEAR, RULED-by-Person, etc.
     if place_names:
         entity_expand = await _expand_via_entity_path(
             place_names, use_graph, errors, "R6", type_filter="Place",
@@ -1101,14 +1322,31 @@ async def _route_fallback(
     k: int,
     use_graph: bool,
 ) -> tuple[list[dict], list[str], dict[str, str]]:
-    """Fallback: Semantic only. Graph-agnostic."""
+    """Fallback: Semantic + book-anchor (when book named). Graph-agnostic.
+
+    Single-book questions like 「撒迦利亞書...在受難週應驗?」 land here when no
+    chapter/event/person/place signal fires. Book-anchor ensures the named
+    book is represented even though no other strategy ran.
+    """
     strategy_name = "hybrid" if settings.hybrid_search_enabled else "semantic"
+    strategies: list[str] = []
     errors: dict[str, str] = {}
     try:
         candidates = await _get_semantic(query)
+        strategies.append(strategy_name)
     except Exception as e:
         logger.warning(f"Fallback semantic retrieval failed: {e}")
         errors[strategy_name] = repr(e)[:200]
         candidates = []
 
-    return _dedup(candidates), [strategy_name], errors
+    deduped = _dedup(candidates)
+    existing_ids = {c["id"] for c in deduped}
+    if signals.detected_book_names:
+        anchor = await _expand_via_book_anchor(
+            query, signals.detected_book_names, existing_ids, errors, "fallback",
+        )
+        if anchor:
+            deduped.extend(anchor)
+            strategies.append("book_anchor")
+
+    return deduped, strategies, errors

@@ -14,6 +14,7 @@ from utils.entity_dicts import (
     match_places_in_text,
     match_events_in_text,
     count_books_in_text,
+    match_books_in_text,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ class QuerySignals:
     detected_persons: list[str] = field(default_factory=list)
     detected_places: list[str] = field(default_factory=list)
     detected_events: list[str] = field(default_factory=list)
+    detected_book_names: list[str] = field(default_factory=list)
 
     # Selected route
     route: str = "fallback"
@@ -75,8 +77,9 @@ def detect_signals(
             signals.has_book_chapter = True
 
     # --- Multi-book signal ---
-    book_count = count_books_in_text(query)
-    if book_count >= 2:
+    detected_books = match_books_in_text(query)
+    signals.detected_book_names = detected_books
+    if len(detected_books) >= 2:
         signals.has_multi_book = True
 
     # --- Person signal ---

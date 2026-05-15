@@ -52,19 +52,34 @@ def search_vectors(
     query_vector: list[float],
     top_k: int = 20,
     score_threshold: Optional[float] = None,
+    book_filter: Optional[list[str]] = None,
 ) -> list[dict]:
     """
     Search for similar vectors in the bible_embeddings collection.
+
+    When `book_filter` is non-empty, restricts hits to payloads whose
+    `book_name` matches any value in the list (book-anchored retrieval).
 
     Returns list of dicts with: record_id, score, type, book_id, book_name,
     chapter_num, title, verse_range, content_preview.
     """
     client = get_client()
+    query_filter = None
+    if book_filter:
+        query_filter = models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="book_name",
+                    match=models.MatchAny(any=book_filter),
+                )
+            ]
+        )
     results = client.search(
         collection_name=settings.qdrant_collection,
         query_vector=query_vector,
         limit=top_k,
         score_threshold=score_threshold,
+        query_filter=query_filter,
     )
 
     return [

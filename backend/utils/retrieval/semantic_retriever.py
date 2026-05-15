@@ -11,9 +11,17 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
-async def retrieve_semantic(query: str, top_k: int | None = None) -> list[dict]:
+async def retrieve_semantic(
+    query: str,
+    top_k: int | None = None,
+    book_filter: list[str] | None = None,
+) -> list[dict]:
     """
     Embed query with BGE-M3, search Qdrant, then fetch full content from PostgreSQL.
+
+    When `book_filter` is non-empty, Qdrant search is restricted to payloads whose
+    `book_name` matches any value in the list — used by router's book-anchored
+    seeding so queries naming a book always pull seeds from inside that book.
 
     Returns list of candidate dicts with: id, content, title, book_name,
     chapter_num, verse_range, source_strategy, weight, semantic_score.
@@ -24,7 +32,7 @@ async def retrieve_semantic(query: str, top_k: int | None = None) -> list[dict]:
     query_vector = embedder.encode_query(query)
 
     # Search Qdrant
-    hits = qdrant_db.search_vectors(query_vector, top_k=k)
+    hits = qdrant_db.search_vectors(query_vector, top_k=k, book_filter=book_filter)
 
     # Fetch full content from PostgreSQL for each hit
     candidates = []

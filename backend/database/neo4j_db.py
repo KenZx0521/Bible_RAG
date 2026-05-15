@@ -227,7 +227,12 @@ async def get_cross_references_multi_hop(
 
 
 async def get_event_related_content(entity_id: str, limit: int = 10) -> list[dict]:
-    """Get content related to an Event entity through various relationships."""
+    """Get content related to an Event entity through MENTIONS relationships.
+
+    Sorted by book/chapter ascending so multi-chapter narrative events
+    (e.g. 受難週 spanning Mat21-27) surface chronological start first,
+    making the triumphal entry → 撒9:9 cross-ref reachable.
+    """
     driver = get_driver()
     async with driver.session() as session:
         result = await session.run(
@@ -240,6 +245,7 @@ async def get_event_related_content(entity_id: str, limit: int = 10) -> list[dic
                    p.book_name AS book_name,
                    p.chapter_num AS chapter_num,
                    p.verse_range AS verse_range
+            ORDER BY p.book_name ASC, p.chapter_num ASC, p.verse_range ASC
             LIMIT $limit
             """,
             entity_id=entity_id,
