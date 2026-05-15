@@ -302,8 +302,10 @@ def _pin_entity_query_candidates(
     max_pins: int = 2,
     score_threshold: float = 0.5,
     allowed_types: tuple[str, ...] = ("Event", "Person"),
+    rerank_confidence_threshold: float = 0.3,
 ) -> list[dict]:
-    """Guarantee high-confidence entity_query candidates survive rerank.
+    """Guarantee high-confidence entity_query candidates survive rerank,
+    but only when the reranker itself is uncertain.
 
     BGE-reranker is a lexical-semantic surface matcher: when modern Chinese
     question vocabulary (登山寶訓, 王國分裂) does not appear in ancient Bible
@@ -312,23 +314,34 @@ def _pin_entity_query_candidates(
     modern→ancient via named entity embeddings; this pin keeps its
     high-confidence outputs from being erased downstream.
 
-    Eligibility: via_entity_score is not None (EQ-specific metadata) AND
-    via_entity_score > score_threshold AND via_entity_type in allowed_types
-    AND not already in `ranked`. Note: `_expand_via_entity_query` injects
-    these metadata fields back into deduped candidates that semantic/graph
-    already retrieved, so EQ-validated pericopes can still be recognised
-    here even when source_strategy is not "entity_query".
+    Confidence gate: when ranked[0].rerank_score >= rerank_confidence_threshold,
+    pin is skipped entirely. Empirical reason — EQ entity matching has
+    failure modes ("耶穌受試探" embedding sits close to "耶穌受難" query;
+    hub entities like 耶穌/亞伯拉罕 over-recall; OCR-noise entity names
+    like "谷歌大"). When the reranker has a strong signal (top1 >= 0.3)
+    these EQ false positives reliably hurt; when reranker is uncertain
+    (top1 < 0.3) EQ's bridge is the best available signal even with noise.
+    100-Q eval (2026-05-15) showed pinned_high_top1 mean AC 0.497 vs
+    no_pin mean AC 0.703 — pin without this gate net-negative.
+
+    Eligibility (when gate passes): via_entity_score is not None
+    (EQ-specific metadata) AND via_entity_score > score_threshold AND
+    via_entity_type in allowed_types AND not already in `ranked`. Note:
+    `_expand_via_entity_query` injects these metadata fields back into
+    deduped candidates that semantic/graph already retrieved.
 
     Selection priority: Event-typed entities first (events anchor the
     action), then Person-typed; within a type, sort by via_entity_score
-    desc (preserves EQ's confidence ranking, not weight which decays with
-    pericope_rank).
+    desc.
 
     Synthetic rerank_score uses base+0.005 (vs chapter-pin's base+0.01) so
-    chapter-pin still wins on conflicts. Pinned entries replace the lowest
-    rerank entries when truncating to top_k.
+    chapter-pin still wins on conflicts.
     """
     if not ranked or not candidates:
+        return ranked
+
+    top1_score = ranked[0].get("rerank_score", 0) or 0
+    if top1_score >= rerank_confidence_threshold:
         return ranked
 
     existing_ids = {c["id"] for c in ranked}
