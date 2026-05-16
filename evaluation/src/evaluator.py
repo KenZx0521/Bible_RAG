@@ -27,6 +27,7 @@ from .collector import collect_responses
 from .metrics.retrieval import compute_retrieval_metrics
 from .metrics.ragas_eval import compute_ragas_metrics
 from .metrics.semantic_similarity import compute_semantic_similarity
+from .metrics.coverage_eval import compute_coverage_metrics
 
 console = Console()
 
@@ -179,20 +180,24 @@ def run_evaluation(
     question_ids = [s.question_id for s in samples]
 
     # 1. Retrieval metrics (fast, no LLM)
-    console.print("\n[bold cyan]1/3 Retrieval Metrics[/bold cyan]")
+    console.print("\n[bold cyan]1/4 Retrieval Metrics[/bold cyan]")
     retrieval = compute_retrieval_metrics(samples, k=settings.top_k)
 
     # 2. Semantic similarity
-    console.print("\n[bold cyan]2/3 Semantic Similarity[/bold cyan]")
+    console.print("\n[bold cyan]2/4 Semantic Similarity[/bold cyan]")
     semantic = compute_semantic_similarity(samples)
 
     # 3. RAGAS (LLM judge) - extracts rationales from traces
-    console.print("\n[bold cyan]3/3 RAGAS Evaluation[/bold cyan]")
+    console.print("\n[bold cyan]3/4 RAGAS Evaluation[/bold cyan]")
     ragas, rationales = compute_ragas_metrics(samples)
+
+    # 4. Answer coverage (LLM judge) - recall over expected_answer_points
+    console.print("\n[bold cyan]4/4 Answer Coverage[/bold cyan]")
+    coverage = compute_coverage_metrics(samples)
 
     # Merge all metrics
     all_metrics = _merge_metrics(
-        question_ids, retrieval, semantic, ragas
+        question_ids, retrieval, semantic, ragas, coverage
     )
 
     # Log rationale statistics

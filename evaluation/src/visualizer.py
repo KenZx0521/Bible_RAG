@@ -30,6 +30,7 @@ RETRIEVAL_METRICS = [
 LLM_JUDGE_METRICS = [
     "ragas_faithfulness", "ragas_answer_relevancy",
     "ragas_context_recall", "ragas_answer_correctness",
+    "answer_coverage",
 ]
 SEMANTIC_METRICS = ["semantic_similarity"]
 
@@ -107,7 +108,7 @@ def _make_generation_bar(report: AggregatedReport) -> str:
     """Bar chart for generation quality metrics."""
     gen_metrics = [
         "ragas_faithfulness", "ragas_answer_relevancy", "ragas_answer_correctness",
-        "semantic_similarity",
+        "answer_coverage", "semantic_similarity",
     ]
     rows = []
     for qtype in QUESTION_TYPES:
@@ -197,6 +198,7 @@ def _make_question_detail_table(report: AggregatedReport) -> list[dict]:
     KEY_COLS = [
         "hit_rate", "ragas_faithfulness", "ragas_answer_relevancy",
         "ragas_context_recall", "semantic_similarity",
+        "ragas_answer_correctness", "answer_coverage",
     ]
     rows = []
     for sample in report.samples:
@@ -233,6 +235,7 @@ def _make_metric_cards(report: AggregatedReport) -> list[dict]:
         ("ragas_answer_relevancy", "Answer Relevancy", "回答相關性"),
         ("ragas_context_recall", "Context Recall", "Context 召回率"),
         ("ragas_answer_correctness", "Answer Correctness", "綜合正確性"),
+        ("answer_coverage", "Answer Coverage", "重點涵蓋率"),
         ("semantic_similarity", "Similarity", "語意相似度"),
     ]
     cards = []
