@@ -145,7 +145,7 @@ async def _score_one(
 
     async with semaphore:
         try:
-            raw = await judge_completion(prompt, max_tokens=1536, temperature=0.0)
+            raw = await judge_completion(prompt, max_tokens=8192, temperature=0.0)
         except Exception as e:  # noqa: BLE001 - judge failure must not abort the run
             logger.error("[Coverage] %s judge call failed: %s", qid, e)
             return qid, _result(0.0, valid=False)
