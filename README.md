@@ -11,7 +11,7 @@
 - **實體辭典比對**：內建人物、地名、事件辭典，無需 LLM 即可快速比對
 - **BGE-M3 + Reranker**：語意嵌入搜尋搭配 BGE Reranker v2 重排序
 - **多 LLM 支援**：Ollama（Gemma 3 4B）、Claude、OpenAI、Gemini
-- **完整評估框架**：100 題五類型測試集，19 項指標（RAGAS + 自定義 + LLM Judge）
+- **完整評估框架**：100 題五類型測試集，13 項指標（RAGAS + 自定義檢索指標 + LLM Judge）
 
 ## Architecture
 
@@ -193,21 +193,27 @@ Bible_RAG/
 |------|------|------|
 | `books` | 66 卷書卷 | 66 |
 | `chapters` | 章節 | 1,189 |
-| `pericopes` | 段落單元 | ~2,600 |
-| `chunks` | 分塊 | ~400 |
-| `entities` | 實體 (人物/地名/事件) | ~5,000 |
-| `entity_mentions` | 實體提及 | ~90,000 |
+| `pericopes` | 段落單元 | 2,779 |
+| `chunks` | 分塊 | 431 |
+| `entities` | 實體（六型：人物/地名/群體/事件/物件/主題） | 9,122 |
+| `entity_mentions` | 實體提及 | 173,768 |
 
 ### Qdrant (向量資料庫)
 
-- Collection：`bible_embeddings`
-- 向量數量：3,041
-- 維度：1024 (BGE-M3)
+| Collection | Points | 向量 | 用途 |
+|------------|--------|------|------|
+| `bible_embeddings` | 34,072 | dense 1024 維（BGE-M3） | 純語意檢索 |
+| `bible_embeddings_hybrid` | 34,072 | dense + sparse（BM25） | 混合檢索（RRF），預設啟用 |
+| `bible_entities` | 9,122 | dense 1024 維 | entity_query 實體檢索 |
+
+> 34,072 points = pericope（2,610）+ chunk（431）+ verse（31,031）三粒度混合索引。
 
 ### Neo4j (知識圖譜)
 
-- 節點：19,317 (Person, Place, Event, Theme, Object, Group, Pericope, Chunk, Chapter, Book)
-- 關係：58,031 (MENTIONS, CONTAINS, NEXT, CROSS_REFERENCES, NEXT_BOOK)
+- 節點：13,589（Person, Place, Event, Theme, Object, Group, Pericope, Chunk, Chapter, Book）
+- 關係：319,988（CROSS_REFERENCES 250,418 · MENTIONS 46,205 · 語意關係邊 37 型 15,926 · CONTAINS/NEXT/NEXT_BOOK）
+
+> 數字為 2026-07-06 live 快照（KG P0 修復 + TSK 串珠匯入後）。完整架構見 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 ## API Endpoints
 
@@ -433,10 +439,9 @@ uv run python run_eval.py --visualize-only
 
 ### 評估指標
 
-- **RAGAS**：Faithfulness、Answer Relevancy、Context Precision、Context Recall
-- **LLM Judge**：Point Coverage（答案要點涵蓋率）
-- **Reference-based**：BLEU、ROUGE-L、BERTScore
-- **Retrieval**：MRR、Hit Rate、Context Relevancy
+- **RAGAS**：Faithfulness、Answer Relevancy、Context Recall、Answer Correctness
+- **LLM Judge**：Answer Coverage（答案要點涵蓋率）
+- **Retrieval**：Hit Rate、Recall@k、Precision@k、F1@k、MRR、MAP@k、NDCG@k
 - **Semantic Similarity**：嵌入向量餘弦相似度
 
 ## Data Pipeline
