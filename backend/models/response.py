@@ -13,6 +13,11 @@ class Source(BaseModel):
     title: str
     verse_range: str = ""
     score: float | None = None
+    # Retrieval provenance for eval diagnostics: which strategy surfaced this
+    # candidate (semantic / graph_event / cross_ref_expand / ...) and the raw
+    # reranker score when `score` is the fused score.
+    strategy: str | None = None
+    rerank_score: float | None = None
 
 
 class IntentInfo(BaseModel):
@@ -28,6 +33,8 @@ class RetrievalStats(BaseModel):
     route_used: str = ""
     strategy_errors: dict[str, str] = {}
     use_graph: bool = True
+    # Effective rank-fusion alpha for this request (None = fusion disabled).
+    fusion_alpha: float | None = None
 
 
 class QueryResponse(BaseModel):

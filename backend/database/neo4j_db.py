@@ -75,13 +75,22 @@ async def find_entity_by_name(name: str, limit: int = 5) -> list[dict]:
 
 
 async def get_entity_related_pericopes(entity_id: str, limit: int = 10) -> list[dict]:
-    """Get pericopes/chunks related to an entity via MENTIONS relationships."""
+    """Get pericopes related to an entity via MENTIONS relationships.
+
+    Chunk-level anchors are remapped to their parent Pericope (via CONTAINS,
+    431/431 chunks have one) so a candidate never appears twice — once as
+    `exo:29:0` and once as chunk `exo:29:0:0` — which used to burn two top-k
+    slots on identical content and hide chunk-only entities from
+    pericope-level consumers.
+    """
     driver = get_driver()
     async with driver.session() as session:
         result = await session.run(
             """
-            MATCH (e {entity_id: $entity_id})-[:MENTIONS]-(p)
-            WHERE p:Pericope OR p:Chunk
+            MATCH (e {entity_id: $entity_id})-[:MENTIONS]-(p0)
+            WHERE p0:Pericope OR p0:Chunk
+            OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
+            WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
                    labels(p) AS labels,
                    p.title AS title,
@@ -120,9 +129,11 @@ async def get_pericopes_for_entities_hub_aware(
             """
             UNWIND $entity_ids AS eid
             MATCH (e {entity_id: eid})
-            OPTIONAL MATCH (e)-[:MENTIONS]-(p)
-            WHERE p:Pericope OR p:Chunk
-            WITH eid, collect(p) AS all_p
+            OPTIONAL MATCH (e)-[:MENTIONS]-(p0)
+            WHERE p0:Pericope OR p0:Chunk
+            OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
+            WITH eid, CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
+            WITH eid, collect(DISTINCT p) AS all_p
             WHERE size(all_p) > 0
             WITH eid, all_p, size(all_p) AS total,
                  CASE WHEN size(all_p) >= $hub_threshold
@@ -150,13 +161,15 @@ async def get_entities_shared_pericopes(entity_ids: list[str], limit: int = 10) 
     async with driver.session() as session:
         result = await session.run(
             """
-            MATCH (e {entity_id: $first_id})-[:MENTIONS]-(p)
-            WHERE (p:Pericope OR p:Chunk)
+            MATCH (e {entity_id: $first_id})-[:MENTIONS]-(p0)
+            WHERE (p0:Pericope OR p0:Chunk)
               AND ALL(eid IN $other_ids WHERE
                 EXISTS {
-                  MATCH (e2 {entity_id: eid})-[:MENTIONS]-(p)
+                  MATCH (e2 {entity_id: eid})-[:MENTIONS]-(p0)
                 }
               )
+            OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
+            WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
                    labels(p) AS labels,
                    p.title AS title,
@@ -173,17 +186,27 @@ async def get_entities_shared_pericopes(entity_ids: list[str], limit: int = 10) 
 
 
 async def get_cross_references(pericope_id: str, limit: int = 10) -> list[dict]:
-    """Get cross-referenced pericopes/chapters for a given pericope."""
+    """Get cross-referenced pericopes for a given pericope, strongest first.
+
+    Since the TSK import (~250k edges) the cross-ref graph is dense
+    (~180 neighbours per pericope), so an unordered LIMIT would return an
+    arbitrary subset. Order by community votes; hand-curated markdown edges
+    carry no votes property and rank highest (999).
+    """
     driver = get_driver()
     async with driver.session() as session:
         result = await session.run(
             """
-            MATCH (p:Pericope {id: $pericope_id})-[:CROSS_REFERENCES]->(target)
+            MATCH (p:Pericope {id: $pericope_id})-[r:CROSS_REFERENCES]-(target:Pericope)
+            WHERE target.id <> $pericope_id
+            WITH target, max(coalesce(r.votes, 999)) AS votes
             RETURN target.id AS id,
                    labels(target) AS labels,
                    target.title AS title,
                    target.book_name AS book_name,
-                   target.chapter_num AS chapter_num
+                   target.chapter_num AS chapter_num,
+                   votes
+            ORDER BY votes DESC
             LIMIT $limit
             """,
             pericope_id=pericope_id,
@@ -195,21 +218,50 @@ async def get_cross_references(pericope_id: str, limit: int = 10) -> list[dict]:
 async def get_cross_references_multi_hop(
     pericope_ids: list[str], max_hops: int = 2, limit: int = 30
 ) -> list[dict]:
-    """Traverse CROSS_REFERENCES up to `max_hops` steps from any seed pericope.
+    """Strongest cross-referenced neighbours for a set of seed pericopes.
 
-    Used by retrieve_via_cross_references() to surface neighbouring pericopes
-    along the 916 hand-curated cross-book edges. Returns DISTINCT targets only,
-    excluding the seed set itself. `hop_distance` reflects the shortest path
-    length back to a seed.
+    Since the TSK import (~250k edges, ~180 neighbours per pericope) the
+    1-hop pool alone far exceeds any sensible limit, so ranking — not
+    reachability — is what matters: order by how many seeds cite the target
+    (seed_support), then by community votes (hand-curated markdown edges
+    carry no votes property and rank highest). Hops beyond 1 are only walked
+    as a fallback when the 1-hop pool cannot fill `limit` (sparse regions).
+    `hop_distance` reflects the shortest path length back to a seed.
     """
     if not pericope_ids or max_hops < 1:
         return []
-    hops = max(1, min(int(max_hops), 4))
     driver = get_driver()
-    cypher = (
+    one_hop_cypher = (
         "MATCH (seed:Pericope) WHERE seed.id IN $ids "
-        f"MATCH path = (seed)-[:CROSS_REFERENCES*1..{hops}]-(target:Pericope) "
+        "MATCH (seed)-[r:CROSS_REFERENCES]-(target:Pericope) "
         "WHERE NOT target.id IN $ids "
+        "WITH target, count(DISTINCT seed) AS seed_support, "
+        "     max(coalesce(r.votes, 999)) AS votes "
+        "RETURN target.id AS id, "
+        "       labels(target) AS labels, "
+        "       target.title AS title, "
+        "       target.book_name AS book_name, "
+        "       target.chapter_num AS chapter_num, "
+        "       target.verse_range AS verse_range, "
+        "       1 AS hop_distance, "
+        "       seed_support, votes "
+        "ORDER BY seed_support DESC, votes DESC "
+        "LIMIT $limit"
+    )
+    async with driver.session() as session:
+        result = await session.run(one_hop_cypher, ids=pericope_ids, limit=limit)
+        rows = [dict(record) for record in await result.data()]
+
+    if len(rows) >= limit or max_hops < 2:
+        return rows
+
+    # Sparse fallback: expand remaining slots via multi-hop paths.
+    hops = max(2, min(int(max_hops), 4))
+    exclude = list(set(pericope_ids) | {r["id"] for r in rows})
+    fallback_cypher = (
+        "MATCH (seed:Pericope) WHERE seed.id IN $ids "
+        f"MATCH path = (seed)-[:CROSS_REFERENCES*2..{hops}]-(target:Pericope) "
+        "WHERE NOT target.id IN $exclude "
         "WITH target, min(length(path)) AS hop_distance "
         "RETURN target.id AS id, "
         "       labels(target) AS labels, "
@@ -222,8 +274,12 @@ async def get_cross_references_multi_hop(
         "LIMIT $limit"
     )
     async with driver.session() as session:
-        result = await session.run(cypher, ids=pericope_ids, limit=limit)
-        return [dict(record) for record in await result.data()]
+        result = await session.run(
+            fallback_cypher, ids=pericope_ids, exclude=exclude,
+            limit=limit - len(rows),
+        )
+        rows.extend(dict(record) for record in await result.data())
+    return rows
 
 
 async def get_event_related_content(entity_id: str, limit: int = 10) -> list[dict]:
@@ -237,8 +293,10 @@ async def get_event_related_content(entity_id: str, limit: int = 10) -> list[dic
     async with driver.session() as session:
         result = await session.run(
             """
-            MATCH (e:Event {entity_id: $entity_id})-[:MENTIONS]-(p)
-            WHERE p:Pericope OR p:Chunk
+            MATCH (e:Event {entity_id: $entity_id})-[:MENTIONS]-(p0)
+            WHERE p0:Pericope OR p0:Chunk
+            OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
+            WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
                    labels(p) AS labels,
                    p.title AS title,
@@ -260,8 +318,10 @@ async def get_place_related_content(entity_id: str, limit: int = 10) -> list[dic
     async with driver.session() as session:
         result = await session.run(
             """
-            MATCH (e:Place {entity_id: $entity_id})-[:MENTIONS]-(p)
-            WHERE p:Pericope OR p:Chunk
+            MATCH (e:Place {entity_id: $entity_id})-[:MENTIONS]-(p0)
+            WHERE p0:Pericope OR p0:Chunk
+            OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
+            WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
                    labels(p) AS labels,
                    p.title AS title,
@@ -287,6 +347,7 @@ async def find_events_by_keyword(keyword: str, limit: int = 5) -> list[dict]:
                OR any(a IN e.aliases WHERE a CONTAINS $keyword)
             RETURN e.entity_id AS entity_id,
                    e.canonical_name AS canonical_name,
+                   e.aliases AS aliases,
                    e.description AS description,
                    e.mention_count AS mention_count
             ORDER BY e.mention_count DESC

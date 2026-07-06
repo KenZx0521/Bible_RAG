@@ -63,6 +63,7 @@ async def retrieve_and_rerank(
     keywords: list[str] | None = None,
     use_graph: bool | None = None,
     semantic_only: bool = False,
+    fusion_alpha: float | None = None,
 ) -> tuple[list[dict], dict]:
     """
     Signal-driven multi-strategy retrieval with 6 routes.
@@ -74,12 +75,21 @@ async def retrieve_and_rerank(
         semantic_only: When True, bypass signal detection + route dispatch and
             run pure semantic (or hybrid) retrieval only. Skips SQL/graph/cross-ref
             and chapter-pinning. Rerank still applies.
+        fusion_alpha: Per-request override for the rank-fusion alpha. None
+            falls back to settings (fusion enabled/alpha); a float forces
+            fusion on with that alpha (0.0 = pure reranker ordering).
 
     Returns:
         (top_k_results, retrieval_stats)
     """
     k = top_k or settings.default_top_k
     effective_use_graph = use_graph if use_graph is not None else settings.rag_use_graph
+
+    # Rank fusion: a per-request alpha forces fusion on (A/B sweeps without
+    # backend restart); otherwise both switch and alpha come from settings.
+    fusion_active = fusion_alpha is not None or settings.rag_rank_fusion_enabled
+    effective_alpha = fusion_alpha if fusion_alpha is not None else settings.rag_rank_fusion_alpha
+    score_key = "fused_score" if fusion_active else "rerank_score"
 
     if semantic_only:
         # Bypass signal detection + route dispatch: pure semantic baseline.
@@ -134,7 +144,18 @@ async def retrieve_and_rerank(
         ranked = candidates[:k]
     elif candidates:
         try:
-            ranked = reranker_mod.rerank(query, candidates, top_k=k, text_key="content")
+            if fusion_active:
+                # Score the whole pool (the cross-encoder computes every pair
+                # anyway; only the truncation differs), then blend each
+                # rerank_score with the candidate's strategy prior. This is
+                # the last-mile fix for BGE literal surface matches erasing
+                # graph signals (2026-05 EQ displacement + 2026-07 TSK noise).
+                scored = reranker_mod.rerank(
+                    query, candidates, top_k=len(candidates), text_key="content"
+                )
+                ranked = _fuse_and_rank(scored, top_k=k, alpha=effective_alpha)
+            else:
+                ranked = reranker_mod.rerank(query, candidates, top_k=k, text_key="content")
         except Exception as e:
             logger.warning(f"Reranker failed, falling back to weight-based sorting: {e}")
             strategy_errors["rerank"] = repr(e)[:200]
@@ -153,34 +174,51 @@ async def retrieve_and_rerank(
             verse_refs=verse_refs,
             top_k=k,
             min_pins=2,
+            score_key=score_key,
         )
 
-    # Entity-query pin: protect high-confidence EQ candidates from rerank
-    # erasure. BGE-reranker is a lexical-semantic surface matcher and gets
-    # fooled when modern Chinese question vocab (登山寶訓, 王國分裂) does
-    # not appear in ancient Bible text — empirically mat:5:0 scored 13×
-    # lower than psa:104:0 for "登山寶訓". EQ is the only retrieval signal
-    # that bridges modern→ancient via named entities; without this pin the
-    # bridge is erased downstream. Skipped on R1 and semantic_only for the
-    # same reasons as chapter-pin.
-    if route not in ("R1", "semantic_only") and ranked:
+    # Entity-query pin: predates rank fusion — it existed to push EQ's
+    # modern→ancient bridge past a purely lexical final ordering. With fusion
+    # active that signal flows through the weight term continuously, and the
+    # 2026-07-06 rerun showed the pin's remaining effect is adverse (rr≈0 EQ
+    # noise pinned to top-1 on GENERAL_003/020). Legacy (fusion-off) path
+    # keeps it. Skipped on R1 and semantic_only for the same reasons as
+    # chapter-pin.
+    if not fusion_active and route not in ("R1", "semantic_only") and ranked:
         ranked = _pin_entity_query_candidates(
             ranked=ranked,
             candidates=candidates,
             top_k=k,
             max_pins=2,
+            score_key=score_key,
         )
 
-    # Graph/book-anchor pin: when reranker is uncertain (top1 < 0.3) and the
-    # query named a book or hit a graph anchor (Event/Person/Place), pin those
-    # candidates so the BGE-reranker can't erase the only topical signal we
-    # have. Skipped on R1/semantic_only for the same reasons as the pins above.
+    # Graph/book-anchor pin: book_anchor stays unconditional (user literally
+    # named the book). The uncertainty-gated graph pin is superseded by rank
+    # fusion for the same reason as the EQ pin above — legacy path only.
     if route not in ("R1", "semantic_only") and ranked:
         ranked = _pin_graph_candidates(
             ranked=ranked,
             candidates=candidates,
             top_k=k,
             max_pins=2,
+            score_key=score_key,
+            include_uncertainty_pins=not fusion_active,
+        )
+
+    # Keyword-exact event pin: a dictionary event keyword matched an Event's
+    # name/alias EXACTLY (保羅歸主 == alias of 掃羅的轉變 → act:9:0). The
+    # keyword is literally part of the user's query, so this is a curated
+    # bridge, not a vector guess — and BGE rerank can still zero it out when
+    # the narrative uses a different surface form (act:9 tells 保羅歸主
+    # entirely as 掃羅, rr=0.07, fused rank 7). Same unconditional rationale
+    # as book_anchor pin; hub events excluded.
+    if fusion_active and route not in ("R1", "semantic_only") and ranked:
+        ranked = _pin_keyword_event_candidates(
+            ranked=ranked,
+            candidates=candidates,
+            top_k=k,
+            score_key=score_key,
         )
 
     stats = {
@@ -190,6 +228,7 @@ async def retrieve_and_rerank(
         "route_used": route,
         "strategy_errors": strategy_errors,
         "use_graph": effective_use_graph,
+        "fusion_alpha": effective_alpha if (fusion_active and route != "R1") else None,
     }
 
     return ranked, stats
@@ -217,6 +256,26 @@ def _dedup(candidates: list[dict]) -> list[dict]:
     return list(seen.values())
 
 
+def _fuse_and_rank(candidates: list[dict], top_k: int, alpha: float) -> list[dict]:
+    """Blend the cross-encoder score with the retrieval-strategy prior.
+
+    fused = (1 - alpha) * rerank_score + alpha * weight
+
+    Both terms live in [0, 1]: rerank_score is the BGE sigmoid, weight is the
+    per-candidate strategy prior (graph anchors 0.85-0.9, semantic 0.7, TSK
+    cross-ref 0.5-0.6, sql_supplement 0.5). At alpha=0.3 a graph anchor out-
+    prioritises a TSK neighbour unless the neighbour's raw rerank advantage
+    exceeds ~0.11 — big lexical gaps still win, coin flips go to the graph.
+    """
+    a = min(max(alpha, 0.0), 1.0)
+    for c in candidates:
+        rr = float(c.get("rerank_score") or 0.0)
+        prior = min(max(float(c.get("weight") or 0.5), 0.0), 1.0)
+        c["fused_score"] = (1 - a) * rr + a * prior
+    ranked = sorted(candidates, key=lambda x: x["fused_score"], reverse=True)
+    return ranked[:top_k]
+
+
 def _extract_book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
     """Extract unique (book_id, chapter_num) pairs from candidates."""
     pairs: set[tuple[str, int]] = set()
@@ -238,6 +297,7 @@ def _pin_chapter_candidates(
     verse_refs: list[VerseRef],
     top_k: int,
     min_pins: int = 2,
+    score_key: str = "rerank_score",
 ) -> list[dict]:
     """Guarantee chapter-specified pericopes survive rerank by pinning them into top-k.
 
@@ -247,7 +307,8 @@ def _pin_chapter_candidates(
     least min_pins pericopes from that (book_id, chapter) survive in the returned
     top-k, pulling extras from the pre-rerank pool when needed. Only candidates
     with weight >= 0.85 are eligible (floors out semantic noise). Pinned entries
-    get a synthetic rerank_score just above the current max so routers/query.py
+    get a synthetic score (on `score_key`, the final ranking field — fused_score
+    when rank fusion is active) just above the current max so routers/query.py
     does not emit null scores.
     """
     targets: set[tuple[str, int]] = {
@@ -284,10 +345,10 @@ def _pin_chapter_candidates(
         if not to_pin:
             continue
 
-        existing_scores = [c.get("rerank_score") for c in result if c.get("rerank_score") is not None]
+        existing_scores = [c.get(score_key) for c in result if c.get(score_key) is not None]
         base_score = max(existing_scores) if existing_scores else 1.0
         for c in to_pin:
-            c["rerank_score"] = base_score + 0.01
+            c[score_key] = base_score + 0.01
             existing_ids.add(c["id"])
 
         result = to_pin + result
@@ -315,6 +376,7 @@ def _pin_entity_query_candidates(
     score_threshold: float = 0.5,
     allowed_types: tuple[str, ...] = ("Event", "Person"),
     rerank_confidence_threshold: float = 0.3,
+    score_key: str = "rerank_score",
 ) -> list[dict]:
     """Guarantee high-confidence entity_query candidates survive rerank,
     but only when the reranker itself is uncertain.
@@ -352,7 +414,10 @@ def _pin_entity_query_candidates(
     if not ranked or not candidates:
         return ranked
 
-    top1_score = ranked[0].get("rerank_score", 0) or 0
+    # Confidence gate stays on the RAW reranker signal: under fusion ranked[0]
+    # is the fused top, so probe the max rerank_score across ranked — same
+    # semantics as pre-fusion (ranked[0] was the rerank max by construction).
+    top1_score = max((c.get("rerank_score") or 0) for c in ranked)
     if top1_score >= rerank_confidence_threshold:
         return ranked
 
@@ -376,10 +441,10 @@ def _pin_entity_query_candidates(
     if not to_pin:
         return ranked
 
-    existing_scores = [c.get("rerank_score") for c in ranked if c.get("rerank_score") is not None]
+    existing_scores = [c.get(score_key) for c in ranked if c.get(score_key) is not None]
     base_score = max(existing_scores) if existing_scores else 1.0
     for i, c in enumerate(to_pin):
-        c["rerank_score"] = base_score + 0.005 * (len(to_pin) - i)
+        c[score_key] = base_score + 0.005 * (len(to_pin) - i)
 
     pinned_via = [(c["id"], c.get("via_entity_name"), c.get("via_entity_type")) for c in to_pin]
     logger.info("entity_pin: pinned %d EQ candidates: %s", len(to_pin), pinned_via)
@@ -668,6 +733,8 @@ def _pin_graph_candidates(
     top_k: int,
     max_pins: int = 2,
     rerank_confidence_threshold: float = 0.3,
+    score_key: str = "rerank_score",
+    include_uncertainty_pins: bool = True,
 ) -> list[dict]:
     """Pin graph and book_anchor candidates when their topical signal would
     otherwise be erased by the BGE reranker.
@@ -692,7 +759,7 @@ def _pin_graph_candidates(
         return ranked
 
     existing_ids = {c["id"] for c in ranked}
-    existing_scores = [c.get("rerank_score") for c in ranked if c.get("rerank_score") is not None]
+    existing_scores = [c.get(score_key) for c in ranked if c.get(score_key) is not None]
     base_score = max(existing_scores) if existing_scores else 1.0
 
     pinned_total: list[dict] = []
@@ -705,13 +772,16 @@ def _pin_graph_candidates(
     ]
     book_eligible.sort(key=lambda c: -c.get("semantic_score", c.get("weight", 0)))
     for i, c in enumerate(book_eligible[:max_pins]):
-        c["rerank_score"] = base_score + 0.004 * (max_pins - i)
+        c[score_key] = base_score + 0.004 * (max_pins - i)
         existing_ids.add(c["id"])
         pinned_total.append(c)
 
-    # Graph: gated on reranker uncertainty
-    top1_score = ranked[0].get("rerank_score", 0) or 0
-    if top1_score < rerank_confidence_threshold:
+    # Graph: gated on RAW reranker uncertainty (see _pin_entity_query_candidates
+    # for why the probe is max rerank_score, not ranked[0], under fusion).
+    # Suppressed entirely under rank fusion (include_uncertainty_pins=False):
+    # fusion carries graph priors continuously, so this pin is redundant there.
+    top1_score = max((c.get("rerank_score") or 0) for c in ranked)
+    if include_uncertainty_pins and top1_score < rerank_confidence_threshold:
         graph_eligible = [
             c for c in candidates
             if c.get("source_strategy") in _GRAPH_STRATEGIES
@@ -725,7 +795,7 @@ def _pin_graph_candidates(
             -c.get("weight", 0),
         ))
         for i, c in enumerate(graph_eligible[:max_pins]):
-            c["rerank_score"] = base_score + 0.003 * (max_pins - i)
+            c[score_key] = base_score + 0.003 * (max_pins - i)
             existing_ids.add(c["id"])
             pinned_total.append(c)
 
@@ -740,6 +810,54 @@ def _pin_graph_candidates(
 
     result = pinned_total + ranked
     return result[:top_k]
+
+
+def _pin_keyword_event_candidates(
+    ranked: list[dict],
+    candidates: list[dict],
+    top_k: int,
+    max_pins: int = 2,
+    hub_cap: int = 25,
+    score_key: str = "rerank_score",
+) -> list[dict]:
+    """Pin the first anchor of events whose name/alias EXACTLY equals a
+    detected dictionary event keyword.
+
+    Fires unconditionally (same rationale as the book_anchor pin): the
+    keyword is literally present in the user's query and the equality match
+    against a curated alias is a dictionary bridge, not a vector guess.
+    Constraints keep it surgical — hub events excluded (受難週 mc=76 would
+    spray passion-week pericopes), only each event's first anchor (Event
+    anchors are ordered book/chapter ASC = narrative start), at most
+    `max_pins` events, smallest-mention-count (most specific) events first.
+    """
+    if not ranked or not candidates:
+        return ranked
+
+    existing_ids = {c["id"] for c in ranked}
+    eligible = [
+        c for c in candidates
+        if c.get("keyword_exact")
+        and (c.get("via_event_mc") or 0) <= hub_cap
+        and c.get("anchor_rank", 99) == 0
+        and c.get("id") not in existing_ids
+    ]
+    if not eligible:
+        return ranked
+
+    eligible.sort(key=lambda c: (c.get("via_event_mc") or 0, c.get("id", "")))
+    to_pin = eligible[:max_pins]
+
+    existing_scores = [c.get(score_key) for c in ranked if c.get(score_key) is not None]
+    base_score = max(existing_scores) if existing_scores else 1.0
+    for i, c in enumerate(to_pin):
+        c[score_key] = base_score + 0.002 * (len(to_pin) - i)
+
+    logger.info(
+        "keyword_event_pin: pinned %s",
+        [(c["id"], c.get("via_event_name")) for c in to_pin],
+    )
+    return (to_pin + ranked)[:top_k]
 
 
 # ---------------------------------------------------------------------------
@@ -1169,8 +1287,16 @@ async def _route_r5(
                 errors[label if label != "cross_ref" else "cross_reference"] = repr(result)[:200]
                 continue
             if result:
-                w = weights.get(label, weights.get("cross_ref", 0.85))
-                _apply_weights(result, w)
+                if label == "cross_ref" and settings.rag_use_cross_ref_expand:
+                    # Multi-hop expansion candidates already carry votes-aware
+                    # per-candidate weights (curated 0.75 / TSK 0.5-0.6).
+                    # Blanket-raising them to the route's 0.85 was what let
+                    # TSK topical neighbours outrank narrative-correct seeds
+                    # (GENERAL_013, 2026-07-06 eval).
+                    pass
+                else:
+                    w = weights.get(label, weights.get("cross_ref", 0.85))
+                    _apply_weights(result, w)
                 all_candidates.extend(result)
                 strategies.append(label if label != "cross_ref" else "cross_reference")
 

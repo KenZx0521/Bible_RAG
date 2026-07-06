@@ -1,0 +1,4916 @@
+{
+  "overall": {
+    "precision_at_k": 0.37,
+    "recall_at_k": 0.9058,
+    "f1_at_k": 0.4898,
+    "mrr": 0.8335,
+    "map_at_k": 0.7951,
+    "ndcg_at_k": 0.8653,
+    "hit_rate": 0.97
+  },
+  "by_type": {
+    "EVENT_QUESTION": {
+      "precision_at_k": 0.36,
+      "recall_at_k": 0.975,
+      "f1_at_k": 0.4996,
+      "mrr": 0.7367,
+      "map_at_k": 0.7571,
+      "ndcg_at_k": 0.7797,
+      "hit_rate": 1.0
+    },
+    "GENERAL_BIBLE_QUESTION": {
+      "precision_at_k": 0.34,
+      "recall_at_k": 0.6375,
+      "f1_at_k": 0.4337,
+      "mrr": 0.6808,
+      "map_at_k": 0.4768,
+      "ndcg_at_k": 0.7238,
+      "hit_rate": 0.9
+    },
+    "PERSON_QUESTION": {
+      "precision_at_k": 0.67,
+      "recall_at_k": 0.9167,
+      "f1_at_k": 0.7569,
+      "mrr": 0.9,
+      "map_at_k": 0.8917,
+      "ndcg_at_k": 0.9022,
+      "hit_rate": 0.95
+    },
+    "TOPIC_QUESTION": {
+      "precision_at_k": 0.28,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.4256,
+      "mrr": 0.85,
+      "map_at_k": 0.85,
+      "ndcg_at_k": 0.9206,
+      "hit_rate": 1.0
+    },
+    "VERSE_LOOKUP": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0
+    }
+  },
+  "n": 100,
+  "per_question": {
+    "VERSE_LOOKUP_001": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "jhn:3:16"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:3:16",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_002": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "gen:1:27"
+      ],
+      "source_detail": [
+        {
+          "id": "gen:1:27",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_003": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "psa:23:1-3"
+      ],
+      "source_detail": [
+        {
+          "id": "psa:23:1-3",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_004": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "isa:53:5"
+      ],
+      "source_detail": [
+        {
+          "id": "isa:53:5",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_005": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "rom:3:23-24"
+      ],
+      "source_detail": [
+        {
+          "id": "rom:3:23-24",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_006": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "mat:5:3-6"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:5:3-6",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_007": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "gal:5:22-23"
+      ],
+      "source_detail": [
+        {
+          "id": "gal:5:22-23",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_008": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "jhn:14:6"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:14:6",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_009": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "eph:2:8-9"
+      ],
+      "source_detail": [
+        {
+          "id": "eph:2:8-9",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_010": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "pro:3:5-6"
+      ],
+      "source_detail": [
+        {
+          "id": "pro:3:5-6",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_011": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "1co:13:4-7"
+      ],
+      "source_detail": [
+        {
+          "id": "1co:13:4-7",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_012": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "php:4:6-7"
+      ],
+      "source_detail": [
+        {
+          "id": "php:4:6-7",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_013": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "heb:11:1"
+      ],
+      "source_detail": [
+        {
+          "id": "heb:11:1",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_014": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "jas:1:2-4"
+      ],
+      "source_detail": [
+        {
+          "id": "jas:1:2-4",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_015": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "1pe:5:7"
+      ],
+      "source_detail": [
+        {
+          "id": "1pe:5:7",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_016": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "1jn:1:9"
+      ],
+      "source_detail": [
+        {
+          "id": "1jn:1:9",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_017": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "rev:3:20"
+      ],
+      "source_detail": [
+        {
+          "id": "rev:3:20",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_018": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "2ti:3:16-17"
+      ],
+      "source_detail": [
+        {
+          "id": "2ti:3:16-17",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_019": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "jer:29:11"
+      ],
+      "source_detail": [
+        {
+          "id": "jer:29:11",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "VERSE_LOOKUP_020": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R1",
+      "strategies": [
+        "verse_direct"
+      ],
+      "sources": [
+        "isa:40:31"
+      ],
+      "source_detail": [
+        {
+          "id": "isa:40:31",
+          "strategy": "verse_direct",
+          "score": null,
+          "rerank_score": null
+        }
+      ]
+    },
+    "TOPIC_QUESTION_001": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.9134,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "rom:8:0",
+        "rom:8:1",
+        "2co:1:1",
+        "rom:5:0",
+        "eph:3:0"
+      ],
+      "source_detail": [
+        {
+          "id": "rom:8:0",
+          "strategy": "sql_chapter",
+          "score": 0.8358262193202972,
+          "rerank_score": 0.10644149035215378
+        },
+        {
+          "id": "rom:8:1",
+          "strategy": "sql_chapter",
+          "score": 0.7949331402778625,
+          "rerank_score": 0.7070473432540894
+        },
+        {
+          "id": "2co:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8258262193202972,
+          "rerank_score": 0.8797517418861389
+        },
+        {
+          "id": "rom:5:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8046305155754089,
+          "rerank_score": 0.849472165107727
+        },
+        {
+          "id": "eph:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7098538136482239,
+          "rerank_score": 0.7140768766403198
+        }
+      ]
+    },
+    "TOPIC_QUESTION_002": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.6309,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "psa:32:0",
+        "psa:51:0",
+        "1ch:29:1",
+        "2sa:24:0",
+        "1ch:21:0"
+      ],
+      "source_detail": [
+        {
+          "id": "psa:32:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.660207358598709,
+          "rerank_score": 0.6431533694267273
+        },
+        {
+          "id": "psa:51:0",
+          "strategy": "sql_chapter",
+          "score": 0.6129878669977188,
+          "rerank_score": 0.44712552428245544
+        },
+        {
+          "id": "1ch:29:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5730111873149871,
+          "rerank_score": 0.5185874104499817
+        },
+        {
+          "id": "2sa:24:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5066645210981369,
+          "rerank_score": 0.42380645871162415
+        },
+        {
+          "id": "1ch:21:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.48000490725040434,
+          "rerank_score": 0.3857212960720062
+        }
+      ]
+    },
+    "TOPIC_QUESTION_003": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.8855,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "eph:6:2",
+        "2co:10:0",
+        "act:19:0",
+        "act:20:3",
+        "eph:6:1"
+      ],
+      "source_detail": [
+        {
+          "id": "eph:6:2",
+          "strategy": "sql_chapter",
+          "score": 0.917769479751587,
+          "rerank_score": 0.8825278282165527
+        },
+        {
+          "id": "2co:10:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.49409363925456995,
+          "rerank_score": 0.40584805607795715
+        },
+        {
+          "id": "act:19:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4121666556596756,
+          "rerank_score": 0.28880950808525085
+        },
+        {
+          "id": "act:20:3",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3699035158753395,
+          "rerank_score": 0.22843359410762787
+        },
+        {
+          "id": "eph:6:1",
+          "strategy": "sql_chapter",
+          "score": 0.3150812160223722,
+          "rerank_score": 0.021544594317674637
+        }
+      ]
+    },
+    "TOPIC_QUESTION_004": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "mat:6:0",
+        "mat:6:1",
+        "mrk:7:0",
+        "1ti:4:1",
+        "mrk:6:0"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:6:0",
+          "strategy": "sql_chapter",
+          "score": 0.6622161459922791,
+          "rerank_score": 0.0463252030313015
+        },
+        {
+          "id": "mat:6:1",
+          "strategy": "sql_chapter",
+          "score": 0.6622161459922791,
+          "rerank_score": 0.029765352606773376
+        },
+        {
+          "id": "mrk:7:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6522161459922791,
+          "rerank_score": 0.6317373514175415
+        },
+        {
+          "id": "1ti:4:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.62285799741745,
+          "rerank_score": 0.5897971391677856
+        },
+        {
+          "id": "mrk:6:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5392370384931564,
+          "rerank_score": 0.49176719784736633
+        }
+      ]
+    },
+    "TOPIC_QUESTION_005": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.9134,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "jas:3:1",
+        "jas:3:0",
+        "mic:3:0",
+        "job:4:0",
+        "job:33:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jas:3:1",
+          "strategy": "sql_chapter",
+          "score": 0.6773221743106842,
+          "rerank_score": 0.17569416761398315
+        },
+        {
+          "id": "jas:3:0",
+          "strategy": "sql_chapter",
+          "score": 0.6340872734785079,
+          "rerank_score": 0.4772675335407257
+        },
+        {
+          "id": "mic:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6673221743106842,
+          "rerank_score": 0.653317391872406
+        },
+        {
+          "id": "job:4:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6276772832870483,
+          "rerank_score": 0.5966818332672119
+        },
+        {
+          "id": "job:33:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6090015804767608,
+          "rerank_score": 0.5700022578239441
+        }
+      ]
+    },
+    "TOPIC_QUESTION_006": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.906,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "php:2:0",
+        "2co:10:0",
+        "1pe:2:2",
+        "php:2:1",
+        "1th:2:0"
+      ],
+      "source_detail": [
+        {
+          "id": "php:2:0",
+          "strategy": "sql_chapter",
+          "score": 0.8337378084659577,
+          "rerank_score": 0.7624825835227966
+        },
+        {
+          "id": "2co:10:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7894971585273742,
+          "rerank_score": 0.8278530836105347
+        },
+        {
+          "id": "1pe:2:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5556375628709793,
+          "rerank_score": 0.49376794695854187
+        },
+        {
+          "id": "php:2:1",
+          "strategy": "sql_chapter",
+          "score": 0.522756266593933,
+          "rerank_score": 0.318223237991333
+        },
+        {
+          "id": "1th:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.42535212099552155,
+          "rerank_score": 0.30764588713645935
+        }
+      ]
+    },
+    "TOPIC_QUESTION_007": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "jhn:15:0",
+        "jhn:15:1",
+        "mat:13:1",
+        "mrk:4:0",
+        "mat:15:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:15:0",
+          "strategy": "sql_chapter",
+          "score": 0.8777491998672484,
+          "rerank_score": 0.2504890561103821
+        },
+        {
+          "id": "jhn:15:1",
+          "strategy": "sql_chapter",
+          "score": 0.8777491998672484,
+          "rerank_score": 0.1254233717918396
+        },
+        {
+          "id": "mat:13:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8677491998672484,
+          "rerank_score": 0.9396417140960693
+        },
+        {
+          "id": "mrk:4:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8527119314670562,
+          "rerank_score": 0.9181599020957947
+        },
+        {
+          "id": "mat:15:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8122640347480773,
+          "rerank_score": 0.8603771924972534
+        }
+      ]
+    },
+    "TOPIC_QUESTION_008": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "heb:11:0",
+        "heb:11:0:0",
+        "rev:11:0",
+        "heb:6:0",
+        "1pe:1:1"
+      ],
+      "source_detail": [
+        {
+          "id": "heb:11:0",
+          "strategy": "sql_chapter",
+          "score": 0.9085056245326995,
+          "rerank_score": 0.869293749332428
+        },
+        {
+          "id": "heb:11:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8035056245326995,
+          "rerank_score": 0.869293749332428
+        },
+        {
+          "id": "rev:11:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.714699009656906,
+          "rerank_score": 0.7209985852241516
+        },
+        {
+          "id": "heb:6:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6122657155990601,
+          "rerank_score": 0.5746653079986572
+        },
+        {
+          "id": "1pe:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6094992554187775,
+          "rerank_score": 0.570713222026825
+        }
+      ]
+    },
+    "TOPIC_QUESTION_009": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "2co:4:1",
+        "2co:4:0",
+        "act:24:1",
+        "2co:1:1",
+        "2co:10:0"
+      ],
+      "source_detail": [
+        {
+          "id": "2co:4:1",
+          "strategy": "sql_chapter",
+          "score": 0.7671459090709686,
+          "rerank_score": 0.021678084507584572
+        },
+        {
+          "id": "2co:4:0",
+          "strategy": "sql_chapter",
+          "score": 0.48422248661518097,
+          "rerank_score": 0.26317498087882996
+        },
+        {
+          "id": "act:24:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7571459090709686,
+          "rerank_score": 0.7816370129585266
+        },
+        {
+          "id": "2co:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4983818298578262,
+          "rerank_score": 0.4119740426540375
+        },
+        {
+          "id": "2co:10:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4421745812892913,
+          "rerank_score": 0.33167797327041626
+        }
+      ]
+    },
+    "TOPIC_QUESTION_010": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.9134,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "1pe:2:1",
+        "1pe:2:0",
+        "act:10:0",
+        "1ti:2:0",
+        "act:4:0"
+      ],
+      "source_detail": [
+        {
+          "id": "1pe:2:1",
+          "strategy": "sql_chapter",
+          "score": 0.7628181076049805,
+          "rerank_score": 0.15460605919361115
+        },
+        {
+          "id": "1pe:2:0",
+          "strategy": "sql_chapter",
+          "score": 0.7528181076049805,
+          "rerank_score": 0.6468830108642578
+        },
+        {
+          "id": "act:10:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6610594725608825,
+          "rerank_score": 0.6443706750869751
+        },
+        {
+          "id": "1ti:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5973599171638488,
+          "rerank_score": 0.5533713102340698
+        },
+        {
+          "id": "act:4:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.573340675830841,
+          "rerank_score": 0.519058108329773
+        }
+      ]
+    },
+    "TOPIC_QUESTION_011": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9386,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "1jn:4:1",
+        "2jn:1:1",
+        "1jn:4:0",
+        "jhn:4:0",
+        "jhn:13:1"
+      ],
+      "source_detail": [
+        {
+          "id": "1jn:4:1",
+          "strategy": "sql_chapter",
+          "score": 0.6677598357200623,
+          "rerank_score": 0.5253711938858032
+        },
+        {
+          "id": "2jn:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.41110715627670286,
+          "rerank_score": 0.287295937538147
+        },
+        {
+          "id": "1jn:4:0",
+          "strategy": "sql_chapter",
+          "score": 0.35631982833147047,
+          "rerank_score": 0.08045689761638641
+        },
+        {
+          "id": "jhn:4:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.34818121254444123,
+          "rerank_score": 0.1974017322063446
+        },
+        {
+          "id": "jhn:13:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.23066236585378647,
+          "rerank_score": 0.02951766550540924
+        }
+      ]
+    },
+    "TOPIC_QUESTION_012": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.906,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "col:3:0",
+        "rom:12:0",
+        "eph:3:0",
+        "col:3:1",
+        "1co:3:0"
+      ],
+      "source_detail": [
+        {
+          "id": "col:3:0",
+          "strategy": "sql_chapter",
+          "score": 0.7674576699733734,
+          "rerank_score": 0.6677966713905334
+        },
+        {
+          "id": "rom:12:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7182941353321075,
+          "rerank_score": 0.7261344790458679
+        },
+        {
+          "id": "eph:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5637895143032073,
+          "rerank_score": 0.5054135918617249
+        },
+        {
+          "id": "col:3:1",
+          "strategy": "sql_chapter",
+          "score": 0.45272209942340846,
+          "rerank_score": 0.21817442774772644
+        },
+        {
+          "id": "1co:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4457707804441452,
+          "rerank_score": 0.3582439720630646
+        }
+      ]
+    },
+    "TOPIC_QUESTION_013": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "psa:139:0",
+        "1ch:29:1",
+        "psa:89:1",
+        "2sa:7:1",
+        "2sa:22:0"
+      ],
+      "source_detail": [
+        {
+          "id": "psa:139:0",
+          "strategy": "sql_chapter",
+          "score": 0.6256947249174118,
+          "rerank_score": 0.46527817845344543
+        },
+        {
+          "id": "1ch:29:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5173059529066085,
+          "rerank_score": 0.439008504152298
+        },
+        {
+          "id": "psa:89:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5039424961805343,
+          "rerank_score": 0.41991785168647766
+        },
+        {
+          "id": "2sa:7:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4237805616855621,
+          "rerank_score": 0.32682937383651733
+        },
+        {
+          "id": "2sa:22:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.30650777876377105,
+          "rerank_score": 0.1378682553768158
+        }
+      ]
+    },
+    "TOPIC_QUESTION_014": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "isa:55:0",
+        "isa:65:0",
+        "exo:3:0",
+        "zec:1:0",
+        "1ki:18:0"
+      ],
+      "source_detail": [
+        {
+          "id": "isa:55:0",
+          "strategy": "sql_chapter",
+          "score": 0.7805606067180633,
+          "rerank_score": 0.6865151524543762
+        },
+        {
+          "id": "isa:65:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6292922234535216,
+          "rerank_score": 0.5989888906478882
+        },
+        {
+          "id": "exo:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6290865278244018,
+          "rerank_score": 0.5986950397491455
+        },
+        {
+          "id": "zec:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5795119202136993,
+          "rerank_score": 0.5278741717338562
+        },
+        {
+          "id": "1ki:18:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.540771005153656,
+          "rerank_score": 0.4725300073623657
+        }
+      ]
+    },
+    "TOPIC_QUESTION_015": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.9134,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "1th:4:0",
+        "1th:4:1",
+        "act:19:0",
+        "act:14:1",
+        "1th:2:1"
+      ],
+      "source_detail": [
+        {
+          "id": "1th:4:0",
+          "strategy": "sql_chapter",
+          "score": 0.8353544545173645,
+          "rerank_score": 0.021326638758182526
+        },
+        {
+          "id": "1th:4:1",
+          "strategy": "sql_chapter",
+          "score": 0.44539217948913573,
+          "rerank_score": 0.2077031135559082
+        },
+        {
+          "id": "act:19:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8253544545173644,
+          "rerank_score": 0.8790777921676636
+        },
+        {
+          "id": "act:14:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7328772461414337,
+          "rerank_score": 0.7469674944877625
+        },
+        {
+          "id": "1th:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.563946852684021,
+          "rerank_score": 0.5056383609771729
+        }
+      ]
+    },
+    "TOPIC_QUESTION_016": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.8772,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "mrk:4:0",
+        "luk:8:1",
+        "mat:13:0",
+        "mrk:4:2",
+        "mat:13:2"
+      ],
+      "source_detail": [
+        {
+          "id": "mrk:4:0",
+          "strategy": "sql_chapter",
+          "score": 0.8923909366130829,
+          "rerank_score": 0.8462727665901184
+        },
+        {
+          "id": "luk:8:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8421551144123076,
+          "rerank_score": 0.9030787348747253
+        },
+        {
+          "id": "mat:13:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7740891790390014,
+          "rerank_score": 0.8058416843414307
+        },
+        {
+          "id": "mrk:4:2",
+          "strategy": "sql_chapter",
+          "score": 0.7393475890159606,
+          "rerank_score": 0.6276394128799438
+        },
+        {
+          "id": "mat:13:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7391620707511901,
+          "rerank_score": 0.7773743867874146
+        }
+      ]
+    },
+    "TOPIC_QUESTION_017": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "gen:1:0",
+        "gen:1:0:0",
+        "gen:1:0:1",
+        "gen:2:0"
+      ],
+      "source_detail": [
+        {
+          "id": "gen:1:0",
+          "strategy": "sql_chapter",
+          "score": 0.9662208139896393,
+          "rerank_score": 0.951744019985199
+        },
+        {
+          "id": "gen:1:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8612208139896393,
+          "rerank_score": 0.951744019985199
+        },
+        {
+          "id": "gen:1:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6875660133361816,
+          "rerank_score": 0.7036657333374023
+        },
+        {
+          "id": "gen:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5243012523651123,
+          "rerank_score": 0.4490017890930176
+        }
+      ]
+    },
+    "TOPIC_QUESTION_018": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.8503,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "rev:21:0",
+        "rev:1:1",
+        "isa:65:1",
+        "rev:1:0",
+        "rev:21:1"
+      ],
+      "source_detail": [
+        {
+          "id": "rev:21:0",
+          "strategy": "sql_chapter",
+          "score": 0.8422342896461485,
+          "rerank_score": 0.7746204137802124
+        },
+        {
+          "id": "rev:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5739091646671295,
+          "rerank_score": 0.5412988066673279
+        },
+        {
+          "id": "isa:65:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5242783671617508,
+          "rerank_score": 0.4489690959453583
+        },
+        {
+          "id": "rev:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5220124703645705,
+          "rerank_score": 0.4671606719493866
+        },
+        {
+          "id": "rev:21:1",
+          "strategy": "sql_chapter",
+          "score": 0.48838817775249477,
+          "rerank_score": 0.26912596821784973
+        }
+      ]
+    },
+    "TOPIC_QUESTION_019": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.9134,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "ecc:3:1",
+        "ecc:3:0",
+        "ecc:1:0",
+        "tit:1:0"
+      ],
+      "source_detail": [
+        {
+          "id": "ecc:3:1",
+          "strategy": "sql_chapter",
+          "score": 0.9154687762260436,
+          "rerank_score": 0.8792411088943481
+        },
+        {
+          "id": "ecc:3:0",
+          "strategy": "sql_chapter",
+          "score": 0.9118738174438477,
+          "rerank_score": 0.8741054534912109
+        },
+        {
+          "id": "ecc:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5323562389612198,
+          "rerank_score": 0.46050891280174255
+        },
+        {
+          "id": "tit:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.24193963915109634,
+          "rerank_score": 0.045628055930137634
+        }
+      ]
+    },
+    "TOPIC_QUESTION_020": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.8503,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "1co:12:1",
+        "rom:12:0",
+        "eph:1:2",
+        "1co:1:1",
+        "1co:12:0"
+      ],
+      "source_detail": [
+        {
+          "id": "1co:12:1",
+          "strategy": "sql_chapter",
+          "score": 0.726622748374939,
+          "rerank_score": 0.6094610691070557
+        },
+        {
+          "id": "rom:12:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6255214941501617,
+          "rerank_score": 0.6150307059288025
+        },
+        {
+          "id": "eph:1:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.46470930933952326,
+          "rerank_score": 0.36387044191360474
+        },
+        {
+          "id": "1co:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.40803530275821687,
+          "rerank_score": 0.2829075753688812
+        },
+        {
+          "id": "1co:12:0",
+          "strategy": "sql_chapter",
+          "score": 0.3297966443002224,
+          "rerank_score": 0.042566634714603424
+        }
+      ]
+    },
+    "PERSON_QUESTION_001": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.6309,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:7:0",
+        "gen:25:3",
+        "exo:33:0",
+        "exo:6:1",
+        "deu:6:1"
+      ],
+      "source_detail": [
+        {
+          "id": "act:7:0",
+          "strategy": "graph_person",
+          "score": 0.6925718796253204,
+          "rerank_score": 0.6036741137504578
+        },
+        {
+          "id": "gen:25:3",
+          "strategy": "graph_person",
+          "score": 0.6739326012134552,
+          "rerank_score": 0.5770465731620789
+        },
+        {
+          "id": "exo:33:0",
+          "strategy": "graph_person",
+          "score": 0.6404861998558045,
+          "rerank_score": 0.5292659997940063
+        },
+        {
+          "id": "exo:6:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6068725264072418,
+          "rerank_score": 0.5669607520103455
+        },
+        {
+          "id": "deu:6:1",
+          "strategy": "graph_person",
+          "score": 0.5868577611446381,
+          "rerank_score": 0.4526539444923401
+        }
+      ]
+    },
+    "PERSON_QUESTION_002": {
+      "precision_at_k": 0.8,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8889,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "gen:29:0",
+        "gen:25:4",
+        "gen:27:0",
+        "gen:25:3",
+        "gen:32:0"
+      ],
+      "source_detail": [
+        {
+          "id": "gen:29:0",
+          "strategy": "graph_person",
+          "score": 0.8639857661724091,
+          "rerank_score": 0.8485510945320129
+        },
+        {
+          "id": "gen:25:4",
+          "strategy": "graph_person",
+          "score": 0.6925727140903473,
+          "rerank_score": 0.6036753058433533
+        },
+        {
+          "id": "gen:27:0",
+          "strategy": "graph_person",
+          "score": 0.6804370057582856,
+          "rerank_score": 0.5863385796546936
+        },
+        {
+          "id": "gen:25:3",
+          "strategy": "graph_person",
+          "score": 0.6471755218505859,
+          "rerank_score": 0.5388221740722656
+        },
+        {
+          "id": "gen:32:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5839331245422363,
+          "rerank_score": 0.5341901779174805
+        }
+      ]
+    },
+    "PERSON_QUESTION_003": {
+      "precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "f1_at_k": 1.0,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "gen:43:0:2",
+        "gen:45:0",
+        "gen:42:0",
+        "gen:45:0:1",
+        "gen:37:1"
+      ],
+      "source_detail": [
+        {
+          "id": "gen:43:0:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8247909820079803,
+          "rerank_score": 0.8782728314399719
+        },
+        {
+          "id": "gen:45:0",
+          "strategy": "graph_person",
+          "score": 0.8234483730792999,
+          "rerank_score": 0.7906405329704285
+        },
+        {
+          "id": "gen:42:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7428491866588591,
+          "rerank_score": 0.7612131237983704
+        },
+        {
+          "id": "gen:45:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.733077392578125,
+          "rerank_score": 0.74725341796875
+        },
+        {
+          "id": "gen:37:1",
+          "strategy": "entity_query",
+          "score": 0.6388332655106354,
+          "rerank_score": 0.6350268721580505
+        }
+      ]
+    },
+    "PERSON_QUESTION_004": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "hit_rate": 0.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "1ch:6:0",
+        "num:2:0",
+        "1ch:24:0",
+        "1ch:23:1",
+        "num:26:0"
+      ],
+      "source_detail": [
+        {
+          "id": "1ch:6:0",
+          "strategy": "graph_person",
+          "score": 0.7009022188186645,
+          "rerank_score": 0.6155745983123779
+        },
+        {
+          "id": "num:2:0",
+          "strategy": "graph_person",
+          "score": 0.5649671775102616,
+          "rerank_score": 0.4213816821575165
+        },
+        {
+          "id": "1ch:24:0",
+          "strategy": "graph_person",
+          "score": 0.546641657948494,
+          "rerank_score": 0.3952023684978485
+        },
+        {
+          "id": "1ch:23:1",
+          "strategy": "graph_person",
+          "score": 0.5157359522581101,
+          "rerank_score": 0.35105136036872864
+        },
+        {
+          "id": "num:26:0",
+          "strategy": "graph_person",
+          "score": 0.463940457701683,
+          "rerank_score": 0.27705779671669006
+        }
+      ]
+    },
+    "PERSON_QUESTION_005": {
+      "precision_at_k": 0.8,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8889,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9829,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "exo:18:0",
+        "exo:4:1",
+        "exo:3:0",
+        "exo:24:0",
+        "exo:18:1"
+      ],
+      "source_detail": [
+        {
+          "id": "exo:18:0",
+          "strategy": "graph_person",
+          "score": 0.8827253472805023,
+          "rerank_score": 0.8753219246864319
+        },
+        {
+          "id": "exo:4:1",
+          "strategy": "graph_person",
+          "score": 0.7884666395187377,
+          "rerank_score": 0.7406666278839111
+        },
+        {
+          "id": "exo:3:0",
+          "strategy": "graph_person",
+          "score": 0.7138644230365754,
+          "rerank_score": 0.6340920329093933
+        },
+        {
+          "id": "exo:24:0",
+          "strategy": "graph_person",
+          "score": 0.4579428029060364,
+          "rerank_score": 0.2684897184371948
+        },
+        {
+          "id": "exo:18:1",
+          "strategy": "graph_person",
+          "score": 0.4575391095876694,
+          "rerank_score": 0.26791301369667053
+        }
+      ]
+    },
+    "PERSON_QUESTION_006": {
+      "precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "f1_at_k": 1.0,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "rut:2:0",
+        "rut:3:0",
+        "rut:4:1",
+        "rut:2:0:0",
+        "rut:4:0"
+      ],
+      "source_detail": [
+        {
+          "id": "rut:2:0",
+          "strategy": "graph_person",
+          "score": 0.8019348633289337,
+          "rerank_score": 0.7599069476127625
+        },
+        {
+          "id": "rut:3:0",
+          "strategy": "graph_person",
+          "score": 0.7830697786808014,
+          "rerank_score": 0.7329568266868591
+        },
+        {
+          "id": "rut:4:1",
+          "strategy": "graph_person",
+          "score": 0.7675058376789092,
+          "rerank_score": 0.7107226252555847
+        },
+        {
+          "id": "rut:2:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7419348633289337,
+          "rerank_score": 0.7599069476127625
+        },
+        {
+          "id": "rut:4:0",
+          "strategy": "graph_person",
+          "score": 0.6143872421979903,
+          "rerank_score": 0.49198177456855774
+        }
+      ]
+    },
+    "PERSON_QUESTION_007": {
+      "precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "f1_at_k": 1.0,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "1sa:1:2",
+        "1sa:2:2",
+        "1sa:3:0",
+        "1sa:1:1",
+        "1sa:1:0"
+      ],
+      "source_detail": [
+        {
+          "id": "1sa:1:2",
+          "strategy": "graph_person",
+          "score": 0.8082119178771973,
+          "rerank_score": 0.7688741683959961
+        },
+        {
+          "id": "1sa:2:2",
+          "strategy": "graph_person",
+          "score": 0.7746407222747803,
+          "rerank_score": 0.7209153175354004
+        },
+        {
+          "id": "1sa:3:0",
+          "strategy": "graph_person",
+          "score": 0.6955204617977142,
+          "rerank_score": 0.6078863739967346
+        },
+        {
+          "id": "1sa:1:1",
+          "strategy": "graph_person",
+          "score": 0.6929361236095428,
+          "rerank_score": 0.6041944622993469
+        },
+        {
+          "id": "1sa:1:0",
+          "strategy": "graph_person",
+          "score": 0.6086430770158768,
+          "rerank_score": 0.4837758243083954
+        }
+      ]
+    },
+    "PERSON_QUESTION_008": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9675,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "1sa:18:0",
+        "1sa:19:0",
+        "1sa:23:1",
+        "1sa:19:0:0",
+        "2sa:1:0"
+      ],
+      "source_detail": [
+        {
+          "id": "1sa:18:0",
+          "strategy": "graph_person",
+          "score": 0.9060057532787322,
+          "rerank_score": 0.9085796475410461
+        },
+        {
+          "id": "1sa:19:0",
+          "strategy": "graph_person",
+          "score": 0.7807426226139068,
+          "rerank_score": 0.7296323180198669
+        },
+        {
+          "id": "1sa:23:1",
+          "strategy": "graph_person",
+          "score": 0.757144410610199,
+          "rerank_score": 0.6959205865859985
+        },
+        {
+          "id": "1sa:19:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7207426226139068,
+          "rerank_score": 0.7296323180198669
+        },
+        {
+          "id": "2sa:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6616572833061218,
+          "rerank_score": 0.6452246904373169
+        }
+      ]
+    },
+    "PERSON_QUESTION_009": {
+      "precision_at_k": 0.8,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8889,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "2sa:11:0",
+        "2sa:11:0:0",
+        "2sa:12:0",
+        "2sa:12:2",
+        "1ki:1:2"
+      ],
+      "source_detail": [
+        {
+          "id": "2sa:11:0",
+          "strategy": "graph_person",
+          "score": 0.898302264213562,
+          "rerank_score": 0.8975746631622314
+        },
+        {
+          "id": "2sa:11:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8383022642135619,
+          "rerank_score": 0.8975746631622314
+        },
+        {
+          "id": "2sa:12:0",
+          "strategy": "graph_person",
+          "score": 0.8176656556129456,
+          "rerank_score": 0.7823795080184937
+        },
+        {
+          "id": "2sa:12:2",
+          "strategy": "graph_person",
+          "score": 0.7118651700019836,
+          "rerank_score": 0.6312359571456909
+        },
+        {
+          "id": "1ki:1:2",
+          "strategy": "graph_person",
+          "score": 0.5785606962442398,
+          "rerank_score": 0.4408009946346283
+        }
+      ]
+    },
+    "PERSON_QUESTION_010": {
+      "precision_at_k": 0.8,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8889,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9829,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "1ki:2:0",
+        "1ki:1:1",
+        "2sa:13:0",
+        "1ki:3:0",
+        "2sa:16:2"
+      ],
+      "source_detail": [
+        {
+          "id": "1ki:2:0",
+          "strategy": "graph_person",
+          "score": 0.7165851962566376,
+          "rerank_score": 0.6379788517951965
+        },
+        {
+          "id": "1ki:1:1",
+          "strategy": "graph_person",
+          "score": 0.6169326734542846,
+          "rerank_score": 0.4956181049346924
+        },
+        {
+          "id": "2sa:13:0",
+          "strategy": "graph_person",
+          "score": 0.5967455667257309,
+          "rerank_score": 0.4667793810367584
+        },
+        {
+          "id": "1ki:3:0",
+          "strategy": "graph_person",
+          "score": 0.5909343314170837,
+          "rerank_score": 0.45847761631011963
+        },
+        {
+          "id": "2sa:16:2",
+          "strategy": "graph_person",
+          "score": 0.5406010282039642,
+          "rerank_score": 0.3865728974342346
+        }
+      ]
+    },
+    "PERSON_QUESTION_011": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "2ki:2:0",
+        "2ki:2:1",
+        "1ki:19:1",
+        "mat:27:6",
+        "exo:28:0"
+      ],
+      "source_detail": [
+        {
+          "id": "2ki:2:0",
+          "strategy": "graph_person",
+          "score": 0.9092305433750152,
+          "rerank_score": 0.9131864905357361
+        },
+        {
+          "id": "2ki:2:1",
+          "strategy": "graph_person",
+          "score": 0.7500636827945709,
+          "rerank_score": 0.6858052611351013
+        },
+        {
+          "id": "1ki:19:1",
+          "strategy": "graph_person",
+          "score": 0.6272395682334899,
+          "rerank_score": 0.5103422403335571
+        },
+        {
+          "id": "mat:27:6",
+          "strategy": "entity_path",
+          "score": 0.43239816904067996,
+          "rerank_score": 0.2534259557723999
+        },
+        {
+          "id": "exo:28:0",
+          "strategy": "graph_person",
+          "score": 0.4184937399625778,
+          "rerank_score": 0.21213391423225403
+        }
+      ]
+    },
+    "PERSON_QUESTION_012": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9675,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "1ki:19:0",
+        "1ki:18:0",
+        "1ki:21:0:1",
+        "1ki:18:0:1",
+        "1ki:21:0"
+      ],
+      "source_detail": [
+        {
+          "id": "1ki:19:0",
+          "strategy": "graph_person",
+          "score": 0.8600847673416138,
+          "rerank_score": 0.8429782390594482
+        },
+        {
+          "id": "1ki:18:0",
+          "strategy": "graph_person",
+          "score": 0.7572787594795227,
+          "rerank_score": 0.6961125135421753
+        },
+        {
+          "id": "1ki:21:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7366953825950622,
+          "rerank_score": 0.7524219751358032
+        },
+        {
+          "id": "1ki:18:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.645471498966217,
+          "rerank_score": 0.6221021413803101
+        },
+        {
+          "id": "1ki:21:0",
+          "strategy": "graph_person",
+          "score": 0.6303793680667877,
+          "rerank_score": 0.5148276686668396
+        }
+      ]
+    },
+    "PERSON_QUESTION_013": {
+      "precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "f1_at_k": 1.0,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "dan:1:0",
+        "dan:2:3",
+        "dan:5:0",
+        "dan:2:2",
+        "dan:5:1"
+      ],
+      "source_detail": [
+        {
+          "id": "dan:1:0",
+          "strategy": "graph_person",
+          "score": 0.9012039077281951,
+          "rerank_score": 0.901719868183136
+        },
+        {
+          "id": "dan:2:3",
+          "strategy": "graph_person",
+          "score": 0.8911604535579681,
+          "rerank_score": 0.8873720765113831
+        },
+        {
+          "id": "dan:5:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8039885199069976,
+          "rerank_score": 0.8485550284385681
+        },
+        {
+          "id": "dan:2:2",
+          "strategy": "graph_person",
+          "score": 0.720879979133606,
+          "rerank_score": 0.6441142559051514
+        },
+        {
+          "id": "dan:5:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6747230029106139,
+          "rerank_score": 0.66389000415802
+        }
+      ]
+    },
+    "PERSON_QUESTION_014": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "dan:3:3",
+        "dan:3:2",
+        "dan:3:1",
+        "dan:1:0",
+        "dan:2:3"
+      ],
+      "source_detail": [
+        {
+          "id": "dan:3:3",
+          "strategy": "hybrid_hybrid",
+          "score": 0.895170429944992,
+          "rerank_score": 0.9788148999214172
+        },
+        {
+          "id": "dan:3:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8882708644866942,
+          "rerank_score": 0.9689583778381348
+        },
+        {
+          "id": "dan:3:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8831428265571594,
+          "rerank_score": 0.9616326093673706
+        },
+        {
+          "id": "dan:1:0",
+          "strategy": "graph_person",
+          "score": 0.7769066703319549,
+          "rerank_score": 0.7241523861885071
+        },
+        {
+          "id": "dan:2:3",
+          "strategy": "entity_query",
+          "score": 0.7728865671157836,
+          "rerank_score": 0.8469808101654053
+        }
+      ]
+    },
+    "PERSON_QUESTION_015": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 0.5,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.6797,
+      "hit_rate": 1.0,
+      "route": "fallback",
+      "strategies": [
+        "hybrid"
+      ],
+      "sources": [
+        "est:9:1",
+        "est:2:0",
+        "est:8:0",
+        "est:7:0",
+        "est:2:1"
+      ],
+      "source_detail": [
+        {
+          "id": "est:9:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7647798037528991,
+          "rerank_score": 0.792542576789856
+        },
+        {
+          "id": "est:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7542009985446929,
+          "rerank_score": 0.77742999792099
+        },
+        {
+          "id": "est:8:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7500214135646819,
+          "rerank_score": 0.77145916223526
+        },
+        {
+          "id": "est:7:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6935441946983337,
+          "rerank_score": 0.6907774209976196
+        },
+        {
+          "id": "est:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6927277958393097,
+          "rerank_score": 0.6896111369132996
+        }
+      ]
+    },
+    "PERSON_QUESTION_016": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.3333,
+      "f1_at_k": 0.25,
+      "mrr": 1.0,
+      "map_at_k": 0.3333,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mat:17:0",
+        "luk:5:0",
+        "act:1:2",
+        "luk:6:2",
+        "mrk:3:2"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:17:0",
+          "strategy": "graph_person",
+          "score": 0.9230165731906891,
+          "rerank_score": 0.9328808188438416
+        },
+        {
+          "id": "luk:5:0",
+          "strategy": "graph_person",
+          "score": 0.8202406060695648,
+          "rerank_score": 0.7860580086708069
+        },
+        {
+          "id": "act:1:2",
+          "strategy": "graph_person",
+          "score": 0.8075203132629394,
+          "rerank_score": 0.7678861618041992
+        },
+        {
+          "id": "luk:6:2",
+          "strategy": "graph_person",
+          "score": 0.7994205784797668,
+          "rerank_score": 0.7563151121139526
+        },
+        {
+          "id": "mrk:3:2",
+          "strategy": "graph_person",
+          "score": 0.7646533024311066,
+          "rerank_score": 0.7066475749015808
+        }
+      ]
+    },
+    "PERSON_QUESTION_017": {
+      "precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "f1_at_k": 1.0,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:11:1",
+        "jhn:11:0",
+        "jhn:12:0",
+        "luk:10:5",
+        "jhn:11:2"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:11:1",
+          "strategy": "graph_person",
+          "score": 0.9449058425426483,
+          "rerank_score": 0.9641512036323547
+        },
+        {
+          "id": "jhn:11:0",
+          "strategy": "graph_person",
+          "score": 0.9360389423370361,
+          "rerank_score": 0.951484203338623
+        },
+        {
+          "id": "jhn:12:0",
+          "strategy": "graph_person",
+          "score": 0.9008359503746033,
+          "rerank_score": 0.9011942148208618
+        },
+        {
+          "id": "luk:10:5",
+          "strategy": "graph_person",
+          "score": 0.8859381628036499,
+          "rerank_score": 0.8799116611480713
+        },
+        {
+          "id": "jhn:11:2",
+          "strategy": "entity_query",
+          "score": 0.7523272681236266,
+          "rerank_score": 0.8176103830337524
+        }
+      ]
+    },
+    "PERSON_QUESTION_018": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.8855,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:15:2",
+        "act:18:0",
+        "act:15:1",
+        "act:17:1",
+        "act:16:0"
+      ],
+      "source_detail": [
+        {
+          "id": "act:15:2",
+          "strategy": "graph_person",
+          "score": 0.8269020569324493,
+          "rerank_score": 0.7955743670463562
+        },
+        {
+          "id": "act:18:0",
+          "strategy": "graph_person",
+          "score": 0.8260215294361114,
+          "rerank_score": 0.7943164706230164
+        },
+        {
+          "id": "act:15:1",
+          "strategy": "graph_person",
+          "score": 0.6537883234024048,
+          "rerank_score": 0.5482690334320068
+        },
+        {
+          "id": "act:17:1",
+          "strategy": "graph_person",
+          "score": 0.5793477219343186,
+          "rerank_score": 0.4419253170490265
+        },
+        {
+          "id": "act:16:0",
+          "strategy": "graph_person",
+          "score": 0.5735788774490356,
+          "rerank_score": 0.4336841106414795
+        }
+      ]
+    },
+    "PERSON_QUESTION_019": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:10:0",
+        "act:10:0:0",
+        "act:10:0:1",
+        "act:4:0",
+        "mat:15:0"
+      ],
+      "source_detail": [
+        {
+          "id": "act:10:0",
+          "strategy": "graph_person",
+          "score": 0.7874677431583404,
+          "rerank_score": 0.7392396330833435
+        },
+        {
+          "id": "act:10:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7274677431583404,
+          "rerank_score": 0.7392396330833435
+        },
+        {
+          "id": "act:10:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6589333391189575,
+          "rerank_score": 0.6413333415985107
+        },
+        {
+          "id": "act:4:0",
+          "strategy": "graph_person",
+          "score": 0.35692214861512184,
+          "rerank_score": 0.12417449802160263
+        },
+        {
+          "id": "mat:15:0",
+          "strategy": "graph_person",
+          "score": 0.29571379467844966,
+          "rerank_score": 0.03673399239778519
+        }
+      ]
+    },
+    "PERSON_QUESTION_020": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9469,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:18:0",
+        "act:18:1",
+        "act:19:0",
+        "act:17:0",
+        "act:18:2"
+      ],
+      "source_detail": [
+        {
+          "id": "act:18:0",
+          "strategy": "graph_person",
+          "score": 0.9202252459526061,
+          "rerank_score": 0.9288932085037231
+        },
+        {
+          "id": "act:18:1",
+          "strategy": "graph_person",
+          "score": 0.8210786592960357,
+          "rerank_score": 0.7872552275657654
+        },
+        {
+          "id": "act:19:0",
+          "strategy": "graph_person",
+          "score": 0.813611866235733,
+          "rerank_score": 0.7765883803367615
+        },
+        {
+          "id": "act:17:0",
+          "strategy": "graph_person",
+          "score": 0.7493536365032196,
+          "rerank_score": 0.6847909092903137
+        },
+        {
+          "id": "act:18:2",
+          "strategy": "graph_person",
+          "score": 0.6694424283504485,
+          "rerank_score": 0.5706320405006409
+        }
+      ]
+    },
+    "EVENT_QUESTION_001": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 0.5,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.6934,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "isa:54:0",
+        "gen:7:0",
+        "gen:8:0",
+        "dan:9:1",
+        "dan:11:1"
+      ],
+      "source_detail": [
+        {
+          "id": "isa:54:0",
+          "strategy": "graph_event",
+          "score": 0.6739362783432007,
+          "rerank_score": 0.013054776936769485
+        },
+        {
+          "id": "gen:7:0",
+          "strategy": "graph_event",
+          "score": 0.6719362783432007,
+          "rerank_score": 0.595623254776001
+        },
+        {
+          "id": "gen:8:0",
+          "strategy": "graph_event",
+          "score": 0.6149570870399474,
+          "rerank_score": 0.5142244100570679
+        },
+        {
+          "id": "dan:9:1",
+          "strategy": "graph_event",
+          "score": 0.570798157453537,
+          "rerank_score": 0.45114022493362427
+        },
+        {
+          "id": "dan:11:1",
+          "strategy": "graph_event",
+          "score": 0.4378885108232498,
+          "rerank_score": 0.26126930117607117
+        }
+      ]
+    },
+    "EVENT_QUESTION_002": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "gen:11:0",
+        "jer:52:0",
+        "jer:39:0",
+        "2ki:25:0",
+        "2ki:24:0"
+      ],
+      "source_detail": [
+        {
+          "id": "gen:11:0",
+          "strategy": "graph_event",
+          "score": 0.8258102941513061,
+          "rerank_score": 0.8154432773590088
+        },
+        {
+          "id": "jer:52:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3578614240884781,
+          "rerank_score": 0.21123060584068298
+        },
+        {
+          "id": "jer:39:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.2365155669301748,
+          "rerank_score": 0.03787938132882118
+        },
+        {
+          "id": "2ki:25:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.225069399215281,
+          "rerank_score": 0.021527713164687157
+        },
+        {
+          "id": "2ki:24:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.22503142975270748,
+          "rerank_score": 0.021473471075296402
+        }
+      ]
+    },
+    "EVENT_QUESTION_003": {
+      "precision_at_k": 0.8,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8889,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9829,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query"
+      ],
+      "sources": [
+        "exo:7:2",
+        "exo:8:0",
+        "exo:10:0",
+        "gen:12:1",
+        "exo:11:0"
+      ],
+      "source_detail": [
+        {
+          "id": "exo:7:2",
+          "strategy": "graph_event",
+          "score": 0.49221468341350555,
+          "rerank_score": 0.03708529844880104
+        },
+        {
+          "id": "exo:8:0",
+          "strategy": "graph_event",
+          "score": 0.49021468341350555,
+          "rerank_score": 0.33602097630500793
+        },
+        {
+          "id": "exo:10:0",
+          "strategy": "graph_event",
+          "score": 0.42766957908868786,
+          "rerank_score": 0.24667082726955414
+        },
+        {
+          "id": "gen:12:1",
+          "strategy": "entity_query",
+          "score": 0.3855110454559326,
+          "rerank_score": 0.29358720779418945
+        },
+        {
+          "id": "exo:11:0",
+          "strategy": "graph_event",
+          "score": 0.3572145077586174,
+          "rerank_score": 0.14602072536945343
+        }
+      ]
+    },
+    "EVENT_QUESTION_004": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.2,
+      "map_at_k": 0.2,
+      "ndcg_at_k": 0.3869,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "num:33:0",
+        "jos:24:0",
+        "psa:106:0:0",
+        "psa:106:0",
+        "exo:14:0"
+      ],
+      "source_detail": [
+        {
+          "id": "num:33:0",
+          "strategy": "entity_query",
+          "score": 0.5385656583309173,
+          "rerank_score": 0.5122366547584534
+        },
+        {
+          "id": "jos:24:0",
+          "strategy": "entity_query",
+          "score": 0.4201130139827728,
+          "rerank_score": 0.3430185914039612
+        },
+        {
+          "id": "psa:106:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3332763424515724,
+          "rerank_score": 0.17610906064510345
+        },
+        {
+          "id": "psa:106:0",
+          "strategy": "entity_query",
+          "score": 0.3032763424515724,
+          "rerank_score": 0.17610906064510345
+        },
+        {
+          "id": "exo:14:0",
+          "strategy": "graph_event",
+          "score": 0.2759927670657635,
+          "rerank_score": 0.029989667236804962
+        }
+      ]
+    },
+    "EVENT_QUESTION_005": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.8772,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "num:14:0",
+        "jos:5:1",
+        "num:32:0",
+        "num:14:2",
+        "deu:2:0"
+      ],
+      "source_detail": [
+        {
+          "id": "num:14:0",
+          "strategy": "graph_event",
+          "score": 0.8267820532321929,
+          "rerank_score": 0.010920580476522446
+        },
+        {
+          "id": "jos:5:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8247820532321929,
+          "rerank_score": 0.87826007604599
+        },
+        {
+          "id": "num:32:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8226702308654784,
+          "rerank_score": 0.8752431869506836
+        },
+        {
+          "id": "num:14:2",
+          "strategy": "graph_event",
+          "score": 0.8192827332019805,
+          "rerank_score": 0.8061181902885437
+        },
+        {
+          "id": "deu:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4265560036897659,
+          "rerank_score": 0.30936571955680847
+        }
+      ]
+    },
+    "EVENT_QUESTION_006": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.3333,
+      "map_at_k": 0.3333,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jer:39:0",
+        "2ki:25:0",
+        "jos:6:0:1",
+        "jos:10:2",
+        "jdg:1:1"
+      ],
+      "source_detail": [
+        {
+          "id": "jer:39:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8627329802513122,
+          "rerank_score": 0.9324756860733032
+        },
+        {
+          "id": "2ki:25:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8509952700138091,
+          "rerank_score": 0.915707528591156
+        },
+        {
+          "id": "jos:6:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8068979656696319,
+          "rerank_score": 0.8527113795280457
+        },
+        {
+          "id": "jos:10:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.790037349462509,
+          "rerank_score": 0.8286247849464417
+        },
+        {
+          "id": "jdg:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7876985526084899,
+          "rerank_score": 0.8252836465835571
+        }
+      ]
+    },
+    "EVENT_QUESTION_007": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 0.5,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.6797,
+      "hit_rate": 1.0,
+      "route": "R6",
+      "strategies": [
+        "graph_place",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jdg:8:0",
+        "jdg:7:0",
+        "jdg:8:0:0",
+        "jdg:7:0:1",
+        "jdg:7:0:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jdg:8:0",
+          "strategy": "graph_place",
+          "score": 0.9005438971519469,
+          "rerank_score": 0.9222055673599243
+        },
+        {
+          "id": "jdg:7:0",
+          "strategy": "graph_place",
+          "score": 0.8686432170867919,
+          "rerank_score": 0.8766331672668457
+        },
+        {
+          "id": "jdg:8:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8555438971519469,
+          "rerank_score": 0.9222055673599243
+        },
+        {
+          "id": "jdg:7:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8504050946235656,
+          "rerank_score": 0.9148644208908081
+        },
+        {
+          "id": "jdg:7:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8373526430130004,
+          "rerank_score": 0.8962180614471436
+        }
+      ]
+    },
+    "EVENT_QUESTION_008": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.5,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.6309,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "dan:11:1",
+        "1ki:12:0",
+        "1sa:13:0",
+        "2sa:13:1",
+        "dan:2:2:1"
+      ],
+      "source_detail": [
+        {
+          "id": "dan:11:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4053511416912079,
+          "rerank_score": 0.2790730595588684
+        },
+        {
+          "id": "1ki:12:0",
+          "strategy": "graph_event",
+          "score": 0.31427745401859286,
+          "rerank_score": 0.08468207716941833
+        },
+        {
+          "id": "1sa:13:0",
+          "strategy": "entity_query",
+          "score": 0.30225921303033826,
+          "rerank_score": 0.17465601861476898
+        },
+        {
+          "id": "2sa:13:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.29765732795000077,
+          "rerank_score": 0.1252247542142868
+        },
+        {
+          "id": "dan:2:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.29278381749987603,
+          "rerank_score": 0.11826259642839432
+        }
+      ]
+    },
+    "EVENT_QUESTION_009": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9469,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "ezr:2:0",
+        "ezr:2:0:0",
+        "1ch:9:0",
+        "2ki:25:2",
+        "neh:7:1"
+      ],
+      "source_detail": [
+        {
+          "id": "ezr:2:0",
+          "strategy": "graph_event",
+          "score": 0.4894631850719452,
+          "rerank_score": 0.334947407245636
+        },
+        {
+          "id": "ezr:2:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.44446318507194515,
+          "rerank_score": 0.334947407245636
+        },
+        {
+          "id": "1ch:9:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4152671104669571,
+          "rerank_score": 0.29323872923851013
+        },
+        {
+          "id": "2ki:25:2",
+          "strategy": "graph_event",
+          "score": 0.3483839589357376,
+          "rerank_score": 0.1334056556224823
+        },
+        {
+          "id": "neh:7:1",
+          "strategy": "graph_event",
+          "score": 0.3151253122091293,
+          "rerank_score": 0.08589330315589905
+        }
+      ]
+    },
+    "EVENT_QUESTION_010": {
+      "precision_at_k": 0.8,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8889,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "luk:2:0",
+        "mat:1:1",
+        "mat:2:0",
+        "luk:2:1",
+        "jhn:2:0"
+      ],
+      "source_detail": [
+        {
+          "id": "luk:2:0",
+          "strategy": "graph_event",
+          "score": 0.8388151640892028,
+          "rerank_score": 0.07757841050624847
+        },
+        {
+          "id": "mat:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8368151640892028,
+          "rerank_score": 0.895450234413147
+        },
+        {
+          "id": "mat:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7285602247714996,
+          "rerank_score": 0.7408003211021423
+        },
+        {
+          "id": "luk:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.675183001756668,
+          "rerank_score": 0.6645471453666687
+        },
+        {
+          "id": "jhn:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6588805592060089,
+          "rerank_score": 0.6412579417228699
+        }
+      ]
+    },
+    "EVENT_QUESTION_011": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.8772,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mat:5:0",
+        "heb:12:1",
+        "psa:104:0",
+        "mat:5:2",
+        "rev:17:0"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:5:0",
+          "strategy": "graph_event",
+          "score": 0.29223394271731373,
+          "rerank_score": 0.010291452519595623
+        },
+        {
+          "id": "heb:12:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.29023394271731373,
+          "rerank_score": 0.1146199181675911
+        },
+        {
+          "id": "psa:104:0",
+          "strategy": "entity_query",
+          "score": 0.27645543694496155,
+          "rerank_score": 0.13779348134994507
+        },
+        {
+          "id": "mat:5:2",
+          "strategy": "graph_event",
+          "score": 0.26889891728758814,
+          "rerank_score": 0.019855596125125885
+        },
+        {
+          "id": "rev:17:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.2662555328011513,
+          "rerank_score": 0.08036504685878754
+        }
+      ]
+    },
+    "EVENT_QUESTION_012": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 0.8333,
+      "ndcg_at_k": 0.9197,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:6:0",
+        "luk:9:2",
+        "mat:14:1",
+        "mrk:6:3",
+        "1ti:4:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:6:0",
+          "strategy": "graph_event",
+          "score": 0.8788521456718444,
+          "rerank_score": 0.8912173509597778
+        },
+        {
+          "id": "luk:9:2",
+          "strategy": "graph_event",
+          "score": 0.8674478459358215,
+          "rerank_score": 0.8749254941940308
+        },
+        {
+          "id": "mat:14:1",
+          "strategy": "graph_event",
+          "score": 0.8247687566280365,
+          "rerank_score": 0.8139553666114807
+        },
+        {
+          "id": "mrk:6:3",
+          "strategy": "graph_event",
+          "score": 0.813818906545639,
+          "rerank_score": 0.7983127236366272
+        },
+        {
+          "id": "1ti:4:0",
+          "strategy": "cross_ref_expand",
+          "score": 0.48080526173114774,
+          "rerank_score": 0.42972180247306824
+        }
+      ]
+    },
+    "EVENT_QUESTION_013": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.2,
+      "map_at_k": 0.2,
+      "ndcg_at_k": 0.3869,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:12:2",
+        "jhn:12:0",
+        "luk:16:2",
+        "jhn:12:1",
+        "jhn:11:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:12:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7779621398448944,
+          "rerank_score": 0.8113744854927063
+        },
+        {
+          "id": "jhn:12:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7399951910972594,
+          "rerank_score": 0.7571359872817993
+        },
+        {
+          "id": "luk:16:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7259337878227233,
+          "rerank_score": 0.7370482683181763
+        },
+        {
+          "id": "jhn:12:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7244798994064331,
+          "rerank_score": 0.734971284866333
+        },
+        {
+          "id": "jhn:11:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7059752619266509,
+          "rerank_score": 0.7085360884666443
+        }
+      ]
+    },
+    "EVENT_QUESTION_014": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:13:0",
+        "luk:22:2",
+        "jhn:21:2",
+        "mrk:14:3",
+        "mat:26:3"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:13:0",
+          "strategy": "graph_event",
+          "score": 0.37113882929086683,
+          "rerank_score": 0.16591261327266693
+        },
+        {
+          "id": "luk:22:2",
+          "strategy": "graph_event",
+          "score": 0.27058706872165206,
+          "rerank_score": 0.022267241030931473
+        },
+        {
+          "id": "jhn:21:2",
+          "strategy": "entity_query",
+          "score": 0.2657956677675247,
+          "rerank_score": 0.12256523966789246
+        },
+        {
+          "id": "mrk:14:3",
+          "strategy": "graph_event",
+          "score": 0.26064150186255575,
+          "rerank_score": 0.008059288375079632
+        },
+        {
+          "id": "mat:26:3",
+          "strategy": "graph_event",
+          "score": 0.25984240902587774,
+          "rerank_score": 0.006917727179825306
+        }
+      ]
+    },
+    "EVENT_QUESTION_015": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 0.7,
+      "ndcg_at_k": 0.8503,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mat:26:6",
+        "mrk:14:6",
+        "act:8:1",
+        "eph:6:2",
+        "luk:22:6"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:26:6",
+          "strategy": "graph_event",
+          "score": 0.8316436219215393,
+          "rerank_score": 0.8237766027450562
+        },
+        {
+          "id": "mrk:14:6",
+          "strategy": "graph_event",
+          "score": 0.726680063009262,
+          "rerank_score": 0.673828661441803
+        },
+        {
+          "id": "act:8:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.38051862031221384,
+          "rerank_score": 0.24359802901744843
+        },
+        {
+          "id": "eph:6:2",
+          "strategy": "cross_ref_expand",
+          "score": 0.36973172903060914,
+          "rerank_score": 0.2710453271865845
+        },
+        {
+          "id": "luk:22:6",
+          "strategy": "graph_event",
+          "score": 0.3112404029071331,
+          "rerank_score": 0.08034343272447586
+        }
+      ]
+    },
+    "EVENT_QUESTION_016": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.25,
+      "map_at_k": 0.25,
+      "ndcg_at_k": 0.4307,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:19:1",
+        "mrk:15:3",
+        "luk:23:3",
+        "mat:27:5",
+        "jhn:19:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:19:1",
+          "strategy": "graph_event",
+          "score": 0.8753323304653168,
+          "rerank_score": 0.8861890435218811
+        },
+        {
+          "id": "mrk:15:3",
+          "strategy": "graph_event",
+          "score": 0.8622462499141693,
+          "rerank_score": 0.8674946427345276
+        },
+        {
+          "id": "luk:23:3",
+          "strategy": "graph_event",
+          "score": 0.8437685656547546,
+          "rerank_score": 0.8410979509353638
+        },
+        {
+          "id": "mat:27:5",
+          "strategy": "graph_event",
+          "score": 0.8301521825790404,
+          "rerank_score": 0.821645975112915
+        },
+        {
+          "id": "jhn:19:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7823735809326171,
+          "rerank_score": 0.8176765441894531
+        }
+      ]
+    },
+    "EVENT_QUESTION_017": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.2857,
+      "mrr": 0.25,
+      "map_at_k": 0.125,
+      "ndcg_at_k": 0.4307,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mat:27:6",
+        "mat:28:0",
+        "mrk:16:1",
+        "luk:24:0",
+        "mrk:9:1"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:27:6",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8636793887615203,
+          "rerank_score": 0.9338276982307434
+        },
+        {
+          "id": "mat:28:0",
+          "strategy": "graph_event",
+          "score": 0.8339624333381652,
+          "rerank_score": 0.8270891904830933
+        },
+        {
+          "id": "mrk:16:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7518458461761474,
+          "rerank_score": 0.7740654945373535
+        },
+        {
+          "id": "luk:24:0",
+          "strategy": "graph_event",
+          "score": 0.7433352756500244,
+          "rerank_score": 0.6976218223571777
+        },
+        {
+          "id": "mrk:9:1",
+          "strategy": "cross_ref_expand",
+          "score": 0.7088646578788758,
+          "rerank_score": 0.7555209398269653
+        }
+      ]
+    },
+    "EVENT_QUESTION_018": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:2:0",
+        "ezk:1:0",
+        "jhn:16:1",
+        "act:8:1",
+        "mrk:16:3"
+      ],
+      "source_detail": [
+        {
+          "id": "act:2:0",
+          "strategy": "graph_event",
+          "score": 0.8830239284038544,
+          "rerank_score": 0.8971770405769348
+        },
+        {
+          "id": "ezk:1:0",
+          "strategy": "entity_query",
+          "score": 0.4732138621807098,
+          "rerank_score": 0.4188769459724426
+        },
+        {
+          "id": "jhn:16:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3439332222938537,
+          "rerank_score": 0.19133317470550537
+        },
+        {
+          "id": "act:8:1",
+          "strategy": "cross_ref_expand",
+          "score": 0.3412763568758964,
+          "rerank_score": 0.23039479553699493
+        },
+        {
+          "id": "mrk:16:3",
+          "strategy": "cross_ref_expand",
+          "score": 0.2838233458995819,
+          "rerank_score": 0.1483190655708313
+        }
+      ]
+    },
+    "EVENT_QUESTION_019": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:9:0",
+        "act:18:0",
+        "gal:1:0",
+        "act:13:2",
+        "rom:1:0"
+      ],
+      "source_detail": [
+        {
+          "id": "act:9:0",
+          "strategy": "graph_event",
+          "score": 0.7068446226119995,
+          "rerank_score": 0.07355418056249619
+        },
+        {
+          "id": "act:18:0",
+          "strategy": "entity_query",
+          "score": 0.7048446226119995,
+          "rerank_score": 0.7497780323028564
+        },
+        {
+          "id": "gal:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6305213487148285,
+          "rerank_score": 0.6007447838783264
+        },
+        {
+          "id": "act:13:2",
+          "strategy": "cross_ref_expand",
+          "score": 0.48729596018791194,
+          "rerank_score": 0.43899422883987427
+        },
+        {
+          "id": "rom:1:0",
+          "strategy": "cross_ref_expand",
+          "score": 0.46208393454551694,
+          "rerank_score": 0.4029770493507385
+        }
+      ]
+    },
+    "EVENT_QUESTION_020": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "fallback",
+      "strategies": [
+        "hybrid"
+      ],
+      "sources": [
+        "luk:15:2"
+      ],
+      "source_detail": [
+        {
+          "id": "luk:15:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.37750042289495467,
+          "rerank_score": 0.23928631842136383
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_001": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 0.75,
+      "ndcg_at_k": 0.8772,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "cross_reference",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mat:1:1",
+        "mat:26:7",
+        "mat:21:0",
+        "isa:7:1",
+        "mat:12:2"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8147949671745299,
+          "rerank_score": 0.8639928102493286
+        },
+        {
+          "id": "mat:26:7",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6514431393146515,
+          "rerank_score": 0.6306330561637878
+        },
+        {
+          "id": "mat:21:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6364797627925872,
+          "rerank_score": 0.6092568039894104
+        },
+        {
+          "id": "isa:7:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5760812771320343,
+          "rerank_score": 0.5444018244743347
+        },
+        {
+          "id": "mat:12:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5574200427532195,
+          "rerank_score": 0.4963143467903137
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_002": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 0.7,
+      "ndcg_at_k": 0.8529,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "cross_reference",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "gal:3:0",
+        "jas:2:1",
+        "heb:11:0",
+        "rom:4:0",
+        "rom:4:1"
+      ],
+      "source_detail": [
+        {
+          "id": "gal:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8461703097820281,
+          "rerank_score": 0.9088147282600403
+        },
+        {
+          "id": "jas:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8185479736328124,
+          "rerank_score": 0.869354248046875
+        },
+        {
+          "id": "heb:11:0",
+          "strategy": "entity_query",
+          "score": 0.8006096231937407,
+          "rerank_score": 0.8865851759910583
+        },
+        {
+          "id": "rom:4:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7666744565963745,
+          "rerank_score": 0.7952492237091064
+        },
+        {
+          "id": "rom:4:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5924850976467132,
+          "rerank_score": 0.5464072823524475
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_003": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 0.6667,
+      "f1_at_k": 0.5,
+      "mrr": 1.0,
+      "map_at_k": 0.5556,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "cross_reference",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:1:2",
+        "jhn:1:3",
+        "rev:5:0",
+        "mrk:1:0",
+        "rev:17:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:1:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4199855929613113,
+          "rerank_score": 0.29997941851615906
+        },
+        {
+          "id": "jhn:1:3",
+          "strategy": "hybrid_hybrid",
+          "score": 0.396450132727623,
+          "rerank_score": 0.26635733246803284
+        },
+        {
+          "id": "rev:5:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3041458985209465,
+          "rerank_score": 0.1344941407442093
+        },
+        {
+          "id": "mrk:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.2611144085228443,
+          "rerank_score": 0.09444915503263474
+        },
+        {
+          "id": "rev:17:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.24905528672039506,
+          "rerank_score": 0.055793266743421555
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_004": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5714,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.987,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_chapter",
+        "cross_reference",
+        "graph_event",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "gen:1:0",
+        "jhn:1:0",
+        "jhn:1:2",
+        "gen:48:0",
+        "jhn:1:3"
+      ],
+      "source_detail": [
+        {
+          "id": "gen:1:0",
+          "strategy": "sql_chapter",
+          "score": 0.5361687690019608,
+          "rerank_score": 0.3373839557170868
+        },
+        {
+          "id": "jhn:1:0",
+          "strategy": "sql_chapter",
+          "score": 0.4901656717061996,
+          "rerank_score": 0.2716652452945709
+        },
+        {
+          "id": "jhn:1:2",
+          "strategy": "sql_chapter",
+          "score": 0.41239645183086393,
+          "rerank_score": 0.16056635975837708
+        },
+        {
+          "id": "gen:48:0",
+          "strategy": "cross_ref_expand",
+          "score": 0.4072851586341858,
+          "rerank_score": 0.32469308376312256
+        },
+        {
+          "id": "jhn:1:3",
+          "strategy": "sql_chapter",
+          "score": 0.36177153438329696,
+          "rerank_score": 0.08824504911899567
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_005": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.3333,
+      "mrr": 0.2,
+      "map_at_k": 0.2,
+      "ndcg_at_k": 0.3869,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "heb:5:0",
+        "1ch:24:0",
+        "exo:28:0",
+        "exo:29:0",
+        "heb:7:0"
+      ],
+      "source_detail": [
+        {
+          "id": "heb:5:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8264299547672271,
+          "rerank_score": 0.8806142210960388
+        },
+        {
+          "id": "1ch:24:0",
+          "strategy": "graph_person",
+          "score": 0.8227305245399474,
+          "rerank_score": 0.7896150350570679
+        },
+        {
+          "id": "exo:28:0",
+          "strategy": "graph_person",
+          "score": 0.8204836857318878,
+          "rerank_score": 0.7864052653312683
+        },
+        {
+          "id": "exo:29:0",
+          "strategy": "graph_person",
+          "score": 0.7555179131031036,
+          "rerank_score": 0.6935970187187195
+        },
+        {
+          "id": "heb:7:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7458094513416289,
+          "rerank_score": 0.7654420733451843
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_006": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "hit_rate": 0.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "cross_reference",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jer:28:0",
+        "jer:26:0",
+        "jer:26:0:0",
+        "jer:26:0:1",
+        "jer:29:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jer:28:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4044186270236969,
+          "rerank_score": 0.2777408957481384
+        },
+        {
+          "id": "jer:26:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3728043249249458,
+          "rerank_score": 0.2325776070356369
+        },
+        {
+          "id": "jer:26:0:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.35780432492494585,
+          "rerank_score": 0.2325776070356369
+        },
+        {
+          "id": "jer:26:0:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.34781317085027696,
+          "rerank_score": 0.21830452978610992
+        },
+        {
+          "id": "jer:29:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.30780769795179364,
+          "rerank_score": 0.13972528278827667
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_007": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.2857,
+      "mrr": 0.25,
+      "map_at_k": 0.125,
+      "ndcg_at_k": 0.4307,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "jhn:18:5",
+        "luk:9:4",
+        "col:1:2",
+        "psa:22:0",
+        "isa:8:4"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:18:5",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6149498558044433,
+          "rerank_score": 0.5784997940063477
+        },
+        {
+          "id": "luk:9:4",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5783445036411285,
+          "rerank_score": 0.5262064337730408
+        },
+        {
+          "id": "col:1:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.48975598573684687,
+          "rerank_score": 0.3996514081954956
+        },
+        {
+          "id": "psa:22:0",
+          "strategy": "sql_chapter",
+          "score": 0.4870418310165405,
+          "rerank_score": 0.26720261573791504
+        },
+        {
+          "id": "isa:8:4",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4741078054904937,
+          "rerank_score": 0.3772968649864197
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_008": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "hit_rate": 0.0,
+      "route": "R4",
+      "strategies": [
+        "graph_event",
+        "semantic",
+        "book_anchor",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "zec:4:1",
+        "luk:1:1",
+        "jhn:18:0",
+        "jhn:19:1",
+        "jhn:18:5"
+      ],
+      "source_detail": [
+        {
+          "id": "zec:4:1",
+          "strategy": "book_anchor",
+          "score": 0.6837490611076354,
+          "rerank_score": 0.02721535414457321
+        },
+        {
+          "id": "luk:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6757490611076354,
+          "rerank_score": 0.6653558015823364
+        },
+        {
+          "id": "jhn:18:0",
+          "strategy": "graph_event",
+          "score": 0.42630763828754425,
+          "rerank_score": 0.24472519755363464
+        },
+        {
+          "id": "jhn:19:1",
+          "strategy": "graph_event",
+          "score": 0.3897010552883148,
+          "rerank_score": 0.19243007898330688
+        },
+        {
+          "id": "jhn:18:5",
+          "strategy": "graph_event",
+          "score": 0.3677209022641182,
+          "rerank_score": 0.1610298603773117
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_009": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "cross_reference",
+        "graph_event",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:6:2",
+        "jhn:6:2:0",
+        "exo:16:0",
+        "exo:12:4",
+        "luk:1:1"
+      ],
+      "source_detail": [
+        {
+          "id": "jhn:6:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5367691403627395,
+          "rerank_score": 0.4668130576610565
+        },
+        {
+          "id": "jhn:6:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5217691403627396,
+          "rerank_score": 0.4668130576610565
+        },
+        {
+          "id": "exo:16:0",
+          "strategy": "graph_event",
+          "score": 0.29896267905831336,
+          "rerank_score": 0.06280382722616196
+        },
+        {
+          "id": "exo:12:4",
+          "strategy": "graph_event",
+          "score": 0.28790502913296223,
+          "rerank_score": 0.047007184475660324
+        },
+        {
+          "id": "luk:1:1",
+          "strategy": "entity_query",
+          "score": 0.22188346602022646,
+          "rerank_score": 0.05983352288603783
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_010": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 0.75,
+      "f1_at_k": 0.6667,
+      "mrr": 1.0,
+      "map_at_k": 0.65,
+      "ndcg_at_k": 0.9469,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "act:2:1",
+        "act:2:1:1",
+        "mat:16:2",
+        "act:4:0",
+        "act:2:1:0"
+      ],
+      "source_detail": [
+        {
+          "id": "act:2:1",
+          "strategy": "sql_chapter",
+          "score": 0.5998380959033967,
+          "rerank_score": 0.4283401370048523
+        },
+        {
+          "id": "act:2:1:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5608961415290832,
+          "rerank_score": 0.5227087736129761
+        },
+        {
+          "id": "mat:16:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5159843480587005,
+          "rerank_score": 0.4371204972267151
+        },
+        {
+          "id": "act:4:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5056275105476379,
+          "rerank_score": 0.4223250150680542
+        },
+        {
+          "id": "act:2:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4948380959033966,
+          "rerank_score": 0.4283401370048523
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_011": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 0.6667,
+      "f1_at_k": 0.5,
+      "mrr": 0.5,
+      "map_at_k": 0.3333,
+      "ndcg_at_k": 0.8799,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "deu:18:0",
+        "deu:18:2",
+        "2pe:1:2",
+        "act:3:1",
+        "act:2:1"
+      ],
+      "source_detail": [
+        {
+          "id": "deu:18:0",
+          "strategy": "sql_chapter",
+          "score": 0.7801909339427947,
+          "rerank_score": 0.004101859405636787
+        },
+        {
+          "id": "deu:18:2",
+          "strategy": "sql_chapter",
+          "score": 0.519115725159645,
+          "rerank_score": 0.3130224645137787
+        },
+        {
+          "id": "2pe:1:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7701909339427947,
+          "rerank_score": 0.8002727627754211
+        },
+        {
+          "id": "act:3:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7422062730789184,
+          "rerank_score": 0.7602946758270264
+        },
+        {
+          "id": "act:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5682495212554931,
+          "rerank_score": 0.5117850303649902
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_012": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.3333,
+      "f1_at_k": 0.25,
+      "mrr": 0.3333,
+      "map_at_k": 0.1111,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "book_anchor",
+        "cross_reference",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "isa:8:2",
+        "eph:2:1",
+        "1pe:2:0",
+        "act:4:0",
+        "mat:21:5"
+      ],
+      "source_detail": [
+        {
+          "id": "isa:8:2",
+          "strategy": "book_anchor",
+          "score": 0.8371118419170379,
+          "rerank_score": 0.342231422662735
+        },
+        {
+          "id": "eph:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.8291118419170379,
+          "rerank_score": 0.8844454884529114
+        },
+        {
+          "id": "1pe:2:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7485832548141479,
+          "rerank_score": 0.7694046497344971
+        },
+        {
+          "id": "act:4:0",
+          "strategy": "cross_ref_expand",
+          "score": 0.7267051446437836,
+          "rerank_score": 0.7810073494911194
+        },
+        {
+          "id": "mat:21:5",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7027537679672241,
+          "rerank_score": 0.7039339542388916
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_013": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.3333,
+      "f1_at_k": 0.25,
+      "mrr": 0.5,
+      "map_at_k": 0.1667,
+      "ndcg_at_k": 0.6788,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_chapter",
+        "cross_reference",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:2:1",
+        "1co:15:2",
+        "1co:15:0",
+        "2ki:13:2",
+        "rev:21:0"
+      ],
+      "source_detail": [
+        {
+          "id": "act:2:1",
+          "strategy": "cross_ref_expand",
+          "score": 0.5414381372928618,
+          "rerank_score": 0.5163401961326599
+        },
+        {
+          "id": "1co:15:2",
+          "strategy": "sql_chapter",
+          "score": 0.48921515345573424,
+          "rerank_score": 0.27030736207962036
+        },
+        {
+          "id": "1co:15:0",
+          "strategy": "sql_chapter",
+          "score": 0.47176133692264555,
+          "rerank_score": 0.24537333846092224
+        },
+        {
+          "id": "2ki:13:2",
+          "strategy": "entity_query",
+          "score": 0.4454840677976608,
+          "rerank_score": 0.3792629539966583
+        },
+        {
+          "id": "rev:21:0",
+          "strategy": "cross_ref_expand",
+          "score": 0.4266513395309448,
+          "rerank_score": 0.3523590564727783
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_014": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.2857,
+      "mrr": 1.0,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R6",
+      "strategies": [
+        "graph_place",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "eph:2:1",
+        "ezk:44:1",
+        "act:15:0",
+        "eph:3:0",
+        "act:19:0"
+      ],
+      "source_detail": [
+        {
+          "id": "eph:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6461090302467346,
+          "rerank_score": 0.623012900352478
+        },
+        {
+          "id": "ezk:44:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5364121562242508,
+          "rerank_score": 0.4663030803203583
+        },
+        {
+          "id": "act:15:0",
+          "strategy": "cross_ref_expand",
+          "score": 0.5066657292842864,
+          "rerank_score": 0.4666653275489807
+        },
+        {
+          "id": "eph:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.4901164537668228,
+          "rerank_score": 0.4001663625240326
+        },
+        {
+          "id": "act:19:0",
+          "strategy": "graph_place",
+          "score": 0.3375975388288498,
+          "rerank_score": 0.11799648404121399
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_015": {
+      "precision_at_k": 0.8,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8889,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9397,
+      "hit_rate": 1.0,
+      "route": "R3",
+      "strategies": [
+        "graph_person",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jon:2:0",
+        "mat:12:5",
+        "jon:4:0",
+        "jon:3:0",
+        "rev:1:0"
+      ],
+      "source_detail": [
+        {
+          "id": "jon:2:0",
+          "strategy": "graph_person",
+          "score": 0.5728402715921401,
+          "rerank_score": 0.43262895941734314
+        },
+        {
+          "id": "mat:12:5",
+          "strategy": "hybrid_hybrid",
+          "score": 0.40006616175174714,
+          "rerank_score": 0.2715230882167816
+        },
+        {
+          "id": "jon:4:0",
+          "strategy": "graph_person",
+          "score": 0.38358937174081803,
+          "rerank_score": 0.16227053105831146
+        },
+        {
+          "id": "jon:3:0",
+          "strategy": "graph_person",
+          "score": 0.35527701124548916,
+          "rerank_score": 0.12182430177927017
+        },
+        {
+          "id": "rev:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.34605075031518934,
+          "rerank_score": 0.1943582147359848
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_016": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.2857,
+      "mrr": 1.0,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R6",
+      "strategies": [
+        "graph_place",
+        "semantic",
+        "entity_path",
+        "cross_ref_expand",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "2co:3:0",
+        "heb:3:0",
+        "2co:11:0",
+        "1co:9:0",
+        "act:19:0"
+      ],
+      "source_detail": [
+        {
+          "id": "2co:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.7336044824123382,
+          "rerank_score": 0.7480064034461975
+        },
+        {
+          "id": "heb:3:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6664470708370208,
+          "rerank_score": 0.652067244052887
+        },
+        {
+          "id": "2co:11:0",
+          "strategy": "graph_place",
+          "score": 0.31635202273726465,
+          "rerank_score": 0.0876457467675209
+        },
+        {
+          "id": "1co:9:0",
+          "strategy": "graph_place",
+          "score": 0.29525010764598847,
+          "rerank_score": 0.05750015377998352
+        },
+        {
+          "id": "act:19:0",
+          "strategy": "entity_path",
+          "score": 0.2830699823051691,
+          "rerank_score": 0.04009997472167015
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_017": {
+      "precision_at_k": 0.4,
+      "recall_at_k": 0.6667,
+      "f1_at_k": 0.5,
+      "mrr": 1.0,
+      "map_at_k": 0.6667,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "rom:9:1",
+        "rom:9:0",
+        "jer:11:0",
+        "zep:2:1",
+        "isa:9:3"
+      ],
+      "source_detail": [
+        {
+          "id": "rom:9:1",
+          "strategy": "sql_chapter",
+          "score": 0.6376509141921997,
+          "rerank_score": 0.3053586781024933
+        },
+        {
+          "id": "rom:9:0",
+          "strategy": "sql_chapter",
+          "score": 0.5456280350685119,
+          "rerank_score": 0.3508971929550171
+        },
+        {
+          "id": "jer:11:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.6276509141921996,
+          "rerank_score": 0.5966441631317139
+        },
+        {
+          "id": "zep:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5746689772605895,
+          "rerank_score": 0.5209556818008423
+        },
+        {
+          "id": "isa:9:3",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5565051352977752,
+          "rerank_score": 0.49500733613967896
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_018": {
+      "precision_at_k": 0.6,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.75,
+      "mrr": 1.0,
+      "map_at_k": 0.9167,
+      "ndcg_at_k": 0.8655,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "cross_reference",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "rev:3:1",
+        "rev:21:0",
+        "jol:2:0",
+        "gen:2:1",
+        "isa:65:1"
+      ],
+      "source_detail": [
+        {
+          "id": "rev:3:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.38058425098657606,
+          "rerank_score": 0.24369178712368011
+        },
+        {
+          "id": "rev:21:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3500455117225647,
+          "rerank_score": 0.200065016746521
+        },
+        {
+          "id": "jol:2:0",
+          "strategy": "entity_query",
+          "score": 0.28723919719457625,
+          "rerank_score": 0.15319885313510895
+        },
+        {
+          "id": "gen:2:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.27979844123125075,
+          "rerank_score": 0.0997120589017868
+        },
+        {
+          "id": "isa:65:1",
+          "strategy": "hybrid_hybrid",
+          "score": 0.2771914681792259,
+          "rerank_score": 0.09598781168460846
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_019": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.2857,
+      "mrr": 0.5,
+      "map_at_k": 0.25,
+      "ndcg_at_k": 0.6309,
+      "hit_rate": 1.0,
+      "route": "R2",
+      "strategies": [
+        "sql_chapter",
+        "semantic"
+      ],
+      "sources": [
+        "mat:12:2",
+        "isa:53:0",
+        "isa:55:0",
+        "isa:65:0",
+        "exo:23:3"
+      ],
+      "source_detail": [
+        {
+          "id": "mat:12:2",
+          "strategy": "hybrid_hybrid",
+          "score": 0.5775331115722656,
+          "rerank_score": 0.5250473022460938
+        },
+        {
+          "id": "isa:53:0",
+          "strategy": "sql_chapter",
+          "score": 0.31463986486196516,
+          "rerank_score": 0.020914092659950256
+        },
+        {
+          "id": "isa:55:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.3059843710064888,
+          "rerank_score": 0.13712053000926971
+        },
+        {
+          "id": "isa:65:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.27798623353242874,
+          "rerank_score": 0.09712319076061249
+        },
+        {
+          "id": "exo:23:3",
+          "strategy": "hybrid_hybrid",
+          "score": 0.23582933589816094,
+          "rerank_score": 0.05832762271165848
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_020": {
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.3333,
+      "f1_at_k": 0.25,
+      "mrr": 0.3333,
+      "map_at_k": 0.1111,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "cross_reference",
+        "graph_event",
+        "entity_query",
+        "sql_supplement"
+      ],
+      "sources": [
+        "rev:12:0",
+        "gen:48:0",
+        "mat:28:2",
+        "rev:1:0",
+        "rev:10:0"
+      ],
+      "source_detail": [
+        {
+          "id": "rev:12:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.30937540650367734,
+          "rerank_score": 0.16339343786239624
+        },
+        {
+          "id": "gen:48:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.27792486906051633,
+          "rerank_score": 0.09703552722930908
+        },
+        {
+          "id": "mat:28:2",
+          "strategy": "graph_event",
+          "score": 0.25529847251425963,
+          "rerank_score": 0.0004263893060851842
+        },
+        {
+          "id": "rev:1:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.2504906421899795,
+          "rerank_score": 0.05784377455711365
+        },
+        {
+          "id": "rev:10:0",
+          "strategy": "hybrid_hybrid",
+          "score": 0.23200719490647315,
+          "rerank_score": 0.03143884986639023
+        }
+      ]
+    }
+  }
+}

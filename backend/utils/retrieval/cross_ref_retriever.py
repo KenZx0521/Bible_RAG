@@ -32,6 +32,7 @@ async def retrieve_cross_references(pericope_ids: list[str], top_k: int = 10) ->
                 seen_ids.add(target_id)
                 content_data = await postgres.get_content_by_id(target_id)
                 if content_data:
+                    votes = ref.get("votes")
                     candidates.append({
                         "id": target_id,
                         "content": content_data.get("content", ""),
@@ -40,16 +41,34 @@ async def retrieve_cross_references(pericope_ids: list[str], top_k: int = 10) ->
                         "chapter_num": content_data.get("chapter_num", ref.get("chapter_num")),
                         "verse_range": content_data.get("metadata", {}).get("verse_range", ""),
                         "source_strategy": "cross_reference",
-                        "weight": 0.7,
+                        "votes": votes,
+                        "weight": _edge_weight(1, votes),
                     })
 
     logger.info(f"Cross-ref retriever: {len(candidates)} candidates from {len(pericope_ids)} pericopes")
     return candidates
 
 
-# Hop-distance → weight curve. 1-hop edges are explicit citations (high signal);
-# 2-hop are second-degree neighbours (signal weaker, used as expansion only).
+# Hop-distance → weight curves, split by edge provenance.
+#
+# Hand-curated markdown edges (votes >= _CURATED_VOTES; they carry no votes
+# property and neo4j_db coalesces them to 999) are explicit cross-book
+# citations — high prior, kept above semantic (0.7).
+#
+# TSK community edges (votes < 999) are *topical* associations: high votes
+# mean strong thematic affinity, NOT same-narrative membership. The 2026-07-06
+# P0 eval showed they displace narrative-correct pericopes on EVENT questions
+# (保羅歸主 → act:13 宣教串珠, 復活當天 → 登山變像預言串珠), so their prior
+# must sit below semantic (0.7) — they only win top-k when the rank-fusion
+# layer sees both a decent rerank score and this supplementary prior.
+_CURATED_VOTES = 999
 _HOP_WEIGHT = {1: 0.75, 2: 0.55, 3: 0.40, 4: 0.30}
+_TSK_HOP_WEIGHT = {1: 0.60, 2: 0.50, 3: 0.40, 4: 0.30}
+
+
+def _edge_weight(hop: int, votes: int | None) -> float:
+    curve = _HOP_WEIGHT if (votes is not None and votes >= _CURATED_VOTES) else _TSK_HOP_WEIGHT
+    return curve.get(hop, curve[max(curve)])
 
 
 async def retrieve_via_cross_references(
@@ -87,7 +106,8 @@ async def retrieve_via_cross_references(
         if not content_data:
             continue
         hop = int(ref.get("hop_distance", 1) or 1)
-        weight = _HOP_WEIGHT.get(hop, _HOP_WEIGHT[max(_HOP_WEIGHT)])
+        votes = ref.get("votes")
+        weight = _edge_weight(hop, votes)
         candidates.append({
             "id": target_id,
             "content": content_data.get("content", ""),
@@ -99,6 +119,8 @@ async def retrieve_via_cross_references(
             ),
             "source_strategy": "cross_ref_expand",
             "hop_distance": hop,
+            "votes": votes,
+            "seed_support": ref.get("seed_support"),
             "weight": weight,
         })
 

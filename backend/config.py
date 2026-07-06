@@ -82,12 +82,28 @@ class Settings(BaseSettings):
     rag_use_graph: bool = True
 
     # Cross-reference 2-hop expansion: traverse CROSS_REFERENCES from top graph
-    # seeds to surface neighbouring pericopes. Activates 916 hand-curated
-    # cross-book edges currently unused in R3/R4/R6 pre-rerank candidate pool.
+    # seeds to surface neighbouring pericopes. Activates the hand-curated
+    # cross-book edges plus TSK community edges in R3/R4/R5/R6 pre-rerank pool.
+    # expand_limit dropped 30→10 after the 2026-07-06 P0 eval: post-TSK every
+    # seed has ~180 one-hop neighbours, and 30 topically-related but
+    # narrative-wrong candidates per route displaced correct pericopes on
+    # EVENT questions (EVENT_015/017/019, PERSON_011, GENERAL_013).
     rag_use_cross_ref_expand: bool = True
     rag_cross_ref_max_hops: int = 2
     rag_cross_ref_top_seeds: int = 5
-    rag_cross_ref_expand_limit: int = 30
+    rag_cross_ref_expand_limit: int = 10
+
+    # Rank fusion (last-mile fix for the 2026-05 + 2026-07 double evidence that
+    # pure rerank_score ordering lets BGE literal surface matches erase graph
+    # signals): final ranking sorts by
+    #     fused = (1 - alpha) * rerank_score + alpha * strategy_weight
+    # instead of rerank_score alone. Strategy weight is the per-candidate
+    # retrieval prior (graph anchors 0.85-0.9 / semantic 0.7 / TSK cross-ref
+    # 0.5-0.6 / sql_supplement 0.5), so graph-anchored candidates win close
+    # calls while a large rerank gap still dominates. alpha=0 degrades to the
+    # legacy pure-reranker behaviour.
+    rag_rank_fusion_enabled: bool = True
+    rag_rank_fusion_alpha: float = 0.3
 
     # Entity-Path retriever: walks Entity-[r]-Entity edges (FATHER_OF, RULED, ...)
     # populated by scripts/relation_extraction/extract_relations.py. Provides

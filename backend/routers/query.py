@@ -54,22 +54,29 @@ async def rag_query(req: QueryRequest):
         keywords=intent.get("keywords"),
         use_graph=req.use_graph,
         semantic_only=req.semantic_only,
+        fusion_alpha=req.fusion_alpha,
     )
 
-    # Step 6-7: Generate answer
-    answer = await generate_answer(question, results)
+    # Step 6-7: Generate answer (skipped in retrieval_only fast-eval mode)
+    if req.retrieval_only:
+        answer = ""
+    else:
+        answer = await generate_answer(question, results)
 
     # Build response
     sources = []
     if req.include_sources:
         for r in results:
+            fused = r.get("fused_score")
             sources.append(Source(
                 id=r["id"],
                 book=r.get("book_name", ""),
                 chapter=r.get("chapter_num"),
                 title=r.get("title", ""),
                 verse_range=r.get("verse_range", ""),
-                score=r.get("rerank_score"),
+                score=fused if fused is not None else r.get("rerank_score"),
+                strategy=r.get("source_strategy"),
+                rerank_score=r.get("rerank_score"),
             ))
 
     return QueryResponse(

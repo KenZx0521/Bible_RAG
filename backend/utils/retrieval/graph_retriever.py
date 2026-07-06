@@ -86,8 +86,15 @@ async def retrieve_by_events(event_keywords: list[str], top_k: int = 10) -> list
         events = await neo4j_db.find_events_by_keyword(keyword, limit=3)
         for event in events:
             eid = event["entity_id"]
+            # Exact keyword↔name/alias equality marks a curated modern→ancient
+            # bridge (e.g. detected keyword 保羅歸主 == alias of 掃羅的轉變).
+            # Downstream _pin_keyword_event_candidates relies on this flag —
+            # substring matches (復活 ⊂ 耶穌復活) stay unpinned.
+            aliases = event.get("aliases") or []
+            keyword_exact = keyword == (event.get("canonical_name") or "") or keyword in aliases
+            event_mc = event.get("mention_count") or 0
             related = await neo4j_db.get_event_related_content(eid, limit=top_k)
-            for item in related:
+            for rank, item in enumerate(related):
                 record_id = item["id"]
                 if record_id and record_id not in seen_ids:
                     seen_ids.add(record_id)
@@ -101,6 +108,11 @@ async def retrieve_by_events(event_keywords: list[str], top_k: int = 10) -> list
                             "chapter_num": content_data.get("chapter_num", item.get("chapter_num")),
                             "verse_range": content_data.get("metadata", {}).get("verse_range", item.get("verse_range", "")),
                             "source_strategy": "graph_event",
+                            "via_event_id": eid,
+                            "via_event_name": event.get("canonical_name"),
+                            "via_event_mc": event_mc,
+                            "keyword_exact": keyword_exact,
+                            "anchor_rank": rank,
                             "weight": 0.85,
                         })
 
