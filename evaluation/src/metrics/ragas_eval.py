@@ -194,8 +194,8 @@ def compute_ragas_metrics(
     # retrying a 30-minute-worst-case slow judge only compounds the delay.
     is_ollama = settings.eval_llm_provider.lower() == "ollama"
     run_config = RunConfig(
-        timeout=1800 if is_ollama else 180,
-        max_workers=1 if is_ollama else 16,
+        timeout=1800 if is_ollama else settings.eval_ragas_timeout,
+        max_workers=1 if is_ollama else settings.eval_ragas_workers,
         max_retries=1 if is_ollama else 3,
         max_wait=30,
     )

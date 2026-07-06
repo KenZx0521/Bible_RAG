@@ -53,6 +53,15 @@ THEME_KEYWORDS = {
     "義人", "罪", "罪惡", "赦免", "救恩", "永生", "天國", "福音",
 }
 
+# Generic nouns that make meaningless Event entities when a title falls
+# through to the EVENT default (e.g. event:rizi 日子 anchored 413 sources).
+# Titles equal to these produce no candidate at all.
+GENERIC_TITLE_STOPLIST = {
+    "日子", "長子", "結局", "問候", "吩咐", "工程", "大會", "建築",
+    "大事", "醜事", "使用", "艱難", "爭論", "坐席", "生日", "探子",
+    "兒子", "時候", "事情", "話", "早晨", "晚上", "夜間", "明天",
+}
+
 
 def _is_pure_name(title: str) -> bool:
     """Check if title is purely a known person/place/group name."""
@@ -61,6 +70,10 @@ def _is_pure_name(title: str) -> bool:
 
 def _classify_title(title: str) -> EntityType | None:
     """Rule-based classification of a pericope title."""
+    # Generic nouns never make useful entities — drop before EVENT default
+    if title in GENERIC_TITLE_STOPLIST:
+        return None
+
     # Check for object suffixes
     for suffix in OBJECT_SUFFIXES:
         if title.endswith(suffix):
@@ -104,6 +117,8 @@ def mine_pericope_titles(pericopes: List[PericopeData]) -> List[EntityCandidate]
     candidates: List[EntityCandidate] = []
     for title, source_ids in title_sources.items():
         proposed_type = _classify_title(title)
+        if proposed_type is None:
+            continue
         grounding = title_texts[title][0] if title_texts[title] else ""
 
         candidates.append(EntityCandidate(

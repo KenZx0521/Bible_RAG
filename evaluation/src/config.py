@@ -62,6 +62,12 @@ class Settings(BaseSettings):
     request_delay: float = 1.5
     batch_size: int = 5
 
+    # RAGAS RunConfig for API providers (ollama uses its own serialized path).
+    # workers=16 saturates Anthropic rate limits → backoff retries blow the
+    # 180s job timeout (observed 27% TimeoutError); 4 workers stays under.
+    eval_ragas_workers: int = 4
+    eval_ragas_timeout: int = 600
+
     @property
     def postgres_dsn(self) -> str:
         return (

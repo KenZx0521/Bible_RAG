@@ -188,7 +188,9 @@ def import_entities(driver, filepath: Path, batch_size: int = 500) -> int:
             "canonical_name": record.get("canonical_name", ""),
             "description": record.get("description", ""),
             "mention_count": record.get("mention_count", 0),
-            "aliases": json.dumps(record.get("aliases", [])),
+            # Native LIST — backend Cypher relies on `any(a IN e.aliases ...)`,
+            # which silently matches nothing against a JSON string.
+            "aliases": list(record.get("aliases") or []),
         })
         
         if len(batch) >= batch_size:
@@ -226,59 +228,87 @@ def _insert_entity_batch(driver, batch: list):
             )
 
 
-def import_entity_mentions(driver, filepath: Path, batch_size: int = 2000) -> int:
-    """Import MENTIONS relationships from entity_mentions.jsonl."""
-    total = 0
-    batch = []
-    
+def import_entity_mentions(driver, filepath: Path, batch_size: int = 2000) -> dict:
+    """Import MENTIONS relationships from entity_mentions.jsonl.
+
+    Verse-level mentions have no Verse node in the graph. Their source_id
+    (e.g. ``gen:1:0:v:3``) is remapped to the parent pericope (``gen:1:0``)
+    so the anchor lands on a node that exists instead of being dropped.
+
+    Returns a stats dict with honest counters: rows whose MATCH found no
+    node are counted as skipped, not reported as imported.
+    """
+    stats = {"read": 0, "anchored": 0, "skipped_missing": 0, "verse_remapped": 0}
+    batches: dict[str, list] = {"Pericope": [], "Chunk": []}
+
+    def _flush(label: str):
+        batch = batches[label]
+        if not batch:
+            return
+        anchored = _insert_mention_batch(driver, label, batch)
+        stats["anchored"] += anchored
+        missing = len(batch) - anchored
+        if missing:
+            stats["skipped_missing"] += missing
+            print(f"  ⚠ {missing} mentions skipped: no {label} node matched")
+        batches[label] = []
+
     for record in read_jsonl(filepath):
         entity_id = record.get("entity_id")
         source_id = record.get("source_id")
-        
+
         if not entity_id or not source_id:
             continue
-        
-        batch.append({
+        stats["read"] += 1
+
+        source_type = record.get("source_type", "")
+        granularity = source_type or "pericope"
+        if source_type == "verse" or ":v:" in source_id:
+            source_id = source_id.split(":v:")[0]
+            stats["verse_remapped"] += 1
+            label = "Pericope"
+        elif source_type == "chunk":
+            label = "Chunk"
+        else:
+            label = "Pericope"
+
+        batches[label].append({
             "entity_id": entity_id,
             "source_id": source_id,
             "text_span": record.get("text_span", ""),
             "start_pos": record.get("start_pos"),
             "end_pos": record.get("end_pos"),
+            "granularity": granularity,
         })
-        
-        if len(batch) >= batch_size:
-            _insert_mention_batch(driver, batch)
-            total += len(batch)
-            print(f"  Imported {total} MENTIONS relationships...")
-            batch = []
-    
-    if batch:
-        _insert_mention_batch(driver, batch)
-        total += len(batch)
-    
-    return total
+
+        if len(batches[label]) >= batch_size:
+            _flush(label)
+            print(f"  Processed {stats['read']} mentions "
+                  f"({stats['anchored']} anchored, {stats['skipped_missing']} skipped)...")
+
+    for label in batches:
+        _flush(label)
+
+    return stats
 
 
-def _insert_mention_batch(driver, batch: list):
-    """Insert a batch of MENTIONS relationships."""
+def _insert_mention_batch(driver, source_label: str, batch: list) -> int:
+    """Insert a batch of MENTIONS relationships; return rows actually anchored."""
+    query = f"""
+    UNWIND $rows AS row
+    MATCH (e:Entity {{entity_id: row.entity_id}})
+    MATCH (s:{source_label} {{id: row.source_id}})
+    MERGE (s)-[r:MENTIONS]->(e)
+    ON CREATE SET r.text_span = row.text_span,
+                  r.start_pos = row.start_pos,
+                  r.end_pos = row.end_pos,
+                  r.source_granularity = row.granularity
+    RETURN count(r) AS anchored
+    """
     with driver.session() as session:
-        for item in batch:
-            query = """
-            MATCH (e:Entity {entity_id: $entity_id})
-            MATCH (s {id: $source_id})
-            MERGE (s)-[r:MENTIONS]->(e)
-            ON CREATE SET r.text_span = $text_span,
-                         r.start_pos = $start_pos,
-                         r.end_pos = $end_pos
-            """
-            session.run(
-                query,
-                entity_id=item["entity_id"],
-                source_id=item["source_id"],
-                text_span=item["text_span"],
-                start_pos=item["start_pos"],
-                end_pos=item["end_pos"],
-            )
+        result = session.run(query, rows=batch)
+        record = result.single()
+        return int(record["anchored"]) if record else 0
 
 
 def get_stats(driver) -> dict:
@@ -395,9 +425,11 @@ def main():
             mentions_file = output_dir / "entity_mentions.jsonl"
             if mentions_file.exists():
                 print("\nImporting MENTIONS relationships...")
-                count = import_entity_mentions(driver, mentions_file, args.batch_size * 2)
-                results["mentions"] = count
-                print(f"✓ Imported {count:,} MENTIONS relationships")
+                mention_stats = import_entity_mentions(driver, mentions_file, args.batch_size * 2)
+                results["mentions_anchored"] = mention_stats["anchored"]
+                print(f"✓ Anchored {mention_stats['anchored']:,} / {mention_stats['read']:,} mentions "
+                      f"({mention_stats['verse_remapped']:,} verse-level remapped to pericope, "
+                      f"{mention_stats['skipped_missing']:,} skipped: source node missing)")
         else:
             print("\n⚠ Skipping entity mentions import")
         
