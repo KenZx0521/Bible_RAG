@@ -5,6 +5,7 @@
 > **資料來源**：`bible_md/`（66 卷新標點和合本 markdown）
 > **更新日期**：2026-04-29
 > **驗證方式**：MCP Neo4j Cypher 即時查詢
+> **⚠️ 歷史版本**：本文數據為 KG P0 修復前快照。P0 後（2026-07-06）anchor coverage 83.8%→98.2%、CROSS_REFERENCES 916→250,418、Event 參與者/地點補至 84%/75% 等已大幅變動，現況以 [kg_optimization_progress.md](kg_optimization_progress.md) 為準。
 
 ---
 
@@ -759,9 +760,9 @@ RETURN length(path) AS hops, end.id LIMIT 10;
 
 本文件聚焦 **Neo4j 知識圖譜**。完整三庫架構（PostgreSQL + Neo4j + Qdrant）請參閱：
 
-- `docs/database_architecture_report.md` — 三庫整合分析
-- `docs/build_database.md` — 完整建置流程（含 PG 與 Qdrant）
-- `Bible_RAG_Architecture_Analysis.md` — 系統架構總覽
+- `database_architecture_report.md` — 三庫整合分析
+- `build_database.md` — 完整建置流程（含 PG 與 Qdrant）
+- `bible_rag_latest.md` — 系統架構總覽
 
 跨庫 ID 統一為冒號分隔的階層格式，所有路由結果最終會回到 PostgreSQL 進行 ID 水合（`get_content_by_id()`）取得完整文本內容。
 

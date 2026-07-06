@@ -8,7 +8,7 @@ Two surgical edits, pure stdlib (python-docx is not installed):
 The drawing's <wp:extent> is left byte-for-byte unchanged, so the figure keeps
 the exact same display box and the document stays 2 pages. Idempotent / re-runnable.
 
-Usage:  python3 figures/apply_docx_changes.py
+Usage:  python3 paper/tools/apply_docx_changes.py
 Rollback:  git checkout -- biblerag.docx   (or restore biblerag.docx.bak)
 """
 import os
@@ -18,7 +18,7 @@ import sys
 import xml.etree.ElementTree as ET
 import zipfile
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DOCX = os.path.join(ROOT, "biblerag.docx")
 BACKUP = DOCX + ".bak"
 NEW_PNG = os.path.join(ROOT, "figures", "fig1_architecture.png")

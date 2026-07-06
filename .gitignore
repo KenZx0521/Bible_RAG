@@ -19,3 +19,6 @@ output/
 
 # Backup
 *.bak
+
+# Eval telemetry
+.deepeval/
