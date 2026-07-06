@@ -102,7 +102,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 ## Project Structure
 
 ```
-Senior/
+Bible_RAG/
 ├── backend/                    # FastAPI 後端
 │   ├── main.py                 # 應用程式入口 + lifespan 管理
 │   ├── config.py               # pydantic-settings 設定
@@ -136,32 +136,49 @@ Senior/
 ├── bible_chunking/             # 聖經文本前處理
 │   ├── markdown_parser.py      # Markdown 聖經解析
 │   ├── hierarchical_chunker.py # 階層式分塊
-│   ├── entity_extraction/      # NER + LLM 實體抽取
-│   └── nt_cross_references.py  # 新約交叉引用
+│   ├── nt_cross_references.py  # 新約交叉引用
+│   └── tokenizer_wrapper.py    # 分詞器封裝
 ├── bible_md/                   # 66 卷聖經 Markdown 原始資料
-├── scripts/
+├── bible_pdf/                  # 66 卷聖經 PDF 原始資料
+├── config/
+│   └── relations/              # 關係抽取類型與先驗 YAML
+├── scripts/                    # 建庫管線（host-side）
 │   ├── process_bible.py        # 聖經文本處理管線
-│   ├── extract_entities.py     # 實體抽取管線
-│   ├── generate_embeddings.py  # 嵌入向量生成
+│   ├── convert_bible_pdf.py    # 聖經 PDF → Markdown 轉換
+│   ├── extract_entities.py     # 實體抽取管線入口
+│   ├── entity_extraction/      # NER + LLM 實體抽取模組
+│   ├── relation_extraction/    # Grounded 關係抽取模組
+│   ├── generate_embeddings.py  # 嵌入向量生成（BGE-M3）
+│   ├── generate_sparse_vectors.py # BM25 稀疏向量（CKIP 分詞）
+│   ├── embed_entities.py       # Entity 節點向量化（bible_entities）
 │   ├── import_postgres.py      # PostgreSQL 資料匯入
-│   ├── import_qdrant.py        # Qdrant 向量匯入
+│   ├── import_qdrant.py        # Qdrant 向量匯入（dense）
+│   ├── import_qdrant_hybrid.py # Qdrant 混合匯入（dense + sparse）
 │   ├── import_neo4j.py         # Neo4j 圖譜匯入
+│   ├── import_relations_neo4j.py # 關係三元組匯入 Neo4j
+│   ├── import_tsk_crossrefs.py # TSK 串珠交叉引用匯入
+│   ├── backfill_*.py           # KG P0 資料修復（mentions/aliases/events）
+│   ├── cleanup_noise_entities.py # 噪音實體清理
 │   └── db/schema.sql           # PostgreSQL 資料庫 Schema
 ├── evaluation/                 # 評估框架
 │   ├── run_eval.py             # 評估 CLI 入口
+│   ├── quick_retrieval_eval.py # 檢索指標快評（不經 LLM 生成）
 │   ├── src/
 │   │   ├── evaluator.py        # 評估主邏輯
 │   │   ├── collector.py        # RAG 回應收集
 │   │   ├── rag_client.py       # RAG API 客戶端
 │   │   ├── relevance_judge.py  # LLM 相關性評判
 │   │   ├── visualizer.py       # Dashboard 視覺化
+│   │   ├── llm/                # LLM Judge 客戶端
 │   │   └── metrics/
 │   │       ├── ragas_eval.py       # RAGAS 指標
-│   │       ├── llm_judge.py        # LLM Judge 指標
-│   │       ├── reference_based.py  # 參考答案比對
+│   │       ├── coverage_eval.py    # Point Coverage（LLM Judge）
 │   │       ├── retrieval.py        # 檢索品質指標
 │   │       └── semantic_similarity.py # 語意相似度
-│   └── results/                # 評估結果
+│   └── results_*/              # 評估結果（依管線/回答模型/階段分目錄）
+├── docs/                       # 專案文檔（KG 進度總覽、執行紀錄、架構文檔）
+├── paper/                      # 論文資產（PDF、發現紀錄 record/、工具 tools/）
+├── figures/                    # 論文圖（fig1 系統架構圖）
 ├── ground_truth.json           # 100 題測試集（5 類型 × 20 題）
 ├── docker-compose.yml          # Docker Compose 設定
 ├── Dockerfile                  # 後端 Docker 映像
@@ -433,18 +450,32 @@ python scripts/process_bible.py
 # 2. 抽取實體 (人物/地名/事件)
 python scripts/extract_entities.py
 
-# 3. 生成嵌入向量
+# 3. 生成嵌入向量與 BM25 稀疏向量
 python scripts/generate_embeddings.py
+python scripts/generate_sparse_vectors.py
 
 # 4. 匯入 PostgreSQL
 python scripts/import_postgres.py
 
-# 5. 匯入 Qdrant 向量
+# 5. 匯入 Qdrant（dense 與 hybrid 兩個 collection）
 python scripts/import_qdrant.py
+python scripts/import_qdrant_hybrid.py
 
 # 6. 匯入 Neo4j 圖譜
 python scripts/import_neo4j.py
+
+# 7. 關係抽取與匯入（grounded RE）
+python -m scripts.relation_extraction.extract_relations
+python scripts/import_relations_neo4j.py
+
+# 8. TSK 串珠交叉引用（Pericope 層 CROSS_REFERENCES）
+python scripts/import_tsk_crossrefs.py
+
+# 9. Entity 節點向量化（Qdrant bible_entities collection）
+python scripts/embed_entities.py
 ```
+
+> KG P0 一次性資料修復腳本（`backfill_*.py`、`cleanup_noise_entities.py`）不屬常規建庫流程，執行紀錄見 [docs/kg_p0_execution_2026-07-06.md](docs/kg_p0_execution_2026-07-06.md)。
 
 ## Development
 
