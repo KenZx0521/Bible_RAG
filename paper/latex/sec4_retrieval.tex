@@ -1,0 +1,402 @@
+%% ============================================================================
+%% Section V: Online Retrieval Architecture
+%% ============================================================================
+
+\section{Online Retrieval Architecture}
+\label{sec:retrieval}
+
+The online service is a FastAPI application exposing
+\code{POST /api/v1/query}. Figure~\ref{fig:online} shows the query
+pipeline; this section walks through it stage by stage.
+
+\begin{figure*}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\sffamily,
+  >={Stealth[length=2.0mm,width=1.8mm]},
+  stage/.style={rectangle, rounded corners=2.5pt, draw=blue!55, fill=blue!9,
+                line width=0.6pt, align=center, inner sep=2.5pt},
+  proc/.style={rectangle, rounded corners=2.5pt, draw=black!55, fill=black!8,
+               line width=0.6pt, align=center, inner sep=2.5pt},
+  db/.style={cylinder, shape border rotate=90, aspect=0.20, draw=teal!65,
+             fill=teal!13, line width=0.6pt, align=center, inner sep=2.5pt},
+  flow/.style={->, draw=black!62, line width=0.8pt},
+  bypass/.style={->, draw=orange!85!red, line width=0.8pt, dashed},
+  lbl/.style={font=\scriptsize\sffamily, inner sep=1pt},
+]
+% Band 1 -- Query
+\node[stage, minimum width=2.7cm, minimum height=0.72cm] (query)
+  at (7.6,9.55) {\small\textbf{Query}};
+% Band 2 -- Intent Classifier | Verse Parser
+\node[proc, minimum width=3.7cm, minimum height=1.0cm] (intent) at (4.05,8.25)
+  {\small\textbf{Intent Classifier}\\[1pt]
+   {\footnotesize LLM $\cdot$ intent / entities / keywords}};
+\node[proc, minimum width=3.7cm, minimum height=1.0cm] (vparser) at (11.15,8.25)
+  {\small\textbf{Verse Parser}\\[1pt]
+   {\footnotesize regex $\cdot$ book / chapter / verse}};
+% Band 3 -- Signal Detector
+\node[stage, minimum width=5.4cm, minimum height=0.9cm] (signal) at (7.6,6.85)
+  {\small\textbf{Signal Detector}\\[1pt]{\footnotesize 6 boolean signals}};
+% Band 4 -- Decision tree
+\node[proc, minimum width=11.8cm, minimum height=0.95cm] (decision) at (7.6,5.5)
+  {\small\textbf{Route Decision Tree}\\[1.5pt]
+   {\footnotesize R1 $\blacktriangleright$ R5 $\blacktriangleright$ R2
+    $\blacktriangleright$ R3 $\blacktriangleright$ R4 $\blacktriangleright$
+    R6 $\blacktriangleright$ Fallback \quad (multi-strategy parallel
+    retrieval, weighted)}};
+% Band 5 -- Retrieval layer
+\draw[draw=teal!50, dashed, line width=0.75pt, rounded corners=4pt,
+      fill=teal!6] (1.05,2.62) rectangle (14.15,4.55);
+\node[db, minimum width=2.7cm, minimum height=1.15cm] (pg) at (3.35,3.42)
+  {\footnotesize\textbf{PostgreSQL}\\[1pt]{\scriptsize authoritative text}};
+\node[db, minimum width=2.7cm, minimum height=1.15cm] (qd) at (7.6,3.42)
+  {\footnotesize\textbf{Qdrant}\\[1pt]\scriptsize BGE-M3 dense+sparse\\entity vectors};
+\node[db, minimum width=2.7cm, minimum height=1.15cm] (n4) at (11.85,3.42)
+  {\footnotesize\textbf{Neo4j}\\[1pt]{\scriptsize KG traversal / x-refs}};
+\node[font=\footnotesize\sffamily, text=teal!45!black] at (7.6,4.3)
+  {\textbf{Retrieval layer} (returns IDs; text hydrated from PostgreSQL)};
+% Band 6 -- post-retrieval chain
+\node[proc, minimum width=1.75cm, minimum height=0.95cm] (dedup) at (2.05,1.25)
+  {\footnotesize\textbf{Dedup}};
+\node[proc, minimum width=2.55cm, minimum height=0.95cm] (rerank) at (4.75,1.25)
+  {\footnotesize\textbf{BGE-Reranker}\\[1pt]{\scriptsize v2-M3, whole pool}};
+\node[proc, minimum width=2.75cm, minimum height=0.95cm] (fuse) at (7.85,1.25)
+  {\footnotesize\textbf{Rank fusion}\\[1pt]
+   {\scriptsize $(1{-}\alpha)\,\mathrm{rr}+\alpha\,w$, $\alpha{=}0.3$}};
+\node[proc, minimum width=2.15cm, minimum height=0.95cm] (pin) at (10.6,1.25)
+  {\footnotesize\textbf{Pins $\times$3}\\[1pt]{\scriptsize user-literal only}};
+\node[proc, minimum width=1.7cm, minimum height=0.95cm] (llm) at (12.8,1.25)
+  {\footnotesize\textbf{LLM}\\[1pt]{\scriptsize generate}};
+\node[stage, minimum width=1.5cm, minimum height=0.95cm] (ans) at (14.35,1.25)
+  {\footnotesize\textbf{Answer}};
+% edges
+\draw[flow] (query.south) -- ++(0,-0.28) -| (intent.north);
+\draw[flow] (query.south) -- ++(0,-0.28) -| (vparser.north);
+\draw[flow] (intent.south) -- ([xshift=-1.35cm]signal.north);
+\draw[flow] (vparser.south) -- ([xshift=1.35cm]signal.north);
+\draw[flow] (signal.south) -- (decision.north);
+\draw[flow] (decision.south) -- (7.6,4.55);
+\draw[flow] (7.6,2.62) -- ++(0,-0.42) -| (dedup.north);
+\draw[flow] (dedup.east) -- (rerank.west);
+\draw[flow] (rerank.east) -- (fuse.west);
+\draw[flow] (fuse.east) -- (pin.west);
+\draw[flow] (pin.east) -- (llm.west);
+\draw[flow] (llm.east) -- (ans.west);
+% R1 bypass
+\draw[bypass] (12.8,2.62) -- (llm.north);
+\node[lbl, text=orange!75!red, align=center] at (13.9,2.35)
+  {R1 exact verse:\\skip rerank/fusion/pins};
+\end{tikzpicture}
+\caption{Online query pipeline. Compared with the May 2026 deployment, the
+post-retrieval chain gained the rank-fusion stage, and the pin set was
+re-audited: only ``user-literal'' pins survive
+(Section~\ref{sec:fusionlayer}).}
+\label{fig:online}
+\end{figure*}
+
+\subsection{Triple-Database Roles and Content Hydration}
+\label{sec:tripledb}
+
+The three stores play strictly complementary roles:
+
+\begin{itemize}
+\item \textbf{PostgreSQL} is the authoritative source of truth: full
+text, hierarchy, entity mentions. \emph{Every} retrieval strategy returns
+only IDs; final passage text is always hydrated by a single PostgreSQL
+lookup (\code{get\_content\_by\_id()}), which resolves 3-segment IDs to
+pericopes, 4-segment IDs to chunks, and verse IDs to their parent
+pericope. This guarantees that no matter which index proposed a
+candidate, the generator always sees identical, authoritative text.
+\item \textbf{Qdrant} is the semantic entry point: dense, hybrid, and
+entity-vector search.
+\item \textbf{Neo4j} is the relational entry point: hierarchy traversal,
+entity networks, and cross-reference expansion.
+\end{itemize}
+
+Strategy weights are \emph{priors} on the reliability of the proposing
+strategy, not similarity scores; deduplication keeps the maximum weight
+per ID and weights are only ever upgraded. Every retriever is wrapped in
+per-strategy error isolation: a failing strategy is recorded in a
+\code{strategy\_errors} field of the response and never aborts the query.
+
+\subsection{Query Pipeline}
+\label{sec:pipeline}
+
+A query passes through seven steps: (1) verse-reference detection
+(regex); (2) LLM intent classification returning
+\code{\{intent, entities, keywords\}}; (3) signal detection and route
+selection; (4) parallel multi-strategy retrieval for the selected route;
+(5) deduplication, whole-pool reranking, rank fusion, and pins; (6)
+context assembly from the top-5 passages; (7) constrained answer
+generation. Three request-level switches matter for evaluation:
+\code{semantic\_only} bypasses steps 1--3 (the ablation baseline);
+\code{use\_graph} gates all Neo4j strategies per request (A/B without
+container restarts); \code{retrieval\_only} skips step 7 (the fast
+evaluation loop of Section~\ref{sec:evalinfra}). Responses expose
+observability fields --- per-source strategy, raw and fused scores, route
+used, strategies used, and errors --- which later made
+question-by-question forensics possible without re-instrumentation.
+
+\subsection{Intent Classification and Signal Detection}
+\label{sec:signals}
+
+\begin{itemize}
+\item \textbf{Verse parser}: regex over canonical and abbreviated
+Chinese book names (longest-match, length-descending) resolves
+``Romans 3:23''-style and ``Genesis chapter 1''-style references.
+\item \textbf{Intent classifier}: the generation LLM returns JSON with
+$\code{intent} \in$ \{\code{verse\_lookup}, \code{topic}, \code{person},
+\code{event}, \code{cross\_reference}\} plus entity names and keywords;
+a detected verse reference forces \code{verse\_lookup}.
+\item \textbf{Dictionaries}: person/place gazetteers are \emph{reused
+from the build-side extraction dictionary}, matched by longest substring;
+event detection uses a curated list of $\sim$54 event keywords (Sermon on
+the Mount, division of the kingdom, Paul's conversion, \ldots); book-name
+matches require $\ge 2$ characters; LLM-returned entities are re-filtered
+through the same dictionaries.
+\end{itemize}
+
+Six boolean signals result: \emph{has-book-chapter-verse},
+\emph{has-book-chapter}, \emph{multi-book}, \emph{multi-person},
+\emph{event-keyword}, \emph{has-place}. There is deliberately \emph{no
+query rewriting}: the raw user query reaches both the embedder and the
+reranker verbatim, so the lexical gap between modern phrasing and the
+century-old CUV vocabulary must be bridged by graph anchors and the
+fusion layer --- a recurring causal thread in
+Sections~\ref{sec:p0}--\ref{sec:fusion}.
+
+\subsection{Six-Route Decision Tree}
+\label{sec:routes}
+
+\begin{algorithm}[!t]
+\caption{Signal-driven route selection}
+\label{alg:routes}
+\begin{algorithmic}[1]
+\REQUIRE signals $S$ (six booleans), intent $i$
+\IF{$S.\mathrm{book\_chapter\_verse}$} \RETURN R1 (exact verse)
+\ELSIF{$S.\mathrm{book\_chapter} \wedge S.\mathrm{multi\_book}$}
+  \RETURN R5 (cross-book)
+\ELSIF{$S.\mathrm{book\_chapter}$} \RETURN R2 (chapter $+$ semantic)
+\ELSIF{$S.\mathrm{multi\_book} \vee i=\mathrm{cross\_reference}$}
+  \RETURN R5 (cross-book)
+\ELSIF{$S.\mathrm{multi\_person}$} \RETURN R3 (person graph)
+\ELSIF{$S.\mathrm{event\_keyword}$} \RETURN R4 (event graph)
+\ELSIF{$S.\mathrm{has\_place}$} \RETURN R6 (place graph)
+\ELSE \RETURN Fallback (semantic $+$ book anchor)
+\ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+\begin{table}[!t]
+\caption{Routes and Strategy Compositions (Weights in Parentheses)}
+\label{tab:routes}
+\centering
+\begin{threeparttable}
+\begin{tabular}{@{}lp{6.0cm}@{}}
+\toprule
+Route & Strategies (strategy prior $w$) \\
+\midrule
+R1 & \code{verse\_direct} (1.0); empty $\Rightarrow$ fall back to R2 \\
+R2 & \code{sql\_chapter} (0.9) $+$ \code{semantic} (0.6) \\
+R3 & \code{graph\_person} (0.9) $+$ \code{semantic} (0.7) $+$
+     \code{entity\_path} $+$ \code{cross\_ref\_expand} $+$
+     \code{entity\_query} (0.6) $+$ \code{sql} (0.5) $+$
+     \code{book\_anchor} \\
+R4 & \code{graph\_event} (0.85) $+$ \code{semantic} (0.7) $+$
+     \code{cross\_ref\_expand} $+$ \code{entity\_query} (0.6) $+$
+     \code{sql} (0.5) $+$ \code{book\_anchor} \\
+R5 & \code{cross\_reference} (0.85) $\parallel$ \code{sql\_chapter}
+     (0.85) $\parallel$ \code{graph} (0.75) $+$ \code{semantic} (0.65)
+     $+$ \code{entity\_query} (0.6) $+$ \code{sql} (0.4) $+$
+     \code{book\_anchor} \\
+R6 & \code{graph\_place} (0.85) $+$ \code{semantic} (0.7) $+$
+     \code{entity\_path} $+$ \code{cross\_ref\_expand} $+$
+     \code{entity\_query} (0.6) $+$ \code{sql} (0.5) $+$
+     \code{book\_anchor} \\
+FB & \code{semantic}/\code{hybrid} $+$ \code{book\_anchor} (if a book is
+     named) \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Names are the deployment's route-configuration keys:
+\code{graph} denotes the route's typed entity-graph traversal
+(\code{graph\_person} / \code{graph\_event} / \code{graph\_place});
+\code{cross\_reference} is R5's dedicated cross-reference retrieval,
+sharing the seed-support$+$votes machinery of \code{cross\_ref\_expand};
+\code{sql} is a low-prior supplementary SQL lookup distinct from
+\code{sql\_chapter}; \code{hybrid} is the dense$+$sparse mode of
+\code{semantic}. With \code{use\_graph=false}, all Neo4j-backed
+strategies are gated off. Observed route distribution on the
+100-question benchmark: R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10,
+R6$=$4, fallback$=$2.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Different question shapes need different evidence: ``What does John 3:16
+say?'' should be answered by SQL lookup; ``the relationship between Moses
+and Jethro'' by person-graph traversal; ``how Jeremiah's new-covenant
+prophecy is applied in Hebrews'' by cross-book expansion. A
+priority-ordered decision tree (Algorithm~\ref{alg:routes}) maps the six
+signals to six routes plus a fallback; each route launches its strategies
+in parallel with the priors listed in Table~\ref{tab:routes}.
+
+\subsection{Retrieval Strategies}
+\label{sec:strategies}
+
+Eleven strategies --- three of them the typed graph traversals ---
+share the ID-only/hydrate-later contract of
+Section~\ref{sec:tripledb}:
+
+\begin{itemize}
+\item \textbf{\code{semantic}} --- BGE-M3 query embedding against the
+passage collection, top-20; when hybrid search is enabled, dense and
+BM25-sparse branches are prefetched (50 each) and merged by
+RRF~\cite{cormack2009rrf} inside Qdrant, degrading automatically to
+dense-only if the sparse vocabulary is unavailable.
+\item \textbf{\code{verse\_direct}} --- exact SQL lookup of a verse,
+verse range, or whole chapter.
+\item \textbf{\code{sql\_chapter} / \code{sql\_supplement}} --- direct
+chapter fetch; and same-chapter completion for chapters already hit by
+other strategies.
+\item \textbf{\code{graph\_person} / \code{graph\_event} /
+\code{graph\_place}} --- entity lookup by canonical name or alias
+(substring match, ordered by \code{mention\_count}), then
+\textsc{mentions} traversal to pericopes. Multi-person queries
+additionally retrieve \emph{co-occurrence} pericopes at weight 0.9.
+Event anchors are ordered canonically (book/chapter ascending, so the
+narrative origin surfaces first) and tagged with
+\code{keyword\_exact}/\code{anchor\_rank} flags for the pin stage. All
+graph queries remap chunk IDs to their parent pericope \emph{inside
+Cypher} --- a fix that also restored retrieval visibility for 164
+chunk-only entities (Section~\ref{sec:fusion}).
+\item \textbf{\code{cross\_ref\_expand}} --- $\le 2$-hop expansion over
+\textsc{cross\_references} from seed pericopes, ranked by
+\emph{seed support} (number of distinct seeds reaching the candidate)
+then by \emph{votes}; 2-hop only fills unmet quota. Hop weights are
+provenance-stratified: manual edges 0.75/0.55 (1-/2-hop), TSK edges
+0.60/0.50 --- deliberately \emph{below} the semantic prior 0.7 after the
+de-noising episode of Section~\ref{sec:fusion}; expansion is capped at
+10 candidates and seeds are chosen round-robin across strategies to
+prevent single-strategy monopoly.
+\item \textbf{\code{entity\_path}} --- multi-hop reasoning ($\le 2$ hops)
+over the 37-type fact edges only (structural edges excluded), then
+\textsc{mentions} to pericopes.
+\item \textbf{\code{entity\_query}} (EQ) --- the query embedding matched
+against \emph{entity} vectors (top-8, cosine $\ge 0.4$), then
+\textsc{mentions} to pericopes, with hub-aware throttling: entities with
+\code{mention\_count} $> 50$ contribute at most 3 pericopes, others 5,
+supplement cap 5. EQ is the designed bridge between modern question
+vocabulary and the classical corpus; its disable--re-enable history is
+itself an experimental finding (Sections~\ref{sec:round0}
+and~\ref{sec:fusion}).
+\item \textbf{\code{book\_anchor}} --- book-filtered semantic search
+guaranteeing that an explicitly named book contributes seeds.
+\end{itemize}
+
+\subsection{Rank-Fusion Layer}
+\label{sec:fusionlayer}
+
+The post-retrieval chain is the architectural core of the current system
+and the layer where two of our three incident rounds were resolved:
+
+\begin{enumerate}
+\item \textbf{Deduplication}: same-ID candidates keep the maximum
+strategy prior.
+\item \textbf{Whole-pool reranking}: BGE-reranker-v2-m3 (the
+cross-encoder companion of~\cite{chen2024bgem3}) scores every
+(query, passage) pair; scores are sigmoid-normalized to $[0,1]$. The
+\emph{whole} candidate pool is scored --- not a top-$k$ prefix --- so
+fusion can promote candidates the reranker puts arbitrarily deep.
+\item \textbf{Linear rank fusion}: \fusedeq with $\alpha=0.3$, where
+$s_{\mathrm{rr}}$ is the normalized reranker score and $w$ the strategy
+prior of Table~\ref{tab:routes}. $\alpha$ is overridable per request
+(enabling the sweep of Section~\ref{sec:ablation}); $\alpha=0$ recovers
+pure reranker ordering, and a configuration flag restores the full
+legacy path.
+\item \textbf{Pins}: a small additive ladder applied after fusion,
+restricted to ``user-literal'' triggers (Table~\ref{tab:pins}).
+\end{enumerate}
+
+\begin{table}[!t]
+\caption{Pin Ladder (Additive Bonuses on the Final Score)}
+\label{tab:pins}
+\centering
+\begin{threeparttable}
+\footnotesize
+\begin{tabular}{@{}p{1.85cm}cp{1.3cm}p{2.9cm}@{}}
+\toprule
+Pin & Bonus & Status & Trigger \\
+\midrule
+chapter & $+0.010$ & active & user names ``Book, chapter $N$''
+\tnote{a} \\
+EQ & $+0.005$ & legacy only & high-confidence EQ candidate \\
+book-anchor & $+0.004$ & active & user names a book \\
+graph uncertainty & $+0.003$ & legacy only & reranker top-1 $<0.3$ \\
+keyword-exact event & $+0.002$ & active (fusion) & dictionary event
+keyword $=$ entity name/alias \tnote{b} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item[a] Guarantees $\ge 2$ passages of the named chapter survive
+(candidates with $w \ge 0.85$ qualify).
+\item[b] Exact string equality only; hub entities
+(\code{mention\_count} $>25$) excluded; one anchor per event, at most
+two pins. The bonuses are spaced so pins never override one another.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\textbf{Why fusion is necessary.} The cross-encoder is a surface-form
+matcher. When modern question vocabulary does not occur in the CUV text,
+the ground-truth anchor's reranker score can be as low as $0.001$ ---
+\eg ``the Last Supper'' against a corpus that says ``Passover meal'' ---
+and no amount of candidate-pool engineering makes it visible under pure
+reranker ordering. Fusion lets a candidate with
+$s_{\mathrm{rr}}\approx 0.001$ but a graph prior of $w=0.85$ enter the
+top-5. The magnitudes are interpretable: at $\alpha=0.3$ a graph anchor
+($w\in[0.85,0.9]$) beats a TSK neighbor ($w\in[0.5,0.6]$) unless the
+latter's reranker advantage exceeds $\approx 0.11$. R1 (exact verse)
+bypasses reranking, fusion, and pins entirely; if the reranker itself
+fails, ordering falls back to strategy priors.
+
+\textbf{Pin lifecycle.} The EQ pin and the graph-uncertainty pin were
+designed \emph{before} fusion existed, as discrete rescues for graph
+evidence that pure reranker ordering was suppressing. Once fusion exposed
+those same signals continuously, the two pins were re-audited, found to
+be net-negative (they promoted $s_{\mathrm{rr}}\approx 0.002$ noise to
+rank~1 on two benchmark questions), and retired from the fusion path ---
+a mechanism-level lesson analyzed in
+Section~\ref{sec:discussion}. The surviving pins all encode ``the user
+literally named X'' constraints, which are orthogonal to score fusion.
+
+\subsection{Answer Generation}
+\label{sec:generation}
+
+The top-5 hydrated passages are formatted as numbered context blocks
+(``[$N$] Book, Chapter --- pericope title (verse span)''), and the
+generator operates under a strict system prompt: answer \emph{only} from
+the provided passages, cite book and chapter for every claim, add no
+outside knowledge or inference, respond in Traditional Chinese. The LLM
+provider is pluggable behind a factory (Ollama, Claude, OpenAI, Gemini);
+the deployed default is a locally served Gemma~4 E4B (8-bit quantized) at
+temperature 0.1~\cite{gemma4}. If retrieval returns nothing, the system
+refuses rather than answers. Responses are non-streaming JSON envelopes
+carrying the answer, per-source metadata (strategy, raw and fused
+scores), the route used, and timing --- the observability that later
+enabled per-question forensics.
+
+\subsection{Deployment}
+\label{sec:deployment}
+
+The system ships as five Docker Compose services --- backend (FastAPI),
+PostgreSQL 15 with pgvector, Qdrant v1.13.2, Neo4j 5.15 Community with
+APOC, and Ollama with GPU access --- with health-checked startup
+ordering. The backend image is baked (no code volume); the only
+code-relevant mounts are the read-only BM25 vocabulary and the
+HuggingFace model cache. Build (\code{scripts/}), serving
+(\code{backend/}), and evaluation (\code{evaluation/}) each pin their own
+dependency manifest, isolating environment drift. All models --- embedder,
+reranker, extractor, generator, judge --- run locally; no external API is
+required for any pipeline stage, which is the cost/privacy design goal
+carried over from the system's inception.

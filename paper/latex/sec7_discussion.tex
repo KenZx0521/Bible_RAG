@@ -1,0 +1,269 @@
+%% ============================================================================
+%% Sections XI-XIV: Discussion, Limitations, Future Work, Conclusion
+%% ============================================================================
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Three Co-Determinants of Observable Benefit}
+
+The central methodological claim of this paper is that in a GraphRAG
+system, \textbf{knowledge-graph construction quality, the retrieval
+ranking mechanism, and benchmark design jointly determine observable
+benefit} --- and any one of the three can silently zero out investment
+in the others. The evidence chain is summarized by the paper's
+three-round structure: a completeness overhaul whose construction
+metrics all moved (anchor coverage $+14.4$\,pt, event completeness
+$+50$\,pt, cross-references $\times 273$) read as \emph{zero} through a
+reranker-monopolized ranking onto a head-saturated benchmark
+(Section~\ref{sec:p0}); one day of ranking-layer repair then released
+more measured value than the week-scale re-extraction program was
+projected to deliver on the same benchmark (Section~\ref{sec:fusion}).
+The practical rule we draw: \emph{optimization order should follow the
+bottleneck layer, not the upstream-first order of the data flow} ---
+and the bottleneck is found by per-question forensics, not by metric
+staring.
+
+\subsection{Three Independent Rounds of the Same Lesson}
+
+\begin{table}[!t]
+\caption{Three Incidents, One Mechanism: Graph Assets Gated by
+Retrieval-Side Machinery}
+\label{tab:threerounds}
+\centering
+\begin{threeparttable}
+\footnotesize
+\begin{tabular}{@{}p{1.35cm}p{2.5cm}p{2.1cm}p{1.55cm}@{}}
+\toprule
+Round & Asset in the graph & Gating mechanism & Resolution \\
+\midrule
+May 2026 & entity vectors (EQ) bridging modern phrasing & reranker
+surface-form monopoly & EQ disabled; re-enabled under fusion \\
+P0 (July) & correct anchors newly in pool; TSK breadth & same monopoly
+$+$ vote-ranked topical noise & fusion $+$ provenance-stratified
+weights \\
+Dual-anchor family & \emph{all} needed cross-book edges present &
+1-hop expansion depends on seed correctness & open (query
+decomposition) \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+Table~\ref{tab:threerounds} aligns the three incidents. The third
+deserves elaboration because it was discovered \emph{after} the fusion
+remediation and is therefore an independent probe. The two remaining
+GENERAL misses are one family: cross-book
+\emph{prophecy--fulfillment} questions requiring two anchor sets
+simultaneously (GENERAL\_006: Jeremiah's new covenant in Hebrews, gold
+$=$ Jer.~31:31--34 $+$ Heb.~8; GENERAL\_008: Zechariah's prophecies in
+Passion Week, gold $=$ Zech.~9:9; 11:12--13; 12:10 $+$ Matt.~21/27).
+Live graph verification shows \textbf{every needed cross-reference edge
+exists} --- Jer.~31$\leftrightarrow$Heb.~8 (3 edges),
+Zech.~9$\leftrightarrow$Matt.~21 (2), Zech.~11$\leftrightarrow$Matt.~27
+(5), Zech.~12$\leftrightarrow$John~19 (2); TSK is \emph{designed} for
+exactly this relation. The failure is upstream of ranking: retrieval
+seeds land in the wrong chapters (``prophecy'' surface forms hit the
+false-prophet conflict of Jer.~26/28/29; ``Zechariah'' hits the
+Zerubbabel visions of Zech.~4), and 1-hop expansion from wrong seeds
+cannot reach right edges. Assets in the graph; value gated by the
+seed-selection mechanism. These two questions also post the two
+lowest answer-correctness scores of the entire suite ($\approx 0.13$,
+stable across re-judged runs).
+
+\subsection{Retrieval-to-Answer Attenuation}
+
+Post-fusion, retrieval improved sharply (context recall $+0.053$) while
+answer correctness moved $+0.021$ --- at the edge of judge noise. A
+clean single-question case isolates the attenuation: EVENT\_005
+achieves perfect retrieval (context recall $1.0$, recall@5 $1.0$) yet
+its judged answer scores only $0.4$ coverage and $0.173$ correctness on
+the run of record --- and re-judging the identical outputs moves those
+to $0.70$/$0.353$, an instability that is itself the judge noise of
+Section~\ref{sec:evalmetrics} at work. Faithfulness is flat across all
+three time points ($\approx 0.95$), so the gains genuinely come from
+better context; the loss occurs in the small generation model
+(Gemma~4 E4B) and in the judged metrics themselves. The pipeline's
+quality bottleneck has, for these questions, \emph{moved past
+retrieval} --- consistent with our framing that the observable-benefit
+chain must be examined end to end. Any answer-model A/B here must first
+neutralize the noncommittal-refusal artifact of
+Section~\ref{sec:evalmetrics}, or the honest model loses by
+construction --- the local instance of the evaluation-bias warnings
+in~\cite{zeng2025unbiased}.
+
+\subsection{Benchmark Saturation: Evaluation Design as Prerequisite}
+
+At 97/100 (VERSE, TOPIC, EVENT at 1.00 hit rate), the benchmark is
+saturated in the head, and the three residual misses belong to two
+families that need \emph{new architecture}, not better ranking:
+cross-chapter aggregation (PERSON\_004; the community-summary/RAPTOR
+layer~\cite{edge2024graphrag,sarthi2024raptor}) and cross-book
+dual-anchor conjunction (GENERAL\_006/008; query decomposition).
+Consequently, \emph{every} remaining roadmap item --- long-tail
+re-extraction (P1), event-temporal modeling
+(P2,~\cite{lairgi2025atom,zhang2025entityevent,sun2025dygrag}),
+hierarchical aggregation (P3) --- would read as zero on this yardstick:
+P1's tail improvements are unread by head questions (proved empirically
+by P0), P2's target questions already retrieve perfectly (their loss is
+in the attenuation chain above), and P3's target population is $n=1$.
+The methodological consequence: \textbf{benchmark redesign is the
+prerequisite for all further optimization}, not a reporting
+afterthought. We specify the needed instruments in
+Section~\ref{sec:future}; the general principle --- that the benchmark
+itself gates which layer's investment is visible --- echoes the
+defect-sensitivity methodology of BRINK~\cite{zhou2025brink} and the
+task-dependence findings of~\cite{xiang2025whengraphs}. A cautionary
+corollary from Section~\ref{sec:fusion}: with $n=2$ family sizes, tuning
+the system on the residual misses would be overfitting; the family must
+be \emph{populated first}, then fixed.
+
+\subsection{Patch Lifecycles Under Architecture Evolution}
+
+The pin audit (Section~\ref{sec:fusionlayer}) generalizes: the EQ pin
+and graph-uncertainty pin were correct \emph{for the architecture they
+were built in} --- discrete rescues under a ranking that discarded
+graph signal. Once fusion transmitted that signal continuously, the
+same pins became net-negative (noise promotion), and the ``regression''
+observed when retiring them (GENERAL NDCG $-0.08$) was itself an
+artifact of the artificial placements they used to manufacture.
+Remediation machinery must be re-audited whenever the layer it
+compensates for changes; yesterday's fix is today's bug. We suspect
+this lifecycle is common in deployed RAG systems, where discrete
+patches accrete around ranking layers precisely because ranking is the
+last mile.
+
+\subsection{Cost and Privacy}
+
+All conclusions above were reached with every model local --- embedder,
+reranker, extraction classifiers, generator, and judge --- on a single
+GPU host. Round 0 established that a locally served 8-bit E4B-class
+model matches a commercial API model end to end on this task within
+4\,pp on six of seven metrics~(Table~\ref{tab:round0}); nothing in the
+later rounds required revisiting that conclusion, because all
+optimization value was retrieval-side. For sensitive religious-domain
+deployments --- where both the corpus and user questions may be
+confidential --- this is the operative cost/privacy result: the
+investment frontier is retrieval and evaluation engineering, not model
+procurement.
+
+\section{Limitations}
+\label{sec:limitations}
+
+\textbf{Knowledge-graph residuals.} 164 chunk-only entities still lack
+pericope-level \textsc{mentions} in the graph itself (retrieval-side
+remap restores their visibility, the graph remains incomplete); alias
+coverage is $\sim$0.8\% of entities (dictionary and curated sources are
+exhausted; mass production requires entity-resolution merge-back);
+67{,}306 relation candidates remain unclassified (the 77{,}953-pair
+pile minus the 10{,}647 Event-related pairs consumed or set aside by
+the P0 rescue); the event layer has
+only 26 native temporal/causal Event--Event edges live (the audit-time
+figure of 45 included miscounted person-succession edges and edges of
+since-deleted generic events) plus 277 unrescued Event--Event
+candidates; there is no coreference resolution; toneless-pinyin IDs can
+over-merge homophones; and duplicate-name splits (\eg Israel as
+Place vs.\ Israelites as Group) await entity resolution.
+
+\textbf{Benchmark scale and head bias.} 100 questions, 20 per category,
+asking predominantly head entities; per-category deltas below
+$\approx 0.05$ on judged metrics are noise, and several architectural
+claims rest on question families of size 1--2, which we deliberately
+refuse to tune against.
+
+\textbf{Judged metrics.} RAGAS scores carry $\pm 0.4$ per-question
+noise at our scale and a noncommittal rule that penalizes honest
+refusal; the answer-coverage judge is a single local model. All
+retrieval claims are therefore anchored to deterministic metrics.
+
+\textbf{Generation.} The deployed generator is an 8-bit E4B-class
+model; the attenuation analysis shows it discards part of the retrieval
+gains. Conclusions about answer quality are conservative lower bounds.
+
+\textbf{Scope.} One corpus, one language, one translation, one domain.
+The architecture's signal set and dictionaries are domain-engineered;
+transfer requires re-instantiating those assets (though the
+methodological findings --- ranking-layer gating, benchmark dependence,
+patch lifecycles --- are domain-agnostic claims about system structure,
+not about the Bible).
+
+\section{Future Work}
+\label{sec:future}
+
+\textbf{Evaluation first.} Per Section~\ref{sec:discussion}, the next
+artifact is the benchmark, not the pipeline: (i) long-tail question
+sets targeting chunk-only entities and split-pericope person$\times$event
+material; (ii) BRINK-style defect injection~\cite{zhou2025brink} ---
+remove known edges, measure answer degradation --- as a causal probe of
+KG value that no head benchmark can fake; (iii) population of the
+cross-chapter-aggregation and dual-anchor families to statistically
+meaningful sizes; (iv) judged-metric hygiene (noncommittal exclusion,
+position/length debiasing~\cite{zeng2025unbiased}).
+
+\textbf{P1 --- decoupled re-extraction.} Feed extraction whole
+pericopes (storage unit $\ne$ extraction unit~\cite{neo4jbuilder});
+add a coreference pass scoped to pericope$+$chapter context following
+the LINK-KG recipe~\cite{meher2025linkkg}; adopt true-loop gleanings as
+in the GraphRAG lineage~\cite{edge2024graphrag} (\eg the nano-graphrag
+implementation~\cite{nanographrag}); post-hoc entity resolution with
+lexical$+$embedding double signals and propose-then-confirm merging,
+writing merged surface forms back as aliases (the alias-generation
+mechanism identified in the cross-system survey); type assignment by
+majority vote; description regeneration by merge-and-summarize
+(cf.~LightRAG~\cite{guo2024lightrag}); ontology-grounded
+post-correction as the cheap alternative to
+re-extraction~\cite{loconte2026betterlater,zhang2024edc}; and KG
+denoising with downstream verification~\cite{zheng2025lessismore}.
+
+\textbf{P2 --- the event-temporal layer.} Promote the event layer from
+participants/places (now 84\%/75.5\%) to temporal--causal structure,
+following atomic-fact dual-time construction~\cite{lairgi2025atom} and
+entity--event dual-graph designs~\cite{zhang2025entityevent,sun2025dygrag};
+the 77{,}953-pair provenance-kept rejection pile and the 277 unrescued
+Event--Event candidates are the ready inputs.
+
+\textbf{P3 --- aggregation retrieval.} Community summaries (Leiden
+partitions~\cite{traag2019leiden} as in~\cite{edge2024graphrag}) or
+RAPTOR-style summary trees~\cite{sarthi2024raptor} for
+cross-chapter aggregation; RAKG-style pre-entity
+re-retrieval~\cite{zhang2025rakg} and cross-chunk graph
+augmentation~\cite{zhang2026crossaug} for cross-boundary relations.
+
+\textbf{Retrieval mechanics.} Query decomposition for dual-anchor
+conjunctions (retrieve prophecy and fulfillment sides separately, then
+join on cross-reference edges); theme-level anchoring; and, if the
+strategy-prior fusion reaches its ceiling, calibrated score fusion in
+the spirit of~\cite{bacellar2026calibrated} or graph-native retrieval
+scoring~\cite{gutierrez2025hipporag2,wang2025archrag}.
+
+\textbf{Generation.} Answer-model A/B under debiased judging, since the
+attenuation analysis locates the next bottleneck there.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented the complete architecture of a deployed GraphRAG system
+for Traditional Chinese Bible QA --- from layout-geometric PDF parsing,
+pericope-centric chunking, grounded dual-track entity extraction,
+closed-schema relation extraction, and a three-source cross-reference
+network, through a signal-adaptive six-route retrieval design
+terminated by cross-encoder reranking and linear rank fusion --- and an
+unusually complete empirical record of optimizing it: a quantified
+audit tracing KG damage to granularity inheritance rather than chunk
+parameters; a completeness overhaul whose construction metrics all
+moved and whose benchmark reading was zero; the question-level
+diagnosis of that negative result; and a one-day ranking-layer
+remediation that surpassed all prior results (hit rate 0.97, EVENT
+1.00, $+0.16$ over the semantic baseline), decomposed by ablation into
+complementary discrete and continuous mechanisms.
+
+The system-level conclusions are, we believe, portable to any GraphRAG
+deployment. Graph assets have no value until the ranking layer
+transmits them; benchmark design decides which layer's investment is
+visible at all; discrete patches have architecture-bound lifetimes; and
+the correct optimization order follows the measured bottleneck, not the
+data flow. In our deployment, honoring these rules delivered, in a
+day of work, a larger measured return than the deferred week-scale
+re-extraction plan was projected to yield on the same benchmark --- and
+identified the next bottlenecks (benchmark design, then generation)
+before any further construction spend.

@@ -1,0 +1,89 @@
+%% ============================================================================
+%% Section VI: Evaluation Framework
+%% ============================================================================
+
+\section{Evaluation Framework}
+\label{sec:eval}
+
+\subsection{Benchmark}
+\label{sec:benchmark}
+
+The benchmark contains 100 Traditional Chinese questions, 20 in each of
+five categories, with ground truth approved by annotators with biblical
+expertise:
+
+\begin{itemize}
+\item \textbf{VERSE\_LOOKUP} --- exact reference lookup (``What does
+Romans 3:23 say?'');
+\item \textbf{TOPIC} --- thematic aggregation (``What does the Bible
+teach about forgiveness?'');
+\item \textbf{PERSON} --- character-centric questions, often
+multi-person (``What was the relationship between Elijah and Elisha?'');
+\item \textbf{EVENT} --- event-narrative questions (``What happened at
+the Last Supper?'');
+\item \textbf{GENERAL} --- open questions requiring knowledge
+integration, including cross-book prophecy--fulfillment.
+\end{itemize}
+
+Each item carries \code{reference} (gold pericope-level provenance),
+\code{expected\_answer\_points} (a checklist of content points), and
+\code{reference\_answer} (a model answer). The taxonomy deliberately
+spans exact matching, semantic search, entity-centric retrieval, and
+cross-book integration, so that route-level behavior is observable per
+category.
+
+\subsection{Metrics}
+\label{sec:evalmetrics}
+
+Thirteen metrics fall into four families:
+
+\begin{enumerate}
+\item \textbf{Deterministic retrieval metrics} (no LLM, reproducible
+bit-exactly): hit rate, recall@5, precision@5, F1@5, MRR, MAP@5, NDCG@5,
+computed program\-matically against the gold references at pericope
+granularity.
+\item \textbf{RAGAS generation metrics}~\cite{es2023ragas}:
+faithfulness, answer relevancy, context recall, and answer correctness,
+judged by a locally served Gemma~4 26B.
+\item \textbf{Answer coverage} (ours): an LLM judge scores each expected
+answer point as covered (1.0), partial (0.5), or missing (0.0); coverage
+is the mean. Unlike F1-style correctness it is a \emph{pure recall}
+metric --- it rewards completeness without penalizing extra detail,
+complementing faithfulness as a hallucination check.
+\item \textbf{Semantic similarity}: embedding cosine between generated
+and reference answers.
+\end{enumerate}
+
+Three measurement pitfalls, encountered concretely in this project,
+qualify every LLM-judged number we report. (i) Per-question judge noise
+for RAGAS metrics reaches $\pm 0.4$, so 20-question per-category deltas
+below $\approx 0.05$ are treated as noise. (ii) RAGAS answer relevancy
+applies a ``noncommittal'' rule that zeroes refusals; an honest ``the
+provided passages do not state this'' is scored 0, which we found
+systematically deflates cautious models (a commercial model's relevancy
+rose above the local model's once refusal-affected items were excluded).
+(iii) Position and verbosity bias make naive LLM-judged A/B comparisons
+overstate differences~\cite{zeng2025unbiased}. Retrieval conclusions in
+this paper therefore rest on the deterministic family wherever possible.
+
+\subsection{A/B Infrastructure and Reproducibility}
+\label{sec:evalinfra}
+
+Three properties of the harness matter for the experiments that follow:
+
+\begin{itemize}
+\item \textbf{Per-request configuration}: \code{use\_graph} and
+\code{fusion\_alpha} are request-level overrides, so graph/semantic A/B
+tests and $\alpha$ sweeps run against one container without restarts or
+rebuilds.
+\item \textbf{Fast retrieval loop}: with \code{retrieval\_only=true}
+the backend skips generation; the 100-question retrieval suite completes
+in $\sim$15 minutes versus $\sim$2.5 hours for the full pipeline
+(36 min collection $+$ 1\,h\,42\,m RAGAS $+$ 13 min coverage), with
+retrieval metrics verified \emph{bit-exact} against the full pipeline.
+\item \textbf{Re-scorable raw outputs}: every run archives raw responses
+(sources, strategies, scores per question); metrics can be recomputed
+from archives, and a comparison tool emits per-question deltas and
+hit-flip lists --- the instrument behind every forensic table in
+Sections~\ref{sec:p0} and~\ref{sec:fusion}.
+\end{itemize}

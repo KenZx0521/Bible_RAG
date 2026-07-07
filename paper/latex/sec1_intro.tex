@@ -1,0 +1,219 @@
+%% ============================================================================
+%% Section I: Introduction  +  Section II: Related Work
+%% ============================================================================
+
+\section{Introduction}
+\label{sec:intro}
+
+\IEEEPARstart{L}{arge} language models (LLMs) excel at open-domain question
+answering, but deploying them for a specific knowledge domain exposes three
+persistent obstacles. First, commercial API pricing places a recurring cost
+on every query, which is prohibitive for resource-constrained organizations
+such as churches, seminaries, and non-profit publishers. Second, sensitive
+corpora and user questions often cannot leave the premises, ruling out
+cloud-only inference. Third, and most specific to the religious domain,
+factual grounding is non-negotiable: recent measurements report that even
+state-of-the-art LLMs score lowest on faith-related dimensions of a
+human-flourishing alignment benchmark~\cite{hilliard2025flourishing},
+reinforcing a legitimate concern in the Christian community about whether
+LLM answers are actually grounded in Scripture rather than in the model's
+parametric memory.
+
+Retrieval-augmented generation (RAG)~\cite{lewis2020rag} mitigates factual
+errors by conditioning generation on retrieved evidence, and graph-based
+RAG (GraphRAG) variants~\cite{edge2024graphrag,peng2026graphragsurvey}
+additionally exploit entity and relation structure for multi-hop and
+aggregation queries. However, most published GraphRAG systems are evaluated
+as end-to-end black boxes: when a knowledge graph (KG) improvement does or
+does not move the final metric, the community rarely learns \emph{which
+layer} --- extraction, storage, retrieval, ranking, generation, or the
+benchmark itself --- gated the outcome. This paper documents a deployed
+system in which exactly that question was forced into the open, three
+times, by concrete engineering incidents.
+
+We design, build, deploy, and iteratively optimize a GraphRAG system for
+question answering over the Traditional Chinese Bible (Chinese Union
+Version, new punctuation edition; CUV). The system converts 66 books from
+PDF into a pericope-centric hierarchical corpus, constructs a knowledge
+graph with grounded entity and relation extraction, indexes three
+complementary databases (PostgreSQL, Qdrant, Neo4j), and serves queries
+through a signal-driven six-route retrieval architecture terminated by a
+cross-encoder reranker and a linear rank-fusion layer. Along the way we
+performed a quantified audit of KG construction quality, executed a
+completeness overhaul, observed a rigorously verified \emph{negative
+result} --- the overhaul produced zero retrieval improvement on our
+benchmark --- diagnosed the mechanism question by question, and repaired
+the actual bottleneck (the ranking layer) in one day of engineering,
+surpassing all previous results.
+
+This paper makes six contributions:
+
+\begin{enumerate}
+\item \textbf{A complete, reproducible pipeline from raw PDF to GraphRAG
+for Traditional Chinese biblical text} (Sections~\ref{sec:preprocessing}
+and~\ref{sec:kg}): layout-geometry PDF parsing without OCR or LLMs,
+pericope-centric hierarchical chunking with the embedding model's own
+tokenizer, grounded dual-track entity extraction (six types, 9{,}120
+entities, 173{,}896 mentions), closed-schema grounded relation extraction
+(37 relation types with evidence-span verification), and a three-source
+cross-reference network of 250{,}418 edges integrating the public-domain
+Treasury of Scripture Knowledge (TSK)~\cite{tsk}.
+
+\item \textbf{A signal-adaptive six-route retrieval architecture over a
+triple-database backend, terminated by a rank-fusion layer}
+(Section~\ref{sec:retrieval}): six boolean query signals select among six
+routes plus a fallback; each route runs a weighted combination of eleven
+retrieval strategies; candidates are deduplicated, reranked by a
+cross-encoder, fused by
+$s_{\mathrm{fused}}=(1-\alpha)\,s_{\mathrm{rr}}+\alpha\,w$, and finally
+adjusted by a small set of ``user-literal'' pins.
+
+\item \textbf{A quantified causal chain from chunking granularity to KG
+quality} (Section~\ref{sec:audit}): we show that the damage to KG quality
+was caused not by chunk-size parameters but by the \emph{silent
+inheritance} of an embedding-oriented granularity structure by the
+extraction, import, and retrieval layers (mechanisms M1--M6), producing a
+55.9\% silent mention loss and 1{,}474 retrieval-blind entities. The
+finding is aligned with, and locally re-validates, published evidence on
+extraction granularity~\cite{edge2024graphrag}, document-level relation
+extraction~\cite{yao2019docred}, and coreference-resolved KG
+construction~\cite{meher2025corekg,meher2025insidecorekg,meher2025linkkg}.
+
+\item \textbf{A verified negative result with a mechanism-level diagnosis}
+(Section~\ref{sec:p0}): a KG completeness overhaul that raised entity
+anchor coverage from 83.8\% to 98.2\% and multiplied cross-references by
+273 produced \emph{no} improvement --- and locally a regression --- on a
+100-question head-entity benchmark. Question-by-question forensics
+attribute this to (a) topical cross-reference votes acting as noise on
+event-narrative questions, (b) a final ranking monopolized by the
+cross-encoder's surface-form score, and (c) benchmark head saturation. This
+result complements benchmark-level observations that KG defects propagate
+non-linearly to answers~\cite{zhou2025brink} and that GraphRAG gains are
+frequently over-read due to evaluation bias~\cite{zeng2025unbiased}.
+
+\item \textbf{A rank-fusion remediation with an interpretable ablation}
+(Section~\ref{sec:fusion}): TSK de-noising by vote-weighted edge
+declassing, a curated head-event backfill that re-enabled entity-vector
+retrieval, and the linear fusion layer together lift hit rate to 0.97
+(event-narrative questions to 1.00), surpassing the pre-overhaul state and
+widening the margin over the semantic-only baseline to $+0.16$. The
+$\alpha$ ablation exposes a complementary structure --- discrete data
+repairs saturate hit rate, continuous fusion recovers tail anchors --- and
+a mechanism-level finding that discrete ``pin'' patches flip from
+net-positive to net-negative once continuous fusion exists.
+
+\item \textbf{A methodological conclusion for GraphRAG practice}
+(Section~\ref{sec:discussion}): KG construction quality, the retrieval
+ranking mechanism, and benchmark design jointly determine the observable
+benefit of any single-layer investment. In our deployment, one day of
+ranking-layer repair outperformed what a week-scale re-extraction was
+projected to deliver on the same benchmark; three independent incident
+rounds show graph assets whose value was gated by retrieval-side
+mechanisms. We argue that evaluation design is a \emph{prerequisite} for
+--- not an afterthought of --- further construction-side optimization.
+\end{enumerate}
+
+The remainder of the paper follows the pipeline order: corpus and
+preprocessing (Section~\ref{sec:preprocessing}), knowledge-graph
+construction (Section~\ref{sec:kg}), online retrieval and generation
+(Section~\ref{sec:retrieval}), the evaluation framework
+(Section~\ref{sec:eval}), the quality audit and the three experiment
+rounds (Sections~\ref{sec:round0}--\ref{sec:fusion}), discussion
+(Section~\ref{sec:discussion}), limitations and future work
+(Sections~\ref{sec:limitations}--\ref{sec:future}), and conclusion
+(Section~\ref{sec:conclusion}). Appendix~\ref{app:citations} maps each
+pipeline stage to the literature it draws on.
+
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Retrieval-Augmented Generation and Hybrid Retrieval}
+
+RAG~\cite{lewis2020rag} couples a parametric generator with non-parametric
+retrieval; surveys~\cite{gao2023ragsurvey} catalogue its now-extensive
+design space. Dense passage retrieval~\cite{karpukhin2020dpr} and lexical
+scoring~\cite{robertson2009bm25} remain the two complementary retrieval
+substrates, commonly combined by reciprocal rank fusion
+(RRF)~\cite{cormack2009rrf}. Our system uses BGE-M3~\cite{chen2024bgem3}
+for dense embeddings (and its companion cross-encoder,
+BGE-reranker-v2-m3, for reranking), BM25 with Chinese-specific CKIP
+tokenization~\cite{ckip} for sparse vectors, and RRF for dense--sparse
+hybrid search. Distinct from standard hybrid search, the final ranking in
+our system linearly fuses the cross-encoder score with a
+\emph{strategy-prior} weight that encodes which retrieval strategy
+proposed the candidate --- a channel by which graph evidence survives into
+the final top-$k$ (Section~\ref{sec:fusionlayer}). Calibrated fusion of
+heterogeneous graph and vector scores has recently been studied in
+multi-hop QA~\cite{bacellar2026calibrated}; our fusion is deliberately
+simpler (a single linear interpolation with one global $\alpha$) and is
+evaluated by ablation.
+
+\subsection{Graph-Based RAG}
+
+GraphRAG~\cite{edge2024graphrag} popularized LLM-built entity graphs with
+hierarchical community summaries for query-focused summarization;
+subsequent systems explore lighter indexing and different retrieval
+operators, \eg LightRAG's dual-level keyword retrieval~\cite{guo2024lightrag},
+personalized-PageRank retrieval over passage-linked
+graphs~\cite{gutierrez2025hipporag2}, attributed-community hierarchical
+retrieval~\cite{wang2025archrag}, and recursive abstractive summary trees
+(RAPTOR)~\cite{sarthi2024raptor}. Event-centric variants build explicit
+event nodes and temporal edges~\cite{zhang2025entityevent,sun2025dygrag}.
+Benchmark studies ask \emph{when} graphs actually help
+RAG~\cite{xiang2025whengraphs}. Our architecture differs from these
+retrieval-operator designs in that graph traversal is one of ten
+strategies selected \emph{per query} by boolean signals (route-level
+adaptivity), and in that the paper's empirical focus is not a new
+operator but the interaction between graph asset quality, ranking, and
+benchmark --- an interaction that, to our knowledge, has not been
+documented at incident-level granularity for a deployed GraphRAG system.
+
+\subsection{LLM-Based Knowledge Graph Construction}
+
+LLM-driven KG construction is surveyed in~\cite{bian2025kgsurvey}, which
+contrasts schema-based and schema-free extraction paradigms; our relation
+extractor is schema-based with a closed 37-type ontology. On construction
+quality, GraphRAG's own ablation shows chunk granularity directly controls
+extraction density (600- vs.\ 2{,}400-token chunks yield nearly twice the
+entity references)~\cite{edge2024graphrag}; DocRED quantifies that at
+least 40.7\% of relational facts require cross-sentence evidence and
+17.6\% require coreference reasoning~\cite{yao2019docred}; and
+``lost-in-the-middle'' effects bound how much context can be packed into a
+single extraction call~\cite{liu2024lost}. Coreference-resolved
+construction reduces node duplication by 28--45\% in the CORE-KG /
+LINK-KG line of work~\cite{meher2025corekg,meher2025insidecorekg,%
+meher2025linkkg}, with the ablation in~\cite{meher2025insidecorekg}
+cleanly separating coreference (deduplication) from structured prompting
+(noise suppression). Post-extraction correction is an alternative to
+re-extraction: ontology-grounded repair~\cite{loconte2026betterlater},
+canonicalization after open extraction~\cite{zhang2024edc}, KG denoising
+that \emph{shrinks} graphs yet improves downstream RAG~\cite{zheng2025lessismore},
+retrieval-augmented construction that re-retrieves cross-chunk context for
+each pre-entity~\cite{zhang2025rakg}, restoring the source context of
+isolated triples~\cite{huang2025tcrqf}, and GNN-guided cross-chunk graph
+augmentation~\cite{zhang2026crossaug}. Atomic-fact decomposition with
+dual-time modeling~\cite{lairgi2025atom} shows finer construction units
+increase fact coverage. Our audit (Section~\ref{sec:audit}) maps each of
+our locally measured defects onto this literature, and our remediation
+roadmap adopts its recipes.
+
+\subsection{Evaluating RAG and GraphRAG}
+
+We evaluate generation with RAGAS~\cite{es2023ragas} plus a custom
+LLM-judged answer-coverage metric, and retrieval with deterministic
+ground-truth metrics. Two recent results shape our methodology. BRINK
+benchmarks how KG-based RAG breaks under incomplete knowledge and finds
+that answer quality degrades non-linearly with KG defects, with systems
+partly relying on parametric memory rather than structural
+reasoning~\cite{zhou2025brink}. An unbiased evaluation framework for
+GraphRAG shows that after removing position and verbosity bias from
+LLM-judged comparisons, reported win rates can drop by tens of points
+(\eg LightRAG $66.70\%\!\rightarrow\!39.06\%$)~\cite{zeng2025unbiased}. Our
+own evaluation encountered a concrete instance of judge bias --- the RAGAS
+answer-relevancy ``noncommittal'' rule zeroes honest refusals, deflating
+the score of a cautious commercial model (Section~\ref{sec:evalmetrics}).
+Chunking-strategy sensitivity for \emph{retrieval} (not construction) has
+been studied systematically in~\cite{shaukat2026chunking}; we cite it only
+for its retrieval-side scope, since no peer-reviewed quantification exists
+for overlap effects on \emph{extraction}, and we rely on
+DocRED~\cite{yao2019docred} as indirect evidence there.

@@ -1,0 +1,103 @@
+%% ============================================================================
+%% Signal-Adaptive GraphRAG for Traditional Chinese Bible QA — full paper
+%% IEEE journal format (IEEEtran). Compile: pdflatex main && pdflatex main
+%% (bibliography is a manual thebibliography, ordered by first citation)
+%% ============================================================================
+\documentclass[journal]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{threeparttable}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,shapes.geometric,positioning,fit,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{balance}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------------------
+% shorthand macros
+\usepackage{xspace}
+\newcommand{\eg}{e.g.,\xspace}
+\newcommand{\fusedeq}{\ensuremath{s_{\mathrm{fused}} = (1-\alpha)\, s_{\mathrm{rr}} + \alpha\, w}\xspace}
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+\begin{document}
+
+\title{Signal-Adaptive GraphRAG for Traditional Chinese Bible Question
+Answering: End-to-End Architecture, Knowledge-Graph Quality Remediation,
+and Rank Fusion}
+
+\author{Ko-Han~Chung, Yoke-Hou~Tan%
+\thanks{K.-H. Chung and Y.-H. Tan are with the Department of Intelligent
+Computing and Big Data, Chung Yuan Christian University, Taoyuan City,
+Taiwan (corresponding author: Y.-H. Tan).}%
+\thanks{Manuscript drafted July 7, 2026. All corpus, graph, and evaluation
+statistics were re-verified against the live deployment on July 6, 2026.}}
+
+\markboth{Preprint — July 2026}%
+{Chung \MakeLowercase{\textit{et al.}}: Signal-Adaptive GraphRAG for Traditional Chinese Bible QA}
+
+\maketitle
+
+\begin{abstract}
+Domain-specific question answering (QA) with large language models (LLMs)
+faces high API cost, data-privacy constraints, and strict factuality
+requirements. We present the complete design, deployment, and three-round
+empirical optimization of a graph-based retrieval-augmented generation
+(GraphRAG) system for Traditional Chinese Bible QA. The offline pipeline
+converts 66 books of the Chinese Union Version from PDF into a
+pericope-centric hierarchical corpus by layout-geometry analysis, applies
+token-aware hierarchical chunking, and builds a knowledge graph with
+grounded dual-track entity extraction (9{,}120 entities of six types;
+173{,}896 mentions), closed-schema grounded relation extraction (37
+relation types), and a 250{,}418-edge cross-reference network that
+integrates the Treasury of Scripture Knowledge. Content, vectors, and graph
+are stored in PostgreSQL, Qdrant, and Neo4j, and served online by a
+signal-driven six-route retrieval architecture with eleven strategies,
+cross-encoder reranking, and a linear rank-fusion layer
+$s_{\mathrm{fused}}=(1-\alpha)\,s_{\mathrm{rr}}+\alpha\,w$. On a
+100-question benchmark spanning five question types we report a three-round
+evidence chain: (i) signal-adaptive retrieval beats a semantic-only
+baseline by $+15$ percentage points hit rate, independently of the answer
+model; (ii) a knowledge-graph completeness overhaul (entity anchor coverage
+$83.8\%\!\rightarrow\!98.2\%$, cross-references $\times 273$) yields
+\emph{zero} retrieval gain on the head-entity benchmark --- a negative
+result we diagnose, question by question, to a reranker-monopolized final
+ranking, topical cross-reference noise, and benchmark head saturation; and
+(iii) a one-day rank-fusion remediation recovers and surpasses all prior
+results (hit rate $0.97$, event-narrative hit rate $1.00$, $+0.16$ over the
+semantic baseline), with an ablation showing a complementary structure
+between discrete data repairs and continuous score fusion. We conclude that
+knowledge-graph construction quality, the retrieval ranking mechanism, and
+benchmark design \emph{jointly} determine observable benefit, and that
+optimization order should follow the bottleneck layer rather than the
+upstream-first order of the data flow.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Evaluation methodology, GraphRAG, knowledge graph construction,
+negative results, question answering, rank fusion, retrieval-augmented
+generation, Traditional Chinese.
+\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
+
+\input{sec1_intro}
+\input{sec2_preprocessing}
+\input{sec3_kg}
+\input{sec4_retrieval}
+\input{sec5_evaluation}
+\input{sec6_experiments}
+\input{sec7_discussion}
+\input{appendix}
+
+\balance
+\input{refs}
+
+\end{document}

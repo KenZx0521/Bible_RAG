@@ -1,0 +1,132 @@
+%% ============================================================================
+%% Appendices
+%% ============================================================================
+
+\appendices
+
+\section{Stage-to-Citation Map}
+\label{app:citations}
+
+Table~\ref{tab:citemap} indexes, for every pipeline stage and
+experimental round, the literature it draws on and the role each work
+plays --- so that each citation can be audited in place.
+
+\begin{table*}[!t]
+\caption{Which Work Is Cited at Which Stage, and Why}
+\label{tab:citemap}
+\centering
+\begin{threeparttable}
+\begin{tabular}{@{}p{3.5cm}p{4.1cm}p{9.2cm}@{}}
+\toprule
+Stage (section) & Works & Role of the citation \\
+\midrule
+Problem framing (\S\ref{sec:intro}) &
+\cite{hilliard2025flourishing,lewis2020rag,gao2023ragsurvey,edge2024graphrag,peng2026graphragsurvey} &
+faith-dimension LLM deficits motivating grounded QA; RAG foundations and
+surveys; GraphRAG paradigm \\
+\addlinespace
+Chunking \& granularity (\S\ref{sec:chunking}, \S\ref{sec:audit} M5--M6) &
+\cite{chen2024bgem3,edge2024graphrag,lairgi2025atom,liu2024lost} &
+tokenizer/embedder fit; chunk size $\to$ extraction density (600 vs.\
+2{,}400 tokens $\approx 2\times$ entity references); finer units extract
+more completely; long-context degradation as the upper bound \\
+\addlinespace
+Coreference \& overlap (\S\ref{sec:audit} M4) &
+\cite{yao2019docred} &
+40.7\% of relational facts cross-sentence, 17.6\% need coreference ---
+the structural ceiling of fragment-local extraction without coreference
+(used as \emph{indirect} evidence; no peer-reviewed overlap-size
+quantification exists) \\
+\addlinespace
+Entity extraction (\S\ref{sec:entity}) &
+\cite{ckip,gemmateam2025gemma3,meher2025corekg,meher2025insidecorekg} &
+Chinese segmentation/NER; the local classify-only LLM; structured
+prompting as noise suppression \\
+\addlinespace
+Relation extraction (\S\ref{sec:relation}) &
+\cite{bian2025kgsurvey,huang2025tcrqf} &
+schema-based paradigm positioning; evidence-span grounding against
+context-divorced triples \\
+\addlinespace
+Cross-references / TSK (\S\ref{sec:crossrefs}) &
+\cite{tsk,zheng2025lessismore} &
+public-domain cross-reference data; repair-by-reweighting rather than
+deletion \\
+\addlinespace
+KG-quality remediation roadmap (\S\ref{sec:audit}, \S\ref{sec:future}) &
+\cite{meher2025linkkg,zhang2024edc,loconte2026betterlater,zhang2025rakg,zhang2026crossaug,neo4jbuilder,nanographrag,guo2024lightrag} &
+coreference recipe ($-45\%$ duplication, length-amplified); post-hoc
+canonicalization / correction; cross-chunk reassembly; storage
+$\ne$ extraction unit; true-loop gleanings; merge-and-summarize
+descriptions \\
+\addlinespace
+Retrieval substrate (\S\ref{sec:strategies}) &
+\cite{karpukhin2020dpr,robertson2009bm25,cormack2009rrf,chen2024bgem3} &
+dense retrieval; BM25; RRF hybrid; embedder and cross-encoder \\
+\addlinespace
+Rank fusion (\S\ref{sec:fusionlayer}, \S\ref{sec:ablation}) &
+\cite{bacellar2026calibrated} &
+calibrated graph/vector fusion as the sophisticated alternative to our
+single-$\alpha$ linear form \\
+\addlinespace
+Evaluation framework (\S\ref{sec:eval}) &
+\cite{es2023ragas,zeng2025unbiased} &
+RAGAS metrics; judge-bias methodology (position/verbosity;
+noncommittal artifact) \\
+\addlinespace
+Negative result \& benchmark dependence (\S\ref{sec:p0},
+\S\ref{sec:discussion}) &
+\cite{zhou2025brink,zeng2025unbiased,xiang2025whengraphs} &
+KG-defect $\to$ answer non-linearity and defect injection; debiased
+gains; when graphs help RAG at all \\
+\addlinespace
+Aggregation \& event layer (future) (\S\ref{sec:diagnosis},
+\S\ref{sec:future}) &
+\cite{sarthi2024raptor,edge2024graphrag,traag2019leiden,lairgi2025atom,zhang2025entityevent,sun2025dygrag,gutierrez2025hipporag2,wang2025archrag} &
+RAPTOR trees / Leiden community summaries for cross-chapter
+aggregation; temporal--causal event modeling; graph-native retrieval
+scoring \\
+\addlinespace
+Retrieval-side chunking sensitivity (\S\ref{sec:related}) &
+\cite{shaukat2026chunking} &
+cited \emph{only} for retrieval-downstream chunking sensitivity ---
+explicitly not extrapolated to KG construction \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table*}
+
+\section{Reproducibility Notes}
+\label{app:repro}
+
+\textbf{Determinism and re-scoring.} All retrieval metrics are computed
+programmatically against pericope-level gold references; every
+evaluation run archives per-question raw responses (sources,
+strategies, raw reranker and fused scores, route), and the metric suite
+can be recomputed bit-exactly from the archives. The fast
+retrieval-only loop was validated to agree bit-exactly with the full
+pipeline on all retrieval metrics.
+
+\textbf{Comparability across the three time points.} Answer model
+(Gemma~4 E4B, 8-bit), judge model (Gemma~4 26B), decoding temperature
+(0.1), top-$k$ (5), and route distribution (R1$=$20, R2$=$25, R3$=$21,
+R4$=$18, R5$=$10, R6$=$4, fallback$=$2) were verified identical; the
+entity-query strategy was off at the first two time points and on after
+the fusion round (its re-enablement is itself one of the audited
+repairs). The only other systematic difference between time points is
+the state of the knowledge graph and of the post-retrieval chain, as
+described in the text.
+
+\textbf{Rollbackability.} Every P0 and fusion-round mutation is
+reversible: backfilled mention edges, co-occurrence relation edges, and
+TSK cross-reference edges carry provenance flags and can be deleted by
+a single predicate each; curated event nodes carry a source tag;
+alias injections have before-snapshots; and the rank-fusion layer,
+expansion caps, and entity-query strategy are configuration switches
+whose legacy settings reproduce the pre-remediation system exactly.
+
+\textbf{Scale of the evaluation.} A full 100-question pipeline run
+takes $\approx 2.5$ hours on the single-host deployment (36 min
+collection, 1\,h\,42\,m RAGAS judging, 13 min coverage judging); the
+retrieval-only loop takes $\approx 15$ minutes and was used for the
+$\alpha$ sweep and regression forensics.

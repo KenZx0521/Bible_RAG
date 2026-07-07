@@ -1,0 +1,342 @@
+%% ============================================================================
+%% Section IV: Knowledge Graph Construction
+%% ============================================================================
+
+\section{Knowledge Graph Construction}
+\label{sec:kg}
+
+The knowledge graph comprises three subnetworks --- the corpus hierarchy,
+the entity network, and the cross-reference network --- built by the four
+pipelines described below. Throughout construction we enforce a single
+anti-hallucination discipline, \emph{grounding}: LLMs never invent
+entities, relation types, or evidence; they only \emph{classify}
+candidates that rule-based stages propose, and every LLM output must quote
+an evidence span that is verified post hoc to be a literal substring of
+the source text, otherwise the output is demoted or discarded. This is the
+schema-based end of the paradigm spectrum surveyed
+in~\cite{bian2025kgsurvey}, and the structured-prompting choice follows
+the noise-suppression evidence of~\cite{meher2025corekg,meher2025insidecorekg}.
+
+\subsection{Grounded Dual-Track Entity Extraction}
+\label{sec:entity}
+
+Entity extraction targets six types (Table~\ref{tab:entities}) and runs
+two tracks in parallel: a named-entity-recognition (NER) track and a
+grounded classification track.
+
+\begin{table}[!t]
+\caption{Entity Types (Live Graph Counts, July 6, 2026)}
+\label{tab:entities}
+\centering
+\begin{threeparttable}
+\begin{tabular}{llr}
+\toprule
+Type & Examples & Count \\
+\midrule
+Person & Abraham, Moses, Jesus & 2{,}419 \\
+Object & Ark of the Covenant, tabernacle & 2{,}200 \\
+Event  & the Exodus, the Resurrection & 1{,}714 \\
+Place  & Jerusalem, Egypt & 1{,}299 \\
+Theme  & redemption, grace, faith & 987 \\
+Group  & Israelites, Pharisees & 505 \\
+\midrule
+Total  & & 9{,}124 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Live counts differ slightly from the raw extraction output
+(9{,}120; Section~\ref{sec:entity}) because of import-time merging and
+the post-audit curation of Sections~\ref{sec:p0}--\ref{sec:fusion}
+(16 generic-noun events deleted, 18 curated events added, one entity
+retyped); the pre-remediation live count, used by the audit of
+Section~\ref{sec:audit}, was 9{,}122.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsubsection{NER Track (Person / Place / Group)}
+CKIP Transformers~\cite{ckip} performs Chinese word segmentation and named
+entity recognition (BERT-base models), with the type mapping
+PERSON$\to$Person, GPE/LOC$\to$Place, ORG/NORP$\to$Group. Results are
+merged with a hand-built biblical entity dictionary using
+dictionary-first, longest-match precedence. Mention positions are located
+by literal string matching (\code{text.find()}) --- a design whose
+consequences (no coreference; substring false hits) are quantified in
+Section~\ref{sec:audit}.
+
+\subsubsection{Grounded Track (Event / Object / Theme)}
+Four phases, rule-first with LLM escalation:
+
+\begin{enumerate}
+\item \textbf{Pericope-title mining.} Titles are typed by suffix and
+keyword heuristics (altar/vessel/ark suffixes $\to$ Object;
+redemption/grace keywords $\to$ Theme; residual default $\to$ Event). A
+24-word generic-title stoplist (``day(s)'', ``firstborn'', \ldots)
+intercepts generic nouns before the Event default --- a guard added after
+the noise audit of Section~\ref{sec:audit}.
+\item \textbf{POS candidate mining.} CKIP part-of-speech tagging proposes
+nouns (Na/Nb/Nv/Nc) with corpus frequency $\ge 3$; adjacent nouns are
+compounded (\eg ``burnt'' $+$ ``offering'').
+\item \textbf{Rule classifier.} Exact lexicons and verb-component
+features assign types; candidates with confidence $\ge 0.8$ are finalized
+without any LLM call.
+\item \textbf{LLM classifier (grounded).} Remaining candidates are
+classified by a small local model (Gemma~3
+4B~\cite{gemmateam2025gemma3}) under two hard constraints: it may only
+label \emph{provided} candidates (never add new ones), and it must return
+an evidence quotation that post-hoc verification confirms is a substring
+of the grounding text; failures are demoted.
+\end{enumerate}
+
+An \code{EntityNormalizer} merges canonical names and aliases within each
+type and assigns \code{entity\_id} $=$ \code{\{type\}:\{pinyin\}}
+(toneless \code{lazy\_pinyin} --- a homophone-collision risk noted in
+Section~\ref{sec:limitations}). The extraction output is 9{,}120 entities
+and 173{,}896 mentions; mentions carry the granularity of their source
+unit (pericope, chunk, or verse), inherited from the embedding queue
+(Section~\ref{sec:queue}). Known upstream limitations, all revisited in
+the audit: a stopword list removes 33 single-character words including
+``God'', ``Spirit'', and ``Lord''; there is no coreference resolution;
+entity descriptions are 100-character text snippets; and pinyin IDs can
+collide across homophones.
+
+\subsection{Grounded Relation Extraction with a Closed 37-Type Ontology}
+\label{sec:relation}
+
+Entity--entity fact edges are extracted by a five-stage pipeline against a
+closed ontology of 37 relation types (Table~\ref{tab:ontology}), each
+declaring domain/range types, direction, inverse, textual trigger
+signals, few-shot examples, and per-stage confidence priors. Closing the
+schema prevents the LLM from inventing relation names, and typing the
+domain/range prunes the candidate space before any model call.
+
+\begin{table}[!t]
+\caption{Closed Relation Ontology (37 Types)}
+\label{tab:ontology}
+\centering
+\begin{threeparttable}
+\begin{tabular}{p{2.35cm}p{5.6cm}}
+\toprule
+Type pair (count) & Relations \\
+\midrule
+Person$\times$Person (13) & \textsc{father\_of, mother\_of, son\_of,
+daughter\_of, sibling\_of, spouse\_of, ancestor\_of, descendant\_of,
+teacher\_of, disciple\_of, enemy\_of, ally\_of, succeeded\_by} \\
+Person$\times$Place (7) & \textsc{born\_in, died\_in, ruled, visited,
+exiled\_to, returned\_from, built} \\
+Person$\times$Object (4) & \textsc{possessed, received, gave, destroyed} \\
+Person$\times$Event (3) & \textsc{participated\_in, initiated,
+victim\_of} \\
+Person$\times$Group (3) & \textsc{member\_of, leader\_of, founded} \\
+Place$\times$Place (2) & \textsc{located\_in, near} \\
+Event$\times$Place (1) & \textsc{occurred\_in} \\
+Event$\times$Event (2) & \textsc{preceded\_by, caused} \\
+Group$\times$Place (2) & \textsc{originated\_from, settled\_in} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Each type defines domain/range, direction, inverse type, regex
+trigger signals, few-shot examples, and stage-specific confidence priors.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{enumerate}
+\item \textbf{Pair mining.} Entity pairs co-occurring in the same
+pericope are enumerated, kept only if some ontology type admits their
+type signature, and capped at 80 pairs per pericope.
+\item \textbf{Rule classifier.} Per-type regex trigger signals fire when
+the two entities are within 25 characters; matches with confidence
+$\ge 0.85$ are finalized.
+\item \textbf{Domain priors.} 71 curated golden genealogy relations
+bypass the LLM entirely (64 of them enter the graph as distinct
+prior-stage edges; the remainder coincide with earlier-stage matches).
+\item \textbf{Grounded LLM classification.} A local Gemma~4 31B
+model~\cite{gemma4} --- the relation stage was built after the entity
+stage and uses a larger model; the entity classifier's 4B scale is
+itself flagged in the audit --- must select exactly one type from the
+pair's type-legal candidate set \emph{or} answer \textsc{none}, under a
+JSON grammar constraint; the
+returned \code{evidence\_span} must pass substring verification against
+the source pericope (doubly checked post hoc), otherwise the pair is
+rejected. This addresses the classic failure mode of triples divorced
+from their source context~\cite{huang2025tcrqf}.
+\item \textbf{Inverse materialization.} Symmetric/inverse types
+(\textsc{father\_of}\,$\leftrightarrow$\,\textsc{son\_of}) are
+materialized bidirectionally at confidence $\times 0.9$.
+\end{enumerate}
+
+The full run (10--20 hours offline, checkpointed and resumable) yields
+6{,}958 imported relations (772 rule, 64 prior, 5{,}370 LLM, 752 inverse)
+--- and, importantly, 77{,}953 \emph{unclassified} candidate pairs
+(LLM answered \textsc{none}) retained on disk with their source-pericope
+provenance. This ``rejected pile'' later became the raw material of the
+P0 event-layer rescue (Section~\ref{sec:p0}). A companion description
+generator (Gemma~4 E4B) targets the $\sim$4{,}223 Person/Place/Group
+entities with empty descriptions, generating $\le 80$-character
+summaries grounded in the titles of mentioning pericopes; entities
+without pericope anchors cannot be described this way --- which is why
+the audit of Section~\ref{sec:audit} still finds 46\% of NER-type
+entities description-less.
+
+Every fact edge carries \code{confidence}, \code{evidence\_span},
+\code{source\_pericope\_id}, and \code{extraction\_phase}, so all graph
+facts are source-traceable and confidence-filterable --- the property
+that later allowed co-occurrence backfill edges (confidence 0.35) to
+coexist distinguishably with LLM-extracted edges.
+
+\subsection{Cross-Reference Network}
+\label{sec:crossrefs}
+
+Cross-references (``chain references'') connect pericopes across books
+--- prophecy and fulfillment, parallel gospel accounts, quotations. The
+network merges three sources of decreasing editorial cost:
+
+\begin{enumerate}
+\item \textbf{Printed parallel-passage annotations} parsed from the CUV
+Markdown: 774 edges (synoptic parallels and psalm titles);
+\item \textbf{A curated list of famous New-Testament-to-Old-Testament
+(NT$\to$OT) citations}: 142 edges typed as \emph{quotation} or
+\emph{allusion};
+\item \textbf{The Treasury of Scripture Knowledge (TSK)}~\cite{tsk}, a
+public-domain cross-reference compendium with community vote counts:
+344{,}799 raw rows are filtered (1{,}166 negative-vote rows, 9{,}811
+self-loops) and mapped verse$\to$pericope through a reverse index built
+from the embedding queue (covering 31{,}102 verses, with printed verse
+ranges expanded); only 7 rows fail to map, yielding 250{,}358 unique
+pericope pairs.
+\end{enumerate}
+
+After idempotent merge the live graph holds \textbf{250{,}418}
+\textsc{cross\_references} edges. Every TSK edge stores its \code{votes};
+manual edges are assigned a sentinel vote of 999 (highest trust). This
+vote-based provenance is what later made \emph{selective de-noising}
+possible without deleting data (Section~\ref{sec:fusion}) --- the same
+``repair by re-weighting, not removal'' philosophy advocated for KG
+denoising in~\cite{zheng2025lessismore}.
+
+\subsection{Graph Schema and Storage}
+\label{sec:schema}
+
+\begin{figure}[!t]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+  font=\sffamily\scriptsize,
+  >={Stealth[length=1.8mm,width=1.5mm]},
+  hier/.style={rectangle, rounded corners=2pt, draw=blue!55, fill=blue!8,
+               align=center, inner sep=3pt, minimum width=2.1cm},
+  ent/.style={ellipse, draw=orange!70!black, fill=orange!12,
+              align=center, inner sep=2pt},
+  edge/.style={->, draw=black!62, line width=0.6pt},
+  dedge/.style={->, draw=black!45, line width=0.6pt, dashed},
+  elbl/.style={font=\tiny\sffamily, fill=white, inner sep=1pt},
+]
+\node[hier] (book) at (0,4.7) {Book (66)};
+\node[hier] (ch)   at (0,3.55) {Chapter (1{,}189)};
+\node[hier] (per)  at (0,2.4) {Pericope (2{,}779)};
+\node[hier] (chk)  at (0,1.25) {Chunk (431)};
+
+\node[ent] (person) at (5.1,3.75) {Person};
+\node[ent] (event)  at (5.1,2.15) {Event};
+\node[ent] (place)  at (5.1,0.6)  {Place};
+
+\draw[edge] (book) -- node[elbl,right]{\textsc{contains}} (ch);
+\draw[edge] (ch) -- node[elbl,right]{\textsc{contains}} (per);
+\draw[edge] (per) -- node[elbl,right]{\textsc{contains}} (chk);
+
+\draw[edge] (per.east) -- node[elbl,above,sloped,pos=0.45]
+  {\textsc{mentions} (46{,}205)} (person.west);
+\draw[edge] (per.east) -- node[elbl,below,sloped,pos=0.55]
+  {\textsc{mentions}} (event.west);
+\draw[edge] (person) -- node[elbl,right]
+  {\textsc{participated\_in} (7{,}130)} (event);
+\draw[edge] (event) -- node[elbl,right]
+  {\textsc{occurred\_in} (4{,}313)} (place);
+
+\draw[dedge] (person.north) to[out=115,in=65,looseness=5,
+  min distance=9mm] node[elbl,above]
+  {37-type fact edges (15{,}926)} (person.north);
+
+\draw[dedge] (per.west) to[out=150,in=210,looseness=5,
+  min distance=11mm] node[elbl,left,align=center,xshift=-1mm]
+  {\textsc{cross\_ref-}\\ \textsc{erences}\\(250{,}418)} (per.west);
+\end{tikzpicture}%
+}
+\caption{Knowledge-graph schema: corpus hierarchy (left), entity network
+(right), the pericope-to-pericope cross-reference network (774 markdown
+$+$ 142 curated $+$ TSK edges), and sequential \textsc{next} /
+\textsc{next\_book} edges (omitted for clarity). Verse-level nodes
+deliberately do not exist --- the design trade-off whose downstream cost
+is quantified in Section~\ref{sec:audit}.}
+\label{fig:schema}
+\end{figure}
+
+Figure~\ref{fig:schema} shows the schema; Table~\ref{tab:kgscale} the live
+scale. Salient design points:
+
+\begin{itemize}
+\item \textbf{Dual labels.} Hierarchy nodes carry
+\code{(:Pericope:Bible)}, entity nodes \code{(:Person:Entity)}: the
+generic label supports whole-structure queries, the specific label exact
+matches.
+\item \textbf{No verse nodes.} Verse-level IDs (\code{gen:1:0:v:3}) exist
+only in Qdrant and PostgreSQL. This was a deliberate economy at design
+time --- and the direct precondition of the silent mention-loss defect
+(Section~\ref{sec:audit}, M2).
+\item \textbf{Entity properties.} \code{canonical\_name},
+\code{aliases} (a native list), \code{description}, \code{mention\_count}.
+\item \textbf{Provenance-first edges.} Fact edges keep confidence and
+evidence; cross-reference edges keep votes and source; backfilled edges
+are flagged --- all imports are idempotent \textsc{merge} operations, so
+the graph can be rebuilt or rolled back deterministically.
+\end{itemize}
+
+\begin{table}[!t]
+\caption{Live Knowledge-Graph Scale (Neo4j, July 6, 2026)}
+\label{tab:kgscale}
+\centering
+\begin{tabular}{lr}
+\toprule
+Item & Count \\
+\midrule
+Nodes, total & 13{,}589 \\
+\quad structure (Book/Chapter/Pericope/Chunk) & 4{,}465 \\
+\quad entities (six types) & 9{,}124 \\
+Relationships, total & 319{,}988 \\
+\quad \textsc{mentions} & 46{,}205 \\
+\quad \textsc{cross\_references} & 250{,}418 \\
+\quad semantic fact edges (37 types) & 15{,}926 \\
+\qquad \textsc{participated\_in} / \textsc{occurred\_in} & 7{,}130 / 4{,}313 \\
+\qquad \textsc{son\_of} / \textsc{father\_of} / \textsc{possessed} & 659 / 647 / 551 \\
+\quad structural: \textsc{contains} / \textsc{next} / \textsc{next\_book} & 4{,}399 / 2{,}975 / 65 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Vector Indexes and Database Import}
+\label{sec:vectors}
+
+Three vector families are produced:
+
+\begin{itemize}
+\item \textbf{Dense}: BGE-M3~\cite{chen2024bgem3}, 1{,}024-dimensional,
+normalized, for all 34{,}072 queue units;
+\item \textbf{Sparse}: BM25~\cite{robertson2009bm25} ($k_1{=}1.5$,
+$b{=}0.75$) over CKIP-segmented~\cite{ckip} text, with the query-side IDF
+vocabulary exported for the online service;
+\item \textbf{Entity vectors}: each entity is embedded from the recipe
+``\emph{name (aliases). description. commonly appears in: pericope
+titles}'' truncated to 200 characters, upserted idempotently (UUID5 keys)
+into a dedicated collection (9{,}122 points).
+\end{itemize}
+
+Imports populate PostgreSQL (6 tables; the authoritative store),
+Qdrant (\code{bible\_embeddings}, dense-only;
+\code{bible\_embeddings\_hybrid} with named dense$+$sparse vectors;
+\code{bible\_entities}), and Neo4j (structure, mentions, fact edges,
+cross-references). The import layer is where the audit later found the
+single most damaging defect of the whole pipeline --- verse-level
+mentions silently dropped because their target nodes do not exist
+(Section~\ref{sec:audit}) --- and where honesty counters were
+subsequently installed.
