@@ -22,3 +22,10 @@ output/
 
 # Eval telemetry
 .deepeval/
+
+# LaTeX build artifacts (PDF stays tracked)
+paper/**/*.aux
+paper/**/*.log
+paper/**/*.out
+paper/**/*.toc
+paper/**/*.synctex.gz
