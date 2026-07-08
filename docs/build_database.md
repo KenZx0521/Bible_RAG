@@ -8,6 +8,66 @@
 uv sync --project scripts
 ```
 
+## 從零重建 Checklist（fresh clone）
+
+在全新機器 clone 後、跑 Step 1–10 之前，依序完成本節。**現機重灌**（`output/` JSONL 俱在）只需確認 0.2/0.3，然後走本節末「執行順序」的重灌鏈。
+
+### 0.1 Git 內已備，不需重跑
+
+- `bible_md/`（66 卷）與 `bible_pdf/`（66 卷）皆已 git-tracked —— **不需**跑 `scripts/convert_bible_pdf.py`（其輸入/輸出路徑 hardcode 在 repo 外，屬歷史工具）
+- `config/relations/*.yaml`、`config/curated/manual_graph_patches.jsonl`、`scripts/uv.lock` 皆已 git-tracked
+- `output/` 整個被 gitignore：所有 JSONL 產物需由管線重新產生
+
+### 0.2 建立 .env（不進 git；組態即建庫結果的一部分）
+
+```bash
+cp .env.example .env   # 再填入 ANTHROPIC_API_KEY 等秘密值
+```
+
+對建庫結果有決定性影響、且與程式碼 fallback **不同**的 key（`.env.example` 已含，勿刪）：
+
+| Key | 值 | 影響 |
+|-----|-----|------|
+| `ENTITY_EXTRACT_OLLAMA_MODEL` | `gemma4:31b-it-q8_0` | Step 1 Phase 4；code fallback 是 `gemma3:4b`，漏設會用小一個量級的模型抽實體 |
+| `DESC_OLLAMA_MODEL` | `gemma4:26b-a4b-it-q8_0` | Step 7；code fallback 是 `gemma4:e4b-it-q8_0` |
+| `HYBRID_SEARCH_ENABLED` | `true` | 查詢期走 hybrid collection；backend code 預設 `false` |
+
+### 0.3 啟動資料庫服務（⚠ 不要一次 up 全部）
+
+```bash
+docker compose up -d postgres qdrant neo4j ollama
+```
+
+**backend 必須留到管線跑完最後**才 `docker compose up -d --build backend`：backend 服務 bind-mount `./output/bm25_vocabulary.json`，檔案尚不存在時先起 backend，Docker 會在 host 建出同名**目錄**，Step 2.1 寫檔會直接失敗。
+
+- PG volume 為空時 `scripts/db/schema.sql` 自動建表（docker-entrypoint-initdb.d）
+- Neo4j APOC 已由 compose 配置（`NEO4J_PLUGINS: ["apoc"]`），Step 6.1 與 Step 10 重放鏈依賴它
+- compose 的 ollama 服務要求 NVIDIA container runtime；無 GPU 機器 `up` 會直接失敗
+
+### 0.4 Ollama 模型（不會自動 pull，volume 是空的）
+
+```bash
+docker exec bible_rag_ollama ollama pull gemma4:31b-it-q8_0      # Step 1 Phase 4 + Step 6 R4
+docker exec bible_rag_ollama ollama pull gemma4:26b-a4b-it-q8_0  # Step 7
+```
+
+### 0.5 Python 環境
+
+```bash
+uv sync --project scripts   # BGE-M3 / CKIP 權重於首次執行時自動從 HuggingFace 下載
+```
+
+### 0.6 外部資料
+
+- Step 9 的 `output/cross_references_tsk.txt` 需自行下載（來源與授權見 Step 9 前提）
+
+### 執行順序
+
+- **從零**：`process_bible.py` →（選）`validate_output.py` → Step 1 → 2 / 2.1 → 3 → 4 / 4.1 → 5 → 6 → 6.1 → 7 → 8 → 9 → 10.1–10.5 → `docker compose up -d --build backend`
+- **重灌**（JSONL 俱在）：3 → 4 / 4.1 → 5 → 6.1 → **7** → 8 → 9 → 10.1–10.5。Step 7 是重灌鏈中唯一無法跳過的 LLM 步驟 —— description 只寫在 Neo4j、未固化到任何 JSONL，`import_neo4j.py` 清庫重建後必然丟失（重跑措辭會漂移；若需逐字保真，重建前先自 live Neo4j 導出 description 再重放）。
+- **一致性**：結構層 / NER 字典層 / TSK / curated 層重建後逐字元一致；LLM 步驟（Step 1 Phase 4、Step 6 R4、Step 7，temperature=0.1）必有漂移，集中在 Event/Object/Theme 長尾實體與語意邊。
+- ⚠ Step 6 長跑注意：`--resume` checkpoint 記「已嘗試」而非「已成功」，Ollama 不穩期間整批失敗的 pair 會被永久跳過且無警告；跑完比對 `relations.jsonl` 量級（歷史 run 約 6,958 條）。
+
 ## 目前完成
 
 - [x] Hierarchical Chunking（Book → Chapter → Pericope → Chunk）
@@ -264,11 +324,11 @@ uv run --project scripts python scripts/import_relations_neo4j.py output/relatio
 ## Step 7: Entity 描述補完
 
 ### 說明
-Person/Place/Group 三類 entity 中有 ~4,223 個 `description` 欄位空白（Object/Event/Theme 已有 description）。使用較小的 `gemma4:e4b-it-q8_0` 模型（11GB，描述生成不需要 31B）為這些 entity 從其 mentioning pericope titles 推導 ≤80 字 grounded description。
+Person/Place/Group 三類 entity 中有 ~4,223 個 `description` 欄位空白（Object/Event/Theme 已有 description）。使用較小的 gemma4 系列模型（描述生成不需要 31B）為這些 entity 從其 mentioning pericope titles 推導 ≤80 字 grounded description。模型由 `DESC_OLLAMA_MODEL` 控制：現行 `.env` 為 `gemma4:26b-a4b-it-q8_0`；code fallback 為 `gemma4:e4b-it-q8_0`（11GB，原始 run 所用）。
 
 ### 前提
 - Step 5 完成
-- Ollama 已 pull `gemma4:e4b-it-q8_0`
+- Ollama 已 pull `DESC_OLLAMA_MODEL` 指定的模型（見 Checklist 0.4）
 
 ### 指令
 ```bash
@@ -386,6 +446,8 @@ uv run --project scripts python scripts/backfill_manual_patches.py --apply
 ---
 
 ## 資料庫啟動指令
+
+> ⚠ fresh clone 首次建庫請改用「從零重建 Checklist」0.3 —— backend 需等管線跑完最後啟動，否則 bind-mount 會把 `output/bm25_vocabulary.json` 建成目錄。
 
 ```bash
 # 啟動所有資料庫
