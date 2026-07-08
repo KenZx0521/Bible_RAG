@@ -1,4 +1,4 @@
-# Bible RAG 後續步驟
+# Bible RAG 建庫管線（Step 1–10）
 
 ## 環境設定
 
@@ -19,7 +19,7 @@ uv run --project scripts python scripts/process_bible.py --input-dir bible_md --
 ## Step 1: 實體抽取
 
 ### 輸入
-- `output/embedding_queue.jsonl`（3,041 筆）
+- `output/embedding_queue.jsonl`（34,072 筆：pericope 2,610 + chunk 431 + verse 31,031）
 
 ### 待抽取實體類型
 | 類型 | 說明 |
@@ -49,7 +49,7 @@ uv run --project scripts python scripts/extract_entities.py
 ## Step 2: Embeddings 生成 ✅
 
 ### 輸入
-- `output/embedding_queue.jsonl`（3,041 筆）
+- `output/embedding_queue.jsonl`（34,072 筆：pericope 2,610 + chunk 431 + verse 31,031）
 
 ### 模型
 - BGE-M3（BAAI/bge-m3）
@@ -62,7 +62,7 @@ uv run --project scripts python scripts/generate_embeddings.py --batch-size 32
 ```
 
 ### 輸出
-- `output/embeddings.jsonl`（3,041 筆，每筆 1024 維向量）
+- `output/embeddings.jsonl`（34,072 筆，每筆 1024 維向量）
 
 ---
 
@@ -108,9 +108,11 @@ uv run --project scripts python scripts/import_postgres.py
 - chapters: 1,189 records
 - pericopes: 2,779 records
 - chunks: 431 records
-- entities: 14,845 records
-- entity_mentions: 80,912 records
-- **總計: 100,222 records**
+- entities: 9,120 records
+- entity_mentions: 173,896 records
+- **總計: 187,481 records**
+
+> 上列為 JSONL 產物匯入量。Step 10 curated 重放後 live 為 entities 9,122 / entity_mentions 173,768（+18 curated Event、−16 泛名詞 Event、噪音 mention 清理 −128）。
 
 ---
 
@@ -129,7 +131,7 @@ uv run --project scripts python scripts/import_qdrant.py
 ```
 
 ### 結果
-- Vectors: 3,041 (1024 維度)
+- Vectors: 34,072 (1024 維度)
 
 ---
 
@@ -154,7 +156,7 @@ uv run --project scripts python scripts/import_qdrant_hybrid.py
 ```
 
 ### 結果
-- Points: 3,041（每個點包含 dense + sparse vectors）
+- Points: 34,072（每個點包含 dense + sparse vectors）
 
 ### 啟用 Hybrid Search
 在 `.env` 中設定：
@@ -379,7 +381,7 @@ uv run --project scripts python scripts/backfill_manual_patches.py --apply
 
 ### 註記
 - 若重跑過 `extract_entities.py`（重抽而非重灌既有 JSONL），`pericope_miner.py` 的 `GENERIC_TITLE_STOPLIST` 已防泛名詞 Event 再犯，但 10.2 的 dan/yehehua 兩動作與其餘步驟仍必要。
-- 各步驟的執行細節、發現與回滾指令：[kg_p0_execution_2026-07-06.md](kg_p0_execution_2026-07-06.md)（10.1–10.3）、[kg_fixes_execution_2026-07-06.md](kg_fixes_execution_2026-07-06.md)（10.4）、`scripts/backfill_manual_patches.py` docstring（10.5）。
+- 各步驟的執行細節、發現與回滾指令：[records/2026-07-06_kg_p0_execution.md](records/2026-07-06_kg_p0_execution.md)（10.1–10.3）、[records/2026-07-06_kg_fixes_execution.md](records/2026-07-06_kg_fixes_execution.md)（10.4）、`scripts/backfill_manual_patches.py` docstring（10.5）。
 
 ---
 

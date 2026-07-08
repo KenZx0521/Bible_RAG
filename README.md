@@ -176,7 +176,7 @@ Bible_RAG/
 │   │       ├── retrieval.py        # 檢索品質指標
 │   │       └── semantic_similarity.py # 語意相似度
 │   └── results_*/              # 評估結果（依管線/回答模型/階段分目錄）
-├── docs/                       # 專案文檔（KG 進度總覽、執行紀錄、架構文檔）
+├── docs/                       # 專案文檔（README 地圖＋現況文件＋records/ 紀錄＋archive/ 快照＋reference/ 參考）
 ├── paper/                      # 論文資產（PDF、發現紀錄 record/、工具 tools/）
 ├── figures/                    # 論文圖（fig1 系統架構圖）
 ├── ground_truth.json           # 100 題測試集（5 類型 × 20 題）
@@ -489,7 +489,7 @@ python scripts/backfill_head_events.py
 python scripts/backfill_manual_patches.py --apply
 ```
 
-> 第 10 步不可省略：P0 與排序層修復的 curated 資料（字典 aliases、噪音清理、共現關係搶救、18 個頭部 Event 節點、106 條手動圖邊）不在 JSONL 產物中，缺了它們重建出的圖譜停在 P0 前狀態。唯一不需重放的是 `backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`。執行紀錄：[docs/kg_p0_execution_2026-07-06.md](docs/kg_p0_execution_2026-07-06.md)、[docs/kg_fixes_execution_2026-07-06.md](docs/kg_fixes_execution_2026-07-06.md)。
+> 第 10 步不可省略：P0 與排序層修復的 curated 資料（字典 aliases、噪音清理、共現關係搶救、18 個頭部 Event 節點、106 條手動圖邊）不在 JSONL 產物中，缺了它們重建出的圖譜停在 P0 前狀態。唯一不需重放的是 `backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`。執行紀錄：[docs/records/2026-07-06_kg_p0_execution.md](docs/records/2026-07-06_kg_p0_execution.md)、[docs/records/2026-07-06_kg_fixes_execution.md](docs/records/2026-07-06_kg_fixes_execution.md)。
 
 ## Development
 

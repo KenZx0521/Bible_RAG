@@ -3,10 +3,10 @@
 **日期**:2026-07-06
 **性質**:論文寫作素材 — 發現(findings)層級的整理,每條附證據出處與文獻掛鉤;非執行紀錄
 **證據鏈源文件**:
-1. `docs/kg_optimization_analysis_2026-07-05.md`(缺口體檢、chunking→KG 因果鏈、路線圖、文獻驗證)
-2. `docs/kg_p0_execution_2026-07-06.md`(P0 六項資料修復)
-3. `docs/kg_p0_eval_p1_decision_2026-07-06.md`(negative result 與機制診斷)
-4. `docs/kg_fixes_execution_2026-07-06.md`(排序融合三修復 + α 消融)
+1. `docs/records/2026-07-05_kg_optimization_analysis.md`(缺口體檢、chunking→KG 因果鏈、路線圖、文獻驗證)
+2. `docs/records/2026-07-06_kg_p0_execution.md`(P0 六項資料修復)
+3. `docs/records/2026-07-06_kg_p0_eval_p1_decision.md`(negative result 與機制診斷)
+4. `docs/records/2026-07-06_kg_fixes_execution.md`(排序融合三修復 + α 消融)
 5. `docs/kg_optimization_progress.md`(狀態總覽)
 
 **評估數據目錄**:`evaluation/results_graph_gemma_answer/`(P0 前 5/16)、`evaluation/results_graph_p0_after/`(P0 後)、`evaluation/results_graph/`(修復後)、`evaluation/results_quick/`(α 消融四組)

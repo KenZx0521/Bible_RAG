@@ -38,7 +38,7 @@ flowchart TB
 
     subgraph DB["三資料庫(互補角色)"]
         PG[("PostgreSQL<br/>結構化權威資料<br/>6 表")]
-        QD[("Qdrant<br/>3 個向量 collection<br/>34,072 + 9,122 points")]
+        QD[("Qdrant<br/>3 個向量 collection<br/>34,072×2 + 9,122 points")]
         NEO[("Neo4j<br/>知識圖譜<br/>13,589 節點 / 32 萬邊")]
     end
 
@@ -230,7 +230,7 @@ flowchart TB
 - **Grounded 軌**:段落標題先分型(壇/器/櫃等後綴→Object;救贖/恩典等關鍵詞→Theme;日子/長子等泛名詞 STOPLIST 直接丟棄 — P0 後加入防再犯;其餘預設→Event),POS 候選補充,規則分類器高信心定型、低信心 escalate 給 LLM;
 - **Grounding 約束**(防幻覺核心):LLM 只能對「提供的候選詞」分類、必須引用經文 evidence、post-hoc 驗證 evidence 是 grounding text 子字串,不合格降級。
 
-產出 `entities.jsonl` **9,120** 實體、`entity_mentions.jsonl` **173,896 條** mention(含 pericope/chunk/verse 三種 source 粒度)。live 各庫在 P0 後略有差異(直接改圖:+18 curated Event、−16 泛名詞 Event、耶和華重標型別):Neo4j 9,124 / PG 9,122。
+產出 `entities.jsonl` **9,120** 實體、`entity_mentions.jsonl` **173,896 條** mention(含 pericope/chunk/verse 三種 source 粒度)。live 各庫在 P0 後略有差異(直接改圖:+18 curated Event、−16 泛名詞 Event、耶和華重標型別):Neo4j 9,124 / PG 9,122;PG `entity_mentions` live 為 173,768(較 JSONL 產出少 128,噪音清理所致)。
 
 > 已知上游品質限制(P1 範疇):STOPWORDS 把「神/靈/主」等 33 個單字詞全濾掉;無共指消解(「岳父/他」抓不到);description 只取 100 字經文片段;pinyin id 有同音碰撞誤併風險。
 
@@ -355,11 +355,13 @@ graph LR
 | Event 有參與者 / 有地點 | 34.4% / 31.8% | **84.0% / 75.5%** |
 | alias coverage | 35 節點 | 43+29 節點(~0.8%;量產待 P1 ER) |
 
+> Event 完整度的邊型集合定義:參與者 = `(:Person|:Group)-[:PARTICIPATED_IN|INITIATED|VICTIM_OF]->(:Event)`、地點 = `(:Event)-[:OCCURRED_IN]->(:Place)`;2026-07-07 依此重算為 83.1–84.5% / 74.7%,表列值為 P0 執行當日快照(檢驗紀錄見 [records/2026-07-07_architecture_verification.md](records/2026-07-07_architecture_verification.md) §3)。
+
 ---
 
 ## 5. KG 品質演進史
 
-本專案最有價值的工程經驗:**KG 建置品質、檢索排序機制、評估量尺三者共同決定可觀測效益**。以下是三輪證據鏈的演進脈絡(細節見 `docs/kg_optimization_*.md` 系列與 `paper/record/`)。
+本專案最有價值的工程經驗:**KG 建置品質、檢索排序機制、評估量尺三者共同決定可觀測效益**。以下是三輪證據鏈的演進脈絡(細節見 `docs/records/` 的 KG 優化系列紀錄與 `paper/record/`)。
 
 ```mermaid
 timeline
@@ -493,7 +495,7 @@ flowchart TD
 | R6 | `graph_place`(0.85) + `semantic`(0.7) + `entity_path` + `cross_ref_expand` + `entity_query`(0.6) + `sql`(0.5) + `book_anchor` |
 | Fallback | `semantic`/`hybrid` + `book_anchor`(若點名書卷) |
 
-路由分布(100 題實測):R2=25、R3=21、R1=20、R4=18、R5=10、R6=4、fallback=2。
+路由分布(100 題實測,2026-07-06 輪快照;逐輪可漂移一題級,如 07-07 輪 R4=19、R6=3,以當輪為準):R2=25、R3=21、R1=20、R4=18、R5=10、R6=4、fallback=2。
 
 ### 6.4 檢索策略清單
 
@@ -657,12 +659,16 @@ flowchart TB
 
 | 文件 | 內容 |
 |------|------|
+| [README.md](README.md) | **docs/ 文檔地圖**:現況文件/records/archive/reference 四類分類法 |
 | [kg_optimization_progress.md](kg_optimization_progress.md) | **KG 優化單一入口**:P0–P3 狀態、指標演進、殘餘項 |
-| [kg_optimization_analysis_2026-07-05.md](kg_optimization_analysis_2026-07-05.md) | 八大缺口體檢、粒度錯配因果鏈(M1–M6)、文獻驗證 |
-| [kg_p0_execution_2026-07-06.md](kg_p0_execution_2026-07-06.md) | P0 六項修復執行紀錄與回滾方式 |
-| [kg_p0_eval_p1_decision_2026-07-06.md](kg_p0_eval_p1_decision_2026-07-06.md) | P0 後 negative result 逐題診斷、P1 暫緩決策 |
-| [kg_fixes_execution_2026-07-06.md](kg_fixes_execution_2026-07-06.md) | 排序融合層三修復 + α 消融 |
-| [knowledge_graph_setup.md](knowledge_graph_setup.md) | KG 設計原理(pericope 單位、跨書卷)— P0 前快照 |
-| [build_database.md](build_database.md) | 建庫逐步指令 |
-| [bible_rag_latest.md](bible_rag_latest.md) | 2026-05-17 架構快照(融合層之前) |
+| [records/2026-07-05_kg_optimization_analysis.md](records/2026-07-05_kg_optimization_analysis.md) | 八大缺口體檢、粒度錯配因果鏈(M1–M6)、文獻驗證 |
+| [records/2026-07-06_kg_p0_execution.md](records/2026-07-06_kg_p0_execution.md) | P0 六項修復執行紀錄與回滾方式 |
+| [records/2026-07-06_kg_p0_eval_p1_decision.md](records/2026-07-06_kg_p0_eval_p1_decision.md) | P0 後 negative result 逐題診斷、P1 暫緩決策 |
+| [records/2026-07-06_kg_fixes_execution.md](records/2026-07-06_kg_fixes_execution.md) | 排序融合層三修復 + α 消融 |
+| [records/2026-07-07_architecture_verification.md](records/2026-07-07_architecture_verification.md) | 本文件的獨立檢驗(34 項宣稱)+ 特殊機制解說 + 論文引用彙整 |
+| [build_database.md](build_database.md) | 建庫逐步指令(Step 1–10 含 curated 重放鏈) |
+| [archive/2026-04-29_knowledge_graph_setup.md](archive/2026-04-29_knowledge_graph_setup.md) | KG 設計原理(pericope 單位、跨書卷)— P0 前快照 |
+| [archive/2026-05-17_architecture_snapshot.md](archive/2026-05-17_architecture_snapshot.md) | 2026-05-17 架構快照(融合層之前,原 bible_rag_latest.md) |
+| [archive/2026-02-27_database_architecture_report.md](archive/2026-02-27_database_architecture_report.md) | 初版三庫整合分析(2026-02 快照) |
+| [reference/](reference/) | 評估參考資料(指標方法論筆記、100 題人讀版;題庫以根目錄 `ground_truth.json` 為準) |
 | `paper/record/2026-07-06_kg_optimization_findings.md` | 論文發現要點 F1–F9 |

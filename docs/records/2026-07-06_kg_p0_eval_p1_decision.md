@@ -1,7 +1,7 @@
 # P0 修復後評估結果與 P1 決策分析
 
 **日期**:2026-07-06
-**依據**:[kg_optimization_analysis_2026-07-05.md](kg_optimization_analysis_2026-07-05.md) 第 3 節路線圖、[kg_p0_execution_2026-07-06.md](kg_p0_execution_2026-07-06.md) 殘餘問題 7(100 題 A/B 重跑驗證)
+**依據**:[2026-07-05_kg_optimization_analysis.md](2026-07-05_kg_optimization_analysis.md) 第 3 節路線圖、[2026-07-06_kg_p0_execution.md](2026-07-06_kg_p0_execution.md) 殘餘問題 7(100 題 A/B 重跑驗證)
 **方法**:P0 執行完畢後全量重跑 100 題 graph eval,與 5/16 基線逐題對比;所有退步/持平題逐題查 raw sources 與程式碼驗證機制,非統計推測。
 
 ---

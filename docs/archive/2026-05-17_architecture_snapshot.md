@@ -1,8 +1,8 @@
-# Bible_RAG 最新架構說明
+# Bible_RAG 架構快照（2026-05-17，排序融合層之前）
 
 > **文件版本**：2026-05-17 ｜ 對應分支：`main` ｜ 最新提交：`703c45e 拉高coverage max_token`
 > 本文件依據當前程式碼與線上執行中容器（5/5 healthy）實測撰寫，描述系統「目前實際運作」的架構。
-> **⚠️ 落後提醒**：本文停在 `703c45e`，未涵蓋其後的 entity_query 路由、KG P0 資料修復、TSK 串珠匯入與排序融合層（`fused=(1−α)·rerank+α·weight`, α=0.3）等變更；各階段現況見 [kg_optimization_progress.md](kg_optimization_progress.md)。
+> **⚠️ 落後提醒**：本文停在 `703c45e`，未涵蓋其後的 entity_query 路由、KG P0 資料修復、TSK 串珠匯入與排序融合層（`fused=(1−α)·rerank+α·weight`, α=0.3）等變更；各階段現況見 [../kg_optimization_progress.md](../kg_optimization_progress.md)。
 
 ---
 

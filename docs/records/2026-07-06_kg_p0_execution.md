@@ -1,7 +1,7 @@
 # KG P0 優化執行紀錄
 
 **日期**:2026-07-06
-**依據**:[kg_optimization_analysis_2026-07-05.md](kg_optimization_analysis_2026-07-05.md) 第 3 節 P0 路線圖
+**依據**:[2026-07-05_kg_optimization_analysis.md](2026-07-05_kg_optimization_analysis.md) 第 3 節 P0 路線圖
 **性質**:資料修補,不重抽(live 圖譜直接修復 + 匯入程式碼防再犯)
 
 ---

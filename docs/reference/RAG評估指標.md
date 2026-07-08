@@ -1,5 +1,7 @@
 # Comprehensive Guide to RAG Evaluation Methodology
 
+> **性質**：設計期研究筆記（2026-02）— 通用 RAG 評估方法論參考，非本專案現況文檔。本專案實際採用的 13 項指標與用法見 [../../evaluation/README.md](../../evaluation/README.md)，現行評估框架見 [../ARCHITECTURE.md](../ARCHITECTURE.md) §8；文中 BLEU／ROUGE／METEOR／Perplexity 等章節未被本專案採用。
+
 ## Table of Contents
 1. [RAG Evaluation Overview](#overview)
 2. [Retrieval Metrics](#retrieval-metrics)

@@ -3,11 +3,11 @@
 **最後更新**:2026-07-06(排序融合層上線後)
 **性質**:活文件 — 各階段狀態的單一入口;細節見各執行紀錄
 
-**文件鏈**:
-1. [kg_optimization_analysis_2026-07-05.md](kg_optimization_analysis_2026-07-05.md) — 缺口體檢、chunking→KG 因果鏈、P0–P3 路線圖、文獻
-2. [kg_p0_execution_2026-07-06.md](kg_p0_execution_2026-07-06.md) — P0 六項資料修復執行紀錄
-3. [kg_p0_eval_p1_decision_2026-07-06.md](kg_p0_eval_p1_decision_2026-07-06.md) — P0 後評估(negative result)與 P1 暫緩決策
-4. [kg_fixes_execution_2026-07-06.md](kg_fixes_execution_2026-07-06.md) — 排序融合層三修復 + 連鎖修復執行紀錄
+**文件鏈**(執行/決策紀錄已歸檔於 `records/`):
+1. [records/2026-07-05_kg_optimization_analysis.md](records/2026-07-05_kg_optimization_analysis.md) — 缺口體檢、chunking→KG 因果鏈、P0–P3 路線圖、文獻
+2. [records/2026-07-06_kg_p0_execution.md](records/2026-07-06_kg_p0_execution.md) — P0 六項資料修復執行紀錄
+3. [records/2026-07-06_kg_p0_eval_p1_decision.md](records/2026-07-06_kg_p0_eval_p1_decision.md) — P0 後評估(negative result)與 P1 暫緩決策
+4. [records/2026-07-06_kg_fixes_execution.md](records/2026-07-06_kg_fixes_execution.md) — 排序融合層三修復 + 連鎖修復執行紀錄
 
 ---
 

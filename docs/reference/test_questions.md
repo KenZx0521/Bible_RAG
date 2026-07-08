@@ -1,6 +1,7 @@
 # GraphRAG 測試問題集
 
 > 總計：100 題
+> **性質**：100 題測試集的人讀鏡像；評估管線唯一讀取的資料源是根目錄 [`ground_truth.json`](../../ground_truth.json)。2026-07-08 全量比對：100/100 題文與 reference 出處均與 json 一致；欄位級內容（答案要點等）以 json 為準。
 
 ## 經文查找 (VERSE_LOOKUP)
 

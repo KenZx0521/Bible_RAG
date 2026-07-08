@@ -1,8 +1,8 @@
 # ARCHITECTURE.md 重新檢驗與架構解說報告
 
 > **文件日期**:2026-07-07
-> **性質**:對 [ARCHITECTURE.md](ARCHITECTURE.md)(2026-07-06 版)的獨立重新檢驗紀錄 + 特殊機制原理解說 + 論文引用彙整
-> **檢驗方法**:① Neo4j Cypher / Qdrant HTTP / PostgreSQL psql 直查 live 資料庫;② 逐檔對照 `backend/` 程式碼與 live `.env`;③ 對照最新一輪評估結果(commit `d85c7eb`,2026-07-07 重跑 100 題);④ 論文引用交叉比對 `paper/latex/refs.tex` 與 `docs/kg_optimization_analysis_2026-07-05.md`
+> **性質**:對 [../ARCHITECTURE.md](../ARCHITECTURE.md)(2026-07-06 版)的獨立重新檢驗紀錄 + 特殊機制原理解說 + 論文引用彙整
+> **檢驗方法**:① Neo4j Cypher / Qdrant HTTP / PostgreSQL psql 直查 live 資料庫;② 逐檔對照 `backend/` 程式碼與 live `.env`;③ 對照最新一輪評估結果(commit `d85c7eb`,2026-07-07 重跑 100 題);④ 論文引用交叉比對 `paper/latex/refs.tex` 與 `docs/records/2026-07-05_kg_optimization_analysis.md`
 
 ---
 
@@ -200,7 +200,7 @@ P0 修法是「資料修補不重抽」:strip `:v:N` remap 回 pericope(+5,853 �
 
 ## 6. 論文引用彙整
 
-書目唯一權威:`paper/latex/refs.tex`(手寫 `\bibitem`,**42 條,已驗證全部有被 `\cite`**;無 .bib 檔)。docs 端清單:`kg_optimization_analysis_2026-07-05.md` §5。IEEE bib 是 docs 清單的超集(補基礎 RAG/IR/模型引用),但**捨棄了 STEPBible TIPNR / ACAI / MACULA 三個聖經資料資源**(四資源僅 TSK 進 bib)與 fast-graphrag / LazyGraphRAG / KAG / iText2KG 四個比較用系統。
+書目唯一權威:`paper/latex/refs.tex`(手寫 `\bibitem`,**42 條,已驗證全部有被 `\cite`**;無 .bib 檔)。docs 端清單:`2026-07-05_kg_optimization_analysis.md`(同 `records/` 目錄)§5。IEEE bib 是 docs 清單的超集(補基礎 RAG/IR/模型引用),但**捨棄了 STEPBible TIPNR / ACAI / MACULA 三個聖經資料資源**(四資源僅 TSK 進 bib)與 fast-graphrag / LazyGraphRAG / KAG / iText2KG 四個比較用系統。
 
 ### 6.1 核心引用鏈(粒度↔抽取品質)
 
