@@ -189,6 +189,8 @@ uv run --project scripts python scripts/import_neo4j.py
 - Total nodes: 19,310
 - Total relationships: 57,877
 
+> ⚠️ 上列為 2026-05 快照。P0 修復（2026-07-06）後 `import_neo4j.py` 內建 verse→pericope remap 與誠實計數器，重匯的 MENTIONS 會多於舊快照（verse 級 mention 不再靜默丟棄，落空者計入 `skipped_missing`）；live 現況見 [kg_optimization_progress.md](kg_optimization_progress.md)。
+
 ---
 
 ## Step 6: 關係抽取（Grounded RE）
@@ -315,6 +317,69 @@ uv run --project scripts python scripts/embed_entities.py --recreate
 ### 結果
 - Points: ~9,120（每個 entity 一個 vector）
 - 後續 backend `entity_path_retriever.retrieve_by_entity_query()` 讀此 collection
+
+---
+
+## Step 9: TSK 串珠交叉引用匯入
+
+### 說明
+將 Treasury of Scripture Knowledge（19 世紀公版串珠註解）的 verse 級交叉引用映射到 Pericope 層，匯入 Neo4j `CROSS_REFERENCES` 邊，串珠規模 916 → 250,418 條。每條邊帶 `votes`（社群投票數）與 `source: 'tsk'`，與手工 markdown 邊（哨兵值 votes=999）區分 — 檢索端的 TSK 分權（手工 0.75/0.55 vs TSK 0.60/0.50）依賴此欄位。
+
+### 前提
+- Step 5 完成（Pericope 節點已在 Neo4j）
+- `output/embedding_queue.jsonl` 存在（verse→pericope 反查表，31,102 節全覆蓋）
+- 原始資料 `output/cross_references_tsk.txt`：**不進 git**（`output/` 被 ignore），fresh clone 需自 [scrollmapper/bible_databases](https://github.com/scrollmapper/bible_databases) 下載 openbible.info 的 cross_references.txt（CC-BY）
+
+### 指令
+```bash
+# 先 dry-run 檢查映射率
+uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt --dry-run
+
+uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt
+```
+
+### 結果
+- 344,799 行 → 過濾負 votes（1,166）與自環（9,811）→ 250,358 條 unique pericope 對（僅 7 條 unmapped）
+- 回滾：`MATCH ()-[r:CROSS_REFERENCES {source: 'tsk'}]->() DELETE r`
+
+---
+
+## Step 10: KG 修復與 curated 資料重放（重建後必跑）
+
+### 說明
+P0（2026-07-06）與排序層修復產生的 curated 資料**不在 Step 1–9 的 JSONL 產物中**：字典 aliases、噪音清理、共現關係搶救、18 個頭部 Event 節點、106 條手動 MENTIONS 邊。任何全量重建（重灌三庫）後若不重放此鏈，圖譜停在 P0 前狀態，檢索端依賴的資料（alias 查詢、curated Event 錨點、keyword-exact pin 的橋）會缺失。
+
+**不需重跑**：`backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`（Step 5 匯入時自動處理）。
+
+### 前提
+- Step 1–9 全部完成；`bible_entities` collection 已建（10.2/10.4/10.5 會對 Qdrant 同步或重嵌）
+- `output/relations_unclassified.jsonl` 存在（Step 6 產物，10.3 的輸入）
+- `config/curated/manual_graph_patches.jsonl`（git-tracked，106 邊/6 節點快照，10.5 的輸入）
+
+### 指令（依序執行；每個腳本支援 `--dry-run` 預檢）
+```bash
+# 10.1 字典 aliases 直灌（38 節點；原生 LIST，backend alias 查詢的前提）
+uv run --project scripts python scripts/backfill_aliases.py
+
+# 10.2 噪音清理（「但」子字串誤命中 gate、16 泛名詞 Event 刪除、耶和華 Group→Person；三庫同步）
+uv run --project scripts python scripts/cleanup_noise_entities.py
+
+# 10.3 未分類關係搶救（relations_unclassified.jsonl → +5,641 PARTICIPATED_IN、+3,419 OCCURRED_IN）
+uv run --project scripts python scripts/backfill_event_relations.py
+
+# 10.4 頭部 Event curated 補灌（11 個既有 Event 灌問法別名 + 18 curated 節點/56 邊；三庫同步）
+uv run --project scripts python scripts/backfill_head_events.py
+
+# 10.5 手動圖邊 patch 重放（106 MENTIONS 邊 + 受難週/大使命節點；三庫同步）
+uv run --project scripts python scripts/backfill_manual_patches.py --apply
+```
+
+### 順序依據
+10.2 在 10.3 之前（泛名詞 Event 先刪，搶救邊不會 MERGE 到將刪節點）；10.4/10.5 依賴 `bible_entities` collection（Step 8）與 PG entities 表（Step 3）；10.5 放最後 — 其快照導出自 10.4 之後的線上狀態。
+
+### 註記
+- 若重跑過 `extract_entities.py`（重抽而非重灌既有 JSONL），`pericope_miner.py` 的 `GENERIC_TITLE_STOPLIST` 已防泛名詞 Event 再犯，但 10.2 的 dan/yehehua 兩動作與其餘步驟仍必要。
+- 各步驟的執行細節、發現與回滾指令：[kg_p0_execution_2026-07-06.md](kg_p0_execution_2026-07-06.md)（10.1–10.3）、[kg_fixes_execution_2026-07-06.md](kg_fixes_execution_2026-07-06.md)（10.4）、`scripts/backfill_manual_patches.py` docstring（10.5）。
 
 ---
 

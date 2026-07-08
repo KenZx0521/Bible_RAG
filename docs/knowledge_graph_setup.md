@@ -5,7 +5,7 @@
 > **資料來源**：`bible_md/`（66 卷新標點和合本 markdown）
 > **更新日期**：2026-04-29
 > **驗證方式**：MCP Neo4j Cypher 即時查詢
-> **⚠️ 歷史版本**：本文數據為 KG P0 修復前快照。P0 後（2026-07-06）anchor coverage 83.8%→98.2%、CROSS_REFERENCES 916→250,418、Event 參與者/地點補至 84%/75% 等已大幅變動，現況以 [kg_optimization_progress.md](kg_optimization_progress.md) 為準。
+> **⚠️ 歷史版本**：本文數據為 KG P0 修復前快照。P0 後（2026-07-06）anchor coverage 83.8%→98.2%、CROSS_REFERENCES 916→250,418、Event 參與者/地點補至 84%/75% 等已大幅變動，現況以 [kg_optimization_progress.md](kg_optimization_progress.md) 為準。重建至線上現況的完整步驟（含 TSK 匯入與 curated 資料重放鏈）見 [build_database.md](build_database.md) Step 9–10。
 
 ---
 
@@ -322,12 +322,12 @@ has_overlap: BOOLEAN         是否與前塊有重疊
 ```
 entity_id: STRING (indexed)  e.g. "person:abolahan"
 canonical_name: STRING       e.g. "亞伯拉罕"
-aliases: STRING (JSON 字串)  e.g. '["亞伯蘭", "Abraham"]'
+aliases: LIST<STRING>        e.g. ["亞伯蘭", "Abraham"]（P0 後為原生 LIST）
 description: STRING
 mention_count: INTEGER       全聖經被提及次數
 ```
 
-> ⚠ `aliases` 為 **JSON.stringify 後的字串**（Neo4j 屬性不支援原生陣列），查詢時需用 `CONTAINS` 或 `apoc.convert.fromJsonList()`。
+> ⚠ `aliases` 自 P0 修復（2026-07-06）起為 **原生 LIST**（`import_neo4j.py` 已移除 `json.dumps`），查詢寫法為 `any(a IN e.aliases WHERE a CONTAINS $name)`（見 §8.2）。本文初版所述「JSON 字串 + `apoc.convert.fromJsonList()`」為 P0 前舊 schema，已不適用。
 
 ### 4.3 關係 Schema
 
@@ -661,6 +661,8 @@ Database Stats:
   Total nodes: 23,490
   Total relationships: 49,389
 ```
+
+> ⚠ 上列預期輸出為 P0 前快照。P0 後 `import_neo4j.py` 內建 verse→pericope remap 與誠實計數器：重跑時 MENTIONS 會高於 41,034（97,235 條 verse 級 mention 不再靜默丟棄，落空者計入 `skipped_missing` 並輸出 log）。匯入完成後還需執行 TSK 匯入與修復重放鏈才會到線上現況 — 見 [build_database.md](build_database.md) Step 9–10。
 
 #### 進階選項
 

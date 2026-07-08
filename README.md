@@ -474,13 +474,22 @@ python -m scripts.relation_extraction.extract_relations
 python scripts/import_relations_neo4j.py
 
 # 8. TSK 串珠交叉引用（Pericope 層 CROSS_REFERENCES）
-python scripts/import_tsk_crossrefs.py
+#    資料檔不進 git（output/ 被 ignore），fresh clone 需先自
+#    https://github.com/scrollmapper/bible_databases 下載（openbible.info CC-BY）
+python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt
 
 # 9. Entity 節點向量化（Qdrant bible_entities collection）
 python scripts/embed_entities.py
+
+# 10. KG 修復與 curated 資料重放（重建後必跑，順序與細節見 docs/build_database.md Step 10）
+python scripts/backfill_aliases.py
+python scripts/cleanup_noise_entities.py
+python scripts/backfill_event_relations.py
+python scripts/backfill_head_events.py
+python scripts/backfill_manual_patches.py --apply
 ```
 
-> KG P0 一次性資料修復腳本（`backfill_*.py`、`cleanup_noise_entities.py`）不屬常規建庫流程，執行紀錄見 [docs/kg_p0_execution_2026-07-06.md](docs/kg_p0_execution_2026-07-06.md)。
+> 第 10 步不可省略：P0 與排序層修復的 curated 資料（字典 aliases、噪音清理、共現關係搶救、18 個頭部 Event 節點、106 條手動圖邊）不在 JSONL 產物中，缺了它們重建出的圖譜停在 P0 前狀態。唯一不需重放的是 `backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`。執行紀錄：[docs/kg_p0_execution_2026-07-06.md](docs/kg_p0_execution_2026-07-06.md)、[docs/kg_fixes_execution_2026-07-06.md](docs/kg_fixes_execution_2026-07-06.md)。
 
 ## Development
 
