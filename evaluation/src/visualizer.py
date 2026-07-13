@@ -23,8 +23,11 @@ console = Console()
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
 
-# Metric groupings for display
+# Metric groupings for display.
+# verse_recall / anchor_coverage lead — hit_rate/recall_at_k are unit-level
+# and inflated for chapter-range questions (kept for historical comparison).
 RETRIEVAL_METRICS = [
+    "verse_recall_at_k", "anchor_coverage_at_k",
     "precision_at_k", "recall_at_k", "f1_at_k", "mrr", "map_at_k", "ndcg_at_k", "hit_rate"
 ]
 LLM_JUDGE_METRICS = [

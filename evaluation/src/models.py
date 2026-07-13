@@ -14,6 +14,9 @@ class GroundTruthItem(BaseModel):
     reference: str = ""
     expected_answer_points: list[str] = []
     reference_answer: str = ""
+    # Diagnostic family label (500-question GT expansion). Empty for the
+    # legacy 100 questions, which the GT doc designates "legacy_head".
+    family: str = ""
 
 
 class ParsedReference(BaseModel):
@@ -23,6 +26,9 @@ class ParsedReference(BaseModel):
     chapters: list[int] = []          # e.g. [3] or [6,7,8,9]
     verse_start: int | None = None    # e.g. 16
     verse_end: int | None = None      # e.g. 18
+    # True → verse range runs from verse_start to the END of chapters[0]
+    # (emitted for cross-chapter ranges like "1:17-2:10"; verse_end is None).
+    to_chapter_end: bool = False
     is_whole_book: bool = False
 
 
@@ -67,6 +73,7 @@ class Rationale(BaseModel):
 class EvalReport(BaseModel):
     question_id: str
     question_type: str
+    family: str = ""
     metrics: list[MetricResult] = []
     rationale: Rationale | None = None
     route_used: str = ""
@@ -77,4 +84,7 @@ class EvalReport(BaseModel):
 class AggregatedReport(BaseModel):
     overall: dict[str, float] = Field(default_factory=dict)
     by_type: dict[str, dict[str, float]] = Field(default_factory=dict)
+    by_family: dict[str, dict[str, float]] = Field(default_factory=dict)
+    # Run provenance: judge model, ragas version, timestamp, k, n_samples.
+    meta: dict = Field(default_factory=dict)
     samples: list[EvalReport] = []

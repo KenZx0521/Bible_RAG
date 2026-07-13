@@ -45,18 +45,24 @@ def _merge_metrics(
     return dict(merged)
 
 
+def _family_of(sample: EvalSample) -> str:
+    """Diagnostic family; the legacy 100 questions carry no family field in GT."""
+    return sample.ground_truth.family or "legacy_head"
+
+
 def _aggregate(
     samples: list[EvalSample],
     all_metrics: dict[str, list[MetricResult]],
     rationales: dict[str, Rationale] | None = None,
 ) -> AggregatedReport:
-    """Build aggregated report: overall averages and by question_type."""
+    """Build aggregated report: overall averages, by question_type, by family."""
     # Per-sample reports
     reports: list[EvalReport] = []
     for sample in samples:
         report = EvalReport(
             question_id=sample.question_id,
             question_type=sample.question_type,
+            family=_family_of(sample),
             metrics=all_metrics.get(sample.question_id, []),
             route_used=sample.route_used,
             strategies_used=sample.strategies_used,
@@ -83,25 +89,69 @@ def _aggregate(
         ]
         overall[name] = round(sum(vals) / len(vals), 4) if vals else 0.0
 
+    def _group_averages(groups: dict[str, list[str]]) -> dict[str, dict[str, float]]:
+        out: dict[str, dict[str, float]] = {}
+        for key, qids in groups.items():
+            avgs: dict[str, float] = {}
+            for name in sorted(all_names):
+                vals = [
+                    m.value
+                    for qid in qids
+                    for m in all_metrics.get(qid, [])
+                    if m.name == name and m.valid
+                ]
+                avgs[name] = round(sum(vals) / len(vals), 4) if vals else 0.0
+            out[key] = avgs
+        return out
+
     # By question_type
     type_groups: dict[str, list[str]] = defaultdict(list)
     for sample in samples:
         type_groups[sample.question_type].append(sample.question_id)
 
-    by_type: dict[str, dict[str, float]] = {}
-    for qtype, qids in type_groups.items():
-        type_avgs: dict[str, float] = {}
-        for name in sorted(all_names):
-            vals = [
-                m.value
-                for qid in qids
-                for m in all_metrics.get(qid, [])
-                if m.name == name and m.valid
-            ]
-            type_avgs[name] = round(sum(vals) / len(vals), 4) if vals else 0.0
-        by_type[qtype] = type_avgs
+    # By diagnostic family (500-question GT; legacy questions grouped as legacy_head)
+    family_groups: dict[str, list[str]] = defaultdict(list)
+    for sample in samples:
+        family_groups[_family_of(sample)].append(sample.question_id)
 
-    return AggregatedReport(overall=overall, by_type=by_type, samples=reports)
+    return AggregatedReport(
+        overall=overall,
+        by_type=_group_averages(type_groups),
+        by_family=_group_averages(family_groups),
+        samples=reports,
+    )
+
+
+def _judge_model_name() -> str:
+    """Resolve the configured eval judge model name from the active provider."""
+    provider = settings.eval_llm_provider.lower()
+    return {
+        "claude": settings.eval_claude_model,
+        "openai": settings.eval_openai_model,
+        "gemini": settings.eval_gemini_model,
+        "ollama": settings.eval_ollama_model,
+    }.get(provider, provider)
+
+
+def _build_meta(n_samples: int) -> dict:
+    """Run provenance recorded into evaluation_results.json."""
+    from datetime import datetime
+    import importlib.metadata
+
+    try:
+        ragas_version = importlib.metadata.version("ragas")
+    except importlib.metadata.PackageNotFoundError:
+        ragas_version = "unknown"
+
+    return {
+        "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "n_samples": n_samples,
+        "top_k": settings.top_k,
+        "judge_provider": settings.eval_llm_provider,
+        "judge_model": _judge_model_name(),
+        "ragas_version": ragas_version,
+        "results_dir": settings.results_dir.name,
+    }
 
 
 def _save_results(report: AggregatedReport) -> Path:
@@ -144,6 +194,24 @@ def _print_summary(report: AggregatedReport) -> None:
             type_table.add_row(*row)
 
         console.print(type_table)
+
+    # By family (key metrics only — 20 families make a full table unreadable)
+    if report.by_family:
+        key_metrics = [
+            n for n in ["verse_recall_at_k", "anchor_coverage_at_k",
+                        "answer_coverage", "ragas_answer_correctness"]
+            if any(n in avgs for avgs in report.by_family.values())
+        ]
+        if key_metrics:
+            fam_table = Table(title="Key Metrics by Family")
+            fam_table.add_column("Family", style="cyan")
+            for n in key_metrics:
+                fam_table.add_column(n, justify="right")
+            for fam in sorted(report.by_family.keys()):
+                fam_table.add_row(
+                    fam, *(f"{report.by_family[fam].get(n, 0.0):.4f}" for n in key_metrics)
+                )
+            console.print(fam_table)
 
 
 async def run_collection(
@@ -213,6 +281,7 @@ def run_evaluation(
 
     # Aggregate
     report = _aggregate(samples, all_metrics, rationales)
+    report.meta = _build_meta(len(samples))
     _print_summary(report)
 
     # Save
@@ -282,7 +351,7 @@ def export_csv(report: AggregatedReport) -> Path:
                 seen.add(m.name)
 
     fieldnames = [
-        "question_id", "question_type", "route_used", "strategies_used",
+        "question_id", "question_type", "family", "route_used", "strategies_used",
     ] + all_metric_names
 
     with open(out_path, "w", newline="", encoding="utf-8") as f:
@@ -293,6 +362,7 @@ def export_csv(report: AggregatedReport) -> Path:
             row = {
                 "question_id": sample.question_id,
                 "question_type": sample.question_type,
+                "family": sample.family,
                 "route_used": sample.route_used,
                 "strategies_used": "|".join(sample.strategies_used),
             }

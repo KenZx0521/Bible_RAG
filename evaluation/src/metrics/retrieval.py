@@ -1,14 +1,16 @@
 """
 Custom retrieval metrics for Bible RAG evaluation.
 
-Computes 7 metrics at k (default k=5):
-  - Precision@k
-  - Recall@k
-  - F1@k
-  - MRR (Mean Reciprocal Rank)
-  - MAP@k (Mean Average Precision)
-  - NDCG@k (Normalized Discounted Cumulative Gain)
-  - Hit Rate
+Computes 9 metrics at k (default k=5):
+
+  Verse-level (primary readout, deterministic, added 2026-07-13):
+  - verse_recall_at_k     true verse coverage of the gold reference span
+  - anchor_coverage_at_k  fraction of chapter-level gold anchors hit
+
+  Unit-level (kept for backward comparability with historical runs —
+  ⚠️ chapter ranges count as 1 unit, so these are systematically inflated
+  for multi-chapter questions; see relevance_judge.estimate_total_relevant):
+  - Precision@k / Recall@k / F1@k / MRR / MAP@k / NDCG@k / Hit Rate
 """
 
 from __future__ import annotations
@@ -18,17 +20,23 @@ import math
 from ..models import EvalSample, MetricResult
 from ..reference_parser import parse_reference
 from ..relevance_judge import binary_relevance, graded_relevance, estimate_total_relevant
+from ..verse_coverage import verse_level_metrics
+
+_ALL_METRIC_NAMES = [
+    "precision_at_k", "recall_at_k", "f1_at_k", "mrr", "map_at_k",
+    "ndcg_at_k", "hit_rate", "verse_recall_at_k", "anchor_coverage_at_k",
+]
 
 
 def _compute_for_sample(sample: EvalSample, k: int = 5) -> list[MetricResult]:
-    """Compute all 7 retrieval metrics for one sample."""
+    """Compute all retrieval metrics for one sample."""
     gt_refs = parse_reference(sample.ground_truth.reference)
     sources = sample.sources[:k]
 
     if not gt_refs or not sources:
         return [
             MetricResult(name=n, value=0.0, category="retrieval")
-            for n in ["precision_at_k", "recall_at_k", "f1_at_k", "mrr", "map_at_k", "ndcg_at_k", "hit_rate"]
+            for n in _ALL_METRIC_NAMES
         ]
 
     # Binary relevance list
@@ -82,6 +90,9 @@ def _compute_for_sample(sample: EvalSample, k: int = 5) -> list[MetricResult]:
     # Hit Rate
     hit_rate = 1.0 if any(rels) else 0.0
 
+    # Verse-level metrics (deterministic, no inflation from chapter ranges)
+    verse_recall, anchor_coverage = verse_level_metrics(gt_refs, sources)
+
     return [
         MetricResult(name="precision_at_k", value=round(precision, 4), category="retrieval"),
         MetricResult(name="recall_at_k", value=round(recall, 4), category="retrieval"),
@@ -90,6 +101,8 @@ def _compute_for_sample(sample: EvalSample, k: int = 5) -> list[MetricResult]:
         MetricResult(name="map_at_k", value=round(map_k, 4), category="retrieval"),
         MetricResult(name="ndcg_at_k", value=round(ndcg, 4), category="retrieval"),
         MetricResult(name="hit_rate", value=round(hit_rate, 4), category="retrieval"),
+        MetricResult(name="verse_recall_at_k", value=verse_recall, category="retrieval"),
+        MetricResult(name="anchor_coverage_at_k", value=anchor_coverage, category="retrieval"),
     ]
 
 

@@ -37,7 +37,13 @@ from src.metrics.retrieval import compute_retrieval_metrics  # noqa: E402
 
 _OUT_DIR = Path(__file__).resolve().parent / "results_quick"
 
-_METRIC_ORDER = ["hit_rate", "recall_at_k", "ndcg_at_k", "mrr", "precision_at_k"]
+# verse_recall / anchor_coverage first — the honest readouts. hit_rate and
+# recall_at_k are unit-level (inflated for chapter ranges), kept for
+# comparability with historical runs.
+_METRIC_ORDER = [
+    "verse_recall_at_k", "anchor_coverage_at_k",
+    "hit_rate", "recall_at_k", "ndcg_at_k", "mrr", "precision_at_k",
+]
 
 
 async def _query_one(
@@ -165,13 +171,21 @@ def aggregate(samples: list[EvalSample], k: int) -> dict:
     }
 
 
+def _fmt(ms: dict, m: str) -> str:
+    v = ms.get(m)
+    return f"{v:.3f}" if v is not None else "n/a"
+
+
 def print_table(agg: dict, label: str) -> None:
     print(f"\n=== {label} (n={agg['n']}) ===")
-    header = "type".ljust(16) + "".join(m.replace("_at_k", "@5").ljust(11) for m in _METRIC_ORDER)
+    header = "type".ljust(16) + "".join(
+        m.replace("_at_k", "@5").replace("verse_recall", "vrec").replace("anchor_coverage", "anch").ljust(11)
+        for m in _METRIC_ORDER
+    )
     print(header)
     for t, ms in agg["by_type"].items():
-        print(t.ljust(16) + "".join(f"{ms[m]:.3f}".ljust(11) for m in _METRIC_ORDER))
-    print("OVERALL".ljust(16) + "".join(f"{agg['overall'][m]:.3f}".ljust(11) for m in _METRIC_ORDER))
+        print(t.ljust(16) + "".join(_fmt(ms, m).ljust(11) for m in _METRIC_ORDER))
+    print("OVERALL".ljust(16) + "".join(_fmt(agg["overall"], m).ljust(11) for m in _METRIC_ORDER))
 
 
 def compare(path_a: Path, path_b: Path) -> None:
@@ -185,7 +199,10 @@ def compare(path_a: Path, path_b: Path) -> None:
             vb = b["by_type"].get(t, {}).get(m)
             cells.append(f"{vb - va:+.3f}" if va is not None and vb is not None else "  n/a")
         print(t.ljust(16) + "".join(c.ljust(11) for c in cells))
-    cells = [f"{b['overall'][m] - a['overall'][m]:+.3f}" for m in _METRIC_ORDER]
+    cells = []
+    for m in _METRIC_ORDER:
+        va, vb = a["overall"].get(m), b["overall"].get(m)
+        cells.append(f"{vb - va:+.3f}" if va is not None and vb is not None else "  n/a")
     print("OVERALL".ljust(16) + "".join(c.ljust(11) for c in cells))
 
     pa, pb = a.get("per_question", {}), b.get("per_question", {})
@@ -198,6 +215,16 @@ def compare(path_a: Path, path_b: Path) -> None:
         print("\nhit_rate flips:")
         for qid, d in sorted(moved):
             print(f"  {'▲' if d > 0 else '▼'} {qid} ({d:+.0f})")
+
+    vr_moved = []
+    for qid in pa.keys() & pb.keys():
+        va, vb = pa[qid].get("verse_recall_at_k"), pb[qid].get("verse_recall_at_k")
+        if va is not None and vb is not None and abs(vb - va) >= 0.3:
+            vr_moved.append((qid, vb - va))
+    if vr_moved:
+        print("\nverse_recall movers (|Δ|≥0.3):")
+        for qid, d in sorted(vr_moved, key=lambda x: -abs(x[1])):
+            print(f"  {'▲' if d > 0 else '▼'} {qid} ({d:+.3f})")
 
 
 def main() -> int:

@@ -8,8 +8,10 @@ dependencies = [
     "httpx>=0.27.0",
     # Database
     "asyncpg>=0.29.0",
-    # Evaluation frameworks
-    "ragas>=0.2.0",
+    # Evaluation frameworks — pinned: metric formulas differ across RAGAS
+    # versions (answer_correctness weights, noncommittal rules), so an
+    # unpinned range is a reproducibility hazard for published numbers.
+    "ragas==0.4.3",
     # LLM integration
     "langchain-anthropic>=0.3.0",
     "langchain-huggingface>=0.1.0",
@@ -29,4 +31,9 @@ dependencies = [
     # Settings
     "pydantic-settings>=2.6.0",
     "python-dotenv>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
 ]

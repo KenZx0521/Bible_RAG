@@ -86,7 +86,9 @@ def binary_relevance(source: SourceInfo, gt_refs: list[ParsedReference]) -> bool
             # Ref is whole chapter(s), source is in that chapter
             return True
 
-        if _ranges_overlap(src_vs, src_ve, ref.verse_start, ref.verse_end):
+        # to_chapter_end → range is [verse_start, end of chapter]
+        ref_ve = 10**6 if ref.to_chapter_end else ref.verse_end
+        if _ranges_overlap(src_vs, src_ve, ref.verse_start, ref_ve):
             return True
 
     return False
@@ -129,7 +131,8 @@ def graded_relevance(source: SourceInfo, gt_refs: list[ParsedReference]) -> int:
             best = max(best, 2)
             continue
 
-        if _ranges_overlap(src_vs, src_ve, ref.verse_start, ref.verse_end):
+        ref_ve = 10**6 if ref.to_chapter_end else ref.verse_end
+        if _ranges_overlap(src_vs, src_ve, ref.verse_start, ref_ve):
             best = max(best, 3)
         else:
             best = max(best, 2)
@@ -142,6 +145,11 @@ def estimate_total_relevant(gt_refs: list[ParsedReference]) -> int:
     Estimate the total number of relevant retrievable units for recall calculation.
 
     Heuristic: each ParsedReference unit counts as 1 (a pericope typically maps 1:1).
+
+    ⚠️ 量尺缺陷(2026-07-13 確認):章範圍(如「馬太福音 5-7章」111 節)也只算
+    1 個 unit,命中任一節即 recall=1.0 → hit_rate/recall_at_k 系統性灌水
+    (官方 0.944 vs 經節級真實覆蓋 0.75)。本函式僅為與歷史 run 可比而保留;
+    讀數請以 verse_coverage.py 的 verse_recall_at_k / anchor_coverage_at_k 為準。
     """
     if not gt_refs:
         return 1
