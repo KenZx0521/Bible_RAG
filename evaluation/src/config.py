@@ -1,5 +1,9 @@
 """
-Configuration management - reads from ../.env
+Configuration management - layered env files:
+  1. project root .env  — shared infrastructure (API keys, PostgreSQL,
+     OLLAMA_BASE_URL, LLM_MAX_TOKENS)
+  2. evaluation/.env    — evaluation-specific params (EVAL_*, BACKEND_URL,
+     TOP_K, ...); loaded last, wins on duplicated keys
 """
 
 from pathlib import Path
@@ -7,13 +11,14 @@ from pydantic import PrivateAttr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-_ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 _EVAL_ROOT = Path(__file__).resolve().parent.parent
+_ROOT_ENV_FILE = _EVAL_ROOT.parent / ".env"
+_EVAL_ENV_FILE = _EVAL_ROOT / ".env"
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=str(_ENV_FILE),
+        env_file=(str(_ROOT_ENV_FILE), str(_EVAL_ENV_FILE)),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -43,9 +48,8 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     eval_ollama_model: str = "gemma3:4b"
 
-    # LLM generation settings
+    # LLM generation settings (shared with backend via root .env)
     llm_max_tokens: int = 10000
-    llm_temperature: float = 0.1
 
     # PostgreSQL
     postgres_host: str = "localhost"
@@ -60,7 +64,6 @@ class Settings(BaseSettings):
     # Evaluation settings
     top_k: int = 5
     request_delay: float = 1.5
-    batch_size: int = 5
 
     # RAGAS RunConfig for API providers (ollama uses its own serialized path).
     # workers=16 saturates Anthropic rate limits → backoff retries blow the

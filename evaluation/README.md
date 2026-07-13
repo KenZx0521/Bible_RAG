@@ -10,7 +10,7 @@ evaluation/
 ├── quick_retrieval_eval.py      # 快速檢索評估迴圈(retrieval-only,無生成/RAGAS)
 ├── apply_coverage.py            # 答案要點覆蓋率離線補算
 ├── src/
-│   ├── config.py                # 讀取 ../.env 設定
+│   ├── config.py                # 讀取 ../.env(共用)+ ./.env(eval 專屬,優先)
 │   ├── models.py                # Pydantic 資料模型
 │   ├── data_loader.py           # 載入 ground_truth.json
 │   ├── reference_parser.py      # 解析中文經文引用
@@ -40,8 +40,10 @@ evaluation/
    # 在專案根目錄
    docker compose up -d
    ```
-2. **`.env` 設定正確**：確認 `ANTHROPIC_API_KEY`、PostgreSQL 連線設定
-3. **(可選) Graph 檢索預設值**：在 `.env` 設定 `RAG_USE_GRAPH=true/false`，作為 backend 預設行為(CLI 未指定時生效)
+2. **`.env` 設定正確**（兩層）：
+   - 專案根目錄 `.env`：共用基礎設施 — `ANTHROPIC_API_KEY`、PostgreSQL 連線、`OLLAMA_BASE_URL`
+   - `evaluation/.env`：eval 專屬參數 — `EVAL_LLM_PROVIDER`、`EVAL_*_MODEL`、`BACKEND_URL`、`TOP_K`、`REQUEST_DELAY`、`EVAL_RAGAS_*`（範本：`evaluation/.env.example`；同名變數以此檔為準）
+3. **(可選) Graph 檢索預設值**：在根目錄 `.env` 設定 `RAG_USE_GRAPH=true/false`，作為 backend 預設行為(CLI 未指定時生效)
 
 ## 安裝
 
