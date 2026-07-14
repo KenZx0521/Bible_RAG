@@ -153,7 +153,10 @@ async def retrieve_and_rerank(
                 scored = reranker_mod.rerank(
                     query, candidates, top_k=len(candidates), text_key="content"
                 )
-                ranked = _fuse_and_rank(scored, top_k=k, alpha=effective_alpha)
+                ranked = _fuse_and_rank(scored, top_k=len(scored), alpha=effective_alpha)
+                if not semantic_only and len(signals.detected_book_names) > 1:
+                    ranked = _cap_book_anchor_entries(ranked)
+                ranked = ranked[:k]
             else:
                 ranked = reranker_mod.rerank(query, candidates, top_k=k, text_key="content")
         except Exception as e:
@@ -204,6 +207,10 @@ async def retrieve_and_rerank(
             max_pins=2,
             score_key=score_key,
             include_uncertainty_pins=not fusion_active,
+            # Multi-book queries: pin only books absent from the fused top-k
+            # (single-book keeps the original unconditional pin, measured
+            # neutral on every non-GENERAL type).
+            book_gate=len(signals.detected_book_names) > 1,
         )
 
     # Keyword-exact event pin: a dictionary event keyword matched an Event's
@@ -274,6 +281,31 @@ def _fuse_and_rank(candidates: list[dict], top_k: int, alpha: float) -> list[dic
         c["fused_score"] = (1 - a) * rr + a * prior
     ranked = sorted(candidates, key=lambda x: x["fused_score"], reverse=True)
     return ranked[:top_k]
+
+
+def _cap_book_anchor_entries(ranked: list[dict]) -> list[dict]:
+    """Multi-book queries: keep at most ONE book_anchor entry per book in the
+    fused order.
+
+    The anchor's charter is to guarantee a named book is REPRESENTED; letting
+    its 2nd/3rd same-book picks ride high rerank scores displaces gold
+    candidates from other strategies (2026-07-13 A/B: rev:21:1 evicting
+    eph:5:2 on theme_thread). Non-anchor entries are never touched; excess
+    anchor entries sink to the tail, still visible to later pin stages via
+    the full candidate pool.
+    """
+    kept: list[dict] = []
+    demoted: list[dict] = []
+    seen_books: set[str] = set()
+    for c in ranked:
+        if c.get("source_strategy") == _BOOK_ANCHOR_STRATEGY:
+            book = c.get("id", "").split(":")[0]
+            if book in seen_books:
+                demoted.append(c)
+                continue
+            seen_books.add(book)
+        kept.append(c)
+    return kept + demoted
 
 
 def _extract_book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
@@ -698,28 +730,46 @@ async def _expand_via_book_anchor(
     BGE-M3 dense embedding routinely misses the canonical chapter when a query
     pairs `<書名>` with a theme word (e.g. 「耶利米書的新約預言」 ranks 耶26/28/32
     above 耶31, even though 耶31:31-34 is the only place defining 新約). This
-    helper runs a Qdrant search with `book_name` filter so the named book always
-    contributes seed candidates; they're tagged source_strategy='book_anchor'
-    and weighted just below cross_ref so the reranker pin can recover them.
+    helper runs ONE Qdrant search PER named book so every named book contributes
+    its own seeds — a single OR-filtered search lets the book whose wording sits
+    closest to the query eat the entire quota (「耶利米書的新約預言在希伯來書的
+    應驗」 returned 10× jer, 0× heb, silently). Candidates are tagged
+    source_strategy='book_anchor' and weighted just below cross_ref so the
+    reranker pin can recover them.
     """
     if not book_names or not query:
         return []
-    try:
-        results = await retrieve_semantic(query, top_k=top_k, book_filter=book_names)
-    except Exception as e:  # noqa: BLE001
-        logger.warning(f"{route_label} book_anchor retrieval failed: {e}")
-        errors["book_anchor"] = repr(e)[:200]
-        return []
-    if not results:
-        return []
+    multi_book = len(book_names) > 1
+    per_book_k = max(3, top_k // len(book_names)) if multi_book else top_k
+    seen: set[str] = set(existing_ids)
     new_candidates: list[dict] = []
-    for c in results:
-        if c["id"] in existing_ids:
+    for book in book_names:
+        try:
+            results = await retrieve_semantic(query, top_k=per_book_k, book_filter=[book])
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"{route_label} book_anchor retrieval failed for {book}: {e}")
+            errors[f"book_anchor:{book}"] = repr(e)[:200]
             continue
-        c["source_strategy"] = "book_anchor"
-        if c.get("weight", 0) < weight:
-            c["weight"] = weight
-        new_candidates.append(c)
+        added = 0
+        for c in results:
+            if c["id"] in seen:
+                continue
+            seen.add(c["id"])
+            c["source_strategy"] = "book_anchor"
+            # Multi-book: only each book's best hit gets the anchor weight.
+            # Upgrading the whole per-book batch floods fusion with same-book
+            # decoys that evict gold hybrid picks (2026-07-13 A/B:
+            # rev:2:3 / jer:17:1 displacing eph:5:2 / rev:22:1 on
+            # theme_thread). Single-book keeps the original all-upgrade
+            # behavior, which measured neutral across every other type.
+            if (not multi_book or added == 0) and c.get("weight", 0) < weight:
+                c["weight"] = weight
+            new_candidates.append(c)
+            added += 1
+        if not added:
+            # A named book contributing nothing is the exact failure mode this
+            # helper exists to prevent — keep it visible instead of silent.
+            logger.info(f"{route_label} book_anchor: {book} contributed 0 new candidates")
     return new_candidates
 
 
@@ -735,6 +785,7 @@ def _pin_graph_candidates(
     rerank_confidence_threshold: float = 0.3,
     score_key: str = "rerank_score",
     include_uncertainty_pins: bool = True,
+    book_gate: bool = False,
 ) -> list[dict]:
     """Pin graph and book_anchor candidates when their topical signal would
     otherwise be erased by the BGE reranker.
@@ -764,14 +815,45 @@ def _pin_graph_candidates(
 
     pinned_total: list[dict] = []
 
-    # Book-anchor: unconditional
+    # Book-anchor: unconditional for single-book queries (original behavior,
+    # measured neutral). Multi-book queries (book_gate=True) pin ONLY books
+    # with no representation in the fused top-k, one pin per absent book:
+    # the pin exists to guarantee the named book appears at all — when the
+    # ranking already carries that book, spending a slot just evicts a fused
+    # pick, trading gold for same-book duplicates (2026-07-13 A/B: eph:5:2 /
+    # rev:5:0 / jhn:7:4 displaced on theme_thread, GENERAL −0.022).
     book_eligible = [
         c for c in candidates
         if c.get("source_strategy") == _BOOK_ANCHOR_STRATEGY
         and c.get("id") not in existing_ids
     ]
-    book_eligible.sort(key=lambda c: -c.get("semantic_score", c.get("weight", 0)))
-    for i, c in enumerate(book_eligible[:max_pins]):
+    if book_gate:
+        ranked_books = {c["id"].split(":")[0] for c in ranked}
+        book_eligible = [
+            c for c in book_eligible
+            if c["id"].split(":")[0] not in ranked_books
+        ]
+
+    def _sem(c: dict) -> float:
+        return c.get("semantic_score", c.get("weight", 0))
+
+    by_book: dict[str, list[dict]] = {}
+    for c in book_eligible:
+        by_book.setdefault(c["id"].split(":")[0], []).append(c)
+    for group in by_book.values():
+        group.sort(key=_sem, reverse=True)
+    book_order = sorted(by_book, key=lambda b: _sem(by_book[b][0]), reverse=True)
+    if book_gate:
+        # One representation pin per absent book, best book first.
+        interleaved = [by_book[b][0] for b in book_order]
+    else:
+        interleaved = [
+            by_book[b][i]
+            for i in range(max(map(len, by_book.values()), default=0))
+            for b in book_order
+            if i < len(by_book[b])
+        ]
+    for i, c in enumerate(interleaved[:max_pins]):
         c[score_key] = base_score + 0.004 * (max_pins - i)
         existing_ids.add(c["id"])
         pinned_total.append(c)
