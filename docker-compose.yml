@@ -103,12 +103,16 @@ services:
   # Ollama LLM inference server
   ollama:
     image: ollama/ollama:latest
-    container_name: bible_rag_ollama
+    container_name: ollama
     restart: unless-stopped
     ports:
       - "${OLLAMA_PORT:-11434}:11434"
     volumes:
-      - ollama_data:/root/.ollama
+      - type: bind
+        source: /mnt/ollama-data/ollama
+        target: /root/.ollama
+        bind:
+          create_host_path: false
     deploy:
       resources:
         reservations:

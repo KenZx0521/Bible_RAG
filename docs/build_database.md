@@ -47,8 +47,8 @@ docker compose up -d postgres qdrant neo4j ollama
 ### 0.4 Ollama 模型（不會自動 pull，volume 是空的）
 
 ```bash
-docker exec bible_rag_ollama ollama pull gemma4:31b-it-q8_0      # Step 1 Phase 4 + Step 6 R4
-docker exec bible_rag_ollama ollama pull gemma4:26b-a4b-it-q8_0  # Step 7
+docker exec ollama ollama pull gemma4:31b-it-q8_0      # Step 1 Phase 4 + Step 6 R4
+docker exec ollama ollama pull gemma4:26b-a4b-it-q8_0  # Step 7
 ```
 
 ### 0.5 Python 環境

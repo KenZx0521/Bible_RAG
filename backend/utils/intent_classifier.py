@@ -80,7 +80,10 @@ async def classify_intent(question: str) -> dict:
                 {"role": "user", "content": CLASSIFICATION_PROMPT + f'問題: "{question}"'},
             ],
             temperature=0.1,
-            max_tokens=256,
+            # gemma4 *-it 是 reasoning LLM，會先產出約 800-900 個隱藏 thinking
+            # token 才輸出 content。上限太低會讓 thinking 吃光額度、content 回空
+            # 字串，導致下方靜默 fallback 成預設的 "topic"。
+            max_tokens=4096,
         )
 
         # Parse JSON from response

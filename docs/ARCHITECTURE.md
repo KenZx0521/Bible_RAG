@@ -562,7 +562,7 @@ flowchart TB
             PG[("bible_rag_postgres<br/>pgvector/pgvector:pg15<br/>:5432")]
             QD[("bible_rag_qdrant<br/>qdrant:v1.13.2<br/>:6333/:6334")]
             NEO[("bible_rag_neo4j<br/>neo4j:5.15-community+APOC<br/>:7474/:7687")]
-            OL["bible_rag_ollama<br/>ollama :11434<br/>(GPU all)"]
+            OL["ollama<br/>ollama :11434<br/>(GPU all)"]
         end
         SCRIPTS["scripts/ 建庫管線<br/>evaluation/ 評估框架<br/>(host 端 uv 執行)"]
     end
