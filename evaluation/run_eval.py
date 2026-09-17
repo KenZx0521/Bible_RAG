@@ -6,6 +6,8 @@ Usage:
     uv run python run_eval.py                 # Full pipeline (uses backend RAG_USE_GRAPH)
     uv run python run_eval.py --collect-only  # Only collect RAG responses + inline eval
     uv run python run_eval.py --eval-only     # Only run batch evaluation (needs responses)
+    uv run python run_eval.py --eval-only --rebuild-contexts  # legacy checkpoint: rebuild
+                                              # generator-format judge contexts from PostgreSQL
     uv run python run_eval.py --visualize-only # Only generate dashboard
 
     Graph-retrieval A/B (backend does NOT need restart between runs):
@@ -62,10 +64,18 @@ def main() -> None:
         help="Semantic-only mode: bypass R1-R6 routing + SQL + graph + cross-ref; "
              "run pure semantic retrieval + rerank. Outputs to results_semantic/.",
     )
+    parser.add_argument(
+        "--rebuild-contexts",
+        action="store_true",
+        help="With --eval-only: rebuild generator-format context blocks (header + text) "
+             "from PostgreSQL for legacy checkpoints whose sources carry no context.",
+    )
     args = parser.parse_args()
 
     if args.semantic and args.graph is not None:
         parser.error("--semantic cannot be combined with --graph / --no-graph")
+    if args.rebuild_contexts and not args.eval_only:
+        parser.error("--rebuild-contexts requires --eval-only")
 
     _setup_logging()
 
@@ -104,7 +114,7 @@ def main() -> None:
 
     elif args.eval_only:
         console.print("[bold]Mode: Evaluate Only (batch)[/bold]")
-        samples = load_samples_from_checkpoint()
+        samples = load_samples_from_checkpoint(rebuild_contexts=args.rebuild_contexts)
         console.print(f"Loaded {len(samples)} samples from raw_responses.json.")
         report = run_evaluation(samples)
         csv_path = export_csv(report)

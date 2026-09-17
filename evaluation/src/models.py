@@ -39,6 +39,12 @@ class SourceInfo(BaseModel):
     title: str = ""
     verse_range: str = ""
     score: float | None = None
+    # Retrieval strategy that surfaced the source (verse_direct / semantic / ...).
+    # Disambiguates verse ids from pericope ids (see context_blocks.resolve_fetch_kind).
+    strategy: str | None = None
+    # The exact context block the generator saw (header + text), when the
+    # backend was asked for it (include_context). None on legacy checkpoints.
+    context: str | None = None
 
 
 class EvalSample(BaseModel):
@@ -48,6 +54,10 @@ class EvalSample(BaseModel):
     rag_answer: str = ""
     contexts: list[str] = []
     sources: list[SourceInfo] = []
+    # Where `contexts` came from: backend (generator blocks returned by the API),
+    # rebuilt (generator-format blocks rebuilt from PostgreSQL), or
+    # legacy_headerless (pre-2026-09 checkpoint text, no headers).
+    context_source: str = ""
     ground_truth: GroundTruthItem
     reference_answer: str = ""
     route_used: str = ""

@@ -30,7 +30,7 @@ def main() -> None:
 
     from src.evaluator import (
         load_samples_from_checkpoint, load_results,
-        _aggregate, _save_results, export_csv,
+        _aggregate, _save_results, context_format_summary, export_csv,
     )
     from src.metrics.coverage_eval import compute_coverage_metrics
     from src.visualizer import generate_dashboard
@@ -55,6 +55,9 @@ def main() -> None:
             rationales[qid] = prev.rationale
 
     report = _aggregate(samples, all_metrics, rationales)
+    # Keep the original run provenance (judge model, ragas version, ...) and
+    # record what context form these samples carry.
+    report.meta = {**old.meta, **context_format_summary(samples)}
     _save_results(report)
     export_csv(report)
     generate_dashboard(report)

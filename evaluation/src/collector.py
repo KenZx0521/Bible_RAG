@@ -16,9 +16,14 @@ import httpx
 from rich.console import Console
 
 from .config import settings
+from .context_blocks import (
+    CONTEXT_SOURCE_BACKEND,
+    CONTEXT_SOURCE_REBUILT,
+    contexts_from_raw_item,
+)
 from .models import EvalSample, GroundTruthItem, MetricResult, SourceInfo
 from .rag_client import query_rag, parse_sources
-from .content_fetcher import get_pool, fetch_contexts
+from .content_fetcher import get_pool, fetch_context_blocks
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -113,11 +118,19 @@ async def collect_responses(
                 strategies_used = stats.get("strategies_used", [])
                 strategy_errors = stats.get("strategy_errors", {}) or {}
 
-                # --- Step 2: Fetch context from PostgreSQL ---
-                source_ids = [s.id for s in sources]
-                contexts = await fetch_contexts(pool, source_ids)
-                logger.info("[%s] RAG done: %d sources, %d contexts, answer_len=%d",
-                            gt.question_id, len(sources), len(contexts), len(answer))
+                # --- Step 2: Judge context = the generator's context blocks ---
+                # Preferred: the backend returned each block (include_context).
+                # Fallback (older backend): rebuild header + text from PostgreSQL.
+                contexts = contexts_from_raw_item({"sources": [s.model_dump() for s in sources]})
+                context_source = CONTEXT_SOURCE_BACKEND
+                if contexts is None:
+                    if sources:
+                        logger.warning("[%s] backend returned no context blocks; rebuilding from DB",
+                                       gt.question_id)
+                    contexts = await fetch_context_blocks(pool, sources)
+                    context_source = CONTEXT_SOURCE_REBUILT
+                logger.info("[%s] RAG done: %d sources, %d contexts (%s), answer_len=%d",
+                            gt.question_id, len(sources), len(contexts), context_source, len(answer))
 
                 sample = EvalSample(
                     question_id=gt.question_id,
@@ -126,6 +139,7 @@ async def collect_responses(
                     rag_answer=answer,
                     contexts=contexts,
                     sources=sources,
+                    context_source=context_source,
                     ground_truth=gt,
                     reference_answer=gt.reference_answer,
                     route_used=route_used,
@@ -140,13 +154,15 @@ async def collect_responses(
                         f"  [dim]Route: {route_used} | Strategies: {strats}[/dim]"
                     )
 
-                # Save raw response
+                # Save raw response. `contexts` holds the generator blocks once;
+                # `context_source` tells readers they carry headers.
                 collected_raw.append({
                     "question_id": gt.question_id,
                     "question": gt.question,
                     "rag_answer": answer,
                     "contexts": contexts,
-                    "sources": [s.model_dump() for s in sources],
+                    "context_source": context_source,
+                    "sources": [s.model_dump(exclude={"context"}) for s in sources],
                     "route_used": route_used,
                     "strategies_used": strategies_used,
                     "strategy_errors": strategy_errors,

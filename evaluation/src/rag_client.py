@@ -21,6 +21,7 @@ async def query_rag(
     top_k: int | None = None,
     use_graph: bool | None = None,
     semantic_only: bool = False,
+    include_context: bool = True,
 ) -> dict:
     """
     Send a question to POST /api/v1/query and return the parsed response.
@@ -30,6 +31,9 @@ async def query_rag(
             backend default; True/False explicitly forces graph on/off.
         semantic_only: When True, bypass backend routing / SQL / graph /
             cross-ref and run pure semantic retrieval only.
+        include_context: Ask the backend for the exact context block it fed
+            the generator per source (header + text), so the judge sees the
+            same text. Older backends ignore the field.
 
     Returns dict with keys: answer, sources, intent, retrieval_stats
     """
@@ -38,6 +42,7 @@ async def query_rag(
         "question": question,
         "top_k": k,
         "include_sources": True,
+        "include_context": include_context,
     }
     if use_graph is not None:
         payload["use_graph"] = use_graph
@@ -85,5 +90,7 @@ def parse_sources(raw_sources: list[dict]) -> list[SourceInfo]:
             title=s.get("title", ""),
             verse_range=s.get("verse_range", ""),
             score=s.get("score"),
+            strategy=s.get("strategy"),
+            context=s.get("context"),
         ))
     return results

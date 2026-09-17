@@ -133,7 +133,35 @@ def _judge_model_name() -> str:
     }.get(provider, provider)
 
 
-def _build_meta(n_samples: int) -> dict:
+def context_format_summary(samples: list[EvalSample]) -> dict:
+    """
+    What the LLM judges saw as context. ``generator_blocks`` = header-bearing
+    blocks identical to the generator input (backend or rebuilt);
+    ``headerless`` = legacy passages; ``mixed`` otherwise. Faithfulness and
+    context_recall numbers are only comparable within one format.
+    """
+    from .context_blocks import CONTEXT_SOURCE_LEGACY, GENERATOR_CONTEXT_SOURCES
+
+    counts: dict[str, int] = defaultdict(int)
+    unjudged = 0
+    for s in samples:
+        if not s.contexts:  # never reaches an LLM judge (RAGAS skips it)
+            unjudged += 1
+            continue
+        counts[s.context_source or CONTEXT_SOURCE_LEGACY] += 1
+    kinds = set(counts)
+    if not kinds:
+        fmt = "none"
+    elif kinds <= set(GENERATOR_CONTEXT_SOURCES):
+        fmt = "generator_blocks"
+    elif kinds == {CONTEXT_SOURCE_LEGACY}:
+        fmt = "headerless"
+    else:
+        fmt = "mixed"
+    return {"context_format": fmt, "context_sources": dict(counts), "unjudged_samples": unjudged}
+
+
+def _build_meta(n_samples: int, samples: list[EvalSample] | None = None) -> dict:
     """Run provenance recorded into evaluation_results.json."""
     from datetime import datetime
     import importlib.metadata
@@ -151,6 +179,8 @@ def _build_meta(n_samples: int) -> dict:
         "judge_model": _judge_model_name(),
         "ragas_version": ragas_version,
         "results_dir": settings.results_dir.name,
+        "faithfulness_strict": settings.eval_faithfulness_strict,
+        **context_format_summary(samples or []),
     }
 
 
@@ -281,7 +311,7 @@ def run_evaluation(
 
     # Aggregate
     report = _aggregate(samples, all_metrics, rationales)
-    report.meta = _build_meta(len(samples))
+    report.meta = _build_meta(len(samples), samples)
     _print_summary(report)
 
     # Save
@@ -299,11 +329,73 @@ def load_results() -> AggregatedReport:
     return AggregatedReport(**data)
 
 
-def load_samples_from_checkpoint() -> list[EvalSample]:
-    """Reconstruct EvalSample list from raw_responses.json + ground_truth.json."""
+async def _rebuild_context_blocks(legacy: dict[int, tuple[list, list[str]]]) -> dict[int, list[str]]:
+    """Rebuild generator-format context blocks from PostgreSQL for legacy checkpoints (keyed by item position)."""
+    from .content_fetcher import fetch_context_blocks, get_pool
+
+    pool = await get_pool()
+    try:
+        return {
+            pos: await fetch_context_blocks(pool, sources, stored_texts=stored)
+            for pos, (sources, stored) in legacy.items()
+        }
+    finally:
+        await pool.close()
+
+
+def dedupe_by_question_id(items: list[dict]) -> tuple[list[dict], list[str]]:
+    """Keep the first raw item per question_id (downstream dicts are keyed by it); report the dropped ids."""
+    seen: set[str] = set()
+    kept: list[dict] = []
+    dropped: list[str] = []
+    for item in items:
+        qid = item["question_id"]
+        if qid in seen:
+            dropped.append(qid)
+            continue
+        seen.add(qid)
+        kept.append(item)
+    return kept, dropped
+
+
+def _resolve_checkpoint_contexts(
+    item: dict, blocks: list[str] | None, rebuilt: list[str] | None,
+) -> tuple[list[str], str]:
+    """(contexts, context_source) for one raw item; a failed rebuild keeps the stored text."""
+    from .context_blocks import (
+        CONTEXT_SOURCE_BACKEND, CONTEXT_SOURCE_LEGACY, CONTEXT_SOURCE_REBUILT,
+    )
+
+    stored = item.get("contexts", [])
+    if blocks is not None:
+        return blocks, item.get("context_source") or CONTEXT_SOURCE_BACKEND
+    if rebuilt and len(rebuilt) >= len(stored):
+        return rebuilt, CONTEXT_SOURCE_REBUILT
+    if rebuilt is not None:
+        console.print(f"[yellow]{item['question_id']}: rebuild found {len(rebuilt)}/{len(stored)} "
+                      "passages; keeping stored headerless contexts[/yellow]")
+    return stored, CONTEXT_SOURCE_LEGACY
+
+
+def load_samples_from_checkpoint(
+    rebuild_contexts: bool = False,
+    raw_path: Path | None = None,
+    only_ids: set[str] | None = None,
+    limit: int | None = None,
+) -> list[EvalSample]:
+    """
+    Reconstruct EvalSample list from raw_responses.json + ground_truth.json.
+
+    Judge contexts are the generator-format blocks when the checkpoint has
+    them. Legacy checkpoints store headerless passages; with
+    ``rebuild_contexts`` those are rebuilt (header + text) from PostgreSQL,
+    otherwise they are used as stored (and a warning is printed).
+    ``only_ids`` / ``limit`` restrict loading (and rebuilding) to those items.
+    """
+    from .context_blocks import contexts_from_raw_item
     from .models import SourceInfo
 
-    raw_path = settings.results_dir / "raw_responses.json"
+    raw_path = raw_path or settings.results_dir / "raw_responses.json"
     if not raw_path.exists():
         raise FileNotFoundError(f"No checkpoint found at {raw_path}")
 
@@ -312,19 +404,56 @@ def load_samples_from_checkpoint() -> list[EvalSample]:
 
     gt_items = {q.question_id: q for q in load_ground_truth()}
 
-    samples = []
-    for item in raw_data:
+    if limit is not None and limit <= 0:
+        raise ValueError(f"limit must be a positive integer, got {limit}")
+
+    items, duplicates = dedupe_by_question_id(raw_data)
+    if duplicates:
+        console.print(f"[yellow]{len(duplicates)} duplicate question_ids in {raw_path.name} "
+                      f"(first occurrence kept): {duplicates[:5]}[/yellow]")
+
+    parsed: list[tuple[dict, list[SourceInfo], list[str] | None]] = []
+    for item in items:
         qid = item["question_id"]
-        gt = gt_items.get(qid)
-        if gt is None:
+        if qid not in gt_items or (only_ids is not None and qid not in only_ids):
             continue
+        sources = [SourceInfo(**s) for s in item.get("sources", [])]
+        parsed.append((item, sources, contexts_from_raw_item(item)))
+    if only_ids:
+        missing = only_ids - {item["question_id"] for item, _, _ in parsed}
+        if missing:
+            console.print(f"[yellow]{len(missing)} requested ids not in checkpoint/ground truth: "
+                          f"{sorted(missing)}[/yellow]")
+    if limit:
+        parsed = parsed[:limit]
+
+    legacy = {
+        pos: (sources, item.get("contexts", []))
+        for pos, (item, sources, blocks) in enumerate(parsed) if blocks is None and sources
+    }
+    rebuilt: dict[int, list[str]] = {}
+    if legacy and rebuild_contexts:
+        console.print(f"[cyan]Rebuilding generator-format contexts for {len(legacy)} legacy samples...[/cyan]")
+        rebuilt = asyncio.run(_rebuild_context_blocks(legacy))
+    elif legacy:
+        console.print(
+            f"[yellow]{len(legacy)} samples carry headerless legacy contexts; LLM judges will not "
+            "see the generator headers (rebuild_contexts=False).[/yellow]"
+        )
+
+    samples = []
+    for pos, (item, sources, blocks) in enumerate(parsed):
+        qid = item["question_id"]
+        gt = gt_items[qid]
+        contexts, context_source = _resolve_checkpoint_contexts(item, blocks, rebuilt.get(pos))
         samples.append(EvalSample(
             question_id=qid,
             question=gt.question,
             question_type=gt.question_type,
             rag_answer=item.get("rag_answer", ""),
-            contexts=item.get("contexts", []),
-            sources=[SourceInfo(**s) for s in item.get("sources", [])],
+            contexts=contexts,
+            sources=sources,
+            context_source=context_source,
             ground_truth=gt,
             reference_answer=gt.reference_answer,
             route_used=item.get("route_used", ""),
