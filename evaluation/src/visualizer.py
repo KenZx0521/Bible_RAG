@@ -30,6 +30,9 @@ RETRIEVAL_METRICS = [
     "verse_recall_at_k", "anchor_coverage_at_k",
     "precision_at_k", "recall_at_k", "f1_at_k", "mrr", "map_at_k", "ndcg_at_k", "hit_rate"
 ]
+# ragas_faithfulness_strict is a gate, not a headline: shown on cards, the
+# generation bar and the detail table, but kept out of the radar average so
+# the LLM axis stays comparable with runs that disable it.
 LLM_JUDGE_METRICS = [
     "ragas_faithfulness", "ragas_answer_relevancy",
     "ragas_context_recall", "ragas_answer_correctness",
@@ -110,8 +113,8 @@ def _make_retrieval_bar(report: AggregatedReport) -> str:
 def _make_generation_bar(report: AggregatedReport) -> str:
     """Bar chart for generation quality metrics."""
     gen_metrics = [
-        "ragas_faithfulness", "ragas_answer_relevancy", "ragas_answer_correctness",
-        "answer_coverage", "semantic_similarity",
+        "ragas_faithfulness", "ragas_faithfulness_strict", "ragas_answer_relevancy",
+        "ragas_answer_correctness", "answer_coverage", "semantic_similarity",
     ]
     rows = []
     for qtype in QUESTION_TYPES:
@@ -199,7 +202,7 @@ def _make_heatmap(report: AggregatedReport) -> str:
 def _make_question_detail_table(report: AggregatedReport) -> list[dict]:
     """Build a detail row for every question, sorted by avg_score ascending."""
     KEY_COLS = [
-        "hit_rate", "ragas_faithfulness", "ragas_answer_relevancy",
+        "hit_rate", "ragas_faithfulness", "ragas_faithfulness_strict", "ragas_answer_relevancy",
         "ragas_context_recall", "semantic_similarity",
         "ragas_answer_correctness", "answer_coverage",
     ]
@@ -207,10 +210,10 @@ def _make_question_detail_table(report: AggregatedReport) -> list[dict]:
     for sample in report.samples:
         metric_map = {m.name: m.value for m in sample.metrics}
         has_answer = any(m.name == "hit_rate" for m in sample.metrics)
-        avg = (
-            round(sum(m.value for m in sample.metrics) / len(sample.metrics), 4)
-            if sample.metrics else 0.0
-        )
+        # Run-local average over the metrics that were computed (invalid ones
+        # such as a judge timeout are excluded rather than counted as 0).
+        valid_vals = [m.value for m in sample.metrics if m.valid]
+        avg = round(sum(valid_vals) / len(valid_vals), 4) if valid_vals else 0.0
         row = {
             "question_id": sample.question_id,
             "question_type": sample.question_type,
@@ -235,6 +238,7 @@ def _make_metric_cards(report: AggregatedReport) -> list[dict]:
         ("mrr", "MRR", "平均倒數排名"),
         ("ndcg_at_k", "NDCG@k", "歸一化折損累積增益"),
         ("ragas_faithfulness", "Faithfulness", "回答忠實度"),
+        ("ragas_faithfulness_strict", "Faithfulness (strict)", "忠實度(RAGAS 預設判準)"),
         ("ragas_answer_relevancy", "Answer Relevancy", "回答相關性"),
         ("ragas_context_recall", "Context Recall", "Context 召回率"),
         ("ragas_answer_correctness", "Answer Correctness", "綜合正確性"),
@@ -243,8 +247,9 @@ def _make_metric_cards(report: AggregatedReport) -> list[dict]:
     ]
     cards = []
     for key, title, desc in key_metrics:
-        val = report.overall.get(key, 0.0)
-        cards.append({"title": title, "desc": desc, "value": f"{val:.2%}"})
+        if key not in report.overall:
+            continue  # optional metric (e.g. strict gate disabled, older run): no fabricated 0%
+        cards.append({"title": title, "desc": desc, "value": f"{report.overall[key]:.2%}"})
     return cards
 
 

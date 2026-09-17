@@ -137,7 +137,7 @@
 <body>
 <div class="container">
     <h1>Bible RAG Evaluation Dashboard</h1>
-    <p class="subtitle">RAG 系統評估報告 — 100 個 Ground Truth 問題</p>
+    <p class="subtitle">RAG 系統評估報告 — {{ question_details | length }} 個 Ground Truth 問題</p>
 
     <!-- Navigation tabs -->
     <div class="tabs">
@@ -215,6 +215,7 @@
                         <th>Avg Score</th>
                         <th>Hit Rate</th>
                         <th>Faithfulness</th>
+                        <th>Faith. (strict)</th>
                         <th>Answer Rel.</th>
                         <th>Ctx Recall</th>
                         <th>Similarity</th>
@@ -236,6 +237,7 @@
                         </td>
                         <td>{% if item.hit_rate is not none %}{{ "%.2f" | format(item.hit_rate) }}{% else %}-{% endif %}</td>
                         <td>{% if item.ragas_faithfulness is not none %}{{ "%.2f" | format(item.ragas_faithfulness) }}{% else %}-{% endif %}</td>
+                        <td>{% if item.ragas_faithfulness_strict is not none %}{{ "%.2f" | format(item.ragas_faithfulness_strict) }}{% else %}-{% endif %}</td>
                         <td>{% if item.ragas_answer_relevancy is not none %}{{ "%.2f" | format(item.ragas_answer_relevancy) }}{% else %}-{% endif %}</td>
                         <td>{% if item.ragas_context_recall is not none %}{{ "%.2f" | format(item.ragas_context_recall) }}{% else %}-{% endif %}</td>
                         <td>{% if item.semantic_similarity is not none %}{{ "%.2f" | format(item.semantic_similarity) }}{% else %}-{% endif %}</td>
