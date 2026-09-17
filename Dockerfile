@@ -1,19 +1,30 @@
+# Empty fallback for the uv cache. docker compose overrides this stage with a
+# host directory (build.additional_contexts.uvcache, see docker-compose.yml), so
+# `uv sync` reuses already-downloaded wheels (torch + CUDA ~4 GB) instead of
+# re-downloading them. A plain `docker build .` still works: the cache is just empty.
+FROM scratch AS uvcache
+
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+# Pinned: a uv cache is only reusable by a uv that reads the same cache format.
+# The seeded host cache (wheels-v6 / simple-v24) was written by uv 0.12.0.
+COPY --from=ghcr.io/astral-sh/uv:0.12.0 /uv /uvx /usr/local/bin/
 
 WORKDIR /app
 
 # Copy dependency files first for Docker layer caching
 COPY backend/pyproject.toml backend/uv.lock ./backend/
 
-# Install dependencies
+# Install dependencies. The cache is mounted read-write but writes are discarded
+# after this step (the host directory is never modified, the image carries no
+# cache). UV_LINK_MODE=copy: a bind-mounted cache cannot be hardlinked into the layer.
 WORKDIR /app/backend
-RUN uv sync --frozen --no-dev
+RUN --mount=type=bind,from=uvcache,target=/root/.cache/uv,rw=true \
+    UV_LINK_MODE=copy uv sync --frozen --no-dev
 
 # Copy application source
 WORKDIR /app

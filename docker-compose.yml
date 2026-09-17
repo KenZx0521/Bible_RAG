@@ -4,6 +4,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # Host uv cache reused by `uv sync` during the image build (overrides the
+      # empty `uvcache` stage in the Dockerfile). The directory must exist; an
+      # empty one works (uv downloads). Seeding it: see README「Docker 建置快取」.
+      additional_contexts:
+        uvcache: ${BACKEND_UV_CACHE_DIR:-${HOME}/.cache/uv-bible-rag-backend}
     container_name: bible_rag_backend
     restart: unless-stopped
     ports:

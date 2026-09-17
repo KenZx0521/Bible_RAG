@@ -76,8 +76,18 @@ ollama pull gemma3:4b
 ### 3. 啟動所有服務
 
 ```bash
+mkdir -p ~/.cache/uv-bible-rag-backend   # backend 建置用的 uv 快取目錄(必須存在,見下方說明)
 docker compose up -d
 ```
+
+> **Docker 建置快取**:backend 映像檔的 `uv sync` 會掛載主機目錄 `~/.cache/uv-bible-rag-backend`(可用 `BACKEND_UV_CACHE_DIR` 改路徑)當 uv 快取,torch 與 CUDA 套件(約 4 GB)有快取就不重新下載。目錄是空的也能建置,只是會全部重抓。已有舊映像檔時可先從映像檔匯出快取:
+>
+> ```bash
+> cid=$(docker create bible_rag-backend:pre-fix-2026-07-31)   # 任何含 /root/.cache/uv 的舊 backend 映像檔
+> docker cp "$cid:/root/.cache/uv" ~/.cache/uv-bible-rag-backend && docker rm "$cid"
+> ```
+>
+> 快取由 uv 0.12.0 寫入,Dockerfile 釘住同一版 uv;升級 uv 版本時快取可能失效(會自動重抓,不會出錯)。建置期間的寫入不會回寫主機目錄,映像檔本身也不含快取。
 
 此指令啟動：
 - **backend** — FastAPI 服務 (port 8000)
@@ -327,6 +337,7 @@ cp .env.example .env
 | `BATCH_SIZE` | 實體抽取批次大小 | `5` |
 | `VERBOSE` | 是否啟用詳細日誌 | `false` |
 | `BACKEND_PORT` | 後端服務埠號（Docker 部署用） | `8000` |
+| `BACKEND_UV_CACHE_DIR` | backend 映像檔建置時掛載的 uv 快取目錄（Docker 建置用，需存在） | `~/.cache/uv-bible-rag-backend` |
 
 > **Docker Compose 注意事項**：使用 `docker compose up` 時，以下變數會自動被 `docker-compose.yml` 覆寫，不需手動修改：
 > - `POSTGRES_HOST` → `postgres`

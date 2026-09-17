@@ -576,6 +576,7 @@ flowchart TB
 | 啟動順序 | backend `depends_on` 四服務 healthcheck 全綠才啟動 |
 | 主機名覆寫 | compose 把容器內 host 覆寫為服務名;`.env` 的 localhost 僅供 host 端腳本 |
 | **無 code volume** | 改 `backend/` 後必須 `docker compose up -d --build backend`,只 restart 跑舊 image |
+| **建置 uv 快取** | `uv sync` 掛載主機 `~/.cache/uv-bible-rag-backend`(`BACKEND_UV_CACHE_DIR`,需存在)當快取,uv 釘 0.12.0 對齊快取格式;有快取時 torch/CUDA 不重抓(2026-09-17) |
 | 唯一程式相關掛載 | 唯讀 `output/bm25_vocabulary.json`(BM25 詞表)+ `model_cache`(HF 模型快取) |
 | 三套 pyproject.toml | `backend/`(容器)、`scripts/`(建庫)、`evaluation/`(評估)— 依賴不同步是常見 bug 源 |
 
