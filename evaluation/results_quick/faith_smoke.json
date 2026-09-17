@@ -1,0 +1,155 @@
+{
+ "meta": {
+  "timestamp": "2026-09-17T12:39:21+08:00",
+  "source_results_dir": "results_graph",
+  "n_samples": 3,
+  "n_scored": 3,
+  "n_paired_with_stored": 3,
+  "judge_provider": "ollama",
+  "judge_model": "gemma4:26b-a4b-it-q8_0",
+  "strict_enabled": true,
+  "context_format": "generator_blocks",
+  "context_sources": {
+   "rebuilt": 3
+  },
+  "unjudged_samples": 0
+ },
+ "overall": {
+  "ragas_faithfulness": 0.9524,
+  "ragas_faithfulness_strict": 0.9524,
+  "stored_faithfulness": 0.1026
+ },
+ "by_type": {
+  "VERSE_LOOKUP": {
+   "ragas_faithfulness": 1.0,
+   "ragas_faithfulness_strict": 1.0,
+   "stored_faithfulness": 0.0
+  },
+  "GENERAL_BIBLE_QUESTION": {
+   "ragas_faithfulness": 0.8571,
+   "ragas_faithfulness_strict": 0.8571,
+   "stored_faithfulness": 0.3077
+  }
+ },
+ "by_family": {
+  "legacy_head": {
+   "ragas_faithfulness": 1.0,
+   "ragas_faithfulness_strict": 1.0,
+   "stored_faithfulness": 0.0
+  },
+  "longtail_book": {
+   "ragas_faithfulness": 1.0,
+   "ragas_faithfulness_strict": 1.0,
+   "stored_faithfulness": 0.0
+  },
+  "parallel_account": {
+   "ragas_faithfulness": 0.8571,
+   "ragas_faithfulness_strict": 0.8571,
+   "stored_faithfulness": 0.3077
+  }
+ },
+ "samples": [
+  {
+   "question_id": "VERSE_LOOKUP_017",
+   "question_type": "VERSE_LOOKUP",
+   "family": "legacy_head",
+   "route_used": "R1",
+   "context_source": "rebuilt",
+   "stored_faithfulness": 0.0,
+   "ragas_faithfulness": 1.0,
+   "ragas_faithfulness_strict": 1.0,
+   "n_statements": 1,
+   "statements": [
+    {
+     "statement": "根據啟示錄第3章第20節，耶穌說：「看哪，我站在門外叩門，若有聽見我聲音就開門的，我要進到他那裏去，我與他，他與我一同坐席。」",
+     "verdict": 1,
+     "reason": "出處與段落標頭相符；經文內容與陳述引用的文字完全一致。",
+     "strict_verdict": 1,
+     "strict_reason": "The context explicitly provides the text of Revelation Chapter 3, verse 20, which matches the statement provided. While the name 'Jesus' is not explicitly written in the snippet, in the theological context of Revelation, this speaker is understood to be Jesus, and the quote itself is a direct transcription of the provided text."
+    }
+   ]
+  },
+  {
+   "question_id": "VERSE_LOOKUP_067",
+   "question_type": "VERSE_LOOKUP",
+   "family": "longtail_book",
+   "route_used": "R1",
+   "context_source": "rebuilt",
+   "stored_faithfulness": 0.0,
+   "ragas_faithfulness": 1.0,
+   "ragas_faithfulness_strict": 1.0,
+   "n_statements": 1,
+   "statements": [
+    {
+     "statement": "根據約翰三書第1章2節，長老約翰為親愛的兄弟有以下祝願：「我願你凡事興盛，身體健壯，正如你的靈魂興盛一樣。」",
+     "verdict": 1,
+     "reason": "出處與標頭相符；陳述內容完整且準確地引用了經文第2節的文字。",
+     "strict_verdict": 1,
+     "strict_reason": "The context explicitly provides the text of 3 John 1:2, which contains the exact blessing mentioned in the statement."
+    }
+   ]
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_081",
+   "question_type": "GENERAL_BIBLE_QUESTION",
+   "family": "parallel_account",
+   "route_used": "R5",
+   "context_source": "rebuilt",
+   "stored_faithfulness": 0.3077,
+   "ragas_faithfulness": 0.8571,
+   "ragas_faithfulness_strict": 0.8571,
+   "n_statements": 7,
+   "statements": [
+    {
+     "statement": "根據提供的經文段落，馬太福音與路加福音記載的曠野三個試探的順序是相同的。",
+     "verdict": 0,
+     "reason": "經文顯示兩者順序不同。路加福音的順序是：1.石頭變食物、2.萬國榮華、3.殿頂跳下；而馬太福音的順序是：1.石頭變食物、2.殿頂跳下、3.萬國榮華。",
+     "strict_verdict": 0,
+     "strict_reason": "In Luke, the order is: 1. Stone to bread, 2. Kingdoms of the world/worship, 3. Temple top jump. In Matthew, the order is: 1. Stone to bread, 2. Temple top jump, 3. Highest mountain/kingdoms of the world. Therefore, the sequences are different."
+    },
+    {
+     "statement": "路加福音的順序是：魔鬼試探耶穌吩咐石頭變成食物（路加福音 第4章 3節-4節）。",
+     "verdict": 1,
+     "reason": "符合路加福音第3-4節的記載。",
+     "strict_verdict": 1,
+     "strict_reason": "The context for Luke 4:3-4 explicitly describes the devil tempting Jesus to command a stone to become food."
+    },
+    {
+     "statement": "路加福音的順序是：魔鬼領耶穌看見天下的萬國，並誘耶穌下拜（路加福音 第4章 5節-8節）。",
+     "verdict": 1,
+     "reason": "符合路加福音第5-8節的記載。",
+     "strict_verdict": 1,
+     "strict_reason": "The context for Luke 4:5-8 describes the devil taking Jesus to a high mountain, showing him all the kingdoms of the world, and tempting him to worship him."
+    },
+    {
+     "statement": "路加福音的順序是：魔鬼領耶穌到耶路撒冷殿頂，誘耶穌從那裡跳下去（路加福音 第4章 9節-12節）。",
+     "verdict": 1,
+     "reason": "符合路加福音第9-12節的記載。",
+     "strict_verdict": 1,
+     "strict_reason": "The context for Luke 4:9-12 describes the devil taking Jesus to the pinnacle of the temple in Jerusalem and tempting him to jump."
+    },
+    {
+     "statement": "馬太福音的順序是：那試探人對耶穌說可以吩咐石頭變成食物（馬太福音 第4章 3節-4節）。",
+     "verdict": 1,
+     "reason": "符合馬太福音第3-4節的記載。",
+     "strict_verdict": 1,
+     "strict_reason": "The context for Matthew 4:3-4 explicitly describes the tempter telling Jesus to command stones to become food."
+    },
+    {
+     "statement": "馬太福音的順序是：魔鬼帶耶穌上最高的山，將世上的萬國與榮華指給耶穌看，並誘耶穌俯伏拜魔鬼（馬太福音 第4章 8節-10節）。",
+     "verdict": 1,
+     "reason": "符合馬太福音第8-10節的記載。",
+     "strict_verdict": 1,
+     "strict_reason": "The context for Matthew 4:8-10 describes the devil taking Jesus to a very high mountain, showing him all the kingdoms of the world and their glory, and tempting him to bow down and worship."
+    },
+    {
+     "statement": "馬太福音的順序是：魔鬼叫耶穌站在殿頂上，誘耶穌跳下去（馬太福音 第4章 5節-6節）。",
+     "verdict": 1,
+     "reason": "符合馬太福音第5-6節的記載。",
+     "strict_verdict": 1,
+     "strict_reason": "The context for Matthew 4:5-6 describes the devil taking Jesus to the holy city and having him stand on the pinnacle of the temple, tempting him to jump."
+    }
+   ]
+  }
+ ]
+}
