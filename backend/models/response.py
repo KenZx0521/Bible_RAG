@@ -18,6 +18,9 @@ class Source(BaseModel):
     # reranker score when `score` is the fused score.
     strategy: str | None = None
     rerank_score: float | None = None
+    # Exact context block fed to the generator for this source
+    # (`[i] 書卷 第N章 - 標題 (節)` + text). Only when include_context=true.
+    context: str | None = None
 
 
 class IntentInfo(BaseModel):

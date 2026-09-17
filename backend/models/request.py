@@ -9,6 +9,10 @@ class QueryRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=500, description="使用者問題")
     top_k: int = Field(default=5, ge=1, le=20, description="回傳結果數量")
     include_sources: bool = Field(default=True, description="是否包含來源資訊")
+    include_context: bool = Field(
+        default=False,
+        description="在每個 source 附上交給生成器的完整 context 區塊(標頭+經文);供評估端 judge 使用",
+    )
     use_graph: bool | None = Field(
         default=None,
         description="覆寫 RAG_USE_GRAPH 預設值;None 表示沿用 backend 設定",

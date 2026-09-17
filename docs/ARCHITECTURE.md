@@ -449,7 +449,8 @@ sequenceDiagram
 - `semantic_only` 模式跳過 ①②③(省一次 LLM 呼叫),直走純語意檢索 — 評估 baseline 用;
 - `use_graph`(per-request)可覆寫 `.env` 的 `RAG_USE_GRAPH`,A/B 評估不需重啟容器;
 - `retrieval_only` flag 跳過答案生成,供 quick eval 快速迴路;
-- 回應含觀測欄位:`Source.strategy` / `Source.rerank_score`(fused 與 raw 並列)、`stats.fusion_alpha`、`route_used` / `strategies_used` / `strategy_errors`。
+- 回應含觀測欄位:`Source.strategy` / `Source.rerank_score`(fused 與 raw 並列)、`stats.fusion_alpha`、`route_used` / `strategies_used` / `strategy_errors`;
+- `include_context` flag 讓每個 `Source` 附上生成器實際看到的 context 區塊(`Source.context`,標頭 + 經文),評估端 judge 以此對齊生成器輸入(2026-09-17)。
 
 ### 6.2 意圖分類與信號偵測
 

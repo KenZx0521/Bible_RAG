@@ -10,7 +10,7 @@ from models.request import QueryRequest
 from models.response import QueryResponse, Source, IntentInfo, RetrievalStats
 from utils.intent_classifier import classify_intent
 from utils.retrieval.router import retrieve_and_rerank
-from utils.generator import generate_answer
+from utils.generator import build_context_blocks, generate_answer
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,10 @@ async def rag_query(req: QueryRequest):
     # Build response
     sources = []
     if req.include_sources:
-        for r in results:
+        # The exact blocks the generator saw, so an evaluation judge can be
+        # given identical text (header + passage) rather than re-fetching.
+        blocks = build_context_blocks(results) if req.include_context else None
+        for i, r in enumerate(results):
             fused = r.get("fused_score")
             sources.append(Source(
                 id=r["id"],
@@ -77,6 +80,7 @@ async def rag_query(req: QueryRequest):
                 score=fused if fused is not None else r.get("rerank_score"),
                 strategy=r.get("source_strategy"),
                 rerank_score=r.get("rerank_score"),
+                context=blocks[i] if blocks is not None else None,
             ))
 
     return QueryResponse(

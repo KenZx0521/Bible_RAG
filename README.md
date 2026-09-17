@@ -231,9 +231,12 @@ Bible_RAG/
 {
   "question": "保羅在大馬色路上遇到了什麼事？",
   "top_k": 5,
-  "include_sources": true
+  "include_sources": true,
+  "include_context": false
 }
 ```
+
+`include_context=true` 時每個 source 多回 `context` 欄位:交給生成器的完整區塊(`[i] 書卷 第N章 - 標題 (節)` + 經文),供評估端 judge 使用;預設 false、不影響既有欄位。
 
 ### Query Response
 
@@ -247,7 +250,10 @@ Bible_RAG/
       "chapter": 9,
       "title": "掃羅歸主",
       "verse_range": "1-9",
-      "score": 0.92
+      "score": 0.92,
+      "strategy": "graph_event",
+      "rerank_score": 0.88,
+      "context": null
     }
   ],
   "intent": {

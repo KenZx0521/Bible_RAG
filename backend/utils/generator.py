@@ -29,9 +29,15 @@ CONTEXT_TEMPLATE = """以下是提供的經文段落（你只能使用這些內�
 {question}"""
 
 
-def _build_context(sources: list[dict]) -> str:
-    """Build context string from retrieved sources."""
-    parts = []
+def build_context_blocks(sources: list[dict]) -> list[str]:
+    """
+    One context block per retrieved source: ``[i] 書卷 第N章 - 標題 (節)`` + text.
+
+    The evaluation judge must see exactly these blocks (returned via
+    ``include_context``); keep the format in sync with
+    ``evaluation/src/context_blocks.py``.
+    """
+    blocks = []
     for i, src in enumerate(sources, 1):
         book = src.get("book_name", "")
         chapter = src.get("chapter_num", "")
@@ -45,9 +51,14 @@ def _build_context(sources: list[dict]) -> str:
         if verse_range:
             header += f" ({verse_range}節)"
 
-        parts.append(f"{header}\n{content}")
+        blocks.append(f"{header}\n{content}")
 
-    return "\n\n".join(parts)
+    return blocks
+
+
+def _build_context(sources: list[dict]) -> str:
+    """Build context string from retrieved sources."""
+    return "\n\n".join(build_context_blocks(sources))
 
 
 async def generate_answer(question: str, sources: list[dict]) -> str:
