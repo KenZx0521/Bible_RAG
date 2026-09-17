@@ -8,6 +8,7 @@
 evaluation/
 ├── run_eval.py                  # CLI 入口(完整管線:收集 → 評估 → 視覺化)
 ├── quick_retrieval_eval.py      # 快速檢索評估迴圈(retrieval-only,無生成/RAGAS)
+├── quick_faithfulness_eval.py   # 快速 faithfulness 重判迴圈(只跑兩個 faithfulness judge)
 ├── apply_coverage.py            # 答案要點覆蓋率離線補算
 ├── src/
 │   ├── config.py                # 讀取 ../.env(共用)+ ./.env(eval 專屬,優先)
@@ -16,21 +17,24 @@ evaluation/
 │   ├── reference_parser.py      # 解析中文經文引用
 │   ├── relevance_judge.py       # 檢索相關性判斷
 │   ├── rag_client.py            # httpx 呼叫 RAG API
-│   ├── content_fetcher.py       # asyncpg 取得 context
+│   ├── context_blocks.py        # 生成器同款 context 區塊格式 + 經節/pericope id 判別
+│   ├── content_fetcher.py       # asyncpg 重建生成器同款 context(舊後端 / 舊 checkpoint)
 │   ├── collector.py             # 回應收集 (支援中斷續傳)
 │   ├── evaluator.py             # 主要協調器
 │   ├── visualizer.py            # Plotly 視覺化
 │   └── metrics/
 │       ├── retrieval.py         # 7 個檢索指標
 │       ├── ragas_eval.py        # RAGAS 框架指標
+│       ├── faithfulness_zh.py   # zh / strict 兩個 faithfulness judge(共用陳述拆解)
 │       ├── coverage_eval.py     # 答案要點覆蓋率
 │       └── semantic_similarity.py
 ├── templates/
 │   └── dashboard.html.j2       # 儀表板模板
+├── tests/                       # pytest(uv run python -m pytest tests -q)
 ├── results/                     # 預設輸出目錄(無 --graph/--no-graph)
 ├── results_graph/               # --graph 模式輸出(--no-graph → results_no_graph/)
 ├── results_*_answer/            # 生成端 LLM 對照組(claude/gemma × graph/semantic)
-└── results_quick/               # quick_retrieval_eval.py 輸出(<label>.json)
+└── results_quick/               # quick_retrieval_eval.py / quick_faithfulness_eval.py 輸出
 ```
 
 ## 前置條件
@@ -42,7 +46,7 @@ evaluation/
    ```
 2. **`.env` 設定正確**（兩層）：
    - 專案根目錄 `.env`：共用基礎設施 — `ANTHROPIC_API_KEY`、PostgreSQL 連線、`OLLAMA_BASE_URL`
-   - `evaluation/.env`：eval 專屬參數 — `EVAL_LLM_PROVIDER`、`EVAL_*_MODEL`、`BACKEND_URL`、`TOP_K`、`REQUEST_DELAY`、`EVAL_RAGAS_*`（範本：`evaluation/.env.example`；同名變數以此檔為準）
+   - `evaluation/.env`：eval 專屬參數 — `EVAL_LLM_PROVIDER`、`EVAL_*_MODEL`、`BACKEND_URL`、`TOP_K`、`REQUEST_DELAY`、`EVAL_RAGAS_*`、`EVAL_FAITHFULNESS_STRICT`（範本：`evaluation/.env.example`；同名變數以此檔為準）
 3. **(可選) Graph 檢索預設值**：在根目錄 `.env` 設定 `RAG_USE_GRAPH=true/false`，作為 backend 預設行為(CLI 未指定時生效)
 
 ## 安裝
@@ -62,6 +66,10 @@ uv run python run_eval.py
 uv run python run_eval.py --collect-only      # 只收集 RAG 回應
 uv run python run_eval.py --eval-only         # 只跑評估（需先收集）
 uv run python run_eval.py --visualize-only    # 只產生視覺化（需先評估）
+
+# 舊 checkpoint(2026-09 前收集,sources 沒有 context 區塊)要重判 faithfulness 時,
+# 用資料庫重建生成器同款「標頭 + 經文」context,否則出處句會被 judge 判為無支持
+uv run python run_eval.py --eval-only --rebuild-contexts
 ```
 
 ### Graph 檢索 A/B 比較
@@ -125,6 +133,20 @@ uv run python quick_retrieval_eval.py --compare results_quick/a.json results_qui
 ```
 
 輸出存至 `results_quick/<label>.json`，含 overall / by_type 聚合與逐題明細（route、strategies、sources、rerank/fused 分數）。
+
+### 快速 faithfulness 重判迴圈（quick_faithfulness_eval.py）
+
+只跑兩個 faithfulness judge(zh + strict),不跑其他 RAGAS 指標與 coverage;用來重判既有答案、A/B judge prompt 或 context 格式。每題逐句的 statement / verdict / reason 都寫進輸出,可直接審計:
+
+```bash
+# 對 run of record 重判(舊 checkpoint 會自動用 DB 重建含標頭 context)
+uv run python quick_faithfulness_eval.py --results-dir results_graph --out results_quick/faith_metric_validation.json
+
+# 只重判幾題(除錯 judge)
+uv run python quick_faithfulness_eval.py --results-dir results_graph --out results_quick/faith_smoke.json --ids VERSE_LOOKUP_017,VERSE_LOOKUP_067
+```
+
+輸出含 `stored_faithfulness`(該目錄 evaluation_results.json 裡的舊值,只在新 judge 有效評分的題目上配對平均)方便看修前修後差異;`meta.context_format` 記錄 judge 看到的 context 形式。
 
 ## 消融實驗因子總覽
 
@@ -222,10 +244,15 @@ uv run python quick_retrieval_eval.py --compare results_quick/a.json results_qui
 ### LLM 評估指標
 | 指標 | 框架 | 說明 |
 |------|------|------|
-| Faithfulness | RAGAS | 回答是否忠於 context |
-| Answer Relevancy | RAGAS | 回答是否切題 |
-| Context Recall | RAGAS | context 的完整性 |
-| Answer Correctness | RAGAS | 綜合正確性 |
+| Faithfulness (`ragas_faithfulness`) | RAGAS + 本地判準 | 回答是否忠於 context。**主讀數**:繁中 NLI judge,看得到使用者問題與生成器同款的 `[i] 書卷 第N章` 標頭;出處句、問題前提、標題句、題目要求的歸納不算捏造 |
+| Faithfulness strict (`ragas_faithfulness_strict`) | RAGAS 預設 NLI prompt | 同一份含標頭 context、同一份繁中陳述拆解,用 RAGAS 0.4.3 原判準判。保守守門值(run ≥ 0.97 / 題型 ≥ 0.95,實測 0.981);`EVAL_FAITHFULNESS_STRICT=false` 可關 |
+| Answer Relevancy | RAGAS | 回答是否切題(拒答句式會被硬扣 0,見 docs/records) |
+| Context Recall | RAGAS | context 的完整性。**注意**:2026-09-17 起 judge 看到的 context 含標頭,與舊 run 的 context_recall 不可直接互比(`meta.context_format` 區分) |
+| Answer Correctness | RAGAS | 綜合正確性(F1 懲罰詳盡,只作天花板參考) |
+
+Faithfulness 的兩個 judge 共用一次陳述拆解;每題所有 statement/verdict/reason 存在 `rationale.faithfulness_statements`。
+**judge 拿到的 context 必須與生成器看到的完全相同**(後端 `include_context=true` 回傳;舊 checkpoint 用 `--rebuild-contexts` 重建),否則「根據約翰福音第3章第16節」這類出處句會被判為無支持——2026-07-15 run of record 的 faithfulness 0.912 有約 3/4 的缺口是這個量尺假象(`docs/records/2026-09-10_faithfulness_audit.md`)。
+RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` 的溫度設定對 RAGAS 指標無效。
 
 ### 語意指標
 | 指標 | 說明 |
@@ -244,8 +271,8 @@ uv run python quick_retrieval_eval.py --compare results_quick/a.json results_qui
 
 ## 結果解讀
 
-- **Hit Rate > 0.8**: 檢索系統基本可靠
-- **Faithfulness > 0.7**: 回答忠於檢索內容
+- **Hit Rate > 0.8**: 檢索系統基本可靠(章範圍題會灌水,以 verse_recall_at_k 為準)
+- **Faithfulness**: 主讀數看 `ragas_faithfulness`(2026-07-15 run 重判 0.987);`ragas_faithfulness_strict` 作守門,run 平均 ≥ 0.97、題型 ≥ 0.95(實測 0.981,`results_quick/faith_metric_validation.json`);舊版(無標頭 judge,0.912)數字不可與新數字互比
 - **Answer Point Coverage > 0.6**: 回答涵蓋了大部分關鍵要點
 - **Semantic Similarity > 0.7**: 回答與參考答案語意接近
 - 比較不同 Question Type 的表現差異，找出系統弱點

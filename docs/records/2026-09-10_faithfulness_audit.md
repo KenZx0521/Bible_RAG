@@ -2,7 +2,7 @@
 
 日期:2026-09-10
 資料:`evaluation/results_graph/`(2026-07-15 run of record,500 題;answer = gemma4:e4b-it-q8_0 temp 0.1;judge = gemma4:26b-a4b-it-q8_0;RAGAS 0.4.3)
-狀態:分析 + 兩個實驗完成;**未動任何管線程式碼**(修復建議見 §7)。憑證檔在 `evaluation/results_quick/faith_audit_2026-09-10/`。
+狀態:分析 + 兩個實驗完成(2026-09-10);**§7.1 量尺修復已於 2026-09-17 實作**(見 §8)。憑證檔在 `evaluation/results_quick/faith_audit_2026-09-10/`。
 
 ## 0. 一句話結論
 
@@ -130,6 +130,83 @@ Pilot(`pilot_gen.py`,22 題錯誤案例,生產模型、同 context):
 
 ### 7.3 A/B 讀數規則
 coverage 為主 + 修正後 faithfulness 守門;舊 faithfulness 數字不可與新數字互比;PERSON 類另看「人物綁定錯誤題數」。
+
+## 8. 量尺修復實作(2026-09-17)
+
+範圍 = §7.1 全部五項(論文重判除外);生成端 prompt(§7.2)未動,留待量尺穩定後 A/B。
+
+### 8.1 改了什麼
+
+| 層 | 檔案 | 改動 |
+|---|---|---|
+| 後端 API | `backend/models/request.py`、`models/response.py`、`routers/query.py`、`utils/generator.py` | 新增請求欄位 `include_context`(預設 false,公開 API 行為不變);為 true 時每個 `Source` 附 `context` = 生成器實際看到的 `[i] 書卷 第N章 - 標題 (節)\n經文` 區塊(`build_context_blocks` 與生成器共用同一函式,不可能走樣)。容器已重建。 |
+| 評估 context | `evaluation/src/rag_client.py`、`collector.py`、`context_blocks.py`(新)、`content_fetcher.py`、`models.py` | collector 直接用後端回傳的區塊;舊後端或缺欄時回資料庫重建「標頭 + 經文」(`fetch_context_blocks`,標頭格式與生成器逐字相同)。`resolve_fetch_kind` 用 `verse_range`/`strategy` 判別經節 id 與 pericope id(`3jn:1:2` 撞名根治)。 |
+| 判準 | `evaluation/src/metrics/faithfulness_zh.py`(新)、`metrics/ragas_eval.py` | `FaithfulnessZh`(名稱仍為 `faithfulness`):繁中 NLI prompt + context 前綴使用者問題 + 五條判準(標頭即出處、問題前提不算捏造、標題/後設句依正確與否、歸納句看組成事實、意譯可);繁中 statement 拆解 prompt 保留引號內原句的「我/你/你們」。`FaithfulnessStrict`(`faithfulness_strict`):RAGAS 0.4.3 預設 NLI prompt、同一份含標頭 context。兩者共用一次陳述拆解(`StatementCache`),所有 statement/verdict/reason 進 `verdict_log` → `rationale.faithfulness_statements`。 |
+| 設定/CLI | `src/config.py`、`run_eval.py`、`quick_faithfulness_eval.py`(新) | `EVAL_FAITHFULNESS_STRICT`(預設 true);`run_eval.py --eval-only --rebuild-contexts` 重判舊 checkpoint;`quick_faithfulness_eval.py` 只跑兩個 faithfulness judge,輸出逐句判定與 `stored_faithfulness` 對照。 |
+| 呈現/文件 | `src/visualizer.py`、`templates/dashboard.html.j2`、`evaluation/README.md`、`.env.example`、`llm/langchain_factory.py`、根 `README.md`、`docs/ARCHITECTURE.md` | 儀表板多一欄/一卡 strict(缺席指標不出卡片);README 指標表改寫、API 範例加 `include_context`;factory 溫度改 0.0 並註明 RAGAS 每次呼叫覆寫為 0.01。 |
+| 後端經節查詢 | `backend/database/postgres.py` | `verse_span` 解析合併節號(「29-30」),R1 查到合併節不再 `int()` 崩潰(審查發現的既有 bug)。 |
+| 測試 | `tests/test_context_blocks.py`、`test_faithfulness_zh.py`、`test_content_fetcher.py`、`test_evaluator_contexts.py` | 標頭格式逐字對齊、撞名判別、後端區塊優先、cache 併發去重/取消/失敗重試、verdict 合併、NLI context 前綴、兩 judge 共用拆解、合併節號區間、checkpoint context 解析、provenance 摘要;全套通過(見 §8.2)。 |
+
+### 8.1b 對抗式審查後的修正(同日)
+
+兩輪多代理審查(5+4 個 lens、每項發現 2 個反駁者)確認的問題與處置:
+
+| 嚴重度 | 問題 | 處置 |
+|---|---|---|
+| CRITICAL | 兩個 judge 共用的陳述拆解 future 被 RAGAS 逐題 timeout 取消時,`CancelledError` 會逃出 `except Exception`,整個 `evaluate()` 中止、幾小時結果全丟 | `StatementCache` 改 `asyncio.shield` 等待、只淘汰真正失敗的 producer、`_run_ragas` 同時接 `CancelledError`;新增取消/失敗重試測試 |
+| HIGH | 資料庫的合併節號(「29-30」,70 筆)讓 `int()` 崩潰,`--rebuild-contexts` 與 quick 工具整批中止 | `verse_span` 解析為區間;`fetch_context_blocks` 逐 source 容錯,DB 失敗時退回 checkpoint 內文 |
+| HIGH | strict 指標缺席(關閉或舊結果檔)時儀表板卡片顯示假的 0.00% | 缺席指標不出卡片 |
+| MEDIUM | judge 看到的 context 形式沒寫進 provenance;`--eval-only` 不加旗標會默默重現舊的無標頭判法 | `EvalSample.context_source` + `meta.context_format / context_sources`;載入時明確警告 |
+| MEDIUM | 含標頭 context 也會改變 `context_recall`,文件只說 faithfulness 不可比 | README 與本文註明 |
+| MEDIUM | strict 用的是繁中拆解 + RAGAS 預設 NLI,不等於體檢的 hdr 條件(英文拆解) | 文件說明;守門門檻改依 §8.3 的實測值定 |
+| MEDIUM | strict 未跑時 rationale 塞滿「[?]」;statements 在結果檔存三次 | rationale 改為「k/n supported + 失敗句」,未跑回空字串;結構化清單為唯一完整來源 |
+| MEDIUM | rebuild 為空或較短時直接覆蓋掉 checkpoint 內文,樣本被 RAGAS 靜默跳過 | `_resolve_checkpoint_contexts` 保留內文並標 legacy |
+| MEDIUM | quick 工具 stored/new 平均分母不同;`--ids` 前先重建全部 500 題 | 配對平均(`n_paired_with_stored`);`only_ids` 進 loader |
+| MEDIUM | `ZhNLIPrompt` 對「經文沒提到 X」的錯誤後設宣稱沒有反例 | 加入反例;規則 2 補「與經文矛盾則 0」 |
+| LOW | 後端 5 段式 `:v:` 經節 id 未對齊(後端取父 pericope)、verdict log 以 (問題,答案) 為鍵會被重複題覆蓋、`--rebuild-contexts` 在非 eval-only 靜默忽略、儀表板副標寫死 100 題、死碼 | 逐項修正 |
+
+第三輪(聚焦 cache 引用計數、verdict 合併、loader、後端節號):8 項確認——**HIGH:我在第二輪把 `get_verses_range` 改成以經文文字去重,會把同文字的不同節吃掉**(改以 (pericope, 節號標籤) 去重);後端合併節的標籤與評估端不一致(「30.」vs「29-30.」→ `get_verse` 回 `label`,`verse_retriever` 用 label 印);`--limit` 在缺 id 檢查前截斷會誤報、負值 `--limit` 切尾;重複 question_id 只警告不去重(改保留第一筆);verdict 合併對重複陳述用 last-wins 索引;`n_statements` 算進 strict 額外句;cache 引用計數改以 future 為鍵,`reset()` 期間的舊 waiter 不會動到新 producer。
+
+審查駁回(不改):`第None章` 對齊(生成器 `chapter_num` 不會是 None)、`verse_direct` 空 verse_range 分支、函式略長於 50 行。
+
+### 8.2 驗證
+
+- 冒煙(3 題,真 judge):VERSE_LOOKUP_017 0.0→1.0、VERSE_LOOKUP_067(撞名題)0.0→1.0、GENERAL_081 0.31→0.86 且仍抓到「順序相同」那句真錯誤(zh 與 strict 同判)。
+- 後端:`include_context=true` 回傳的 `sources[i].context` 以 `[i] ` 開頭且含標頭(約三 1:2 回單節,不再撞到 13-15 節的 pericope);不帶旗標時 `context` 為 null,回應其餘欄位不變;合併節號章節(歷代志上 16)的 R1 查詢回 200、無策略錯誤。
+- **部署狀態(已完成乾淨建置)**:當日先以 `docker cp` 熱補丁 + `docker commit` 頂著(備份標籤 `bible_rag-backend:hotpatch-2026-09-17`);乾淨建置三次卡在 `uv sync` 下載 torch/nvidia(主機對外頻寬 ~50 KB/s,大檔逾時會從頭重抓)。主機全域 uv 快取派不上用場(torch 是 2.13.0/cu13,lock 要 2.10.0/cu12,離線 dry-run 84 個套件要下載 69 個),改把原映像檔(`bible_rag-backend:pre-fix-2026-07-31`)內 uv 0.12.0 寫的 7.1 GB 快取匯出到 `~/.cache/uv-bible-rag-backend`,Dockerfile 以 BuildKit 具名 context 掛載(`FROM scratch AS uvcache` 空 stage 當後援、uv 釘 0.12.0、`UV_LINK_MODE=copy`)。結果:`uv sync` 19 秒、0 下載,整個建置約 3.5 分鐘;容器已由 `bible_rag-backend:latest`(1eceb1523c94)重建,健康檢查、`include_context`、3jn:1:2 撞名、合併節號標籤「17-18.」、預設請求無 context、完整生成皆通過。
+- 全量:`quick_faithfulness_eval.py --results-dir results_graph` 對 2026-07-15 run of record 重判 500 題 → `results_quick/faith_metric_validation.json`(結果見 §8.3)。
+
+### 8.3 500 題重判結果
+
+`quick_faithfulness_eval.py --results-dir results_graph`,2026-07-15 run of record 的 500 題答案不變、context 以 DB 重建成生成器同款區塊,judge 同為 gemma4:26b-a4b-it-q8_0;500 題全部有效評分,3,675 條陳述。憑證 `results_quick/faith_metric_validation.json`(含逐句判定)。
+
+| 切面 | stored(無標頭 judge) | zh(主讀數) | strict(守門) |
+|---|---|---|---|
+| **overall(500)** | 0.912 | **0.987** | **0.981** |
+| VERSE_LOOKUP | 0.859 | 0.987 | 0.977 |
+| TOPIC | 0.969 | 0.993 | 0.992 |
+| PERSON | 0.940 | 0.976 | 0.978 |
+| EVENT | 0.935 | 0.996 | 0.995 |
+| GENERAL_BIBLE | 0.858 | 0.985 | 0.965 |
+| 滿分題數 | 358 | 468 | 460 |
+| <0.8 題數 | 69 | 10 | 13 |
+
+家族:體檢時墊底的 paraphrase 0.741→1.000、nt_quotes_ot 0.750→0.975、disambiguation 0.762→0.931(仍最低,真錯誤所在)、prophecy_fulfillment 0.883→1.000。與體檢的推估(hdr 0.979 / hdr_zh 0.993)一致。
+
+殘餘否定判定:zh 46 條(32 題)、strict 52 條(40 題)。逐題檢視新出現的低分題:
+- **真錯誤且是新抓到的**(舊 judge 因無標頭反而給滿分):GENERAL_072 答案把加拉太書 5 章引成 2 章(標頭讓 judge 能核對章節);TOPIC_076 以撒的妻子寫成撒拉;PERSON_070 抹大拉的馬利亞的動作寫成愛徒;GENERAL_051 耶穌對法利賽人說的話寫成對門徒。
+- **體檢清單上的真錯誤仍被抓到**:GENERAL_081 0.857、PERSON_061 0.6、PERSON_089 0.8、PERSON_063 0.75、EVENT_068 0.8;GENERAL_071(亞伯→亞伯拉罕)與 GENERAL_039(補「彼西底的安提阿」)兩題 judge 仍放行(與體檢相同)。
+- **judge 噪音(約 3 題)**:VERSE_046 拆解時在引句尾多出「Ant」字串被判 0(拆解 LLM 的雜訊,整題 1 句→0.0);VERSE_023 拆解把「他的臉」改寫成「耶和華的臉」被判改動經文;PERSON_029 judge 誤讀撒下 21:8(亞摩尼、米非波設確是利斯巴之子)。
+- **zh 與 strict 差 ≥0.2 的 5 題**皆屬設計差異:VERSE_071「摩西」是題目前提(zh 1.0/strict 0.0);GENERAL_041 馬太的「你說的是」被答成「我是」,zh 放行、strict 抓到——strict 作守門有價值。
+
+**守門門檻定案**:run 層級 `ragas_faithfulness_strict` ≥ 0.97(實測 0.981;題型最低 GENERAL 0.965,故題型層級用 0.95)。
+
+### 8.4 讀數規則(更新)
+
+- 主讀數 `ragas_faithfulness`(zh);守門 `ragas_faithfulness_strict` run 平均 ≥ 0.97、題型 ≥ 0.95(§8.3 實測 0.981;strict 的拆解是繁中 prompt,不等於體檢的 hdr 條件)。
+- 建置 backend 前 `~/.cache/uv-bible-rag-backend` 必須存在(不存在時錯誤為 `failed to get build context uvcache: stat …: no such file or directory`);空目錄也能建置,只是全部重抓。
+- 2026-09-17 之前所有 faithfulness 數字(含論文 sec6)都是無標頭 judge 產物,不可與新數字互比;論文表格待用 `--eval-only --rebuild-contexts` 重判三個時點後再改。
+- 讀低分題先看 `rationale.faithfulness_statements` 裡 verdict=0 的句子,再決定是模型錯還是判準錯。
 
 ## 附:憑證與工具(`evaluation/results_quick/faith_audit_2026-09-10/`)
 - `refaith.py`(重評分,含 `ZhNLIPrompt`)、`refaith_results.jsonl`(543 列,含每條 statement/verdict/reason)、`refaith_statements.json`

@@ -456,7 +456,7 @@ uv run python run_eval.py --visualize-only
 
 ### 評估指標
 
-- **RAGAS**：Faithfulness、Answer Relevancy、Context Recall、Answer Correctness
+- **RAGAS**：Faithfulness（zh 主讀數 + strict 守門，judge 看生成器同款含標頭 context）、Answer Relevancy、Context Recall、Answer Correctness
 - **LLM Judge**：Answer Coverage（答案要點涵蓋率）
 - **Retrieval**：Hit Rate、Recall@k、Precision@k、F1@k、MRR、MAP@k、NDCG@k
 - **Semantic Similarity**：嵌入向量餘弦相似度
