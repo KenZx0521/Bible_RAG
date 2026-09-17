@@ -1,0 +1,519 @@
+=== residual negatives under hdr ===
+
+[1] VERSE_LOOKUP_003 (legacy_head) score=0.86
+   STMT : 根據詩篇第23章的經文，耶和華作為牧者照顧大衛的內容如下。
+   ANS  : 根據詩篇第23章的經文，耶和華作為牧者照顧的內容如下：
+   WHY  : While the context contains the text of Psalm 23, it does not explicitly mention 'David' (大衛). Although traditionally attributed to David, the provided context alone does not contain this information.
+
+[2] VERSE_LOOKUP_006 (legacy_head) score=0.80
+   STMT : 根據馬太福音第5章的經文，耶穌在登山寶訓中說以下幾類人是有福的。
+   ANS  : 根據馬太福音第5章的經文，耶穌在登山寶訓中說以下幾類人是有福的：
+   WHY  : While the context provides the specific verses from Matthew 5 regarding blessedness, it does not explicitly mention 'Jesus' or the term 'Sermon on the Mount' (登山寶訓). However, in a theological context, these verses are kn
+
+[3] VERSE_LOOKUP_067 (longtail_book) score=0.25
+   STMT : 長老約翰祝願該猶凡事興盛。
+   ANS  : 根據約翰三書第1章2節，長老約翰為親愛的兄弟有以下祝願：「我願你凡事興盛，身體健壯，正如你的靈魂興盛一樣。
+   WHY  : The context mentions the wish for prosperity (凡事興盛), but it does not explicitly name "Gaius" (該猶) in the provided text snippet. While traditionally Gaius is the recipient, based strictly on the provided context, the name
+
+[4] VERSE_LOOKUP_067 (longtail_book) score=0.25
+   STMT : 長老約翰祝願該猶身體健壯。
+   ANS  : 根據約翰三書第1章2節，長老約翰為親愛的兄弟有以下祝願：「我願你凡事興盛，身體健壯，正如你的靈魂興盛一樣。
+   WHY  : The context mentions the wish for health (身體健壯), but it does not explicitly name "Gaius" (該猶) in the provided text snippet.
+
+[5] VERSE_LOOKUP_067 (longtail_book) score=0.25
+   STMT : 長老約翰祝願該猶的身體健壯程度正如該猶的靈魂興盛一樣。
+   ANS  : 根據約翰三書第1章2節，長老約翰為親愛的兄弟有以下祝願：「我願你凡事興盛，身體健壯，正如你的靈魂興盛一樣。
+   WHY  : The context contains the comparison between physical health and soul prosperity, but it does not explicitly name "Gaius" (該猶) in the provided text snippet.
+
+[6] VERSE_LOOKUP_071 (head_cold) score=0.00
+   STMT : 根據詩篇第90章第12節，摩西求上帝指教人們怎樣數算自己的日子。
+   ANS  : 根據詩篇第90章第12節，求上帝指教我們怎樣數算自己的日子，目的是好叫我們得著智慧的心。
+   WHY  : While the text is from Psalm 90, which is traditionally attributed to Moses, the provided context does not explicitly mention 'Moses'. Therefore, his identity cannot be directly inferred solely from this specific snippet
+
+[7] VERSE_LOOKUP_071 (head_cold) score=0.00
+   STMT : 摩西求上帝指教人們數算日子的目的是好叫人們得著智慧的心。
+   ANS  : 根據詩篇第90章第12節，求上帝指教我們怎樣數算自己的日子，目的是好叫我們得著智慧的心。
+   WHY  : Although the purpose (to gain a wise heart) is stated in the text, the identity of 'Moses' is not mentioned in the provided context to confirm he is the one making the request.
+
+[8] TOPIC_QUESTION_056 (multi_chapter) score=0.96
+   STMT : 耶和華是耶和華僕人的牧人。
+   ANS  : 根據提供的經文段落，關於耶和華僕人的面貌，可以從以賽亞書中找到以下描述：
+   WHY  : 經文第28節論到塞魯士說「他是我的牧人」，但此處指的對象與上下文脈絡（關於耶路撒冷的建造）並非直接定義耶和華為僕人的牧人，且語意指向的是塞魯士的角色或描述。
+
+[9] TOPIC_QUESTION_061 (multi_chapter) score=0.96
+   STMT : 根據提供的經文段落，會幕從吩咐到建造完成的過程可分為幾個階段。
+   ANS  : 根據提供的經文段落，會幕從吩咐到建造完成的過程可分為以下幾個階段：
+   WHY  : 雖然經文描述了建造、建立和奉獻的過程，但文中並沒有明確地將其「劃分為幾個階段」。這屬於對內容的總結性推論，而非直接從文本中提取出的事實。
+
+[10] TOPIC_QUESTION_067 (multi_chapter) score=0.98
+   STMT : 利未記記載了五種祭物及其特點。
+   ANS  : 根據提供的經文段落，記載了以下五種祭物及其特點：
+   WHY  : The context provides detailed instructions for various offerings (burnt offerings, grain offerings, drink offerings, peace offerings, and sin offerings) within Leviticus, but it does not explicitly state a summary senten
+
+[11] TOPIC_QUESTION_068 (multi_chapter) score=0.89
+   STMT : 兩次數點的重大差別在於存活的人數。
+   ANS  : 兩次數點的重大差別在於存活的人數。
+   WHY  : While the context provides different numbers for various censuses, it does not explicitly state that the 'major difference' between the two counts is specifically the number of survivors; this is an interpretation rather
+
+[12] TOPIC_QUESTION_070 (multi_chapter) score=0.94
+   STMT : 耶利米在城被交給迦勒底人後，禱告要用銀子為耶利米自己買那塊地。
+   ANS  : *   **買契**和**銀子**：耶利米在城被交給迦勒底人後，禱告要用銀子為自己買那塊地（耶利米書 第32章 16節）。
+   WHY  : 經文第[5]部分第25節提到：「主耶和華啊，你對我說：要用銀子為自己買那塊地...其實這城已交在迦勒底人的手中了」。這裡的「自己」是指上帝對耶利米說的話，而非耶利米禱告要為自己買地。
+
+[13] TOPIC_QUESTION_079 (multi_chapter) score=0.92
+   STMT : 提供的經文段落中僅包含詩篇第32章的內容。
+   ANS  : 根據您提供的經文段落，僅有詩篇第32章的內容。
+   WHY  : 提供的經文段落包含了詩篇第32章、馬太福音第12章、申命記第32章、詩篇第39章以及以弗所書第4章，不僅僅是詩篇第32章。
+
+[14] TOPIC_QUESTION_081 (head_cold) score=0.98
+   STMT : 猶大先給了她瑪一隻山羊羔。
+   ANS  : 她瑪要求猶大先給她一些東西，猶大先是給了她一隻山羊羔，她接著要求猶大的印、帶子和手裏的杖。
+   WHY  : The context says Judah promised to send a young goat ('我從羊群裏取一隻山羊羔...'), but the text indicates he gave the pledge (seal, cord, staff) *before* sleeping with her. The goat was sent later via his friend.
+
+[15] TOPIC_QUESTION_099 (head_cold) score=0.93
+   STMT : 大龍見大龍被摔在地上，就逼迫那生男孩子的婦人。
+   ANS  : *   大龍見自己被摔在地上，就逼迫那生男孩子的婦人 (啟示錄 12:13)。
+   WHY  : The statement is logically redundant/incorrectly phrased ('The dragon saw the dragon...'), but verse 13 says '龍見自己被摔在地上，就逼迫那生男孩子的婦人' (When the dragon saw that he was cast down to the earth, he persecuted the woman who ha
+
+[16] PERSON_QUESTION_007 (legacy_head) score=0.92
+   STMT : 以利詢問哈拿為何哭泣。
+   ANS  : 以利曾對哈拿說話，詢問她為何哭泣（撒母耳記上 1:14）。
+   WHY  : In [5]8, Elkanah asks Hannah why she is weeping, but the statement attributes this to Eli. While Eli speaks to her about her state in [4], the specific question 'Why are you weeping?' is attributed to her husband Elkanah
+
+[17] PERSON_QUESTION_013 (legacy_head) score=0.95
+   STMT : 提供的經文段落中，沒有關於但以理與大利烏王的任何記載。
+   ANS  : 提供的經文段落中，沒有關於但以理與大利烏王的任何記載。
+   WHY  : The context actually mentions Darius the Mede (米底亞人大流士) at the very end, so saying there is no mention of him is incorrect.
+
+[18] PERSON_QUESTION_018 (legacy_head) score=0.95
+   STMT : 保羅和巴拿巴差了西拉，讓保羅和巴拿巴親口訴說相關事宜。
+   ANS  : *   保羅和巴拿巴差了西拉，讓他們親口訴說相關事宜 (使徒行傳 第15章 27節)。
+   WHY  : The context says the apostles and elders sent Judas and Silas to speak personally (Section [3] verse 27), not that Paul and Barnabas sent Silas.
+
+[19] PERSON_QUESTION_026 (longtail_person) score=0.91
+   STMT : 大衛宣告凡屬米非波設的財產都歸米非波設。
+   ANS  : 此外，大衛也宣告「凡屬米非波設的都歸你」（撒母耳記下 第16章 4節），並對他說「你與洗巴均分地土」（撒母耳記下 第19章 29節）。
+   WHY  : The context actually shows the opposite in several places: David gives Saul's property to Mephibosheth, but later (2 Samuel 16:4) he tells Ziba that everything belonging to Mephibosheth belongs to Ziba. The statement is 
+
+[20] PERSON_QUESTION_032 (longtail_person) score=0.92
+   STMT : 示巴女王讚頌耶和華是示巴女王的上帝。
+   ANS  : 她讚頌耶和華她的上帝，說他喜悅所羅門，使他坐以色列的國位，因為他永遠愛以色列，所以立他作王，使他秉公行義（列王紀上 10:9；歷代志下 9:8）。
+   WHY  : The statement is incorrect based on the context. The Queen of Sheba praises Jehovah as Solomon's God ("耶和華－你的上帝是應當稱頌的!"), not her own.
+
+[21] PERSON_QUESTION_035 (longtail_person) score=0.83
+   STMT : 乃<0xE7><0xB8><0xB5>在以色列王處得知需要尋求先知以利沙的幫助。
+   ANS  : 乃縵在以色列王處得知需要尋求先知以利沙的幫助後，以利沙打發使者吩咐他：「你去在約旦河中沐浴七回，你的肉就必復原，而得潔淨。
+   WHY  : The context states that Naaman (乃<0xE7><0xB8><0xB5>) went to the King of Israel and told him what the girl from Israel had said, but it does not say he learned about needing Elisha's help *at* the King's place; rather, h
+
+[22] PERSON_QUESTION_035 (longtail_person) score=0.83
+   STMT : 乃<0xE7><0xB8><0xB5>的僕人將以色列國女子所說的消息告訴乃<0xE7><0xB8><0xB5>。
+   ANS  : 乃縵的僕人首先是將以色列國的女子所說的，關於乃縵應去見撒馬利亞的先知治好大痲瘋的消息告訴乃縵。
+   WHY  : The context states that a little girl from Israel (who was serving Naaman's wife) told the mistress, and then Naaman told his master. It does not say Naaman's servant told him the news.
+
+[23] PERSON_QUESTION_035 (longtail_person) score=0.83
+   STMT : 乃<0xE7><0xB8><0xB5>賜給先知門徒一千脫銀子和兩套衣裳。
+   ANS  : 基哈西追趕乃縵時，乃縵迎上前，並請他賜給先知門徒一他連得銀子和兩套衣裳。
+   WHY  : The context states in section [2] verse 23 that Naaman gave two talents of silver (二他連得銀子) and two sets of clothes, not one thousand.
+
+[24] PERSON_QUESTION_037 (longtail_person) score=0.96
+   STMT : 祭司耶何耶大打發人領約阿施與乳母進了耶和華的殿，並與約阿施與乳母立約。
+   ANS  : 2.  **組織保護與立約：** 耶何耶大打發人領他們進了耶和華的殿，與他們立約（列王紀下 11:4）。
+   WHY  : The context says Joash and the nurse were hidden in the temple, but it does not state that Jehoiada sent for them specifically to make a covenant with them; the covenant mentioned was between Jehoiada and the captains/pe
+
+[25] PERSON_QUESTION_048 (longtail_person) score=0.93
+   STMT : 彼得指出亞拿尼亞和撒非喇夫婦不是在欺哄人。
+   ANS  : 亞拿尼亞和撒非喇夫婦犯的罪是，他們賣了田產，卻私自留下部分價銀，而其餘的價銀則拿來放在使徒腳前（使徒行傳 第5章 1-2節）。
+   WHY  : The context explicitly states '你不是欺哄人，是欺哄上帝了' (You have not deceived men but God), which means Peter was stating they *were* deceiving people/God, contradicting the statement.
+
+[26] PERSON_QUESTION_058 (disambiguation) score=0.92
+   STMT : 在馬太福音第10章1節中，西門（又稱彼得）被稱為「頭一個叫西門（又稱彼得）」。
+   ANS  : *   他被稱為「頭一個叫西門（又稱彼得）」（馬太福音 第10章 1節）。
+   WHY  : The statement misidentifies the verse number; the description 'the first one called Simon (also known as Peter)' is found in Matthew 10:2, not 10:1.
+
+[27] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 歷代志上第26章提到的撒迦利亞包括以薩迦。
+   ANS  : **一、 歷代志上 第26章的撒迦利亞：**
+   WHY  : In Chronicles 26:5, Ishas (以薩迦) is listed as the seventh son of Obed-Edom, not as a Zechariah.
+
+[28] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 尼西米記第11章提到的撒迦利亞包括烏西雅的兒子撒迦利亞。
+   ANS  : *   **烏西雅的兒子撒迦利亞：** 他是法勒斯的子孫，其父烏西雅是亞瑪利雅的兒子 (尼西米記 11:4)。
+   WHY  : Nehemiah 11:4 states that Uzziah was the son of Zechariah (烏西雅是撒迦利雅的兒子), meaning Zechariah is the father, not the son.
+
+[29] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 烏西雅的兒子撒迦利亞是法勒斯的子孫。
+   ANS  : *   **烏西雅的兒子撒迦利亞：** 他是法勒斯的子孫，其父烏西雅是亞瑪利雅的兒子 (尼西米記 11:4)。
+   WHY  : Nehemiah 11:4 states Uzziah is a descendant of Pharez (其中有些猶大人和便雅憫人...法勒斯的子孫、烏西雅的兒子亞他雅. 烏西雅是撒迦利雅的兒子). This implies Uzziah's lineage, but the text says Zechariah is the father of Uzziah, not that there is a son named Zech
+
+[30] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 烏西雅的兒子撒迦利亞的父親烏西雅是亞瑪利雅的兒子。
+   ANS  : *   **烏西雅的兒子撒迦利亞：** 他是法勒斯的子孫，其父烏西雅是亞瑪利雅的兒子 (尼西米記 11:4)。
+   WHY  : Nehemiah 11:4 states Uzziah is the son of Zechariah, and Zechariah is the son of Amariah. It does not say there is a 'son of Uzziah named Zechariah'.
+
+[31] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 尼西米記第11章提到的撒迦利亞包括約雅立的兒子撒迦利亞。
+   ANS  : *   **約雅立的兒子撒迦利亞：** 他是法勒斯的子孫，其父約雅立是示羅尼的兒子 (尼西米記 11:5)。
+   WHY  : Nehemiah 11:5 states that Zechariah is the son of Joiel (約雅立是撒迦利雅的兒子), meaning Zechariah is the father, not the son.
+
+[32] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 約雅立的兒子撒迦利亞是法勒斯的子孫。
+   ANS  : *   **約雅立的兒子撒迦利亞：** 他是法勒斯的子孫，其父約雅立是示羅尼的兒子 (尼西米記 11:5)。
+   WHY  : The text does not state that a son of Joiel named Zechariah is a descendant of Pharez; it lists them as separate lineages.
+
+[33] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 約雅立的兒子撒迦利亞的父親約雅立是示羅尼的兒子。
+   ANS  : *   **約雅立的兒子撒迦利亞：** 他是法勒斯的子孫，其父約雅立是示羅尼的兒子 (尼西米記 11:5)。
+   WHY  : Nehemiah 11:5 states that Zechariah is the son of Joiel, and Joiel is the son of Sheroniah (約雅立是撒迦利雅的兒子; 撒迦利雅是示羅尼的兒子). This means Zechariah's grandfather was Sheroniah, not his father.
+
+[34] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 尼西米記第11章提到的撒迦利亞包括暗洗的兒子撒迦利亞。
+   ANS  : *   **暗洗的兒子撒迦利亞：** 他是殿中供職的，其父暗洗是撒迦利亞的兒子 (尼西米記 11:12)。
+   WHY  : Nehemiah 11:12 states that Zechariah is the son of Amashiah (暗洗是撒迦利亞的兒子), meaning Zechariah is the father, not the son.
+
+[35] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 暗洗的兒子撒迦利亞是殿中供職的。
+   ANS  : *   **暗洗的兒子撒迦利亞：** 他是殿中供職的，其父暗洗是撒迦利亞的兒子 (尼西米記 11:12)。
+   WHY  : Nehemiah 11:12 mentions these people in the context of those living in Jerusalem and serving, but it identifies Amashiah as the son of Zechariah, not a 'son of Amashiah named Zechariah'.
+
+[36] PERSON_QUESTION_061 (disambiguation) score=0.64
+   STMT : 暗洗的兒子撒迦利亞的父親暗洗是撒迦利亞的兒子。
+   ANS  : *   **暗洗的兒子撒迦利亞：** 他是殿中供職的，其父暗洗是撒迦利亞的兒子 (尼西米記 11:12)。
+   WHY  : Nehemiah 11:12 states 'Amashiah is the son of Zechariah' (暗洗是撒迦利亞的兒子), which means Amashiah is the son, not the father.
+
+[37] PERSON_QUESTION_062 (disambiguation) score=0.88
+   STMT : 士師記中的亞比米勒被示劍人和米羅人一同聚集。
+   ANS  : 他被示劍人和米羅人一同聚集，立為示劍人的王（士師記 第9章 6節）。
+   WHY  : The text states that the men of Shechem and the men of Miloh gathered to make Abimelech king (Judges 9:6), not that they 'gathered him'.
+
+[38] PERSON_QUESTION_063 (title_coref) score=0.85
+   STMT : 拔示巴告訴先知拿單，哈及的兒子亞多尼雅已經作王了。
+   ANS  : 1.  拔示巴告訴先知拿單，哈及的兒子亞多尼雅已經作王了，但大衛王卻不知道 (列王紀上 1:11)。
+   WHY  : According to the context, it was Nathan who told Bathsheba that Adonijah had become king (拿單對所羅門的母親拔示巴說：「哈及的兒子亞多尼雅作王了...」), not the other way around.
+
+[39] PERSON_QUESTION_063 (title_coref) score=0.85
+   STMT : 拔示巴建議拿單去見大衛王。
+   ANS  : 2.  她建議拿單去見大衛王，提醒他曾向婢女起誓，說他的兒子所羅門必接續他作王，坐在他的位上 (列王紀上 1:13)。
+   WHY  : The context shows that Nathan suggested to Bathsheba that she go see King David (現在我可以給你出個主意... 你進去見大衛王), not that Bathsheba suggested Nathan go.
+
+[40] PERSON_QUESTION_065 (title_coref) score=0.88
+   STMT : 羅得的選擇帶來了被擄掠的後果。
+   ANS  : 他的選擇（當時羅得正住在所多瑪，創世記 第14章 12節）帶來了被擄掠的後果。
+   WHY  : While the context describes Lot being captured, it does not explicitly state that his 'choices' were the cause of the capture. This is an interpretation rather than a direct inference.
+
+[41] PERSON_QUESTION_070 (title_coref) score=0.77
+   STMT : 在七日的第一日清早，「耶穌所愛的那門徒」來到墳墓那裡。
+   ANS  : 在七日的第一日清早，他來到墳墓那裡，看見石頭已經從墳墓裡挪開了 (約翰福音 20:1)。
+   WHY  : The context in [4] verse 1 says Mary Magdalene came to the tomb, and verse 2 says she went to see Peter and 'the disciple whom Jesus loved', but it does not say the disciple himself arrived at the tomb at that time; rath
+
+[42] PERSON_QUESTION_070 (title_coref) score=0.77
+   STMT : 「耶穌所愛的那門徒」在墳墓那裡看見石頭已經從墳墓裡挪開了。
+   ANS  : 在七日的第一日清早，他來到墳墓那裡，看見石頭已經從墳墓裡挪開了 (約翰福音 20:1)。
+   WHY  : The context in [4] verse 1 and 2 states that Mary Magdalene saw the stone was moved and then went to tell Peter and the disciple, implying they were not necessarily there seeing it happen themselves at that moment.
+
+[43] PERSON_QUESTION_070 (title_coref) score=0.77
+   STMT : 西門‧彼得跑去見西門‧彼得和「耶穌所愛的那門徒」。
+   ANS  : 他跑去見西門‧彼得和耶穌所愛的那個門徒，並比彼得跑得更快，先到了墳墓 (約翰福音 20:2, 4)。
+   WHY  : The context in [4] verse 2 states that Mary Magdalene went to see Simon Peter and the disciple whom Jesus loved, not that Peter went to see himself.
+
+[44] PERSON_QUESTION_073 (title_coref) score=0.95
+   STMT : 施洗約翰的兒子要給施洗約翰起名叫約翰。
+   ANS  : *   **神聖的應許：** 他的誕生是應許的結果，天使告訴撒迦利亞，他的妻子伊利莎白將會生一個兒子，要給他起名叫約翰（路加福音 第1章 13節）。
+   WHY  : The context states that Zechariah and Elizabeth were to name the child John, not that John had a son named John.
+
+[45] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 根據提供的經文段落，摩西的一生可分為三個階段。
+   ANS  : 根據提供的經文段落，摩西的一生可分為以下三個階段，其關鍵轉折點如下：
+   WHY  : The provided text contains various passages about Moses' life, but it does not explicitly categorize his life into three specific stages.
+
+[46] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 摩西的一生三個階段的關鍵轉折點如下。
+   ANS  : 根據提供的經文段落，摩西的一生可分為以下三個階段，其關鍵轉折點如下：
+   WHY  : Since the context does not define three stages of Moses' life, it cannot be inferred that there are key turning points for such stages.
+
+[47] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 第一階段是牧羊與被呼召的階段。
+   ANS  : **第一階段：牧羊與被呼召的階段**
+   WHY  : While the text describes Moses shepherding and being called, it does not label this as a 'first stage'.
+
+[48] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 在第一階段中，摩西在岳父米甸祭司葉忒羅的羊群中牧養羊群。
+   ANS  : *   **階段描述：** 摩西在岳父米甸祭司葉忒羅的羊群中牧養羊群，來到上帝的山何烈山（出埃及記 3:1）。
+   WHY  : The text mentions Moses shepherding his father-in-law Jethro's flock, but it does not refer to this as a 'first stage'.
+
+[49] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 第一階段的關鍵轉折是耶和華的使者從荊棘裏火焰中向摩西顯現。
+   ANS  : *   **關鍵轉折：** 耶和華的使者從荊棘裏火焰中向摩西顯現，並從荊棘裏呼叫他（出埃及記 3:2-4）。
+   WHY  : The text describes the angel of the Lord appearing in a flame from within a bush, but it does not label this as a 'key turning point of the first stage'.
+
+[50] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 第二階段是領袖與事奉的階段。
+   ANS  : **第二階段：領袖與事奉的階段**
+   WHY  : The text does not categorize Moses' life into a 'second stage' called the leadership and service stage.
+
+[51] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 在第二階段中，摩西接受了上帝的委派。
+   ANS  : *   **階段描述：** 摩西接受了上帝的委派，並在曠野中引導以色列人，在摩押地講律法（申命記 1:5）。
+   WHY  : While the text describes God commissioning Moses, it does not refer to this as occurring in a 'second stage'.
+
+[52] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 第二階段的關鍵轉折之一是上帝賜給摩西神蹟的權能。
+   ANS  : *   上帝賜給摩西神蹟的權能，例如將杖變作蛇，以及賜予他口才，指教他所當說的話（出埃及記 4:3, 12）。
+   WHY  : The text describes God giving Moses power to perform signs, but it does not label this as a 'key turning point of the second stage'.
+
+[53] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 第二階段的另一個關鍵轉折是上帝將迦南人的地擺在以色列人面前。
+   ANS  : *   上帝將迦南人的地擺在以色列人面前，指示他們要進去得這地（申命記 1:8）。
+   WHY  : The text mentions the land being set before them, but it does not label this as a 'key turning point of the second stage'.
+
+[54] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 第三階段是生命的終結階段。
+   ANS  : **第三階段：生命的終結階段**
+   WHY  : The text describes Moses' death, but it does not label this period as a 'third stage'.
+
+[55] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 在第三階段中，摩西在摩押地度過了生命最後的時光。
+   ANS  : *   **階段描述：** 摩西在摩押地度過了生命最後的時光。
+   WHY  : The text mentions Moses dying in Moab, but it does not refer to this as a 'third stage'.
+
+[56] PERSON_QUESTION_077 (trajectory) score=0.48
+   STMT : 第三階段的關鍵轉折是摩西從摩押平原登尼波山。
+   ANS  : *   **關鍵轉折：** 摩西從摩押平原登尼波山，上了與耶利哥相對的毗斯迦山頂（申命記 34:1）。
+   WHY  : The text describes Moses ascending Mount Nebo, but it does not label this as a 'key turning point of the third stage'.
+
+[57] PERSON_QUESTION_078 (trajectory) score=0.97
+   STMT : 大衛的兒子亞希米勒的兒子亞比他逃到大衛那裡。
+   ANS  : *   大衛的兒子亞希米勒的兒子亞比亞他逃到大衛那裡，大衛安慰他，說他可以在那裡得保全（撒母耳記上 22:20-23）。
+   WHY  : The context in [3]20 states Ahimelech's son Abiathar fled to David. Note: The statement calls him 'David's son', but the text says he is 'Ahimelech's son'. However, looking at the phrasing, it might be a typo in the user
+
+[58] PERSON_QUESTION_089 (trajectory) score=0.83
+   STMT : 在以色列人在非利士人面前逃跑、民中被殺的背景下，以利亞提著上帝的約櫃。
+   ANS  : *   以利亞在以色列人在非利士人面前逃跑、民中被殺的背景下，提著上帝的約櫃，從他的位上往後跌倒，在門旁折斷頸項而死（撒母耳記上 4:18）。
+   WHY  : The context describes Eli (not Elijah) being told about the Ark of God being captured and his subsequent death. The statement confuses Eli with Elijah.
+
+[59] PERSON_QUESTION_089 (trajectory) score=0.83
+   STMT : 以利亞從以利亞的位上往後跌倒。
+   ANS  : *   以利亞在以色列人在非利士人面前逃跑、民中被殺的背景下，提著上帝的約櫃，從他的位上往後跌倒，在門旁折斷頸項而死（撒母耳記上 4:18）。
+   WHY  : The context states that it was Eli (以利) who fell backward from his seat, not Elijah (以利亞).
+
+[60] PERSON_QUESTION_089 (trajectory) score=0.83
+   STMT : 以利亞在門旁折斷頸項而死。
+   ANS  : *   以利亞在以色列人在非利士人面前逃跑、民中被殺的背景下，提著上帝的約櫃，從他的位上往後跌倒，在門旁折斷頸項而死（撒母耳記上 4:18）。
+   WHY  : The context states that it was Eli (以利) who died by breaking his neck, not Elijah.
+
+[61] PERSON_QUESTION_089 (trajectory) score=0.83
+   STMT : 以利亞死亡時年紀老邁且身體沉重。
+   ANS  : 這發生在他年紀老邁、身體沉重時（撒母耳記上 4:18）。
+   WHY  : The context describes Eli (以利) as being old and heavy-bodied at the time of his death, not Elijah.
+
+[62] PERSON_QUESTION_099 (split_pericope) score=0.93
+   STMT : 米甸人將約瑟帶到埃及。
+   ANS  : *   **最終去向**：米甸人將約瑟帶到埃及，把他賣給法老的內臣－護衛長波提乏。
+   WHY  : The context says the Ishmaelites (Midianites) were coming from Gilead with camels, but verse 28 specifically says the brothers sold him to them and "They [the brothers] took Joseph to Egypt."
+
+[63] EVENT_QUESTION_008 (legacy_head) score=0.95
+   STMT : 王國的分裂過程如下：
+   ANS  : 王國的分裂是這樣發生的：
+   WHY  : The context describes various historical and prophetic accounts of kingdoms splitting or people rebelling, but it does not explicitly provide a structured list or process titled 'the division process is as follows'. It i
+
+[64] EVENT_QUESTION_061 (temporal) score=0.80
+   STMT : 根據提供的經文段落，關於耶穌受洗與受試探的先後次序，路加福音記載耶穌被聖靈充滿。
+   ANS  : 根據提供的經文段落，關於耶穌受洗與受試探的先後次序，路加福音記載耶穌被聖靈充滿，從約旦河回來後，聖靈將他引到曠野，在那裡四十天受魔鬼的試探（路加福音 第4章 第1節）。
+   WHY  : The context from Luke 4:1 states 'Jesus, full of the Holy Spirit, came back from the Jordan', which mentions being filled with the Holy Spirit, but it does not explicitly discuss the chronological order between his bapti
+
+[65] EVENT_QUESTION_068 (temporal) score=0.78
+   STMT : 根據提供的經文段落，以實瑪利的出生、以撒的出生與獻以撒三件事有先後與關聯。
+   ANS  : 根據提供的經文段落，三件事的先後與關聯如下：
+   WHY  : The provided text mentions the births of Ishmael and Isaac, but there is no mention of the 'offering of Isaac' (献以撒) in any of the context segments. Therefore, a relationship between these three events cannot be inferred
+
+[66] EVENT_QUESTION_068 (temporal) score=0.78
+   STMT : 創世記第25章提到，亞伯拉罕給以撒行割禮是在以撒生下來第八日。
+   ANS  : 此外，創世記 第25章也提到，亞伯拉罕給以撒行了割禮，是在以撒生下來第八日（創世記 第25章 19節）。
+   WHY  : While the text in [4] verse 8 mentions that Isaac was circumcised on the eighth day, and [5] (Genesis 21) also mentions this, the specific section labeled '[1] Genesis Chapter 25' does not contain the detail about the ci
+
+[67] EVENT_QUESTION_074 (surface_form) score=0.93
+   STMT : 「千禧年」的概念出自啟示錄第20章。
+   ANS  : 「千禧年」的概念出自**啟示錄 第20章**。
+   WHY  : The context provided includes Revelation Chapter 20, which describes the thousand-year period (一千年), but the specific term "Millennium" (千禧年) is not explicitly used in the text. While it refers to the concept, the statem
+
+[68] EVENT_QUESTION_078 (surface_form) score=0.83
+   STMT : 「棕枝主日」紀念的是耶穌將到耶路撒冷的事件。
+   ANS  : 「棕枝主日」紀念的是耶穌將到耶路撒冷的事件。
+   WHY  : The context describes the event of people welcoming Jesus with palm branches as he approaches Jerusalem, but it does not explicitly mention or define the term "Palm Sunday" (棕枝主日) or its commemorative purpose.
+
+[69] GENERAL_BIBLE_QUESTION_004 (legacy_head) score=0.82
+   STMT : 約翰福音第1章呼應創世記第1章的創造敘事。
+   ANS  : 約翰福音第1章呼應創世記第1章的創造敘事，主要體現在「道」作為萬物的創造者和生命之源的描述上：
+   WHY  : While the context contains both Genesis 1 and John 1, which both discuss creation (Genesis through God's direct action and John through 'the Word'), the text does not explicitly state that one 'echoes' or 'corresponds to
+
+[70] GENERAL_BIBLE_QUESTION_004 (legacy_head) score=0.82
+   STMT : 約翰福音第1章主要透過「道」作為萬物的創造者和生命之源的描述來呼應創世記第1章。
+   ANS  : 約翰福音第1章呼應創世記第1章的創造敘事，主要體現在「道」作為萬物的創造者和生命之源的描述上：
+   WHY  : Similar to the first statement, while the thematic connection is present in the content of the two chapters provided, the text itself does not make this comparative claim or state that John 1 echoes Genesis 1 in this spe
+
+[71] GENERAL_BIBLE_QUESTION_007 (legacy_head) score=0.90
+   STMT : 根據提供的經文段落，耶穌的受難與詩篇第22章的描述在「受苦」和「被棄絕」的層面有所呼應。
+   ANS  : 根據提供的經文段落，耶穌的受難與詩篇第22章的描述在「受苦」和「被棄絕」的層面有所呼應：
+   WHY  : 雖然上下文分別描述了耶穌的受難（路加福音）和詩篇中的痛苦（詩篇22章），但經文本身並未直接指出兩者之間存在「呼應」的關係，這屬於讀者的解讀而非文本直接陳述。
+
+[72] GENERAL_BIBLE_QUESTION_013 (legacy_head) score=0.94
+   STMT : 哥林多前書第15章回應了創世記中關於死亡的敘述。
+   ANS  : 哥林多前書第15章回應創世記中關於死亡的敘述，主要是在基督的復活中宣告了死亡的得勝。
+   WHY  : While the two texts both discuss death and resurrection, the context does not explicitly state that 1 Corinthians 15 is a response to the narrative in Genesis.
+
+[73] GENERAL_BIBLE_QUESTION_015 (legacy_head) score=0.80
+   STMT : 根據提供的經文，約拿在魚腹中的經歷預表基督的死與復活。
+   ANS  : 根據提供的經文，約拿在魚腹中的經歷預表基督的死與復活，是透過以下經文所闡述的：
+   WHY  : 雖然馬太福音 12:40 將約拿在魚腹中三日三夜與人子在地裏頭三日三夜做類比，但經文中並未直接使用「預表基督的死與復活」這一神學解釋性的措辭。
+
+[74] GENERAL_BIBLE_QUESTION_020 (legacy_head) score=0.57
+   STMT : 此命令與創世記的祝福和啟示錄的異象在「擴展到萬民和世界」的層面有所連結。
+   ANS  : 此命令與創世記的祝福和啟示錄的異象在「擴展到萬民和世界」的層面有所連結：
+   WHY  : While the context contains elements of blessing and visions, the specific interpretive connection that they are 'linked in the dimension of expanding to all nations and the world' is a theological synthesis/interpretatio
+
+[75] GENERAL_BIBLE_QUESTION_020 (legacy_head) score=0.57
+   STMT : 雅各對約瑟兩個兒子的祝福與大使命要求「使萬民作我的門徒」的廣泛性相呼應。
+   ANS  : 創世記中，雅各祝福約瑟的兩個兒子，並願他們「在世界中生養眾多」（創世記 48:16），這與大使命要求「使萬民作我的門徒」的廣泛性相呼應。
+   WHY  : The text provides the content of the blessing and the Great Commission, but it does not explicitly state that they 'echo' or 'correspond' to each other in terms of breadth; this is an analytical inference.
+
+[76] GENERAL_BIBLE_QUESTION_020 (legacy_head) score=0.57
+   STMT : 啟示錄對多民、多國、多方、多王的預言與大使命「使萬民作我的門徒」的目標一致。
+   ANS  : *   **對多民的預言：** 啟示錄中，天使吩咐預言者「必指着多民、多國、多方、多王再說預言」（啟示錄 10:11），這與大使命的「使萬民作我的門徒」的目標一致。
+   WHY  : The text provides the content of both passages, but it does not explicitly state that their goals are 'consistent' or 'aligned'; this is an interpretive conclusion.
+
+[77] GENERAL_BIBLE_QUESTION_028 (prophecy_fulfillment) score=0.50
+   STMT : 回答嚴格遵守只能使用提供內容來回答的規則。
+   ANS  : 根據您提供的經文段落，並嚴格遵守只能使用這些內容來回答的規則，這些段落中並未提及馬太福音如何使用以賽亞書第42章的僕人之歌來描述耶穌的服事風格。
+   WHY  : This statement is a meta-instruction or a rule regarding the task itself, rather than a factual claim that can be inferred from the provided biblical text context.
+
+[78] GENERAL_BIBLE_QUESTION_041 (prophecy_fulfillment) score=0.62
+   STMT : 在馬太福音第26章64節中，耶穌回答耶穌是。
+   ANS  : *   在馬太福音中，當大祭司問耶穌時，耶穌回答：「我是。
+   WHY  : In Matthew 26:64, Jesus does not say 'I am'; instead, he says, 'You have said so' (你說的是).
+
+[79] GENERAL_BIBLE_QUESTION_041 (prophecy_fulfillment) score=0.62
+   STMT : 在馬太福音第26章64節中，耶穌說門徒必看見人子坐在那權能者的右邊，駕著天上的雲降臨。
+   ANS  : 你們必看見人子坐在那權能者的右邊，駕著天上的雲降臨。
+   WHY  : In Matthew 26:64, Jesus says 'However, I tell you, from now on you will see the Son of Man sitting at the right hand of the Mighty One and coming on the clouds of heaven.' The statement claims he said 'the disciples' (門徒
+
+[80] GENERAL_BIBLE_QUESTION_041 (prophecy_fulfillment) score=0.62
+   STMT : 在馬可福音第14章62節中，耶穌說門徒必看見人子坐在那權能者的右邊，駕著天上的雲降臨。
+   ANS  : 你們必看見人子坐在那權能者的右邊，駕著天上的雲降臨。
+   WHY  : In Mark 14:62, Jesus says 'You will see the Son of Man...' (你們必看見人子...), not 'the disciples' (門徒).
+
+[81] GENERAL_BIBLE_QUESTION_052 (nt_quotes_ot) score=0.67
+   STMT : 經文記載的內容是「這百姓用嘴唇尊敬耶穌，心卻遠離耶穌」。
+   ANS  : 耶穌用以賽亞書的預言來責備法利賽人的假冒為善，經文記載的內容是：「這百姓用嘴唇尊敬我，心卻遠離我。
+   WHY  : The context (Mark 7:6 and Matthew 15:8) states 'this people honors me with their lips, but their heart is far from me' (referring to God/the Lord), not specifically 'honors Jesus'. The quote in the text is '這百姓用嘴唇尊敬我，心卻遠
+
+[82] GENERAL_BIBLE_QUESTION_052 (nt_quotes_ot) score=0.67
+   STMT : 在馬可福音第7章第6節中，耶穌引用經上說的內容為「這百姓用嘴唇尊敬耶穌，心卻遠離耶穌」。
+   ANS  : 耶穌用以賽亞書的預言來責備法利賽人的假冒為善，經文記載的內容是：「這百姓用嘴唇尊敬我，心卻遠離我。
+   WHY  : The text in Mark 7:6 says '這百姓用嘴唇尊敬我，心卻遠離我'. While Jesus is speaking, the quote itself uses the first person 'me' (referring to God/the Lord), not 'Jesus'. Therefore, the statement misquotes the specific wording of the s
+
+[83] GENERAL_BIBLE_QUESTION_052 (nt_quotes_ot) score=0.67
+   STMT : 在馬太福音第15章第7節中，耶穌引用以賽亞的話說「這百姓用嘴唇尊敬耶穌，心卻遠離耶穌」。
+   ANS  : 耶穌用以賽亞書的預言來責備法利賽人的假冒為善，經文記載的內容是：「這百姓用嘴唇尊敬我，心卻遠離我。
+   WHY  : Similar to the Mark passage, Matthew 15:8 says '這百姓用嘴唇尊敬我，心卻遠離我'. The statement changes 'me' (referring to God) to 'Jesus', which is not what the text literally says.
+
+[84] GENERAL_BIBLE_QUESTION_061 (nt_quotes_ot) score=0.80
+   STMT : 經文中僅提到「正如大衛稱」。
+   ANS  : 經文中僅提到「正如大衛稱」，但並未具體指出是哪一篇詩篇。
+   WHY  : 經文不僅提到了「正如大衛稱」，還完整敘述了其內容：「正如大衛稱那在行為以外蒙上帝算為義的人是有福的」。因此說「僅提到」是不準確的。
+
+[85] GENERAL_BIBLE_QUESTION_067 (typology) score=0.60
+   STMT : 希伯來書引用「照著山上指示你的樣式」的經文內容如下：
+   ANS  : 希伯來書引用「照著山上指示你的樣式」的經文內容如下：
+   WHY  : 這是一個引導性陳述，後續並未直接列出該引用的完整內容作為對應關係，且語法上不構成一個可判斷真偽的陳述句。
+
+[86] GENERAL_BIBLE_QUESTION_067 (typology) score=0.60
+   STMT : 上帝警戒摩西說：「你要謹慎，作各樣的物件都要照著在山上指示摩西的樣式。」
+   ANS  : *   **關係與引用：** 希伯來書 第8章 5節提到，他們供奉的事本是天上事的形狀和影像，這就像摩西將要造帳幕時，蒙上帝警戒他，說：「你要謹慎，作各樣的物件都要照著在山上指示你的樣式。
+   WHY  : 經文[2] 第8章第5節中，上帝對摩西說的話是「你要謹慎，作各樣的物件都要照着在山上指示你的樣式」，而非「指示摩西的樣式」。
+
+[87] GENERAL_BIBLE_QUESTION_073 (typology) score=0.83
+   STMT : 上述事件發生在約翰福音第2章第17節。
+   ANS  : 」之後（約翰福音 第2章 第17節）。
+   WHY  : The context provided for the cleansing of the temple is John chapter 2, but verse 17 is a specific reaction/memory by the disciples following the event. The events described (driving out animals, overturning tables) are 
+
+[88] GENERAL_BIBLE_QUESTION_075 (parallel_account) score=0.97
+   STMT : 撒母耳記下與歷代志上關於大衛數點百姓的記載存在著名的差異。
+   ANS  : 根據提供的經文段落，撒母耳記下與歷代志上關於大衛數點百姓的記載存在以下著名的差異，事件經過的整理如下：
+   WHY  : While the context shows differences in numbers and causes between the two books, the text does not explicitly state that these differences are "famous."
+
+[89] GENERAL_BIBLE_QUESTION_077 (parallel_account) score=0.79
+   STMT : 根據提供的經文段落，列王紀下與歷代志下的記載在詳略上有所不同。
+   ANS  : 根據提供的經文段落，歷代志下第35章的記載在詳略上與歷代志下第35章的記載有所不同，主要體現在儀式細節和供獻的具體數量上。
+   WHY  : The provided context only contains excerpts from Exodus (出埃及記) and Chronicles (歷代志下). There is no mention of 2 Kings (列王紀下) in the text, so a comparison cannot be made.
+
+[90] GENERAL_BIBLE_QUESTION_077 (parallel_account) score=0.79
+   STMT : 列王紀下與歷代志下的差異主要體現在儀式細節和供獻的具體數量上。
+   ANS  : 根據提供的經文段落，歷代志下第35章的記載在詳略上與歷代志下第35章的記載有所不同，主要體現在儀式細節和供獻的具體數量上。
+   WHY  : The context does not contain any text from 2 Kings (列王紀下), so this comparison cannot be inferred.
+
+[91] GENERAL_BIBLE_QUESTION_077 (parallel_account) score=0.79
+   STMT : 列王紀下的記載較為簡潔，主要描述儀式的執行過程，但未提及供獻的具體數量。
+   ANS  : *   歷代志下第35章（[2]）的記載較為簡潔，主要描述了儀式的執行過程，但未提及供獻的具體數量。
+   WHY  : The context does not contain any text from 2 Kings (列王紀下), so no comparison or description of its content can be made.
+
+[92] GENERAL_BIBLE_QUESTION_077 (parallel_account) score=0.79
+   STMT : 歷代志下的記載則更為詳盡。
+   ANS  : *   歷代志下第35章（[3] 和 [4]）的記載則更為詳盡，不僅描述了儀式，還詳細列出了約西亞王、眾首領和利未人所供獻的羊羔和牛的具體數量，並提到了王室關於聖約櫃的指示。
+   WHY  : While the Chronicles text is detailed, there is no other book (like 2 Kings) provided in the context to compare it against to determine if it is 'more' detailed.
+
+[93] GENERAL_BIBLE_QUESTION_080 (parallel_account) score=0.86
+   STMT : 根據提供的經文段落，烏西雅（亞撒利雅）王長大<0xE7><0x97><0xB2>瘋的原因如下。
+   ANS  : 根據提供的經文段落，烏西雅（亞撒利雅）王的記載在列王紀下與歷代志下存在以下詳略差異，以及他長大痲瘋的原因如下：
+   WHY  : 該陳述是不完整的句子，後面沒有列出具體原因，因此無法判斷其是否為一個正確的推論或事實描述。
+
+[94] GENERAL_BIBLE_QUESTION_080 (parallel_account) score=0.86
+   STMT : 根據列王紀下的記載，亞撒利雅長大<0xE7><0x97><0xB2>瘋的原因是邱壇還沒有廢去。
+   ANS  : *   **列王紀下的記載：** 亞撒利雅長大痲瘋的原因是「邱壇還沒有廢去，百姓仍在那裏獻祭燒香」（列王紀下 第15章 4節）。
+   WHY  : 雖然列王紀下第15章提到「只是邱壇還沒有廢去」，但並未直接將其作為他長大<0xE7><0x97><0xB2>瘋的因果關係描述。文中僅說「耶和華降災與王，使他長大<0xE7><0x97><0xB2>瘋」。
+
+[95] GENERAL_BIBLE_QUESTION_081 (parallel_account) score=0.57
+   STMT : 根據提供的經文段落，馬太福音與路加福音記載的曠野三個試探的順序是相同的。
+   ANS  : 根據提供的經文段落，馬太福音與路加福音記載的曠野三個試探的順序是相同的。
+   WHY  : 在路加福音中，試探順序為：1. 石頭變食物；2. 看見萬國並要求下拜；3. 從殿頂跳下。在馬太福音中，試探順序為：1. 石頭變食物；2. 從殿頂跳下；3. 看見萬國與榮華並要求下拜。因此兩者的順序並不相同。
+
+[96] GENERAL_BIBLE_QUESTION_081 (parallel_account) score=0.57
+   STMT : 馬太福音記載的第二個試探是魔鬼帶耶穌上最高的山，將世上的萬國與榮華指給耶穌看，並誘使耶穌俯伏拜魔鬼（馬太福音 第4章 8節-10節）。
+   ANS  : 2.  魔鬼帶他上最高的山，將世上的萬國與榮華指給他看，並誘他俯伏拜他（馬太福音 第4章 8節-10節）。
+   WHY  : 在馬太福音中，第5-7節是關於殿頂跳下的試探，而第8-10節才是關於高山與萬國的試探。因此，根據經文順序，這應該是第三個試探而非第二個。
+
+[97] GENERAL_BIBLE_QUESTION_081 (parallel_account) score=0.57
+   STMT : 馬太福音記載的第三個試探是魔鬼叫耶穌站在殿頂上，誘使耶穌跳下去（馬太福音 第4章 5節-6節）。
+   ANS  : 3.  魔鬼叫他站在殿頂上，誘他跳下去（馬太福音 第4章 5節-6節）。
+   WHY  : 在馬太福音中，第5-7節描述的是殿頂跳下的試探。根據經文出現的先後順序，這是在石頭變食物之後、高山萬國之前發生的，因此它是第二個試探而非第三個。
+
+[98] GENERAL_BIBLE_QUESTION_097 (theme_thread) score=0.80
+   STMT : 根據提供的經文段落，利未記的初熟節與新約的聖靈降臨及「初熟的果子」的呼應可以從提供的經文內容中觀察到。
+   ANS  : 根據提供的經文段落，利未記的初熟節與新約的聖靈降臨及「初熟的果子」的呼應，可從以下經文內容中觀察到：
+   WHY  : While the text contains passages about 'firstfruits' in Leviticus and 1 Corinthians, and the descent of the Holy Spirit in Acts, the context does not explicitly state or draw a connection/correspondence between these spe
+
+[99] GENERAL_BIBLE_QUESTION_097 (theme_thread) score=0.80
+   STMT : 百姓每年定要將地上初熟的土產和各樣樹上初熟的果子奉到耶和華的殿裏（利未記 第23章 35節）。
+   ANS  : 此外，百姓也定每年將地上初熟的土產和各樣樹上初熟的果子奉到耶和華的殿裏（利未記 第23章 35節）。
+   WHY  : The statement attributes this to Leviticus 23:35, but in the provided context, this content is actually found under Nehemiah 10:35 (尼西米記 第10章 35節). Therefore, it cannot be directly inferred as being from Leviticus based 
+
+[100] GENERAL_BIBLE_QUESTION_009 (legacy_head) score=0.94
+   STMT : 嗎哪使以色列人在曠野中得以存活。
+   ANS  : 這食物是耶和華賜給他們吃的（出埃及記 16:15），使他們在曠野中得以存活（出埃及記 16:21）。
+   WHY  : While the text says they ate it for 40 years, it does not explicitly state 'it made them survive', though it is implied. However, in strict NLI terms, the context focuses on the provision and description rather than a di
+
+[101] EVENT_QUESTION_089 (parable) score=0.96
+   STMT : 領一千銀子的僕人將原有的銀子交給主人。
+   ANS  : *   領一千銀子的僕人則說，他害怕，便將銀子埋藏在地裡，並將原銀子交給主人（馬太福音 25:24-25）。
+   WHY  : The servant says '請看，你的原銀子在這裏', but the context implies he is presenting what he kept, not that he had previously handed it over to be managed.
+
+=== hand-verified error cases: score by condition (stored / orig / hdr / hdr_zh) ===
+  GENERAL_BIBLE_QUESTION_071     orig=0.71 hdr=1.00 hdr_zh=1.00  stored=0.625
+  GENERAL_BIBLE_QUESTION_081     orig=0.43 hdr=0.57 hdr_zh=0.57  stored=0.3077
+  GENERAL_BIBLE_QUESTION_077     orig=0.21 hdr=0.79 hdr_zh=0.79  stored=0.25
+  EVENT_QUESTION_068             orig=0.78 hdr=0.78 hdr_zh=0.89  stored=0.7778
+  PERSON_QUESTION_061            orig=0.64 hdr=0.64 hdr_zh=0.64  stored=0.7143
+  GENERAL_BIBLE_QUESTION_039     orig=0.67 hdr=1.00 hdr_zh=1.00  stored=0.25
+  VERSE_LOOKUP_090               orig=0.50 hdr=1.00 hdr_zh=1.00  stored=0.5
+  GENERAL_BIBLE_QUESTION_020     orig=0.57 hdr=0.57 hdr_zh=1.00  stored=0.5714
+  PERSON_QUESTION_089            orig=0.83 hdr=0.83 hdr_zh=0.83  stored=0.8636
+  PERSON_QUESTION_063            orig=0.85 hdr=0.85 hdr_zh=0.85  stored=0.8571
+  GENERAL_BIBLE_QUESTION_052     orig=0.11 hdr=0.67 hdr_zh=1.00  stored=0.125
