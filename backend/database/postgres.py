@@ -103,6 +103,25 @@ async def get_chapter(book_id: str, chapter_num: int) -> Optional[dict]:
         }
 
 
+def verse_span(raw) -> Optional[tuple[int, int]]:
+    """
+    Parse a stored verse number ("16", 16, "29-30") into an inclusive span.
+    The corpus merges some verses ("29-30", 70 entries); int() on those raised.
+    """
+    if raw is None:
+        return None
+    text = str(raw).strip()
+    start, sep, end = text.partition("-")
+    if not start.isdigit() or (sep and not end.isdigit()):
+        return None
+    return (int(start), int(end)) if sep else (int(start), int(start))
+
+
+def _span_contains(raw, verse_num: int) -> bool:
+    span = verse_span(raw)
+    return span is not None and span[0] <= verse_num <= span[1]
+
+
 async def get_verse(book_id: str, chapter_num: int, verse_num: int) -> Optional[dict]:
     """Get a specific verse by searching pericopes' verses JSONB."""
     pool = get_pool()
@@ -124,14 +143,17 @@ async def get_verse(book_id: str, chapter_num: int, verse_num: int) -> Optional[
         for p in pericopes:
             verses = json.loads(p["verses"]) if isinstance(p["verses"], str) else p["verses"]
             for v in verses:
-                # verses JSONB uses "num" (string) as the verse number key
+                # verses JSONB uses "num" (string) as the verse number key;
+                # merged entries ("29-30") match any verse inside the span
                 v_num = v.get("num") or v.get("verse")
-                if v_num is not None and int(v_num) == verse_num:
+                if _span_contains(v_num, verse_num):
                     return {
                         "book_id": book_id,
                         "book_name": p["book_name"],
                         "chapter": chapter_num,
                         "verse": verse_num,
+                        # stored label ("30" or "29-30"): what the text is printed as
+                        "label": str(v_num),
                         "text": v.get("text", ""),
                         "pericope_id": p["id"],
                         "pericope_title": p["title"],
@@ -140,11 +162,16 @@ async def get_verse(book_id: str, chapter_num: int, verse_num: int) -> Optional[
 
 
 async def get_verses_range(book_id: str, chapter_num: int, start_verse: int, end_verse: int) -> list[dict]:
-    """Get a range of verses."""
+    """Get a range of verses (a merged entry such as "29-30" is returned once)."""
     results = []
+    seen: set[tuple[str, str]] = set()
     for v in range(start_verse, end_verse + 1):
         verse = await get_verse(book_id, chapter_num, v)
-        if verse:
+        if verse is None:
+            continue
+        entry = (verse["pericope_id"], verse["label"])  # identity of the stored entry, not its text
+        if entry not in seen:
+            seen.add(entry)
             results.append(verse)
     return results
 
@@ -251,8 +278,7 @@ async def search_pericopes_by_verse_ref(book_id: str, chapter_num: int, verse_nu
             verses = json.loads(row["verses"]) if isinstance(row["verses"], str) else row["verses"]
             metadata = json.loads(row["metadata"]) if isinstance(row["metadata"], str) else row["metadata"]
             if verse_num is not None:
-                verse_nums = [int(v.get("num") or v.get("verse") or 0) for v in verses]
-                if verse_num not in verse_nums:
+                if not any(_span_contains(v.get("num") or v.get("verse"), verse_num) for v in verses):
                     continue
             results.append({
                 "id": row["id"],

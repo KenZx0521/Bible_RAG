@@ -42,8 +42,10 @@ async def retrieve_by_verse_refs(verse_refs: list[VerseRef]) -> list[dict]:
                 cid = f"{ref.book_id}:{ref.chapter}:{ref.verse_start}-{ref.verse_end}"
                 if cid not in seen_ids:
                     seen_ids.add(cid)
+                    # stored label ("30" or merged "29-30") keeps the block identical
+                    # to what evaluation rebuilds from the same rows
                     content = "\n".join(
-                        f"{v['verse']}. {v['text']}" for v in verses
+                        f"{v.get('label', v['verse'])}. {v['text']}" for v in verses
                     )
                     candidates.append({
                         "id": cid,
@@ -69,7 +71,7 @@ async def retrieve_by_verse_refs(verse_refs: list[VerseRef]) -> list[dict]:
                     seen_ids.add(cid)
                     candidates.append({
                         "id": cid,
-                        "content": f"{verse['verse']}. {verse['text']}",
+                        "content": f"{verse.get('label', verse['verse'])}. {verse['text']}",
                         "title": verse.get("pericope_title", ""),
                         "book_name": verse["book_name"],
                         "chapter_num": ref.chapter,
