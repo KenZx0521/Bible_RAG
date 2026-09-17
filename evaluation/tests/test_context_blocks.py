@@ -129,3 +129,23 @@ def test_contexts_from_raw_item_falls_back_when_any_block_missing():
 
 def test_contexts_from_raw_item_legacy_checkpoint():
     assert contexts_from_raw_item({"contexts": ["x"], "sources": []}) is None
+
+
+def test_quick_tool_parse_ids_is_whitespace_tolerant():
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from quick_faithfulness_eval import parse_ids
+    assert parse_ids("A, B ,,C") == {"A", "B", "C"}
+    assert parse_ids("") is None
+    assert parse_ids(" , ") is None
+
+
+def test_quick_tool_n_decomposed_ignores_strict_extras():
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from quick_faithfulness_eval import n_decomposed
+    assert n_decomposed([{"verdict": 1}, {"verdict": 0}, {"verdict": None, "strict_verdict": 0}]) == 2
+    assert n_decomposed([{"verdict": None, "strict_verdict": 0}]) == 1
+    assert n_decomposed([]) == 0
