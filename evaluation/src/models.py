@@ -64,10 +64,14 @@ class MetricResult(BaseModel):
 
 class Rationale(BaseModel):
     """LLM judge rationale explanations for evaluation."""
-    faithfulness: str = ""   # 回答對檢索內容的忠實度解釋
+    faithfulness: str = ""   # zh 判準:「k/n statements supported」+ 只列 verdict=0 的陳述
     relevance: str = ""      # 回答與問題的相關性解釋
     overall: str = ""        # 整體評價解釋
     context: str = ""        # 上下文品質解釋
+    faithfulness_strict: str = ""  # RAGAS 預設判準的忠實度解釋
+    # Full audit trail: one entry per statement with both metrics' verdicts
+    # {statement, verdict, reason, strict_verdict, strict_reason}
+    faithfulness_statements: list[dict] = []
 
 
 class EvalReport(BaseModel):

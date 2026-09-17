@@ -53,10 +53,13 @@ def create_langchain_llm():
         from langchain_ollama import ChatOllama
 
         logger.info("[LangChain] Creating ChatOllama model=%s", settings.eval_ollama_model)
+        # NOTE: RAGAS 0.4.3 overwrites `temperature` on every call
+        # (BaseRagasLLM.get_temperature -> 0.01 for n=1), so this value is
+        # only the default outside RAGAS; the judge is effectively greedy.
         return ChatOllama(
             model=settings.eval_ollama_model,
             base_url=settings.ollama_base_url,
-            temperature=0.3,
+            temperature=0.0,
             num_predict=8192,
             num_ctx=16384,
             top_p=0.9,

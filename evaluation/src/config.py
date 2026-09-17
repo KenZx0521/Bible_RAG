@@ -71,6 +71,11 @@ class Settings(BaseSettings):
     eval_ragas_workers: int = 4
     eval_ragas_timeout: int = 600
 
+    # Also run the conservative faithfulness gate (RAGAS default NLI prompt on
+    # the header-bearing context) alongside the zh judge. One extra NLI call
+    # per sample; statement decomposition is shared.
+    eval_faithfulness_strict: bool = True
+
     @property
     def postgres_dsn(self) -> str:
         return (
