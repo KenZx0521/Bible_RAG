@@ -3,8 +3,27 @@ Application configuration using pydantic-settings.
 Reads from .env file in project root.
 """
 
+from typing import Literal
+
 from pydantic_settings import BaseSettings
 from pathlib import Path
+
+# Graph strategies, by the label each reports in strategies_used; "all" enables
+# every one. Single source of truth: router.GRAPH_STRATEGIES and the request
+# model both derive from this, and Settings validation rejects unknown names at
+# startup.
+GraphStrategyName = Literal[
+    "all",
+    "graph_person",      # R3 person → MENTIONS pericopes
+    "graph_event",       # R4/R5 event anchors
+    "graph_place",       # R6 place → MENTIONS pericopes
+    "graph",             # R5 entity traversal over intent entities
+    "entity_path",       # R3/R6 Entity-Entity relation walk
+    "entity_query",      # R3-R6 bible_entities vector supplement
+    "cross_ref_expand",  # R3/R4/R6 pre-rerank CROSS_REFERENCES expansion
+    "cross_reference",   # R5 CROSS_REFERENCES from semantic seeds (its sources
+                         # are labelled cross_ref_expand when multi-hop is on)
+]
 
 
 class Settings(BaseSettings):
@@ -80,6 +99,17 @@ class Settings(BaseSettings):
     # Graph retrieval toggle (gates Neo4j-backed graph_retriever + cross_ref_retriever).
     # Can be overridden per-request via the `use_graph` payload field.
     rag_use_graph: bool = True
+
+    # Which graph strategies may inject candidates when use_graph is on
+    # (GraphStrategyName above). Overridable per request via `graph_strategies`.
+    # Env value must be a JSON array: RAG_GRAPH_STRATEGIES='["all"]' (every
+    # strategy, the pre-2026-10 behaviour), '[]' (none); a bare word or an empty
+    # value fails at startup. The 2026-10 diagnosis of the Round 3 500-question
+    # runs found graph_event the only strategy whose injected passages beat the
+    # ones they displaced (26% vs 18% gold); graph_person cost R3 verse recall
+    # −0.046, and keeping graph_event alone scored +0.011 verse recall over
+    # all-on, stable across both folds of a legacy/expansion split.
+    rag_graph_strategies: list[GraphStrategyName] = ["graph_event"]
 
     # Cross-reference 2-hop expansion: traverse CROSS_REFERENCES from top graph
     # seeds to surface neighbouring pericopes. Activates the hand-curated

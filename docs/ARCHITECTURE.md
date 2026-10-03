@@ -448,6 +448,7 @@ sequenceDiagram
 
 - `semantic_only` 模式跳過 ①②③(省一次 LLM 呼叫),直走純語意檢索 — 評估 baseline 用;
 - `use_graph`(per-request)可覆寫 `.env` 的 `RAG_USE_GRAPH`,A/B 評估不需重啟容器;
+- `graph_strategies`(per-request)可覆寫 `RAG_GRAPH_STRATEGIES`,指定 use_graph 開啟時哪些圖譜策略可以跑(`["all"]` = 全開、`[]` = 全關);`stats.graph_strategies` 回報實際生效的集合(圖譜關閉時為空);
 - `retrieval_only` flag 跳過答案生成,供 quick eval 快速迴路;
 - 回應含觀測欄位:`Source.strategy` / `Source.rerank_score`(fused 與 raw 並列)、`stats.fusion_alpha`、`route_used` / `strategies_used` / `strategy_errors`;
 - `include_context` flag 讓每個 `Source` 附上生成器實際看到的 context 區塊(`Source.context`,標頭 + 經文),評估端 judge 以此對齊生成器輸入(2026-09-17)。
@@ -484,7 +485,7 @@ flowchart TD
     S7 -- 否 --> FB["Fallback 純語意<br/>(+book_anchor)"]
 ```
 
-**各路策略組合與權重**(`backend/config.py:route_weights`;`use_graph=false` 時 Neo4j 策略全部閘道掉):
+**各路策略組合與權重**(`backend/config.py:route_weights`;`use_graph=false` 時 Neo4j 策略全部閘道掉;`use_graph=true` 時每個圖譜策略還要列在 `RAG_GRAPH_STRATEGIES` 裡才會跑 —— **2026-10 起預設只開 `graph_event`**,下表是 `["all"]` 時的完整組合,R3/R6 在預設下不跑任何圖譜策略):
 
 | 路由 | 策略組合(weight) |
 |------|------------------|
@@ -625,6 +626,7 @@ flowchart TB
 | 開關 | 值 | 備註 |
 |------|-----|------|
 | `RAG_USE_GRAPH` | true | per-request 可覆寫 |
+| `RAG_GRAPH_STRATEGIES` | `["graph_event"]`(程式預設) | 2026-10 止血:其餘圖譜策略淨負或零貢獻;`["all"]` 恢復 Round 3 行為;per-request 可覆寫 |
 | `HYBRID_SEARCH_ENABLED` | true | dense+sparse RRF |
 | `RAG_USE_CROSS_REF_EXPAND` / `_LIMIT` | true / 10 | TSK 抑噪後 cap |
 | `RAG_USE_ENTITY_PATH` | true | ≤2 hop |

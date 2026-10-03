@@ -4,7 +4,10 @@
 Collects top-k sources for all ground-truth questions via the backend's
 ``retrieval_only`` mode and computes the same 7 retrieval metrics as the full
 pipeline (src.metrics.retrieval — identical reference parsing and relevance
-judging, so numbers are directly comparable with results_graph/ runs).
+judging, so numbers are directly comparable with results_graph/ runs). Round 3's
+results_graph/ ran every graph strategy; since 2026-10 the backend default is
+graph_event only, so compare against it with --graph-strategies all. Each run
+records the strategies the backend actually applied under "config".
 
 Also recomputes metrics from an existing raw_responses.json for baseline
 comparison (--from-raw), so P0-era runs can be scored with byte-identical
@@ -13,6 +16,9 @@ metric code.
 Usage (from evaluation/):
     uv run python quick_retrieval_eval.py --label fixes_a03            # live run
     uv run python quick_retrieval_eval.py --alpha 0.0 --label alpha0   # sweep point
+    uv run python quick_retrieval_eval.py --graph-strategies all --label all_graph  # strategy A/B
+    uv run python quick_retrieval_eval.py --graph-strategies graph_event graph_person --label ev_person
+    uv run python quick_retrieval_eval.py --graph-strategies --label none  # no graph strategy
     uv run python quick_retrieval_eval.py --from-raw results_graph/raw_responses.json --label p0_baseline
     uv run python quick_retrieval_eval.py --compare out_a.json out_b.json
 """
@@ -23,7 +29,7 @@ import argparse
 import asyncio
 import json
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import httpx
@@ -46,6 +52,27 @@ _METRIC_ORDER = [
 ]
 
 
+def applied_graph_strategies(requested: list[str] | None, stats: dict) -> list[str] | None:
+    """Graph strategies the backend reports it applied, checked against the request.
+
+    Raises when an explicit request was not honoured — a backend image built
+    before `graph_strategies` existed drops the field silently, which would
+    mislabel an A/B arm — or when the backend applied a different list.
+    """
+    applied = stats.get("graph_strategies")
+    if requested is None:
+        return applied
+    if applied is None:
+        raise RuntimeError(
+            "backend did not report graph_strategies; rebuild it "
+            "(docker compose up -d --build backend) before an A/B run"
+        )
+    wanted = sorted(set(requested))
+    if stats.get("use_graph", True) and "all" not in requested and applied != wanted:
+        raise RuntimeError(f"backend applied graph_strategies {applied}, requested {wanted}")
+    return applied
+
+
 async def _query_one(
     client: httpx.AsyncClient,
     sem: asyncio.Semaphore,
@@ -53,7 +80,8 @@ async def _query_one(
     use_graph: bool | None,
     alpha: float | None,
     top_k: int,
-) -> EvalSample:
+    graph_strategies: list[str] | None = None,
+) -> tuple[EvalSample, list[dict], list[str] | None]:
     payload: dict = {
         "question": gt.question,
         "top_k": top_k,
@@ -64,10 +92,13 @@ async def _query_one(
         payload["use_graph"] = use_graph
     if alpha is not None:
         payload["fusion_alpha"] = alpha
+    if graph_strategies is not None:
+        payload["graph_strategies"] = graph_strategies
 
     async with sem:
         resp = await client.post(f"{settings.backend_url}/api/v1/query", json=payload)
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            raise RuntimeError(f"{gt.question_id}: HTTP {resp.status_code} {resp.text[:300]}")
         data = resp.json()
 
     sources = [
@@ -82,6 +113,7 @@ async def _query_one(
         for s in data.get("sources", [])
     ]
     stats = data.get("retrieval_stats", {})
+    applied = applied_graph_strategies(graph_strategies, stats)
     return EvalSample(
         question_id=gt.question_id,
         question=gt.question,
@@ -95,29 +127,33 @@ async def _query_one(
         {"id": s.get("id"), "strategy": s.get("strategy"), "score": s.get("score"),
          "rerank_score": s.get("rerank_score")}
         for s in data.get("sources", [])
-    ]
+    ], applied
 
 
-async def collect(use_graph, alpha, top_k, concurrency, only_prefix) -> tuple[list[EvalSample], dict]:
+async def collect(use_graph, alpha, top_k, concurrency, only_prefix,
+                  graph_strategies=None) -> tuple[list[EvalSample], dict, dict]:
     gts = load_ground_truth()
     if only_prefix:
         gts = [g for g in gts if g.question_id.startswith(tuple(only_prefix))]
     sem = asyncio.Semaphore(concurrency)
     raw_sources: dict[str, list] = {}
+    applied_by_q: dict[str, list[str] | None] = {}
     async with httpx.AsyncClient(timeout=180.0) as client:
-        tasks = [_query_one(client, sem, gt, use_graph, alpha, top_k) for gt in gts]
+        tasks = [_query_one(client, sem, gt, use_graph, alpha, top_k, graph_strategies)
+                 for gt in gts]
         out = []
         done = 0
         for coro in asyncio.as_completed(tasks):
-            sample, srcs = await coro
+            sample, srcs, applied = await coro
             out.append(sample)
             raw_sources[sample.question_id] = srcs
+            applied_by_q[sample.question_id] = applied
             done += 1
             if done % 20 == 0:
                 print(f"  collected {done}/{len(gts)}")
     order = {g.question_id: i for i, g in enumerate(gts)}
     out.sort(key=lambda s: order[s.question_id])
-    return out, raw_sources
+    return out, raw_sources, applied_by_q
 
 
 def samples_from_raw(path: Path) -> list[EvalSample]:
@@ -233,6 +269,9 @@ def main() -> int:
     parser.add_argument("--alpha", type=float, default=None,
                         help="fusion_alpha override (omit = backend default)")
     parser.add_argument("--use-graph", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--graph-strategies", nargs="*", default=None,
+                        help="graph strategies allowed to run (e.g. graph_event, or 'all'; "
+                             "no values = none); omit = backend default")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--only", nargs="*", default=None,
@@ -247,12 +286,16 @@ def main() -> int:
         compare(args.compare[0], args.compare[1])
         return 0
 
+    applied_by_q: dict[str, list[str] | None] = {}
     if args.from_raw:
+        if args.graph_strategies is not None:
+            print("warning: --graph-strategies is ignored with --from-raw")
         samples = samples_from_raw(args.from_raw)
         raw_sources = None
     else:
-        samples, raw_sources = asyncio.run(
-            collect(args.use_graph, args.alpha, args.top_k, args.concurrency, args.only)
+        samples, raw_sources, applied_by_q = asyncio.run(
+            collect(args.use_graph, args.alpha, args.top_k, args.concurrency, args.only,
+                    args.graph_strategies)
         )
 
     agg = aggregate(samples, k=args.top_k)
@@ -260,6 +303,20 @@ def main() -> int:
         for qid, srcs in raw_sources.items():
             if qid in agg["per_question"]:
                 agg["per_question"][qid]["source_detail"] = srcs
+                agg["per_question"][qid]["graph_strategies"] = applied_by_q.get(qid)
+    applied_counts = Counter(
+        "legacy (not reported)" if v is None else ",".join(v) or "(none)"
+        for v in applied_by_q.values()
+    )
+    agg["config"] = {
+        "from_raw": str(args.from_raw) if args.from_raw else None,
+        "use_graph": args.use_graph,
+        "fusion_alpha": args.alpha,
+        "top_k": args.top_k,
+        "only": args.only,
+        "graph_strategies_requested": args.graph_strategies,
+        "graph_strategies_applied": dict(applied_counts),
+    }
     print_table(agg, args.label)
 
     _OUT_DIR.mkdir(exist_ok=True)

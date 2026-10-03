@@ -247,6 +247,7 @@ def _print_summary(report: AggregatedReport) -> None:
 async def run_collection(
     use_graph: bool | None = None,
     semantic_only: bool = False,
+    graph_strategies: list[str] | None = None,
 ) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
     Step 1: Collect RAG responses + inline Claude evaluation.
@@ -256,12 +257,17 @@ async def run_collection(
             None = use backend RAG_USE_GRAPH env default.
         semantic_only: When True, bypass backend routing / SQL / graph /
             cross-ref and run pure semantic retrieval only.
+        graph_strategies: Which graph strategies run (["all"] = every one).
+            None = backend RAG_GRAPH_STRATEGIES default.
 
     Returns: (samples, inline_point_coverage_metrics)
     """
     questions = load_ground_truth()
     console.print(f"[bold]Loaded {len(questions)} ground truth questions.[/bold]")
-    return await collect_responses(questions, use_graph=use_graph, semantic_only=semantic_only)
+    return await collect_responses(
+        questions, use_graph=use_graph, semantic_only=semantic_only,
+        graph_strategies=graph_strategies,
+    )
 
 
 def run_evaluation(

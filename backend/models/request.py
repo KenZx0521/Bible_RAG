@@ -4,6 +4,8 @@ Pydantic v2 request models.
 
 from pydantic import BaseModel, Field
 
+from config import GraphStrategyName
+
 
 class QueryRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=500, description="使用者問題")
@@ -16,6 +18,10 @@ class QueryRequest(BaseModel):
     use_graph: bool | None = Field(
         default=None,
         description="覆寫 RAG_USE_GRAPH 預設值;None 表示沿用 backend 設定",
+    )
+    graph_strategies: list[GraphStrategyName] | None = Field(
+        default=None,
+        description="覆寫 RAG_GRAPH_STRATEGIES:允許注入候選的圖譜策略(['all'] = 全開,[] = 全關);None 沿用 backend 設定。供 A/B 使用",
     )
     semantic_only: bool = Field(
         default=False,

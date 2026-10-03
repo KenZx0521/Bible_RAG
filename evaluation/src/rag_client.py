@@ -22,6 +22,7 @@ async def query_rag(
     use_graph: bool | None = None,
     semantic_only: bool = False,
     include_context: bool = True,
+    graph_strategies: list[str] | None = None,
 ) -> dict:
     """
     Send a question to POST /api/v1/query and return the parsed response.
@@ -34,6 +35,8 @@ async def query_rag(
         include_context: Ask the backend for the exact context block it fed
             the generator per source (header + text), so the judge sees the
             same text. Older backends ignore the field.
+        graph_strategies: Per-request override for which graph strategies run
+            (["all"] = every one). None = backend default.
 
     Returns dict with keys: answer, sources, intent, retrieval_stats
     """
@@ -48,6 +51,8 @@ async def query_rag(
         payload["use_graph"] = use_graph
     if semantic_only:
         payload["semantic_only"] = True
+    if graph_strategies is not None:
+        payload["graph_strategies"] = graph_strategies
     url = f"{settings.backend_url}/api/v1/query"
 
     own_client = client is None

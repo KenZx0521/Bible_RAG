@@ -55,6 +55,7 @@ async def rag_query(req: QueryRequest):
         use_graph=req.use_graph,
         semantic_only=req.semantic_only,
         fusion_alpha=req.fusion_alpha,
+        graph_strategies=req.graph_strategies,
     )
 
     # Step 6-7: Generate answer (skipped in retrieval_only fast-eval mode)

@@ -35,11 +35,27 @@ def _raw_responses_path() -> Path:
 
 
 def _clear_previous_results() -> None:
-    """Delete previous run's checkpoint so we always start fresh."""
+    """Delete previous run's checkpoint so we always start fresh.
+
+    Refuses to delete an archive written before per-strategy graph gating
+    (records carry no `graph_strategies`): those are the Round 3 run-of-record
+    files, and `--graph` no longer means every graph strategy, so a rerun would
+    silently replace them with a different condition. Move or commit it first.
+    """
     path = _raw_responses_path()
-    if path.exists():
-        path.unlink()
-        logger.info("Cleared previous raw_responses.json at %s", path)
+    if not path.exists():
+        return
+    try:
+        records = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        raise RuntimeError(f"{path} is unreadable ({e}); move it aside before a new run") from e
+    if records and not any("graph_strategies" in r for r in records):
+        raise RuntimeError(
+            f"{path} predates graph_strategies (pre-2026-10 archive, every graph "
+            "strategy on); move or commit it before collecting into this directory"
+        )
+    path.unlink()
+    logger.info("Cleared previous raw_responses.json at %s", path)
 
 
 def _save_responses(collected: list[dict]) -> None:
@@ -54,6 +70,7 @@ async def collect_responses(
     questions: list[GroundTruthItem],
     use_graph: bool | None = None,
     semantic_only: bool = False,
+    graph_strategies: list[str] | None = None,
 ) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
     For each ground truth question:
@@ -69,6 +86,9 @@ async def collect_responses(
             True/False = force graph on/off for every request in this run.
         semantic_only: When True, bypass backend routing / SQL / graph /
             cross-ref and run pure semantic retrieval only.
+        graph_strategies: Per-request override for which graph strategies run
+            (["all"] = every one, the pre-2026-10 behaviour). None = backend
+            RAG_GRAPH_STRATEGIES default.
 
     Returns: (samples, inline_metrics)
       - inline_metrics: kept as empty dict for run_evaluation() signature compat.
@@ -81,8 +101,9 @@ async def collect_responses(
     inline_metrics: dict[str, list[MetricResult]] = {}
     total = len(questions)
 
-    logger.info("Starting fresh collection for %d questions (use_graph=%s, semantic_only=%s)",
-                total, use_graph, semantic_only)
+    logger.info("Starting fresh collection for %d questions "
+                "(use_graph=%s, semantic_only=%s, graph_strategies=%s)",
+                total, use_graph, semantic_only, graph_strategies)
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         for idx, gt in enumerate(questions, 1):
@@ -98,6 +119,7 @@ async def collect_responses(
                         resp = await query_rag(
                             gt.question, client=client,
                             use_graph=use_graph, semantic_only=semantic_only,
+                            graph_strategies=graph_strategies,
                         )
                         break
                     except Exception as e:
@@ -167,6 +189,7 @@ async def collect_responses(
                     "strategies_used": strategies_used,
                     "strategy_errors": strategy_errors,
                     "use_graph": stats.get("use_graph", True),
+                    "graph_strategies": stats.get("graph_strategies"),
                 })
                 _save_responses(collected_raw)
 

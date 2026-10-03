@@ -14,6 +14,11 @@ Usage:
         uv run python run_eval.py --graph       # results_graph/
         uv run python run_eval.py --no-graph    # results_no_graph/
         uv run python run_eval.py --semantic    # results_semantic/ (pure semantic baseline)
+
+    Since 2026-10 --graph runs only the backend's RAG_GRAPH_STRATEGIES (default:
+    graph_event). Round 3's results_graph/ was every strategy; reproduce it with
+        uv run python run_eval.py --graph --graph-strategies all
+    A pre-2026-10 archive in the output dir is never overwritten: move it first.
 """
 
 from __future__ import annotations
@@ -65,6 +70,13 @@ def main() -> None:
              "run pure semantic retrieval + rerank. Outputs to results_semantic/.",
     )
     parser.add_argument(
+        "--graph-strategies",
+        nargs="*",
+        default=None,
+        help="Graph strategies the backend may run (e.g. graph_event, or 'all'; "
+             "no values = none). Omit = backend RAG_GRAPH_STRATEGIES default.",
+    )
+    parser.add_argument(
         "--rebuild-contexts",
         action="store_true",
         help="With --eval-only: rebuild generator-format context blocks (header + text) "
@@ -91,7 +103,8 @@ def main() -> None:
         mode_label = {True: "graph", False: "no-graph", None: "default (backend env)"}[args.graph]
     console.print(Panel.fit(
         "[bold blue]Bible RAG Evaluation System[/bold blue]\n"
-        f"[dim]RAGAS + Custom Metrics | Graph mode: {mode_label}[/dim]\n"
+        f"[dim]RAGAS + Custom Metrics | Graph mode: {mode_label} | "
+        f"graph strategies: {args.graph_strategies if args.graph_strategies is not None else 'backend default'}[/dim]\n"
         f"[dim]Output dir: {settings.results_dir}[/dim]",
         border_style="blue",
     ))
@@ -108,7 +121,8 @@ def main() -> None:
     if args.collect_only:
         console.print("[bold]Mode: Collect Only[/bold]")
         samples, inline_metrics = asyncio.run(
-            run_collection(use_graph=args.graph, semantic_only=args.semantic)
+            run_collection(use_graph=args.graph, semantic_only=args.semantic,
+                           graph_strategies=args.graph_strategies)
         )
         console.print("[green]Collection complete. Run with --eval-only to run batch metrics.[/green]")
 
@@ -133,7 +147,8 @@ def main() -> None:
         # Step 1: Collect + inline Claude eval
         console.rule("[bold cyan]Step 1: Collect RAG Responses + Claude Point Coverage")
         samples, inline_metrics = asyncio.run(
-            run_collection(use_graph=args.graph, semantic_only=args.semantic)
+            run_collection(use_graph=args.graph, semantic_only=args.semantic,
+                           graph_strategies=args.graph_strategies)
         )
 
         # Step 2: Batch evaluate (pass inline metrics so point coverage isn't re-run)

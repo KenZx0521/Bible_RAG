@@ -9,10 +9,16 @@ Routes:
     R5: Cross-reference (≥2 books) → Semantic seed + Cross-Ref ∥ Graph + SQL
     R6: Place search (place name) → Graph(place) + Semantic + SQL supplement
     Fallback: Semantic only
+
+Graph strategies run only when use_graph is on AND they are listed in
+settings.rag_graph_strategies (or the request's graph_strategies). Since
+2026-10 the default is graph_event alone, so R3/R6 run without any graph
+strategy and R5 keeps only graph_event; pass ["all"] to restore every one.
 """
 
 import asyncio
 import logging
+from typing import get_args
 
 from utils.verse_parser import VerseRef
 from utils.signal_detector import detect_signals, QuerySignals
@@ -33,7 +39,7 @@ from utils.retrieval.entity_path_retriever import (
 )
 from utils import reranker as reranker_mod
 from database import neo4j_db, postgres
-from config import settings
+from config import GraphStrategyName, settings
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +56,30 @@ def _get_hybrid_retriever():
     return _hybrid_retriever
 
 
+# Every Neo4j/entity-backed strategy that can inject candidates (see
+# config.GraphStrategyName for what each one is).
+GRAPH_STRATEGIES = frozenset(get_args(GraphStrategyName)) - {"all"}
+
+
+def resolve_graph_strategies(requested: list[str] | None) -> frozenset[str]:
+    """Graph strategies allowed for one request.
+
+    None falls back to settings.rag_graph_strategies; "all" enables every
+    strategy; an empty list disables them all (graph off, use_graph aside).
+    """
+    names = settings.rag_graph_strategies if requested is None else requested
+    unknown = sorted(set(names) - GRAPH_STRATEGIES - {"all"})
+    if unknown:
+        raise ValueError(f"unknown graph strategies: {unknown}")
+    if "all" in names:
+        return GRAPH_STRATEGIES
+    return frozenset(names)
+
+
+def _graph_on(use_graph: bool, graph_strategies: frozenset[str], name: str) -> bool:
+    return use_graph and name in graph_strategies
+
+
 # ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
@@ -64,6 +94,7 @@ async def retrieve_and_rerank(
     use_graph: bool | None = None,
     semantic_only: bool = False,
     fusion_alpha: float | None = None,
+    graph_strategies: list[str] | None = None,
 ) -> tuple[list[dict], dict]:
     """
     Signal-driven multi-strategy retrieval with 6 routes.
@@ -72,6 +103,9 @@ async def retrieve_and_rerank(
         use_graph: Per-request override for graph retrieval. None falls back to
             settings.rag_use_graph. When False, graph_retriever and
             cross_ref_retriever calls are skipped in R3/R4/R5/R6.
+        graph_strategies: Per-request override for which graph strategies may
+            run when use_graph is on (see resolve_graph_strategies). None falls
+            back to settings.rag_graph_strategies.
         semantic_only: When True, bypass signal detection + route dispatch and
             run pure semantic (or hybrid) retrieval only. Skips SQL/graph/cross-ref
             and chapter-pinning. Rerank still applies.
@@ -84,6 +118,7 @@ async def retrieve_and_rerank(
     """
     k = top_k or settings.default_top_k
     effective_use_graph = use_graph if use_graph is not None else settings.rag_use_graph
+    effective_graph_strategies = resolve_graph_strategies(graph_strategies)
 
     # Rank fusion: a per-request alpha forces fusion on (A/B sweeps without
     # backend restart); otherwise both switch and alpha come from settings.
@@ -135,6 +170,7 @@ async def retrieve_and_rerank(
             signals=signals,
             k=k,
             use_graph=effective_use_graph,
+            graph_strategies=effective_graph_strategies,
         )
 
     total_candidates = len(candidates)
@@ -235,6 +271,11 @@ async def retrieve_and_rerank(
         "route_used": route,
         "strategy_errors": strategy_errors,
         "use_graph": effective_use_graph,
+        # Strategies in effect for this request; empty when graph is off.
+        "graph_strategies": (
+            sorted(effective_graph_strategies)
+            if effective_use_graph and not semantic_only else []
+        ),
         "fusion_alpha": effective_alpha if (fusion_active and route != "R1") else None,
     }
 
@@ -773,7 +814,9 @@ async def _expand_via_book_anchor(
     return new_candidates
 
 
-_GRAPH_STRATEGIES = ("graph", "graph_person", "graph_event", "graph_place")
+# Graph labels eligible for the legacy (fusion-off) graph pin; narrower than
+# GRAPH_STRATEGIES, which governs which strategies run at all.
+_PINNABLE_GRAPH_STRATEGIES = ("graph", "graph_person", "graph_event", "graph_place")
 _BOOK_ANCHOR_STRATEGY = "book_anchor"
 
 
@@ -866,7 +909,7 @@ def _pin_graph_candidates(
     if include_uncertainty_pins and top1_score < rerank_confidence_threshold:
         graph_eligible = [
             c for c in candidates
-            if c.get("source_strategy") in _GRAPH_STRATEGIES
+            if c.get("source_strategy") in _PINNABLE_GRAPH_STRATEGIES
             and c.get("id") not in existing_ids
         ]
         strategy_priority = {
@@ -953,6 +996,7 @@ async def _route_r1(
     signals: QuerySignals,
     k: int,
     use_graph: bool,
+    graph_strategies: frozenset[str],
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R1: Exact verse reference → SQL direct lookup, skip reranking.
 
@@ -972,7 +1016,7 @@ async def _route_r1(
     # Fallback to R2
     logger.info("R1 empty, falling back to R2")
     r2_candidates, r2_strategies, r2_errors = await _route_r2(
-        query, verse_refs, entity_names, signals, k, use_graph
+        query, verse_refs, entity_names, signals, k, use_graph, graph_strategies
     )
     errors.update(r2_errors)
     return r2_candidates, r2_strategies, errors
@@ -985,6 +1029,7 @@ async def _route_r2(
     signals: QuerySignals,
     k: int,
     use_graph: bool,
+    graph_strategies: frozenset[str],
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R2: Chapter + semantic → SQL chapter filter (0.9) + Semantic (0.6).
 
@@ -1028,10 +1073,12 @@ async def _route_r3(
     signals: QuerySignals,
     k: int,
     use_graph: bool,
+    graph_strategies: frozenset[str],
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R3: Person graph (≥2 persons) → Graph(0.9) + Semantic(0.7) + SQL(0.5).
 
-    When use_graph=False, graph_person is skipped; falls back to semantic + SQL supplement.
+    When use_graph=False (or graph_person is not in graph_strategies),
+    graph_person is skipped; falls back to semantic + SQL supplement.
     """
     strategies: list[str] = []
     errors: dict[str, str] = {}
@@ -1039,7 +1086,7 @@ async def _route_r3(
 
     # Use detected persons for graph retrieval, fall back to entity_names
     person_names = signals.detected_persons or entity_names
-    graph_enabled = bool(use_graph and person_names)
+    graph_enabled = bool(_graph_on(use_graph, graph_strategies, "graph_person") and person_names)
 
     # Parallel: graph (if enabled) + semantic. Placeholder keeps index[0] stable.
     if graph_enabled:
@@ -1097,7 +1144,8 @@ async def _route_r3(
     # imported.
     if person_names:
         entity_expand = await _expand_via_entity_path(
-            person_names, use_graph, errors, "R3", type_filter="Person",
+            person_names, _graph_on(use_graph, graph_strategies, "entity_path"),
+            errors, "R3", type_filter="Person",
         )
         if entity_expand:
             new_entity = [c for c in entity_expand if c["id"] not in existing_ids]
@@ -1109,7 +1157,8 @@ async def _route_r3(
     # CROSS_REFERENCES edges from the strongest seeds. Activates the 916
     # hand-curated cross-book edges in the pre-rerank candidate pool.
     expand = await _expand_via_cross_ref_seeds(
-        deduped, existing_ids, use_graph, errors, "R3"
+        deduped, existing_ids, _graph_on(use_graph, graph_strategies, "cross_ref_expand"),
+        errors, "R3",
     )
     if expand:
         new_expand = [c for c in expand if c["id"] not in existing_ids]
@@ -1121,7 +1170,10 @@ async def _route_r3(
     # Adds pericopes that graph_person + semantic missed, e.g. recovers
     # 出埃及記6 摩西亞倫族譜 for PERSON_QUESTION_004 when entity_path noise
     # otherwise displaces it. Supplement-only; weight 0.6 stays below semantic.
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R3", deduped=deduped)
+    eq_supplement = await _expand_via_entity_query(
+        query, existing_ids, _graph_on(use_graph, graph_strategies, "entity_query"),
+        errors, "R3", deduped=deduped,
+    )
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
@@ -1151,6 +1203,7 @@ async def _route_r4(
     signals: QuerySignals,
     k: int,
     use_graph: bool,
+    graph_strategies: frozenset[str],
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R4: Event search → Graph_Event(0.85) + Semantic(0.7) + EntityQuery(0.6) + SQL(0.5).
 
@@ -1161,14 +1214,15 @@ async def _route_r4(
     captures unique recoveries (e.g. EVENT_008 王國分裂) without breaking
     EVENT_014 / 020 where graph_event/semantic already work.
 
-    When use_graph=False, both graph_event and entity_query are skipped.
+    When use_graph=False, both graph_event and entity_query are skipped; each
+    also needs its name in graph_strategies.
     """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     weights = settings.route_weights.get("R4", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
 
     event_keywords = signals.detected_events
-    graph_enabled = bool(use_graph and event_keywords)
+    graph_enabled = bool(_graph_on(use_graph, graph_strategies, "graph_event") and event_keywords)
 
     # Parallel: graph_event + semantic
     tasks = [asyncio.create_task(_get_semantic(query))]
@@ -1216,7 +1270,8 @@ async def _route_r4(
 
     # Cross-ref 2-hop expansion (see _route_r3 for rationale).
     expand = await _expand_via_cross_ref_seeds(
-        deduped, existing_ids, use_graph, errors, "R4"
+        deduped, existing_ids, _graph_on(use_graph, graph_strategies, "cross_ref_expand"),
+        errors, "R4",
     )
     if expand:
         new_expand = [c for c in expand if c["id"] not in existing_ids]
@@ -1228,7 +1283,10 @@ async def _route_r4(
     # Critical for EVENT cases where dense embedding misses the right book —
     # e.g. "王國分裂" semantically maps to 但以理書 "破裂", but entity
     # 「北方的支派反叛」→ 列王紀上12 is recovered here. Supplement-only.
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R4", deduped=deduped)
+    eq_supplement = await _expand_via_entity_query(
+        query, existing_ids, _graph_on(use_graph, graph_strategies, "entity_query"),
+        errors, "R4", deduped=deduped,
+    )
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
@@ -1258,6 +1316,7 @@ async def _route_r5(
     signals: QuerySignals,
     k: int,
     use_graph: bool,
+    graph_strategies: frozenset[str],
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R5: Cross-reference → Semantic + SQL_Chapter(0.85) + Cross-Ref(0.85) ∥ Graph(0.75) + SQL(0.4).
 
@@ -1267,6 +1326,8 @@ async def _route_r5(
 
     When use_graph=False, both cross_reference and graph are skipped;
     route degrades to pure semantic + sql_chapter (if any) + SQL supplement.
+    With use_graph=True, each of cross_reference / graph / graph_event /
+    entity_query still needs its name in graph_strategies.
     """
     strategies: list[str] = []
     errors: dict[str, str] = {}
@@ -1320,7 +1381,8 @@ async def _route_r5(
             strategies.append("book_anchor")
             all_candidates.extend(anchor)
 
-    # Parallel: cross-reference from seed + graph (if entities). Both gated on use_graph.
+    # Parallel: cross-reference from seed + graph (if entities). Each gated on
+    # use_graph plus its own entry in graph_strategies.
     parallel_tasks = []
 
     if use_graph:
@@ -1330,7 +1392,7 @@ async def _route_r5(
         # behaviour for callers that explicitly disable the expand flag).
         seed_count = settings.rag_cross_ref_top_seeds
         source_ids = [c["id"] for c in deduped[:seed_count] if ":" in c["id"]]
-        if source_ids:
+        if source_ids and "cross_reference" in graph_strategies:
             if settings.rag_use_cross_ref_expand:
                 parallel_tasks.append(("cross_ref", asyncio.create_task(
                     retrieve_via_cross_references(
@@ -1345,7 +1407,7 @@ async def _route_r5(
                 )))
 
         # Graph retrieval if entities available
-        if entity_names:
+        if entity_names and "graph" in graph_strategies:
             parallel_tasks.append(("graph", asyncio.create_task(
                 retrieve_by_entities(entity_names)
             )))
@@ -1354,7 +1416,7 @@ async def _route_r5(
         # creation→great-commission→revelation query). R5 by default only walks
         # cross-ref + entity graph; without this branch, new Events like 大使命
         # are never reached even though they exist as graph anchors.
-        if signals.detected_events:
+        if signals.detected_events and "graph_event" in graph_strategies:
             parallel_tasks.append(("graph_event", asyncio.create_task(
                 retrieve_by_events(signals.detected_events)
             )))
@@ -1389,7 +1451,10 @@ async def _route_r5(
     # 與 希伯來書8). Supplement-only after the parallel cross_ref/graph block so
     # it never displaces semantic seeds.
     existing_ids = {c["id"] for c in deduped}
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R5", deduped=deduped)
+    eq_supplement = await _expand_via_entity_query(
+        query, existing_ids, _graph_on(use_graph, graph_strategies, "entity_query"),
+        errors, "R5", deduped=deduped,
+    )
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
@@ -1419,17 +1484,19 @@ async def _route_r6(
     signals: QuerySignals,
     k: int,
     use_graph: bool,
+    graph_strategies: frozenset[str],
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """R6: Place search → Graph_Place(0.85) + Semantic(0.7) + SQL(0.5).
 
-    When use_graph=False, graph_place is skipped.
+    When use_graph=False (or graph_place is not in graph_strategies),
+    graph_place is skipped.
     """
     strategies: list[str] = []
     errors: dict[str, str] = {}
     weights = settings.route_weights.get("R6", {"graph": 0.85, "semantic": 0.7, "sql": 0.5})
 
     place_names = signals.detected_places
-    graph_enabled = bool(use_graph and place_names)
+    graph_enabled = bool(_graph_on(use_graph, graph_strategies, "graph_place") and place_names)
 
     # Parallel: graph place (if enabled) + semantic
     tasks = [asyncio.create_task(_get_semantic(query))]
@@ -1478,7 +1545,8 @@ async def _route_r6(
     # Entity-path expansion (Place-rooted): walk LOCATED_IN, NEAR, RULED-by-Person, etc.
     if place_names:
         entity_expand = await _expand_via_entity_path(
-            place_names, use_graph, errors, "R6", type_filter="Place",
+            place_names, _graph_on(use_graph, graph_strategies, "entity_path"),
+            errors, "R6", type_filter="Place",
         )
         if entity_expand:
             new_entity = [c for c in entity_expand if c["id"] not in existing_ids]
@@ -1488,7 +1556,8 @@ async def _route_r6(
 
     # Cross-ref 2-hop expansion (see _route_r3 for rationale).
     expand = await _expand_via_cross_ref_seeds(
-        deduped, existing_ids, use_graph, errors, "R6"
+        deduped, existing_ids, _graph_on(use_graph, graph_strategies, "cross_ref_expand"),
+        errors, "R6",
     )
     if expand:
         new_expand = [c for c in expand if c["id"] not in existing_ids]
@@ -1499,7 +1568,10 @@ async def _route_r6(
     # Entity-query supplement: e.g. mis-routed PERSON_QUESTION_005 葉忒羅 题
     # ended up here (R6 place route) due to 米甸 → R6. EQ supplement recovers
     # 出埃及記3/4/18 via Person/Theme entities the place graph misses.
-    eq_supplement = await _expand_via_entity_query(query, existing_ids, use_graph, errors, "R6", deduped=deduped)
+    eq_supplement = await _expand_via_entity_query(
+        query, existing_ids, _graph_on(use_graph, graph_strategies, "entity_query"),
+        errors, "R6", deduped=deduped,
+    )
     if eq_supplement:
         _apply_weights(eq_supplement, weights.get("entity_query", 0.6))
         existing_ids.update(c["id"] for c in eq_supplement)
@@ -1529,6 +1601,7 @@ async def _route_fallback(
     signals: QuerySignals,
     k: int,
     use_graph: bool,
+    graph_strategies: frozenset[str],
 ) -> tuple[list[dict], list[str], dict[str, str]]:
     """Fallback: Semantic + book-anchor (when book named). Graph-agnostic.
 

@@ -36,6 +36,8 @@ class RetrievalStats(BaseModel):
     route_used: str = ""
     strategy_errors: dict[str, str] = {}
     use_graph: bool = True
+    # Graph strategies allowed for this request (they only run when use_graph).
+    graph_strategies: list[str] = []
     # Effective rank-fusion alpha for this request (None = fusion disabled).
     fusion_alpha: float | None = None
 

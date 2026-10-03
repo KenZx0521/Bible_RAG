@@ -87,6 +87,12 @@ uv run python run_eval.py --no-graph
 uv run python run_eval.py
 ```
 
+> **2026-10 起 `--graph` 不再等於「全部圖譜策略」**:backend 預設 `RAG_GRAPH_STRATEGIES=["graph_event"]`。
+> 要重現 Round 3 的 `results_graph/`(全開),加 `--graph-strategies all`;
+> `--graph-strategies graph_event graph_person` 指定子集,只寫 `--graph-strategies` 不帶值 = 全關。
+> 輸出目錄裡若有 2026-10 前的存檔(記錄沒有 `graph_strategies` 欄位),collector 會拒絕覆寫,請先移走或 commit。
+> 每筆 `raw_responses.json` 記錄另帶 `graph_strategies`(backend 實際生效的策略;缺欄位 = 舊版全開)。
+
 兩種模式的輸出會自動分到不同目錄，方便對照比較:
 
 ```bash
@@ -102,7 +108,8 @@ jq '[.[] | .use_graph] | unique' results_no_graph/raw_responses.json # → [fals
 **閘道規則**(`--no-graph` 時跳過):
 - R3 person → 略過 `graph_person`，保留 semantic + SQL supplement
 - R4 event → 略過 `graph_event`
-- R5 cross-ref → 略過 `cross_reference` 與 `graph`
+- R5 cross-ref → 略過 `cross_reference` 與 `graph`(以及 `graph_event`)
+- R3/R4/R5/R6 的 `entity_path`、`cross_ref_expand`、`entity_query` 也一併略過
 - R6 place → 略過 `graph_place`
 - R1/R2/fallback 不受影響(本來就沒用 Neo4j)
 
