@@ -8,9 +8,11 @@
 \subsection{Benchmark}
 \label{sec:benchmark}
 
-The benchmark contains 100 Traditional Chinese questions, 20 in each of
-five categories, with ground truth approved by annotators with biblical
-expertise:
+The benchmark contains 500 Traditional Chinese questions, 100 in each of
+five categories. Rounds 0--2 (Sections~\ref{sec:round0}--\ref{sec:fusion})
+used the original 100 questions, 20 per category, with ground truth
+approved by annotators with biblical expertise; Round~3
+(Section~\ref{sec:round3}) uses all 500. The five categories are:
 
 \begin{itemize}
 \item \textbf{VERSE\_LOOKUP} --- exact reference lookup (``What does
@@ -32,19 +34,80 @@ spans exact matching, semantic search, entity-centric retrieval, and
 cross-book integration, so that route-level behavior is observable per
 category.
 
+\begin{table}[!t]
+\caption{Benchmark Composition (500 Questions, 100 per Type)}
+\label{tab:benchmark}
+\centering
+\begin{threeparttable}
+\footnotesize
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{6.0cm}@{}}
+\toprule
+Type & Diagnostic families added in July 2026 ($n$) \\
+\midrule
+VERSE\_LOOKUP & longtail\_book (48), head\_cold (14), paraphrase (18) \\
+TOPIC & longtail\_chapter (35), multi\_chapter (25), head\_cold (20) \\
+PERSON & longtail\_person (30), disambiguation (12), title\_coref
+(12), trajectory (18), split\_pericope (8) \\
+EVENT & longtail\_event (34), temporal (16), surface\_form (16),
+parable (14) \\
+GENERAL & prophecy\_fulfillment (26), nt\_quotes\_ot (16), typology
+(12), parallel\_account (14), theme\_thread (12) \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Each type also keeps its 20 original questions (the Round~0--2
+benchmark).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Once Round~2 had saturated the original 100 (Section~\ref{sec:fusion}),
+400 questions were added on July 11, 2026 --- after the Round~2
+repairs --- in 19 diagnostic families of size $n \ge 8$
+(Table~\ref{tab:benchmark}); we call them the \emph{expansion} set and
+the first 100 the \emph{original} (legacy) set. Each family aims at a
+failure mode identified in Sections~\ref{sec:audit}--\ref{sec:fusion}.
+The \emph{longtail\_*} families ask about books, chapters, persons, and
+events that head questions never reach, \emph{head\_cold} about cold
+passages of head books, and \emph{parable} about the parables.
+\emph{Paraphrase} gives a quotation without its reference, which
+bypasses R1; \emph{title\_coref} names a person only by title (the
+missing-coreference gap) and \emph{disambiguation} asks about
+homonymous persons; \emph{trajectory} and \emph{multi\_chapter} require
+cross-chapter aggregation (the PERSON\_004 family); \emph{split\_pericope}
+targets persons in chunk-split pericopes (mechanism M3); \emph{temporal}
+asks for event ordering and \emph{surface\_form} uses modern labels
+absent from the CUV text. Five cross-book multi-anchor families populate
+the GENERAL\_006/008 family of Section~\ref{sec:discussion}. All 400
+references were machine-validated against the corpus, every question
+was content-checked against the corpus text in an LLM-assisted review
+(49 corrections), and new reference answers use the corpus's own
+spellings. The original 100 are unchanged, so they remain a comparable
+subset across all four rounds.
+
 \subsection{Metrics}
 \label{sec:evalmetrics}
 
-Thirteen metrics fall into four families:
+Sixteen metrics (counting the two faithfulness judges separately) fall
+into four families:
 
 \begin{enumerate}
-\item \textbf{Deterministic retrieval metrics} (no LLM, reproducible
-bit-exactly): hit rate, recall@5, precision@5, F1@5, MRR, MAP@5, NDCG@5,
-computed program\-matically against the gold references at pericope
-granularity.
+\item \textbf{Deterministic retrieval metrics} (no LLM in scoring;
+recomputable bit-exactly from archived outputs): hit rate, recall@5,
+precision@5, F1@5, MRR, MAP@5, NDCG@5,
+computed program\-matically against the gold references with each gold
+pericope or chapter range counted as one unit; and, added in July 2026,
+\emph{verse recall@5} (the fraction of gold verses retrieved, ranges
+expanded verse by verse) and \emph{anchor coverage@5} (the fraction of
+gold chapter-level anchors reached by at least one retrieved passage;
+not to be confused with the knowledge graph's \emph{entity} anchor
+coverage of Section~\ref{sec:p0}).
 \item \textbf{RAGAS generation metrics}~\cite{es2023ragas}:
 faithfulness, answer relevancy, context recall, and answer correctness,
-judged by a locally served Gemma~4 26B.
+judged by a locally served Gemma~4 26B. Since September 2026
+faithfulness is reported by two judges that share one statement
+decomposition: \emph{zh}, a Traditional Chinese NLI rubric that also
+sees the user question, and \emph{strict}, RAGAS's default NLI prompt.
 \item \textbf{Answer coverage} (ours): an LLM judge scores each expected
 answer point as covered (1.0), partial (0.5), or missing (0.0); coverage
 is the mean. Unlike F1-style correctness it is a \emph{pure recall}
@@ -54,36 +117,70 @@ complementing faithfulness as a hallucination check.
 and reference answers.
 \end{enumerate}
 
-Three measurement pitfalls, encountered concretely in this project,
-qualify every LLM-judged number we report. (i) Per-question judge noise
-for RAGAS metrics reaches $\pm 0.4$, so 20-question per-category deltas
-below $\approx 0.05$ are treated as noise. (ii) RAGAS answer relevancy
+Five measurement pitfalls, encountered concretely in this project,
+qualify the numbers we report. (i) Per-question judge noise for RAGAS
+metrics reaches $\pm 0.4$, so 20-question per-category deltas below
+$\approx 0.05$ are treated as noise (Round~3 measures the floor
+directly, Section~\ref{sec:round3}). (ii) RAGAS answer relevancy
 applies a ``noncommittal'' rule that zeroes refusals; an honest ``the
 provided passages do not state this'' is scored 0, which we found
 systematically deflates cautious models (a commercial model's relevancy
 rose above the local model's once refusal-affected items were excluded).
 (iii) Position and verbosity bias make naive LLM-judged A/B comparisons
-overstate differences~\cite{zeng2025unbiased}. Retrieval conclusions in
-this paper therefore rest on the deterministic family wherever possible.
+overstate differences~\cite{zeng2025unbiased}. (iv) Unit-level recall
+is inflated by ranges: a gold ``Matthew 5--7'' (111 verses) is one unit,
+so retrieving any one of its verses scores recall 1.0. On the Round~3
+graph run, unit-level recall@5 is 0.835 but verse recall@5 0.749 (0.893
+vs.\ 0.688 on the original 100); the hit rates and recall@5 values of
+Rounds~0--2 are unit-level --- valid as ``some gold passage was
+retrieved,'' optimistic about breadth. (v) The faithfulness judge
+originally received passage text without the generator's citation
+headers (``[1] John, chapter 3 --- \emph{title} (verse 16)''), so the
+citations the generator is instructed to write were judged unsupported,
+and short, citation-dense answers suffered most: exact-verse questions,
+with the best retrieval, scored the lowest faithfulness in every
+Round~0--2 run. Re-judging the 500 answers of a July 15, 2026 run with
+context blocks rebuilt in the generator's exact format raised
+faithfulness from 0.912 to 0.987 (zh) and 0.981 (strict) without
+changing a single answer. Every faithfulness value in
+Rounds~0--2 predates this repair and is not comparable with Round~3.
+Retrieval conclusions in this paper therefore rest on the deterministic
+family wherever possible.
+
+Following a July 2026 audit of the instruments, answer coverage is the
+primary answer-side metric and faithfulness a gate --- since the
+September repair, strict faithfulness $\ge 0.97$ per run and $\ge 0.95$
+per question type. Answer correctness is reported
+for continuity only: its F1 term penalizes complete answers --- among
+Round~3 graph-configuration answers with coverage $\ge 0.8$, answer
+length and correctness correlate at $r=-0.45$ --- and it averages only
+0.76 on answers whose verse recall ($\ge 0.9$) and coverage
+($\ge 0.8$) are both high.
 
 \subsection{A/B Infrastructure and Reproducibility}
 \label{sec:evalinfra}
 
-Three properties of the harness matter for the experiments that follow:
+Four properties of the harness matter for the experiments that follow:
 
 \begin{itemize}
-\item \textbf{Per-request configuration}: \code{use\_graph} and
-\code{fusion\_alpha} are request-level overrides, so graph/semantic A/B
-tests and $\alpha$ sweeps run against one container without restarts or
-rebuilds.
+\item \textbf{Per-request configuration}: \code{use\_graph},
+\code{semantic\_only}, and \code{fusion\_alpha} are request-level
+overrides, so the graph/no-graph/semantic A/B tests and $\alpha$ sweeps
+run against one container without restarts or rebuilds.
 \item \textbf{Fast retrieval loop}: with \code{retrieval\_only=true}
 the backend skips generation; the 100-question retrieval suite completes
 in $\sim$15 minutes versus $\sim$2.5 hours for the full pipeline
 (36 min collection $+$ 1\,h\,42\,m RAGAS $+$ 13 min coverage), with
-retrieval metrics verified \emph{bit-exact} against the full pipeline.
+retrieval metrics verified \emph{bit-exact} against the full pipeline
+in Rounds~0--2, while the intent classifier was inactive (with a
+sampling classifier the two can route a few questions differently).
+\item \textbf{Judge-visible context}: with \code{include\_context=true}
+the backend returns, for every source, the exact context block the
+generator saw, and the judges score against that text --- the repair of
+pitfall~(v) above.
 \item \textbf{Re-scorable raw outputs}: every run archives raw responses
 (sources, strategies, scores per question); metrics can be recomputed
 from archives, and a comparison tool emits per-question deltas and
 hit-flip lists --- the instrument behind every forensic table in
-Sections~\ref{sec:p0} and~\ref{sec:fusion}.
+Sections~\ref{sec:p0}, \ref{sec:fusion}, and~\ref{sec:round3}.
 \end{itemize}

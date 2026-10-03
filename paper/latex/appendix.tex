@@ -75,7 +75,7 @@ RAGAS metrics; judge-bias methodology (position/verbosity;
 noncommittal artifact) \\
 \addlinespace
 Negative result \& benchmark dependence (\S\ref{sec:p0},
-\S\ref{sec:discussion}) &
+\S\ref{sec:round3}, \S\ref{sec:discussion}) &
 \cite{zhou2025brink,zeng2025unbiased,xiang2025whengraphs} &
 KG-defect $\to$ answer non-linearity and defect injection; debiased
 gains; when graphs help RAG at all \\
@@ -100,22 +100,49 @@ explicitly not extrapolated to KG construction \\
 \label{app:repro}
 
 \textbf{Determinism and re-scoring.} All retrieval metrics are computed
-programmatically against pericope-level gold references; every
+programmatically against the gold references (at unit, verse, and
+chapter level); every
 evaluation run archives per-question raw responses (sources,
 strategies, raw reranker and fused scores, route), and the metric suite
 can be recomputed bit-exactly from the archives. The fast
 retrieval-only loop was validated to agree bit-exactly with the full
-pipeline on all retrieval metrics.
+pipeline on all retrieval metrics in Rounds~0--2, while the intent
+classifier was inactive. Retrieval is deterministic \emph{given the
+classifier output}; routes and graph inputs depend on the LLM intent
+classifier, which samples at temperature 0.1 --- in Round~3, 12 of 500
+questions (2.4\%) were routed differently in two configurations whose
+routing logic is identical. The script \code{paper/tools/round3\_stats.py} recomputes
+every number derived from the three Round~3 archives (aggregates,
+bootstrap intervals with a fixed seed, the noise floor, the slot
+analysis, the faithfulness gate, the traces) after asserting that its
+aggregates equal the archived ones; \code{paper/tools/replay\_routes.py}
+reproduces the empty-classifier route replay and the July~15
+comparisons from the git-archived runs.
 
 \textbf{Comparability across the three time points.} Answer model
 (Gemma~4 E4B, 8-bit), judge model (Gemma~4 26B), decoding temperature
-(0.1), top-$k$ (5), and route distribution (R1$=$20, R2$=$25, R3$=$21,
-R4$=$18, R5$=$10, R6$=$4, fallback$=$2) were verified identical; the
-entity-query strategy was off at the first two time points and on after
-the fusion round (its re-enablement is itself one of the audited
-repairs). The only other systematic difference between time points is
-the state of the knowledge graph and of the post-retrieval chain, as
-described in the text.
+(0.1), and top-$k$ (5) were verified identical, as was the route
+distribution (R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10, R6$=$4,
+fallback$=$2) at the first two time points; at the third, one question
+(EVENT\_015) moved from R6 to R4 after the event keyword ``Gethsemane
+prayer'' was added in the fusion round. All three time points ran with
+the intent classifier silently inactive (Section~\ref{sec:signals}):
+replaying the signal detector with an empty classifier output
+reproduces every logged route. The entity-query strategy was off at the
+first two time points and on after the fusion round (its re-enablement
+is itself one of the audited repairs). The only other systematic
+difference between time points is the state of the knowledge graph and
+of the post-retrieval chain, as described in the text.
+
+\textbf{Comparability with Round 3.} Round~3 differs from the three
+time points in the classifier (functioning), book-anchor retrieval (per
+book, developed and checked on the 500 questions), merged-verse lookup,
+the judges' inputs (generator context blocks) and faithfulness rubrics,
+the Ollama server version, and the benchmark (500 questions). The bridge is the
+original 100 questions scored by the deterministic retrieval metrics,
+which can be recomputed from every archive; across it the graph
+configuration's hit rate (0.97) and its margin over semantic-only
+($+0.16$) are unchanged.
 
 \textbf{Rollbackability.} Every P0 and fusion-round mutation is
 reversible: backfilled mention edges, co-occurrence relation edges, and
@@ -129,4 +156,6 @@ whose legacy settings reproduce the pre-remediation system exactly.
 takes $\approx 2.5$ hours on the single-host deployment (36 min
 collection, 1\,h\,42\,m RAGAS judging, 13 min coverage judging); the
 retrieval-only loop takes $\approx 15$ minutes and was used for the
-$\alpha$ sweep and regression forensics.
+$\alpha$ sweep and regression forensics. On the 500-question benchmark,
+LLM judging alone took roughly 10--12 hours per Round~3 configuration
+(two faithfulness judges, three further RAGAS metrics, and coverage).

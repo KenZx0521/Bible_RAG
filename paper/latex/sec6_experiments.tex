@@ -20,8 +20,7 @@ entity-query strategy was \emph{disabled}: an earlier deployment had
 found that cross-encoder reranking systematically displaced its
 candidates --- surface-form scores beat entity anchors --- so EQ was
 turned off pending a mechanism fix. This early incident is the first of
-the three rounds of ranking-layer evidence assembled in
-Section~\ref{sec:discussion}.
+the four incidents assembled in Section~\ref{sec:discussion}.
 
 \subsection{Results}
 
@@ -53,7 +52,13 @@ Category & Metric & Claude & Gemma & Claude & Gemma \\
 \item Retrieval metrics under semantic-only are identical across answer
 models by construction (deterministic retrieval); small graph-mode
 differences arise because the answer LLM also performs intent
-classification, which shapes graph-traversal inputs on R3--R6.
+classification, which shapes route selection and graph-traversal
+inputs. (With
+Gemma the classifier in fact returned nothing, so its routes are
+dictionary-only; Claude's classifier functioned and re-routed 8 of the
+100 questions --- Section~\ref{sec:signals}.) Faithfulness here and in
+Tables~\ref{tab:p0result} and~\ref{tab:evolution} predates the judge
+repair of Section~\ref{sec:evalmetrics} and understates it.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -83,10 +88,15 @@ decisive retrieval gains: hit rate $+15$\,pp ($0.81\to0.96$), recall@5
 $+13$\,pp, MRR $+16$\,pp. The improvement propagates to generation
 (faithfulness $0.90\to0.95$, coverage $0.62\to0.74$, two-model
 averages) and is \emph{model-independent}: Claude and Gemma improve by near-identical
-margins, isolating retrieval architecture as the causal factor.
+margins, isolating retrieval architecture as the causal factor. (The
+retrieval and coverage gains replicate on the same 100 questions in
+Round~3; the faithfulness gain is not confirmed under the repaired
+judge --- Section~\ref{sec:round3}.)
 
-\textbf{A local model matches the commercial API.} Holding the pipeline
-fixed, the two models differ by under 4\,pp on six of seven metrics;
+\textbf{A local model matches the commercial API.} With identical code
+--- though not identical routing, since Gemma's classifier was silently
+inactive (Section~\ref{sec:signals}) --- the two models differ by under
+4\,pp on six of seven metrics;
 only answer relevancy differs more (7.8\,pp, in Gemma's favor ---
 partly the noncommittal-refusal artifact of
 Section~\ref{sec:evalmetrics}). Strengths are complementary (Claude
@@ -105,6 +115,9 @@ cross-reference network had only 916 edges to serve cross-book
 questions. Notably, PERSON was the \emph{only} category where graph
 mode trailed the semantic baseline (hit 0.95 vs.\ 1.00) --- a deficit
 that the audit traces to entity-layer damage rather than to routing.
+(Round~3 locates it in the graph strategy itself: with identical routing
+and no graph, all 20 original PERSON questions hit;
+Section~\ref{sec:round3mech}.)
 These observations motivated the audit of Section~\ref{sec:audit}.
 
 \section{Knowledge-Graph Quality Audit: The Granularity-Mismatch Causal
@@ -266,7 +279,7 @@ extract at a \emph{single} unified granularity --- our three-granularity
 mix with no resolution stitching is the outlier and the fragmentation
 driver.
 
-\section{P0 Remediation and the Negative Result}
+\section{Round 1: P0 Remediation and the Negative Result}
 \label{sec:p0}
 
 \subsection{Six Data Repairs (No Re-Extraction)}
@@ -286,7 +299,7 @@ decisively; three of them are now tracked as permanent CI metrics.
 Repair & Result \\
 \midrule
 Verse-mention backfill & $+5{,}853$ pericope anchors; blind entities
-$1{,}474 \to 164$; anchor coverage $83.8\% \to 98.2\%$ (prediction from
+$1{,}474 \to 164$; entity anchor coverage $83.8\% \to 98.2\%$ (prediction from
 the audit's offline recomputation matched exactly) \\
 Import honesty & importer rewritten: verse remap $+$ honest counters
 (silent-drop class eliminated for future rebuilds) \\
@@ -315,8 +328,10 @@ The 100-question graph-mode evaluation was re-run under conditions
 verified identical to the May baseline: same answer model (Gemma~4 E4B),
 same judge (Gemma~4 26B), same disabled entity query, and --- verified
 question by question --- the \emph{same route distribution}
-(R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10, R6$=$4, fallback$=$2). The
-only systematic difference was the state of the knowledge graph.
+(R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10, R6$=$4, fallback$=$2;
+both runs under the silent classifier fallback of
+Section~\ref{sec:signals}). The only systematic difference was the state
+of the knowledge graph.
 Retrieval metrics are deterministic, so every delta below is exactly
 reproducible from archived raw responses.
 
@@ -344,7 +359,7 @@ Faithfulness (RAGAS) & 0.9513 & 0.9564 & $+0.0051$ \\
 \end{table}
 
 Table~\ref{tab:p0result} is the paper's central negative result: after a
-completeness overhaul that raised anchor coverage by 14.4 points and
+completeness overhaul that raised entity anchor coverage by 14.4 points and
 multiplied cross-references by 273, \textbf{every deterministic
 retrieval metric was flat or slightly down}, and answer-side movements
 were inside judge noise. By category: VERSE and TOPIC unchanged at 1.00
@@ -436,7 +451,11 @@ roles of Moses, Aaron, and Miriam) fails structurally: the answer is
 scattered across chapters and co-occurrence density favors
 genealogies/rosters; no top-5 pericope set suffices. That question is
 typed to the aggregation layer (community summaries / RAPTOR
-trees~\cite{sarthi2024raptor,edge2024graphrag}), not to P0/P1.
+trees~\cite{sarthi2024raptor,edge2024graphrag}), not to P0/P1. (Round~3
+qualifies the hit-level part: without the graph, PERSON\_004 retrieves
+Exodus~6--7 and hits, so its graph-mode miss is the displacement of
+Section~\ref{sec:round3mech}; complete coverage still needs
+aggregation.)
 
 \subsection{Decision: Defer Re-Extraction, Fix the Ranking Layer}
 
@@ -453,7 +472,7 @@ that P1's value proposition is unchanged \emph{as graph asset}; what
 failed was the claim that its effect would be observable on this
 benchmark.
 
-\section{Rank-Fusion Remediation}
+\section{Round 2: Rank-Fusion Remediation}
 \label{sec:fusion}
 
 \subsection{Three Repairs and Three Chained Fixes}
@@ -534,7 +553,9 @@ record; re-judging the \emph{identical} retrieval outputs with the same
 judge shifts them within the noise band of
 Section~\ref{sec:evalmetrics} (\eg faithfulness $0.9495$ vs.\
 $0.9655$) --- one more reason all retrieval conclusions rest on the
-deterministic rows, which are bit-exactly reproducible.
+deterministic rows, which are bit-exactly reproducible. All faithfulness
+rows predate the judge repair of Section~\ref{sec:evalmetrics} and are
+not comparable with Round~3.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -596,7 +617,8 @@ pin-based artificial top-1 placement (the correct passages remain in
 top-5; the earlier perfect MRR was pin manufactured, so the ``drop'' is
 the removal of an artifact, not a regression). PERSON\_004 remains the
 single PERSON miss, by design out of scope for ranking repairs
-(Section~\ref{sec:diagnosis}).
+(Section~\ref{sec:diagnosis}; Round~3 shows that its hit-level miss is
+caused by \code{graph\_person} itself, Section~\ref{sec:round3mech}).
 
 \subsection{$\alpha$ Ablation: A Complementary Structure}
 \label{sec:ablation}
@@ -648,6 +670,10 @@ at \emph{different layers} --- discrete repairs at the
 candidate/vocabulary layer, fusion at the scoring layer --- and their
 effects are complementary rather than redundant. This
 decomposition is the constructive counterpart of the negative result:
-the same graph assets that read as zero in Section~\ref{sec:p0} produce
-the Table~\ref{tab:evolution} gains once the ranking layer transmits
-them.
+the same graph assets that read as zero in Section~\ref{sec:p0} ---
+together with the curated head events of Repair~2, which the $\alpha=0$
+column shows carry the hit-rate gain --- produce the
+Table~\ref{tab:evolution} gains once the ranking layer transmits
+them. Like every number in this section, that reading was taken on the
+100 questions the repairs were developed on; Section~\ref{sec:round3}
+re-tests it on 400 questions none of them saw.

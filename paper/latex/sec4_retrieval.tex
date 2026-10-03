@@ -128,11 +128,14 @@ A query passes through seven steps: (1) verse-reference detection
 selection; (4) parallel multi-strategy retrieval for the selected route;
 (5) deduplication, whole-pool reranking, rank fusion, and pins; (6)
 context assembly from the top-5 passages; (7) constrained answer
-generation. Three request-level switches matter for evaluation:
+generation. Five request-level switches matter for evaluation:
 \code{semantic\_only} bypasses steps 1--3 (the ablation baseline);
 \code{use\_graph} gates all Neo4j strategies per request (A/B without
-container restarts); \code{retrieval\_only} skips step 7 (the fast
-evaluation loop of Section~\ref{sec:evalinfra}). Responses expose
+container restarts); \code{fusion\_alpha} overrides $\alpha$
+(Section~\ref{sec:ablation}); \code{retrieval\_only} skips step 7 (the
+fast evaluation loop of Section~\ref{sec:evalinfra}); and
+\code{include\_context} returns, per source, the context block the
+generator saw, for judging. Responses expose
 observability fields --- per-source strategy, raw and fused scores, route
 used, strategies used, and errors --- which later made
 question-by-question forensics possible without re-instrumentation.
@@ -147,7 +150,13 @@ Chinese book names (longest-match, length-descending) resolves
 \item \textbf{Intent classifier}: the generation LLM returns JSON with
 $\code{intent} \in$ \{\code{verse\_lookup}, \code{topic}, \code{person},
 \code{event}, \code{cross\_reference}\} plus entity names and keywords;
-a detected verse reference forces \code{verse\_lookup}.
+a detected verse reference forces \code{verse\_lookup}. In the Gemma
+configurations of Rounds~0--2 this call silently returned nothing ---
+the model's hidden reasoning tokens exhausted a 256-token output budget
+and the parser fell back to \code{topic} with empty lists --- so those
+rounds were routed by the verse parser and the dictionaries alone; the
+budget was raised to 4{,}096 tokens before Round~3
+(Section~\ref{sec:round3}).
 \item \textbf{Dictionaries}: person/place gazetteers are \emph{reused
 from the build-side extraction dictionary}, matched by longest substring;
 event detection uses a curated list of $\sim$54 event keywords (Sermon on
@@ -226,9 +235,14 @@ sharing the seed-support$+$votes machinery of \code{cross\_ref\_expand};
 \code{sql} is a low-prior supplementary SQL lookup distinct from
 \code{sql\_chapter}; \code{hybrid} is the dense$+$sparse mode of
 \code{semantic}. With \code{use\_graph=false}, all Neo4j-backed
-strategies are gated off. Observed route distribution on the
-100-question benchmark: R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10,
-R6$=$4, fallback$=$2.
+strategies are gated off. Observed route distribution on the original
+100 questions: R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10, R6$=$4,
+fallback$=$2 in the Gemma runs of Rounds~0--1 (R4$=$19, R6$=$3 in
+Round~2, after the event keyword ``Gethsemane prayer'' was added);
+R1$=$20, R2$=$25, R3$=$19, R4$=$21, R5$=$14, R6$=$1, fallback$=$0 in
+Round~3, with the repaired classifier. On
+all 500 questions (Round~3, graph run): R1$=$90, R2$=$87, R3$=$74,
+R4$=$92, R5$=$87, R6$=$9, fallback$=$61.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -298,7 +312,8 @@ guaranteeing that an explicitly named book contributes seeds.
 \label{sec:fusionlayer}
 
 The post-retrieval chain is the architectural core of the current system
-and the layer where two of our three incident rounds were resolved:
+and the layer where two of the four incidents of
+Table~\ref{tab:threerounds} were resolved and where the fourth arises:
 
 \begin{enumerate}
 \item \textbf{Deduplication}: same-ID candidates keep the maximum

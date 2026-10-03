@@ -12,3 +12,4 @@
 | 日期 | 檔案 | 內容 |
 |---|---|---|
 | 2026-07-06 | [2026-07-06_kg_optimization_findings.md](2026-07-06_kg_optimization_findings.md) | KG 優化三輪證據鏈 F1–F9:粒度錯配體檢、P0 negative result、排序層診斷、融合修復與 α 消融、pin 退役、跨卷雙錨新發現、傳導衰減、benchmark 飽和與量尺依賴;含論文敘事骨架與主結論候選 |
+| 2026-10-02 | [2026-10-02_round3_expanded_benchmark_findings.md](2026-10-02_round3_expanded_benchmark_findings.md) | Round 3 F10–F18:500 題三組態消融(graph/no_graph/semantic)— 頭部 +0.16 重現但約 4/5 屬路由、擴充 400 題 graph 中性偏負、先驗壟斷機制、faithfulness 修判後無差、雜訊地板實測、intent classifier 在 Rounds 0–2 靜默失效(路由重放逐題驗證)、Round 2 路由分佈與 EVENT_005 舊論文小錯更正 |

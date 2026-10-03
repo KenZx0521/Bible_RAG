@@ -1,0 +1,463 @@
+%% ============================================================================
+%% Section XI: Round 3 --- expanded benchmark and graph ablation (Sept. 2026)
+%% Every number is reproduced by paper/tools/round3_stats.py from
+%% evaluation/results_{graph,no_graph,semantic}/
+%% ============================================================================
+
+\section{Round 3: Expanded Benchmark and Graph Ablation}
+\label{sec:round3}
+
+Rounds 0--2 --- Round~0 (Section~\ref{sec:round0}), the P0 round
+(Round~1, Section~\ref{sec:p0}), and the rank-fusion round (Round~2,
+Section~\ref{sec:fusion}) --- were all read on the same 100 questions,
+and the Round~2 repairs were developed on exactly those questions:
+every regression trace of Section~\ref{sec:fusion} was a trace of a
+benchmark question.
+Section~\ref{sec:p0} had argued that this yardstick reads only the head;
+Round~2 added the complementary risk that its readings are in-sample. Round~3 (September 2026) therefore re-evaluates the deployed
+system end to end on the 500-question benchmark of
+Section~\ref{sec:benchmark}, whose 400 new questions were written after
+the Round~2 repairs, with the repaired instruments of
+Section~\ref{sec:evalmetrics}, and --- for the first time --- with the
+knowledge graph switched off while everything else is held fixed.
+
+\subsection{Setup}
+
+Three configurations ran on one deployment and one code version
+(September 28--30, 2026), differing only in request-level switches
+(Section~\ref{sec:pipeline}):
+
+\begin{itemize}
+\item \textbf{Graph} --- the full system of Section~\ref{sec:retrieval}
+(rank fusion, $\alpha=0.3$).
+\item \textbf{No-graph} --- identical signal routing, SQL strategies,
+book anchors, semantic/hybrid search, reranking, fusion, and pins, but
+\code{use\_graph=false} gates every Neo4j-backed strategy: the typed
+graph traversals, cross-reference retrieval and expansion, entity paths,
+and the entity query.
+\item \textbf{Semantic-only} --- the Round~0 baseline: no routing, dense
+retrieval (top-20) and reranking only.
+\end{itemize}
+
+All three use Gemma~4 E4B as answer model (temperature 0.1), top-5
+context, and Gemma~4 26B as judge, one run per configuration. Four
+changes separate this deployment from Round~2. None of them changes the
+graph's content (a July~8 maintenance step only attached provenance tags
+to 106 existing manual edges and synchronized two manual event nodes
+into the other stores), although change (ii) changes which graph
+strategies run.
+
+(i)~\code{book\_anchor} now retrieves per named book and suppresses
+same-book decoys (one anchor per book in the fused list; pins only for
+named books absent from the top-5); the earlier single OR-filtered
+search had let one book take all ten seeds. Unlike the Round~2 graph
+repairs, this fix was developed after a first evaluation of the 500
+questions (July 12--14) and A/B-checked on them, so routing-side
+contrasts on the expansion set are not strictly out-of-sample.
+
+(ii)~The intent classifier was repaired. Gemma~4 E4B is a reasoning
+model whose hidden reasoning tokens exhausted the classifier's 256-token
+output budget; the empty reply failed JSON parsing, and the classifier
+silently fell back to \code{intent=topic} with empty entity and keyword
+lists. Replaying the signal detector with an empty classifier output
+reproduces the logged route of every question in every Gemma graph-mode
+run of Rounds~0--2 (100/100 in each 100-question run, 500/500 in a
+July~15 run on the expanded benchmark). Those rounds were therefore
+routed by the regex and dictionary signals alone, and strategies fed
+only by classifier output never ran: R5's entity traversal was invoked
+0 times in the July~15 run and 73 times in Round~3. (The Claude
+configuration of Round~0 was unaffected; its classifier re-routed 8 of
+100 questions.) With a 4{,}096-token budget, 114 of the 500 questions
+(22.8\%) changed route relative to the July~15 run (48
+fallback$\to$R4, 27 R3$\to$R5, 14 R6$\to$R4, 12 fallback$\to$R5, 7
+R6$\to$R5, 6 R4$\to$R5; 7 of them among the original 100). Yet
+graph-configuration retrieval was essentially unchanged (verse
+recall@5 $0.751\to0.749$, anchor coverage@5 $0.785\to0.781$). The
+Ollama server that hosts the generator and the judges was upgraded
+alongside this fix.
+
+ (iii)~Judges
+receive the generator's exact
+context blocks, faithfulness is scored by the repaired zh and strict
+judges, and verse-level retrieval metrics are computed for every run
+(Section~\ref{sec:evalmetrics}). (iv)~Merged verse labels (``29--30'')
+no longer break exact-verse lookup.
+
+Two operational facts qualify the comparison. The classifier samples at
+temperature 0.1, so 12 of the 500 questions (2.4\%) were routed
+differently in the graph and no-graph runs although routing does not
+depend on \code{use\_graph}. And one graph-run question
+(VERSE\_LOOKUP\_035) lost its only strategy to a network timeout; the
+archived aggregates score it as a miss (RAGAS skips it, $n=499$), while
+all paired comparisons below exclude it.
+
+\subsection{Results}
+
+\begin{table*}[!t]
+\caption{Round 3 --- Three Configurations on the 500-Question Benchmark
+(September 2026)}
+\label{tab:round3}
+\centering
+\begin{threeparttable}
+\begin{tabular}{@{}lccccccccc@{}}
+\toprule
+& \multicolumn{3}{c}{All 500} & \multicolumn{3}{c}{Original 100}
+& \multicolumn{3}{c}{Expansion 400} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+Metric & Graph & No-graph & Semantic & Graph & No-graph & Semantic
+& Graph & No-graph & Semantic \\
+\midrule
+Hit rate & 0.944 & 0.944 & 0.894 & 0.970 & 0.940 & 0.810 & 0.938 & 0.945 & 0.915 \\
+Recall@5 (unit level)\tnote{a} & 0.835 & 0.843 & 0.795 & 0.893 & 0.872 & 0.752 & 0.821 & 0.836 & 0.805 \\
+Verse recall@5 & 0.749 & 0.757 & 0.718 & 0.688 & 0.686 & 0.554 & 0.764 & 0.775 & 0.759 \\
+Anchor coverage@5 & 0.781 & 0.787 & 0.744 & 0.775 & 0.749 & 0.629 & 0.782 & 0.797 & 0.773 \\
+MRR & 0.801 & 0.811 & 0.747 & 0.816 & 0.796 & 0.652 & 0.797 & 0.814 & 0.770 \\
+NDCG@5 & 0.836 & 0.845 & 0.779 & 0.856 & 0.842 & 0.692 & 0.831 & 0.845 & 0.800 \\
+\midrule
+Context recall & 0.777 & 0.784 & 0.745 & 0.802 & 0.783 & 0.670 & 0.771 & 0.784 & 0.763 \\
+Answer coverage & 0.669 & 0.684 & 0.653 & 0.729 & 0.735 & 0.636 & 0.655 & 0.671 & 0.657 \\
+Answer correctness\tnote{b} & 0.618 & 0.632 & 0.604 & 0.589 & 0.590 & 0.511 & 0.625 & 0.642 & 0.628 \\
+Faithfulness (zh) & 0.981 & 0.981 & 0.980 & 0.983 & 0.986 & 0.964 & 0.980 & 0.980 & 0.984 \\
+Faithfulness (strict) & 0.980 & 0.979 & 0.979 & 0.989 & 0.980 & 0.965 & 0.977 & 0.978 & 0.983 \\
+Answer relevancy & 0.865 & 0.878 & 0.840 & 0.868 & 0.892 & 0.778 & 0.864 & 0.875 & 0.856 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Answer model Gemma~4 E4B, judge Gemma~4 26B, top-5, one run per
+configuration; ``Original 100'' are the Round~0--2 questions. Archived
+aggregates: the graph columns include the infrastructure failure
+VERSE\_LOOKUP\_035, scored as a miss (RAGAS $n=499$); the paired
+comparisons of Table~\ref{tab:round3paired} exclude it. Faithfulness uses
+the repaired judges of Section~\ref{sec:evalmetrics} and is not
+comparable with Rounds~0--2.
+\item[a] Each gold pericope or chapter range counts as one unit; verse
+recall and anchor coverage are the verse- and chapter-level metrics.
+\item[b] Reference only: its F1 term penalizes complete answers
+(Section~\ref{sec:evalmetrics}).
+\end{tablenotes}
+\end{threeparttable}
+\end{table*}
+
+\begin{table*}[!t]
+\caption{Round 3 --- Paired Differences with 95\% Bootstrap Confidence
+Intervals}
+\label{tab:round3paired}
+\centering
+\begin{threeparttable}
+\footnotesize
+\begin{tabular}{@{}llcccccc@{}}
+\toprule
+Contrast & Questions & Hit rate & Verse recall@5 & Anchor cov.@5 &
+Context recall & Answer coverage & Faithfulness (zh) \\
+\midrule
+No-graph $-$ semantic & All (499) & $+$0.050 & $+$0.040 & $+$0.043 & $+$0.039 & $+$0.031 & $+$0.001 \\
+ & & {\scriptsize [$+$.030, $+$.070]} & {\scriptsize [$+$.022, $+$.059]} & {\scriptsize [$+$.026, $+$.062]} & {\scriptsize [$+$.023, $+$.058]} & {\scriptsize [$+$.012, $+$.051]} & {\scriptsize [$-$.008, $+$.010]} \\
+ & Original (100) & $+$0.130 & $+$0.132 & $+$0.120 & $+$0.113 & $+$0.099 & $+$0.022 \\
+ & & {\scriptsize [$+$.070, $+$.200]} & {\scriptsize [$+$.076, $+$.197]} & {\scriptsize [$+$.063, $+$.183]} & {\scriptsize [$+$.058, $+$.176]} & {\scriptsize [$+$.039, $+$.164]} & {\scriptsize [$-$.001, $+$.052]} \\
+ & Expansion (399) & $+$0.030 & $+$0.016 & $+$0.024 & $+$0.021 & $+$0.014 & $-$0.004 \\
+ & & {\scriptsize [$+$.013, $+$.050]} & {\scriptsize [$+$.000, $+$.033]} & {\scriptsize [$+$.008, $+$.041]} & {\scriptsize [$+$.006, $+$.037]} & {\scriptsize [$-$.004, $+$.032]} & {\scriptsize [$-$.013, $+$.004]} \\
+\midrule
+Graph $-$ no-graph & All (499) & $+$0.002 & $-$0.007 & $-$0.005 & $-$0.006 & $-$0.012 & 0.000 \\
+ & & {\scriptsize [$-$.012, $+$.016]} & {\scriptsize [$-$.017, $+$.003]} & {\scriptsize [$-$.016, $+$.007]} & {\scriptsize [$-$.018, $+$.005]} & {\scriptsize [$-$.027, $+$.002]} & {\scriptsize [$-$.008, $+$.008]} \\
+ & Original (100) & $+$0.030 & $+$0.002 & $+$0.026 & $+$0.018 & $-$0.006 & $-$0.004 \\
+ & & {\scriptsize [$-$.020, $+$.080]} & {\scriptsize [$-$.030, $+$.031]} & {\scriptsize [$-$.013, $+$.070]} & {\scriptsize [$-$.024, $+$.060]} & {\scriptsize [$-$.052, $+$.040]} & {\scriptsize [$-$.015, $+$.007]} \\
+ & Expansion (399) & $-$0.005 & $-$0.009 & $-$0.012 & $-$0.012 & $-$0.014 & $+$0.001 \\
+ & & {\scriptsize [$-$.018, $+$.008]} & {\scriptsize [$-$.019, $+$.001]} & {\scriptsize [$-$.023, $-$.003]} & {\scriptsize [$-$.023, $-$.003]} & {\scriptsize [$-$.029, $+$.001]} & {\scriptsize [$-$.009, $+$.011]} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Means of per-question differences; intervals (leading zeros
+omitted) from 10{,}000 bootstrap resamples with a fixed seed.
+VERSE\_LOOKUP\_035 (infrastructure failure) is excluded throughout.
+\end{tablenotes}
+\end{threeparttable}
+\end{table*}
+
+Tables~\ref{tab:round3} and~\ref{tab:round3paired} support three
+findings.
+
+\textbf{The head result replicates.} On the original 100 questions the
+graph configuration reads hit rate 0.97 and a $+0.16$ margin over
+semantic-only (0.81) --- the Round~2 headline, reproduced by an
+independent full run twelve weeks later and with a functioning
+classifier. The misses changed composition: GENERAL\_008 now hits
+(re-routed to R5, whose newly active entity traversal reaches
+Matthew~21), EVENT\_020 now misses (Section~\ref{sec:round3mech}), and
+GENERAL\_006 and PERSON\_004 still miss.
+
+\textbf{Routing, not the graph, carries the margin.} The no-graph
+configuration --- routing, SQL, and book anchors without a single Neo4j
+call --- reaches 0.94 on the original 100: $+0.130$ of the $+0.160$
+(95\% CI $[+0.070, +0.200]$), leaving the graph $+0.030$
+($[-0.020, +0.080]$). All 13 questions that no-graph recovers come from
+the 45 original questions routed R1 or R2, which cite a reference
+(exact-verse lookup $+5$, chapter fetch $+8$); on the other routes
+no-graph and semantic-only tie on hit rate. The graph's net share comes from EVENT questions
+(0.95 vs.\ 0.80): four head events whose dictionary keywords map onto
+graph event nodes (EVENT\_008/011/014/019; three of them are among the
+four Round~2 flips) against one loss (EVENT\_020); elsewhere one gain
+(GENERAL\_008) offsets one loss (PERSON\_004). Over all paired questions
+(499), no-graph beats semantic-only on every retrieval metric (hit rate
+$+0.050$ $[+0.030, +0.070]$, verse recall@5 $+0.040$, anchor
+coverage@5 $+0.043$) and on answer coverage ($+0.031$ $[+0.012, +0.051]$), whereas
+graph and no-graph tie on hit rate (0.944 each; seven flips each way,
+one of them the infrastructure failure).
+On the expansion questions the routing gain shrinks but survives (hit
+rate $+0.030$ $[+0.013, +0.050]$, anchor coverage@5 $+0.024$), largely
+because semantic-only itself does far better there (hit rate 0.915
+vs.\ 0.810) --- many expansion questions are single-anchor long-tail
+lookups that dense retrieval already finds --- and because fewer of them
+cite a reference (33\% are routed R1/R2, against 45\% of the original
+100).
+
+\textbf{On questions the graph repairs never saw, the graph is
+neutral to slightly harmful.} On the 399 expansion questions the graph
+configuration trails no-graph on every retrieval metric by small but
+consistent margins: anchor coverage@5 $-0.012$ $[-0.023, -0.003]$, context
+recall $-0.012$ $[-0.023, -0.003]$, MRR $-0.015$ $[-0.028, -0.002]$,
+verse recall $-0.009$ $[-0.019, +0.001]$, answer coverage $-0.014$
+$[-0.029, +0.001]$. Against semantic-only, the graph configuration's
+expansion advantage reduces to hit rate ($+0.025$ $[+0.005, +0.048]$)
+and, marginally, MRR ($+0.030$, interval lower bound $\approx 0$); verse
+recall, anchor coverage, context recall, and coverage are statistically
+flat. The losses
+concentrate in the person route: on the 55 expansion questions routed
+R3 in both runs, switching the graph on lowers verse recall from 0.692
+to 0.627 and coverage from 0.606 to 0.567. By family
+(Table~\ref{tab:round3family}) the largest losses are title\_coref
+($-0.120$ verse recall), multi\_chapter ($-0.049$), and nt\_quotes\_ot
+($-0.031$); typology is the one family with a sizable gain ($+0.117$,
+on $n=12$).
+
+\subsection{Mechanism: Wrong Graph Anchors Pass the Ranking Layer}
+\label{sec:round3mech}
+
+\begin{table*}[!t]
+\caption{Round 3 --- Graph Minus No-Graph by Number of Graph-Held
+Context Slots}
+\label{tab:round3slots}
+\centering
+\begin{threeparttable}
+\footnotesize
+\begin{tabular}{@{}lrrrrrrrrrrrrr@{}}
+\toprule
+& \multicolumn{5}{c}{All (253)} & \multicolumn{4}{c}{Original (55)}
+& \multicolumn{4}{c}{Expansion (198)} \\
+\cmidrule(lr){2-6}\cmidrule(lr){7-10}\cmidrule(lr){11-14}
+Graph slots in top-5 & $n$ & $\Delta$Hit & $\Delta$VR & $\Delta$AC &
+$\Delta$Cov & $n$ & $\Delta$Hit & $\Delta$VR & $\Delta$Cov & $n$ &
+$\Delta$Hit & $\Delta$VR & $\Delta$Cov \\
+\midrule
+0 & 43 & 0.000 & 0.000 & 0.000 & $+$0.034 & 5 & 0.000 & 0.000 & 0.000 & 38 & 0.000 & 0.000 & $+$0.038 \\
+1 & 53 & $-$0.019 & $+$0.001 & $-$0.011 & $+$0.002 & 7 & 0.000 & $-$0.002 & $+$0.021 & 46 & $-$0.022 & $+$0.002 & $-$0.001 \\
+2 & 57 & 0.000 & $-$0.015 & $+$0.002 & $-$0.030 & 7 & $+$0.143 & $+$0.057 & $+$0.012 & 50 & $-$0.020 & $-$0.025 & $-$0.036 \\
+3 & 43 & $+$0.116 & $+$0.020 & $+$0.018 & $+$0.013 & 12 & $+$0.250 & $+$0.059 & $-$0.017 & 31 & $+$0.065 & $+$0.005 & $+$0.025 \\
+4 & 28 & 0.000 & $-$0.017 & $-$0.026 & $-$0.047 & 10 & 0.000 & $+$0.003 & $-$0.015 & 18 & 0.000 & $-$0.028 & $-$0.065 \\
+5 & 29 & $-$0.103 & $-$0.099 & $-$0.061 & $-$0.112 & 14 & $-$0.071 & $-$0.066 & $-$0.038 & 15 & $-$0.133 & $-$0.130 & $-$0.182 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Questions that took the same route among R3--R6 in both runs
+(infrastructure failure excluded). A slot is graph-held if its passage
+was proposed by a typed graph traversal, cross-reference retrieval or
+expansion, an entity path, or the entity query. VR $=$ verse recall@5,
+AC $=$ anchor coverage@5, Cov $=$ answer coverage. With no graph-held
+slot the retrieval metrics are identical in both runs (42 of the 43
+contexts are byte-identical), so that row's coverage delta is
+essentially generation and judge noise.
+\end{tablenotes}
+\end{threeparttable}
+\end{table*}
+
+Nothing in the ranking layer asks whether a graph anchor is right. The
+cross-encoder scores surface form, and the fusion prior scores the
+proposing strategy: on R3, R4, and R6 a typed-graph candidate carries
+$w=0.85$--$0.9$ against $0.65$--$0.7$ for a semantic one, so under
+\fusedeq with $\alpha=0.3$ (Section~\ref{sec:fusionlayer}) it outranks a
+semantic candidate unless the latter's reranker score is higher by
+roughly 0.06--0.11. When the anchor is right --- the curated head events
+--- injection plus prior is the intended rescue; when it is wrong, the
+same machinery lets it through. Table~\ref{tab:round3slots} sorts the
+253 questions that took the same route among R3--R6 in both runs by how
+many of the five context slots graph strategies hold in the graph run.
+Where they hold three, the graph run gains on the no-graph run
+($+0.116$ hit rate: 5 net hits of 43, three of them on the original
+100). Where they hold all five, it loses ($-0.103$ hit rate, 3 net of
+29; $-0.099$ verse recall; $-0.112$ coverage), more on the expansion
+questions ($-0.133$, $-0.130$, $-0.182$) than on the original 100
+($-0.071$, $-0.066$, $-0.038$). The buckets are defined by the graph
+run's own output, so this is a descriptive decomposition, not a
+dose--response estimate.
+
+Which part of the ranking layer lets the wrong anchors through? A
+passage receives the same reranker score in both runs, so its reranker
+score can be solved from its fused score and prior. On the 30
+same-route questions where the graph run lost a hit or verse recall,
+the reranker alone already prefers every graph-held passage to every
+passage it displaced in 16 to 21 cases (depending on the exact prior of
+a few strategies): the damage is done by \emph{injection} --- graph
+strategies propose off-target pericopes that the surface-form reranker
+then favors. In 9 cases the prior is decisive for at least one
+displacement.
+
+Three traces show both shapes. EVENT\_020 (``What story does the parable
+of the prodigal son tell?'') is sent to R4 by the repaired classifier,
+and \code{graph\_event} injects two \emph{other} parables --- the wicked
+tenants (Luke~20, Matthew~21, Mark~12) and the sower (Luke~8) --- which
+fill all five slots at fused scores 0.48--0.57. The correctly titled
+Luke~15 pericope scores 0.38 in the no-graph run, and the reranker alone
+already ranks the intruders higher (0.32--0.44 against 0.24; the prior
+adds only 0.045). Under the silent classifier of Round~2 the same
+question had fallen back to hybrid search and hit. GENERAL\_048 (``love
+your neighbor as yourself'': Leviticus~19, Matthew~22, Romans~13) is the
+same injection case: R5's entity traversal, newly fed by the classifier,
+injects Pauline Acts pericopes that out-score Romans~13 on the reranker
+alone. PERSON\_066 (Timothy's grandmother and mother, 2~Timothy~1) is the
+prior case: the weakest of the Acts pericopes that \code{graph\_person}
+proposes for Timothy (Acts~20) and the gold 2~Timothy~1 pericope have
+nearly equal reranker scores (0.073 vs.\ 0.077), and the prior
+decides. The two shapes have different
+roots. In EVENT\_020 the event lookup lands on the wrong entities, an
+alias and entity-resolution gap of the kind the audit measured
+(Table~\ref{tab:gaps}). In the other two the entity is right, but its
+anchors --- the pericopes that mention it --- answer a different
+question: a gap in anchor precision that the audit did not list.
+
+Head questions are not immune. PERSON\_004, the graph's other head loss,
+is a prior case: \code{graph\_person} fills all five slots with
+genealogies and rosters (1~Chronicles~6, 23, 24; Numbers~2, 26),
+displacing the two Exodus pericopes (the genealogy of Moses and Aaron,
+Exodus~6--7) that the no-graph run retrieves; and EVENT\_020 is itself a
+head question. On the original 100, however, the graph's verse-recall
+losses (9 questions) are outweighed by its wins (17, all on PERSON and
+EVENT questions except GENERAL\_008), whereas on the expansion set the
+losses outnumber the wins 22 to 13. Among the families, title\_coref
+shows the largest loss ($-0.120$ verse recall, $n=12$) and
+disambiguation none.
+
+\begin{table*}[!t]
+\caption{Round 3 --- Retrieval Breadth and Answer Coverage by Question
+Type and Family}
+\label{tab:round3family}
+\centering
+\begin{threeparttable}
+\footnotesize
+\begin{tabular}{@{}lrccccccccccr@{}}
+\toprule
+& & \multicolumn{3}{c}{Verse recall@5} & \multicolumn{3}{c}{Anchor
+coverage@5} & \multicolumn{3}{c}{Answer coverage} & & \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}\cmidrule(lr){9-11}
+Type / family & $n$ & G & NG & S & G & NG & S & G & NG & S & &
+$\Delta_{\mathrm{VR}}$ \\
+\midrule
+\textbf{VERSE\_LOOKUP (all)} & 100 & 0.950 & 0.960 & 0.850 & 0.950 & 0.960 & 0.850 & 0.854 & 0.876 & 0.817 & & $-$0.010$^\dagger$ \\
+\quad original & 20 & 1.000 & 1.000 & 0.750 & 1.000 & 1.000 & 0.750 & 0.940 & 0.904 & 0.750 & & 0.000 \\
+\quad longtail\_book & 48 & 0.979 & 1.000 & 0.896 & 0.979 & 1.000 & 0.896 & 0.878 & 0.925 & 0.878 & & $-$0.021$^\dagger$ \\
+\quad head\_cold & 14 & 1.000 & 1.000 & 0.929 & 1.000 & 1.000 & 0.929 & 0.893 & 0.905 & 0.833 & & 0.000 \\
+\quad paraphrase & 18 & 0.778 & 0.778 & 0.778 & 0.778 & 0.778 & 0.778 & 0.662 & 0.690 & 0.718 & & 0.000 \\
+\midrule
+\textbf{TOPIC (all)} & 100 & 0.815 & 0.827 & 0.742 & 0.862 & 0.870 & 0.808 & 0.704 & 0.704 & 0.638 & & $-$0.012 \\
+\quad original & 20 & 0.964 & 0.964 & 0.670 & 1.000 & 1.000 & 0.750 & 0.906 & 0.900 & 0.688 & & 0.000 \\
+\quad longtail\_chapter & 35 & 0.947 & 0.947 & 0.900 & 1.000 & 1.000 & 0.971 & 0.704 & 0.734 & 0.684 & & 0.000 \\
+\quad multi\_chapter & 25 & 0.373 & 0.422 & 0.395 & 0.449 & 0.479 & 0.470 & 0.454 & 0.447 & 0.418 & & $-$0.049 \\
+\quad head\_cold & 20 & 0.988 & 0.988 & 0.971 & 1.000 & 1.000 & 1.000 & 0.815 & 0.775 & 0.785 & & 0.000 \\
+\midrule
+\textbf{PERSON (all)} & 100 & 0.590 & 0.614 & 0.615 & 0.646 & 0.681 & 0.678 & 0.570 & 0.599 & 0.595 & & $-$0.025 \\
+\quad original & 20 & 0.418 & 0.410 & 0.405 & 0.627 & 0.631 & 0.631 & 0.629 & 0.623 & 0.600 & & $+$0.008 \\
+\quad longtail\_person & 30 & 0.852 & 0.879 & 0.891 & 0.886 & 0.908 & 0.908 & 0.733 & 0.740 & 0.755 & & $-$0.027 \\
+\quad disambiguation & 12 & 0.440 & 0.440 & 0.440 & 0.385 & 0.385 & 0.385 & 0.345 & 0.403 & 0.391 & & 0.000 \\
+\quad title\_coref & 12 & 0.505 & 0.624 & 0.624 & 0.514 & 0.625 & 0.625 & 0.502 & 0.573 & 0.583 & & $-$0.120 \\
+\quad trajectory & 18 & 0.337 & 0.348 & 0.361 & 0.417 & 0.469 & 0.480 & 0.422 & 0.467 & 0.472 & & $-$0.010 \\
+\quad split\_pericope & 8 & 0.954 & 0.979 & 0.924 & 0.896 & 0.958 & 0.896 & 0.588 & 0.638 & 0.588 & & $-$0.024 \\
+\midrule
+\textbf{EVENT (all)} & 100 & 0.734 & 0.734 & 0.738 & 0.840 & 0.813 & 0.813 & 0.677 & 0.671 & 0.633 & & 0.000 \\
+\quad original & 20 & 0.431 & 0.404 & 0.398 & 0.742 & 0.604 & 0.604 & 0.670 & 0.640 & 0.585 & & $+$0.028 \\
+\quad longtail\_event & 34 & 0.948 & 0.946 & 0.960 & 0.985 & 0.985 & 0.985 & 0.724 & 0.741 & 0.694 & & $+$0.002 \\
+\quad temporal & 16 & 0.418 & 0.442 & 0.446 & 0.531 & 0.536 & 0.536 & 0.469 & 0.469 & 0.425 & & $-$0.024 \\
+\quad surface\_form & 16 & 0.741 & 0.755 & 0.755 & 0.823 & 0.823 & 0.823 & 0.625 & 0.619 & 0.606 & & $-$0.014 \\
+\quad parable & 14 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 & 1.000 & 0.871 & 0.836 & 0.821 & & 0.000 \\
+\midrule
+\textbf{GENERAL (all)} & 100 & 0.655 & 0.651 & 0.644 & 0.605 & 0.612 & 0.573 & 0.542 & 0.570 & 0.580 & & $+$0.004 \\
+\quad original & 20 & 0.627 & 0.652 & 0.545 & 0.508 & 0.510 & 0.408 & 0.499 & 0.609 & 0.556 & & $-$0.025 \\
+\quad prophecy\_fulfillment & 26 & 0.683 & 0.697 & 0.677 & 0.647 & 0.679 & 0.603 & 0.498 & 0.517 & 0.552 & & $-$0.014 \\
+\quad nt\_quotes\_ot & 16 & 0.622 & 0.653 & 0.713 & 0.492 & 0.544 & 0.544 & 0.486 & 0.527 & 0.566 & & $-$0.031 \\
+\quad typology & 12 & 0.620 & 0.503 & 0.636 & 0.639 & 0.583 & 0.674 & 0.667 & 0.642 & 0.667 & & $+$0.117 \\
+\quad parallel\_account & 14 & 0.815 & 0.802 & 0.802 & 0.815 & 0.810 & 0.810 & 0.636 & 0.650 & 0.671 & & $+$0.013 \\
+\quad theme\_thread & 12 & 0.529 & 0.516 & 0.468 & 0.549 & 0.528 & 0.444 & 0.550 & 0.508 & 0.508 & & $+$0.013 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item G $=$ graph, NG $=$ no-graph, S $=$ semantic-only;
+$\Delta_{\mathrm{VR}}$ $=$ G $-$ NG verse recall@5. ``Original'' rows
+are each type's 20 Round~0--2 questions; head\_cold spans two types and
+is split by type. Archived aggregates: $^\dagger$the difference is
+entirely the infrastructure failure VERSE\_LOOKUP\_035 (R1, R2, and the
+fallback never call Neo4j, and all other questions on those routes
+retrieved identically in both runs).
+\end{tablenotes}
+\end{threeparttable}
+\end{table*}
+
+\subsection{Faithfulness and the Measured Noise Floor}
+
+\textbf{Faithfulness is flat at $\approx 0.98$.} Under the repaired
+judges, faithfulness is 0.980--0.981 (zh) and 0.979--0.980 (strict) in
+all three configurations; every configuration passes the gate (strict
+$\ge 0.97$ per run, $\ge 0.95$ per type), and no paired contrast differs
+from zero (Table~\ref{tab:round3paired}). The Round~0 reading that
+retrieval quality propagates into faithfulness ($0.90\to0.95$,
+Section~\ref{sec:round0}) is therefore not confirmed under the repaired
+judge: across all paired questions the no-graph minus semantic-only
+contrast is $+0.001$ $[-0.008, +0.010]$; on the original 100 a $+0.022$
+tendency remains, and its interval $[-0.001, +0.052]$ just includes
+zero --- and cannot exclude a gap of the Round~0 size. With citation
+headers visible, the generator is about equally faithful to whatever
+context it receives, and retrieval quality surfaces in coverage instead
+(original 100: 0.636 semantic-only, 0.735 no-graph, 0.729 graph).
+
+\textbf{The noise floor, measured.} Retrieval on R1, R2, and the
+fallback never touches Neo4j, so 296 questions received byte-identical
+contexts in the graph and no-graph runs (all 177 R1/R2 questions, 59 on
+the fallback, and 60 graph-route questions whose top-5 the graph left
+unchanged). Their answer-side differences are pure generation-sampling
+and judge noise: answer coverage moves by a mean $|\Delta|$ of 0.060
+(14\% of the questions by $\ge 0.2$; mean $\Delta=-0.002$), answer
+correctness by 0.074, faithfulness by 0.028, and context recall ---
+judged on the context alone --- by 0.003. With a standard deviation
+of 0.131 for the per-question coverage difference, a paired difference
+of two 400-question coverage means carries about $\pm 0.013$ of pure
+noise at 95\% confidence --- the size of the graph's coverage effect
+above (the retrieval metrics carry no judge noise), which is why every
+contrast is reported paired and with an interval. The zero-slot row of Table~\ref{tab:round3slots} shows the
+same floor directly: identical retrieval metrics, $+0.034$ coverage.
+
+\subsection{What Round 3 Changes}
+
+Four revisions to the reading of Rounds~0--2 follow. First, the
+$+0.16$ head margin is real, but about four-fifths of it belongs to
+signal routing --- all 13 original questions that no-graph recovers from
+semantic-only come from exact-verse (R1) and chapter (R2) lookup ---
+and one-fifth to the knowledge graph. Second, the
+graph's measured benefit is concentrated in head events whose graph
+anchors were built or verified on the evaluation questions themselves;
+it does not transfer to 400 questions written afterwards, where the
+same machinery is neutral to slightly harmful. Third, the bottleneck
+has moved: Rounds~1--2 found a ranking layer that could not
+\emph{transmit} graph signal; Round~3 finds one that cannot
+\emph{discriminate} it --- neither the reranker nor a fixed strategy
+prior carries per-query evidence of anchor precision. Fourth, the
+long-tail families --- the questions that Section~\ref{sec:p0} argued
+the head benchmark could not read --- show no graph benefit either:
+identical hit rates for longtail\_person, longtail\_event, and
+longtail\_chapter, and verse recall $-0.027$, $+0.002$, and $0.000$,
+because dense retrieval already resolves single-anchor long-tail
+questions. Head saturation explains why P0 read zero on the original
+100, but in this architecture a long-tail benchmark does not reveal
+hidden P0 value either. The natural next repairs are anchor-confidence
+gating (admitting or weighting graph candidates by entity-resolution
+confidence, with penalties for hub entities and generic events),
+per-strategy slot quotas, and query decomposition for multi-anchor
+questions; none has been tested yet, and the $\alpha=0.3$ of
+Section~\ref{sec:ablation}, chosen on the original 100, should itself be
+re-swept on the 500 --- an $\alpha=0$ run would also measure how much of
+the graph's damage the prior adds to injection.

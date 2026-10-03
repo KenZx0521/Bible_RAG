@@ -28,7 +28,7 @@ as end-to-end black boxes: when a knowledge graph (KG) improvement does or
 does not move the final metric, the community rarely learns \emph{which
 layer} --- extraction, storage, retrieval, ranking, generation, or the
 benchmark itself --- gated the outcome. This paper documents a deployed
-system in which exactly that question was forced into the open, three
+system in which exactly that question was forced into the open, four
 times, by concrete engineering incidents.
 
 We design, build, deploy, and iteratively optimize a GraphRAG system for
@@ -43,10 +43,13 @@ performed a quantified audit of KG construction quality, executed a
 completeness overhaul, observed a rigorously verified \emph{negative
 result} --- the overhaul produced zero retrieval improvement on our
 benchmark --- diagnosed the mechanism question by question, and repaired
-the actual bottleneck (the ranking layer) in one day of engineering,
-surpassing all previous results.
+the actual bottlenecks (the ranking and vocabulary layers) in one day
+of engineering, surpassing all previous results. A September 2026
+re-evaluation on an expanded 500-question benchmark, with a no-graph
+control, then replicated that head result while showing that most of it
+belongs to signal routing rather than to the graph.
 
-This paper makes six contributions:
+This paper makes seven contributions:
 
 \begin{enumerate}
 \item \textbf{A complete, reproducible pipeline from raw PDF to GraphRAG
@@ -102,23 +105,44 @@ repairs saturate hit rate, continuous fusion recovers tail anchors --- and
 a mechanism-level finding that discrete ``pin'' patches flip from
 net-positive to net-negative once continuous fusion exists.
 
+\item \textbf{An expanded-benchmark re-evaluation with a no-graph
+ablation} (Section~\ref{sec:round3}): on 500 questions (the original 100
+plus 400 in 19 diagnostic families), with verse-level retrieval metrics
+and a repaired faithfulness judge, the head result replicates (hit rate
+0.97, $+0.16$) but decomposes into $+0.13$ from signal routing and a
+non-significant $+0.03$ from the graph, the latter concentrated in
+hand-curated head events; on the new questions the graph is neutral to
+slightly harmful (paired anchor coverage@5 $-0.012$, 95\% CI
+$[-0.023,-0.003]$), because wrongly anchored graph candidates pass a
+ranking layer that cannot tell them from right ones. The round also
+documents two instrument failures of general relevance: a faithfulness
+judge blind to the generator's citation headers (0.912 rising to 0.987
+on unchanged answers once repaired), and an intent classifier silently
+disabled by a reasoning model's hidden tokens.
+
 \item \textbf{A methodological conclusion for GraphRAG practice}
 (Section~\ref{sec:discussion}): KG construction quality, the retrieval
 ranking mechanism, and benchmark design jointly determine the observable
 benefit of any single-layer investment. In our deployment, one day of
 ranking-layer repair outperformed what a week-scale re-extraction was
-projected to deliver on the same benchmark; three independent incident
-rounds show graph assets whose value was gated by retrieval-side
-mechanisms. We argue that evaluation design is a \emph{prerequisite} for
---- not an afterthought of --- further construction-side optimization.
+projected to deliver on the same benchmark; three incidents show graph
+value gated by retrieval-side mechanisms, a fourth shows wrong graph
+evidence passing through them, and the expanded benchmark shows that a
+head benchmark can misattribute gains between layers. We
+argue that evaluation design is a \emph{prerequisite} for --- not an
+afterthought of --- further construction-side optimization, and that a
+layer's contribution must be established by ablation on questions its
+repairs were not developed on.
 \end{enumerate}
 
 The remainder of the paper follows the pipeline order: corpus and
 preprocessing (Section~\ref{sec:preprocessing}), knowledge-graph
 construction (Section~\ref{sec:kg}), online retrieval and generation
 (Section~\ref{sec:retrieval}), the evaluation framework
-(Section~\ref{sec:eval}), the quality audit and the three experiment
-rounds (Sections~\ref{sec:round0}--\ref{sec:fusion}), discussion
+(Section~\ref{sec:eval}), the quality audit and the four experiment
+rounds (Sections~\ref{sec:round0}--\ref{sec:round3}: Round~0, the P0
+round as Round~1, the rank-fusion round as Round~2, and the
+expanded-benchmark Round~3), discussion
 (Section~\ref{sec:discussion}), limitations and future work
 (Sections~\ref{sec:limitations}--\ref{sec:future}), and conclusion
 (Section~\ref{sec:conclusion}). Appendix~\ref{app:citations} maps each
@@ -161,8 +185,9 @@ retrieval~\cite{wang2025archrag}, and recursive abstractive summary trees
 event nodes and temporal edges~\cite{zhang2025entityevent,sun2025dygrag}.
 Benchmark studies ask \emph{when} graphs actually help
 RAG~\cite{xiang2025whengraphs}. Our architecture differs from these
-retrieval-operator designs in that graph traversal is one of ten
-strategies selected \emph{per query} by boolean signals (route-level
+retrieval-operator designs in that graph traversal is one family among
+the eleven strategies selected \emph{per query} by boolean signals
+(route-level
 adaptivity), and in that the paper's empirical focus is not a new
 operator but the interaction between graph asset quality, ranking, and
 benchmark --- an interaction that, to our knowledge, has not been
@@ -211,7 +236,10 @@ LLM-judged comparisons, reported win rates can drop by tens of points
 (\eg LightRAG $66.70\%\!\rightarrow\!39.06\%$)~\cite{zeng2025unbiased}. Our
 own evaluation encountered a concrete instance of judge bias --- the RAGAS
 answer-relevancy ``noncommittal'' rule zeroes honest refusals, deflating
-the score of a cautious commercial model (Section~\ref{sec:evalmetrics}).
+the score of a cautious commercial model --- and a larger one in the
+judge's inputs: a faithfulness judge that never saw the generator's
+citation headers scored correct citations as unsupported
+(Section~\ref{sec:evalmetrics}).
 Chunking-strategy sensitivity for \emph{retrieval} (not construction) has
 been studied systematically in~\cite{shaukat2026chunking}; we cite it only
 for its retrieval-side scope, since no peer-reviewed quantification exists

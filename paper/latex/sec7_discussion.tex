@@ -1,5 +1,5 @@
 %% ============================================================================
-%% Sections XI-XIV: Discussion, Limitations, Future Work, Conclusion
+%% Sections XII-XV: Discussion, Limitations, Future Work, Conclusion
 %% ============================================================================
 
 \section{Discussion}
@@ -11,9 +11,10 @@ The central methodological claim of this paper is that in a GraphRAG
 system, \textbf{knowledge-graph construction quality, the retrieval
 ranking mechanism, and benchmark design jointly determine observable
 benefit} --- and any one of the three can silently zero out investment
-in the others. The evidence chain is summarized by the paper's
-three-round structure: a completeness overhaul whose construction
-metrics all moved (anchor coverage $+14.4$\,pt, event completeness
+in the others. The evidence chain is summarized by the original
+three-round chain (Rounds~0--2): a completeness overhaul whose
+construction metrics all moved (entity anchor coverage $+14.4$\,pt,
+event completeness
 $+50$\,pt, cross-references $\times 273$) read as \emph{zero} through a
 reranker-monopolized ranking onto a head-saturated benchmark
 (Section~\ref{sec:p0}); one day of ranking-layer repair then released
@@ -24,36 +25,53 @@ bottleneck layer, not the upstream-first order of the data flow} ---
 and the bottleneck is found by per-question forensics, not by metric
 staring.
 
-\subsection{Three Independent Rounds of the Same Lesson}
+Round~3 adds the converse. The same co-determinants can also silently
+\emph{inflate} a reading: on a head benchmark whose failing graph
+anchors had been repaired question by question, the graph was credited
+with part of a margin that a no-graph control assigns mostly to signal
+routing ($+0.13$ of $+0.16$ on the same 100 questions), while on 400 new
+questions the graph's share disappears (Section~\ref{sec:round3}). Benchmark design
+therefore decides not only whether a layer's investment is visible but
+also to which layer it is credited, and the instrument that settled the
+attribution was an ablation removing one layer while holding the others
+fixed.
+
+\subsection{Four Incidents of the Same Lesson}
 
 \begin{table}[!t]
-\caption{Three Incidents, One Mechanism: Graph Assets Gated by
-Retrieval-Side Machinery}
+\caption{Four Incidents: Graph Value Gated --- or Wrong Graph Evidence
+Passed --- by Retrieval-Side Machinery}
 \label{tab:threerounds}
 \centering
 \begin{threeparttable}
 \footnotesize
-\begin{tabular}{@{}p{1.35cm}p{2.5cm}p{2.1cm}p{1.55cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.35cm}%
+>{\raggedright\arraybackslash}p{2.5cm}%
+>{\raggedright\arraybackslash}p{2.1cm}%
+>{\raggedright\arraybackslash}p{1.55cm}@{}}
 \toprule
-Round & Asset in the graph & Gating mechanism & Resolution \\
+Incident & Asset in the graph & Gating mechanism & Resolution \\
 \midrule
-May 2026 & entity vectors (EQ) bridging modern phrasing & reranker
+Round 0 (May) & entity vectors (EQ) bridging modern phrasing & reranker
 surface-form monopoly & EQ disabled; re-enabled under fusion \\
-P0 (July) & correct anchors newly in pool; TSK breadth & same monopoly
+Round 1 (P0) & correct anchors newly in pool; TSK breadth & same monopoly
 $+$ vote-ranked topical noise & fusion $+$ provenance-stratified
 weights \\
-Dual-anchor family & \emph{all} needed cross-book edges present &
-1-hop expansion depends on seed correctness & open (query
-decomposition) \\
+Round 2 residual: dual-anchor family & \emph{all} needed cross-book
+edges present & 1-hop expansion depends on seed correctness & open
+(query decomposition) \\
+Round 3 (Sept.) & entity and event anchors, now fed by a working
+classifier & wrong anchors enter the pool; neither reranker nor fixed
+prior demotes them & open (anchor gating, slot quotas) \\
 \bottomrule
 \end{tabular}
 \end{threeparttable}
 \end{table}
 
-Table~\ref{tab:threerounds} aligns the three incidents. The third
+Table~\ref{tab:threerounds} aligns the four incidents. The third
 deserves elaboration because it was discovered \emph{after} the fusion
-remediation and is therefore an independent probe. The two remaining
-GENERAL misses are one family: cross-book
+remediation and is therefore an independent probe. The two GENERAL
+misses remaining after Round~2 are one family: cross-book
 \emph{prophecy--fulfillment} questions requiring two anchor sets
 simultaneously (GENERAL\_006: Jeremiah's new covenant in Hebrews, gold
 $=$ Jer.~31:31--34 $+$ Heb.~8; GENERAL\_008: Zechariah's prophecies in
@@ -68,25 +86,49 @@ false-prophet conflict of Jer.~26/28/29; ``Zechariah'' hits the
 Zerubbabel visions of Zech.~4), and 1-hop expansion from wrong seeds
 cannot reach right edges. Assets in the graph; value gated by the
 seed-selection mechanism. These two questions also post the two
-lowest answer-correctness scores of the entire suite ($\approx 0.13$,
-stable across re-judged runs).
+lowest answer-correctness scores of the original suite
+($\approx 0.13$, stable across re-judged runs). Round~3 populated the
+family (prophecy\_fulfillment, $n=26$), and its reading is consistent
+with the diagnosis: with the graph on, hit rate is 0.92 and anchor
+coverage@5 0.65, against 0.96 and 0.68 with it off --- expansion from
+imperfect seeds adds nothing measurable (edge presence and seed
+placement were not re-verified for the new questions).
+GENERAL\_008 itself now hits, through the entity traversal that the
+repaired classifier activated rather than through cross-references.
+
+The fourth incident inverts the first two. There, the ranking layer
+discarded correct graph evidence; in Round~3 it passes graph evidence
+whether or not it is correct, because neither of its signals concerns
+the anchor: the reranker scores surface form and the prior scores the
+proposing strategy. On the 29 questions where graph strategies took all
+five context slots, the graph run trailed the no-graph run by 0.10
+verse recall and 0.11 coverage (a descriptive split on the graph run's
+own output), and in most graph-caused losses the reranker alone already
+preferred the injected passages (Section~\ref{sec:round3mech}).
+Injecting graph candidates is a safe default only for verified anchors;
+fusion compounds the problem rather than causing it.
 
 \subsection{Retrieval-to-Answer Attenuation}
 
-Post-fusion, retrieval improved sharply (context recall $+0.053$) while
-answer correctness moved $+0.021$ --- at the edge of judge noise. A
-clean single-question case isolates the attenuation: EVENT\_005
-achieves perfect retrieval (context recall $1.0$, recall@5 $1.0$) yet
-its judged answer scores only $0.4$ coverage and $0.173$ correctness on
-the run of record --- and re-judging the identical outputs moves those
-to $0.70$/$0.353$, an instability that is itself the judge noise of
-Section~\ref{sec:evalmetrics} at work. Faithfulness is flat across all
-three time points ($\approx 0.95$), so the gains genuinely come from
-better context; the loss occurs in the small generation model
-(Gemma~4 E4B) and in the judged metrics themselves. The pipeline's
-quality bottleneck has, for these questions, \emph{moved past
-retrieval} --- consistent with our framing that the observable-benefit
-chain must be examined end to end. Any answer-model A/B here must first
+Post-fusion, context recall rose $+0.053$ and answer coverage
+$+0.041$, while answer correctness moved only $+0.021$ --- at the edge of
+judge noise. EVENT\_005 illustrates both limits of reading such numbers.
+On the unit-level metrics its retrieval is perfect (context recall
+$1.0$, recall@5 $1.0$), yet its answer scored $0.4$ coverage and $0.173$
+correctness on the run of record, and re-judging the identical outputs
+moved those to $0.70$/$0.353$. The verse-level metrics introduced later
+show that the retrieval was not perfect: the gold is Numbers~13--14 and
+no archived run retrieved chapter~13, so on the run of record anchor
+coverage@5 is 0.5 and verse recall 0.29. And in Round~3 the no-graph and
+semantic-only runs received identical contexts for it yet scored 0.7
+and 0.4 coverage. Faithfulness is flat across all three time points
+($\approx 0.95$) and, under the repaired judge, $\approx 0.98$ in every
+Round~3 configuration, which is consistent with the gains coming from
+better context; what is lost is shared among retrieval breadth that
+unit-level recall hides, the small generation model (Gemma~4 E4B), and
+the judged metrics themselves. The quality bottleneck is therefore no
+longer retrieval alone --- consistent with our framing that the
+observable-benefit chain must be examined end to end. Any answer-model A/B here must first
 neutralize the noncommittal-refusal artifact of
 Section~\ref{sec:evalmetrics}, or the honest model loses by
 construction --- the local instance of the evaluation-bias warnings
@@ -99,14 +141,21 @@ saturated in the head, and the three residual misses belong to two
 families that need \emph{new architecture}, not better ranking:
 cross-chapter aggregation (PERSON\_004; the community-summary/RAPTOR
 layer~\cite{edge2024graphrag,sarthi2024raptor}) and cross-book
-dual-anchor conjunction (GENERAL\_006/008; query decomposition).
+dual-anchor conjunction (GENERAL\_006/008; query decomposition). (Round~3
+qualifies both: without the graph PERSON\_004 hits at the unit level,
+its graph-mode miss being the displacement of
+Section~\ref{sec:round3mech}, although complete coverage still needs
+aggregation; and GENERAL\_008 now hits through the classifier-activated
+entity traversal.)
 Consequently, \emph{every} remaining roadmap item --- long-tail
 re-extraction (P1), event-temporal modeling
 (P2,~\cite{lairgi2025atom,zhang2025entityevent,sun2025dygrag}),
 hierarchical aggregation (P3) --- would read as zero on this yardstick:
-P1's tail improvements are unread by head questions (proved empirically
-by P0), P2's target questions already retrieve perfectly (their loss is
-in the attenuation chain above), and P3's target population is $n=1$.
+P1's tail improvements are unread by head questions (consistent with
+P0, although Round~3's long-tail families show no graph benefit either;
+Section~\ref{sec:round3}), P2's target questions already retrieved
+perfectly at the unit level (their verse recall is only 0.43; see
+below), and P3's target population is $n=1$.
 The methodological consequence: \textbf{benchmark redesign is the
 prerequisite for all further optimization}, not a reporting
 afterthought. We specify the needed instruments in
@@ -117,6 +166,19 @@ task-dependence findings of~\cite{xiang2025whengraphs}. A cautionary
 corollary from Section~\ref{sec:fusion}: with $n=2$ family sizes, tuning
 the system on the residual misses would be overfitting; the family must
 be \emph{populated first}, then fixed.
+
+That prescription has since been carried out. The 500-question benchmark
+(Section~\ref{sec:benchmark}) populates the aggregation and dual-anchor
+families (trajectory $n=18$, multi\_chapter $n=25$,
+prophecy\_fulfillment $n=26$, among 19 families), and its first
+reading, with the no-graph control, revised the graph's share of the
+margin and showed that the graph's head gains do not transfer to new
+questions (Section~\ref{sec:round3}). It also corrects one premise
+above: P2's target questions do \emph{not} retrieve perfectly once
+breadth is measured --- the temporal family reads verse recall 0.42 and
+anchor coverage@5 0.53 under the graph configuration ---
+and the aggregation families sit lower still (verse recall 0.34 for
+trajectory, 0.37 for multi\_chapter). The yardstick has room again.
 
 \subsection{Patch Lifecycles Under Architecture Evolution}
 
@@ -139,9 +201,12 @@ All conclusions above were reached with every model local --- embedder,
 reranker, extraction classifiers, generator, and judge --- on a single
 GPU host. Round 0 established that a locally served 8-bit E4B-class
 model matches a commercial API model end to end on this task within
-4\,pp on six of seven metrics~(Table~\ref{tab:round0}); nothing in the
-later rounds required revisiting that conclusion, because all
-optimization value was retrieval-side. For sensitive religious-domain
+4\,pp on six of seven metrics~(Table~\ref{tab:round0}). Round~3
+qualifies but does not overturn that result --- Gemma's Round~0
+classifier was inactive, and its faithfulness values predate the judge
+repair --- and an answer-model A/B under the repaired instruments
+remains to be run; all optimization value so far has been
+retrieval-side. For sensitive religious-domain
 deployments --- where both the corpus and user questions may be
 confidential --- this is the operative cost/privacy result: the
 investment frontier is retrieval and evaluation engineering, not model
@@ -165,16 +230,45 @@ candidates; there is no coreference resolution; toneless-pinyin IDs can
 over-merge homophones; and duplicate-name splits (\eg Israel as
 Place vs.\ Israelites as Group) await entity resolution.
 
-\textbf{Benchmark scale and head bias.} 100 questions, 20 per category,
-asking predominantly head entities; per-category deltas below
-$\approx 0.05$ on judged metrics are noise, and several architectural
-claims rest on question families of size 1--2, which we deliberately
-refuse to tune against.
+\textbf{Benchmark scale and design.} Rounds~0--2 rest on 100
+head-entity questions, on which the Round~2 repairs were also developed;
+per-category deltas below $\approx 0.05$ on judged metrics are noise
+there, and several of their architectural claims rest on question
+families of size 1--2, which we deliberately refused to tune against.
+Round~3 adds 400 questions in 19 families, but the families are small
+(8--48 questions), each configuration was run once, and the ground truth
+has known weaknesses: 313 of the 500 items carry exactly five expected
+points (a mechanical decomposition of the gold passage), and some points
+are broader than what the question asks, so coverage levels are
+conservative --- comparisons between configurations, which share the
+ground truth, are less affected. The 400 new items were content-checked
+in an LLM-assisted review rather than by the annotators of the original
+100. The expansion set is diagnostic rather than representative: its
+families target known failure modes, some of which favor dense
+retrieval and some of which expose graph gaps, so ``neutral to slightly
+harmful'' describes the graph on this mix, from one run per
+configuration. Finally, the semantic-only baseline has no reference
+parser, so most of the routing gain is the use of a reference that the
+user supplied; and the book-anchor change deployed in all Round~3
+configurations was itself checked on the 500 questions.
 
 \textbf{Judged metrics.} RAGAS scores carry $\pm 0.4$ per-question
 noise at our scale and a noncommittal rule that penalizes honest
-refusal; the answer-coverage judge is a single local model. All
+refusal; the answer-coverage judge is a single local model, and on
+byte-identical contexts coverage still moves by 0.060 per question on
+average from generation sampling plus judging (Section~\ref{sec:round3}). Faithfulness values before the
+September 2026 judge repair are systematically understated. All
 retrieval claims are therefore anchored to deterministic metrics.
+
+\textbf{Configuration history.} In the Gemma configurations of
+Rounds~0--2 the intent classifier was silently inactive, so routing was
+dictionary-only and the classifier-fed strategies never ran. Round~3 is
+the first local-model evaluation with a functioning classifier (Claude's
+worked in Round~0). The two regimes meet on the original 100 questions
+(graph hit rate 0.97 in both) and on a July~15 run of all 500 questions
+(graph-configuration verse recall 0.751 vs.\ 0.749), but the
+graph/no-graph contrast exists only under the repaired classifier, whose
+re-routing (\eg 48 fallback$\to$R4) increases the graph's exposure.
 
 \textbf{Generation.} The deployed generator is an 8-bit E4B-class
 model; the attenuation analysis shows it discards part of the retrieval
@@ -191,14 +285,17 @@ not about the Bible).
 \label{sec:future}
 
 \textbf{Evaluation first.} Per Section~\ref{sec:discussion}, the next
-artifact is the benchmark, not the pipeline: (i) long-tail question
-sets targeting chunk-only entities and split-pericope person$\times$event
-material; (ii) BRINK-style defect injection~\cite{zhou2025brink} ---
-remove known edges, measure answer degradation --- as a causal probe of
-KG value that no head benchmark can fake; (iii) population of the
-cross-chapter-aggregation and dual-anchor families to statistically
-meaningful sizes; (iv) judged-metric hygiene (noncommittal exclusion,
-position/length debiasing~\cite{zeng2025unbiased}).
+artifact was the benchmark, not the pipeline. Done since the first
+version of this paper: long-tail question sets, populated
+cross-chapter-aggregation and dual-anchor families
+(Section~\ref{sec:benchmark}), and the faithfulness repair. Still open:
+(i) BRINK-style defect injection~\cite{zhou2025brink} --- remove known
+edges, measure answer degradation --- as a causal probe of KG value that
+no head benchmark can fake, made more pressing by Round~3, since a
+no-graph ablation shows whether the graph helps on average but not
+which edges carry the value; (ii) noncommittal exclusion and
+position/length debiasing~\cite{zeng2025unbiased}; (iii) an audit of the
+expected answer points; and (iv) repeated runs per configuration.
 
 \textbf{P1 --- decoupled re-extraction.} Feed extraction whole
 pericopes (storage unit $\ne$ extraction unit~\cite{neo4jbuilder});
@@ -229,15 +326,22 @@ cross-chapter aggregation; RAKG-style pre-entity
 re-retrieval~\cite{zhang2025rakg} and cross-chunk graph
 augmentation~\cite{zhang2026crossaug} for cross-boundary relations.
 
-\textbf{Retrieval mechanics.} Query decomposition for dual-anchor
-conjunctions (retrieve prophecy and fulfillment sides separately, then
-join on cross-reference edges); theme-level anchoring; and, if the
+\textbf{Retrieval mechanics.} Anchor-confidence gating, the repair
+Round~3 points to: admit or weight graph candidates by the confidence of
+their entity resolution, with penalties for hub entities and generic
+events --- since most wrong anchors are injected rather than merely
+up-weighted, the gate must act on candidates, not only on the prior;
+per-strategy slot quotas in the top-5; a re-sweep of $\alpha$ on the
+500 questions (an $\alpha=0$ run also separates injection from prior
+effects); query decomposition for dual-anchor conjunctions
+(retrieve prophecy and fulfillment sides separately, then join on
+cross-reference edges); theme-level anchoring; and, if the
 strategy-prior fusion reaches its ceiling, calibrated score fusion in
 the spirit of~\cite{bacellar2026calibrated} or graph-native retrieval
 scoring~\cite{gutierrez2025hipporag2,wang2025archrag}.
 
 \textbf{Generation.} Answer-model A/B under debiased judging, since the
-attenuation analysis locates the next bottleneck there.
+attenuation analysis locates a further bottleneck there.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -255,15 +359,29 @@ moved and whose benchmark reading was zero; the question-level
 diagnosis of that negative result; and a one-day ranking-layer
 remediation that surpassed all prior results (hit rate 0.97, EVENT
 1.00, $+0.16$ over the semantic baseline), decomposed by ablation into
-complementary discrete and continuous mechanisms.
+complementary discrete and continuous mechanisms. A fourth round, on a
+500-question benchmark with repaired instruments and a no-graph
+control, replicated the head hit rate and margin and re-attributed
+them: about four-fifths of the margin over semantic-only belongs to
+signal routing, the graph's share is concentrated in head events with
+hand-curated anchors, and on 400 new questions the graph is neutral to
+slightly harmful, because wrongly anchored graph candidates pass a
+ranking layer that cannot tell them from right ones. The same round
+uncovered an intent classifier that had been silently inactive in every
+earlier local-model run.
 
 The system-level conclusions are, we believe, portable to any GraphRAG
 deployment. Graph assets have no value until the ranking layer
-transmits them; benchmark design decides which layer's investment is
-visible at all; discrete patches have architecture-bound lifetimes; and
-the correct optimization order follows the measured bottleneck, not the
-data flow. In our deployment, honoring these rules delivered, in a
-day of work, a larger measured return than the deferred week-scale
-re-extraction plan was projected to yield on the same benchmark --- and
-identified the next bottlenecks (benchmark design, then generation)
-before any further construction spend.
+transmits them, and a ranking layer that cannot judge anchors transmits
+wrong ones too; benchmark design decides which layer's investment is
+visible at all, and to which layer it is credited; discrete patches
+have architecture-bound lifetimes; a layer's contribution is established
+only by an ablation on questions its repairs never saw; and the correct
+optimization order follows the measured bottleneck, not the data flow.
+In our deployment, the bottleneck rule delivered, in a day of work, a
+larger measured return on the head benchmark than the deferred
+week-scale re-extraction plan was projected to yield there; the
+ablation rule, applied in Round~3, then showed that the graph's share of
+that return does not transfer beyond the questions it was built on ---
+and identified the next bottlenecks (anchor precision in the ranking
+layer, then generation) before any further construction spend.

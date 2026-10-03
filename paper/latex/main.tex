@@ -9,6 +9,7 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{multirow}
 \usepackage{threeparttable}
 \usepackage{algorithm}
@@ -37,10 +38,12 @@ and Rank Fusion}
 \thanks{K.-H. Chung and Y.-H. Tan are with the Department of Intelligent
 Computing and Big Data, Chung Yuan Christian University, Taoyuan City,
 Taiwan (corresponding author: Y.-H. Tan).}%
-\thanks{Manuscript drafted July 7, 2026. All corpus, graph, and evaluation
-statistics were re-verified against the live deployment on July 6, 2026.}}
+\thanks{Manuscript drafted July 7, 2026; revised October 2, 2026 to add
+the September 2026 expanded-benchmark evaluation (Round 3). Corpus and
+graph statistics were re-verified against the live deployment on July 6,
+2026; Round 3 statistics are recomputed from the archived run outputs.}}
 
-\markboth{Preprint — July 2026}%
+\markboth{Preprint — October 2026 (revised)}%
 {Chung \MakeLowercase{\textit{et al.}}: Signal-Adaptive GraphRAG for Traditional Chinese Bible QA}
 
 \maketitle
@@ -64,7 +67,7 @@ cross-encoder reranking, and a linear rank-fusion layer
 $s_{\mathrm{fused}}=(1-\alpha)\,s_{\mathrm{rr}}+\alpha\,w$. On a
 100-question benchmark spanning five question types we report a three-round
 evidence chain: (i) signal-adaptive retrieval beats a semantic-only
-baseline by $+15$ percentage points hit rate, independently of the answer
+baseline by $+14$--$15$ percentage points hit rate with either answer
 model; (ii) a knowledge-graph completeness overhaul (entity anchor coverage
 $83.8\%\!\rightarrow\!98.2\%$, cross-references $\times 273$) yields
 \emph{zero} retrieval gain on the head-entity benchmark --- a negative
@@ -73,11 +76,22 @@ ranking, topical cross-reference noise, and benchmark head saturation; and
 (iii) a one-day rank-fusion remediation recovers and surpasses all prior
 results (hit rate $0.97$, event-narrative hit rate $1.00$, $+0.16$ over the
 semantic baseline), with an ablation showing a complementary structure
-between discrete data repairs and continuous score fusion. We conclude that
-knowledge-graph construction quality, the retrieval ranking mechanism, and
-benchmark design \emph{jointly} determine observable benefit, and that
-optimization order should follow the bottleneck layer rather than the
-upstream-first order of the data flow.
+between discrete data repairs and continuous score fusion. A fourth
+round (Round 3) re-evaluates on 500 questions (the original 100 plus 400
+in 19 diagnostic families) with verse-level metrics, a repaired
+faithfulness judge, a repaired intent classifier (silently inactive in
+all earlier local-model runs), and a no-graph ablation: routing alone
+accounts for $+0.13$ of the replicated $+0.16$ head margin, the graph's
+$+0.03$ is not significant, and on the new questions the graph is
+neutral to slightly harmful (anchor coverage@5 $-0.012$, 95\% CI
+$[-0.023,-0.003]$) because wrongly anchored graph candidates pass the
+ranking layer; faithfulness is $\approx 0.98$ throughout. We conclude
+that knowledge-graph construction quality, the retrieval ranking
+mechanism, and benchmark design \emph{jointly} determine observable
+benefit, that optimization order should follow the bottleneck layer
+rather than the upstream-first order of the data flow, and that a
+layer's gains must be validated by ablation on questions its repairs
+never saw.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -94,6 +108,7 @@ generation, Traditional Chinese.
 \input{sec4_retrieval}
 \input{sec5_evaluation}
 \input{sec6_experiments}
+\input{sec6b_round3}
 \input{sec7_discussion}
 \input{appendix}
 
