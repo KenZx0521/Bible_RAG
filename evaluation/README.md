@@ -8,6 +8,8 @@
 evaluation/
 ├── run_eval.py                  # CLI 入口(完整管線:收集 → 評估 → 視覺化)
 ├── quick_retrieval_eval.py      # 快速檢索評估迴圈(retrieval-only,無生成/RAGAS)
+├── ab_compare.py                # 兩個 quick eval 結果的配對 A/B / --require-identical 一致性檢查
+├── d3_gate.py                   # D3 非劣閘門(兩個 backend 跑 500 題 → 一致性 + 路由殘差判定)
 ├── quick_faithfulness_eval.py   # 快速 faithfulness 重判迴圈(只跑兩個 faithfulness judge)
 ├── apply_coverage.py            # 答案要點覆蓋率離線補算
 ├── src/
@@ -141,6 +143,8 @@ uv run python quick_retrieval_eval.py --compare results_quick/a.json results_qui
 
 輸出存至 `results_quick/<label>.json`，含 overall / by_type 聚合與逐題明細（route、strategies、sources、rerank/fused 分數）。每段 `source_detail` 另記 `found_by`(所有找到它的策略)與 `gold`(是否與 reference 經文重疊);基礎設施失敗(0 source 且有 strategy_errors)標 `invalid`,不進平均。`--metric-k N` 以前 N 段計分(預設 = `--top-k`),`--ids-file` 只跑指定題號。
 
+`--include-context` 會在請求帶 `include_context=true`,把生成器實際讀到的 context 區塊(標頭 + 經文)做 sha256:每段 `source_detail` 記 `context_sha256`,每題記 `context_sha`(全部區塊依序以空行串接,即生成器看到的整段文字)。`config.include_context` 記錄有沒有開。backend 若沒回 context(舊 image)會直接報錯,不會記成空字串的雜湊。
+
 #### 配對 A/B 比較（ab_compare.py）
 
 逐題配對比較兩個 quick eval 結果(同路由題):主檢定 sign-flip permutation,並列精確符號檢定(勝負題數)、95% bootstrap CI、指標族 Holm 校正;分全體 / 被改動題 / 原 100 / 擴充 400 報告;列出每個指標變差的題與改動帳本(identical / order_only / nongold_swap / gold_in / gold_out / gold_swap)。所有比較的檔案必須以同一個 metric k 計分,否則直接拒絕。
@@ -154,6 +158,32 @@ uv run python quick_retrieval_eval.py --no-use-graph --metric-k 6 --label dense5
 uv run python quick_retrieval_eval.py --no-use-graph --top-k 6 --metric-k 6 --ids-file touched.txt --label dense6
 uv run python ab_compare.py results_quick/dense5.json results_quick/aux.json --control-ext results_quick/dense6.json --label aux_vs_dense
 ```
+
+`--require-identical` 改跑一致性檢查(不出統計報告):同路由題的 core(前 top_k 段)、附加段落(超過 top_k 的段落)與 `context_sha` 必須全部相同,兩邊逐題與整體的 `graph_strategies_applied` 也必須相同;invalid 題、只出現在一邊的題同樣算失敗。任何不同都列出明細並以結束碼 1 結束。路由不同的題另外列出,不判失敗:這時 PASS 會註明有幾題沒判(`identity: PASS (N route mismatches not judged; run d3_gate.py)`),重問與路由殘差 ≤ r0 的判定只有 `d3_gate.py` 會做,所以 D3 閘門一律跑 `d3_gate.py`,`--require-identical` 只當診斷用。沒有 `context_sha` 的舊檔(沒用 `--include-context` 跑的)直接拒絕。
+
+```bash
+uv run python ab_compare.py results_quick/d3_prod_w1.json results_quick/d3_stg_w1.json --require-identical
+```
+
+#### D3 非劣閘門（d3_gate.py）
+
+KG 資料層修復第 1 批的硬門檻(`docs/records/2026-10-04_kg_batch1_plan.md` §5.1):prod 與 backend-staging 各跑一次 500 題(`quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context`,以 `BACKEND_URL` 指向各自的 backend),再做 `--require-identical` 比對。路由不同的題兩邊各重問(`--ids-file`),最多 2 輪,重問結果要和原檔的 top_k / metric_k / metric_version / include_context 等設定相同、題號完全對上才併回去。判定:
+
+- 兩邊的 `graph_strategies_applied` 相同;
+- 同路由題 100% 相同;
+- invalid 為 0;
+- 重問後仍路由不同的題數(路由殘差)≤ r0(`--route-residual-max`)。r0 由 W0 的 AA 演練用 `--calibrate` 量出,這時只記錄殘差、不判這一條。
+
+```bash
+# W0 AA:量 r0
+.venv/bin/python d3_gate.py --label w0_aa --control-url http://localhost:8000 --treatment-url http://localhost:8001 --calibrate
+# W1 / W2 閘門
+.venv/bin/python d3_gate.py --label w1 --control-url http://localhost:8000 --treatment-url http://localhost:8001 --route-residual-max <r0>
+# 只重判 live 閘門存下的合併結果檔(不重跑查詢、不重問)
+.venv/bin/python d3_gate.py --label w1_files --control-file results_quick/d3_prod_w1_merged.json --treatment-file results_quick/d3_stg_w1_merged.json --route-residual-max <r0>
+```
+
+兩邊的結果檔是 `results_quick/d3_prod_<label>.json`、`d3_stg_<label>.json`(重問為 `..._retry1/2.json`,名稱可用 `--control-name` / `--treatment-name` 改);這兩個原始檔保留第一次的回答,併入重問結果後的最終版另存為 `d3_prod_<label>_merged.json`、`d3_stg_<label>_merged.json`,對它們跑檔案模式才會重現 live 的判定(對原始檔跑,有重問過的題仍會算成路由殘差)。完整報告(各輪重問、判定項、所有差異明細、`merged_runs` 路徑)寫到 `results_quick/d3_<label>.json`;通過結束碼 0,否則 1。這些檔案已存在時拒絕執行,要覆寫請加 `--overwrite`(檔案模式只檢查報告檔);報告路徑若就是 `--control-file` / `--treatment-file` 之一(例如 `--label prod_s1` 配 `d3_prod_s1.json`),加 `--overwrite` 也一律拒絕。staging 端必須跑「由該波 HEAD 建出的 image」。
 
 ### 快速 faithfulness 重判迴圈（quick_faithfulness_eval.py）
 

@@ -26,11 +26,16 @@ Usage (from evaluation/):
     uv run python quick_retrieval_eval.py --no-use-graph --metric-k 6 --label dense5
     uv run python quick_retrieval_eval.py --no-use-graph --top-k 6 --metric-k 6 \
         --ids-file touched.txt --label dense6        # then: ab_compare.py
+    # D3 gate arm: also hash the generator's context blocks (see d3_gate.py)
+    uv run python quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context --label d3_prod_w1
 
 Each question's source_detail records every passage's provenance (strategy,
 found_by) and whether it overlaps the gold reference, for ab_compare.py's
 change ledger. Infrastructure failures (no sources + a strategy error) are
-flagged invalid and left out of the averages.
+flagged invalid and left out of the averages. With --include-context every
+passage also records context_sha256 (the block the generator reads) and each
+question a context_sha over all its blocks, so ab_compare.py
+--require-identical can prove two backends feed the generator the same text.
 """
 
 from __future__ import annotations
@@ -82,6 +87,39 @@ _METRIC_ORDER = [
 ]
 
 
+# The generator reads its context blocks joined by a blank line
+# (backend utils/generator.py _build_context); context_sha hashes that text.
+_CONTEXT_JOIN = "\n\n"
+
+
+def context_sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def context_digest(api_sources: list[dict]) -> str:
+    """sha256 of every source's context block, in order, joined as the generator joins them.
+
+    Raises when a source carries no block: a backend image built before
+    include_context drops the field silently, and two runs of empty blocks
+    would hash alike and pass the identity gate.
+    """
+    missing = [i for i, s in enumerate(api_sources) if not isinstance(s.get("context"), str)]
+    if missing:
+        raise RuntimeError(
+            f"backend returned no context block for source positions {missing}; rebuild it "
+            "(docker compose up -d --build backend) before an --include-context run"
+        )
+    return context_sha256(_CONTEXT_JOIN.join(s["context"] for s in api_sources))
+
+
+def applied_counts(applied_by_q: dict[str, list[str] | None]) -> dict[str, int]:
+    """Run-level tally of the graph strategies each question applied."""
+    return dict(Counter(
+        "legacy (not reported)" if v is None else ",".join(v) or "(none)"
+        for v in applied_by_q.values()
+    ))
+
+
 def applied_graph_strategies(requested: list[str] | None, stats: dict) -> list[str] | None:
     """Graph strategies the backend reports it applied, checked against the request.
 
@@ -111,7 +149,8 @@ async def _query_one(
     alpha: float | None,
     top_k: int,
     graph_strategies: list[str] | None = None,
-) -> tuple[EvalSample, list[dict], list[str] | None]:
+    include_context: bool = False,
+) -> tuple[EvalSample, list[dict], list[str] | None, dict]:
     payload: dict = {
         "question": gt.question,
         "top_k": top_k,
@@ -124,6 +163,8 @@ async def _query_one(
         payload["fusion_alpha"] = alpha
     if graph_strategies is not None:
         payload["graph_strategies"] = graph_strategies
+    if include_context:
+        payload["include_context"] = True
 
     async with sem:
         resp = await client.post(f"{settings.backend_url}/api/v1/query", json=payload)
@@ -156,6 +197,8 @@ async def _query_one(
         strategy_errors=stats.get("strategy_errors", {}),
     )
     extra = {"event_registry_events": stats.get("event_registry_events")}
+    if include_context:
+        extra["context_sha"] = context_digest(data.get("sources", []))
     return sample, source_detail(sample, data.get("sources", [])), applied, extra
 
 
@@ -169,6 +212,8 @@ def source_detail(sample: EvalSample, api_sources: list[dict]) -> list[dict]:
             "found_by": api.get("found_by"), "score": api.get("score"),
             "rerank_score": api.get("rerank_score"),
             "gold": bool(gt_refs) and binary_relevance(src, gt_refs),
+            "context_sha256": (context_sha256(api["context"])
+                               if isinstance(api.get("context"), str) else None),
         }
         for src, api in zip(sample.sources, api_sources)
     ]
@@ -183,6 +228,7 @@ def load_ids(path: Path) -> set[str]:
 
 async def collect(use_graph, alpha, top_k, concurrency, only_prefix,
                   graph_strategies=None, ids: set[str] | None = None,
+                  include_context: bool = False,
                   ) -> tuple[list[EvalSample], dict, dict, dict]:
     gts = load_ground_truth()
     if only_prefix:
@@ -197,7 +243,8 @@ async def collect(use_graph, alpha, top_k, concurrency, only_prefix,
     applied_by_q: dict[str, list[str] | None] = {}
     extra_by_q: dict[str, dict] = {}
     async with httpx.AsyncClient(timeout=180.0) as client:
-        tasks = [_query_one(client, sem, gt, use_graph, alpha, top_k, graph_strategies)
+        tasks = [_query_one(client, sem, gt, use_graph, alpha, top_k, graph_strategies,
+                            include_context)
                  for gt in gts]
         out = []
         done = 0
@@ -349,6 +396,10 @@ def main() -> int:
                              "with ab_compare.py must share it")
     parser.add_argument("--ids-file", type=Path, default=None,
                         help="only these question ids (JSON list or one per line)")
+    parser.add_argument("--include-context", action="store_true",
+                        help="ask for the generator's context blocks and record their sha256 "
+                             "(per passage and per question); needed by ab_compare.py "
+                             "--require-identical and d3_gate.py")
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--only", nargs="*", default=None,
                         help="question_id prefixes to include (e.g. EVENT PERSON)")
@@ -366,13 +417,15 @@ def main() -> int:
     if args.from_raw:
         if args.graph_strategies is not None:
             print("warning: --graph-strategies is ignored with --from-raw")
+        if args.include_context:
+            print("warning: --include-context is ignored with --from-raw")
         samples = samples_from_raw(args.from_raw)
         raw_sources = None
     else:
         ids = load_ids(args.ids_file) if args.ids_file else None
         samples, raw_sources, applied_by_q, extra_by_q = asyncio.run(
             collect(args.use_graph, args.alpha, args.top_k, args.concurrency, args.only,
-                    args.graph_strategies, ids)
+                    args.graph_strategies, ids, include_context=args.include_context)
         )
 
     metric_k = args.metric_k or args.top_k
@@ -383,10 +436,6 @@ def main() -> int:
                 agg["per_question"][qid]["source_detail"] = srcs
                 agg["per_question"][qid]["graph_strategies"] = applied_by_q.get(qid)
                 agg["per_question"][qid].update(extra_by_q.get(qid, {}))
-    applied_counts = Counter(
-        "legacy (not reported)" if v is None else ",".join(v) or "(none)"
-        for v in applied_by_q.values()
-    )
     agg["config"] = {
         "from_raw": str(args.from_raw) if args.from_raw else None,
         "use_graph": args.use_graph,
@@ -397,7 +446,8 @@ def main() -> int:
         "only": args.only,
         "ids_file": str(args.ids_file) if args.ids_file else None,
         "graph_strategies_requested": args.graph_strategies,
-        "graph_strategies_applied": dict(applied_counts),
+        "graph_strategies_applied": applied_counts(applied_by_q),
+        "include_context": bool(args.include_context and not args.from_raw),
     }
     print_table(agg, args.label, k=metric_k)
 

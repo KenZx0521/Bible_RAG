@@ -1,5 +1,6 @@
 """
-k-aligned paired comparison of two quick_retrieval_eval runs.
+k-aligned paired comparison of two quick_retrieval_eval runs, and the identity
+check behind ab_compare.py --require-identical / d3_gate.py.
 
 Inputs are quick_retrieval_eval output files (per_question metrics computed at
 config.metric_k, with source_detail carrying per-passage gold flags). Every
@@ -193,4 +194,113 @@ def compare(
         "negatives": negatives,
         "ledger_summary": summarize_ledger(ledger),
         "ledger": ledger,
+    }
+
+
+# --- identity gate (D3: a data or image change must not move default retrieval) --
+
+# Request settings two runs must share for their passages to be comparable.
+_REQUEST_KEYS = ("top_k", "use_graph", "fusion_alpha", "graph_strategies_requested")
+
+
+def _require_context(run: dict, arm: str) -> None:
+    lacking = sorted(q for q, e in run["per_question"].items()
+                     if not isinstance(e.get("context_sha"), str))
+    if not run.get("config", {}).get("include_context") or lacking:
+        raise ValueError(
+            f"{arm} run carries no context digests ({len(lacking)} questions without "
+            "context_sha); rerun quick_retrieval_eval.py with --include-context"
+        )
+
+
+def _context_positions(control: dict, treatment: dict) -> list[int]:
+    """Passages whose own block changed; only meaningful when the ids match."""
+    if control["sources"] != treatment["sources"]:
+        return []
+    pairs = zip(control.get("source_detail") or [], treatment.get("source_detail") or [])
+    return [i for i, (a, b) in enumerate(pairs)
+            if a.get("context_sha256") != b.get("context_sha256")]
+
+
+def passage_diff(control: dict, treatment: dict, top_k: int) -> dict:
+    """What differs between two answers to one question: core, appended, context."""
+    diff: dict[str, dict] = {}
+    for part, cut in (("core", slice(None, top_k)), ("appended", slice(top_k, None))):
+        a, b = control["sources"][cut], treatment["sources"][cut]
+        if a != b:
+            diff[part] = {"control": a, "treatment": b}
+    if control["context_sha"] != treatment["context_sha"]:
+        diff["context_sha"] = {
+            "control": control["context_sha"],
+            "treatment": treatment["context_sha"],
+            "positions": _context_positions(control, treatment),
+        }
+    return diff
+
+
+def _strategies_check(control: dict, treatment: dict, qids: list[str]) -> dict:
+    pc, pt = control["per_question"], treatment["per_question"]
+    ca = control.get("config", {}).get("graph_strategies_applied")
+    ta = treatment.get("config", {}).get("graph_strategies_applied")
+    unreported = [q for q in qids
+                  if pc[q].get("graph_strategies") is None or pt[q].get("graph_strategies") is None]
+    differing = [q for q in qids if pc[q].get("graph_strategies") != pt[q].get("graph_strategies")]
+    return {
+        "identical": ca == ta and not differing and not unreported,
+        "control": ca,
+        "treatment": ta,
+        "per_question_mismatch": differing,
+        # A backend that does not report what it applied cannot be vouched for.
+        "unreported": unreported,
+    }
+
+
+def identity_report(control: dict, treatment: dict) -> dict:
+    """Do two runs retrieve identically? (ab_compare --require-identical, d3_gate).
+
+    Same-route questions must agree on the top_k core passages, the passages
+    appended after it, and the context digest. Route mismatches (the intent
+    classifier samples at temperature 0.1) are listed apart for d3_gate to
+    re-ask. Invalid or unpaired questions and differing applied graph
+    strategies also fail. Runs without context digests are refused.
+    """
+    _require_context(control, "control")
+    _require_context(treatment, "treatment")
+    cc, tc = control.get("config", {}), treatment.get("config", {})
+    differing = [k for k in _REQUEST_KEYS if cc.get(k) != tc.get(k)]
+    if differing:
+        raise ValueError(
+            f"runs were requested with different {differing}: "
+            + ", ".join(f"{k} {cc.get(k)!r} vs {tc.get(k)!r}" for k in differing)
+        )
+
+    pc, pt = control["per_question"], treatment["per_question"]
+    qids = sorted(set(pc) & set(pt))
+    if not qids:
+        raise ValueError("the runs share no question; nothing to compare")
+    top_k = cc.get("top_k", 5)
+    invalid = [q for q in qids if pc[q].get("invalid") or pt[q].get("invalid")]
+    valid = [q for q in qids if q not in set(invalid)]
+    route_mismatch = [q for q in valid if pc[q].get("route") != pt[q].get("route")]
+    same = [q for q in valid if q not in set(route_mismatch)]
+    mismatches = {q: d for q in same if (d := passage_diff(pc[q], pt[q], top_k))}
+    unpaired = {"control_only": sorted(set(pc) - set(pt)),
+                "treatment_only": sorted(set(pt) - set(pc))}
+    strategies = _strategies_check(control, treatment, qids)
+
+    return {
+        "top_k": top_k,
+        "n_paired": len(qids),
+        "unpaired": unpaired,
+        "invalid": invalid,
+        "route_mismatch": route_mismatch,
+        "routes": {q: {"control": pc[q].get("route"), "treatment": pt[q].get("route")}
+                   for q in route_mismatch},
+        "same_route": len(same),
+        "identical": len(same) - len(mismatches),
+        "mismatches": mismatches,
+        "strategies": strategies,
+        # Route mismatches do not fail here; d3_gate re-asks them.
+        "passed": (not mismatches and not invalid and strategies["identical"]
+                   and not unpaired["control_only"] and not unpaired["treatment_only"]),
     }

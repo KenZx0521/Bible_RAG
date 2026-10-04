@@ -419,9 +419,10 @@
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d backend-staging
 cd evaluation
-BACKEND_URL=http://localhost:8000 .venv/bin/python quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context --label d3_prod_<波>
-BACKEND_URL=http://localhost:8001 .venv/bin/python quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context --label d3_stg_<波>
-.venv/bin/python ab_compare.py results_quick/d3_prod_<波>.json results_quick/d3_stg_<波>.json --require-identical
+# W0 AA：量路由殘差 r0（只記錄，不判這一條）
+.venv/bin/python d3_gate.py --label w0_aa --control-url http://localhost:8000 --treatment-url http://localhost:8001 --calibrate
+# W1、W2：兩邊各跑 500 題、路由不同的題自動重問（最多 2 輪），報告寫到 results_quick/d3_<波>.json，結束碼 0 = 通過
+.venv/bin/python d3_gate.py --label <波> --control-url http://localhost:8000 --treatment-url http://localhost:8001 --route-residual-max <W0 AA 量到的 r0>
 ```
 
 判準：
