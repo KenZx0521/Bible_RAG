@@ -168,8 +168,11 @@ class NERExtractor:
         """Extract entities using dictionary matching."""
         results = []
         
-        # Sort by length (longest first) to avoid partial matches
-        sorted_entities = sorted(self._all_entities.keys(), key=len, reverse=True)
+        # Longest first to avoid partial matches; ties broken by the name itself.
+        # _all_entities is filled from sets, so its order (and with it which of
+        # two overlapping equal-length names wins, and every mention_id) used
+        # to change with PYTHONHASHSEED.
+        sorted_entities = sorted(self._all_entities, key=lambda name: (-len(name), name))
         
         # Track matched positions to avoid duplicates
         matched_positions: Set[Tuple[int, int]] = set()
