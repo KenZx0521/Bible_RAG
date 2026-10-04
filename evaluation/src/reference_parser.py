@@ -61,6 +61,7 @@ _CROSS_CHAP_VERSE_RANGE = re.compile(r"^(\d+)\s*:\s*(\d+)\s*[-–]\s*(\d+)\s*:\s
 _CHAP_VERSE_RANGE = re.compile(r"^(\d+)\s*:\s*(\d+)\s*[-–]\s*(\d+)$")
 _CHAP_VERSE = re.compile(r"^(\d+)\s*:\s*(\d+)$")
 _CHAPTER_ONLY = re.compile(r"^(\d+)$")
+_BARE_VERSES = re.compile(r"^\d+(\s*[-–]\s*\d+)?$")
 
 
 def _parse_single_ref(book_name: str, spec: str) -> list[ParsedReference]:
@@ -165,13 +166,28 @@ def _parse_book_segment(segment: str) -> list[ParsedReference]:
     # Split by comma for multi-spec within same book: "2-4章, 18章"
     parts = [p.strip() for p in rest.split(",") if p.strip()]
     refs: list[ParsedReference] = []
+    # Chapter of the previous part when it was a chapter:verse spec — a bare
+    # number right after one continues that chapter's verses ("11:1, 10" is
+    # 11:10, not chapter 10; GENERAL_043).
+    verse_chapter: int | None = None
+    current_book = book_name
     for part in parts:
         # Check if part starts with a new book name
         inner_book, inner_rest = _extract_book_and_rest(part)
-        if inner_book and inner_book != book_name:
-            refs.extend(_parse_book_segment(part))
+        if inner_book and inner_book != current_book:
+            parsed = _parse_book_segment(part)
+            current_book = inner_book
+        elif verse_chapter is not None and _BARE_VERSES.match(part):
+            parsed = _parse_single_ref(current_book, f"{verse_chapter}:{part}")
         else:
-            refs.extend(_parse_single_ref(book_name, part))
+            parsed = _parse_single_ref(current_book, part)
+        refs.extend(parsed)
+        last = parsed[-1] if parsed else None
+        verse_chapter = (
+            last.chapters[-1]
+            if last is not None and last.verse_start is not None and last.chapters
+            else None
+        )
     return refs
 
 

@@ -18,6 +18,10 @@ class Source(BaseModel):
     # reranker score when `score` is the fused score.
     strategy: str | None = None
     rerank_score: float | None = None
+    # Every strategy that returned this passage, first-seen order. `strategy`
+    # names only the copy that won dedup, so a graph label alone cannot tell
+    # whether dense retrieval had found the passage too.
+    found_by: list[str] | None = None
     # Exact context block fed to the generator for this source
     # (`[i] 書卷 第N章 - 標題 (節)` + text). Only when include_context=true.
     context: str | None = None
@@ -40,6 +44,9 @@ class RetrievalStats(BaseModel):
     graph_strategies: list[str] = []
     # Effective rank-fusion alpha for this request (None = fusion disabled).
     fusion_alpha: float | None = None
+    # Event-registry events the question triggered; their anchors appear as
+    # extra sources (strategy "event_registry") after the top-k when missing.
+    event_registry_events: list[str] = []
 
 
 class QueryResponse(BaseModel):

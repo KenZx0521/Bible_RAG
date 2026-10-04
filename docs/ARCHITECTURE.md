@@ -449,8 +449,9 @@ sequenceDiagram
 - `semantic_only` 模式跳過 ①②③(省一次 LLM 呼叫),直走純語意檢索 — 評估 baseline 用;
 - `use_graph`(per-request)可覆寫 `.env` 的 `RAG_USE_GRAPH`,A/B 評估不需重啟容器;
 - `graph_strategies`(per-request)可覆寫 `RAG_GRAPH_STRATEGIES`,指定 use_graph 開啟時哪些圖譜策略可以跑(`["all"]` = 全開、`[]` = 全關);`stats.graph_strategies` 回報實際生效的集合(圖譜關閉時為空);
+- **事件登錄表附加軌**(`graph_strategies` 含 `"event_registry"`,2026-10):只在 R4/R5,題目原文(遮書名後)完全命中 `backend/data/event_registry.json` 的觸發詞時,在所有排序與 pin **之後**附加 1 段 curated 事件錨點(最具體的事件優先、取第一個不在 top-k 的正典順序錨點);top-k 與 graph-off 逐位相同,附加段 `strategy="event_registry"`、無 rerank/fused 分數;LLM keywords 不能觸發;`stats.event_registry_events` 回報命中的事件。登錄表由 `scripts/export_event_registry.py` 從 Neo4j 匯出(curated 來源 = `backfill_head_events.py` + `config/curated/manual_graph_patches.jsonl`),執行期不查 Neo4j;`"all"` 不含它;
 - `retrieval_only` flag 跳過答案生成,供 quick eval 快速迴路;
-- 回應含觀測欄位:`Source.strategy` / `Source.rerank_score`(fused 與 raw 並列)、`stats.fusion_alpha`、`route_used` / `strategies_used` / `strategy_errors`;
+- 回應含觀測欄位:`Source.strategy` / `Source.rerank_score`(fused 與 raw 並列)、`Source.found_by`(所有找到該段的策略,依首見順序;`strategy` 只是去重後勝出那份的標籤)、`stats.fusion_alpha`、`route_used` / `strategies_used` / `strategy_errors`;
 - `include_context` flag 讓每個 `Source` 附上生成器實際看到的 context 區塊(`Source.context`,標頭 + 經文),評估端 judge 以此對齊生成器輸入(2026-09-17)。
 
 ### 6.2 意圖分類與信號偵測
@@ -626,7 +627,8 @@ flowchart TB
 | 開關 | 值 | 備註 |
 |------|-----|------|
 | `RAG_USE_GRAPH` | true | per-request 可覆寫 |
-| `RAG_GRAPH_STRATEGIES` | `["graph_event"]`(程式預設) | 2026-10 止血:其餘圖譜策略淨負或零貢獻;`["all"]` 恢復 Round 3 行為;per-request 可覆寫 |
+| `RAG_GRAPH_STRATEGIES` | `["graph_event"]`(程式預設) | 2026-10 止血:其餘圖譜策略淨負或零貢獻;`["all"]` 恢復 Round 3 行為;`"event_registry"` 是不進候選池的附加軌(需明列);per-request 可覆寫 |
+| `RAG_EVENT_REGISTRY_SLOTS` | 1 | 事件登錄表附加軌最多附加幾段 |
 | `HYBRID_SEARCH_ENABLED` | true | dense+sparse RRF |
 | `RAG_USE_CROSS_REF_EXPAND` / `_LIMIT` | true / 10 | TSK 抑噪後 cap |
 | `RAG_USE_ENTITY_PATH` | true | ≤2 hop |

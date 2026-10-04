@@ -196,13 +196,32 @@ async def collect_responses(
             except Exception as e:
                 logger.error("[%s] Failed: %s", gt.question_id, e)
                 console.print(f"  [red]Error: {e}[/red]")
+                # Recorded as an infrastructure failure (validity.is_infra_failure)
+                # here and in raw_responses.json, so --eval-only reruns also
+                # leave it out of the averages instead of scoring it 0.
+                errors = {"request": repr(e)[:200]}
                 samples.append(EvalSample(
                     question_id=gt.question_id,
                     question=gt.question,
                     question_type=gt.question_type,
                     ground_truth=gt,
                     reference_answer=gt.reference_answer,
+                    strategy_errors=errors,
                 ))
+                collected_raw.append({
+                    "question_id": gt.question_id,
+                    "question": gt.question,
+                    "rag_answer": "",
+                    "contexts": [],
+                    "context_source": "",
+                    "sources": [],
+                    "route_used": "",
+                    "strategies_used": [],
+                    "strategy_errors": errors,
+                    "use_graph": use_graph,
+                    "graph_strategies": graph_strategies,
+                })
+                _save_responses(collected_raw)
 
             # Rate-limit between questions
             await asyncio.sleep(settings.request_delay)

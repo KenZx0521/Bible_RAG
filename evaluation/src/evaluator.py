@@ -23,6 +23,7 @@ from .config import settings
 from .models import EvalSample, MetricResult, EvalReport, AggregatedReport, Rationale
 from .data_loader import load_ground_truth
 from .collector import collect_responses
+from .validity import invalidate_infra_failures
 
 from .metrics.retrieval import compute_retrieval_metrics
 from .metrics.ragas_eval import compute_ragas_metrics
@@ -56,6 +57,10 @@ def _aggregate(
     rationales: dict[str, Rationale] | None = None,
 ) -> AggregatedReport:
     """Build aggregated report: overall averages, by question_type, by family."""
+    # Infrastructure failures (no sources because a retriever raised) are not
+    # misses; flag them invalid so the averages below skip them.
+    all_metrics = invalidate_infra_failures(samples, all_metrics)
+
     # Per-sample reports
     reports: list[EvalReport] = []
     for sample in samples:
@@ -493,7 +498,9 @@ def export_csv(report: AggregatedReport) -> Path:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for sample in report.samples:
-            metric_map = {m.name: m.value for m in sample.metrics}
+            # Invalid metrics (infra failure, judge timeout) are left blank,
+            # matching the averages that skip them.
+            metric_map = {m.name: m.value if m.valid else "" for m in sample.metrics}
             row = {
                 "question_id": sample.question_id,
                 "question_type": sample.question_type,

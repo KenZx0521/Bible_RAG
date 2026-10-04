@@ -231,10 +231,14 @@
                         <td>{{ type_labels.get(item.question_type, item.question_type) }}</td>
                         <td><code style="font-size:0.8em;">{{ item.route_used }}</code></td>
                         <td style="font-size:0.75em;">{{ item.strategies_used }}</td>
-                        <td>{% if item.status == 'success' %}<span style="color:var(--success);">&#10003;</span>{% else %}<span style="color:var(--danger);">&#10007;</span>{% endif %}</td>
+                        <td>{% if item.status == 'success' %}<span style="color:var(--success);">&#10003;</span>{% elif item.status == 'invalid' %}<span title="基礎設施失敗,不計入平均" style="color:var(--text-muted, #888);">—</span>{% else %}<span style="color:var(--danger);">&#10007;</span>{% endif %}</td>
+                        {% if item.avg_score is none %}
+                        <td>-</td>
+                        {% else %}
                         <td class="{% if item.avg_score < 0.3 %}score-low{% elif item.avg_score < 0.6 %}score-mid{% else %}score-high{% endif %}">
                             {{ "%.4f" | format(item.avg_score) }}
                         </td>
+                        {% endif %}
                         <td>{% if item.hit_rate is not none %}{{ "%.2f" | format(item.hit_rate) }}{% else %}-{% endif %}</td>
                         <td>{% if item.ragas_faithfulness is not none %}{{ "%.2f" | format(item.ragas_faithfulness) }}{% else %}-{% endif %}</td>
                         <td>{% if item.ragas_faithfulness_strict is not none %}{{ "%.2f" | format(item.ragas_faithfulness_strict) }}{% else %}-{% endif %}</td>

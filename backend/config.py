@@ -23,6 +23,9 @@ GraphStrategyName = Literal[
     "cross_ref_expand",  # R3/R4/R6 pre-rerank CROSS_REFERENCES expansion
     "cross_reference",   # R5 CROSS_REFERENCES from semantic seeds (its sources
                          # are labelled cross_ref_expand when multi-hop is on)
+    "event_registry",    # R4/R5 auxiliary lane: appends a curated event anchor
+                         # AFTER the finished top-k (never competes for a slot);
+                         # not included in "all", which keeps its Round 3 meaning
 ]
 
 
@@ -110,6 +113,11 @@ class Settings(BaseSettings):
     # −0.046, and keeping graph_event alone scored +0.011 verse recall over
     # all-on, stable across both folds of a legacy/expansion split.
     rag_graph_strategies: list[GraphStrategyName] = ["graph_event"]
+
+    # Event registry auxiliary lane (graph strategy "event_registry"): how many
+    # curated anchors may be appended after the top-k. The 2026-10 simulation
+    # found no gain from a second slot over the first.
+    rag_event_registry_slots: int = 1
 
     # Cross-reference 2-hop expansion: traverse CROSS_REFERENCES from top graph
     # seeds to surface neighbouring pericopes. Activates the hand-curated

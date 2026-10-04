@@ -81,6 +81,7 @@ async def rag_query(req: QueryRequest):
                 score=fused if fused is not None else r.get("rerank_score"),
                 strategy=r.get("source_strategy"),
                 rerank_score=r.get("rerank_score"),
+                found_by=r.get("found_by"),
                 context=blocks[i] if blocks is not None else None,
             ))
 

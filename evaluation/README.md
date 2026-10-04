@@ -139,7 +139,21 @@ uv run python quick_retrieval_eval.py --from-raw results_graph/raw_responses.jso
 uv run python quick_retrieval_eval.py --compare results_quick/a.json results_quick/b.json
 ```
 
-輸出存至 `results_quick/<label>.json`，含 overall / by_type 聚合與逐題明細（route、strategies、sources、rerank/fused 分數）。
+輸出存至 `results_quick/<label>.json`，含 overall / by_type 聚合與逐題明細（route、strategies、sources、rerank/fused 分數）。每段 `source_detail` 另記 `found_by`(所有找到它的策略)與 `gold`(是否與 reference 經文重疊);基礎設施失敗(0 source 且有 strategy_errors)標 `invalid`,不進平均。`--metric-k N` 以前 N 段計分(預設 = `--top-k`),`--ids-file` 只跑指定題號。
+
+#### 配對 A/B 比較（ab_compare.py）
+
+逐題配對比較兩個 quick eval 結果(同路由題):主檢定 sign-flip permutation,並列精確符號檢定(勝負題數)、95% bootstrap CI、指標族 Holm 校正;分全體 / 被改動題 / 原 100 / 擴充 400 報告;列出每個指標變差的題與改動帳本(identical / order_only / nongold_swap / gold_in / gold_out / gold_swap)。所有比較的檔案必須以同一個 metric k 計分,否則直接拒絕。
+
+附加軌(`event_registry`)會在 top-5 後多附加一段,被附加的題必須和**獨立的 top_k=6 請求**比(chapter-pin 依 top_k 運作,k=7 結果的前綴不等於 k=6):
+
+```bash
+uv run python quick_retrieval_eval.py --graph-strategies event_registry --metric-k 6 --label aux
+uv run python quick_retrieval_eval.py --no-use-graph --metric-k 6 --label dense5
+# touched.txt = aux 中 sources 超過 5 段的題號
+uv run python quick_retrieval_eval.py --no-use-graph --top-k 6 --metric-k 6 --ids-file touched.txt --label dense6
+uv run python ab_compare.py results_quick/dense5.json results_quick/aux.json --control-ext results_quick/dense6.json --label aux_vs_dense
+```
 
 ### 快速 faithfulness 重判迴圈（quick_faithfulness_eval.py）
 

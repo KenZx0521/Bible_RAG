@@ -114,8 +114,11 @@ def test_resolve_rejects_unknown_strategy_alongside_all():
 
 
 def test_router_strategy_set_derives_from_the_literal():
-    assert set(get_args(GraphStrategyName)) == set(router.GRAPH_STRATEGIES) | {"all"}
-    assert len(router.GRAPH_STRATEGIES) == 8
+    assert set(get_args(GraphStrategyName)) == (
+        set(router.GRAPH_STRATEGIES) | set(router.AUXILIARY_STRATEGIES) | {"all"}
+    )
+    assert len(router.GRAPH_STRATEGIES) == 8  # in-pool strategies, unchanged since Round 3
+    assert router.AUXILIARY_STRATEGIES == {"event_registry"}
 
 
 def test_request_rejects_unknown_strategy_name():

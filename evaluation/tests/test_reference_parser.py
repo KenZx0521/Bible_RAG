@@ -96,3 +96,38 @@ def test_semicolon_inherits_book():
     assert all(not r.is_whole_book for r in rev_refs)
     assert rev_refs[0].chapters == [21] and rev_refs[0].to_chapter_end
     assert rev_refs[1].chapters == [22] and rev_refs[1].verse_end == 5
+
+
+def test_bare_number_after_verse_is_verse_in_same_chapter():
+    """GENERAL_043: "以賽亞書 11:1, 10" means 11:10, not the whole of chapter 10
+    (the old parse put 34 of its 40 gold verses in the wrong chapter)."""
+    refs = parse_reference("以賽亞書 11:1, 10; 羅馬書 15:8-12")
+
+    isa = [r for r in refs if r.book_id == "isa"]
+    assert [(r.chapters, r.verse_start, r.verse_end) for r in isa] == [
+        ([11], 1, 1), ([11], 10, 10),
+    ]
+
+
+def test_bare_range_after_verse_is_verse_range_in_same_chapter():
+    refs = parse_reference("以賽亞書 11:1-5, 10-12")
+
+    assert [(r.chapters, r.verse_start, r.verse_end) for r in refs] == [
+        ([11], 1, 5), ([11], 10, 12),
+    ]
+
+
+def test_bare_numbers_after_chapter_stay_chapters():
+    """Without a preceding chapter:verse part, a bare number is still a chapter."""
+    refs = parse_reference("出埃及記 2-4章, 18")
+
+    assert [r.chapters for r in refs] == [[2, 3, 4], [18]]
+    assert all(r.verse_start is None for r in refs)
+
+
+def test_bare_number_after_cross_book_part_follows_that_book():
+    refs = parse_reference("以賽亞書 11:1, 羅馬書 15:8, 10")
+
+    assert [(r.book_id, r.chapters, r.verse_start) for r in refs] == [
+        ("isa", [11], 1), ("rom", [15], 8), ("rom", [15], 10),
+    ]

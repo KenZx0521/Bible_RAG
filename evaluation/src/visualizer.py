@@ -213,13 +213,17 @@ def _make_question_detail_table(report: AggregatedReport) -> list[dict]:
         # Run-local average over the metrics that were computed (invalid ones
         # such as a judge timeout are excluded rather than counted as 0).
         valid_vals = [m.value for m in sample.metrics if m.valid]
-        avg = round(sum(valid_vals) / len(valid_vals), 4) if valid_vals else 0.0
+        avg = round(sum(valid_vals) / len(valid_vals), 4) if valid_vals else None
+        if sample.metrics and not valid_vals:
+            status = "invalid"  # infra failure: excluded from every average
+        else:
+            status = "success" if has_answer else "fail"
         row = {
             "question_id": sample.question_id,
             "question_type": sample.question_type,
             "route_used": sample.route_used or "-",
             "strategies_used": ", ".join(sample.strategies_used) if sample.strategies_used else "-",
-            "status": "success" if has_answer else "fail",
+            "status": status,
             "avg_score": avg,
         }
         for col in KEY_COLS:

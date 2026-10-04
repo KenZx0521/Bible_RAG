@@ -37,6 +37,7 @@ from utils.retrieval.entity_path_retriever import (
     retrieve_by_entity_path,
     retrieve_by_entity_query,
 )
+from utils.retrieval import event_registry
 from utils import reranker as reranker_mod
 from database import neo4j_db, postgres
 from config import GraphStrategyName, settings
@@ -56,23 +57,32 @@ def _get_hybrid_retriever():
     return _hybrid_retriever
 
 
-# Every Neo4j/entity-backed strategy that can inject candidates (see
-# config.GraphStrategyName for what each one is).
-GRAPH_STRATEGIES = frozenset(get_args(GraphStrategyName)) - {"all"}
+# Graph contributions that never enter the candidate pool: they append after
+# the finished top-k (see _append_event_registry).
+AUXILIARY_STRATEGIES = frozenset({"event_registry"})
+
+# Every Neo4j/entity-backed strategy that can inject candidates into the pool
+# (see config.GraphStrategyName for what each one is).
+GRAPH_STRATEGIES = frozenset(get_args(GraphStrategyName)) - {"all"} - AUXILIARY_STRATEGIES
+
+# Routes the event registry serves — the only ones its 2026-10 simulation covered.
+_EVENT_REGISTRY_ROUTES = ("R4", "R5")
 
 
 def resolve_graph_strategies(requested: list[str] | None) -> frozenset[str]:
     """Graph strategies allowed for one request.
 
     None falls back to settings.rag_graph_strategies; "all" enables every
-    strategy; an empty list disables them all (graph off, use_graph aside).
+    in-pool strategy (the Round 3 configuration — auxiliary lanes must be
+    named explicitly); an empty list disables them all (graph off, use_graph
+    aside).
     """
     names = settings.rag_graph_strategies if requested is None else requested
-    unknown = sorted(set(names) - GRAPH_STRATEGIES - {"all"})
+    unknown = sorted(set(names) - GRAPH_STRATEGIES - AUXILIARY_STRATEGIES - {"all"})
     if unknown:
         raise ValueError(f"unknown graph strategies: {unknown}")
     if "all" in names:
-        return GRAPH_STRATEGIES
+        return GRAPH_STRATEGIES | (frozenset(names) & AUXILIARY_STRATEGIES)
     return frozenset(names)
 
 
@@ -174,6 +184,10 @@ async def retrieve_and_rerank(
         )
 
     total_candidates = len(candidates)
+    # Routes that never dedup (R1) or add passages after their last dedup
+    # leave some candidates without found_by; their own label is the record.
+    for c in candidates:
+        c.setdefault("found_by", _labels_of(c))
 
     # Rerank (skip for R1 which returns direct matches)
     if route == "R1":
@@ -264,10 +278,27 @@ async def retrieve_and_rerank(
             score_key=score_key,
         )
 
+    # Event registry auxiliary lane: runs after every ranking step, so the
+    # top-k above is exactly what the graph-off configuration returns. Only on
+    # a full core: appended to a short one (e.g. dense retrieval failed) the
+    # anchor would sit inside the top-k, and an empty failed result would look
+    # like a valid registry-only answer.
+    registry_events: list[str] = []
+    reranked_count = len(ranked)
+    if route in _EVENT_REGISTRY_ROUTES and len(ranked) >= k and _graph_on(
+        effective_use_graph, effective_graph_strategies, "event_registry"
+    ):
+        aux, registry_events = await _append_event_registry(
+            query, ranked, candidates, settings.rag_event_registry_slots, strategy_errors,
+        )
+        if aux:
+            ranked = ranked + aux
+            strategies_used.append("event_registry")
+
     stats = {
         "strategies_used": strategies_used,
         "total_candidates": total_candidates,
-        "reranked_top_k": len(ranked),
+        "reranked_top_k": reranked_count,
         "route_used": route,
         "strategy_errors": strategy_errors,
         "use_graph": effective_use_graph,
@@ -277,6 +308,9 @@ async def retrieve_and_rerank(
             if effective_use_graph and not semantic_only else []
         ),
         "fusion_alpha": effective_alpha if (fusion_active and route != "R1") else None,
+        # Registry events the question triggered (an anchor is appended only
+        # when the top-k lacks one of them).
+        "event_registry_events": registry_events,
     }
 
     return ranked, stats
@@ -294,13 +328,53 @@ async def _get_semantic(query: str) -> list[dict]:
     return await retrieve_semantic(query)
 
 
+def _labels_of(c: dict) -> list[str]:
+    """Strategies already known to have returned candidate `c`."""
+    if c.get("found_by"):
+        return c["found_by"]
+    label = c.get("source_strategy")
+    return [label] if label else []
+
+
+def _note_found_by(c: dict, label: str | None) -> None:
+    """Record that strategy `label` also returned candidate `c`."""
+    found = c.setdefault("found_by", _labels_of(c))
+    if label and label not in found:
+        found.append(label)
+
+
+def _note_duplicates(pool: list[dict], results: list[dict], label: str) -> None:
+    """Credit `label` on pool passages that a post-dedup expansion returned again.
+
+    Expansions only add passages missing from the pool; without this their
+    re-discovery of an existing passage would leave no trace in found_by.
+    """
+    by_id = {c["id"]: c for c in pool}
+    for r in results:
+        existing = by_id.get(r.get("id"))
+        if existing is not None and existing is not r:
+            _note_found_by(existing, label)
+
+
 def _dedup(candidates: list[dict]) -> list[dict]:
-    """Deduplicate candidates by ID, keeping highest weight."""
+    """Deduplicate candidates by ID, keeping highest weight.
+
+    The kept copy carries `found_by`: every strategy that returned this ID, in
+    first-seen order (its own `source_strategy` names only the winning copy).
+    found_by is provenance only — it never affects which copy is kept.
+    """
     seen: dict[str, dict] = {}
+    found_by: dict[str, list[str]] = {}
     for c in candidates:
         cid = c["id"]
+        labels = found_by.setdefault(cid, [])
+        for label in _labels_of(c):
+            if label not in labels:
+                labels.append(label)
         if cid not in seen or c["weight"] > seen[cid]["weight"]:
             seen[cid] = c
+    for cid, c in seen.items():
+        c["found_by"] = found_by[cid]
     return list(seen.values())
 
 
@@ -717,6 +791,7 @@ async def _expand_via_entity_query(
             existing = existing_index.get(r["id"])
             if existing is None:
                 continue
+            _note_found_by(existing, "entity_query")
             for k in _EQ_METADATA_KEYS:
                 if k in r and existing.get(k) is None:
                     existing[k] = r[k]
@@ -765,6 +840,7 @@ async def _expand_via_book_anchor(
     route_label: str,
     weight: float = 0.9,
     top_k: int = 10,
+    pool: list[dict] | None = None,
 ) -> list[dict]:
     """Pull additional semantic candidates restricted to the user-named book(s).
 
@@ -776,10 +852,12 @@ async def _expand_via_book_anchor(
     closest to the query eat the entire quota (「耶利米書的新約預言在希伯來書的
     應驗」 returned 10× jer, 0× heb, silently). Candidates are tagged
     source_strategy='book_anchor' and weighted just below cross_ref so the
-    reranker pin can recover them.
+    reranker pin can recover them. Hits already in `pool` (the route's
+    candidates so far) are not returned again but get book_anchor in found_by.
     """
     if not book_names or not query:
         return []
+    pool_by_id = {c["id"]: c for c in pool or []}
     multi_book = len(book_names) > 1
     per_book_k = max(3, top_k // len(book_names)) if multi_book else top_k
     seen: set[str] = set(existing_ids)
@@ -794,6 +872,8 @@ async def _expand_via_book_anchor(
         added = 0
         for c in results:
             if c["id"] in seen:
+                if c["id"] in pool_by_id:
+                    _note_found_by(pool_by_id[c["id"]], "book_anchor")
                 continue
             seen.add(c["id"])
             c["source_strategy"] = "book_anchor"
@@ -985,6 +1065,59 @@ def _pin_keyword_event_candidates(
     return (to_pin + ranked)[:top_k]
 
 
+async def _append_event_registry(
+    query: str,
+    ranked: list[dict],
+    candidates: list[dict],
+    slots: int,
+    errors: dict[str, str],
+) -> tuple[list[dict], list[str]]:
+    """Curated event anchors to append after the finished top-k.
+
+    Triggers are registry keywords literally in the question (book names
+    masked) — never LLM keywords, whose event path had a 0.27 gold rate
+    against 0.59 for dictionary hits in the 2026-10 audit. Appended passages
+    carry no rerank/fused score: they are placed by rule, not ranked.
+
+    Returns (passages to append, ids of every triggered event).
+    """
+    events = event_registry.match_events(query)
+    if not events:
+        return [], []
+    picks = event_registry.select_aux_anchors(events, [c["id"] for c in ranked], slots)
+    names = {e.id: e.name for e in events}
+    pool_by_id = {c["id"]: c for c in candidates}
+
+    aux: list[dict] = []
+    for event_id, anchor in picks:
+        try:
+            content = await postgres.get_content_by_id(anchor)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("event_registry: fetching %s failed: %s", anchor, e)
+            errors["event_registry"] = repr(e)[:200]
+            continue
+        if not content:
+            logger.warning("event_registry: anchor %s not found in PostgreSQL", anchor)
+            continue
+        found_by = list(_labels_of(pool_by_id[anchor])) if anchor in pool_by_id else []
+        aux.append({
+            "id": anchor,
+            "content": content.get("content", ""),
+            "title": content.get("title", ""),
+            "book_name": content.get("book_name", ""),
+            "chapter_num": content.get("chapter_num"),
+            "verse_range": content.get("metadata", {}).get("verse_range", ""),
+            "source_strategy": "event_registry",
+            "via_event_id": event_id,
+            "via_event_name": names[event_id],
+            "found_by": found_by + ["event_registry"],
+        })
+
+    logger.info("event_registry: triggered %s, appended %s",
+                [e.id for e in events], [c["id"] for c in aux])
+    return aux, [e.id for e in events]
+
+
 # ---------------------------------------------------------------------------
 # Route handlers
 # ---------------------------------------------------------------------------
@@ -1133,6 +1266,7 @@ async def _route_r3(
     if signals.detected_book_names:
         anchor = await _expand_via_book_anchor(
             query, signals.detected_book_names, existing_ids, errors, "R3",
+            pool=deduped,
         )
         if anchor:
             existing_ids.update(c["id"] for c in anchor)
@@ -1148,6 +1282,7 @@ async def _route_r3(
             errors, "R3", type_filter="Person",
         )
         if entity_expand:
+            _note_duplicates(deduped, entity_expand, "entity_path")
             new_entity = [c for c in entity_expand if c["id"] not in existing_ids]
             existing_ids.update(c["id"] for c in new_entity)
             deduped.extend(new_entity)
@@ -1161,6 +1296,7 @@ async def _route_r3(
         errors, "R3",
     )
     if expand:
+        _note_duplicates(deduped, expand, "cross_ref_expand")
         new_expand = [c for c in expand if c["id"] not in existing_ids]
         existing_ids.update(c["id"] for c in new_expand)
         deduped.extend(new_expand)
@@ -1262,6 +1398,7 @@ async def _route_r4(
     if signals.detected_book_names:
         anchor = await _expand_via_book_anchor(
             query, signals.detected_book_names, existing_ids, errors, "R4",
+            pool=deduped,
         )
         if anchor:
             existing_ids.update(c["id"] for c in anchor)
@@ -1274,6 +1411,7 @@ async def _route_r4(
         errors, "R4",
     )
     if expand:
+        _note_duplicates(deduped, expand, "cross_ref_expand")
         new_expand = [c for c in expand if c["id"] not in existing_ids]
         existing_ids.update(c["id"] for c in new_expand)
         deduped.extend(new_expand)
@@ -1374,6 +1512,7 @@ async def _route_r5(
     if signals.detected_book_names:
         anchor = await _expand_via_book_anchor(
             query, signals.detected_book_names, existing_ids, errors, "R5",
+            pool=deduped,
         )
         if anchor:
             existing_ids.update(c["id"] for c in anchor)
@@ -1536,6 +1675,7 @@ async def _route_r6(
     if signals.detected_book_names:
         anchor = await _expand_via_book_anchor(
             query, signals.detected_book_names, existing_ids, errors, "R6",
+            pool=deduped,
         )
         if anchor:
             existing_ids.update(c["id"] for c in anchor)
@@ -1549,6 +1689,7 @@ async def _route_r6(
             errors, "R6", type_filter="Place",
         )
         if entity_expand:
+            _note_duplicates(deduped, entity_expand, "entity_path")
             new_entity = [c for c in entity_expand if c["id"] not in existing_ids]
             existing_ids.update(c["id"] for c in new_entity)
             deduped.extend(new_entity)
@@ -1560,6 +1701,7 @@ async def _route_r6(
         errors, "R6",
     )
     if expand:
+        _note_duplicates(deduped, expand, "cross_ref_expand")
         new_expand = [c for c in expand if c["id"] not in existing_ids]
         existing_ids.update(c["id"] for c in new_expand)
         deduped.extend(new_expand)
@@ -1625,6 +1767,7 @@ async def _route_fallback(
     if signals.detected_book_names:
         anchor = await _expand_via_book_anchor(
             query, signals.detected_book_names, existing_ids, errors, "fallback",
+            pool=deduped,
         )
         if anchor:
             deduped.extend(anchor)
