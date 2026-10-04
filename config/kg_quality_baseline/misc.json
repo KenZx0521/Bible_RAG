@@ -1,0 +1,139 @@
+{
+  "format": "kg_quality_baseline/v1",
+  "checks": [
+    {
+      "id": "PROBES",
+      "title": "config/kg_probes.yaml facts hold",
+      "severity": "record",
+      "hard_from": "with the check each probe names",
+      "plan_reference": "-",
+      "query": "every fact: relation / mention / event_anchor / alias / xref present or absent as declared; book_region <= max. failing (subset) is the gate: a probe outside the stored ids is a regression even when failures (the count) is unchanged",
+      "metrics": {
+        "failures": {
+          "value": 13,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0,
+          "count_of": "failing"
+        },
+        "failing": {
+          "value": [
+            "alias-matthew-not-levi",
+            "alias-paul-not-saul",
+            "book-region-egypt",
+            "book-region-mark",
+            "book-region-matthew",
+            "edge-no-dan-orphan-nehemiah-wall",
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah",
+            "mention-not-elijah-in-eleazar",
+            "mention-not-mary-in-samaria",
+            "xref-heb1-0-not-curated-psa2",
+            "xref-rev20-not-curated-isa65"
+          ],
+          "direction": "subset",
+          "tolerance": 0,
+          "target": []
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      },
+      "ids_note": "failing ids = the probes kg_probes.yaml marks 'fails today'; their count equals the 2026-10-04 live failures, a live run reports any id that disagrees as new/fixed"
+    },
+    {
+      "id": "W",
+      "title": "label and relationship counts within ±tolerance_pct of the baseline",
+      "severity": "warn",
+      "hard_from": "0 (warning)",
+      "plan_reference": "-",
+      "tolerance_pct": 5,
+      "query": "Entity + type-label counts; Entity-Entity edge types, MENTIONS edges, CROSS_REFERENCES. Deliberate large moves (e.g. kinship 1,571 -> ~300) are recorded with --accept W",
+      "metrics": {
+        "histogram": {
+          "value": {
+            "labels": {
+              "Entity": 9124,
+              "Event": 1714,
+              "Group": 505,
+              "Object": 2200,
+              "Person": 2419,
+              "Place": 1299,
+              "Theme": 987
+            },
+            "relationships": {
+              "ALLY_OF": 64,
+              "ANCESTOR_OF": 49,
+              "BORN_IN": 11,
+              "BUILT": 16,
+              "CAUSED": 10,
+              "CROSS_REFERENCES": 250418,
+              "DAUGHTER_OF": 27,
+              "DESCENDANT_OF": 49,
+              "DESTROYED": 38,
+              "DIED_IN": 20,
+              "DISCIPLE_OF": 21,
+              "ENEMY_OF": 33,
+              "EXILED_TO": 20,
+              "FATHER_OF": 647,
+              "FOUNDED": 1,
+              "GAVE": 76,
+              "INITIATED": 384,
+              "LEADER_OF": 70,
+              "LOCATED_IN": 55,
+              "MEMBER_OF": 357,
+              "MENTIONS": 46205,
+              "MOTHER_OF": 44,
+              "NEAR": 29,
+              "OCCURRED_IN": 4313,
+              "ORIGINATED_FROM": 51,
+              "PARTICIPATED_IN": 7130,
+              "POSSESSED": 551,
+              "PRECEDED_BY": 16,
+              "RECEIVED": 171,
+              "RETURNED_FROM": 41,
+              "RULED": 144,
+              "SETTLED_IN": 223,
+              "SIBLING_OF": 48,
+              "SON_OF": 659,
+              "SPOUSE_OF": 48,
+              "SUCCEEDED_BY": 7,
+              "TEACHER_OF": 21,
+              "VICTIM_OF": 229,
+              "VISITED": 253
+            }
+          },
+          "direction": "none",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "D1",
+      "title": "export_event_registry.py --check passes against the target",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "pass",
+      "query": "run scripts/export_event_registry.py --check with NEO4J_URI = target (live only); registry changes need a reviewed diff",
+      "metrics": {
+        "drift": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    }
+  ]
+}

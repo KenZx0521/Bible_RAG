@@ -1,16 +1,16 @@
-"""validate_kg quality gate (plan §3.6) on the kg_snapshot fixture.
+"""validate_kg quality gate (plan §3.6): each check on the kg_snapshot fixture.
 
 The fixture is a clean KG (every violation metric is 0). Each test copies it,
 injects one defect, and asserts the metric moves by exactly that defect, so
-every check has a negative (clean) and a positive (broken) example. Exit
-codes and ratchet direction run through main() against a baseline built from
-the shipped config/kg_quality_baseline.json with its values cleared, so the
-shipped severities/directions are what is being tested.
+every check has a negative (clean) and a positive (broken) example.
+
+Split from test_validate_kg.py, together with test_validate_kg_gate.py (exit
+codes, ratchet, CLI, live) and test_validate_kg_shipped.py (the shipped config
+files); shared pieces are in _validate_kg_helpers.py.
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -18,102 +18,24 @@ from pathlib import Path
 import pytest
 
 import validate_kg as vk
-
-FIXTURE = Path(__file__).resolve().parent / "fixtures" / "kg_snapshot"
-REPO = Path(__file__).resolve().parents[2]
-SHIPPED_BASELINE = REPO / "config" / "kg_quality_baseline.json"
-SHIPPED_PROBES = REPO / "config" / "kg_probes.yaml"
-
-
-# ---------------------------------------------------------------------------
-# helpers
-# ---------------------------------------------------------------------------
-
-@pytest.fixture
-def snap(tmp_path: Path) -> Path:
-    dest = tmp_path / "snap"
-    shutil.copytree(FIXTURE, dest)
-    return dest
-
-
-def _sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def read_rows(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-
-
-def write_rows(path: Path, rows: list[dict]) -> None:
-    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
-
-
-def append_row(path: Path, row: dict) -> None:
-    write_rows(path, read_rows(path) + [row])
-
-
-def edit_rows(path: Path, match, **changes) -> None:
-    rows = read_rows(path)
-    hit = 0
-    for r in rows:
-        if match(r):
-            r.update(changes)
-            hit += 1
-    assert hit, f"no row matched in {path.name}"
-    write_rows(path, rows)
-
-
-def write_step0_sha(path: Path, sha: str) -> None:
-    path.write_text(json.dumps({"version": 1, "files": {"embedding_queue.jsonl": {"sha256": sha}}}),
-                    encoding="utf-8")
-
-
-def fresh_baseline(tmp_path: Path, snap: Path) -> Path:
-    """Shipped specs with every value cleared; H7's sha target (step0_sha.json
-    next to the baseline, see cli) = the fixture's."""
-    doc = json.loads(SHIPPED_BASELINE.read_text(encoding="utf-8"))
-    for check in doc["checks"]:
-        for metric in check["metrics"].values():
-            metric["value"] = None
-    write_step0_sha(tmp_path / "step0_sha.json", _sha(snap / "embedding_queue.jsonl"))
-    path = tmp_path / "baseline.json"
-    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
-    return path
-
-
-def measure(snap: Path, baseline: Path | None = None) -> dict:
-    ctx = vk.Context(
-        baseline=vk.load_baseline(baseline or SHIPPED_BASELINE),
-        probes=vk.load_probes(snap / "probes.yaml"),
-        embedding_queue=snap / "embedding_queue.jsonl",
-    )
-    return vk.run_checks(vk.load_snapshot(snap), ctx)
-
-
-def metric(results: dict, check_id: str, name: str):
-    return results[check_id].metrics[name]
-
-
-def argv(snap: Path, baseline: Path, *extra: str) -> list[str]:
-    return ["--snapshot", str(snap), "--baseline", str(baseline), "--probes", str(snap / "probes.yaml"),
-            "--embedding-queue", str(snap / "embedding_queue.jsonl"),
-            "--step0-sha", str(baseline.with_name("step0_sha.json")), "--json", *extra]
-
-
-def cli(snap: Path, baseline: Path, capsys, *extra: str) -> tuple[int, dict]:
-    code = vk.main(argv(snap, baseline, *extra))
-    return code, json.loads(capsys.readouterr().out)
-
-
-def unsupported_edge(**over) -> dict:
-    """馬可 VISITED 摩利亞, sourced from gen:22:0 where 馬可 is never mentioned.
-
-    Deliberately not a kinship edge, so it moves H3 and nothing else (R6's
-    functionality rate would change with a FATHER_OF)."""
-    row = {"head_id": "person:make", "relation": "VISITED", "tail_id": "place:moliya",
-           "source_pericope_id": "gen:22:0", "extraction_phase": 4, "notes": ""}
-    row.update(over)
-    return row
+from _validate_kg_helpers import (
+    SHIPPED_BASELINE,
+    SHIPPED_PROBES,
+    _sha,
+    _stored,
+    append_row,
+    argv,
+    cli,
+    edit_rows,
+    fresh_baseline,
+    measure,
+    metric,
+    read_rows,
+    unsupported_edge,
+    write_rows,
+)
+# snap is a pytest fixture: importing it is what makes it available here.
+from _validate_kg_helpers import snap  # noqa: F401
 
 
 # ---------------------------------------------------------------------------
@@ -196,7 +118,7 @@ def test_h2_entity_needs_exactly_one_type_label(snap, labels):
 def test_h7_prefix_mismatch_and_allowlist(snap, tmp_path):
     edit_rows(snap / "entities.jsonl", lambda r: r["entity_id"] == "group:yiselie", labels=["Person"])
     assert metric(measure(snap), "H7", "prefix_mismatch") == 1
-    doc = json.loads(SHIPPED_BASELINE.read_text(encoding="utf-8"))
+    doc = vk.load_baseline(SHIPPED_BASELINE)
     h7 = next(c for c in doc["checks"] if c["id"] == "H7")
     h7["params"]["id_prefix_allowlist"] = {"group:yiselie": "Person"}
     path = tmp_path / "allow.json"
@@ -501,294 +423,3 @@ def test_probe_failures(snap, change):
     res = measure(snap)
     assert metric(res, "PROBES", "failures") == 1
 
-
-# ---------------------------------------------------------------------------
-# exit codes, ratchet, warnings
-# ---------------------------------------------------------------------------
-
-def test_exit_codes_pass_hard_fail_and_regression(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    code, _ = cli(snap, baseline, capsys, "--ratchet")
-    assert code == 0
-    code, report = cli(snap, baseline, capsys)
-    assert code == 0 and report["exit_code"] == 0
-
-    append_row(snap / "relations.jsonl", unsupported_edge())
-    code, report = cli(snap, baseline, capsys)
-    assert code == 2
-    assert report["checks"]["H3"]["status"] == "regressed"
-
-    edit_rows(snap / "entities.jsonl", lambda r: r["entity_id"] == "person:make", labels=[])
-    code, report = cli(snap, baseline, capsys)
-    assert code == 1  # hard failure outranks the regression
-    assert report["checks"]["H2"]["status"] == "fail"
-
-
-def _stored(baseline: Path, check_id: str, name: str):
-    doc = json.loads(baseline.read_text(encoding="utf-8"))
-    return next(c for c in doc["checks"] if c["id"] == check_id)["metrics"][name]["value"]
-
-
-def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    append_row(snap / "relations.jsonl", unsupported_edge())
-    append_row(snap / "relations.jsonl", unsupported_edge(head_id="person:bide"))
-    cli(snap, baseline, capsys, "--ratchet")
-    assert _stored(baseline, "H3", "unsupported") == 2  # null baseline: first measurement sets it
-    doc = json.loads(baseline.read_text(encoding="utf-8"))
-    h3 = next(c for c in doc["checks"] if c["id"] == "H3")
-    assert h3["measured"]["origin"].startswith("snapshot:")  # provenance is stamped per check
-
-    rows = read_rows(snap / "relations.jsonl")[:-1]
-    write_rows(snap / "relations.jsonl", rows)
-    code, _ = cli(snap, baseline, capsys, "--ratchet")
-    assert code == 0 and _stored(baseline, "H3", "unsupported") == 1  # improved: moves down
-
-    append_row(snap / "relations.jsonl", unsupported_edge(head_id="person:bide"))
-    append_row(snap / "relations.jsonl", unsupported_edge(head_id="person:yage"))
-    code, _ = cli(snap, baseline, capsys, "--ratchet")
-    assert code == 2 and _stored(baseline, "H3", "unsupported") == 1  # regressed: never moves up
-
-
-def test_ratchet_raises_up_direction_metric(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    cli(snap, baseline, capsys, "--ratchet")
-    append_row(snap / "cross_references.jsonl", {"source_id": "exo:1:0", "target_id": "gen:22:0",
-                                                 "source": "tsk", "votes": 3, "curated": False, "tsk": True})
-    code, _ = cli(snap, baseline, capsys, "--ratchet")
-    assert code == 0 and _stored(baseline, "R11", "tsk_votes_edges") == 2
-
-
-def test_tolerance_absorbs_small_regressions(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    cli(snap, baseline, capsys, "--ratchet")
-    doc = json.loads(baseline.read_text(encoding="utf-8"))
-    next(c for c in doc["checks"] if c["id"] == "H3")["metrics"]["unsupported"]["tolerance"] = 1
-    baseline.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
-    append_row(snap / "relations.jsonl", unsupported_edge())
-    code, _ = cli(snap, baseline, capsys)
-    assert code == 0
-
-
-def test_equal_direction_needs_explicit_accept(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    cli(snap, baseline, capsys, "--ratchet")
-    # an extra Event anchor changes only H10 (plus R7, which has no direction)
-    append_row(snap / "mentions.jsonl", {"source_label": "Pericope", "source_id": "gen:11:2",
-                                         "entity_id": "event:xianyisa", "text_span": "獻以撒"})
-    code, report = cli(snap, baseline, capsys, "--ratchet")
-    assert code == 2 and report["checks"]["H10"]["status"] == "regressed"
-    code, _ = cli(snap, baseline, capsys, "--accept", "H10")
-    assert code == 0
-    code, _ = cli(snap, baseline, capsys)
-    assert code == 0
-
-
-def test_w_histogram_drift_warns_without_failing(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    cli(snap, baseline, capsys, "--ratchet")
-    append_row(snap / "entities.jsonl", {"entity_id": "person:xin", "labels": ["Person"],
-                                         "canonical_name": "新人", "aliases": [], "description": ""})
-    code, report = cli(snap, baseline, capsys)
-    assert code == 0
-    assert report["checks"]["W"]["status"] == "warn"
-    assert any("Person" in w for w in report["checks"]["W"]["warnings"])
-
-
-def test_probe_swap_with_unchanged_count_is_a_regression(snap, tmp_path, capsys):
-    """A must-hold probe breaking while a known failure heals keeps the count:
-    the per-id baseline still flags it (edges lost in a rebuild, review E-1)."""
-    baseline = fresh_baseline(tmp_path, snap)
-    lot = {"head_id": "person:luode", "relation": "FATHER_OF", "tail_id": "person:tala",
-           "source_pericope_id": "gen:11:2", "extraction_phase": 2}
-    append_row(snap / "relations.jsonl", lot)
-    cli(snap, baseline, capsys, "--ratchet")
-    assert _stored(baseline, "PROBES", "failing") == ["kin-lot-not-father-of-terah"]
-    write_rows(snap / "relations.jsonl", [r for r in read_rows(snap / "relations.jsonl")
-                                          if r != lot and (r["head_id"], r["tail_id"]) != ("person:tala", "person:yabolahan")])
-    code, report = cli(snap, baseline, capsys)
-    assert code == 2 and report["checks"]["PROBES"]["metrics"]["failures"]["status"] == "ok"  # 1 vs 1
-    pairs = (("PROBES", "failing", "failures"), ("R6", "failing_probes", "probe_failures"))
-    for check_id, name, _ in pairs:
-        m = report["checks"][check_id]["metrics"][name]
-        assert m["status"] == "regressed" and m["new"] == ["kin-terah-father-of-abraham"], check_id
-    code, report = cli(snap, baseline, capsys, "--ratchet")
-    for check_id, name, count in pairs:
-        assert _stored(baseline, check_id, name) == []  # the healed probe is locked in, the new one is not
-        assert _stored(baseline, check_id, count) == 0  # count = len(ids): never failures=1 with failing=[]
-        assert code == 2 and report["checks"][check_id]["metrics"][count]["status"] == "regressed"
-
-
-def test_baseline_count_must_equal_its_id_set(tmp_path):
-    doc = json.loads(SHIPPED_BASELINE.read_text(encoding="utf-8"))
-    next(c for c in doc["checks"] if c["id"] == "PROBES")["metrics"]["failures"]["value"] += 1
-    (tmp_path / "baseline.json").write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
-    with pytest.raises(ValueError, match="PROBES.failures"):
-        vk.load_baseline(tmp_path / "baseline.json")
-
-
-def test_record_check_error_fails_the_gate(snap, tmp_path, capsys, monkeypatch):
-    baseline = fresh_baseline(tmp_path, snap)
-    cli(snap, baseline, capsys, "--ratchet")
-
-    def unreadable_store(kg, ctx):
-        raise RuntimeError("database bible_rag_staging does not exist")
-    monkeypatch.setitem(vk.CHECKS, "H5", unreadable_store)
-    code, report = cli(snap, baseline, capsys)
-    assert code == 1 and report["checks"]["H5"]["status"] == "error"
-
-
-# H5's live branch (staging without a Qdrant collection is unmeasured, never n/a)
-# runs through fake PG/Qdrant connections in test_check_identity.py.
-
-
-def test_unmeasurable_hard_metric_fails(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    manifest = json.loads((snap / "manifest.json").read_text(encoding="utf-8"))
-    del manifest["embedding_queue_sha256"]
-    (snap / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
-    (snap / "embedding_queue.jsonl").unlink()
-    code, report = cli(snap, baseline, capsys, "--only", "H7,H2")
-    assert code == 1 and report["checks"]["H7"]["metrics"]["embedding_queue_sha256"]["status"] == "unmeasured"
-
-
-def test_declared_not_applicable_is_reported_and_passes(snap, tmp_path, capsys):
-    code, report = cli(snap, fresh_baseline(tmp_path, snap), capsys, "--only", "D1,H5")
-    assert code == 0
-    assert report["checks"]["D1"]["metrics"]["drift"]["status"] == "n/a"
-    assert report["checks"]["D1"]["metrics"]["drift"]["reason"]
-    assert {m["status"] for m in report["checks"]["H5"]["metrics"].values()} == {"n/a"}
-
-
-def test_h7_sha_target_comes_from_step0_sha_json(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    assert cli(snap, baseline, capsys, "--ratchet")[0] == 0
-    assert _stored(baseline, "H7", "embedding_queue_sha256") is None  # never copied into the baseline
-    write_step0_sha(tmp_path / "step0_sha.json", "0" * 64)  # check_step0 --record moved the sha
-    code, report = cli(snap, baseline, capsys)
-    assert code == 1 and report["checks"]["H7"]["metrics"]["embedding_queue_sha256"]["status"] == "fail"
-    (tmp_path / "step0_sha.json").unlink()
-    assert cli(snap, baseline, capsys)[0] == 1  # no target is not a pass
-
-
-def test_snapshot_missing_a_file_is_an_error(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    (snap / "books.jsonl").unlink()
-    assert vk.main(argv(snap, baseline)) == 1
-    assert "books.jsonl" in capsys.readouterr().err
-
-
-def test_allow_partial_skips_dependent_checks_and_refuses_ratchet(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
-    (snap / "books.jsonl").unlink()
-    code, report = cli(snap, baseline, capsys, "--allow-partial")
-    assert code == 0 and report["partial"] == ["books.jsonl"]
-    assert report["checks"]["R1"]["metrics"]["book_region_mentions"]["status"] == "n/a"
-    before = baseline.read_text(encoding="utf-8")
-    assert vk.main(argv(snap, baseline, "--allow-partial", "--ratchet")) == 1
-    assert "partial" in capsys.readouterr().err
-    assert baseline.read_text(encoding="utf-8") == before
-
-
-def test_live_prod_refuses_a_shell_still_pointing_at_staging(monkeypatch, capsys):
-    monkeypatch.setenv("NEO4J_URI", "bolt://localhost:7688")  # refused before any connection
-    assert vk.main(["--live", "--target", "prod", "--only", "H2"]) == 1
-    assert "NEO4J_URI" in capsys.readouterr().err
-
-
-def test_snapshot_dump_round_trip_preserves_every_metric(snap, tmp_path):
-    kg = vk.load_snapshot(snap)
-    out = tmp_path / "dumped"
-    vk.write_snapshot(kg, out)
-    shutil.copy(snap / "probes.yaml", out / "probes.yaml")
-    shutil.copy(snap / "embedding_queue.jsonl", out / "embedding_queue.jsonl")
-    a, b = measure(snap), measure(out)
-    for check_id in a:
-        assert a[check_id].metrics == b[check_id].metrics, check_id
-
-
-@pytest.mark.parametrize("uri,message", [("bolt://localhost:7687", "prod endpoint"),
-                                         ("bolt://localhost:1", "cannot read")])
-def test_unusable_live_target_exits_1_with_a_message(monkeypatch, capsys, uri, message):
-    # a gate that could not read its target must never report a pass
-    for key in ("POSTGRES_DB", "QDRANT_ENTITY_COLLECTION"):  # other test modules load .env into os.environ
-        monkeypatch.delenv(key, raising=False)
-    monkeypatch.setenv("NEO4J_URI", uri)
-    code = vk.main(["--live", "--target", "staging", "--only", "H2"])
-    assert code == 1
-    assert message in capsys.readouterr().err
-
-
-# ---------------------------------------------------------------------------
-# shipped config files
-# ---------------------------------------------------------------------------
-
-def test_shipped_baseline_covers_every_check_with_batch0_severities():
-    doc = vk.load_baseline(SHIPPED_BASELINE)
-    ids = {c["id"] for c in doc["checks"]}
-    assert ids == set(vk.CHECKS)
-    severity = {c["id"]: c["severity"] for c in doc["checks"]}
-    assert {i for i, s in severity.items() if s == "hard"} == {"H1", "H2", "H7", "D1"}
-    assert severity["W"] == "warn"
-    for check in doc["checks"]:
-        assert check.get("query"), check["id"]
-        for name, m in check["metrics"].items():
-            assert {"value", "direction", "tolerance"} <= set(m), (check["id"], name)
-
-
-def test_shipped_baseline_keeps_probe_ids_and_no_step0_sha_copy():
-    doc = vk.load_baseline(SHIPPED_BASELINE)
-    by_id = {c["id"]: c for c in doc["checks"]}
-    sha = by_id["H7"]["metrics"]["embedding_queue_sha256"]
-    assert sha["target_from"] and sha["value"] is None and "target" not in sha
-    probes = {f["id"] for f in vk.load_probes(SHIPPED_PROBES)["facts"]}
-    for check_id, name, count in (("PROBES", "failing", "failures"), ("R6", "failing_probes", "probe_failures")):
-        failing = by_id[check_id]["metrics"][name]
-        assert failing["direction"] == "subset" and set(failing["value"]) <= probes
-        assert by_id[check_id]["metrics"][count]["count_of"] == name
-        assert len(failing["value"]) == by_id[check_id]["metrics"][count]["value"]
-    r3 = by_id["R3"]["metrics"]
-    assert r3["all_forms_entities"]["value"] is None and r3["all_forms_person"]["value"] is None
-
-
-def test_shipped_probes_cover_the_required_kinds():
-    probes = vk.load_probes(SHIPPED_PROBES)
-    facts = probes["facts"]
-    assert len(facts) >= 15
-    assert len({f["id"] for f in facts}) == len(facts)
-    kinds = {f["kind"] for f in facts}
-    assert {"mention", "relation", "xref", "event_anchor"} <= kinds
-    assert any(f["kind"] == "relation" and f.get("check") == "R6" for f in facts)
-
-
-# ---------------------------------------------------------------------------
-# live (read-only; skipped when Neo4j is not reachable)
-# ---------------------------------------------------------------------------
-
-def _neo4j_or_skip():
-    try:
-        target = vk.resolve_target("prod")
-        driver = vk.open_neo4j(target)
-        driver.verify_connectivity()
-        return target, driver
-    except Exception as e:  # noqa: BLE001  (any connection problem means "service not here")
-        pytest.skip(f"Neo4j not reachable: {e}")
-
-
-def test_live_projection_round_trips_through_a_snapshot(tmp_path):
-    target, driver = _neo4j_or_skip()
-    try:
-        kg = vk.load_live(driver)
-    finally:
-        driver.close()
-    assert kg.entities and kg.mentions and kg.xrefs
-    ctx = vk.Context(baseline=vk.load_baseline(SHIPPED_BASELINE), probes=vk.load_probes(SHIPPED_PROBES))
-    skip = {"D1", "H5"}  # external processes / stores; covered elsewhere
-    live = vk.run_checks(kg, ctx, only=set(vk.CHECKS) - skip)
-    vk.write_snapshot(kg, tmp_path / "live")
-    offline = vk.run_checks(vk.load_snapshot(tmp_path / "live"), ctx, only=set(vk.CHECKS) - skip)
-    for check_id, result in live.items():
-        for name, value in result.metrics.items():
-            if value is not None and offline[check_id].metrics[name] is not None:
-                assert offline[check_id].metrics[name] == value, (check_id, name)
-    assert live["H2"].metrics["bad_type_labels"] == 0

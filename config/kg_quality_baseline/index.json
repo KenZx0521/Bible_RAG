@@ -1,0 +1,9 @@
+{
+  "format": "kg_quality_baseline/v1",
+  "description": "validate_kg quality gate (docs/records/2026-10-04_kg_data_layer_fix_plan.md §3.6). severity hard = must meet target (exit 1); record = must not regress past value + tolerance (exit 2); warn = report only. A check that errors, or a metric that is None without a declared reason (unmeasured), exits 1 at any severity. value is the stored baseline, moved only toward improvement by --ratchet; direction equal moves only with --accept; direction subset stores failing probe ids, any id outside the set is a regression and --ratchet only removes ids; count_of marks a count of such an id set, always stored as len(ids) (load rejects anything else). target_from names a hard target kept in another tracked file (step0_sha = config/step0_sha.json, check_step0's baseline), never copied here. hard_from = batch where a record check becomes hard; plan_reference = the plan's live figure, kept for comparison with the measured value. Split by check family: index.json holds this description and the part files in merge order; each part is a kg_quality_baseline/v1 file holding its checks, which --ratchet/--accept write back to that file.",
+  "parts": [
+    "h.json",
+    "r.json",
+    "misc.json"
+  ]
+}

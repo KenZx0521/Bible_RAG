@@ -12,7 +12,7 @@ R = "/home/kenzx0521/Bible_RAG"
 D = os.path.dirname(os.path.abspath(__file__))
 g = pickle.load(open(f"{D}/graph_staging.pkl", "rb")); kg = g["kg"]
 schema = RelationSchema.load(__import__("pathlib").Path(f"{R}/config/relations/biblical_relations.yaml"))
-ctx = Context(baseline=load_baseline(f"{R}/config/kg_quality_baseline.json"), probes=load_probes(f"{R}/config/kg_probes.yaml"))
+ctx = Context(baseline=load_baseline(f"{R}/config/kg_quality_baseline"), probes=load_probes(f"{R}/config/kg_probes.yaml"))
 
 def support_from_live(kg):
     return {(kg.pericope_of(m), m["entity_id"]) for m in kg.mentions}

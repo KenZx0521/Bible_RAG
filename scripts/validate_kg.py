@@ -19,7 +19,9 @@ Live Neo4j holds one row per MENTIONS edge, not every occurrence: readings
 that need occurrences (R3's all_forms_* metrics, R9) are n/a there and on its
 dump, and have baselines of their own that only a full snapshot fills.
 
-Severity per check comes from config/kg_quality_baseline.json:
+Severity per check comes from config/kg_quality_baseline/ (index.json lists
+one file per check family; the gate reads them merged, and --ratchet/--accept
+write each check back to its own file):
   hard    each metric must meet its target            -> exit 1
   record  each metric must not regress past baseline  -> exit 2
   warn    report only (W: label/relationship counts drifting > ±tolerance_pct)
@@ -107,10 +109,11 @@ from kg_validate.registry import (  # noqa: E402,F401
     load_baseline,
     load_probes,
     run_checks,
+    save_baseline,
 )
 from kg_validate.checks_probes import evaluate_probes  # noqa: E402,F401
 
-DEFAULT_BASELINE = _PROJECT_ROOT / "config" / "kg_quality_baseline.json"
+DEFAULT_BASELINE = _PROJECT_ROOT / "config" / "kg_quality_baseline"
 DEFAULT_PROBES = _PROJECT_ROOT / "config" / "kg_probes.yaml"
 DEFAULT_STEP0_SHA = _PROJECT_ROOT / "config" / "step0_sha.json"
 EXPORT_EVENT_REGISTRY = _SCRIPT_DIR / "export_event_registry.py"
@@ -157,7 +160,8 @@ def _parser() -> argparse.ArgumentParser:
                         help="with --live: which stores to read (default prod)")
     parser.add_argument("--allow-partial", action="store_true",
                         help="with --snapshot: score a snapshot that lacks files (no --ratchet/--accept)")
-    parser.add_argument("--baseline", type=Path, default=DEFAULT_BASELINE)
+    parser.add_argument("--baseline", type=Path, default=DEFAULT_BASELINE,
+                        help="baseline directory (index.json + one file per check family) or a single file")
     parser.add_argument("--probes", type=Path, default=DEFAULT_PROBES)
     parser.add_argument("--step0-sha", type=Path, default=DEFAULT_STEP0_SHA,
                         help="check_step0's baseline; H7's embedding_queue sha target")
@@ -214,8 +218,7 @@ def main(argv: list[str] | None = None) -> int:
         measured = {"at": date.today().isoformat(), "origin": kg.origin}
         updated = apply_ratchet(baseline, results, args.ratchet, accept, measured)
         if updated != baseline:
-            Path(args.baseline).write_text(json.dumps(updated, ensure_ascii=False, indent=2) + "\n",
-                                           encoding="utf-8")
+            save_baseline(args.baseline, updated)
             baseline = updated
 
     report = {"origin": kg.origin, "baseline": str(args.baseline), "partial": list(kg.missing),

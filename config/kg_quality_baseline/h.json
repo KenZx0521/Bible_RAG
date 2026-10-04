@@ -1,0 +1,325 @@
+{
+  "format": "kg_quality_baseline/v1",
+  "checks": [
+    {
+      "id": "H1",
+      "title": "entity_id globally unique; :Entity(entity_id) uniqueness constraint exists",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "duplicates 0; constraint missing",
+      "query": "count entity_ids on >1 node (Entity or type label); SHOW CONSTRAINTS has UNIQUENESS|NODE_KEY on Entity.entity_id (snapshot: manifest.constraints)",
+      "metrics": {
+        "duplicate_ids": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "missing_constraint": {
+          "value": 1,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H2",
+      "title": "every Entity carries exactly one type label",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "0",
+      "query": "nodes labelled Entity whose type labels (Person/Place/Group/Event/Object/Theme) != 1; type-labelled nodes without :Entity",
+      "metrics": {
+        "bad_type_labels": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "missing_entity_label": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H3",
+      "title": "derived edges supported by co-occurrence in their source pericope",
+      "severity": "record",
+      "hard_from": "1A",
+      "plan_reference": "374",
+      "query": "Entity-Entity edges except phase 3 (prior), curated, and phase-5 inverses of priors (empty source): both ends MENTIONed by source_pericope_id or by one of its chunks; an empty source_pericope_id counts as unsupported",
+      "metrics": {
+        "unsupported": {
+          "value": 374,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H4",
+      "title": "entity names without leading/trailing whitespace",
+      "severity": "record",
+      "hard_from": "1C (P/P/G), 1D (all)",
+      "plan_reference": "180 (183 counting ids)",
+      "query": "canonical_name != canonical_name.strip()",
+      "metrics": {
+        "whitespace_names": {
+          "value": 180,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H5",
+      "title": "three stores agree: id set, type, canonical, aliases (list), description",
+      "severity": "record",
+      "hard_from": "1D",
+      "plan_reference": "id diff 0; PG description 3,045; Qdrant string aliases 9,093",
+      "query": "check_identity.run: PG entities and the Qdrant entity collection vs Neo4j (live only)",
+      "metrics": {
+        "neo4j_aliases_not_list": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_only_in_reference": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_only_in_store": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_type": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_canonical_name": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_aliases_not_list": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_aliases": {
+          "value": 14,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_description": {
+          "value": 3045,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_only_in_reference": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_only_in_store": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_type": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_canonical_name": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_aliases_not_list": {
+          "value": 9093,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_aliases": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_description": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H6",
+      "title": "P/P/G MENTIONS carry source_region and a start_pos",
+      "severity": "record",
+      "hard_from": "1C",
+      "plan_reference": "n/a (no source_region yet)",
+      "query": "non-curated MENTIONS edges to Person/Place/Group lacking source_region or start_pos",
+      "metrics": {
+        "missing_region_or_pos": {
+          "value": 30048,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H7",
+      "title": "embedding_queue sha unchanged; id prefix matches type label",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "1 mismatch (group:yehehua)",
+      "query": "sha256(output/embedding_queue.jsonl) (snapshot: manifest.embedding_queue_sha256) must equal config/step0_sha.json files[embedding_queue.jsonl].sha256 (target_from; re-recorded by check_step0.py --record); entity_id prefix vs its single type label, minus params.id_prefix_allowlist",
+      "params": {
+        "id_prefix_allowlist": {
+          "group:yehehua": "Person"
+        },
+        "allowlist_note": "group:yehehua was relabelled Person by cleanup_noise_entities.py; its id stays until entity_overrides.yaml (D9, batch 1D)"
+      },
+      "metrics": {
+        "embedding_queue_sha256": {
+          "value": null,
+          "direction": "equal",
+          "tolerance": 0,
+          "target_from": "step0_sha:embedding_queue.jsonl"
+        },
+        "prefix_mismatch": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H8",
+      "title": "CROSS_REFERENCES carry an explicit provenance flag",
+      "severity": "record",
+      "hard_from": "1B",
+      "plan_reference": "916",
+      "query": "CROSS_REFERENCES with curated IS NULL and votes IS NULL (curated-ness is only inferable from missing votes)",
+      "metrics": {
+        "no_provenance": {
+          "value": 916,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H9",
+      "title": "relation domain/range follows config/relations/biblical_relations.yaml",
+      "severity": "record",
+      "hard_from": "1A",
+      "plan_reference": ">=14",
+      "query": "Entity-Entity edges whose (head label, tail label) the schema entry rejects; edge types missing from the schema",
+      "metrics": {
+        "domain_range_violations": {
+          "value": 14,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "unknown_relation_types": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H10",
+      "title": "Event MENTIONS set unchanged (protects the event registry)",
+      "severity": "record",
+      "hard_from": "1C (every batch)",
+      "plan_reference": "2,227",
+      "query": "sorted (source label, source id, event id) of MENTIONS into Event: count and sha256; intentional change -> D1 review + --accept H10",
+      "metrics": {
+        "event_mentions": {
+          "value": 2227,
+          "direction": "equal",
+          "tolerance": 0,
+          "target": null
+        },
+        "fingerprint": {
+          "value": "e8f45e15c0fd9b0d68208af2f10fd0785ca390cd822ae6b1874dfff010597b0f",
+          "direction": "equal",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    }
+  ]
+}

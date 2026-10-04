@@ -1,0 +1,296 @@
+{
+  "format": "kg_quality_baseline/v1",
+  "checks": [
+    {
+      "id": "R1",
+      "title": "MENTIONS whose first position falls in the book-name region",
+      "severity": "record",
+      "hard_from": "1C",
+      "plan_reference": "1,938 (pure fake 1,745)",
+      "query": "MENTIONS with start_pos < len(book name of the source's book)",
+      "metrics": {
+        "book_region_mentions": {
+          "value": 1938,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R2",
+      "title": "dictionary-substring contamination (馬利亞 in 撒馬利亞, 以利亞 in 以利亞撒 …)",
+      "severity": "record",
+      "hard_from": "2B",
+      "plan_reference": "lower bound 548",
+      "query": "P/P/G MENTIONS whose text_span is a kg_probes.yaml substring probe and every body occurrence of it in the anchor text sits inside a longer name (probe left/right neighbour sets)",
+      "metrics": {
+        "contaminated": {
+          "value": 503,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R3",
+      "title": "entities mentioned under a surface that is neither canonical nor alias (homophone merges)",
+      "severity": "record",
+      "hard_from": "deferred-A",
+      "plan_reference": "169 Person / 268 all types (JSONL, all forms)",
+      "query": "stripped mention text_span outside {canonical} | aliases. Two readings, each with its own baseline (never compare one with the other): foreign_surface_entities / person = entities whose MENTIONS edge keeps such a span (the edge's first row, what live Neo4j stores; live and snapshot agree); all_forms_entities / all_forms_person = entities with such a span in ANY occurrence row (the plan's definition; 268/171 on the 2026-10 output/ JSONL), snapshot only: n/a live and on a --dump-snapshot of live, so its null baseline is first filled by --ratchet on a full snapshot",
+      "metrics": {
+        "foreign_surface_entities": {
+          "value": 264,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "person": {
+          "value": 169,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "all_forms_entities": {
+          "value": null,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "all_forms_person": {
+          "value": null,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R4",
+      "title": "supplementary cross-reference anchors misplaced",
+      "severity": "record",
+      "hard_from": "1B",
+      "plan_reference": "59",
+      "query": "supplementary CROSS_REFERENCES whose first source verse is outside the source pericope's verse_range, or first target verse outside the target's",
+      "metrics": {
+        "misaligned": {
+          "value": 59,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R5",
+      "title": "same canonical name under different types",
+      "severity": "record",
+      "hard_from": "deferred-A",
+      "plan_reference": "908 names",
+      "query": "stripped canonical names owned by entities of >=2 type labels",
+      "metrics": {
+        "cross_type_names": {
+          "value": 908,
+          "direction": "down",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R6",
+      "title": "kinship sanity: probes, FATHER_OF contradictions, female heads, functionality",
+      "severity": "record",
+      "hard_from": "1A",
+      "plan_reference": "contradictions 25 / female head >=40 / 53.6%",
+      "query": "failing R6 probes (failing_probes: ids, subset; probe_failures: their count); FATHER_OF a->b where b is asserted parent of a (FATHER_OF/MOTHER_OF b->a, SON_OF/DAUGHTER_OF a->b); FATHER_OF headed by kg_probes.yaml female_persons; share of FATHER_OF children with >=2 fathers",
+      "metrics": {
+        "probe_failures": {
+          "value": 3,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0,
+          "count_of": "failing_probes"
+        },
+        "failing_probes": {
+          "value": [
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah"
+          ],
+          "direction": "subset",
+          "tolerance": 0,
+          "target": []
+        },
+        "contradictions": {
+          "value": 25,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "female_head": {
+          "value": 42,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "functional_violation_rate": {
+          "value": 0.5357,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0.05
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      },
+      "ids_note": "failing ids = the probes kg_probes.yaml marks 'fails today'; their count equals the 2026-10-04 live failures, a live run reports any id that disagrees as new/fixed"
+    },
+    {
+      "id": "R7",
+      "title": "Events mentioned by a single pericope (observe)",
+      "severity": "record",
+      "hard_from": "deferred-B (observe only)",
+      "plan_reference": "1,535 / 1,714",
+      "query": "Event entities whose MENTIONS (chunk -> parent) reach exactly one pericope",
+      "metrics": {
+        "single_pericope_events": {
+          "value": 1535,
+          "direction": "none",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R8",
+      "title": "junk Event/Theme/Object names (cross-reference remnants, sentence fragments)",
+      "severity": "record",
+      "hard_from": "1D",
+      "plan_reference": "27 + 36 + 25",
+      "query": "E/O/T canonical_name that is empty or whitespace-padded, starts with （ ( ＊ *, contains a verse ref (26‧26), or ENDS in 。，！？；」 (a comma inside a title such as 復活在我，生命在我 does not count; dash-led subtitles such as －蛙災, 15 Events, are not counted pending a decision, as in the plan's 27), minus params.allow_names",
+      "params": {
+        "allow_names": [
+          "這是基督嗎？"
+        ]
+      },
+      "metrics": {
+        "junk_event": {
+          "value": 27,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "junk_theme": {
+          "value": 36,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "junk_object": {
+          "value": 25,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R9",
+      "title": "NER positions: no duplicates; text[start:end] == span",
+      "severity": "record",
+      "hard_from": "1C",
+      "plan_reference": "4,131 duplicates (JSONL); span check n/a",
+      "query": "occurrence rows with text_id: repeated (text_id, entity, start_pos); embedding_queue text slice != text_span. n/a (declared, exit 0) when no row carries text_id and start_pos: live Neo4j keeps one position per edge, a --dump-snapshot of live likewise, and a snapshot without text_id cannot be scored",
+      "metrics": {
+        "duplicate_positions": {
+          "value": 4146,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "span_mismatch": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "snapshot of output/entity_mentions.jsonl (legacy rows; positions index the full embedding_queue text)"
+      }
+    },
+    {
+      "id": "R10",
+      "title": "ambiguous or conflicting aliases",
+      "severity": "record",
+      "hard_from": "1D",
+      "plan_reference": ">=5",
+      "query": "alias surfaces listed by >=2 entities or equal to another entity's canonical_name",
+      "metrics": {
+        "conflicting_aliases": {
+          "value": 21,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R11",
+      "title": "CROSS_REFERENCES carrying TSK votes",
+      "severity": "record",
+      "hard_from": "1B",
+      "plan_reference": "249,502 (target 250,358)",
+      "query": "CROSS_REFERENCES with votes IS NOT NULL",
+      "metrics": {
+        "tsk_votes_edges": {
+          "value": 249502,
+          "direction": "up",
+          "tolerance": 0,
+          "target": 250358
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    }
+  ]
+}

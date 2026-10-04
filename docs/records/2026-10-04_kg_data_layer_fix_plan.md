@@ -248,7 +248,7 @@ P    升版（見 3.7）
 
 ### 3.6 validate_kg 品質門
 - 模式：`--snapshot output/kg`（離線，可放進 pytest）；`--live --target staging|prod`（唯讀）。
-- 基準檔 `config/kg_quality_baseline.json`（git 追蹤），每項記錄 id、query、value、direction、tolerance、severity。
+- 基準檔 `config/kg_quality_baseline/`（git 追蹤），每項記錄 id、query、value、direction、tolerance、severity。
 - 結束碼：0 通過、1 硬失敗、2 ratchet 退步。`--ratchet` 只能往改善的方向更新基準。
 - 探針檔 `config/kg_probes.yaml`：逐條宣告 (pericope, entity) 或 (head, rel, tail) 必須存在或不存在。
 

@@ -18,6 +18,9 @@ DEFAULT_EMBEDDING_QUEUE = PROJECT_ROOT / "output" / "embedding_queue.jsonl"
 RELATION_SCHEMA = PROJECT_ROOT / "config" / "relations" / "biblical_relations.yaml"
 
 BASELINE_FORMAT = "kg_quality_baseline/v1"
+# A split baseline is a directory: index.json (format, description, and the
+# part files in merge order) plus one kg_quality_baseline/v1 file per check family.
+BASELINE_INDEX = "index.json"
 # subset: the value is a list of ids (failing probes) that may only shrink.
 DIRECTIONS = {"down", "up", "equal", "none", "subset"}
 # target_from "<source>:<key>": a hard target kept in another tracked file.
@@ -26,7 +29,71 @@ PROBE_KINDS = {"relation", "mention", "event_anchor", "alias", "xref", "book_reg
 
 
 def load_baseline(path: Path) -> dict:
-    doc = json.loads(Path(path).read_text(encoding="utf-8"))
+    """The baseline as one document {format, description, checks}. `path` is a
+    single file, or a split directory whose parts merge in index order, so a
+    split baseline scores exactly like the one file it was split from."""
+    path = Path(path)
+    if not path.is_dir():
+        return _read_doc(path)
+    index, parts = _split_parts(path)
+    head = {key: value for key, value in index.items() if key != "parts"}
+    return {**head, "checks": [check for _, part in parts for check in part["checks"]]}
+
+
+def save_baseline(path: Path, doc: dict) -> list[Path]:
+    """Write `doc` (load_baseline's document, e.g. after apply_ratchet) back to
+    where it was read; return the files rewritten. A split directory keeps its
+    layout: each check goes back to the part that holds it, and a part whose
+    checks did not change is left as it is. index.json is edited by hand."""
+    path = Path(path)
+    if not path.is_dir():
+        _write_doc(path, doc)
+        return [path]
+    by_id = {check["id"]: check for check in doc["checks"]}
+    _, parts = _split_parts(path)
+    held = sorted(check["id"] for _, part in parts for check in part["checks"])
+    if held != sorted(by_id):
+        raise ValueError(f"{path}: its parts hold {held}, not the checks to write {sorted(by_id)}")
+    written = []
+    for part_path, part in parts:
+        checks = [by_id[check["id"]] for check in part["checks"]]
+        if checks != part["checks"]:
+            _write_doc(part_path, {**part, "checks": checks})
+            written.append(part_path)
+    return written
+
+
+def _write_doc(path: Path, doc: dict) -> None:
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _split_parts(directory: Path) -> tuple[dict, list[tuple[Path, dict]]]:
+    """index.json and its parts in merge order. A layout in which a check could
+    drop out of the gate (a part not listed, a listed part missing) or be
+    written back twice (one id in two parts) is refused."""
+    index_path = directory / BASELINE_INDEX
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    if index.get("format") != BASELINE_FORMAT:
+        raise ValueError(f"{index_path}: expected format {BASELINE_FORMAT}")
+    listed = index.get("parts") or []
+    present = {p.name for p in directory.glob("*.json")} - {BASELINE_INDEX}
+    missing, unlisted = sorted(set(listed) - present), sorted(present - set(listed))
+    if missing or unlisted or len(set(listed)) != len(listed):
+        raise ValueError(f"{index_path}: parts {listed} do not match the files present "
+                         f"(missing {missing}, not listed {unlisted})")
+    parts, owner = [], {}
+    for name in listed:
+        part = _read_doc(directory / name)
+        for check in part["checks"]:
+            if check["id"] in owner:
+                raise ValueError(f"{directory}: check {check['id']} is in both {owner[check['id']]} and {name}")
+            owner[check["id"]] = name
+        parts.append((directory / name, part))
+    return index, parts
+
+
+def _read_doc(path: Path) -> dict:
+    doc = json.loads(path.read_text(encoding="utf-8"))
     if doc.get("format") != BASELINE_FORMAT:
         raise ValueError(f"{path}: expected format {BASELINE_FORMAT}")
     for check in doc["checks"]:
