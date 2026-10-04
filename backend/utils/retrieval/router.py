@@ -426,8 +426,14 @@ def _cap_book_anchor_entries(ranked: list[dict]) -> list[dict]:
 
 
 def _extract_book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
-    """Extract unique (book_id, chapter_num) pairs from candidates."""
-    pairs: set[tuple[str, int]] = set()
+    """Unique (book_id, chapter_num) pairs in order of first appearance.
+
+    _sql_supplement takes the first three, so the order decides which chapters
+    get supplemented. Collected in a set it followed PYTHONHASHSEED and changed
+    with every process; first appearance in the (strategy-ordered) pool is
+    deterministic and favours the chapters retrieval surfaced first.
+    """
+    pairs: dict[tuple[str, int], None] = {}
     for c in candidates:
         book = c.get("book_name", "")
         ch = c.get("chapter_num")
@@ -436,7 +442,7 @@ def _extract_book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
             parts = c.get("id", "").split(":")
             if parts:
                 book_id = parts[0]
-                pairs.add((book_id, int(ch)))
+                pairs.setdefault((book_id, int(ch)), None)
     return list(pairs)
 
 

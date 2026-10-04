@@ -97,7 +97,9 @@ def match_events_in_text(text: str) -> list[str]:
     Returns matched keywords, longest-first.
     """
     matched: list[str] = []
-    for kw in sorted(EVENT_KEYWORDS, key=len, reverse=True):
+    # Tie-break on the keyword: EVENT_KEYWORDS is a set, so equal-length
+    # keywords would otherwise come out in PYTHONHASHSEED order.
+    for kw in sorted(EVENT_KEYWORDS, key=lambda k: (-len(k), k)):
         if kw in text:
             matched.append(kw)
     return matched

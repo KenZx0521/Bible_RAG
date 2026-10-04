@@ -85,13 +85,14 @@ def detect_signals(
     # --- Person signal ---
     # Combine LLM entities with dictionary matching
     dict_persons = match_persons_in_text(query)
-    all_persons: set[str] = set(dict_persons)
-    # Also check LLM entity names against person dict
-    for name in entity_names:
-        extra = match_persons_in_text(name)
-        all_persons.update(extra)
+    # Also check LLM entity names against person dict. Dedup in first-seen
+    # order: a set here made the graph strategies' query order follow
+    # PYTHONHASHSEED.
+    all_persons = list(dict.fromkeys(
+        dict_persons + [p for name in entity_names for p in match_persons_in_text(name)]
+    ))
 
-    signals.detected_persons = list(all_persons)
+    signals.detected_persons = all_persons
     if len(all_persons) >= 2:
         signals.has_multi_person = True
 
@@ -104,7 +105,7 @@ def detect_signals(
     if intent_type == "event" and not dict_events:
         # LLM thinks it's an event query even without keyword match
         dict_events = keywords or []
-    signals.detected_events = list(set(dict_events))
+    signals.detected_events = list(dict.fromkeys(dict_events))
     if signals.detected_events:
         signals.has_event_keyword = True
 
@@ -112,7 +113,7 @@ def detect_signals(
     dict_places = match_places_in_text(query)
     for name in entity_names:
         dict_places.extend(match_places_in_text(name))
-    signals.detected_places = list(set(dict_places))
+    signals.detected_places = list(dict.fromkeys(dict_places))
     if signals.detected_places:
         signals.has_place = True
 
