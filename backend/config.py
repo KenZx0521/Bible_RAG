@@ -110,9 +110,13 @@ class Settings(BaseSettings):
     # value fails at startup. The 2026-10 diagnosis of the Round 3 500-question
     # runs found graph_event the only strategy whose injected passages beat the
     # ones they displaced (26% vs 18% gold); graph_person cost R3 verse recall
-    # −0.046, and keeping graph_event alone scored +0.011 verse recall over
-    # all-on, stable across both folds of a legacy/expansion split.
-    rag_graph_strategies: list[GraphStrategyName] = ["graph_event"]
+    # −0.046. Since 2026-10-04 the default is the event_registry auxiliary
+    # lane instead: it keeps graph_event's curated-event gains but appends
+    # after the top-k, so the top-k equals graph-off (500 questions: verse
+    # recall +0.0072 vs k-aligned dense, no question worse; graph_event in the
+    # pool had 6 questions worse) and its answers were non-inferior to dense@6
+    # (evaluation/experiments/2026-10-03_event_registry/results.md).
+    rag_graph_strategies: list[GraphStrategyName] = ["event_registry"]
 
     # Event registry auxiliary lane (graph strategy "event_registry"): how many
     # curated anchors may be appended after the top-k. The 2026-10 simulation

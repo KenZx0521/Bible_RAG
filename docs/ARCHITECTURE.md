@@ -486,7 +486,7 @@ flowchart TD
     S7 -- 否 --> FB["Fallback 純語意<br/>(+book_anchor)"]
 ```
 
-**各路策略組合與權重**(`backend/config.py:route_weights`;`use_graph=false` 時 Neo4j 策略全部閘道掉;`use_graph=true` 時每個圖譜策略還要列在 `RAG_GRAPH_STRATEGIES` 裡才會跑 —— **2026-10 起預設只開 `graph_event`**,下表是 `["all"]` 時的完整組合,R3/R6 在預設下不跑任何圖譜策略):
+**各路策略組合與權重**(`backend/config.py:route_weights`;`use_graph=false` 時 Neo4j 策略全部閘道掉;`use_graph=true` 時每個圖譜策略還要列在 `RAG_GRAPH_STRATEGIES` 裡才會跑 —— **2026-10-04 起預設為 `["event_registry"]`**:沒有任何圖譜策略進候選池,只有 R4/R5 可能在 top-k 之後附加 1 段 curated 事件錨點(先前預設 `graph_event` 會把錨點放進候選池、擠掉 dense 段落);下表是 `["all"]` 時的完整組合):
 
 | 路由 | 策略組合(weight) |
 |------|------------------|
@@ -627,7 +627,7 @@ flowchart TB
 | 開關 | 值 | 備註 |
 |------|-----|------|
 | `RAG_USE_GRAPH` | true | per-request 可覆寫 |
-| `RAG_GRAPH_STRATEGIES` | `["graph_event"]`(程式預設) | 2026-10 止血:其餘圖譜策略淨負或零貢獻;`["all"]` 恢復 Round 3 行為;`"event_registry"` 是不進候選池的附加軌(需明列);per-request 可覆寫 |
+| `RAG_GRAPH_STRATEGIES` | `["event_registry"]`(程式預設,2026-10-04) | 圖譜只走附加軌:top-k 與 graph-off 逐位相同,檢索對 k 對齊 dense 無任何一題變差、答案端非劣(`evaluation/experiments/2026-10-03_event_registry/results.md`);`["graph_event"]` = 先前預設(進池)、`["all"]` = Round 3 全開;per-request 可覆寫 |
 | `RAG_EVENT_REGISTRY_SLOTS` | 1 | 事件登錄表附加軌最多附加幾段 |
 | `HYBRID_SEARCH_ENABLED` | true | dense+sparse RRF |
 | `RAG_USE_CROSS_REF_EXPAND` / `_LIMIT` | true / 10 | TSK 抑噪後 cap |

@@ -2,8 +2,9 @@
 
 use_graph=True no longer means "every graph strategy injects candidates":
 only the strategies named in settings.rag_graph_strategies (or the per-request
-graph_strategies override) run. Default keeps graph_event only — the one graph
-strategy whose injected passages beat the passages they displaced.
+graph_strategies override) run. graph_event was the one in-pool strategy
+whose injected passages beat the passages they displaced; since 2026-10-04 the
+default is the event_registry auxiliary lane, which enters no pool at all.
 """
 
 import asyncio
@@ -75,9 +76,12 @@ def _run(handler, signals, graph_strategies, entity_names=None, use_graph=True):
 
 # --- strategy resolution -----------------------------------------------------
 
-def test_default_setting_keeps_only_graph_event():
+def test_default_setting_is_the_event_registry_lane_only():
     # Field default, not the loaded value: a developer's .env may override it.
-    assert Settings.model_fields["rag_graph_strategies"].default == ["graph_event"]
+    # 2026-10-04: graph_event (in-pool) replaced by the event_registry auxiliary
+    # lane, which never changes the top-k (evaluation/experiments/
+    # 2026-10-03_event_registry/results.md).
+    assert Settings.model_fields["rag_graph_strategies"].default == ["event_registry"]
 
 
 def test_unknown_strategy_in_settings_fails_at_startup():

@@ -12,8 +12,10 @@ Routes:
 
 Graph strategies run only when use_graph is on AND they are listed in
 settings.rag_graph_strategies (or the request's graph_strategies). Since
-2026-10 the default is graph_event alone, so R3/R6 run without any graph
-strategy and R5 keeps only graph_event; pass ["all"] to restore every one.
+2026-10-04 the default is the event_registry auxiliary lane alone: no graph
+strategy enters any route's candidate pool, and R4/R5 may append one curated
+event anchor after the top-k. Pass ["graph_event"] for the previous default,
+["all"] for every in-pool strategy (Round 3).
 """
 
 import asyncio

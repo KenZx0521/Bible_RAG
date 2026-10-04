@@ -87,7 +87,7 @@ uv run python run_eval.py --no-graph
 uv run python run_eval.py
 ```
 
-> **2026-10 起 `--graph` 不再等於「全部圖譜策略」**:backend 預設 `RAG_GRAPH_STRATEGIES=["graph_event"]`。
+> **2026-10 起 `--graph` 不再等於「全部圖譜策略」**:backend 預設 `RAG_GRAPH_STRATEGIES=["event_registry"]`(2026-10-04 起;只在 top-k 後附加 curated 事件錨點,之前是 `["graph_event"]`)。附加軌會讓部分題的 sources 多一段,檢索指標要用 `--metric-k 6` 並以 `ab_compare.py --control-ext` 對 k 對齊的 dense 比較。
 > 要重現 Round 3 的 `results_graph/`(全開),加 `--graph-strategies all`;
 > `--graph-strategies graph_event graph_person` 指定子集,只寫 `--graph-strategies` 不帶值 = 全關。
 > 輸出目錄裡若有 2026-10 前的存檔(記錄沒有 `graph_strategies` 欄位),collector 會拒絕覆寫,請先移走或 commit。
