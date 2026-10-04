@@ -1,0 +1,2715 @@
+{
+  "overall": {
+    "precision_at_k": 0.2681,
+    "recall_at_k": 0.6304,
+    "f1_at_k": 0.3594,
+    "mrr": 0.5196,
+    "map_at_k": 0.4499,
+    "ndcg_at_k": 0.6105,
+    "hit_rate": 0.7826,
+    "verse_recall_at_k": 0.4023,
+    "anchor_coverage_at_k": 0.5036
+  },
+  "by_type": {
+    "EVENT_QUESTION": {
+      "precision_at_k": 0.2436,
+      "recall_at_k": 0.6154,
+      "f1_at_k": 0.3256,
+      "mrr": 0.532,
+      "map_at_k": 0.5026,
+      "ndcg_at_k": 0.5614,
+      "hit_rate": 0.6923,
+      "verse_recall_at_k": 0.3102,
+      "anchor_coverage_at_k": 0.4423
+    },
+    "GENERAL_BIBLE_QUESTION": {
+      "precision_at_k": 0.2963,
+      "recall_at_k": 0.6481,
+      "f1_at_k": 0.3988,
+      "mrr": 0.5037,
+      "map_at_k": 0.3867,
+      "ndcg_at_k": 0.6703,
+      "hit_rate": 0.8889,
+      "verse_recall_at_k": 0.4834,
+      "anchor_coverage_at_k": 0.5741
+    },
+    "PERSON_QUESTION": {
+      "precision_at_k": 0.3333,
+      "recall_at_k": 0.6667,
+      "f1_at_k": 0.4444,
+      "mrr": 0.5,
+      "map_at_k": 0.3333,
+      "ndcg_at_k": 0.7102,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.8696,
+      "anchor_coverage_at_k": 0.6667
+    }
+  },
+  "n": 23,
+  "n_invalid": 0,
+  "per_question": {
+    "PERSON_QUESTION_070": {
+      "precision_at_k": 0.3333,
+      "recall_at_k": 0.6667,
+      "f1_at_k": 0.4444,
+      "mrr": 0.5,
+      "map_at_k": 0.3333,
+      "ndcg_at_k": 0.7102,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.8696,
+      "anchor_coverage_at_k": 0.6667,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:21:2",
+        "jhn:20:0",
+        "jhn:19:4",
+        "jhn:13:1",
+        "luk:22:2",
+        "mat:12:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "jhn:21:2",
+          "book": "約翰福音",
+          "chapter": 21,
+          "title": "耶穌和他所愛的那門徒",
+          "verse_range": "20-25",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5644251263141632,
+          "rerank_score": 0.5063216090202332,
+          "gold": false
+        },
+        {
+          "id": "jhn:20:0",
+          "book": "約翰福音",
+          "chapter": 20,
+          "title": "耶穌復活",
+          "verse_range": "1-10",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.37831535100936886,
+          "rerank_score": 0.24045050144195557,
+          "gold": true
+        },
+        {
+          "id": "jhn:19:4",
+          "book": "約翰福音",
+          "chapter": 19,
+          "title": "（太27‧57－61；可15‧42－47；路",
+          "verse_range": "38-42",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.361851637661457,
+          "rerank_score": 0.21693091094493866,
+          "gold": false
+        },
+        {
+          "id": "jhn:13:1",
+          "book": "約翰福音",
+          "chapter": 13,
+          "title": "（太26‧20－25；可14‧17－21；路",
+          "verse_range": "21-30",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3050957491993904,
+          "rerank_score": 0.13585107028484344,
+          "gold": true
+        },
+        {
+          "id": "luk:22:2",
+          "book": "路加福音",
+          "chapter": 22,
+          "title": "（太26‧26－30；可14‧22－26；林前",
+          "verse_range": "14-23",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25602760449051853,
+          "rerank_score": 0.06575372070074081,
+          "gold": false
+        },
+        {
+          "id": "mat:12:0",
+          "book": "馬太福音",
+          "chapter": 12,
+          "title": "安息日的問題",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2446445471048355,
+          "rerank_score": 0.049492210149765015,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_003": {
+      "precision_at_k": 0.8333,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.9091,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.4066,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "exo:8:0",
+        "exo:10:0",
+        "exo:9:2",
+        "exo:10:1",
+        "exo:9:0",
+        "rev:9:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "exo:8:0",
+          "book": "出埃及記",
+          "chapter": 8,
+          "title": "－蛙災",
+          "verse_range": "1-15",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.44521468341350556,
+          "rerank_score": 0.33602097630500793,
+          "gold": true
+        },
+        {
+          "id": "exo:10:0",
+          "book": "出埃及記",
+          "chapter": 10,
+          "title": "－蝗災",
+          "verse_range": "1-20",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3826695790886879,
+          "rerank_score": 0.24667082726955414,
+          "gold": true
+        },
+        {
+          "id": "exo:9:2",
+          "book": "出埃及記",
+          "chapter": 9,
+          "title": "－雹災",
+          "verse_range": "13-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2564027538895607,
+          "rerank_score": 0.06628964841365814,
+          "gold": true
+        },
+        {
+          "id": "exo:10:1",
+          "book": "出埃及記",
+          "chapter": 10,
+          "title": "－黑暗之災",
+          "verse_range": "21-29",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24072415217757223,
+          "rerank_score": 0.04389164596796036,
+          "gold": true
+        },
+        {
+          "id": "exo:9:0",
+          "book": "出埃及記",
+          "chapter": 9,
+          "title": "－畜疫之災",
+          "verse_range": "1-7",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.23143582269549368,
+          "rerank_score": 0.116336889564991,
+          "gold": true
+        },
+        {
+          "id": "rev:9:0",
+          "book": "啟示錄",
+          "chapter": 9,
+          "title": "(無標題)",
+          "verse_range": "1-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2310769698023796,
+          "rerank_score": 0.030109956860542297,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_005": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.2857,
+      "mrr": 0.3333,
+      "map_at_k": 0.3333,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.1667,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jos:5:1",
+        "num:32:0",
+        "num:14:2",
+        "deu:2:0",
+        "deu:2:0:0",
+        "ezk:29:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "jos:5:1",
+          "book": "約書亞記",
+          "chapter": 5,
+          "title": "在吉甲行割禮",
+          "verse_range": "2-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.8247820532321929,
+          "rerank_score": 0.87826007604599,
+          "gold": false
+        },
+        {
+          "id": "num:32:0",
+          "book": "民數記",
+          "chapter": 32,
+          "title": "約旦河東的兩支派",
+          "verse_range": "1-42",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.8226702308654784,
+          "rerank_score": 0.8752431869506836,
+          "gold": false
+        },
+        {
+          "id": "num:14:2",
+          "book": "民數記",
+          "chapter": 14,
+          "title": "耶和華懲罰埋怨的民眾",
+          "verse_range": "26-38",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.7742827332019805,
+          "rerank_score": 0.8061181902885437,
+          "gold": true
+        },
+        {
+          "id": "deu:2:0",
+          "book": "申命記",
+          "chapter": 2,
+          "title": "多年在曠野",
+          "verse_range": "1-25",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4265560036897659,
+          "rerank_score": 0.30936571955680847,
+          "gold": false
+        },
+        {
+          "id": "deu:2:0:0",
+          "book": "申命記",
+          "chapter": 2,
+          "title": "多年在曠野",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4265560036897659,
+          "rerank_score": 0.30936571955680847,
+          "gold": false
+        },
+        {
+          "id": "ezk:29:0",
+          "book": "以西結書",
+          "chapter": 29,
+          "title": "斥責埃及",
+          "verse_range": "1-16",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3955426728725433,
+          "rerank_score": 0.2650609612464905,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_008": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "hit_rate": 0.0,
+      "verse_recall_at_k": 0.0,
+      "anchor_coverage_at_k": 0.0,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "dan:11:1",
+        "2sa:13:1",
+        "dan:2:2:1",
+        "dan:7:2",
+        "dan:2:2",
+        "psa:68:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "dan:11:1",
+          "book": "但以理書",
+          "chapter": 11,
+          "title": "南方王和北方王",
+          "verse_range": "3-20",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.40535116255283354,
+          "rerank_score": 0.2790730893611908,
+          "gold": false
+        },
+        {
+          "id": "2sa:13:1",
+          "book": "撒母耳記下",
+          "chapter": 13,
+          "title": "押沙龍為妹報仇",
+          "verse_range": "23-39",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.29765732795000077,
+          "rerank_score": 0.1252247542142868,
+          "gold": false
+        },
+        {
+          "id": "dan:2:2:1",
+          "book": "但以理書",
+          "chapter": 2,
+          "title": "但以理為王解夢",
+          "verse_range": "37-45",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.29278381749987603,
+          "rerank_score": 0.11826259642839432,
+          "gold": false
+        },
+        {
+          "id": "dan:7:2",
+          "book": "但以理書",
+          "chapter": 7,
+          "title": "解釋異象",
+          "verse_range": "15-28",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2838095790147781,
+          "rerank_score": 0.10544225573539734,
+          "gold": false
+        },
+        {
+          "id": "dan:2:2",
+          "book": "但以理書",
+          "chapter": 2,
+          "title": "但以理為王解夢",
+          "verse_range": "24-45",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2409029623866081,
+          "rerank_score": 0.04414708912372589,
+          "gold": false
+        },
+        {
+          "id": "psa:68:0",
+          "book": "詩篇",
+          "chapter": 68,
+          "title": "勝利之歌",
+          "verse_range": "1-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.23650620266795158,
+          "rerank_score": 0.037866003811359406,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_011": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "hit_rate": 0.0,
+      "verse_recall_at_k": 0.0,
+      "anchor_coverage_at_k": 0.0,
+      "route": "R4",
+      "strategies": [
+        "semantic"
+      ],
+      "sources": [
+        "heb:12:1",
+        "rev:17:0",
+        "pro:8:0",
+        "psa:68:0",
+        "rev:6:0",
+        "zec:4:1"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "heb:12:1",
+          "book": "希伯來書",
+          "chapter": 12,
+          "title": "警告棄絕上帝恩典的人",
+          "verse_range": "14-29",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.29023394271731373,
+          "rerank_score": 0.1146199181675911,
+          "gold": false
+        },
+        {
+          "id": "rev:17:0",
+          "book": "啟示錄",
+          "chapter": 17,
+          "title": "大淫婦和獸",
+          "verse_range": "1-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2662555328011513,
+          "rerank_score": 0.08036504685878754,
+          "gold": false
+        },
+        {
+          "id": "pro:8:0",
+          "book": "箴言",
+          "chapter": 8,
+          "title": "智慧頌",
+          "verse_range": "1-36",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2613431780040264,
+          "rerank_score": 0.07334739714860916,
+          "gold": false
+        },
+        {
+          "id": "psa:68:0",
+          "book": "詩篇",
+          "chapter": 68,
+          "title": "勝利之歌",
+          "verse_range": "1-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25419056102633475,
+          "rerank_score": 0.06312937289476395,
+          "gold": false
+        },
+        {
+          "id": "rev:6:0",
+          "book": "啟示錄",
+          "chapter": 6,
+          "title": "揭開封嚴的印",
+          "verse_range": "1-17",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25006586037576195,
+          "rerank_score": 0.057236943393945694,
+          "gold": false
+        },
+        {
+          "id": "zec:4:1",
+          "book": "撒迦利亞書",
+          "chapter": 4,
+          "title": "上帝給所羅巴伯的應許",
+          "verse_range": "6-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24643212504684925,
+          "rerank_score": 0.05204589292407036,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_014": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "hit_rate": 0.0,
+      "verse_recall_at_k": 0.0,
+      "anchor_coverage_at_k": 0.0,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mrk:6:2",
+        "jdg:19:0",
+        "1co:11:4",
+        "2sa:3:4",
+        "rev:15:0",
+        "job:42:1"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "mrk:6:2",
+          "book": "馬可福音",
+          "chapter": 6,
+          "title": "施洗約翰的死",
+          "verse_range": "14-29",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.23705880366265772,
+          "rerank_score": 0.03865543380379677,
+          "gold": false
+        },
+        {
+          "id": "jdg:19:0",
+          "book": "士師記",
+          "chapter": 19,
+          "title": "利未人和他的妾",
+          "verse_range": "1-30",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2279726503789425,
+          "rerank_score": 0.0256752148270607,
+          "gold": false
+        },
+        {
+          "id": "1co:11:4",
+          "book": "哥林多前書",
+          "chapter": 11,
+          "title": "不按理吃主的晚餐",
+          "verse_range": "27-34",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.22612324118614197,
+          "rerank_score": 0.023033201694488525,
+          "gold": false
+        },
+        {
+          "id": "2sa:3:4",
+          "book": "撒母耳記下",
+          "chapter": 3,
+          "title": "安葬押尼珥",
+          "verse_range": "31-39",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21875899996608494,
+          "rerank_score": 0.012512857094407082,
+          "gold": false
+        },
+        {
+          "id": "rev:15:0",
+          "book": "啟示錄",
+          "chapter": 15,
+          "title": "七位天使掌管最後的災",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21715700052678585,
+          "rerank_score": 0.01022428646683693,
+          "gold": false
+        },
+        {
+          "id": "job:42:1",
+          "book": "約伯記",
+          "chapter": 42,
+          "title": "結尾",
+          "verse_range": "7-17",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21715063316747546,
+          "rerank_score": 0.01021519023925066,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_015": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.25,
+      "mrr": 1.0,
+      "map_at_k": 0.5,
+      "ndcg_at_k": 0.8855,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.3056,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mat:26:6",
+        "mrk:14:6",
+        "act:8:1",
+        "act:10:0:0",
+        "mat:26:0",
+        "act:8:2"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "mat:26:6",
+          "book": "馬太福音",
+          "chapter": 26,
+          "title": "在客西馬尼禱告",
+          "verse_range": "36-46",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.7866435801982878,
+          "rerank_score": 0.8237765431404114,
+          "gold": true
+        },
+        {
+          "id": "mrk:14:6",
+          "book": "馬可福音",
+          "chapter": 14,
+          "title": "在客西馬尼禱告",
+          "verse_range": "32-42",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.681679937839508,
+          "rerank_score": 0.6738284826278687,
+          "gold": false
+        },
+        {
+          "id": "act:8:1",
+          "book": "使徒行傳",
+          "chapter": 8,
+          "title": "福音傳到撒馬利亞",
+          "verse_range": "4-25",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3805186828970909,
+          "rerank_score": 0.2435981184244156,
+          "gold": false
+        },
+        {
+          "id": "act:10:0:0",
+          "book": "使徒行傳",
+          "chapter": 10,
+          "title": "彼得和哥尼流",
+          "verse_range": "1-20",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.26226865708827973,
+          "rerank_score": 0.07466951012611389,
+          "gold": false
+        },
+        {
+          "id": "mat:26:0",
+          "book": "馬太福音",
+          "chapter": 26,
+          "title": "殺害耶穌的陰謀",
+          "verse_range": "1-5",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15491217649541794,
+          "rerank_score": 0.007017394993454218,
+          "gold": false
+        },
+        {
+          "id": "act:8:2",
+          "book": "使徒行傳",
+          "chapter": 8,
+          "title": "腓利和衣索匹亞的太監",
+          "verse_range": "26-40",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15293486565351486,
+          "rerank_score": 0.004192665219306946,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_016": {
+      "precision_at_k": 0.3333,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5,
+      "mrr": 0.25,
+      "map_at_k": 0.5833,
+      "ndcg_at_k": 0.4825,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.1773,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "jhn:19:1",
+        "mrk:15:3",
+        "luk:23:3",
+        "mat:27:5",
+        "jhn:19:0",
+        "mat:27:3"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "jhn:19:1",
+          "book": "約翰福音",
+          "chapter": 19,
+          "title": "（太27‧32－44；可15‧21－32；路",
+          "verse_range": "17-27",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.8303323304653167,
+          "rerank_score": 0.8861890435218811,
+          "gold": false
+        },
+        {
+          "id": "mrk:15:3",
+          "book": "馬可福音",
+          "chapter": 15,
+          "title": "（太27‧32－44；路23‧26－43；約",
+          "verse_range": "21-32",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.8172462499141693,
+          "rerank_score": 0.8674946427345276,
+          "gold": false
+        },
+        {
+          "id": "luk:23:3",
+          "book": "路加福音",
+          "chapter": 23,
+          "title": "（太27‧32－44；可15‧21－32；約",
+          "verse_range": "26-43",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.7987685656547545,
+          "rerank_score": 0.8410979509353638,
+          "gold": false
+        },
+        {
+          "id": "mat:27:5",
+          "book": "馬太福音",
+          "chapter": 27,
+          "title": "（可15‧21－32；路23‧26－43；約",
+          "verse_range": "32-44",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.7851521825790404,
+          "rerank_score": 0.821645975112915,
+          "gold": true
+        },
+        {
+          "id": "jhn:19:0",
+          "book": "約翰福音",
+          "chapter": 19,
+          "title": "(無標題)",
+          "verse_range": "1-16",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.7823735809326171,
+          "rerank_score": 0.8176765441894531,
+          "gold": false
+        },
+        {
+          "id": "mat:27:3",
+          "book": "馬太福音",
+          "chapter": 27,
+          "title": "（可15‧6－15；路23‧13－25；約",
+          "verse_range": "15-26",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.7543817019462584,
+          "rerank_score": 0.7776881456375122,
+          "gold": true
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_018": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.2857,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.2766,
+      "anchor_coverage_at_k": 1.0,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:2:0",
+        "jhn:16:1",
+        "rev:5:0",
+        "zec:6:0",
+        "1jn:5:1",
+        "rev:4:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "act:2:0",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "聖靈降臨",
+          "verse_range": "1-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.8380239284038543,
+          "rerank_score": 0.8971770405769348,
+          "gold": true
+        },
+        {
+          "id": "jhn:16:1",
+          "book": "約翰福音",
+          "chapter": 16,
+          "title": "聖靈的工作",
+          "verse_range": "5-15",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3439332222938537,
+          "rerank_score": 0.19133317470550537,
+          "gold": false
+        },
+        {
+          "id": "rev:5:0",
+          "book": "啟示錄",
+          "chapter": 5,
+          "title": "書卷和羔羊",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.28199008539319037,
+          "rerank_score": 0.10284297913312912,
+          "gold": false
+        },
+        {
+          "id": "zec:6:0",
+          "book": "撒迦利亞書",
+          "chapter": 6,
+          "title": "馬車的異象",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2539144365489483,
+          "rerank_score": 0.06273490935564041,
+          "gold": false
+        },
+        {
+          "id": "1jn:5:1",
+          "book": "約翰一書",
+          "chapter": 5,
+          "title": "上帝為他兒子作的見證",
+          "verse_range": "6-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24488250002264975,
+          "rerank_score": 0.049832142889499664,
+          "gold": false
+        },
+        {
+          "id": "rev:4:0",
+          "book": "啟示錄",
+          "chapter": 4,
+          "title": "天上的敬拜",
+          "verse_range": "1-11",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24158574514091014,
+          "rerank_score": 0.04512249305844307,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_019": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.0,
+      "hit_rate": 0.0,
+      "verse_recall_at_k": 0.0,
+      "anchor_coverage_at_k": 0.0,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "gal:1:0",
+        "act:26:0",
+        "act:22:1",
+        "act:26:1",
+        "act:26:3",
+        "act:26:2"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "gal:1:0",
+          "book": "加拉太書",
+          "chapter": 1,
+          "title": "問候",
+          "verse_range": "1-5",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.6305214738845825,
+          "rerank_score": 0.6007449626922607,
+          "gold": false
+        },
+        {
+          "id": "act:26:0",
+          "book": "使徒行傳",
+          "chapter": 26,
+          "title": "保羅在亞基帕王面前申辯",
+          "verse_range": "1-11",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.2681906744837761,
+          "rerank_score": 0.1688438206911087,
+          "gold": false
+        },
+        {
+          "id": "act:22:1",
+          "book": "使徒行傳",
+          "chapter": 22,
+          "title": "保羅敘述歸主的經過",
+          "verse_range": "6-16",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25939562529325483,
+          "rerank_score": 0.07056517899036407,
+          "gold": false
+        },
+        {
+          "id": "act:26:1",
+          "book": "使徒行傳",
+          "chapter": 26,
+          "title": "保羅敘述歸主經過",
+          "verse_range": "12-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24548762537539004,
+          "rerank_score": 0.05069660767912865,
+          "gold": false
+        },
+        {
+          "id": "act:26:3",
+          "book": "使徒行傳",
+          "chapter": 26,
+          "title": "保羅懇請亞基帕信主",
+          "verse_range": "24-32",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.22337623089551925,
+          "rerank_score": 0.10482318699359894,
+          "gold": false
+        },
+        {
+          "id": "act:26:2",
+          "book": "使徒行傳",
+          "chapter": 26,
+          "title": "保羅向猶太和外邦人作見證",
+          "verse_range": "19-23",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.17912332750856874,
+          "rerank_score": 0.04160475358366966,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_056": {
+      "precision_at_k": 0.6667,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8,
+      "mrr": 1.0,
+      "map_at_k": 0.95,
+      "ndcg_at_k": 0.9829,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.2448,
+      "anchor_coverage_at_k": 0.25,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "exo:32:0",
+        "exo:32:0:0",
+        "exo:32:0:1",
+        "jos:2:0",
+        "exo:32:0:2",
+        "exo:34:1"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "exo:32:0",
+          "book": "出埃及記",
+          "chapter": 32,
+          "title": "金牛犢",
+          "verse_range": "1-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4118141984939575,
+          "rerank_score": 0.28830599784851074,
+          "gold": true
+        },
+        {
+          "id": "exo:32:0:0",
+          "book": "出埃及記",
+          "chapter": 32,
+          "title": "金牛犢",
+          "verse_range": "1-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4118141984939575,
+          "rerank_score": 0.28830599784851074,
+          "gold": true
+        },
+        {
+          "id": "exo:32:0:1",
+          "book": "出埃及記",
+          "chapter": 32,
+          "title": "金牛犢",
+          "verse_range": "13-26",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.37926576495170594,
+          "rerank_score": 0.2418082356452942,
+          "gold": true
+        },
+        {
+          "id": "jos:2:0",
+          "book": "約書亞記",
+          "chapter": 2,
+          "title": "約書亞派探子進耶利哥",
+          "verse_range": "1-24",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3507142415642738,
+          "rerank_score": 0.20102034509181976,
+          "gold": false
+        },
+        {
+          "id": "exo:32:0:2",
+          "book": "出埃及記",
+          "chapter": 32,
+          "title": "金牛犢",
+          "verse_range": "26-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24722192272543905,
+          "rerank_score": 0.05317417532205582,
+          "gold": true
+        },
+        {
+          "id": "exo:34:1",
+          "book": "出埃及記",
+          "chapter": 34,
+          "title": "重新立約",
+          "verse_range": "10-28",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2290634552389383,
+          "rerank_score": 0.027233507484197617,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_065": {
+      "precision_at_k": 0.5,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.6667,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9469,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 1.0,
+      "anchor_coverage_at_k": 1.0,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:1:0",
+        "act:1:1",
+        "mrk:9:1",
+        "rev:20:0",
+        "act:2:0",
+        "mat:27:6"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "act:1:0",
+          "book": "使徒行傳",
+          "chapter": 1,
+          "title": "賜聖靈的應許",
+          "verse_range": "1-5",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.6393457746505737,
+          "rerank_score": 0.6133511066436768,
+          "gold": true
+        },
+        {
+          "id": "act:1:1",
+          "book": "使徒行傳",
+          "chapter": 1,
+          "title": "耶穌升天",
+          "verse_range": "6-11",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.33987099438905716,
+          "rerank_score": 0.18552999198436737,
+          "gold": true
+        },
+        {
+          "id": "mrk:9:1",
+          "book": "馬可福音",
+          "chapter": 9,
+          "title": "耶穌改變形像",
+          "verse_range": "2-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3150165370106697,
+          "rerank_score": 0.15002362430095673,
+          "gold": false
+        },
+        {
+          "id": "rev:20:0",
+          "book": "啟示錄",
+          "chapter": 20,
+          "title": "一千年",
+          "verse_range": "1-6",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3016511714458465,
+          "rerank_score": 0.13093024492263794,
+          "gold": false
+        },
+        {
+          "id": "act:2:0",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "聖靈降臨",
+          "verse_range": "1-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.28287767976522443,
+          "rerank_score": 0.1041109710931778,
+          "gold": true
+        },
+        {
+          "id": "mat:27:6",
+          "book": "馬太福音",
+          "chapter": 27,
+          "title": "（可15‧33－41；路23‧44－49；約",
+          "verse_range": "45-56",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2737763313949108,
+          "rerank_score": 0.09110904484987259,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_067": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.25,
+      "mrr": 0.3333,
+      "map_at_k": 0.1667,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.4545,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:18:1",
+        "act:20:0",
+        "gal:1:2",
+        "act:15:2",
+        "act:20:2",
+        "act:18:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "act:18:1",
+          "book": "使徒行傳",
+          "chapter": 18,
+          "title": "保羅回到安提阿",
+          "verse_range": "18-23",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.7974451041221617,
+          "rerank_score": 0.8392072916030884,
+          "gold": false
+        },
+        {
+          "id": "act:20:0",
+          "book": "使徒行傳",
+          "chapter": 20,
+          "title": "保羅再訪問馬其頓和希臘",
+          "verse_range": "1-6",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.7380253946781158,
+          "rerank_score": 0.7543219923973083,
+          "gold": false
+        },
+        {
+          "id": "gal:1:2",
+          "book": "加拉太書",
+          "chapter": 1,
+          "title": "保羅怎樣成為使徒",
+          "verse_range": "11-24",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.6336465871334076,
+          "rerank_score": 0.6052094101905823,
+          "gold": true
+        },
+        {
+          "id": "act:15:2",
+          "book": "使徒行傳",
+          "chapter": 15,
+          "title": "保羅和巴拿巴分手",
+          "verse_range": "36-41",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.5998117423057556,
+          "rerank_score": 0.5568739175796509,
+          "gold": false
+        },
+        {
+          "id": "act:20:2",
+          "book": "使徒行傳",
+          "chapter": 20,
+          "title": "從特羅亞到米利都",
+          "verse_range": "13-16",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.56893390417099,
+          "rerank_score": 0.5984770059585571,
+          "gold": false
+        },
+        {
+          "id": "act:18:0",
+          "book": "使徒行傳",
+          "chapter": 18,
+          "title": "保羅在哥林多",
+          "verse_range": "1-17",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.5104020899534225,
+          "rerank_score": 0.42914584279060364,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "EVENT_QUESTION_090": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.2857,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 1.0,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 1.0,
+      "anchor_coverage_at_k": 1.0,
+      "route": "R4",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mat:25:2",
+        "ezk:34:1",
+        "dan:8:0",
+        "lev:16:1",
+        "lev:16:0",
+        "zec:10:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "mat:25:2",
+          "book": "馬太福音",
+          "chapter": 25,
+          "title": "萬民受審判",
+          "verse_range": "31-46",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.6124316072463989,
+          "rerank_score": 0.5749022960662842,
+          "gold": true
+        },
+        {
+          "id": "ezk:34:1",
+          "book": "以西結書",
+          "chapter": 34,
+          "title": "好牧人",
+          "verse_range": "11-31",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3375735557079315,
+          "rerank_score": 0.18224793672561646,
+          "gold": false
+        },
+        {
+          "id": "dan:8:0",
+          "book": "但以理書",
+          "chapter": 8,
+          "title": "公綿羊、公山羊的異象",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3248008167743683,
+          "rerank_score": 0.16400116682052612,
+          "gold": false
+        },
+        {
+          "id": "lev:16:1",
+          "book": "利未記",
+          "chapter": 16,
+          "title": "代罪羊",
+          "verse_range": "20-28",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.287014472335577,
+          "rerank_score": 0.11002067476511002,
+          "gold": false
+        },
+        {
+          "id": "lev:16:0",
+          "book": "利未記",
+          "chapter": 16,
+          "title": "贖罪日",
+          "verse_range": "1-19",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.27277227699756623,
+          "rerank_score": 0.0896746814250946,
+          "gold": false
+        },
+        {
+          "id": "zec:10:0",
+          "book": "撒迦利亞書",
+          "chapter": 10,
+          "title": "耶和華應許解救",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2546798235177994,
+          "rerank_score": 0.06382831931114197,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_008": {
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "f1_at_k": 0.0,
+      "mrr": 0.0,
+      "map_at_k": 0.0,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 0.0,
+      "verse_recall_at_k": 0.0,
+      "anchor_coverage_at_k": 0.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "book_anchor",
+        "sql_supplement"
+      ],
+      "sources": [
+        "luk:1:1",
+        "luk:1:6",
+        "zec:9:0",
+        "zec:4:1",
+        "luk:4:0",
+        "zec:14:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "luk:1:1",
+          "book": "路加福音",
+          "chapter": 1,
+          "title": "預言施洗約翰的誕生",
+          "verse_range": "5-25",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.6607490611076354,
+          "rerank_score": 0.6653558015823364,
+          "gold": false
+        },
+        {
+          "id": "luk:1:6",
+          "book": "路加福音",
+          "chapter": 1,
+          "title": "撒迦利亞的預言",
+          "verse_range": "67-80",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3537265872955322,
+          "rerank_score": 0.2053236961364746,
+          "gold": false
+        },
+        {
+          "id": "zec:9:0",
+          "book": "撒迦利亞書",
+          "chapter": 9,
+          "title": "審判鄰國",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.32477509349584577,
+          "rerank_score": 0.18539299070835114,
+          "gold": false
+        },
+        {
+          "id": "zec:4:1",
+          "book": "撒迦利亞書",
+          "chapter": 4,
+          "title": "上帝給所羅巴伯的應許",
+          "verse_range": "6-14",
+          "strategy": "book_anchor",
+          "found_by": [
+            "book_anchor"
+          ],
+          "score": 0.2890507479012013,
+          "rerank_score": 0.02721535414457321,
+          "gold": false
+        },
+        {
+          "id": "luk:4:0",
+          "book": "路加福音",
+          "chapter": 4,
+          "title": "耶穌受試探",
+          "verse_range": "1-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2889625039696693,
+          "rerank_score": 0.13423214852809906,
+          "gold": false
+        },
+        {
+          "id": "zec:14:0",
+          "book": "撒迦利亞書",
+          "chapter": 14,
+          "title": "耶路撒冷和列國",
+          "verse_range": "1-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.2719461922347546,
+          "rerank_score": 0.10992313176393509,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_020": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 0.3333,
+      "f1_at_k": 0.2222,
+      "mrr": 0.2,
+      "map_at_k": 0.0667,
+      "ndcg_at_k": 0.3869,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.375,
+      "anchor_coverage_at_k": 0.3333,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "rev:12:0",
+        "gen:48:0",
+        "rev:1:0",
+        "rev:10:0",
+        "gen:12:0",
+        "gen:15:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "rev:12:0",
+          "book": "啟示錄",
+          "chapter": 12,
+          "title": "婦人和龍",
+          "verse_range": "1-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.30937540650367734,
+          "rerank_score": 0.16339343786239624,
+          "gold": false
+        },
+        {
+          "id": "gen:48:0",
+          "book": "創世記",
+          "chapter": 48,
+          "title": "雅各祝福以法蓮和瑪拿西",
+          "verse_range": "1-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.27792486906051633,
+          "rerank_score": 0.09703552722930908,
+          "gold": false
+        },
+        {
+          "id": "rev:1:0",
+          "book": "啟示錄",
+          "chapter": 1,
+          "title": "引言和致意",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.2504906421899795,
+          "rerank_score": 0.05784377455711365,
+          "gold": false
+        },
+        {
+          "id": "rev:10:0",
+          "book": "啟示錄",
+          "chapter": 10,
+          "title": "天使和小書卷",
+          "verse_range": "1-11",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.23200719490647315,
+          "rerank_score": 0.03143884986639023,
+          "gold": false
+        },
+        {
+          "id": "gen:12:0",
+          "book": "創世記",
+          "chapter": 12,
+          "title": "上帝呼召亞伯蘭",
+          "verse_range": "1-9",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.23086996119469402,
+          "rerank_score": 0.029814230278134346,
+          "gold": true
+        },
+        {
+          "id": "gen:15:0",
+          "book": "創世記",
+          "chapter": 15,
+          "title": "上帝與亞伯蘭立約",
+          "verse_range": "1-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.2193120983801782,
+          "rerank_score": 0.013302997685968876,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_054": {
+      "precision_at_k": 0.3333,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5,
+      "mrr": 0.3333,
+      "map_at_k": 0.3667,
+      "ndcg_at_k": 0.5724,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 1.0,
+      "anchor_coverage_at_k": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "lev:24:2",
+        "jhn:9:0",
+        "mat:5:8",
+        "deu:19:2",
+        "exo:21:1",
+        "mat:5:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "lev:24:2",
+          "book": "利未記",
+          "chapter": 24,
+          "title": "公正的判例",
+          "verse_range": "10-23",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4333550369739532,
+          "rerank_score": 0.31907862424850464,
+          "gold": false
+        },
+        {
+          "id": "jhn:9:0",
+          "book": "約翰福音",
+          "chapter": 9,
+          "title": "治好生來瞎眼的",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4217457604408264,
+          "rerank_score": 0.3239225149154663,
+          "gold": false
+        },
+        {
+          "id": "mat:5:8",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "論報復",
+          "verse_range": "38-42",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4200323438644409,
+          "rerank_score": 0.3000462055206299,
+          "gold": true
+        },
+        {
+          "id": "deu:19:2",
+          "book": "申命記",
+          "chapter": 19,
+          "title": "有關證人的條例",
+          "verse_range": "15-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3229485964775085,
+          "rerank_score": 0.1613551378250122,
+          "gold": false
+        },
+        {
+          "id": "exo:21:1",
+          "book": "出埃及記",
+          "chapter": 21,
+          "title": "懲罰暴行的條例",
+          "verse_range": "12-27",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2888714438676834,
+          "rerank_score": 0.11267349123954773,
+          "gold": true
+        },
+        {
+          "id": "mat:5:0",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "山上寶訓",
+          "verse_range": "1-2",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25397124797105786,
+          "rerank_score": 0.0628160685300827,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_055": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.25,
+      "mrr": 0.3333,
+      "map_at_k": 0.1667,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.6667,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "mrk:10:0",
+        "mat:19:0",
+        "mat:5:6",
+        "isa:50:0",
+        "mrk:10:2",
+        "mrk:10:3"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "mrk:10:0",
+          "book": "馬可福音",
+          "chapter": 10,
+          "title": "休妻的問題",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.8692141032218932,
+          "rerank_score": 0.9417344331741333,
+          "gold": false
+        },
+        {
+          "id": "mat:19:0",
+          "book": "馬太福音",
+          "chapter": 19,
+          "title": "休妻的問題",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.8011502122879027,
+          "rerank_score": 0.8445003032684326,
+          "gold": false
+        },
+        {
+          "id": "mat:5:6",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "論休妻",
+          "verse_range": "31-32",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2962502321600914,
+          "rerank_score": 0.12321461737155914,
+          "gold": true
+        },
+        {
+          "id": "isa:50:0",
+          "book": "以賽亞書",
+          "chapter": 50,
+          "title": "(無標題)",
+          "verse_range": "1-3",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.29098640590906144,
+          "rerank_score": 0.11569486558437347,
+          "gold": false
+        },
+        {
+          "id": "mrk:10:2",
+          "book": "馬可福音",
+          "chapter": 10,
+          "title": "財主尋求永生之道",
+          "verse_range": "17-31",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.17847429364919662,
+          "rerank_score": 0.04067756235599518,
+          "gold": false
+        },
+        {
+          "id": "mrk:10:3",
+          "book": "馬可福音",
+          "chapter": 10,
+          "title": "耶穌第三次預言受難和復活",
+          "verse_range": "32-34",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15260902694426476,
+          "rerank_score": 0.003727181348949671,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_065": {
+      "precision_at_k": 0.1667,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.25,
+      "mrr": 0.3333,
+      "map_at_k": 0.1667,
+      "ndcg_at_k": 0.5,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.1875,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "2ch:30:1",
+        "ezr:6:3",
+        "1co:5:0",
+        "num:9:0",
+        "luk:22:1",
+        "mrk:14:3"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "2ch:30:1",
+          "book": "歷代志下",
+          "chapter": 30,
+          "title": "守逾越節",
+          "verse_range": "13-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.576037300825119,
+          "rerank_score": 0.5443390011787415,
+          "gold": false
+        },
+        {
+          "id": "ezr:6:3",
+          "book": "以斯拉記",
+          "chapter": 6,
+          "title": "守逾越節",
+          "verse_range": "19-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5702600073814392,
+          "rerank_score": 0.5360857248306274,
+          "gold": false
+        },
+        {
+          "id": "1co:5:0",
+          "book": "哥林多前書",
+          "chapter": 5,
+          "title": "判斷淫亂的事件",
+          "verse_range": "1-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5166899508237839,
+          "rerank_score": 0.4381285011768341,
+          "gold": true
+        },
+        {
+          "id": "num:9:0",
+          "book": "民數記",
+          "chapter": 9,
+          "title": "第二個逾越節",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5088021492958068,
+          "rerank_score": 0.4268602132797241,
+          "gold": false
+        },
+        {
+          "id": "luk:22:1",
+          "book": "路加福音",
+          "chapter": 22,
+          "title": "（太26‧17－25；可14‧12－21；約",
+          "verse_range": "7-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5018040543794632,
+          "rerank_score": 0.41686293482780457,
+          "gold": false
+        },
+        {
+          "id": "mrk:14:3",
+          "book": "馬可福音",
+          "chapter": 14,
+          "title": "（太26‧17－25；路22‧7－13，21－23；約",
+          "verse_range": "12-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4508109188079834,
+          "rerank_score": 0.34401559829711914,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_076": {
+      "precision_at_k": 0.3333,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.5,
+      "mrr": 1.0,
+      "map_at_k": 0.7,
+      "ndcg_at_k": 0.8503,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.1692,
+      "anchor_coverage_at_k": 0.3333,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_supplement"
+      ],
+      "sources": [
+        "2ch:7:0",
+        "2ch:8:0",
+        "1ki:9:2",
+        "2ch:3:0",
+        "2ch:7:1",
+        "1ki:3:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "2ch:7:0",
+          "book": "歷代志下",
+          "chapter": 7,
+          "title": "聖殿的奉獻禮",
+          "verse_range": "1-10",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.44610635101795193,
+          "rerank_score": 0.3372947871685028,
+          "gold": true
+        },
+        {
+          "id": "2ch:8:0",
+          "book": "歷代志下",
+          "chapter": 8,
+          "title": "所羅門的成就",
+          "verse_range": "1-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4312300300598144,
+          "rerank_score": 0.3160429000854492,
+          "gold": false
+        },
+        {
+          "id": "1ki:9:2",
+          "book": "列王紀上",
+          "chapter": 9,
+          "title": "所羅門其他政績",
+          "verse_range": "15-28",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.4092885440587997,
+          "rerank_score": 0.28469792008399963,
+          "gold": false
+        },
+        {
+          "id": "2ch:3:0",
+          "book": "歷代志下",
+          "chapter": 3,
+          "title": "(無標題)",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.36033776164054865,
+          "rerank_score": 0.21476823091506958,
+          "gold": false
+        },
+        {
+          "id": "2ch:7:1",
+          "book": "歷代志下",
+          "chapter": 7,
+          "title": "上帝再次向所羅門顯現",
+          "verse_range": "11-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.345728208720684,
+          "rerank_score": 0.19389744102954865,
+          "gold": true
+        },
+        {
+          "id": "1ki:3:0",
+          "book": "列王紀上",
+          "chapter": 3,
+          "title": "所羅門祈禱求智慧",
+          "verse_range": "1-15",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.3161820551753044,
+          "rerank_score": 0.15168865025043488,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_077": {
+      "precision_at_k": 0.6667,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.8,
+      "mrr": 1.0,
+      "map_at_k": 1.0,
+      "ndcg_at_k": 0.9829,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 1.0,
+      "anchor_coverage_at_k": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "book_anchor",
+        "sql_supplement"
+      ],
+      "sources": [
+        "2ch:35:0:1",
+        "2ch:35:0",
+        "2ch:35:0:0",
+        "2ch:30:1",
+        "2ki:23:1",
+        "2ch:30:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "2ch:35:0:1",
+          "book": "歷代志下",
+          "chapter": 35,
+          "title": "約西亞守逾越節",
+          "verse_range": "11-19",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.778509600162506,
+          "rerank_score": 0.8335851430892944,
+          "gold": true
+        },
+        {
+          "id": "2ch:35:0",
+          "book": "歷代志下",
+          "chapter": 35,
+          "title": "約西亞守逾越節",
+          "verse_range": "1-19",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.7664687192440032,
+          "rerank_score": 0.794955313205719,
+          "gold": true
+        },
+        {
+          "id": "2ch:35:0:0",
+          "book": "歷代志下",
+          "chapter": 35,
+          "title": "約西亞守逾越節",
+          "verse_range": "1-11",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.7514687192440033,
+          "rerank_score": 0.794955313205719,
+          "gold": true
+        },
+        {
+          "id": "2ch:30:1",
+          "book": "歷代志下",
+          "chapter": 30,
+          "title": "守逾越節",
+          "verse_range": "13-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5609414947032929,
+          "rerank_score": 0.5227735638618469,
+          "gold": false
+        },
+        {
+          "id": "2ki:23:1",
+          "book": "列王紀下",
+          "chapter": 23,
+          "title": "約西亞守逾越節",
+          "verse_range": "21-23",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.5234023457765579,
+          "rerank_score": 0.4477176368236542,
+          "gold": true
+        },
+        {
+          "id": "2ch:30:0",
+          "book": "歷代志下",
+          "chapter": 30,
+          "title": "預備守逾越節",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4218637537956238,
+          "rerank_score": 0.3240910768508911,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_097": {
+      "precision_at_k": 0.5,
+      "recall_at_k": 1.0,
+      "f1_at_k": 0.6667,
+      "mrr": 1.0,
+      "map_at_k": 0.8056,
+      "ndcg_at_k": 0.906,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.6667,
+      "anchor_coverage_at_k": 1.0,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "book_anchor",
+        "sql_supplement"
+      ],
+      "sources": [
+        "act:2:0",
+        "neh:10:1",
+        "1co:15:1",
+        "lev:23:1",
+        "jer:2:0",
+        "lev:2:0"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "act:2:0",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "聖靈降臨",
+          "verse_range": "1-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5055792367458343,
+          "rerank_score": 0.4222560524940491,
+          "gold": true
+        },
+        {
+          "id": "neh:10:1",
+          "book": "尼西米記",
+          "chapter": 10,
+          "title": "公約的內容",
+          "verse_range": "28-39",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3643150410056114,
+          "rerank_score": 0.22045005857944489,
+          "gold": false
+        },
+        {
+          "id": "1co:15:1",
+          "book": "哥林多前書",
+          "chapter": 15,
+          "title": "死人的復活",
+          "verse_range": "12-34",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3139229393005371,
+          "rerank_score": 0.14846134185791016,
+          "gold": true
+        },
+        {
+          "id": "lev:23:1",
+          "book": "利未記",
+          "chapter": 23,
+          "title": "逾越節和除酵節",
+          "verse_range": "5-14",
+          "strategy": "book_anchor",
+          "found_by": [
+            "book_anchor"
+          ],
+          "score": 0.2947872203588486,
+          "rerank_score": 0.0354103147983551,
+          "gold": true
+        },
+        {
+          "id": "jer:2:0",
+          "book": "耶利米書",
+          "chapter": 2,
+          "title": "上帝眷顧以色列",
+          "verse_range": "1-3",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.27789910495281217,
+          "rerank_score": 0.09699872136116028,
+          "gold": false
+        },
+        {
+          "id": "lev:2:0",
+          "book": "利未記",
+          "chapter": 2,
+          "title": "素祭的條例",
+          "verse_range": "1-16",
+          "strategy": "book_anchor",
+          "found_by": [
+            "book_anchor"
+          ],
+          "score": 0.27246881872881207,
+          "rerank_score": 0.0035268838983029127,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    },
+    "GENERAL_BIBLE_QUESTION_099": {
+      "precision_at_k": 0.3333,
+      "recall_at_k": 0.5,
+      "f1_at_k": 0.4,
+      "mrr": 0.3333,
+      "map_at_k": 0.2083,
+      "ndcg_at_k": 0.834,
+      "hit_rate": 1.0,
+      "verse_recall_at_k": 0.2857,
+      "anchor_coverage_at_k": 0.5,
+      "route": "R5",
+      "strategies": [
+        "semantic",
+        "sql_chapter",
+        "book_anchor",
+        "sql_supplement"
+      ],
+      "sources": [
+        "psa:89:1",
+        "luk:2:1",
+        "act:2:1:1",
+        "psa:89:0",
+        "psa:89:3",
+        "psa:89:2"
+      ],
+      "strategy_errors": {},
+      "invalid": false,
+      "source_detail": [
+        {
+          "id": "psa:89:1",
+          "book": "詩篇",
+          "chapter": 89,
+          "title": "上帝對大衛的應許",
+          "verse_range": "19-37",
+          "strategy": "sql_chapter",
+          "found_by": [
+            "hybrid_hybrid",
+            "sql_chapter",
+            "book_anchor"
+          ],
+          "score": 0.39206313639879226,
+          "rerank_score": 0.13151876628398895,
+          "gold": false
+        },
+        {
+          "id": "luk:2:1",
+          "book": "路加福音",
+          "chapter": 2,
+          "title": "天使報喜訊給牧羊的人",
+          "verse_range": "8-21",
+          "strategy": "book_anchor",
+          "found_by": [
+            "book_anchor"
+          ],
+          "score": 0.3878993374109268,
+          "rerank_score": 0.27557048201560974,
+          "gold": false
+        },
+        {
+          "id": "act:2:1:1",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "彼得在五旬節的講論",
+          "verse_range": "30-42",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3585798767209053,
+          "rerank_score": 0.23368553817272186,
+          "gold": true
+        },
+        {
+          "id": "psa:89:0",
+          "book": "詩篇",
+          "chapter": 89,
+          "title": "困難中的聖詩",
+          "verse_range": "1-18",
+          "strategy": "sql_chapter",
+          "found_by": [
+            "sql_chapter"
+          ],
+          "score": 0.3410195469856262,
+          "rerank_score": 0.05859935283660889,
+          "gold": true
+        },
+        {
+          "id": "psa:89:3",
+          "book": "詩篇",
+          "chapter": 89,
+          "title": "求救的禱告",
+          "verse_range": "46-52",
+          "strategy": "sql_chapter",
+          "found_by": [
+            "hybrid_hybrid",
+            "sql_chapter"
+          ],
+          "score": 0.32749371901154517,
+          "rerank_score": 0.039276741445064545,
+          "gold": false
+        },
+        {
+          "id": "psa:89:2",
+          "book": "詩篇",
+          "chapter": 89,
+          "title": "君主慘敗的哀歌",
+          "verse_range": "38-45",
+          "strategy": "sql_chapter",
+          "found_by": [
+            "sql_chapter"
+          ],
+          "score": 0.3037472290918231,
+          "rerank_score": 0.005353184416890144,
+          "gold": false
+        }
+      ],
+      "graph_strategies": [],
+      "event_registry_events": []
+    }
+  },
+  "config": {
+    "from_raw": null,
+    "use_graph": false,
+    "fusion_alpha": null,
+    "top_k": 6,
+    "metric_k": 6,
+    "metric_version": "7d5c536168e0",
+    "only": null,
+    "ids_file": "/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/touched_20261003.txt",
+    "graph_strategies_requested": null,
+    "graph_strategies_applied": {
+      "(none)": 23
+    }
+  }
+}

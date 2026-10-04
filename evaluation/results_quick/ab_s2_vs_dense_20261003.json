@@ -1,0 +1,5505 @@
+{
+  "metric_k": 6,
+  "top_k": 5,
+  "n": 490,
+  "excluded_invalid": [],
+  "route_mismatch": [
+    "EVENT_QUESTION_083",
+    "GENERAL_BIBLE_QUESTION_062",
+    "GENERAL_BIBLE_QUESTION_086",
+    "PERSON_QUESTION_028",
+    "PERSON_QUESTION_040",
+    "PERSON_QUESTION_082",
+    "PERSON_QUESTION_091",
+    "TOPIC_QUESTION_034",
+    "TOPIC_QUESTION_068",
+    "TOPIC_QUESTION_071"
+  ],
+  "with_strategy_errors": [],
+  "invariants": {
+    "core_identical": 432,
+    "core_mismatch": [
+      "EVENT_QUESTION_001",
+      "EVENT_QUESTION_003",
+      "EVENT_QUESTION_004",
+      "EVENT_QUESTION_005",
+      "EVENT_QUESTION_008",
+      "EVENT_QUESTION_009",
+      "EVENT_QUESTION_010",
+      "EVENT_QUESTION_011",
+      "EVENT_QUESTION_014",
+      "EVENT_QUESTION_015",
+      "EVENT_QUESTION_018",
+      "EVENT_QUESTION_019",
+      "EVENT_QUESTION_024",
+      "EVENT_QUESTION_031",
+      "EVENT_QUESTION_032",
+      "EVENT_QUESTION_038",
+      "EVENT_QUESTION_039",
+      "EVENT_QUESTION_041",
+      "EVENT_QUESTION_043",
+      "EVENT_QUESTION_047",
+      "EVENT_QUESTION_053",
+      "EVENT_QUESTION_056",
+      "EVENT_QUESTION_057",
+      "EVENT_QUESTION_059",
+      "EVENT_QUESTION_060",
+      "EVENT_QUESTION_065",
+      "EVENT_QUESTION_067",
+      "EVENT_QUESTION_078",
+      "EVENT_QUESTION_081",
+      "EVENT_QUESTION_082",
+      "EVENT_QUESTION_090",
+      "EVENT_QUESTION_096",
+      "EVENT_QUESTION_097",
+      "GENERAL_BIBLE_QUESTION_008",
+      "GENERAL_BIBLE_QUESTION_009",
+      "GENERAL_BIBLE_QUESTION_015",
+      "GENERAL_BIBLE_QUESTION_020",
+      "GENERAL_BIBLE_QUESTION_021",
+      "GENERAL_BIBLE_QUESTION_047",
+      "GENERAL_BIBLE_QUESTION_054",
+      "GENERAL_BIBLE_QUESTION_055",
+      "GENERAL_BIBLE_QUESTION_065",
+      "GENERAL_BIBLE_QUESTION_069",
+      "GENERAL_BIBLE_QUESTION_076",
+      "GENERAL_BIBLE_QUESTION_077",
+      "GENERAL_BIBLE_QUESTION_099",
+      "PERSON_QUESTION_032",
+      "PERSON_QUESTION_033",
+      "PERSON_QUESTION_035",
+      "PERSON_QUESTION_042",
+      "PERSON_QUESTION_043",
+      "PERSON_QUESTION_046",
+      "PERSON_QUESTION_048",
+      "PERSON_QUESTION_070",
+      "PERSON_QUESTION_085",
+      "PERSON_QUESTION_096",
+      "PERSON_QUESTION_098",
+      "TOPIC_QUESTION_077"
+    ],
+    "touched": []
+  },
+  "stats": {
+    "all": {
+      "verse_recall_at_k": {
+        "n": 490,
+        "mean_delta": 0.00676,
+        "ci95": [
+          0.00129,
+          0.01314
+        ],
+        "wins": 14,
+        "losses": 6,
+        "sign_flip_p": 0.0234,
+        "sign_test_p": 0.11532
+      },
+      "anchor_coverage_at_k": {
+        "n": 490,
+        "mean_delta": 0.00872,
+        "ci95": [
+          0.00017,
+          0.01812
+        ],
+        "wins": 10,
+        "losses": 5,
+        "sign_flip_p": 0.05505,
+        "sign_test_p": 0.30176
+      },
+      "mrr": {
+        "n": 490,
+        "mean_delta": 0.00725,
+        "ci95": [
+          -0.00058,
+          0.01602
+        ],
+        "wins": 11,
+        "losses": 8,
+        "sign_flip_p": 0.0873,
+        "sign_test_p": 0.64761
+      },
+      "hit_rate": {
+        "n": 490,
+        "mean_delta": 0.00816,
+        "ci95": [
+          0.00204,
+          0.01633
+        ],
+        "wins": 4,
+        "losses": 0,
+        "sign_flip_p": 0.125,
+        "sign_test_p": 0.125
+      }
+    },
+    "touched": {
+      "verse_recall_at_k": {
+        "n": 0,
+        "mean_delta": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "wins": 0,
+        "losses": 0,
+        "sign_flip_p": 1.0,
+        "sign_test_p": 1.0
+      },
+      "anchor_coverage_at_k": {
+        "n": 0,
+        "mean_delta": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "wins": 0,
+        "losses": 0,
+        "sign_flip_p": 1.0,
+        "sign_test_p": 1.0
+      },
+      "mrr": {
+        "n": 0,
+        "mean_delta": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "wins": 0,
+        "losses": 0,
+        "sign_flip_p": 1.0,
+        "sign_test_p": 1.0
+      },
+      "hit_rate": {
+        "n": 0,
+        "mean_delta": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "wins": 0,
+        "losses": 0,
+        "sign_flip_p": 1.0,
+        "sign_test_p": 1.0
+      }
+    },
+    "legacy": {
+      "verse_recall_at_k": {
+        "n": 100,
+        "mean_delta": 0.02388,
+        "ci95": [
+          0.00457,
+          0.04856
+        ],
+        "wins": 9,
+        "losses": 2,
+        "sign_flip_p": 0.03125,
+        "sign_test_p": 0.06543
+      },
+      "anchor_coverage_at_k": {
+        "n": 100,
+        "mean_delta": 0.03917,
+        "ci95": [
+          0.0075,
+          0.08
+        ],
+        "wins": 6,
+        "losses": 1,
+        "sign_flip_p": 0.03125,
+        "sign_test_p": 0.125
+      },
+      "mrr": {
+        "n": 100,
+        "mean_delta": 0.02967,
+        "ci95": [
+          0.00267,
+          0.063
+        ],
+        "wins": 7,
+        "losses": 1,
+        "sign_flip_p": 0.0625,
+        "sign_test_p": 0.07031
+      },
+      "hit_rate": {
+        "n": 100,
+        "mean_delta": 0.04,
+        "ci95": [
+          0.01,
+          0.08
+        ],
+        "wins": 4,
+        "losses": 0,
+        "sign_flip_p": 0.125,
+        "sign_test_p": 0.125
+      }
+    },
+    "expanded": {
+      "verse_recall_at_k": {
+        "n": 390,
+        "mean_delta": 0.00237,
+        "ci95": [
+          -0.00195,
+          0.00796
+        ],
+        "wins": 5,
+        "losses": 4,
+        "sign_flip_p": 0.44141,
+        "sign_test_p": 1.0
+      },
+      "anchor_coverage_at_k": {
+        "n": 390,
+        "mean_delta": 0.00092,
+        "ci95": [
+          -0.00507,
+          0.00714
+        ],
+        "wins": 4,
+        "losses": 4,
+        "sign_flip_p": 0.76562,
+        "sign_test_p": 1.0
+      },
+      "mrr": {
+        "n": 390,
+        "mean_delta": 0.0015,
+        "ci95": [
+          -0.00513,
+          0.00919
+        ],
+        "wins": 4,
+        "losses": 7,
+        "sign_flip_p": 0.66797,
+        "sign_test_p": 0.54883
+      },
+      "hit_rate": {
+        "n": 390,
+        "mean_delta": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "wins": 0,
+        "losses": 0,
+        "sign_flip_p": 1.0,
+        "sign_test_p": 1.0
+      }
+    }
+  },
+  "holm": {
+    "all": {
+      "verse_recall_at_k": 0.0936,
+      "anchor_coverage_at_k": 0.16515,
+      "mrr": 0.1746,
+      "hit_rate": 0.1746
+    },
+    "touched": {
+      "verse_recall_at_k": 1.0,
+      "anchor_coverage_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate": 1.0
+    },
+    "legacy": {
+      "verse_recall_at_k": 0.125,
+      "anchor_coverage_at_k": 0.125,
+      "mrr": 0.125,
+      "hit_rate": 0.125
+    },
+    "expanded": {
+      "verse_recall_at_k": 1.0,
+      "mrr": 1.0,
+      "anchor_coverage_at_k": 1.0,
+      "hit_rate": 1.0
+    }
+  },
+  "negatives": {
+    "verse_recall_at_k": [
+      "EVENT_QUESTION_001",
+      "EVENT_QUESTION_003",
+      "GENERAL_BIBLE_QUESTION_054",
+      "GENERAL_BIBLE_QUESTION_076",
+      "GENERAL_BIBLE_QUESTION_077",
+      "TOPIC_QUESTION_077"
+    ],
+    "anchor_coverage_at_k": [
+      "EVENT_QUESTION_001",
+      "EVENT_QUESTION_060",
+      "GENERAL_BIBLE_QUESTION_054",
+      "GENERAL_BIBLE_QUESTION_077",
+      "TOPIC_QUESTION_077"
+    ],
+    "mrr": [
+      "EVENT_QUESTION_001",
+      "GENERAL_BIBLE_QUESTION_021",
+      "GENERAL_BIBLE_QUESTION_069",
+      "GENERAL_BIBLE_QUESTION_077",
+      "GENERAL_BIBLE_QUESTION_099",
+      "PERSON_QUESTION_070",
+      "PERSON_QUESTION_096",
+      "TOPIC_QUESTION_077"
+    ],
+    "hit_rate": []
+  },
+  "ledger_summary": {
+    "gold_out": 4,
+    "identical": 432,
+    "gold_swap": 7,
+    "order_only": 5,
+    "gold_in": 10,
+    "nongold_swap": 32
+  },
+  "ledger": {
+    "EVENT_QUESTION_001": {
+      "status": "gold_out",
+      "injected": [
+        {
+          "id": "isa:54:0",
+          "book": "以賽亞書",
+          "chapter": 54,
+          "title": "耶和華對以色列的愛",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.6739362783432007,
+          "rerank_score": 0.013054776936769485,
+          "gold": false
+        },
+        {
+          "id": "dan:9:1",
+          "book": "但以理書",
+          "chapter": 9,
+          "title": "加百列解釋預言",
+          "verse_range": "20-27",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.570798157453537,
+          "rerank_score": 0.45114022493362427,
+          "gold": false
+        },
+        {
+          "id": "dan:11:1",
+          "book": "但以理書",
+          "chapter": 11,
+          "title": "南方王和北方王",
+          "verse_range": "3-20",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.4378885108232498,
+          "rerank_score": 0.26126930117607117,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "gen:6:1",
+          "book": "創世記",
+          "chapter": 6,
+          "title": "挪亞",
+          "verse_range": "9-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.31662290304899215,
+          "rerank_score": 0.15231843292713165,
+          "gold": true
+        },
+        {
+          "id": "gen:8:1",
+          "book": "創世記",
+          "chapter": 8,
+          "title": "挪亞獻祭",
+          "verse_range": "20-22",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.1713158432394266,
+          "rerank_score": 0.030451204627752304,
+          "gold": true
+        },
+        {
+          "id": "gen:6:0",
+          "book": "創世記",
+          "chapter": 6,
+          "title": "人類的邪惡",
+          "verse_range": "1-8",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.16818814314901828,
+          "rerank_score": 0.025983061641454697,
+          "gold": true
+        }
+      ]
+    },
+    "EVENT_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_003": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "exo:7:2",
+          "book": "出埃及記",
+          "chapter": 7,
+          "title": "埃及遭災－血災",
+          "verse_range": "14-25",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.49221468341350555,
+          "rerank_score": 0.03708529844880104,
+          "gold": true
+        },
+        {
+          "id": "exo:11:0",
+          "book": "出埃及記",
+          "chapter": 11,
+          "title": "所有頭胎的都死",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3572145077586174,
+          "rerank_score": 0.14602072536945343,
+          "gold": true
+        },
+        {
+          "id": "exo:12:3",
+          "book": "出埃及記",
+          "chapter": 12,
+          "title": "頭胎的被殺",
+          "verse_range": "29-36",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.31404279202222823,
+          "rerank_score": 0.08434684574604034,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "exo:9:2",
+          "book": "出埃及記",
+          "chapter": 9,
+          "title": "－雹災",
+          "verse_range": "13-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2564027538895607,
+          "rerank_score": 0.06628964841365814,
+          "gold": true
+        },
+        {
+          "id": "exo:10:1",
+          "book": "出埃及記",
+          "chapter": 10,
+          "title": "－黑暗之災",
+          "verse_range": "21-29",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24072415217757223,
+          "rerank_score": 0.04389164596796036,
+          "gold": true
+        },
+        {
+          "id": "exo:9:0",
+          "book": "出埃及記",
+          "chapter": 9,
+          "title": "－畜疫之災",
+          "verse_range": "1-7",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.23143582269549368,
+          "rerank_score": 0.116336889564991,
+          "gold": true
+        }
+      ]
+    },
+    "EVENT_QUESTION_004": {
+      "status": "order_only",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_005": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "num:14:0",
+          "book": "民數記",
+          "chapter": 14,
+          "title": "民眾埋怨",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.8267820532321929,
+          "rerank_score": 0.010920580476522446,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "deu:2:0:0",
+          "book": "申命記",
+          "chapter": 2,
+          "title": "多年在曠野",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4265560036897659,
+          "rerank_score": 0.30936571955680847,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_008": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "1ki:12:0",
+          "book": "列王紀上",
+          "chapter": 12,
+          "title": "北方的支派反叛",
+          "verse_range": "1-20",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.31427745401859286,
+          "rerank_score": 0.08468207716941833,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "dan:2:2",
+          "book": "但以理書",
+          "chapter": 2,
+          "title": "但以理為王解夢",
+          "verse_range": "24-45",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2409029623866081,
+          "rerank_score": 0.04414708912372589,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_009": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "2ki:25:2",
+          "book": "列王紀下",
+          "chapter": 25,
+          "title": "猶大人被擄",
+          "verse_range": "18-21",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3483839589357376,
+          "rerank_score": 0.1334056556224823,
+          "gold": false
+        },
+        {
+          "id": "neh:7:1",
+          "book": "尼西米記",
+          "chapter": 7,
+          "title": "被擄歸回者的名單",
+          "verse_range": "4-73",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event",
+            "hybrid_hybrid"
+          ],
+          "score": 0.3151253122091293,
+          "rerank_score": 0.08589330315589905,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "ezr:6:3",
+          "book": "以斯拉記",
+          "chapter": 6,
+          "title": "守逾越節",
+          "verse_range": "19-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3068262523412704,
+          "rerank_score": 0.13832321763038635,
+          "gold": true
+        },
+        {
+          "id": "jer:39:0",
+          "book": "耶利米書",
+          "chapter": 39,
+          "title": "耶路撒冷陷落",
+          "verse_range": "1-10",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2983873179554939,
+          "rerank_score": 0.12626759707927704,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_010": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "luk:2:0",
+          "book": "路加福音",
+          "chapter": 2,
+          "title": "耶穌降生",
+          "verse_range": "1-7",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event",
+            "hybrid_hybrid"
+          ],
+          "score": 0.8388151640892028,
+          "rerank_score": 0.07757841050624847,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "luk:23:3",
+          "book": "路加福音",
+          "chapter": 23,
+          "title": "（太27‧32－44；可15‧21－32；約",
+          "verse_range": "26-43",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.6334182775020599,
+          "rerank_score": 0.6048832535743713,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_011": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "mat:5:2",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "鹽和光",
+          "verse_range": "13-16",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.26889891728758814,
+          "rerank_score": 0.019855596125125885,
+          "gold": true
+        },
+        {
+          "id": "mat:5:9",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "論愛仇敵",
+          "verse_range": "43-48",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2655790627188981,
+          "rerank_score": 0.01511294674128294,
+          "gold": true
+        },
+        {
+          "id": "mat:5:0",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "山上寶訓",
+          "verse_range": "1-2",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event",
+            "hybrid_hybrid"
+          ],
+          "score": 0.26220401676371696,
+          "rerank_score": 0.010291452519595623,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "pro:8:0",
+          "book": "箴言",
+          "chapter": 8,
+          "title": "智慧頌",
+          "verse_range": "1-36",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2613431780040264,
+          "rerank_score": 0.07334739714860916,
+          "gold": false
+        },
+        {
+          "id": "psa:68:0",
+          "book": "詩篇",
+          "chapter": 68,
+          "title": "勝利之歌",
+          "verse_range": "1-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25419056102633475,
+          "rerank_score": 0.06312937289476395,
+          "gold": false
+        },
+        {
+          "id": "rev:6:0",
+          "book": "啟示錄",
+          "chapter": 6,
+          "title": "揭開封嚴的印",
+          "verse_range": "1-17",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25006586037576195,
+          "rerank_score": 0.057236943393945694,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_014": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "jhn:13:0",
+          "book": "約翰福音",
+          "chapter": 13,
+          "title": "耶穌為門徒洗腳",
+          "verse_range": "1-20",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.37113882929086683,
+          "rerank_score": 0.16591261327266693,
+          "gold": true
+        },
+        {
+          "id": "luk:22:2",
+          "book": "路加福音",
+          "chapter": 22,
+          "title": "（太26‧26－30；可14‧22－26；林前",
+          "verse_range": "14-23",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.27058706872165206,
+          "rerank_score": 0.022267241030931473,
+          "gold": true
+        },
+        {
+          "id": "mrk:14:3",
+          "book": "馬可福音",
+          "chapter": 14,
+          "title": "（太26‧17－25；路22‧7－13，21－23；約",
+          "verse_range": "12-21",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.26064150186255575,
+          "rerank_score": 0.008059288375079632,
+          "gold": false
+        },
+        {
+          "id": "mat:26:3",
+          "book": "馬太福音",
+          "chapter": 26,
+          "title": "（可14‧12－21；路22‧7－14，21－23；約",
+          "verse_range": "17-25",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25984240902587774,
+          "rerank_score": 0.006917727179825306,
+          "gold": false
+        },
+        {
+          "id": "jhn:13:1",
+          "book": "約翰福音",
+          "chapter": 13,
+          "title": "（太26‧20－25；可14‧17－21；路",
+          "verse_range": "21-30",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2585264436621219,
+          "rerank_score": 0.005037776660174131,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mrk:6:2",
+          "book": "馬可福音",
+          "chapter": 6,
+          "title": "施洗約翰的死",
+          "verse_range": "14-29",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.23705880366265772,
+          "rerank_score": 0.03865543380379677,
+          "gold": false
+        },
+        {
+          "id": "jdg:19:0",
+          "book": "士師記",
+          "chapter": 19,
+          "title": "利未人和他的妾",
+          "verse_range": "1-30",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2279726503789425,
+          "rerank_score": 0.0256752148270607,
+          "gold": false
+        },
+        {
+          "id": "1co:11:4",
+          "book": "哥林多前書",
+          "chapter": 11,
+          "title": "不按理吃主的晚餐",
+          "verse_range": "27-34",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.22612324118614197,
+          "rerank_score": 0.023033201694488525,
+          "gold": false
+        },
+        {
+          "id": "2sa:3:4",
+          "book": "撒母耳記下",
+          "chapter": 3,
+          "title": "安葬押尼珥",
+          "verse_range": "31-39",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21875899996608494,
+          "rerank_score": 0.012512857094407082,
+          "gold": false
+        },
+        {
+          "id": "rev:15:0",
+          "book": "啟示錄",
+          "chapter": 15,
+          "title": "七位天使掌管最後的災",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21715700052678585,
+          "rerank_score": 0.01022428646683693,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_015": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "luk:22:6",
+          "book": "路加福音",
+          "chapter": 22,
+          "title": "在橄欖山上禱告",
+          "verse_range": "39-46",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3112404029071331,
+          "rerank_score": 0.08034343272447586,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:26:0",
+          "book": "馬太福音",
+          "chapter": 26,
+          "title": "殺害耶穌的陰謀",
+          "verse_range": "1-5",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15491217649541794,
+          "rerank_score": 0.007017394993454218,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_018": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "act:2:1",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "彼得在五旬節的講論",
+          "verse_range": "14-42",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event",
+            "hybrid_hybrid"
+          ],
+          "score": 0.2631743131391704,
+          "rerank_score": 0.011677590198814869,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "1jn:5:1",
+          "book": "約翰一書",
+          "chapter": 5,
+          "title": "上帝為他兒子作的見證",
+          "verse_range": "6-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24488250002264975,
+          "rerank_score": 0.049832142889499664,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_019": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "act:9:0",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅的轉變",
+          "verse_range": "1-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.30648792639374733,
+          "rerank_score": 0.07355418056249619,
+          "gold": true
+        },
+        {
+          "id": "act:9:1",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅在大馬士革傳道",
+          "verse_range": "20-22",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2742735265940428,
+          "rerank_score": 0.02753360942006111,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "act:26:0",
+          "book": "使徒行傳",
+          "chapter": 26,
+          "title": "保羅在亞基帕王面前申辯",
+          "verse_range": "1-11",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.2681906744837761,
+          "rerank_score": 0.1688438206911087,
+          "gold": false
+        },
+        {
+          "id": "act:26:3",
+          "book": "使徒行傳",
+          "chapter": 26,
+          "title": "保羅懇請亞基帕信主",
+          "verse_range": "24-32",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.22337623089551925,
+          "rerank_score": 0.10482318699359894,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_024": {
+      "status": "order_only",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_031": {
+      "status": "order_only",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_032": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "deu:21:0",
+          "book": "申命記",
+          "chapter": 21,
+          "title": "有關未結案的謀殺案件",
+          "verse_range": "1-9",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.26198843989521264,
+          "rerank_score": 0.0099834855645895,
+          "gold": false
+        },
+        {
+          "id": "act:9:0",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅的轉變",
+          "verse_range": "1-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25840972482226787,
+          "rerank_score": 0.0048710354603827,
+          "gold": false
+        },
+        {
+          "id": "num:5:2",
+          "book": "民數記",
+          "chapter": 5,
+          "title": "疑妻不貞的案件",
+          "verse_range": "11-31",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25678335558157417,
+          "rerank_score": 0.002547650830820203,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "rev:12:0",
+          "book": "啟示錄",
+          "chapter": 12,
+          "title": "婦人和龍",
+          "verse_range": "1-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2360874733328819,
+          "rerank_score": 0.03726781904697418,
+          "gold": false
+        },
+        {
+          "id": "1ki:3:0",
+          "book": "列王紀上",
+          "chapter": 3,
+          "title": "所羅門祈禱求智慧",
+          "verse_range": "1-15",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.21635746210813522,
+          "rerank_score": 0.09479637444019318,
+          "gold": false
+        },
+        {
+          "id": "2sa:12:2",
+          "book": "撒母耳記下",
+          "chapter": 12,
+          "title": "所羅門出生",
+          "verse_range": "24-25",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2125945002445951,
+          "rerank_score": 0.0037064289208501577,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_038": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "1sa:14:2",
+          "book": "撒母耳記上",
+          "chapter": 14,
+          "title": "戰後發生的事件",
+          "verse_range": "24-46",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25746032495051624,
+          "rerank_score": 0.0035147499293088913,
+          "gold": false
+        },
+        {
+          "id": "num:20:0",
+          "book": "民數記",
+          "chapter": 20,
+          "title": "在加低斯發生的事件",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25594568911008536,
+          "rerank_score": 0.0013509844429790974,
+          "gold": false
+        },
+        {
+          "id": "1co:5:0",
+          "book": "哥林多前書",
+          "chapter": 5,
+          "title": "判斷淫亂的事件",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2551469198425184,
+          "rerank_score": 0.00020988548931200057,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "exo:16:0:1",
+          "book": "出埃及記",
+          "chapter": 16,
+          "title": "嗎哪和鵪鶉",
+          "verse_range": "14-30",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.22142727360129355,
+          "rerank_score": 0.01632467657327652,
+          "gold": false
+        },
+        {
+          "id": "exo:31:1",
+          "book": "出埃及記",
+          "chapter": 31,
+          "title": "安息日",
+          "verse_range": "12-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2135092611797154,
+          "rerank_score": 0.0050132302567362785,
+          "gold": false
+        },
+        {
+          "id": "num:25:0",
+          "book": "民數記",
+          "chapter": 25,
+          "title": "以色列人在毗珥",
+          "verse_range": "1-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21183243255596607,
+          "rerank_score": 0.002617760794237256,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_039": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "jhn:6:0",
+          "book": "約翰福音",
+          "chapter": 6,
+          "title": "耶穌給五千人吃飽",
+          "verse_range": "1-15",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.7937040019035339,
+          "rerank_score": 0.769577145576477,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "jhn:4:0",
+          "book": "約翰福音",
+          "chapter": 4,
+          "title": "耶穌和撒馬利亞婦人",
+          "verse_range": "1-42",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.44693682789802547,
+          "rerank_score": 0.42419546842575073,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_041": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:28:0",
+          "book": "使徒行傳",
+          "chapter": 28,
+          "title": "保羅在馬耳他島上",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.46387460708618167,
+          "rerank_score": 0.29839229583740234,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:14:0",
+          "book": "馬太福音",
+          "chapter": 14,
+          "title": "施洗約翰的死",
+          "verse_range": "1-12",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.4535473763942718,
+          "rerank_score": 0.4336391091346741,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_043": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:28:0",
+          "book": "馬太福音",
+          "chapter": 28,
+          "title": "耶穌復活",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.5801531779766083,
+          "rerank_score": 0.46450453996658325,
+          "gold": false
+        },
+        {
+          "id": "luk:24:0",
+          "book": "路加福音",
+          "chapter": 24,
+          "title": "耶穌復活",
+          "verse_range": "1-12",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.5476935523748397,
+          "rerank_score": 0.4181336462497711,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "jhn:12:0",
+          "book": "約翰福音",
+          "chapter": 12,
+          "title": "在伯大尼受膏",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5317451602220535,
+          "rerank_score": 0.4596359431743622,
+          "gold": false
+        },
+        {
+          "id": "jhn:4:1",
+          "book": "約翰福音",
+          "chapter": 4,
+          "title": "耶穌治好大臣的兒子",
+          "verse_range": "43-54",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5150771176815032,
+          "rerank_score": 0.435824453830719,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_047": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "exo:35:3",
+          "book": "出埃及記",
+          "chapter": 35,
+          "title": "百姓奉獻禮物",
+          "verse_range": "20-29",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2585137346945703,
+          "rerank_score": 0.00501962099224329,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "jhn:4:0:2",
+          "book": "約翰福音",
+          "chapter": 4,
+          "title": "耶穌和撒馬利亞婦人",
+          "verse_range": "38-42",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2578779941797256,
+          "rerank_score": 0.06839713454246521,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_053": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "zec:7:1",
+          "book": "撒迦利亞書",
+          "chapter": 7,
+          "title": "被擄的原因是悖逆",
+          "verse_range": "8-14",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25969305738806725,
+          "rerank_score": 0.006704367697238922,
+          "gold": false
+        },
+        {
+          "id": "luk:12:6",
+          "book": "路加福音",
+          "chapter": 12,
+          "title": "分裂的原因",
+          "verse_range": "49-53",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25948224381543694,
+          "rerank_score": 0.0064032054506242275,
+          "gold": false
+        },
+        {
+          "id": "oba:1:2",
+          "book": "俄巴底亞書",
+          "chapter": 1,
+          "title": "以東受罰的原因",
+          "verse_range": "10-14",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2557917526410893,
+          "rerank_score": 0.0011310752015560865,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2ki:12:0",
+          "book": "列王紀下",
+          "chapter": 12,
+          "title": "猶大王約阿施",
+          "verse_range": "1-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25315290376544,
+          "rerank_score": 0.06164700537919998,
+          "gold": false
+        },
+        {
+          "id": "est:3:0",
+          "book": "以斯帖記",
+          "chapter": 3,
+          "title": "哈曼陰謀除滅猶大人",
+          "verse_range": "1-15",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.23534898221492767,
+          "rerank_score": 0.03621283173561096,
+          "gold": false
+        },
+        {
+          "id": "ezk:7:1",
+          "book": "以西結書",
+          "chapter": 7,
+          "title": "懲罰以色列的罪惡",
+          "verse_range": "14-27",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.23071712501347064,
+          "rerank_score": 0.029595892876386642,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_056": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "exo:14:0",
+          "book": "出埃及記",
+          "chapter": 14,
+          "title": "過紅海",
+          "verse_range": "1-31",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.46081419849395755,
+          "rerank_score": 0.06533589214086533,
+          "gold": true
+        },
+        {
+          "id": "exo:20:0",
+          "book": "出埃及記",
+          "chapter": 20,
+          "title": "十誡",
+          "verse_range": "1-17",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event",
+            "hybrid_hybrid"
+          ],
+          "score": 0.45881419849395755,
+          "rerank_score": 0.017157819122076035,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "jos:2:0",
+          "book": "約書亞記",
+          "chapter": 2,
+          "title": "約書亞派探子進耶利哥",
+          "verse_range": "1-24",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3507142415642738,
+          "rerank_score": 0.20102034509181976,
+          "gold": false
+        },
+        {
+          "id": "exo:32:0:2",
+          "book": "出埃及記",
+          "chapter": 32,
+          "title": "金牛犢",
+          "verse_range": "26-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24722192272543905,
+          "rerank_score": 0.05317417532205582,
+          "gold": true
+        }
+      ]
+    },
+    "EVENT_QUESTION_057": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "zec:7:1",
+          "book": "撒迦利亞書",
+          "chapter": 7,
+          "title": "被擄的原因是悖逆",
+          "verse_range": "8-14",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2871032959967852,
+          "rerank_score": 0.045861851423978806,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "gen:36:0",
+          "book": "創世記",
+          "chapter": 36,
+          "title": "以掃的子孫",
+          "verse_range": "1-19",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15189068228937685,
+          "rerank_score": 0.0027009746991097927,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_059": {
+      "status": "order_only",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_060": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "ezr:4:1",
+          "book": "以斯拉記",
+          "chapter": 4,
+          "title": "阻撓重建耶路撒冷",
+          "verse_range": "6-23",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2566051105922088,
+          "rerank_score": 0.002293015131726861,
+          "gold": true
+        },
+        {
+          "id": "isa:4:1",
+          "book": "以賽亞書",
+          "chapter": 4,
+          "title": "耶路撒冷的重建",
+          "verse_range": "2-6",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2552773184387479,
+          "rerank_score": 0.0003961691982112825,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "hag:1:0",
+          "book": "哈該書",
+          "chapter": 1,
+          "title": "耶和華命令重建聖殿",
+          "verse_range": "1-11",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.245762957111001,
+          "rerank_score": 0.05108993873000145,
+          "gold": true
+        },
+        {
+          "id": "ezr:3:1",
+          "book": "以斯拉記",
+          "chapter": 3,
+          "title": "開始重建聖殿",
+          "verse_range": "8-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21874666031450032,
+          "rerank_score": 0.01249522902071476,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_065": {
+      "status": "order_only",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_067": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "act:9:0",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅的轉變",
+          "verse_range": "1-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.7994451041221617,
+          "rerank_score": 0.030623026192188263,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "act:20:2",
+          "book": "使徒行傳",
+          "chapter": 20,
+          "title": "從特羅亞到米利都",
+          "verse_range": "13-16",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.56893390417099,
+          "rerank_score": 0.5984770059585571,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_077": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_078": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "1sa:14:2",
+          "book": "撒母耳記上",
+          "chapter": 14,
+          "title": "戰後發生的事件",
+          "verse_range": "24-46",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2590320388507098,
+          "rerank_score": 0.005760055501013994,
+          "gold": false
+        },
+        {
+          "id": "num:20:0",
+          "book": "民數記",
+          "chapter": 20,
+          "title": "在加低斯發生的事件",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2564866370940581,
+          "rerank_score": 0.002123767277225852,
+          "gold": false
+        },
+        {
+          "id": "act:9:0",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅的轉變",
+          "verse_range": "1-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2564744938351214,
+          "rerank_score": 0.002106419764459133,
+          "gold": false
+        },
+        {
+          "id": "act:22:1",
+          "book": "使徒行傳",
+          "chapter": 22,
+          "title": "保羅敘述歸主的經過",
+          "verse_range": "6-16",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2563936713337898,
+          "rerank_score": 0.001990959048271179,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2sa:18:0",
+          "book": "撒母耳記下",
+          "chapter": 18,
+          "title": "押沙龍敗亡",
+          "verse_range": "1-18",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2536084434390068,
+          "rerank_score": 0.06229777634143829,
+          "gold": false
+        },
+        {
+          "id": "luk:24:0",
+          "book": "路加福音",
+          "chapter": 24,
+          "title": "耶穌復活",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24242352195084094,
+          "rerank_score": 0.04631931707262993,
+          "gold": false
+        },
+        {
+          "id": "luk:6:0",
+          "book": "路加福音",
+          "chapter": 6,
+          "title": "安息日的問題",
+          "verse_range": "1-5",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.23418181858956813,
+          "rerank_score": 0.03454545512795448,
+          "gold": false
+        },
+        {
+          "id": "2sa:1:0",
+          "book": "撒母耳記下",
+          "chapter": 1,
+          "title": "大衛聽到掃羅的死訊",
+          "verse_range": "1-16",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21730065954849123,
+          "rerank_score": 0.01042951364070177,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_081": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "1co:5:0",
+          "book": "哥林多前書",
+          "chapter": 5,
+          "title": "判斷淫亂的事件",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2619380453787744,
+          "rerank_score": 0.00991149339824915,
+          "gold": false
+        },
+        {
+          "id": "1sa:14:2",
+          "book": "撒母耳記上",
+          "chapter": 14,
+          "title": "戰後發生的事件",
+          "verse_range": "24-46",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2613839273527265,
+          "rerank_score": 0.009119896218180656,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2ki:9:1",
+          "book": "列王紀下",
+          "chapter": 9,
+          "title": "以色列王約蘭被殺",
+          "verse_range": "14-26",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25517661705613137,
+          "rerank_score": 0.06453802436590195,
+          "gold": false
+        },
+        {
+          "id": "zec:6:0",
+          "book": "撒迦利亞書",
+          "chapter": 6,
+          "title": "馬車的異象",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24045061454176903,
+          "rerank_score": 0.0435008779168129,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_082": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "luk:9:5",
+          "book": "路加福音",
+          "chapter": 9,
+          "title": "耶穌改變形像",
+          "verse_range": "28-36",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25737225759774446,
+          "rerank_score": 0.0033889394253492355,
+          "gold": false
+        },
+        {
+          "id": "mat:17:0",
+          "book": "馬太福音",
+          "chapter": 17,
+          "title": "耶穌改變形像",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25525551188737156,
+          "rerank_score": 0.00036501698195934296,
+          "gold": false
+        },
+        {
+          "id": "mrk:9:1",
+          "book": "馬可福音",
+          "chapter": 9,
+          "title": "耶穌改變形像",
+          "verse_range": "2-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25525280798436145,
+          "rerank_score": 0.00036115426337346435,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "act:20:0",
+          "book": "使徒行傳",
+          "chapter": 20,
+          "title": "保羅再訪問馬其頓和希臘",
+          "verse_range": "1-6",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25081501960754393,
+          "rerank_score": 0.05830717086791992,
+          "gold": false
+        },
+        {
+          "id": "act:28:2",
+          "book": "使徒行傳",
+          "chapter": 28,
+          "title": "保羅在羅馬傳道",
+          "verse_range": "17-31",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.22616730354726314,
+          "rerank_score": 0.023096147924661636,
+          "gold": false
+        },
+        {
+          "id": "act:20:3",
+          "book": "使徒行傳",
+          "chapter": 20,
+          "title": "保羅向以弗所長老發表談話",
+          "verse_range": "17-38",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.22249077059328556,
+          "rerank_score": 0.017843957990407944,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_090": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "rev:20:2",
+          "book": "啟示錄",
+          "chapter": 20,
+          "title": "末日的審判",
+          "verse_range": "11-15",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event",
+            "hybrid_hybrid"
+          ],
+          "score": 0.2780416629463434,
+          "rerank_score": 0.032916661351919174,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "lev:16:0",
+          "book": "利未記",
+          "chapter": 16,
+          "title": "贖罪日",
+          "verse_range": "1-19",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.27277227699756623,
+          "rerank_score": 0.0896746814250946,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_096": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "luk:8:3",
+          "book": "路加福音",
+          "chapter": 8,
+          "title": "解明撒種的比喻",
+          "verse_range": "11-15",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.6187700915336609,
+          "rerank_score": 0.5196715593338013,
+          "gold": false
+        },
+        {
+          "id": "mat:13:2",
+          "book": "馬太福音",
+          "chapter": 13,
+          "title": "解明撒種的比喻",
+          "verse_range": "18-23",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.4689054298400879,
+          "rerank_score": 0.30557918548583984,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:21:1",
+          "book": "馬太福音",
+          "chapter": 21,
+          "title": "（可11‧15－19；路19‧45－48；約",
+          "verse_range": "12-17",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.16667986977845428,
+          "rerank_score": 0.023828385397791862,
+          "gold": false
+        },
+        {
+          "id": "mat:21:0",
+          "book": "馬太福音",
+          "chapter": 21,
+          "title": "（可11‧1－11；路19‧28－40；約",
+          "verse_range": "1-11",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15421534832566977,
+          "rerank_score": 0.006021926179528236,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_097": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:21:5",
+          "book": "馬太福音",
+          "chapter": 21,
+          "title": "凶惡園戶的比喻",
+          "verse_range": "33-46",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.6401869702339172,
+          "rerank_score": 0.5502671003341675,
+          "gold": false
+        },
+        {
+          "id": "mrk:12:0",
+          "book": "馬可福音",
+          "chapter": 12,
+          "title": "凶惡園戶的比喻",
+          "verse_range": "1-12",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.44378799080848697,
+          "rerank_score": 0.2696971297264099,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "luk:5:3",
+          "book": "路加福音",
+          "chapter": 5,
+          "title": "呼召利未",
+          "verse_range": "27-32",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.306313713490963,
+          "rerank_score": 0.13759101927280426,
+          "gold": false
+        },
+        {
+          "id": "luk:14:3",
+          "book": "路加福音",
+          "chapter": 14,
+          "title": "作門徒的代價",
+          "verse_range": "25-33",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.18673883788287637,
+          "rerank_score": 0.05248405411839485,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_008": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "jhn:18:0",
+          "book": "約翰福音",
+          "chapter": 18,
+          "title": "（太26‧47－56；可14‧43－50；路",
+          "verse_range": "1-11",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.42630763828754425,
+          "rerank_score": 0.24472519755363464,
+          "gold": false
+        },
+        {
+          "id": "jhn:19:1",
+          "book": "約翰福音",
+          "chapter": 19,
+          "title": "（太27‧32－44；可15‧21－32；路",
+          "verse_range": "17-27",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3897010552883148,
+          "rerank_score": 0.19243007898330688,
+          "gold": false
+        },
+        {
+          "id": "jhn:18:5",
+          "book": "約翰福音",
+          "chapter": 18,
+          "title": "（太27‧1－2，11－14；可15‧1－5；路",
+          "verse_range": "28-38",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.36772089183330536,
+          "rerank_score": 0.1610298454761505,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "luk:1:6",
+          "book": "路加福音",
+          "chapter": 1,
+          "title": "撒迦利亞的預言",
+          "verse_range": "67-80",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3537265872955322,
+          "rerank_score": 0.2053236961364746,
+          "gold": false
+        },
+        {
+          "id": "zec:9:0",
+          "book": "撒迦利亞書",
+          "chapter": 9,
+          "title": "審判鄰國",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.32477509349584577,
+          "rerank_score": 0.18539299070835114,
+          "gold": false
+        },
+        {
+          "id": "luk:4:0",
+          "book": "路加福音",
+          "chapter": 4,
+          "title": "耶穌受試探",
+          "verse_range": "1-13",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2889625039696693,
+          "rerank_score": 0.13423214852809906,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_009": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "exo:12:4",
+          "book": "出埃及記",
+          "chapter": 12,
+          "title": "以色列人出埃及",
+          "verse_range": "37-42",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.28790502913296223,
+          "rerank_score": 0.047007184475660324,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "exo:29:1",
+          "book": "出埃及記",
+          "chapter": 29,
+          "title": "每天當獻的祭",
+          "verse_range": "38-46",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.20336415849626066,
+          "rerank_score": 0.011948797851800919,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_015": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:28:0",
+          "book": "馬太福音",
+          "chapter": 28,
+          "title": "耶穌復活",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3474557626247406,
+          "rerank_score": 0.13207966089248657,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mrk:15:5",
+          "book": "馬可福音",
+          "chapter": 15,
+          "title": "（太27‧57－61；路23‧50－56；約",
+          "verse_range": "42-47",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2558930043876171,
+          "rerank_score": 0.08699000626802444,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_020": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "mat:28:2",
+          "book": "馬太福音",
+          "chapter": 28,
+          "title": "（可16‧14－18；路24‧36－49；約",
+          "verse_range": "16-20",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25529847251425963,
+          "rerank_score": 0.0004263893060851842,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "gen:12:0",
+          "book": "創世記",
+          "chapter": 12,
+          "title": "上帝呼召亞伯蘭",
+          "verse_range": "1-9",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.23086996119469402,
+          "rerank_score": 0.029814230278134346,
+          "gold": true
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_021": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "luk:2:0",
+          "book": "路加福音",
+          "chapter": 2,
+          "title": "耶穌降生",
+          "verse_range": "1-7",
+          "strategy": "graph_event",
+          "found_by": [
+            "hybrid_hybrid",
+            "graph_event"
+          ],
+          "score": 0.6853398394584655,
+          "rerank_score": 0.053810518234968185,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:1:1",
+          "book": "馬太福音",
+          "chapter": 1,
+          "title": "耶穌基督降生",
+          "verse_range": "18-25",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5713309502601623,
+          "rerank_score": 0.5161870718002319,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_047": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mrk:1:2",
+          "book": "馬可福音",
+          "chapter": 1,
+          "title": "耶穌受試探",
+          "verse_range": "12-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "hybrid_hybrid",
+            "graph_event"
+          ],
+          "score": 0.3151871147751808,
+          "rerank_score": 0.0859815925359726,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "deu:10:0",
+          "book": "申命記",
+          "chapter": 10,
+          "title": "摩西重新接受十誡",
+          "verse_range": "1-11",
+          "strategy": "book_anchor",
+          "found_by": [
+            "book_anchor"
+          ],
+          "score": 0.27342678995803,
+          "rerank_score": 0.004895414225757122,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_054": {
+      "status": "gold_out",
+      "injected": [
+        {
+          "id": "mat:5:0",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "山上寶訓",
+          "verse_range": "1-2",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event",
+            "hybrid_hybrid"
+          ],
+          "score": 0.2989712479710579,
+          "rerank_score": 0.0628160685300827,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "exo:21:1",
+          "book": "出埃及記",
+          "chapter": 21,
+          "title": "懲罰暴行的條例",
+          "verse_range": "12-27",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2888714438676834,
+          "rerank_score": 0.11267349123954773,
+          "gold": true
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_055": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:5:0",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "山上寶訓",
+          "verse_range": "1-2",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2770075860619545,
+          "rerank_score": 0.031439408659935,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mrk:10:2",
+          "book": "馬可福音",
+          "chapter": 10,
+          "title": "財主尋求永生之道",
+          "verse_range": "17-31",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.17847429364919662,
+          "rerank_score": 0.04067756235599518,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_065": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "exo:12:0",
+          "book": "出埃及記",
+          "chapter": 12,
+          "title": "逾越節",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "hybrid_hybrid",
+            "graph_event"
+          ],
+          "score": 0.578037300825119,
+          "rerank_score": 0.23827692866325378,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "num:9:0",
+          "book": "民數記",
+          "chapter": 9,
+          "title": "第二個逾越節",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5088021492958068,
+          "rerank_score": 0.4268602132797241,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_069": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "isa:54:0",
+          "book": "以賽亞書",
+          "chapter": 54,
+          "title": "耶和華對以色列的愛",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "hybrid_hybrid",
+            "graph_event"
+          ],
+          "score": 0.7097269964218139,
+          "rerank_score": 0.32346442341804504,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2pe:2:0",
+          "book": "彼得後書",
+          "chapter": 2,
+          "title": "假先知和假師傅",
+          "verse_range": "1-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.5207938289642333,
+          "rerank_score": 0.44399118423461914,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_076": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "1ki:8:4",
+          "book": "列王紀上",
+          "chapter": 8,
+          "title": "奉獻聖殿",
+          "verse_range": "62-66",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.4511299479007721,
+          "rerank_score": 0.28018563985824585,
+          "gold": true
+        },
+        {
+          "id": "1ki:6:0",
+          "book": "列王紀上",
+          "chapter": 6,
+          "title": "所羅門建造聖殿",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.4476583856344223,
+          "rerank_score": 0.27522626519203186,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2ch:3:0",
+          "book": "歷代志下",
+          "chapter": 3,
+          "title": "(無標題)",
+          "verse_range": "1-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.36033776164054865,
+          "rerank_score": 0.21476823091506958,
+          "gold": false
+        },
+        {
+          "id": "2ch:7:1",
+          "book": "歷代志下",
+          "chapter": 7,
+          "title": "上帝再次向所羅門顯現",
+          "verse_range": "11-22",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.345728208720684,
+          "rerank_score": 0.19389744102954865,
+          "gold": true
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_077": {
+      "status": "gold_out",
+      "injected": [
+        {
+          "id": "exo:12:0",
+          "book": "出埃及記",
+          "chapter": 12,
+          "title": "逾越節",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.780509600162506,
+          "rerank_score": 0.06471975147724152,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2ki:23:1",
+          "book": "列王紀下",
+          "chapter": 23,
+          "title": "約西亞守逾越節",
+          "verse_range": "21-23",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.5234023457765579,
+          "rerank_score": 0.4477176368236542,
+          "gold": true
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_099": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:2:0",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "聖靈降臨",
+          "verse_range": "1-13",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3945255044102669,
+          "rerank_score": 0.1993221491575241,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "psa:89:3",
+          "book": "詩篇",
+          "chapter": 89,
+          "title": "求救的禱告",
+          "verse_range": "46-52",
+          "strategy": "sql_chapter",
+          "found_by": [
+            "hybrid_hybrid",
+            "sql_chapter"
+          ],
+          "score": 0.32749371901154517,
+          "rerank_score": 0.039276741445064545,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_008": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_015": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_032": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:11:1",
+          "book": "馬太福音",
+          "chapter": 11,
+          "title": "施洗約翰的門徒來見耶穌",
+          "verse_range": "2-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2596570701058954,
+          "rerank_score": 0.006652957294136286,
+          "gold": false
+        },
+        {
+          "id": "luk:7:2",
+          "book": "路加福音",
+          "chapter": 7,
+          "title": "施洗約翰的門徒來見耶穌",
+          "verse_range": "18-35",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25746257996186617,
+          "rerank_score": 0.0035179713740944862,
+          "gold": false
+        },
+        {
+          "id": "luk:12:6",
+          "book": "路加福音",
+          "chapter": 12,
+          "title": "分裂的原因",
+          "verse_range": "49-53",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2571805858705193,
+          "rerank_score": 0.0031151226721704006,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2ch:9:1",
+          "book": "歷代志下",
+          "chapter": 9,
+          "title": "所羅門王的財富",
+          "verse_range": "13-28",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.18630383126437663,
+          "rerank_score": 0.05186261609196663,
+          "gold": false
+        },
+        {
+          "id": "1ki:10:1",
+          "book": "列王紀上",
+          "chapter": 10,
+          "title": "所羅門的財富",
+          "verse_range": "14-25",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.1820682719349861,
+          "rerank_score": 0.045811817049980164,
+          "gold": false
+        },
+        {
+          "id": "1ki:10:2",
+          "book": "列王紀上",
+          "chapter": 10,
+          "title": "所羅門的車騎",
+          "verse_range": "26-29",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15061655825702472,
+          "rerank_score": 0.000880797510035336,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_033": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "est:7:0",
+          "book": "以斯帖記",
+          "chapter": 7,
+          "title": "哈曼被處死",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.33319097936153413,
+          "rerank_score": 0.11170139908790588,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2ki:1:0",
+          "book": "列王紀下",
+          "chapter": 1,
+          "title": "以利亞和亞哈謝王",
+          "verse_range": "1-16",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.32249007880687713,
+          "rerank_score": 0.16070011258125305,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_035": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:9:0",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅的轉變",
+          "verse_range": "1-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25852671812288464,
+          "rerank_score": 0.0050381687469780445,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "lev:8:0",
+          "book": "利未記",
+          "chapter": 8,
+          "title": "立亞倫和他的兒子們作祭司",
+          "verse_range": "1-36",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.22641237288713453,
+          "rerank_score": 0.02344624698162079,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_042": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "1sa:15:1",
+          "book": "撒母耳記上",
+          "chapter": 15,
+          "title": "掃羅被廢",
+          "verse_range": "10-23",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.25693938359152524,
+          "rerank_score": 0.0027705479878932238,
+          "gold": false
+        },
+        {
+          "id": "2ch:24:1",
+          "book": "歷代志下",
+          "chapter": 24,
+          "title": "耶何耶大的政策被廢棄",
+          "verse_range": "15-22",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2556731933739502,
+          "rerank_score": 0.0009617048199288547,
+          "gold": false
+        }
+      ],
+      "displaced": []
+    },
+    "PERSON_QUESTION_043": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "neh:7:1",
+          "book": "尼西米記",
+          "chapter": 7,
+          "title": "被擄歸回者的名單",
+          "verse_range": "4-73",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2605704680271447,
+          "rerank_score": 0.00795781146734953,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "zec:4:1",
+          "book": "撒迦利亞書",
+          "chapter": 4,
+          "title": "上帝給所羅巴伯的應許",
+          "verse_range": "6-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2211934695392847,
+          "rerank_score": 0.015990670770406723,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_046": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:28:0",
+          "book": "使徒行傳",
+          "chapter": 28,
+          "title": "保羅在馬耳他島上",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.5562937366962433,
+          "rerank_score": 0.4304196238517761,
+          "gold": false
+        },
+        {
+          "id": "act:9:4",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "以尼雅得醫治",
+          "verse_range": "32-35",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.4580678570270538,
+          "rerank_score": 0.2900969386100769,
+          "gold": false
+        },
+        {
+          "id": "1pe:2:2",
+          "book": "彼得前書",
+          "chapter": 2,
+          "title": "基督受苦的榜樣",
+          "verse_range": "18-25",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3788143116235733,
+          "rerank_score": 0.17687758803367615,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mrk:8:3",
+          "book": "馬可福音",
+          "chapter": 8,
+          "title": "治好伯賽大的瞎子",
+          "verse_range": "22-26",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.36440471470355984,
+          "rerank_score": 0.2205781638622284,
+          "gold": false
+        },
+        {
+          "id": "mat:21:1",
+          "book": "馬太福音",
+          "chapter": 21,
+          "title": "（可11‧15－19；路19‧45－48；約",
+          "verse_range": "12-17",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3333623549342155,
+          "rerank_score": 0.17623193562030792,
+          "gold": false
+        },
+        {
+          "id": "mat:15:2",
+          "book": "馬太福音",
+          "chapter": 15,
+          "title": "治好許多病人",
+          "verse_range": "29-31",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3233586943149567,
+          "rerank_score": 0.16194099187850952,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_048": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "hab:2:1",
+          "book": "哈巴谷書",
+          "chapter": 2,
+          "title": "不義的結局",
+          "verse_range": "5-20",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2570925344899297,
+          "rerank_score": 0.002989334985613823,
+          "gold": false
+        },
+        {
+          "id": "zep:2:1",
+          "book": "西番雅書",
+          "chapter": 2,
+          "title": "以色列鄰國的結局",
+          "verse_range": "4-15",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.2560296252090484,
+          "rerank_score": 0.0014708931557834148,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "jos:7:0:1",
+          "book": "約書亞記",
+          "chapter": 7,
+          "title": "亞干犯罪",
+          "verse_range": "11-20",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.22873257681727407,
+          "rerank_score": 0.026760824024677277,
+          "gold": false
+        },
+        {
+          "id": "1ki:15:2",
+          "book": "列王紀上",
+          "chapter": 15,
+          "title": "以色列王拿答",
+          "verse_range": "25-32",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2239100717380643,
+          "rerank_score": 0.019871531054377556,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_065": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_070": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "jhn:13:0",
+          "book": "約翰福音",
+          "chapter": 13,
+          "title": "耶穌為門徒洗腳",
+          "verse_range": "1-20",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.4597209531068802,
+          "rerank_score": 0.29245850443840027,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "luk:22:2",
+          "book": "路加福音",
+          "chapter": 22,
+          "title": "（太26‧26－30；可14‧22－26；林前",
+          "verse_range": "14-23",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.25602760449051853,
+          "rerank_score": 0.06575372070074081,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_077": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_085": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "act:13:2",
+          "book": "使徒行傳",
+          "chapter": 13,
+          "title": "在彼西底的安提阿傳道",
+          "verse_range": "13-52",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.44833146512508393,
+          "rerank_score": 0.27618780732154846,
+          "gold": true
+        },
+        {
+          "id": "act:14:2",
+          "book": "使徒行傳",
+          "chapter": 14,
+          "title": "回到敘利亞的安提阿",
+          "verse_range": "21-28",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.3284657794237137,
+          "rerank_score": 0.10495111346244812,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "act:20:0",
+          "book": "使徒行傳",
+          "chapter": 20,
+          "title": "保羅再訪問馬其頓和希臘",
+          "verse_range": "1-6",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.31548117756843563,
+          "rerank_score": 0.15068739652633667,
+          "gold": true
+        },
+        {
+          "id": "act:28:2",
+          "book": "使徒行傳",
+          "chapter": 28,
+          "title": "保羅在羅馬傳道",
+          "verse_range": "17-31",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3074624380469322,
+          "rerank_score": 0.13923205435276031,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_096": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:28:0",
+          "book": "使徒行傳",
+          "chapter": 28,
+          "title": "保羅在馬耳他島上",
+          "verse_range": "1-10",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.8858338887691497,
+          "rerank_score": 0.14848054945468903,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:9:4",
+          "book": "馬太福音",
+          "chapter": 9,
+          "title": "兩個瞎子得醫治",
+          "verse_range": "27-31",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.6975617265701294,
+          "rerank_score": 0.696516752243042,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_098": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:12:1",
+          "book": "使徒行傳",
+          "chapter": 12,
+          "title": "彼得獲救出獄",
+          "verse_range": "6-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.26227455187588933,
+          "rerank_score": 0.010392216965556145,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "rom:15:3",
+          "book": "羅馬書",
+          "chapter": 15,
+          "title": "保羅計劃訪問羅馬",
+          "verse_range": "22-33",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21056933548185042,
+          "rerank_score": 0.000813336402643472,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_008": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_015": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_065": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_077": {
+      "status": "gold_out",
+      "injected": [
+        {
+          "id": "est:9:0",
+          "book": "以斯帖記",
+          "chapter": 9,
+          "title": "猶大人除滅他們的仇敵",
+          "verse_range": "1-19",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.4765724945068359,
+          "rerank_score": 0.3165321350097656,
+          "gold": false
+        },
+        {
+          "id": "isa:34:0",
+          "book": "以賽亞書",
+          "chapter": 34,
+          "title": "神要懲罰仇敵",
+          "verse_range": "1-17",
+          "strategy": "graph_event",
+          "found_by": [
+            "graph_event"
+          ],
+          "score": 0.266828101053834,
+          "rerank_score": 0.016897287219762802,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "jdg:3:1",
+          "book": "士師記",
+          "chapter": 3,
+          "title": "俄陀聶",
+          "verse_range": "7-11",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.26408925637602804,
+          "rerank_score": 0.07727036625146866,
+          "gold": true
+        },
+        {
+          "id": "jdg:12:1",
+          "book": "士師記",
+          "chapter": 12,
+          "title": "以比讚、以倫、押頓",
+          "verse_range": "8-15",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.2370181756466627,
+          "rerank_score": 0.03859739378094673,
+          "gold": true
+        }
+      ]
+    },
+    "TOPIC_QUESTION_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_008": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_015": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_065": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_077": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    }
+  },
+  "inputs": {
+    "control": "results_quick/dense5_20261003.json",
+    "treatment": "results_quick/s2_graph_event_20261003.json",
+    "control_ext": null
+  }
+}

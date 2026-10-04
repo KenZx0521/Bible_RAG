@@ -1,0 +1,2900 @@
+[
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_003",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.625,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_005",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_011",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.25,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.25,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.25,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.25,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.25,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.0833,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.0833,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.25,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_014",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_015",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.1667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.3333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.3333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.5833,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_016",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.4167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_018",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.9167,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.5833,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.6667,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_019",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.8333,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_056",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.1,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_067",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "EVENT_QUESTION_090",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.2,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.1,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.1,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_008",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_020",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.875,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.75,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.3,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.4,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 1.0,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.9,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_097",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.8,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.7,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_099",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 100,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 101,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 102,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 103,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 104,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 105,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 106,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "AUX",
+  "rep": 108,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 100,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 101,
+  "coverage": 0.5,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 102,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 103,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 104,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 105,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 106,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 107,
+  "coverage": 0.6,
+  "valid": true
+ },
+ {
+  "qid": "PERSON_QUESTION_070",
+  "arm": "DENSE6",
+  "rep": 108,
+  "coverage": 0.6,
+  "valid": true
+ }
+]

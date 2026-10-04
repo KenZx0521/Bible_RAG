@@ -1,0 +1,3428 @@
+{
+  "metric_k": 6,
+  "top_k": 5,
+  "n": 492,
+  "excluded_invalid": [],
+  "route_mismatch": [
+    "EVENT_QUESTION_069",
+    "EVENT_QUESTION_083",
+    "GENERAL_BIBLE_QUESTION_054",
+    "GENERAL_BIBLE_QUESTION_086",
+    "PERSON_QUESTION_025",
+    "PERSON_QUESTION_028",
+    "TOPIC_QUESTION_068",
+    "TOPIC_QUESTION_071"
+  ],
+  "with_strategy_errors": [],
+  "invariants": {
+    "core_identical": 492,
+    "core_mismatch": [],
+    "touched": [
+      "EVENT_QUESTION_003",
+      "EVENT_QUESTION_005",
+      "EVENT_QUESTION_008",
+      "EVENT_QUESTION_011",
+      "EVENT_QUESTION_014",
+      "EVENT_QUESTION_015",
+      "EVENT_QUESTION_016",
+      "EVENT_QUESTION_018",
+      "EVENT_QUESTION_019",
+      "EVENT_QUESTION_056",
+      "EVENT_QUESTION_065",
+      "EVENT_QUESTION_067",
+      "EVENT_QUESTION_090",
+      "GENERAL_BIBLE_QUESTION_008",
+      "GENERAL_BIBLE_QUESTION_020",
+      "GENERAL_BIBLE_QUESTION_054",
+      "GENERAL_BIBLE_QUESTION_055",
+      "GENERAL_BIBLE_QUESTION_065",
+      "GENERAL_BIBLE_QUESTION_076",
+      "GENERAL_BIBLE_QUESTION_077",
+      "GENERAL_BIBLE_QUESTION_097",
+      "GENERAL_BIBLE_QUESTION_099",
+      "PERSON_QUESTION_070"
+    ]
+  },
+  "stats": {
+    "all": {
+      "verse_recall_at_k": {
+        "n": 492,
+        "mean_delta": 0.00721,
+        "ci95": [
+          0.00252,
+          0.01302
+        ],
+        "wins": 12,
+        "losses": 0,
+        "sign_flip_p": 0.00049,
+        "sign_test_p": 0.00049
+      },
+      "anchor_coverage_at_k": {
+        "n": 492,
+        "mean_delta": 0.00972,
+        "ci95": [
+          0.00356,
+          0.01741
+        ],
+        "wins": 10,
+        "losses": 0,
+        "sign_flip_p": 0.00195,
+        "sign_test_p": 0.00195
+      },
+      "mrr": {
+        "n": 492,
+        "mean_delta": 0.00034,
+        "ci95": [
+          -0.00237,
+          0.00237
+        ],
+        "wins": 4,
+        "losses": 1,
+        "sign_flip_p": 0.75,
+        "sign_test_p": 0.375
+      },
+      "hit_rate": {
+        "n": 492,
+        "mean_delta": 0.00813,
+        "ci95": [
+          0.00203,
+          0.01626
+        ],
+        "wins": 4,
+        "losses": 0,
+        "sign_flip_p": 0.125,
+        "sign_test_p": 0.125
+      }
+    },
+    "touched": {
+      "verse_recall_at_k": {
+        "n": 22,
+        "mean_delta": 0.16118,
+        "ci95": [
+          0.06924,
+          0.26928
+        ],
+        "wins": 12,
+        "losses": 0,
+        "sign_flip_p": 0.00049,
+        "sign_test_p": 0.00049
+      },
+      "anchor_coverage_at_k": {
+        "n": 22,
+        "mean_delta": 0.21743,
+        "ci95": [
+          0.10151,
+          0.35227
+        ],
+        "wins": 10,
+        "losses": 0,
+        "sign_flip_p": 0.00195,
+        "sign_test_p": 0.00195
+      },
+      "mrr": {
+        "n": 22,
+        "mean_delta": 0.00758,
+        "ci95": [
+          -0.05303,
+          0.05304
+        ],
+        "wins": 4,
+        "losses": 1,
+        "sign_flip_p": 0.75,
+        "sign_test_p": 0.375
+      },
+      "hit_rate": {
+        "n": 22,
+        "mean_delta": 0.18182,
+        "ci95": [
+          0.04545,
+          0.36364
+        ],
+        "wins": 4,
+        "losses": 0,
+        "sign_flip_p": 0.125,
+        "sign_test_p": 0.125
+      }
+    },
+    "legacy": {
+      "verse_recall_at_k": {
+        "n": 100,
+        "mean_delta": 0.02569,
+        "ci95": [
+          0.00754,
+          0.04915
+        ],
+        "wins": 9,
+        "losses": 0,
+        "sign_flip_p": 0.00391,
+        "sign_test_p": 0.00391
+      },
+      "anchor_coverage_at_k": {
+        "n": 100,
+        "mean_delta": 0.03533,
+        "ci95": [
+          0.01,
+          0.07033
+        ],
+        "wins": 7,
+        "losses": 0,
+        "sign_flip_p": 0.01562,
+        "sign_test_p": 0.01562
+      },
+      "mrr": {
+        "n": 100,
+        "mean_delta": 0.00667,
+        "ci95": [
+          0.00167,
+          0.01334
+        ],
+        "wins": 4,
+        "losses": 0,
+        "sign_flip_p": 0.125,
+        "sign_test_p": 0.125
+      },
+      "hit_rate": {
+        "n": 100,
+        "mean_delta": 0.04,
+        "ci95": [
+          0.01,
+          0.08
+        ],
+        "wins": 4,
+        "losses": 0,
+        "sign_flip_p": 0.125,
+        "sign_test_p": 0.125
+      }
+    },
+    "expanded": {
+      "verse_recall_at_k": {
+        "n": 392,
+        "mean_delta": 0.00249,
+        "ci95": [
+          0.0,
+          0.00706
+        ],
+        "wins": 3,
+        "losses": 0,
+        "sign_flip_p": 0.25,
+        "sign_test_p": 0.25
+      },
+      "anchor_coverage_at_k": {
+        "n": 392,
+        "mean_delta": 0.00319,
+        "ci95": [
+          0.0,
+          0.00765
+        ],
+        "wins": 3,
+        "losses": 0,
+        "sign_flip_p": 0.25,
+        "sign_test_p": 0.25
+      },
+      "mrr": {
+        "n": 392,
+        "mean_delta": -0.00128,
+        "ci95": [
+          -0.00383,
+          0.0
+        ],
+        "wins": 0,
+        "losses": 1,
+        "sign_flip_p": 1.0,
+        "sign_test_p": 1.0
+      },
+      "hit_rate": {
+        "n": 392,
+        "mean_delta": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "wins": 0,
+        "losses": 0,
+        "sign_flip_p": 1.0,
+        "sign_test_p": 1.0
+      }
+    }
+  },
+  "holm": {
+    "all": {
+      "verse_recall_at_k": 0.00196,
+      "anchor_coverage_at_k": 0.00585,
+      "hit_rate": 0.25,
+      "mrr": 0.75
+    },
+    "touched": {
+      "verse_recall_at_k": 0.00196,
+      "anchor_coverage_at_k": 0.00585,
+      "hit_rate": 0.25,
+      "mrr": 0.75
+    },
+    "legacy": {
+      "verse_recall_at_k": 0.01564,
+      "anchor_coverage_at_k": 0.04686,
+      "mrr": 0.25,
+      "hit_rate": 0.25
+    },
+    "expanded": {
+      "verse_recall_at_k": 1.0,
+      "anchor_coverage_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate": 1.0
+    }
+  },
+  "negatives": {
+    "verse_recall_at_k": [],
+    "anchor_coverage_at_k": [],
+    "mrr": [
+      "GENERAL_BIBLE_QUESTION_097"
+    ],
+    "hit_rate": []
+  },
+  "ledger_summary": {
+    "identical": 470,
+    "gold_in": 12,
+    "nongold_swap": 9,
+    "gold_swap": 1
+  },
+  "ledger": {
+    "EVENT_QUESTION_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_003": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "exo:7:2",
+          "book": "出埃及記",
+          "chapter": 7,
+          "title": "埃及遭災－血災",
+          "verse_range": "14-25",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "rev:9:0",
+          "book": "啟示錄",
+          "chapter": 9,
+          "title": "(無標題)",
+          "verse_range": "1-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2310769698023796,
+          "rerank_score": 0.030109956860542297,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_005": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "num:14:0",
+          "book": "民數記",
+          "chapter": 14,
+          "title": "民眾埋怨",
+          "verse_range": "1-10",
+          "strategy": "event_registry",
+          "found_by": [
+            "sql_supplement",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "ezk:29:0",
+          "book": "以西結書",
+          "chapter": 29,
+          "title": "斥責埃及",
+          "verse_range": "1-16",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.3955426728725433,
+          "rerank_score": 0.2650609612464905,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_008": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "1ki:12:0",
+          "book": "列王紀上",
+          "chapter": 12,
+          "title": "北方的支派反叛",
+          "verse_range": "1-20",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "psa:68:0",
+          "book": "詩篇",
+          "chapter": 68,
+          "title": "勝利之歌",
+          "verse_range": "1-35",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.23650620266795158,
+          "rerank_score": 0.037866003811359406,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_011": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "mat:5:0",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "山上寶訓",
+          "verse_range": "1-2",
+          "strategy": "event_registry",
+          "found_by": [
+            "hybrid_hybrid",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "zec:4:1",
+          "book": "撒迦利亞書",
+          "chapter": 4,
+          "title": "上帝給所羅巴伯的應許",
+          "verse_range": "6-14",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24643212504684925,
+          "rerank_score": 0.05204589292407036,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_014": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:26:3",
+          "book": "馬太福音",
+          "chapter": 26,
+          "title": "（可14‧12－21；路22‧7－14，21－23；約",
+          "verse_range": "17-25",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "job:42:1",
+          "book": "約伯記",
+          "chapter": 42,
+          "title": "結尾",
+          "verse_range": "7-17",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.21715063316747546,
+          "rerank_score": 0.01021519023925066,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_015": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "luk:22:6",
+          "book": "路加福音",
+          "chapter": 22,
+          "title": "在橄欖山上禱告",
+          "verse_range": "39-46",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "act:8:2",
+          "book": "使徒行傳",
+          "chapter": 8,
+          "title": "腓利和衣索匹亞的太監",
+          "verse_range": "26-40",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15293486565351486,
+          "rerank_score": 0.004192665219306946,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_016": {
+      "status": "gold_swap",
+      "injected": [
+        {
+          "id": "mat:27:6",
+          "book": "馬太福音",
+          "chapter": 27,
+          "title": "（可15‧33－41；路23‧44－49；約",
+          "verse_range": "45-56",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:27:3",
+          "book": "馬太福音",
+          "chapter": 27,
+          "title": "（可15‧6－15；路23‧13－25；約",
+          "verse_range": "15-26",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.7543817019462584,
+          "rerank_score": 0.7776881456375122,
+          "gold": true
+        }
+      ]
+    },
+    "EVENT_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_018": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "act:2:1",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "彼得在五旬節的講論",
+          "verse_range": "14-42",
+          "strategy": "event_registry",
+          "found_by": [
+            "hybrid_hybrid",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "rev:4:0",
+          "book": "啟示錄",
+          "chapter": 4,
+          "title": "天上的敬拜",
+          "verse_range": "1-11",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.24158574514091014,
+          "rerank_score": 0.04512249305844307,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_019": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "act:9:0",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅的轉變",
+          "verse_range": "1-19",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "act:26:2",
+          "book": "使徒行傳",
+          "chapter": 26,
+          "title": "保羅向猶太和外邦人作見證",
+          "verse_range": "19-23",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.17912332750856874,
+          "rerank_score": 0.04160475358366966,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_056": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "exo:20:0",
+          "book": "出埃及記",
+          "chapter": 20,
+          "title": "十誡",
+          "verse_range": "1-17",
+          "strategy": "event_registry",
+          "found_by": [
+            "hybrid_hybrid",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "exo:34:1",
+          "book": "出埃及記",
+          "chapter": 34,
+          "title": "重新立約",
+          "verse_range": "10-28",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2290634552389383,
+          "rerank_score": 0.027233507484197617,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_065": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:2:1",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "彼得在五旬節的講論",
+          "verse_range": "14-42",
+          "strategy": "event_registry",
+          "found_by": [
+            "hybrid_hybrid",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:27:6",
+          "book": "馬太福音",
+          "chapter": 27,
+          "title": "（可15‧33－41；路23‧44－49；約",
+          "verse_range": "45-56",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2737763313949108,
+          "rerank_score": 0.09110904484987259,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_067": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "act:9:0",
+          "book": "使徒行傳",
+          "chapter": 9,
+          "title": "掃羅的轉變",
+          "verse_range": "1-19",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "act:18:0",
+          "book": "使徒行傳",
+          "chapter": 18,
+          "title": "保羅在哥林多",
+          "verse_range": "1-17",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.5104020899534225,
+          "rerank_score": 0.42914584279060364,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_077": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_090": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "rev:20:2",
+          "book": "啟示錄",
+          "chapter": 20,
+          "title": "末日的審判",
+          "verse_range": "11-15",
+          "strategy": "event_registry",
+          "found_by": [
+            "hybrid_hybrid",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "zec:10:0",
+          "book": "撒迦利亞書",
+          "chapter": 10,
+          "title": "耶和華應許解救",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2546798235177994,
+          "rerank_score": 0.06382831931114197,
+          "gold": false
+        }
+      ]
+    },
+    "EVENT_QUESTION_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "EVENT_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_008": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "mat:21:0",
+          "book": "馬太福音",
+          "chapter": 21,
+          "title": "（可11‧1－11；路19‧28－40；約",
+          "verse_range": "1-11",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "zec:14:0",
+          "book": "撒迦利亞書",
+          "chapter": 14,
+          "title": "耶路撒冷和列國",
+          "verse_range": "1-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.2719461922347546,
+          "rerank_score": 0.10992313176393509,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_015": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_020": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "mat:28:2",
+          "book": "馬太福音",
+          "chapter": 28,
+          "title": "（可16‧14－18；路24‧36－49；約",
+          "verse_range": "16-20",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "gen:15:0",
+          "book": "創世記",
+          "chapter": 15,
+          "title": "上帝與亞伯蘭立約",
+          "verse_range": "1-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.2193120983801782,
+          "rerank_score": 0.013302997685968876,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_055": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:5:0",
+          "book": "馬太福音",
+          "chapter": 5,
+          "title": "山上寶訓",
+          "verse_range": "1-2",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mrk:10:3",
+          "book": "馬可福音",
+          "chapter": 10,
+          "title": "耶穌第三次預言受難和復活",
+          "verse_range": "32-34",
+          "strategy": "sql_supplement",
+          "found_by": [
+            "sql_supplement"
+          ],
+          "score": 0.15260902694426476,
+          "rerank_score": 0.003727181348949671,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_065": {
+      "status": "gold_in",
+      "injected": [
+        {
+          "id": "exo:12:0",
+          "book": "出埃及記",
+          "chapter": 12,
+          "title": "逾越節",
+          "verse_range": "1-13",
+          "strategy": "event_registry",
+          "found_by": [
+            "hybrid_hybrid",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": true
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mrk:14:3",
+          "book": "馬可福音",
+          "chapter": 14,
+          "title": "（太26‧17－25；路22‧7－13，21－23；約",
+          "verse_range": "12-21",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4508109188079834,
+          "rerank_score": 0.34401559829711914,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_076": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "1ki:6:0",
+          "book": "列王紀上",
+          "chapter": 6,
+          "title": "所羅門建造聖殿",
+          "verse_range": "1-10",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "1ki:3:0",
+          "book": "列王紀上",
+          "chapter": 3,
+          "title": "所羅門祈禱求智慧",
+          "verse_range": "1-15",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid",
+            "book_anchor"
+          ],
+          "score": 0.3161820551753044,
+          "rerank_score": 0.15168865025043488,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_077": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "exo:12:0",
+          "book": "出埃及記",
+          "chapter": 12,
+          "title": "逾越節",
+          "verse_range": "1-13",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "2ch:30:0",
+          "book": "歷代志下",
+          "chapter": 30,
+          "title": "預備守逾越節",
+          "verse_range": "1-12",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.4218637537956238,
+          "rerank_score": 0.3240910768508911,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_097": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:2:1",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "彼得在五旬節的講論",
+          "verse_range": "14-42",
+          "strategy": "event_registry",
+          "found_by": [
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "jer:2:0",
+          "book": "耶利米書",
+          "chapter": 2,
+          "title": "上帝眷顧以色列",
+          "verse_range": "1-3",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.27789910495281217,
+          "rerank_score": 0.09699872136116028,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "GENERAL_BIBLE_QUESTION_099": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "act:2:0",
+          "book": "使徒行傳",
+          "chapter": 2,
+          "title": "聖靈降臨",
+          "verse_range": "1-13",
+          "strategy": "event_registry",
+          "found_by": [
+            "sql_supplement",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "psa:89:2",
+          "book": "詩篇",
+          "chapter": 89,
+          "title": "君主慘敗的哀歌",
+          "verse_range": "38-45",
+          "strategy": "sql_chapter",
+          "found_by": [
+            "sql_chapter"
+          ],
+          "score": 0.3037472290918231,
+          "rerank_score": 0.005353184416890144,
+          "gold": false
+        }
+      ]
+    },
+    "GENERAL_BIBLE_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_008": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_015": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_065": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_070": {
+      "status": "nongold_swap",
+      "injected": [
+        {
+          "id": "mat:26:3",
+          "book": "馬太福音",
+          "chapter": 26,
+          "title": "（可14‧12－21；路22‧7－14，21－23；約",
+          "verse_range": "17-25",
+          "strategy": "event_registry",
+          "found_by": [
+            "hybrid_hybrid",
+            "event_registry"
+          ],
+          "score": null,
+          "rerank_score": null,
+          "gold": false
+        }
+      ],
+      "displaced": [
+        {
+          "id": "mat:12:0",
+          "book": "馬太福音",
+          "chapter": 12,
+          "title": "安息日的問題",
+          "verse_range": "1-8",
+          "strategy": "hybrid_hybrid",
+          "found_by": [
+            "hybrid_hybrid"
+          ],
+          "score": 0.2446445471048355,
+          "rerank_score": 0.049492210149765015,
+          "gold": false
+        }
+      ]
+    },
+    "PERSON_QUESTION_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_077": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "PERSON_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_008": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_015": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_065": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_077": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "TOPIC_QUESTION_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_001": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_002": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_003": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_004": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_005": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_006": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_007": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_008": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_009": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_010": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_011": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_012": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_013": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_014": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_015": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_016": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_017": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_018": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_019": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_020": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_021": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_022": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_023": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_024": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_025": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_026": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_027": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_028": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_029": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_030": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_031": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_032": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_033": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_034": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_035": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_036": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_037": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_038": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_039": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_040": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_041": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_042": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_043": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_044": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_045": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_046": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_047": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_048": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_049": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_050": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_051": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_052": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_053": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_054": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_055": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_056": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_057": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_058": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_059": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_060": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_061": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_062": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_063": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_064": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_065": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_066": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_067": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_068": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_069": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_070": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_071": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_072": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_073": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_074": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_075": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_076": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_077": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_078": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_079": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_080": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_081": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_082": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_083": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_084": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_085": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_086": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_087": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_088": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_089": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_090": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_091": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_092": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_093": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_094": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_095": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_096": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_097": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_098": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_099": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    },
+    "VERSE_LOOKUP_100": {
+      "status": "identical",
+      "injected": [],
+      "displaced": []
+    }
+  },
+  "inputs": {
+    "control": "results_quick/dense5_20261003.json",
+    "treatment": "results_quick/aux_registry_20261003.json",
+    "control_ext": "results_quick/dense6_touched_20261003.json"
+  }
+}

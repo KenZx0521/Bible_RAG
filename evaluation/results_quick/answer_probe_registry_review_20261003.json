@@ -1,0 +1,1173 @@
+{
+ "agreement": {
+  "n": 138,
+  "po": 0.9855072463768116,
+  "kappa": 0.9642579642579644
+ },
+ "labels": {
+  "I000": {
+   "qid": "EVENT_QUESTION_005",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I001": {
+   "qid": "GENERAL_BIBLE_QUESTION_020",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I002": {
+   "qid": "EVENT_QUESTION_065",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I003": {
+   "qid": "GENERAL_BIBLE_QUESTION_076",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "把王上9:25「每年三次」獻祭當作列王紀的獻殿「工程完畢的儀式」，與代下7章對比；王上8:10-11其實也記載雲充滿殿、祭司不能供職",
+   "how": "agree"
+  },
+  "I004": {
+   "qid": "EVENT_QUESTION_008",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I005": {
+   "qid": "GENERAL_BIBLE_QUESTION_099",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I006": {
+   "qid": "EVENT_QUESTION_019",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I007": {
+   "qid": "EVENT_QUESTION_067",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "「他先上船開往亞朔接保羅」：徒20:13上船的是「我們」，保羅步行；又稱歸主後「最初回到安提阿」，實為先往阿拉伯、大馬士革",
+   "how": "agree"
+  },
+  "I008": {
+   "qid": "GENERAL_BIBLE_QUESTION_008",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I009": {
+   "qid": "GENERAL_BIBLE_QUESTION_065",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I010": {
+   "qid": "GENERAL_BIBLE_QUESTION_008",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I011": {
+   "qid": "EVENT_QUESTION_015",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "「門徒們感到極其難過並憂愁起來（太26:37；可14:33）」錯；經文中憂愁、極其難過的是耶穌自己，不是門徒。",
+   "how": "agree"
+  },
+  "I012": {
+   "qid": "GENERAL_BIBLE_QUESTION_054",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "fabricated_citation",
+   "evidence": "稱「馬太福音5章1節」記「你們聽見有話說：以眼還眼」；5:1是耶穌上山坐下，此語實在太5:38",
+   "how": "agree"
+  },
+  "I013": {
+   "qid": "GENERAL_BIBLE_QUESTION_008",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I015": {
+   "qid": "EVENT_QUESTION_067",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I016": {
+   "qid": "EVENT_QUESTION_018",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I017": {
+   "qid": "EVENT_QUESTION_008",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "答案把但11:4希臘王國「破裂向四方」當作王國分裂的記載；實為所羅門死後羅波安時北十支派立耶羅波安（王上12）。",
+   "how": "agree"
+  },
+  "I018": {
+   "qid": "EVENT_QUESTION_090",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I019": {
+   "qid": "GENERAL_BIBLE_QUESTION_097",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I021": {
+   "qid": "EVENT_QUESTION_005",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "fabricated_citation",
+   "evidence": "「民數記14:13…使他們在曠野飄流四十年」實為民32:13；民14:13是摩西說埃及人必聽見這事",
+   "how": "agree"
+  },
+  "I022": {
+   "qid": "EVENT_QUESTION_065",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I023": {
+   "qid": "EVENT_QUESTION_015",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "「門徒，如彼得、雅各和約翰，都感到驚恐和極度難過（可14:33）」錯；驚恐、極其難過的是耶穌本人。",
+   "how": "agree"
+  },
+  "I024": {
+   "qid": "EVENT_QUESTION_018",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I025": {
+   "qid": "EVENT_QUESTION_090",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I026": {
+   "qid": "PERSON_QUESTION_070",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I027": {
+   "qid": "GENERAL_BIBLE_QUESTION_077",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I028": {
+   "qid": "GENERAL_BIBLE_QUESTION_099",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I029": {
+   "qid": "EVENT_QUESTION_005",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I030": {
+   "qid": "GENERAL_BIBLE_QUESTION_065",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I031": {
+   "qid": "GENERAL_BIBLE_QUESTION_054",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I032": {
+   "qid": "EVENT_QUESTION_003",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I033": {
+   "qid": "EVENT_QUESTION_011",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I034": {
+   "qid": "EVENT_QUESTION_056",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "把出34章重新立約當作「西奈山頒十誡」並排在金牛犢之後；十誡實頒於出20章，早於金牛犢事件",
+   "how": "agree"
+  },
+  "I036": {
+   "qid": "EVENT_QUESTION_019",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I037": {
+   "qid": "GENERAL_BIBLE_QUESTION_065",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I038": {
+   "qid": "EVENT_QUESTION_019",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I039": {
+   "qid": "GENERAL_BIBLE_QUESTION_076",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "「兩者都提到所羅門在完成或建造過程中獻祭（王上3:15）」；王上3:15是基遍夢後回耶路撒冷獻祭，在建殿之前",
+   "how": "agree"
+  },
+  "I040": {
+   "qid": "EVENT_QUESTION_011",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I041": {
+   "qid": "GENERAL_BIBLE_QUESTION_077",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I042": {
+   "qid": "EVENT_QUESTION_056",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I043": {
+   "qid": "EVENT_QUESTION_015",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "「耶穌帶着彼得和西庇太的兩個兒子同去，他們憂愁起來，極其難過」：太26:37憂愁難過的是耶穌，不是門徒",
+   "how": "agree"
+  },
+  "I044": {
+   "qid": "GENERAL_BIBLE_QUESTION_097",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "fabricated_citation",
+   "evidence": "「若沒有死人復活的事，基督也就沒有復活了」標為哥林多前書13:12，實為林前15:13；林前13:12是「如今彷彿對著鏡子觀看」",
+   "how": "agree"
+  },
+  "I045": {
+   "qid": "GENERAL_BIBLE_QUESTION_097",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I046": {
+   "qid": "EVENT_QUESTION_014",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I047": {
+   "qid": "EVENT_QUESTION_003",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I048": {
+   "qid": "PERSON_QUESTION_070",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "「他跑來見西門彼得和自己，說有人把主挪了去(約20:2)」；跑去報信的是抹大拉的馬利亞，非那門徒",
+   "how": "agree"
+  },
+  "I049": {
+   "qid": "GENERAL_BIBLE_QUESTION_055",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I050": {
+   "qid": "EVENT_QUESTION_003",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I051": {
+   "qid": "GENERAL_BIBLE_QUESTION_077",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "fabricated_citation",
+   "evidence": "「約西亞在耶路撒冷守這逾越節達十八年（王下23:23）」；經文是約西亞王十八年守此節，不是守了十八年",
+   "how": "agree"
+  },
+  "I052": {
+   "qid": "GENERAL_BIBLE_QUESTION_020",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "稱為耶穌作見證的兒女參與天上爭戰(引啟17:17)；實為啟12:17龍與婦人其餘兒女爭戰，天上爭戰是米迦勒與龍",
+   "how": "agree"
+  },
+  "I053": {
+   "qid": "GENERAL_BIBLE_QUESTION_054",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I054": {
+   "qid": "EVENT_QUESTION_015",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I055": {
+   "qid": "EVENT_QUESTION_056",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "稱百姓出埃及時「聽聞」紅海乾了、滅西宏和噩（書2:10）：實為喇合等耶利哥人聽見，且滅西宏噩在四十年後",
+   "how": "agree"
+  },
+  "I057": {
+   "qid": "EVENT_QUESTION_008",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I058": {
+   "qid": "EVENT_QUESTION_018",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I059": {
+   "qid": "EVENT_QUESTION_065",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I060": {
+   "qid": "GENERAL_BIBLE_QUESTION_097",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I061": {
+   "qid": "EVENT_QUESTION_019",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "「主告訴亞拿尼亞，上帝揀選了保羅」及22:15-16的命令：徒22:14-16是亞拿尼亞對保羅說的話，不是主說的",
+   "how": "agree"
+  },
+  "I062": {
+   "qid": "EVENT_QUESTION_011",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I063": {
+   "qid": "PERSON_QUESTION_070",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I064": {
+   "qid": "EVENT_QUESTION_056",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I065": {
+   "qid": "EVENT_QUESTION_011",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I066": {
+   "qid": "GENERAL_BIBLE_QUESTION_099",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I067": {
+   "qid": "GENERAL_BIBLE_QUESTION_054",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I068": {
+   "qid": "GENERAL_BIBLE_QUESTION_054",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I069": {
+   "qid": "EVENT_QUESTION_067",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "fabricated_citation",
+   "evidence": "「安提阿（使徒行傳4:41）」；使徒行傳第4章只有37節，4:41不存在",
+   "how": "agree"
+  },
+  "I070": {
+   "qid": "GENERAL_BIBLE_QUESTION_099",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I071": {
+   "qid": "GENERAL_BIBLE_QUESTION_097",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I072": {
+   "qid": "GENERAL_BIBLE_QUESTION_055",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I073": {
+   "qid": "EVENT_QUESTION_015",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "「門徒們就憂愁起來，極其難過」（太26:37；可14:33）：經文中憂愁、驚恐、極其難過的是耶穌本人",
+   "how": "agree"
+  },
+  "I074": {
+   "qid": "EVENT_QUESTION_090",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I075": {
+   "qid": "EVENT_QUESTION_014",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I076": {
+   "qid": "GENERAL_BIBLE_QUESTION_097",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I077": {
+   "qid": "EVENT_QUESTION_016",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "「耶穌對同釘的兩個犯人說：父啊！赦免他們」錯；路23:34是向父為釘他的人禱告；又約19:21並無古利奈人西門。",
+   "how": "agree"
+  },
+  "I078": {
+   "qid": "GENERAL_BIBLE_QUESTION_076",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I079": {
+   "qid": "EVENT_QUESTION_019",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "「主還告訴他：現在你為甚麼耽延呢？起來…受洗」及22:15：徒22:14-16是亞拿尼亞對保羅說的話，不是主",
+   "how": "agree"
+  },
+  "I080": {
+   "qid": "GENERAL_BIBLE_QUESTION_055",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I081": {
+   "qid": "EVENT_QUESTION_067",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "「他前往亞朔接人」；徒20:13是同伴開船往亞朔要接保羅，保羅自己步行；另徒18:18是從哥林多啟程，不是離開安提阿",
+   "how": "agree"
+  },
+  "I082": {
+   "qid": "GENERAL_BIBLE_QUESTION_077",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I083": {
+   "qid": "GENERAL_BIBLE_QUESTION_099",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I084": {
+   "qid": "EVENT_QUESTION_056",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "把出34重新立約當作「西奈山頒十誡」並排在金牛犢之後；實際頒十誡在出20，早於金牛犢(出32)",
+   "how": "agree"
+  },
+  "I085": {
+   "qid": "GENERAL_BIBLE_QUESTION_076",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "fabricated_citation",
+   "evidence": "稱代下8章「建造耶和華殿二十年才完畢」並標(2:1)：代下8:1是殿和王宮合計二十年，代下2:1也沒有這句話",
+   "how": "agree"
+  },
+  "I086": {
+   "qid": "EVENT_QUESTION_016",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "寫「耶穌向同釘的犯人說：父啊！赦免他們」；路23:34是向父禱告，耶穌對犯人說的是「今日你要同我在樂園裏」(23:43)",
+   "how": "agree"
+  },
+  "I087": {
+   "qid": "EVENT_QUESTION_090",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I088": {
+   "qid": "EVENT_QUESTION_016",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I089": {
+   "qid": "GENERAL_BIBLE_QUESTION_020",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I090": {
+   "qid": "EVENT_QUESTION_005",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I091": {
+   "qid": "EVENT_QUESTION_014",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I092": {
+   "qid": "GENERAL_BIBLE_QUESTION_077",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I093": {
+   "qid": "EVENT_QUESTION_018",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I094": {
+   "qid": "EVENT_QUESTION_056",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "以出34:27-28重新立約經文當作金牛犢前的首次頒十誡；首次頒佈在出20章，34章是摔碎法版後的再立約",
+   "how": "agree"
+  },
+  "I095": {
+   "qid": "EVENT_QUESTION_016",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "fabricated_citation",
+   "evidence": "古利奈人西門背十字架一事引約19:17；該節記的是耶穌背着自己的十字架出來，約翰福音並沒有記載西門。",
+   "how": "agree"
+  },
+  "I096": {
+   "qid": "GENERAL_BIBLE_QUESTION_065",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I097": {
+   "qid": "GENERAL_BIBLE_QUESTION_054",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I098": {
+   "qid": "GENERAL_BIBLE_QUESTION_020",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I099": {
+   "qid": "GENERAL_BIBLE_QUESTION_077",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I100": {
+   "qid": "EVENT_QUESTION_011",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "把希伯來書12章(錫安山、追求聖潔)當作登山寶訓主要內容；登山寶訓是太5-7章八福、論律法等",
+   "how": "agree"
+  },
+  "I101": {
+   "qid": "EVENT_QUESTION_015",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "「（耶穌帶彼得等同去，）門徒們就憂愁起來，極其難過」錯；太26:37／可14:33憂愁、極其難過的是耶穌本人。",
+   "how": "agree"
+  },
+  "I102": {
+   "qid": "PERSON_QUESTION_070",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "「他跑來見西門彼得和自己(約20:2)」；約20:2跑去見彼得和那門徒的是抹大拉的馬利亞",
+   "how": "agree"
+  },
+  "I103": {
+   "qid": "EVENT_QUESTION_018",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I104": {
+   "qid": "GENERAL_BIBLE_QUESTION_008",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I105": {
+   "qid": "EVENT_QUESTION_018",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I106": {
+   "qid": "EVENT_QUESTION_016",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "「當下耶穌對同釘的犯人說：父啊！赦免他們」；路23:34此話是耶穌向父禱告，不是對犯人說",
+   "how": "agree"
+  },
+  "I107": {
+   "qid": "EVENT_QUESTION_014",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I108": {
+   "qid": "EVENT_QUESTION_011",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I109": {
+   "qid": "EVENT_QUESTION_065",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I110": {
+   "qid": "GENERAL_BIBLE_QUESTION_065",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I111": {
+   "qid": "EVENT_QUESTION_067",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "「他從安提阿出發，前往以弗所（徒18:19）」；徒18:18-19是從哥林多（堅革哩）坐船到以弗所，不是從安提阿出發",
+   "how": "agree"
+  },
+  "I112": {
+   "qid": "EVENT_QUESTION_014",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I113": {
+   "qid": "PERSON_QUESTION_070",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I114": {
+   "qid": "PERSON_QUESTION_070",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I115": {
+   "qid": "EVENT_QUESTION_065",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I116": {
+   "qid": "GENERAL_BIBLE_QUESTION_008",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I117": {
+   "qid": "GENERAL_BIBLE_QUESTION_065",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I118": {
+   "qid": "EVENT_QUESTION_008",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "以但11:3-4勇敢的王之國四分當作王國分裂經過；實為所羅門死後北方支派背叛羅波安、立耶羅波安(王上12)",
+   "how": "agree"
+  },
+  "I119": {
+   "qid": "GENERAL_BIBLE_QUESTION_055",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I120": {
+   "qid": "GENERAL_BIBLE_QUESTION_076",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "fabricated_citation",
+   "evidence": "引「列王紀上3章1,24節」說娶法老女兒、建宮殿城牆；3:24是所羅門吩咐「拿刀來」審兩婦人案",
+   "how": "agree"
+  },
+  "I121": {
+   "qid": "GENERAL_BIBLE_QUESTION_008",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I122": {
+   "qid": "EVENT_QUESTION_008",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "fabricated_citation",
+   "evidence": "大像半鐵半泥的腳、石頭打碎大像，引為「但以理書第5章41節、34-35節」；第5章只有31節，內容實出自但以理書2:34-35、2:41",
+   "how": "agree"
+  },
+  "I123": {
+   "qid": "GENERAL_BIBLE_QUESTION_055",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I124": {
+   "qid": "EVENT_QUESTION_019",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I125": {
+   "qid": "EVENT_QUESTION_065",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I127": {
+   "qid": "EVENT_QUESTION_003",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I128": {
+   "qid": "EVENT_QUESTION_008",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I129": {
+   "qid": "EVENT_QUESTION_090",
+   "arm": "DENSE6",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I130": {
+   "qid": "GENERAL_BIBLE_QUESTION_055",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I131": {
+   "qid": "EVENT_QUESTION_014",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I132": {
+   "qid": "EVENT_QUESTION_090",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I133": {
+   "qid": "GENERAL_BIBLE_QUESTION_099",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I134": {
+   "qid": "EVENT_QUESTION_016",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I135": {
+   "qid": "GENERAL_BIBLE_QUESTION_020",
+   "arm": "AUX",
+   "rep": 2,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I136": {
+   "qid": "EVENT_QUESTION_003",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "misattribution",
+   "evidence": "稱法老「被告知明天時便硬著心」；實為法老自己說明天(出8:10)，蛙死災鬆後才硬心；且蛙災誤排在雹災後",
+   "how": "agree"
+  },
+  "I137": {
+   "qid": "EVENT_QUESTION_005",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "none",
+   "evidence": "",
+   "how": "agree"
+  },
+  "I014": {
+   "qid": "EVENT_QUESTION_005",
+   "arm": "DENSE6",
+   "rep": 2,
+   "label": "misattribution",
+   "evidence": "答「曠野路上生的眾民未受割禮，因為他們沒有聽從耶和華的話」；書5:6不聽從的是出埃及的兵丁，曠野所生的人未受割禮是因途中沒行割禮(5:7)",
+   "how": "adjudicated",
+   "first": [
+    {
+     "item_id": "I014",
+     "label": "none",
+     "evidence": ""
+    },
+    {
+     "item_id": "I014",
+     "label": "misattribution",
+     "evidence": "稱曠野所生的人未受割禮「因為他們沒有聽從耶和華的話」；書5:6不聽從的是出埃及的兵丁，不是曠野所生的人"
+    }
+   ]
+  },
+  "I020": {
+   "qid": "EVENT_QUESTION_003",
+   "arm": "AUX",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "雹災寫法老「請求耶和華饒恕他的罪，好讓他脫離死亡」並標出9:27-35，實為蝗災時的話(出10:17)；雹災時法老只說「這一次我犯了罪了…請你們求耶和華」(9:27-28)",
+   "how": "adjudicated",
+   "first": [
+    {
+     "item_id": "I020",
+     "label": "misattribution",
+     "evidence": "雹災下寫法老請求「饒恕他的罪，好讓他脫離死亡」，這是蝗災時的話(出10:17)；雹災時法老只說「這一次我犯了罪了」(出9:27)"
+    },
+    {
+     "item_id": "I020",
+     "label": "none",
+     "evidence": ""
+    }
+   ]
+  },
+  "I035": {
+   "qid": "EVENT_QUESTION_067",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "fabricated_citation",
+   "evidence": "「說明他為傳揚真道必須受苦難（加拉太書1:16）」；加1:16只講上帝啟示其子、叫他傳給外邦人，沒有提到受苦；「必須受許多的苦難」出自徒9:16",
+   "how": "adjudicated",
+   "first": [
+    {
+     "item_id": "I035",
+     "label": "fabricated_citation",
+     "evidence": "「說明他為傳揚真道必須受苦難（加拉太書1:16）」；加1:16講上帝啟示其子、叫他傳在外邦人中，並沒有提到受苦。"
+    },
+    {
+     "item_id": "I035",
+     "label": "misattribution",
+     "evidence": "稱保羅歸主後「最初坐船往敘利亞去(徒18:18)」，又把加1:21與徒15:41當成同一次行程；實際上他歸主後先往阿拉伯，再回大馬士革"
+    }
+   ]
+  },
+  "I056": {
+   "qid": "GENERAL_BIBLE_QUESTION_076",
+   "arm": "DENSE6",
+   "rep": 0,
+   "label": "misattribution",
+   "evidence": "稱王上6章記「建造過程中」神夢中顯現賜智慧，實為王上3章建殿前的基遍之夢；另引代下5:12-22不存在（該章僅14節），殿尺寸在代下3章非4章",
+   "how": "adjudicated",
+   "first": [
+    {
+     "item_id": "I056",
+     "label": "fabricated_citation",
+     "evidence": "引「歷代志下第5章12-22節」，但該章只有14節，應為代下7:12-22；殿的尺寸標成代下4:3-8，實為代下3:3-8"
+    },
+    {
+     "item_id": "I056",
+     "label": "misattribution",
+     "evidence": "稱王上6章記「建造過程中」神在夢中顯現、賜所羅門智慧；那是王上3章建殿前在基遍的夢。另有引用錯：代下5:12-22不存在"
+    }
+   ]
+  },
+  "I126": {
+   "qid": "GENERAL_BIBLE_QUESTION_020",
+   "arm": "AUX",
+   "rep": 1,
+   "label": "fabricated_citation",
+   "evidence": "「守上帝誡命、為耶穌作見證的」兒女與龍爭戰引作啟17:17；此語實在啟12:17，啟17:17講上帝使諸王同心遵行祂旨意",
+   "how": "adjudicated",
+   "first": [
+    {
+     "item_id": "I126",
+     "label": "fabricated_citation",
+     "evidence": "「守上帝誡命、為耶穌作見證的…與龍爭戰(啟17:17)」；此語在啟12:17，17:17講神使諸王同心"
+    },
+    {
+     "item_id": "I126",
+     "label": "misattribution",
+     "evidence": "把創48:16「在世界中生養眾多」說成耶和華對亞伯蘭的應許；實為雅各祝福以法蓮瑪拿西；另啟17:17應為12:17"
+    }
+   ]
+  }
+ }
+}
