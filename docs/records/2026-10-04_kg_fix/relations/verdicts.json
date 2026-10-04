@@ -1,0 +1,10 @@
+{"kin_sample_seed": 20261004,
+ "rule_kin_22": {"correct": [11,19,20], "semi": [1], "wrong": [0,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17,18,21]},
+ "llm_kin_16": {"correct": "all 22-37"},
+ "inverse_10": {"correct": [45], "wrong": [38,39,40,41,42,43,44,46,47]},
+ "prior_6": {"correct": "all 48-53"},
+ "llm_nonkin_20_seed7": {"correct": 14},
+ "llm_event_10_seed7": {"correct_strict": 6, "membership_only": 4},
+ "backfill_20_seed7": {"correct_strict": 4},
+ "rule_nonkin_14_seed3": {"correct": 3},
+ "proto_anchored_30_seed11": {"correct": 30}}
