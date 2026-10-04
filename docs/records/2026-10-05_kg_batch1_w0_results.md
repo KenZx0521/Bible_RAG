@@ -171,3 +171,24 @@
   - `router.py` 1,786 行，超過 800 行規則；
   - 建議把 pin 相關的 helper 拆到 `retrieval/pins.py`；
   - 第 1 批期間不拆，避免 D3 映像改變。
+
+## 補記：W1-0 opt-in 決定性（2026-10-05）
+
+Kay 決定把上面的 opt-in 不決定性納入 W1，排在 1A／1B 之前修，修正為 087ab0d（backend 查詢）與 3a294a0（embed_entities）。
+
+| 驗證 | 修正前 | 修正後 |
+|---|---|---|
+| 跨庫探針：13 類查詢，約 1,000 次呼叫，prod 對 staging Neo4j／PG | 大量不同：xref 88/120、related 55/60、entity_path 27/40、multi_hop 19/20、graph_person 17/150、place 18/80、名稱查詢 80/80（含 labels 順序） | 全部相同。唯一例外是 K10 已知的 mention_count 殘差：event:baoluoxushuguizhujingguo 在 prod 是 4、在 staging 是 1 |
+| 實體向量：分別從 prod 與 staging Neo4j 重建 | 舊 collection 有 2,894 個 cos<0.99 | 9,124 個向量逐位元相同，payload 全同 |
+| legacy-100 opt-in 全開 | 19 題不同 | **1 題**（GENERAL_BIBLE_QUESTION_016） |
+
+legacy-100 這一列的條件是兩邊都用新映像 w1det：一邊是臨時容器接 prod 三庫（只讀），實體向量用 detA；另一邊是 staging，用 detB。
+
+**剩下這 1 題不是存放順序造成的。** 同一個 backend 對這題重問 3 次，結果在兩組 top-5 之間切換，兩個庫都會出現這兩組結果。R5 的 `graph` 策略直接用 intent LLM 抽出的實體名稱（temperature 0.1 取樣），路由相同但實體名稱可能不同。
+
+所以 opt-in 路徑還有一個 LLM 取樣造成的雜訊地板。在這組 100 題、各跑一次的比較裡，就是這 1 題。預設路徑不讀 LLM 實體，所以 D3 不受影響。§5.2 的 opt-in A/B 遇到差異題時，要先重問排除取樣雜訊。
+
+**環境狀態：**
+- 臨時容器、含密碼的 env 檔與 `bible_entities_detA` 都已移除，正式 collection 的指紋不變。
+- backend-staging 目前跑 w1det 加 `bible_entities_detB`，到 W1 重建為止。
+- prod 仍是 9bc112a6，新的查詢會在 W1 升版時一起上線。

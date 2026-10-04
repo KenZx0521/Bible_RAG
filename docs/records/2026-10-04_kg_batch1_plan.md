@@ -565,3 +565,17 @@ related_passages 與 related_entities 的查詢沒有 ORDER BY，比對前一律
   - **C4：** W2 之前從抽取字典撤回「流珥→葉忒羅」的別名。這要單獨一個例外 commit，並經過 D3 驗證。
   - **K9 人工標註：** 由 AI 審查代理雙人盲標，再加裁決；Kay 抽查。報告中要標明「非人工」。
 - 下一步是 W0。
+
+## 9. W0 之後的決定（2026-10-05）
+
+W0 結果見 [2026-10-05_kg_batch1_w0_results.md](2026-10-05_kg_batch1_w0_results.md)。
+
+- **後端決定性修正部署到 prod（2026-10-04 核可）：** 56a5440、7d322f7。r0 = 0。
+- **新增 W1-0「opt-in 決定性」，排在 1A／1B 之前（Kay 決定納入 W1）：**
+  - backend 每個 `LIMIT` 或截取前的 `ORDER BY`，都以 `apoc.util.md5([列身分])` 結尾；PG 用 `md5()`。這是把 X1 推廣到全部查詢，因此 **1B 的 C2 已提前完成**（087ab0d），1B 只剩 C1 的排序鍵語意要改。
+  - `embed_entities` 改成依 (title, pid) 排序後，再取前 5 個標題（3a294a0）。
+  - 驗收：
+    - 跨庫探針只剩 K10 已知的 mention_count 殘差；
+    - 從兩個等價的庫重建出的實體向量逐位元相同；
+    - legacy-100 opt-in AA 的結果見 W0 紀錄的補記。
+- **影響：** W1 的 staging 重建會用新的 `embed_entities`，所以 entity_query 的向量會與 prod 現行的 `bible_entities` 不同（舊向量的標題取決於存放順序）。§5.2 的 entity_query A/B 要把這一點列為已知變因。
