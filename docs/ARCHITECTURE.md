@@ -673,6 +673,7 @@ flowchart TB
 | [records/2026-07-06_kg_fixes_execution.md](records/2026-07-06_kg_fixes_execution.md) | 排序融合層三修復 + α 消融 |
 | [records/2026-07-07_architecture_verification.md](records/2026-07-07_architecture_verification.md) | 本文件的獨立檢驗(34 項宣稱)+ 特殊機制解說 + 論文引用彙整 |
 | [build_database.md](build_database.md) | 建庫逐步指令(Step 1–10 含 curated 重放鏈) |
+| [staging_promotion.md](staging_promotion.md) | Staging 重建與 R0–R5 升版流程(備份、等價驗證、升版、回滾) |
 | [archive/2026-04-29_knowledge_graph_setup.md](archive/2026-04-29_knowledge_graph_setup.md) | KG 設計原理(pericope 單位、跨書卷)— P0 前快照 |
 | [archive/2026-05-17_architecture_snapshot.md](archive/2026-05-17_architecture_snapshot.md) | 2026-05-17 架構快照(融合層之前,原 bible_rag_latest.md) |
 | [archive/2026-02-27_database_architecture_report.md](archive/2026-02-27_database_architecture_report.md) | 初版三庫整合分析(2026-02 快照) |

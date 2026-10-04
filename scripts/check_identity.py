@@ -22,7 +22,7 @@ Read-only: Neo4j read transactions, a read-only PG session, Qdrant scroll.
 
 Targets (``--target``) choose which stores NEO4J_URI / POSTGRES_DB /
 QDRANT_ENTITY_COLLECTION resolve to; both directions are guarded, because
-the staging flow (docs/build_database.md R1) exports staging values in the
+the staging flow (docs/staging_promotion.md R1) exports staging values in the
 operator's shell while .env keeps pointing at production:
   * ``staging`` reads the shell only, then the staging defaults
     (bolt://localhost:7688, bible_rag_staging, no Qdrant default because the
@@ -186,8 +186,8 @@ def resolve_target(name: str, environ: Mapping[str, str] | None = None,
     values = {key: store(key) for key in _STORE_KEYS}
     problems = _staging_problems(values, dotenv) if name == "staging" else _prod_problems(environ, dotenv, values)
     if problems:
-        hint = ("open a shell without the staging exports (docs/build_database.md R4)" if name == "prod"
-                else "export the staging settings (docs/build_database.md R1)")
+        hint = ("open a shell without the staging exports (docs/staging_promotion.md R4)" if name == "prod"
+                else "export the staging settings (docs/staging_promotion.md R1)")
         raise ValueError(f"--target {name} refused: " + "; ".join(problems) + f"; {hint}")
 
     return Target(

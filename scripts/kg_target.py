@@ -1,7 +1,7 @@
 """
 Guard: a staging KG rebuild must never write to production.
 
-The staging flow (docs/build_database.md, staging section) points the
+The staging flow (docs/staging_promotion.md) points the
 pipeline at a separate Neo4j (port 7688), PostgreSQL database and Qdrant
 entity collection purely through environment variables. Every script also
 calls load_dotenv(), so a variable the operator forgot to export silently
@@ -101,7 +101,7 @@ def assert_target(*stores: str) -> str:
     if problems:
         raise SystemExit(
             "KG_TARGET=staging refused before connecting:\n  " + "\n  ".join(problems)
-            + "\nSource scripts/tools/staging.env (docs/build_database.md, staging section)."
+            + "\nSource scripts/tools/staging.env (docs/staging_promotion.md)."
         )
     return target
 
@@ -115,7 +115,7 @@ def refuse_under_staging(reason: str) -> None:
     if _active_target() == "staging":
         raise SystemExit(
             f"KG_TARGET=staging refused before connecting: {reason}"
-            "\nThis step is not part of a staging rebuild (docs/build_database.md, staging section)."
+            "\nThis step is not part of a staging rebuild (docs/staging_promotion.md)."
         )
 
 
@@ -148,7 +148,7 @@ def require_staging(*stores: str) -> dict[str, str]:
         raise SystemExit(
             "KG_TARGET is not staging: scripts run from this shell write production "
             "and none of them would refuse.\n"
-            "Run: source scripts/tools/staging.env (docs/build_database.md, staging section)."
+            "Run: source scripts/tools/staging.env (docs/staging_promotion.md)."
         )
     return {store: _endpoint(store) for store in stores}
 

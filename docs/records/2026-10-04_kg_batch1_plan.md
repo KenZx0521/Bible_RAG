@@ -162,10 +162,10 @@
 | C3 | anchored_rules.py 加 yaml：句型 P1–P4，同一節內比對，端點經該段 MENTIONS 解析。**詞庫只用 P/P/G**（E/O/T 垃圾如「兒子大衛」有 683 個 token）；**清單項後面接「的」就結束清單**；**同名防護：子女已有 curated、prior 或 llm 的其他父母時，abstain 並寫入 conflicts**；deny group:yehehua | test_anchored_rules.py：原本列的案例，加上 2ch 28:12、jer 36:12、jer 38:1、gen 28:9、2sa 2:13；「約翰的兒子西門」不得連到使徒約翰 | feat: 錨定句型親屬抽取 |
 | C4a | relation_postprocess.py 骨架：`--rules none` 等價、決定性輸出；report 要模擬 10.2 刪除泛名詞 Event 端點的 80 條 | test_relation_postprocess.py | feat: 6.05 骨架 |
 | C4b–j | 九條規則，各一個 commit：丟 inverse 752 條；規則邊換成錨定邊（−772）；丟 LLM 的 Event–Event 邊 38 條；出處閘門 1 條；domain/range 13 條；flag_id_order 48 條（**改讀 direction_pair 表，與 yaml 的 inverse 脫鉤**）；親屬方向矛盾與無向去重；每鍵唯一列；寫入 provenance | 每條規則各有測試 | 9 個 fix commit |
-| C5 | import_relations_neo4j：改成 `SET rel = row.props`；檢查 written==rows；鍵唯一；空層防護。**標準鏈不帶 --replace**，它只給 staging 手動使用 | test_import_relations.py；同時修改 W0 拆出的 test_db_env 檔中的 fixture | fix: 關係匯入整組覆寫 |
+| C5 | import_relations_neo4j：改成 `SET rel = row.props`；檢查 written==rows；鍵唯一；空層防護。**標準鏈不帶 --replace**，它只給 staging 手動使用 | test_import_relations.py；同時修改 W0 拆出的 fixture：test_db_env_contract.py:205、test_staging_write_guards.py:81 | fix: 關係匯入整組覆寫 |
 | C6a–c | R5 改為 opt-in，帶性別的 inverse 改 null；刪除 R2、rule_classifier、prompt_signals；修正 PRECEDED_BY 的描述 | test_relation_schema.py、test_extract_relations_policy.py | 3 個 commit |
 | C7 | backfill_event_relations：沒有 `--legacy-cooccurrence` 時結束碼 2 | test_backfill_event_relations_retired.py | fix: 10.3 退出預設鏈 |
-| C8 | kg_validate：H3 改用 source；新增 H11；R6 新增全部父母編碼的指標；**model.py 的 live 查詢加讀 direction_verified 與 sources**；新增 6 個探針，另加流珥的 absent 探針（yeteluo SON_OF yisao、naha SON_OF yeteluo） | test_validate_kg_checks.py（W0 拆出的檔） | feat: H11 與 R6 指標 |
+| C8 | kg_validate：H3 改用 source；新增 H11；R6 新增全部父母編碼的指標；**model.py 的 live 查詢加讀 direction_verified 與 sources**；新增 6 個探針，另加流珥的 absent 探針（yeteluo SON_OF yisao、naha SON_OF yeteluo） | test_validate_kg_checks.py（W0 拆出的檔）；H11 寫進 config/kg_quality_baseline/h.json，並擴充 test_validate_kg_shipped.py 的 PRE_SPLIT_IDS | feat: H11 與 R6 指標 |
 | C9 | 文件：新增 Step 6.05、更新重灌鏈、Step 7 改寫成「1A 不改 MENTIONS」；同步 ARCHITECTURE.md:243-249、kg_construction_overview.md:167；註明已歸檔的證據腳本要在 a32fbea 上執行（它們 import classify_by_rules） | test_docs_alignment | docs |
 | C10 | staging 驗證紀錄與期望檔 | — | docs: 1A 結果 |
 
@@ -334,7 +334,7 @@
 | C5 | 孿生合併與 id_migration。**依 --previous-ids，以 (type, normalize(name)) 推導 merge，不依賴「compile 自己做了合併」**。新鑄的 id 若撞上既有 id 而名稱不同，硬失敗。合併後以 (source_id, entity_id, start_pos) 去重，mention_count 由去重後的列重算（有 10/169 列是同一處出現） | test_compile_twins、test_id_migration | feat |
 | C6 | drop_junk：命中 protected 時失敗 | test_compile_rules | fix |
 | C7 | drop_stoplist_events、drop_dictname：命中 protected 時豁免（babieta）；新增 R12 | test_compile_rules、entity_layer 測試 | fix |
-| C8 | aliases 在編譯期產生，歧義字形移到 ambiguous_aliases。**curated 豁免只限 registry 相關的 Event alias，流珥不豁免**。刪除 backfill_aliases.py，**同一個 commit 移除 test_db_env 中的 3 處引用與 README:502** | test_alias_ambiguity：豁免時 33 個事件，不豁免時 28 個 | feat |
+| C8 | aliases 在編譯期產生，歧義字形移到 ambiguous_aliases。**curated 豁免只限 registry 相關的 Event alias，流珥不豁免**。刪除 backfill_aliases.py，**同一個 commit 移除 test_db_env_contract.py:28/186 與 test_staging_write_guards.py:21/82–83 的引用，以及 README:502** | test_alias_ambiguity：豁免時 33 個事件，不豁免時 28 個 | feat |
 | C9 | entity_overrides.yaml 擴充（D9）；H7 改讀這個檔 | test_overrides | feat |
 | C10 | extraction_method 與 title_derived 寫進 Neo4j 與 Qdrant；新增 H11 | test_compile_provenance | feat |
 | C11 | cleanup_noise_entities 加 `--check` 斷言模式 | test_cleanup_check | refactor |

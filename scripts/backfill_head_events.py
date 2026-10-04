@@ -28,7 +28,7 @@ Rollback:
                 ALIAS_INJECTIONS targets) and nothing from PG or Qdrant. write_pg rewrites those
                 rows' PG aliases (merged and deduplicated, order not kept) and
                 reembed_qdrant overwrites their Qdrant payload and vectors, so
-                roll PG and Qdrant back from the R0 backup (docs/build_database.md
+                roll PG and Qdrant back from the R0 backup (docs/staging_promotion.md
                 "R0 備份" / "R5 回滾": bak/<date>/postgres/entity_tables.sql, the
                 Qdrant snapshot or the previous entity collection).
 

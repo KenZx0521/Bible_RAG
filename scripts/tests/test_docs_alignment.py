@@ -1,9 +1,12 @@
-"""docs/build_database.md must match the scripts it tells people to run.
+"""The rebuild docs must match the scripts they tell people to run.
 
-Every script name with flags in the doc is checked against that script's real
---help (and --stage/--target choices), so a renamed or removed flag fails here
-instead of in the middle of a rebuild. Also pins the batch-0 rebuild order
-(replay after the curated overlay) in both the doc and the fix plan.
+The runbook is split in two: docs/build_database.md (Step 0-10, rebuild order)
+and docs/staging_promotion.md (staging, R0-R5 promotion). Every script name
+with flags in either doc is checked against that script's real --help (and
+--stage/--target choices), so a renamed or removed flag fails here instead of
+in the middle of a rebuild. Also pins the batch-0 rebuild order (replay after
+the curated overlay) in both the doc and the fix plan, whose batch-1+ details
+live in a companion file, and checks that the cross links survive the split.
 """
 from __future__ import annotations
 
@@ -16,7 +19,11 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "build_database.md"
+STAGING_DOC = ROOT / "docs" / "staging_promotion.md"
+DOCS = (DOC, STAGING_DOC)
 PLAN = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan.md"
+PLAN_BATCHES = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan_batches.md"
+PLANS = (PLAN, PLAN_BATCHES)
 PY = str(ROOT / "scripts" / ".venv" / "bin" / "python")
 
 # script name as it appears in the doc -> argv that prints its --help
@@ -38,6 +45,7 @@ HELP_ARGV = {
 }
 _SCRIPT_RE = re.compile(r"\b(" + "|".join(sorted(HELP_ARGV, key=len, reverse=True)) + r")(?:\.py)?\b")
 _FLAG_RE = re.compile(r"(?<![\w-])(--[a-z][a-z0-9-]*)")
+_LINK_RE = re.compile(r"\]\(([^)\s]+)\)")
 
 
 @functools.lru_cache(maxsize=None)
@@ -46,23 +54,47 @@ def help_text(script: str) -> str:
     return out.stdout + out.stderr
 
 
+def read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
 def doc_text() -> str:
-    return DOC.read_text(encoding="utf-8")
+    return read(DOC)
+
+
+def staging_text() -> str:
+    return read(STAGING_DOC)
 
 
 def plan_text() -> str:
-    return PLAN.read_text(encoding="utf-8")
+    return read(PLAN)
+
+
+def batches_text() -> str:
+    return read(PLAN_BATCHES)
+
+
+def _name(path: Path) -> str:
+    return path.name
+
+
+def mask_code(text: str) -> str:
+    """Blank out fenced code (same length) so shell comments ("# ...") are not taken for headings."""
+    return re.sub(r"```.*?```", lambda c: re.sub(r"[^\n]", "x", c.group(0)), text, flags=re.S)
 
 
 def section(text: str, heading: str) -> str:
     """Text from a markdown heading to the next heading of the same or higher level."""
-    # mask fenced code so shell comments ("# ...") are not taken for headings
-    masked = re.sub(r"```.*?```", lambda c: re.sub(r"[^\n]", "x", c.group(0)), text, flags=re.S)
+    masked = mask_code(text)
     m = re.search(rf"^(#+) {re.escape(heading)}.*$", masked, re.M)
     assert m, heading
     level = len(m.group(1))
     nxt = re.compile(rf"^#{{1,{level}}} ", re.M).search(masked, m.end())
     return text[m.start(): nxt.start() if nxt else len(text)]
+
+
+def headings(text: str) -> list[str]:
+    return re.findall(r"^#+ (.+)$", mask_code(text), re.M)
 
 
 def code_snippets(text: str):
@@ -73,15 +105,21 @@ def code_snippets(text: str):
     yield from re.findall(r"`([^`\n]+)`", re.sub(r"```.*?```", "", text, flags=re.S))
 
 
-# ---------------------------------------------------------------- build_database.md
-
-def test_doc_stays_within_800_lines():
-    assert len(doc_text().splitlines()) <= 800
+def _git_ignored(path: Path) -> bool:
+    return subprocess.run(["git", "check-ignore", "-q", str(path)], cwd=ROOT).returncode == 0
 
 
-def test_every_documented_flag_exists_in_that_scripts_cli():
+# ---------------------------------------------------------------- both runbook docs
+
+@pytest.mark.parametrize("path", DOCS + PLANS, ids=_name)
+def test_doc_stays_within_800_lines(path):
+    assert len(read(path).splitlines()) <= 800
+
+
+@pytest.mark.parametrize("path", DOCS, ids=_name)
+def test_every_documented_flag_exists_in_that_scripts_cli(path):
     missing = []
-    for snippet in code_snippets(doc_text()):
+    for snippet in code_snippets(read(path)):
         scripts = set(_SCRIPT_RE.findall(snippet))
         if len(scripts) != 1:
             continue
@@ -93,13 +131,66 @@ def test_every_documented_flag_exists_in_that_scripts_cli():
     assert not missing, missing
 
 
-def test_documented_stage_and_target_values_are_valid_choices():
-    text = doc_text()
+@pytest.mark.parametrize("path", DOCS, ids=_name)
+def test_documented_stage_and_target_values_are_valid_choices(path):
+    text = read(path)
     stages = set(re.findall(r"--stage ([a-z-]+)", text))
     assert stages <= {"ner", "freeze-grounded", "merge"}, stages
     targets = set(re.findall(r"--(?:target|a|b) ([a-z]+)", text))
     assert targets <= {"prod", "staging"}, targets
 
+
+@pytest.mark.parametrize("path", DOCS + PLANS, ids=_name)
+def test_relative_links_resolve(path):
+    broken = []
+    for target in _LINK_RE.findall(mask_code(read(path))):
+        if re.match(r"[a-z]+:", target) or target.startswith("#"):
+            continue
+        dest = path.parent / target.split("#", 1)[0]
+        if not dest.exists() and not _git_ignored(dest):
+            broken.append(target)
+    assert not broken, broken
+
+
+# ---------------------------------------------------------------- the split
+
+_STAGING_HEADINGS = ("拓撲", "環境變數契約", "執行前檢查", "R0", "R1", "R2", "R3", "R4", "R5", "收尾")
+
+
+def test_staging_chapter_lives_in_its_own_doc_with_a_summary_left_behind():
+    stub = section(doc_text(), "Staging 與升版流程")
+    assert "](staging_promotion.md)" in stub
+    for step in ("R0", "R1", "R2", "R3", "R4", "R5"):
+        assert step in stub, step
+    build_heads, staging_heads = headings(doc_text()), headings(staging_text())
+    for name in _STAGING_HEADINGS:
+        assert not [h for h in build_heads if h.startswith(name)], name
+        assert [h for h in staging_heads if h.startswith(name)], name
+    assert "](build_database.md)" in staging_text().split("\n## ", 1)[0]
+
+
+# references to the moved chapter (or its sub-sections) from build_database.md
+_TO_STAGING = re.compile(r"「Staging 與升版流程」|「執行前檢查」|見 R[0-5]\b|R0 的 `llm_artifacts")
+# references from the moved chapter back to build_database.md sections
+_TO_BUILD = re.compile(r"「執行順序」|見 Step \d")
+
+
+def test_build_database_refs_to_the_staging_chapter_link_the_new_doc():
+    text = doc_text()
+    stub = section(text, "Staging 與升版流程")
+    rest = mask_code(text.replace(stub, ""))
+    unlinked = [line for line in rest.splitlines()
+                if _TO_STAGING.search(line) and "staging_promotion.md" not in line]
+    assert not unlinked, unlinked
+
+
+def test_staging_doc_refs_to_build_steps_link_build_database():
+    unlinked = [line for line in mask_code(staging_text()).splitlines()
+                if _TO_BUILD.search(line) and "build_database.md" not in line]
+    assert not unlinked, unlinked
+
+
+# ---------------------------------------------------------------- build_database.md
 
 def test_step1_documents_ner_manifest_and_guards():
     s1 = section(doc_text(), "Step 1:")
@@ -117,43 +208,9 @@ def test_step1_documents_g4_input_sha_behaviour():
     assert re.search(r"輸入.{0,40}sha.{0,80}embedding_queue|embedding_queue.{0,80}sha.{0,40}不符", s1, re.S)
 
 
-def test_r0_tarball_carries_the_ner_half_and_its_manifest():
-    r0 = section(doc_text(), "R0")
-    files = " ".join(re.findall(r'FILES="([^"]*)"', r0))
-    for name in ("ner_entities.jsonl", "ner_mentions.jsonl", "ner_manifest.json"):
-        assert name in files, name
-    assert "--stage ner" in r0
-
-
-def test_staging_precheck_requires_the_staging_target():
-    text = doc_text()
-    assert "scripts/kg_target.py --require-staging neo4j postgres qdrant" in text
-    assert "kg_target.assert_target(\"neo4j\", \"postgres\", \"qdrant\")' && echo" not in text
-
-
-def test_diff_kg_command_allowlist_and_clean_shell_are_documented():
-    text = doc_text()
-    r2 = section(text, "R2")
-    s106 = section(text, "10.6")
-    for part in (r2, s106):
-        assert re.search(r"diff_kg\.py --a prod --b staging --allow config/kg_diff_allow_", part), part[:200]
-    assert "乾淨" in r2 and "staging.env" in r2
-    assert "kg_diff_allow_batch0.yaml" in r2
-    row = next(line for line in text.splitlines() if line.startswith("| tools/diff_kg.py"))
-    for flag in ("--a", "--b", "--allow"):
-        assert flag in row, flag
-    assert "參數以 `--help` 為準" not in s106
-
-
 def test_validate_kg_exit_code_comment_covers_error_and_unmeasured():
     s106 = section(doc_text(), "10.6")
     assert "unmeasured" in s106 and "error" in s106
-
-
-def test_r4_rationale_reflects_the_prod_guard():
-    r4 = section(doc_text(), "R4")
-    assert "不擋「prod 檢查讀到 staging」" not in r4
-    assert "拒絕" in r4 and "export_event_registry" in r4
 
 
 def test_step7_explains_the_expected_stale_procedure():
@@ -162,8 +219,44 @@ def test_step7_explains_the_expected_stale_procedure():
         assert needle in s7, needle
 
 
+# ---------------------------------------------------------------- staging_promotion.md
+
+def test_r0_tarball_carries_the_ner_half_and_its_manifest():
+    r0 = section(staging_text(), "R0")
+    files = " ".join(re.findall(r'FILES="([^"]*)"', r0))
+    for name in ("ner_entities.jsonl", "ner_mentions.jsonl", "ner_manifest.json"):
+        assert name in files, name
+    assert "--stage ner" in r0
+
+
+def test_staging_precheck_requires_the_staging_target():
+    text = staging_text()
+    assert "scripts/kg_target.py --require-staging neo4j postgres qdrant" in text
+    for path in DOCS:
+        assert "kg_target.assert_target(\"neo4j\", \"postgres\", \"qdrant\")' && echo" not in read(path)
+
+
+def test_diff_kg_command_allowlist_and_clean_shell_are_documented():
+    r2 = section(staging_text(), "R2")
+    s106 = section(doc_text(), "10.6")
+    for part in (r2, s106):
+        assert re.search(r"diff_kg\.py --a prod --b staging --allow config/kg_diff_allow_", part), part[:200]
+    assert "乾淨" in r2 and "staging.env" in r2
+    assert "kg_diff_allow_batch0.yaml" in r2
+    row = next(line for line in staging_text().splitlines() if line.startswith("| tools/diff_kg.py"))
+    for flag in ("--a", "--b", "--allow"):
+        assert flag in row, flag
+    assert "參數以 `--help` 為準" not in s106
+
+
+def test_r4_rationale_reflects_the_prod_guard():
+    r4 = section(staging_text(), "R4")
+    assert "不擋「prod 檢查讀到 staging」" not in r4
+    assert "拒絕" in r4 and "export_event_registry" in r4
+
+
 def test_inventory_rows_are_current():
-    lines = doc_text().splitlines()
+    lines = staging_text().splitlines()
     ci = next(line for line in lines if line.startswith("| check_identity.py"))
     assert "--target prod" in ci
 
@@ -171,10 +264,15 @@ def test_inventory_rows_are_current():
 # ---------------------------------------------------------------- plan
 
 _ORDER = ("5", "6.1", "8a", "10.1", "7", "8b", "10.6")
+_MOVED_BATCHES = ("1A", "1B", "1C", "1D", "2A", "2B", "2C", "2D", "延後-A", "延後-B", "延後-C")
 
 
 def _positions(labels, keys):
     return [next(i for i, label in enumerate(labels) if label.startswith(key)) for key in keys]
+
+
+def _batch_heading(batch: str) -> re.Pattern:
+    return re.compile(rf"^(?:第 {re.escape(batch)} 批|{re.escape(batch)})：")
 
 
 def test_plan_target_pipeline_runs_k7_after_curated_overlay():
@@ -199,8 +297,20 @@ def test_plan_batch0_chain_is_the_implemented_order():
     assert "ner|grounded|merge" not in b0
 
 
+def test_plan_section4_keeps_batch0_and_summarises_the_moved_batches():
+    s4 = section(plan_text(), "4. 分批計畫")
+    assert [h for h in headings(s4) if h.startswith("第 0 批")]
+    assert "](2026-10-04_kg_data_layer_fix_plan_batches.md)" in s4
+    plan_heads, batch_heads = headings(plan_text()), headings(batches_text())
+    for batch in _MOVED_BATCHES:
+        assert re.search(rf"^\| {re.escape(batch)} \|", s4, re.M), batch
+        assert not [h for h in plan_heads if _batch_heading(batch).match(h)], batch
+        assert [h for h in batch_heads if _batch_heading(batch).match(h)], batch
+    assert "](2026-10-04_kg_data_layer_fix_plan.md)" in batches_text().split("\n## ", 1)[0]
+
+
 def test_plan_batch1d_replays_after_10_5():
-    d = section(plan_text(), "第 1D 批")
+    d = section(batches_text(), "第 1D 批")
     line = next(line for line in d.splitlines() if "**管線順序變更**" in line)
     labels = [s.strip().strip("*") for s in line.split("：", 1)[1].split("→")]
     assert _positions(labels, ("10.5", "7(replay)", "8b", "10.6")) == sorted(

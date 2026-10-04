@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Diff two KG targets, read-only: live prod vs a staging rebuild (batch-0 R2 gate).
 
-docs/build_database.md R2 asks that a batch-0 equivalence rebuild match live
+docs/staging_promotion.md R2 asks that a batch-0 equivalence rebuild match live
 "per E–E phase" and "description replay verbatim", with every allowed
 difference listed and explained. validate_kg scores one graph against its
 baseline and check_identity compares the three stores of one target; neither

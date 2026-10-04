@@ -25,7 +25,7 @@ backend 與 evaluation 的測試各自在 `backend/tests/`、`evaluation/tests/`
 
 - `bible_md/`（66 卷）與 `bible_pdf/`（66 卷）皆已 git-tracked —— **不需**跑 `scripts/convert_bible_pdf.py`（其輸入/輸出路徑 hardcode 在 repo 外，屬歷史工具）
 - `config/relations/*.yaml`、`config/curated/manual_graph_patches.jsonl`、`config/step0_sha.json`（Step 0 sha 基準）、`scripts/uv.lock` 皆已 git-tracked
-- `output/` 整個被 gitignore：所有 JSONL 產物需由管線重新產生。LLM 產物（`output/frozen/`、relations*.jsonl、entities／mentions、checkpoint、TSK 原始檔）重跑必有漂移，只能從備份還原（「Staging 與升版流程」R0 的 `llm_artifacts.tgz`）
+- `output/` 整個被 gitignore：所有 JSONL 產物需由管線重新產生。LLM 產物（`output/frozen/`、relations*.jsonl、entities／mentions、checkpoint、TSK 原始檔）重跑必有漂移，只能從備份還原（[staging_promotion.md](staging_promotion.md) R0 的 `llm_artifacts.tgz`）
 
 ### 0.2 建立 .env（不進 git；組態即建庫結果的一部分）
 
@@ -72,8 +72,8 @@ uv sync --project scripts   # BGE-M3 / CKIP 權重於首次執行時自動從 Hu
 
 ### 執行順序
 
-- **從零**（沒有 staging 的機器）：`process_bible.py` → `check_step0.py`（Step 0 是決定性的，fresh clone 重跑應與 git 追蹤的基準逐位元相同；不符就先查原因）→（選）`validate_output.py` → Step 1 → 2 / 2.1 → 3 → 4 / 4.1 → 5 → 6 → 6.1 → 8a → 9 → 10.1–10.5 → 7 → 8b → 10.6（改用 `--target prod`）→ `export_event_registry.py --check` → `docker compose up -d --build backend`。若能從 R0 的 `llm_artifacts.tgz` 還原 `output/frozen/` 與 NER 半邊（`ner_*.jsonl` 加 `ner_manifest.json`），Step 1 改走 `--stage merge`（缺 NER 半邊時先跑 `--stage ner`）、Step 7 改走 `--replay --fail-on-stale`，就與重灌鏈相同、不必重跑 LLM。
-- **重灌**（JSONL 與 `output/frozen/` 俱在；一律先建在 staging，見「Staging 與升版流程」）：
+- **從零**（沒有 staging 的機器）：`process_bible.py` → `check_step0.py`（Step 0 是決定性的，fresh clone 重跑應與 git 追蹤的基準逐位元相同；不符就先查原因）→（選）`validate_output.py` → Step 1 → 2 / 2.1 → 3 → 4 / 4.1 → 5 → 6 → 6.1 → 8a → 9 → 10.1–10.5 → 7 → 8b → 10.6（改用 `--target prod`）→ `export_event_registry.py --check` → `docker compose up -d --build backend`。若能從 [staging_promotion.md](staging_promotion.md) R0 的 `llm_artifacts.tgz` 還原 `output/frozen/` 與 NER 半邊（`ner_*.jsonl` 加 `ner_manifest.json`），Step 1 改走 `--stage merge`（缺 NER 半邊時先跑 `--stage ner`）、Step 7 改走 `--replay --fail-on-stale`，就與重灌鏈相同、不必重跑 LLM。
+- **重灌**（JSONL 與 `output/frozen/` 俱在；一律先建在 staging，見 [staging_promotion.md](staging_promotion.md)）：
 
   **0 → 1(merge) → 3 → 4（sha 未變就跳過）→ 5 → 6.1 → 8a(embed) → 9 → 10.1–10.5 → 7(replay --fail-on-stale) → 8b(embed --recreate) → 10.6 → export_event_registry --check**
 
@@ -310,7 +310,7 @@ HYBRID_SEARCH_ENABLED=true
 uv run --project scripts python scripts/import_neo4j.py
 ```
 
-> ⚠ 預設先清空 `NEO4J_URI` 指向的整個資料庫（`--no-clear` 可關閉）。重建一律對 staging（`bolt://localhost:7688`）執行，跑之前先做「Staging 與升版流程」中的環境變數檢查。
+> ⚠ 預設先清空 `NEO4J_URI` 指向的整個資料庫（`--no-clear` 可關閉）。重建一律對 staging（`bolt://localhost:7688`）執行，跑之前先做 [staging_promotion.md](staging_promotion.md)「執行前檢查」中的環境變數檢查。
 
 ### 結果
 - Total nodes: 19,310
@@ -393,12 +393,12 @@ Person/Place/Group 三類 entity 中有 ~4,223 個 `description` 欄位空白（
 
 產生的描述只寫進 Neo4j（Step 8 再帶進 Qdrant payload），不在任何 JSONL；PG 的 `entities.description` 對 P/P/G 是 0/4,223，所以 /api/v1/entity 回傳的描述一律是空字串（PG 同步排在第 1D 批）。Step 5 清庫重建後描述必然消失，因此第 0 批起改成快取：
 - 產生模式每接受一條描述，就先附加到 `output/frozen/descriptions.jsonl`，再寫回 Neo4j。每行記錄 entity_id、description、model、temperature（固定 0.2）、prompt_version（prompt 內容雜湊）、titles_sha、quality_flag、git_commit（HEAD，工作樹有改時加 `-dirty`）、generated_at（計畫 §3.1）；
-- 快取的種子是 live 現有的描述（3,045 條 P/P/G，加上 E/O/T）：R0 由 `scripts/tools/export_live_state.py`（唯讀）匯出到 `output/frozen/live_state/<YYYYMMDD>/descriptions.jsonl`，再以 `--promote` 複製成正式快取 `output/frozen/descriptions.jsonl`。種子不知道當初的生成參數：temperature 是 null，model、prompt_version、git_commit 是 `live_export_unknown`；
+- 快取的種子是 live 現有的描述（3,045 條 P/P/G，加上 E/O/T）：R0（見 [staging_promotion.md](staging_promotion.md)）由 `scripts/tools/export_live_state.py`（唯讀）匯出到 `output/frozen/live_state/<YYYYMMDD>/descriptions.jsonl`，再以 `--promote` 複製成正式快取 `output/frozen/descriptions.jsonl`。種子不知道當初的生成參數：temperature 是 null，model、prompt_version、git_commit 是 `live_export_unknown`；
 - 重灌鏈用 `--replay` 從正式快取寫回 Neo4j，不呼叫 LLM。快取以 (entity_id, titles_sha) 定址：實體目前的標題集合雜湊對不上任何快取條目時，回報為 stale、不寫回，留到第 2B 批重生。快取裡有、圖裡沒有的實體回報為 missing。
 - **replay 排在 10.5 之後**：種子的 titles_sha 是用 live 的 MENTIONS 算的，也就是 10.2 刪掉「但」的誤命中、10.4/10.5 補上 curated 邊之後的狀態。放在 6.1 之後會讓 place:dan、person:yeteluo 判為 stale，而 10.5 對 extracted 節點不寫描述，兩條描述就永久遺失（scripts/tests/test_export_live_state.py 模擬了兩種順序）。
 - replay 是閘門：每次都把 written、stale、missing 寫成 JSON 報告（`--report`，預設 `output/frozen/replay_reports/replay_<時間>.json`；stale 附目前的標題與快取裡的 titles_sha），`--fail-on-stale` 在 stale 或 missing 不是 0 時結束碼 1。相符的列照樣寫回（冪等）。
-- **會刻意改動 MENTIONS 的批次（1A、1C、1D）**：標題集合變了，stale 是預期的，鏈會停在 Step 7。處理：(1) 讀這次的報告，逐筆確認 stale 與 missing 都落在該批預期改動的實體內（stale 條目附目前的標題與兩個 titles_sha；missing 只能來自刻意的刪除或改 id）；(2) 把清單與報告路徑列進該批紀錄並核可；(3) 確認後不帶 `--fail-on-stale` 重跑 Step 7（相符的列第一次就已寫回，重跑只是讓這一步以結束碼 0 留下報告），再接 8b。stale 的實體保留 Step 5 匯入的描述（P/P/G 是空的），留到 2B 重生；它們與 live 的描述差異逐條列進該批的 diff_kg 允許清單（`config/kg_diff_allow_<批次>.yaml` 的 `descriptions` section，見 R2）。名單外的 stale 一律當退步查。
-- 兩種模式在連線前都呼叫 `kg_target.assert_target("neo4j")`（見「執行前檢查」）。
+- **會刻意改動 MENTIONS 的批次（1A、1C、1D）**：標題集合變了，stale 是預期的，鏈會停在 Step 7。處理：(1) 讀這次的報告，逐筆確認 stale 與 missing 都落在該批預期改動的實體內（stale 條目附目前的標題與兩個 titles_sha；missing 只能來自刻意的刪除或改 id）；(2) 把清單與報告路徑列進該批紀錄並核可；(3) 確認後不帶 `--fail-on-stale` 重跑 Step 7（相符的列第一次就已寫回，重跑只是讓這一步以結束碼 0 留下報告），再接 8b。stale 的實體保留 Step 5 匯入的描述（P/P/G 是空的），留到 2B 重生；它們與 live 的描述差異逐條列進該批的 diff_kg 允許清單（`config/kg_diff_allow_<批次>.yaml` 的 `descriptions` section，見 [staging_promotion.md](staging_promotion.md) R2）。名單外的 stale 一律當退步查。
+- 兩種模式在連線前都呼叫 `kg_target.assert_target("neo4j")`（見 [staging_promotion.md](staging_promotion.md)「執行前檢查」）。
 
 ### 前提
 - Step 5 完成；重灌鏈中還要 10.1–10.5 完成
@@ -438,7 +438,7 @@ uv run --project scripts python -m scripts.relation_extraction.desc_generator --
 - **Step 7 要在前面**（Person/Place/Group 若 description 為空會降低嵌入質量）。重灌鏈因此跑兩次：8a 在 10.x 之前（只為建 collection），8b 在 Step 7 之後（最終向量）
 
 ### Collection 設計
-- `bible_entities`（1024 維 BGE-M3，COSINE distance）；名稱取自 `QDRANT_ENTITY_COLLECTION`，與 backend 設定 `qdrant_entity_collection` 同名。staging 寫入 `bible_entities_vN`（見「Staging 與升版流程」），10.2/10.4/10.5 的 Qdrant 同步也跟著這個變數走
+- `bible_entities`（1024 維 BGE-M3，COSINE distance）；名稱取自 `QDRANT_ENTITY_COLLECTION`，與 backend 設定 `qdrant_entity_collection` 同名。staging 寫入 `bible_entities_vN`（見 [staging_promotion.md](staging_promotion.md)），10.2/10.4/10.5 的 Qdrant 同步也跟著這個變數走
 - payload：`{entity_id, type, canonical_name, aliases, description, pericope_titles, pericope_ids}`
 - point id：由 `entity_id` 經 UUID5 衍生（idempotent upsert）
 
@@ -546,11 +546,11 @@ uv run --project scripts python scripts/validate_kg.py --live --target staging
 # 三庫身分一致（id、type、canonical、aliases、description 全部列出）；--fail-on id：只有 id 集合有差、或有庫沒讀到時結束碼 1
 uv run --project scripts python scripts/check_identity.py --target staging --fail-on id
 ```
-- 兩項都在 source 過 staging.env 的 shell 跑：`--target staging` 只讀 shell 的變數（不讀 .env），解析到 production 的庫會拒絕；Qdrant 沒有 staging 預設值，沒設 `QDRANT_ENTITY_COLLECTION` 時 H5 判 unmeasured、check_identity 判「庫被略過」，都是結束碼 1。從零鏈（沒有 staging 的機器）兩項都改用 `--target prod`，而且要在乾淨的 shell 跑（見 R4）。
+- 兩項都在 source 過 staging.env 的 shell 跑：`--target staging` 只讀 shell 的變數（不讀 .env），解析到 production 的庫會拒絕；Qdrant 沒有 staging 預設值，沒設 `QDRANT_ENTITY_COLLECTION` 時 H5 判 unmeasured、check_identity 判「庫被略過」，都是結束碼 1。從零鏈（沒有 staging 的機器）兩項都改用 `--target prod`，而且要在乾淨的 shell 跑（見 [staging_promotion.md](staging_promotion.md) R4）。
 - **第 0 批的判準**。等價重建刻意保留 live 的狀態，所以不會全綠；預期差異要逐項列進該批的紀錄，不可直接 ratchet：
   - validate_kg：hard（H1、H2、H7）全過；結束碼 2 只能來自事先列出的退步。已知 R1 從基準 1,938 升到約 2,124（以 output/ JSONL 投影實測；verse remap 後 start_pos=0 從 1,785 變 1,947）。「但」的 370 條孤兒邊仍會被 10.3 重新產生（H3 到第 1A 批才是硬門檻）；mention_count 也會變。
   - check_identity：`--fail-on id` 結束碼 0，即三庫 id 集合差為 0。其餘欄位的差異在第 1D 批前屬正常：PG 的 P/P/G description 全空（Step 3 早於 Step 7；live 為 3,045 筆）、PG aliases（部分 10.x 補的 aliases 只進了 Neo4j；live 為 14 筆）。staging 的 Qdrant 預期 0 差異（8b 從 Neo4j 重讀，aliases 是原生 list），但 live 的 Qdrant aliases 是 JSON 字串（9,093 筆），所以 staging 對 live 的比對在這裡會不同，同樣屬正常。
-- staging 對 live 的等價比對（E–E 各 phase 的邊數、描述逐字比對等）用 `scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_<批次>.yaml`（唯讀），與上面兩項相反，**必須在沒有 source staging.env 的乾淨 shell 跑**，見 R2。
+- staging 對 live 的等價比對（E–E 各 phase 的邊數、描述逐字比對等）用 `scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_<批次>.yaml`（唯讀），與上面兩項相反，**必須在沒有 source staging.env 的乾淨 shell 跑**，見 [staging_promotion.md](staging_promotion.md) R2。
 
 ### export_event_registry（registry 匯出）
 `scripts/export_event_registry.py` 從 Neo4j 讀 curated 事件（backfill_head_events.py 的 ALIAS_INJECTIONS 與 NEW_EVENTS，以及 manual_graph_patches.jsonl 的 Event 節點）的名稱、aliases 與錨點，寫成 `backend/data/event_registry.json`。線上預設 `graph_strategies=["event_registry"]` 只讀這個燒進 image 的靜態檔，不讀 Neo4j；所以重建只要讓這個檔案的內容變了，線上 QA 就會變。
@@ -567,202 +567,20 @@ uv run --project scripts python scripts/export_event_registry.py           # 重
 
 ## Staging 與升版流程
 
-> 依據：[records/2026-10-04_kg_data_layer_fix_plan.md](records/2026-10-04_kg_data_layer_fix_plan.md) §3.5、§3.7（D1：staging 全量重建後升版，不做線上增量補丁）。每批升版都走 R0 → R1 → R2 → R3 → R4，出事走 R5。**第 0 批只做 R0、R1、R2**（在 staging 上做等價重建並列出 diff），不升版。
+> 整章已移到 [staging_promotion.md](staging_promotion.md)（2026-10-04 拆出，內容未刪減）。依據是[計畫](records/2026-10-04_kg_data_layer_fix_plan.md) §3.5、§3.7（D1：staging 全量重建後升版，不做線上增量補丁）。每批升版都走 R0 → R1 → R2 → R3 → R4，出事走 R5；**第 0 批只做 R0、R1、R2**，不升版。
 
-### 拓撲
-
-| 庫 | production | staging | 隔離方式 |
-|---|---|---|---|
-| Neo4j | `bible_rag_neo4j`，bolt 7687／http 7474，volume `bible_rag_neo4j_data` | `bible_rag_neo4j_staging`，bolt 7688／http 7475，volume `bible_rag_neo4j_staging_data` | 另起容器（Neo4j community 只有單一使用者資料庫） |
-| PostgreSQL | 資料庫 `bible_rag` | 資料庫 `bible_rag_staging`（同一個 `bible_rag_postgres` 容器） | 資料庫名 |
-| Qdrant | entity collection `bible_entities` | `bible_entities_vN`（第 0 批用 `bible_entities_v2`） | collection 名。段落 collection（`bible_embeddings`、`bible_embeddings_hybrid`）共用，不重建 |
-| backend | `bible_rag_backend`，port 8000 | `bible_rag_backend_staging`，port 8001（R2 才起） | 另起容器，用現有 image |
-
-`docker-compose.staging.yml` 定義 `neo4j-staging` 與 `backend-staging`：
-- 一律疊在 docker-compose.yml 上，並且指名服務啟動：`docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d neo4j-staging`。
-- 兩者都掛 `staging` profile，沒有指名服務的 `up -d` 不會帶起它們。
-- 兩者都是 `pull_policy: never`，image 必須已在本機（`neo4j:5.15-community`，與正式版同一個 image；`bible_rag-backend:latest`）。
-- neo4j-staging 的 APOC、帳密、記憶體設定與正式版相同，所以 staging 的 dump 可以原樣載入正式版（R3）。image 內建 `labs/apoc-5.15.0-core.jar`，啟動時不需下載。
-- 可用環境變數改 port：`NEO4J_STAGING_BOLT_PORT`、`NEO4J_STAGING_HTTP_PORT`、`BACKEND_STAGING_PORT`。backend-staging 的 env_file 是 `.env` 加 `scripts/tools/staging.env`，PG 資料庫與 entity collection 和腳本讀同一份值；每批只在 staging.env 遞增 `bible_entities_vN`。neo4j-staging 要從 source 過 staging.env 的 shell 啟動（見該檔）。
-
-### 環境變數契約
-
-所有會連資料庫的腳本只從環境變數讀連線設定。`.env` 由 python-dotenv 載入，而且不覆寫已經存在的環境變數（`override=False`），所以在 shell 裡 `export` 的值優先於 `.env`。staging 就靠這一點：不改 `.env`，只在執行腳本的 shell 裡 `source scripts/tools/staging.env`（見「執行前檢查」）。
-
-| 變數 | production（`.env`） | staging（`scripts/tools/staging.env`） | 備註 |
-|---|---|---|---|
-| `KG_TARGET` | 未設（等同 `prod`） | `staging` | 寫入型腳本的連線前防護（`scripts/kg_target.py`），見「執行前檢查」 |
-| `NEO4J_URI` | `bolt://localhost:7687` | `bolt://localhost:7688` | |
-| `NEO4J_USER`、`NEO4J_PASSWORD` | `.env` | 不變 | staging 容器的 `NEO4J_AUTH` 用同一組 |
-| `POSTGRES_HOST`、`POSTGRES_PORT`、`POSTGRES_USER`、`POSTGRES_PASSWORD` | `.env` | 不變 | 同一個 PG 容器 |
-| `POSTGRES_DB` | `bible_rag` | `bible_rag_staging` | |
-| `QDRANT_HOST` | `localhost` | 不變 | |
-| `QDRANT_PORT` | 未設 | 不變 | 有設就優先於 `QDRANT_HTTP_PORT`（`.env` 與 compose 用的名稱）；兩者都沒設時用 6333 |
-| `QDRANT_ENTITY_COLLECTION` | `bible_entities` | `bible_entities_v2`（之後各批：`bible_entities_vN`） | |
-| `QDRANT_COLLECTION`、`QDRANT_HYBRID_COLLECTION` | `bible_embeddings`、`bible_embeddings_hybrid` | 不設 | 只有 Step 4／4.1 讀；staging 不跑這兩步（`KG_TARGET=staging` 時兩者直接拒絕） |
-
-程式碼裡其餘的值都只是變數沒設時的 fallback，與 docker-compose.yml 的預設值相同（localhost、5432、bible_rag、bible、bible_password、bolt://localhost:7687、neo4j、neo4j_password、6333）。
-
-**盤點表**（2026-10-04。✓ 表示該庫的連線設定全部讀環境變數；— 表示不連該庫）
-
-| 腳本（scripts/ 下） | 步驟 | Neo4j：URI/USER/PASSWORD | PG：HOST/PORT/DB/USER/PASSWORD | Qdrant | 寫死與備註 |
-|---|---|---|---|---|---|
-| process_bible.py、validate_output.py、tools/check_step0.py | 0 | — | — | — | 不連資料庫 |
-| extract_entities.py | 1 | — | — | — | 不連資料庫（LLM 走 `ENTITY_EXTRACT_*`） |
-| generate_embeddings.py、generate_sparse_vectors.py | 2、2.1 | — | — | — | 不連資料庫 |
-| import_postgres.py | 3 | — | ✓ | — | 無。會 TRUNCATE 六張表 |
-| import_qdrant.py | 4 | — | — | HOST、PORT→HTTP_PORT、`QDRANT_COLLECTION` | 已修正：collection 原本寫死 `bible_embeddings`；port 原本只認 `QDRANT_HTTP_PORT`。預設刪除後重建 |
-| import_qdrant_hybrid.py | 4.1 | — | — | HOST、PORT→HTTP_PORT、`QDRANT_HYBRID_COLLECTION` | 已修正 port。預設刪除後重建 |
-| import_neo4j.py | 5 | ✓ | — | — | 無。預設清空整個資料庫 |
-| relation_extraction/extract_relations.py（Neo4j 經 config.py 的 `Neo4jConfig.from_env`） | 6 | ✓ | ✓ | — | 無 |
-| import_relations_neo4j.py | 6.1 | ✓ | — | — | 無 |
-| relation_extraction/desc_generator.py | 7 | ✓（`Neo4jConfig.from_env`） | — | — | 無。產生與 replay 都在連線前呼叫 `kg_target.assert_target("neo4j")` |
-| embed_entities.py | 8 | ✓ | — | HOST、PORT→HTTP_PORT、`QDRANT_ENTITY_COLLECTION` | 已修正 port。`--qdrant-host`、`--qdrant-port` 可再覆寫 |
-| import_tsk_crossrefs.py | 9 | ✓ | — | — | 無 |
-| backfill_aliases.py | 10.1 | ✓ | — | — | 無（只寫 Neo4j） |
-| cleanup_noise_entities.py | 10.2 | ✓ | ✓ | HOST、PORT→HTTP_PORT、`QDRANT_ENTITY_COLLECTION` | 已修正 port，以及 PG 的 user/password fallback：原本是 `postgres`／空字串，沒有 .env 時連不上，而連不上時只印警告、靜默跳過 PG 同步 |
-| backfill_event_relations.py | 10.3 | ✓ | — | — | 無（第 1A 批退場） |
-| backfill_head_events.py | 10.4 | ✓ | ✓ | HOST、PORT→HTTP_PORT（`qdrant_endpoint`）；collection 取自 embed_entities（`QDRANT_ENTITY_COLLECTION`） | 無 |
-| backfill_manual_patches.py | 10.5 | 經 backfill_head_events | 經 backfill_head_events | 經 backfill_head_events（`get_qdrant`、`reembed_qdrant`） | 無 |
-| export_event_registry.py | 10.6、export | 經 backfill_head_events.get_neo4j | — | — | 無。輸出檔固定為 backend/data/event_registry.json（git 追蹤的檔案，不是資料庫） |
-| backfill_verse_mentions.py | 退役 | ✓ | — | — | 不在鏈中 |
-| tools/export_live_state.py | R0 | ✓（`Neo4jConfig.from_env`；只用 read 交易） | — | — | 無（第 0 批新增）。`--promote` 不連庫 |
-| check_identity.py | 10.6、R4 | ✓ | ✓ | HOST、PORT→HTTP_PORT、`QDRANT_ENTITY_COLLECTION` | 第 0 批新增，唯讀。`--target staging` 只讀 shell 變數（預設 bolt://localhost:7688、bible_rag_staging；Qdrant 沒有預設），解析到 production 會拒絕；`--target prod` 讀 .env，shell 還帶著 staging 設定（`KG_TARGET=staging`、值與 .env 不同、7688、bible_rag_staging）時拒絕 |
-| validate_kg.py | 10.6、R4 | 經 check_identity 的 `--target` 解析 | 同左 | 同左 | 第 0 批新增，唯讀；兩個方向的守門同 check_identity |
-| tools/diff_kg.py | R2 | `--a`、`--b` 各選 prod／staging（預設 `--a prod --b staging`），經 check_identity 的 `--target` 解析 | — | — | 第 0 批新增，唯讀，只比 Neo4j；`--allow` 讀允許清單。prod 端會拒絕 staging 的 shell，只能在乾淨的 shell 跑，staging 端此時用預設的 bolt://localhost:7688（改過 `NEO4J_STAGING_BOLT_PORT` 時無法指定） |
-
-### 執行前檢查（每次在 staging 跑寫入步驟之前）
-Step 3 會 TRUNCATE、Step 5 會清庫、8a／8b 的 `--recreate` 會刪 collection；變數沒指對，被清掉的就是 production。staging 的變數一律 source 現成的檔案，不要手打：
-```bash
-source scripts/tools/staging.env   # 設好 KG_TARGET=staging 與上表 staging 欄的全部變數
-uv run --project scripts python scripts/kg_target.py --require-staging neo4j postgres qdrant   # 結束碼 0 才往下走
-```
-- 程式端防護 `scripts/kg_target.py`：寫入型腳本在連線前呼叫 `kg_target.assert_target(<要寫的庫>)`。`KG_TARGET=staging` 時，只要有一個要寫的庫的設定沒設（腳本會退回 `.env` 的 production 值），或解析到 production（Neo4j port 7687，沒寫 port 也算；`bible_rag`；`bible_entities`；以及 `.env` 寫的值），就在連線前 SystemExit。`KG_TARGET` 沒設時行為與以前相同，所以沒有 source staging.env 的 shell 不受保護。
-- 第二行的 `--require-staging` 做同一組三庫檢查，另外要求 `KG_TARGET=staging`：新開的終端機忘了 source、或任一庫沒有隔離時結束碼 1；通過時結束碼 0，並印出腳本實際會寫入的三個端點（Neo4j URI、PG 主機與資料庫、Qdrant 主機與 collection），要逐一看過。舊版文件的 `python -c '…assert_target(…)'` 在沒 source 的 shell 會假性通過（`KG_TARGET` 沒設時 assert_target 不檢查、直接回傳 prod），不要再用。
-- staging 的變數只放在跑腳本的 shell，**不要在這個 shell 裡對 production 服務下 `docker compose up`**：docker-compose.yml 會把 `${POSTGRES_DB}` 插值進 production 的 postgres 服務，帶著 `POSTGRES_DB=bible_rag_staging` 去 `up` 它，compose 會判定設定已變而重建 production 的 postgres 容器。指名 `neo4j-staging`、`backend-staging` 不受影響（backend-staging 刻意只依賴 neo4j-staging）。
-
-### R0 備份（每批升版前；第 0 批也要做）
-1. `git tag kg-pre-<批次>`（例：`kg-pre-batch0`）作為 run-of-record。
-2. 三庫備份：照 [bak/README.md](../bak/README.md)「重新備份」建 `bak/<日期>/`。PG 做 `pg_dump -Fc` 加 globals；Qdrant 三個 collection 各做 snapshot；Neo4j 先 `docker stop -t 60`，再 `neo4j-admin database dump`（停機約 1 分鐘）。
-3. 另存 PG 兩張實體表的 plain SQL，R5 換表回滾時使用：
-   ```bash
-   D=$(date +%Y%m%d)
-   docker exec bible_rag_postgres pg_dump -U bible -d bible_rag -t entities -t entity_mentions \
-     > bak/$D/postgres/entity_tables.sql
-   ```
-4. 第 0 批一次性（在沒有 source staging.env 的 shell 執行，讀的是 production）。要在第 0 批程式碼 commit 之後做，manifest 記錄的 commit 才對得上程式碼：
-   - 把只存在 live 的狀態匯出到 `output/frozen/live_state/<YYYYMMDD>/`：descriptions.jsonl（描述快取的種子）、entities.jsonl（labels、canonical、aliases）、curated_mentions.jsonl、manifest.json，查詢都在 read 交易內。再以 `--promote` 把種子複製成正式快取 `output/frozen/descriptions.jsonl`（不連庫；先比對 manifest 的 sha256 與快取格式；已存在時沒有 `--force` 就拒絕）。之後每次重灌的 Step 7 都 replay 這一份：
-     ```bash
-     uv run --project scripts python scripts/tools/export_live_state.py --dry-run
-     uv run --project scripts python scripts/tools/export_live_state.py
-     uv run --project scripts python scripts/tools/export_live_state.py --promote --out-dir output/frozen/live_state/<YYYYMMDD>
-     ```
-   - 以 `extract_entities.py --stage freeze-grounded` 凍結 grounded 半邊，再跑 `--stage ner`（約 30 分鐘）產生帶 manifest 的 NER 半邊，最後 `--stage merge --dry-run` 確認 log 是「NER half identical」（見 Step 1）。
-5. 打包 LLM 產物、K0 的 5 個產物、NER 半邊與 `output/frozen/`。output/ 被 gitignore，bak/20260715 也沒有收這些，現在磁碟上只有一份（計畫 §3.5.1）。K0 檔也要收：重灌鏈的 Step 0 會先覆寫它們才跑 sha 閘門，閘門報漂移時要有原檔可比。ner_* 要連同 `ner_manifest.json` 一起收：merge 會拒絕沒有 manifest 的 NER 半邊：
-   ```bash
-   FILES="relations.jsonl relations_checkpoint.jsonl relations_unclassified.jsonl entities.jsonl entity_mentions.jsonl cross_references_tsk.txt"
-   FILES="$FILES books.jsonl chapters.jsonl pericopes.jsonl chunks.jsonl embedding_queue.jsonl frozen"
-   FILES="$FILES ner_entities.jsonl ner_mentions.jsonl ner_manifest.json"
-   mkdir -p bak/$D/output
-   (cd output && find $FILES -type f -print0 | sort -z | xargs -0 sha256sum) > bak/$D/output/MANIFEST.sha256
-   tar -C output -czf bak/$D/output/llm_artifacts.tgz $FILES
-   ```
-6. 最後照 bak/README.md 重新產生 `bak/$D/SHA256SUMS`。bak/README.md 目前還沒有第 3、5 項，以本節為準。
-
-### R1 staging 建置
-1. 起 staging Neo4j（第一次會建立空的 volume），並確認 APOC 可用（Step 6.1 與 10.x 依賴它）：
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d neo4j-staging
-   docker exec bible_rag_neo4j_staging bash -c 'cypher-shell -u neo4j -p "${NEO4J_AUTH#*/}" "RETURN apoc.version()"'
-   ```
-2. 建 PG staging 資料庫。schema 用 scripts/db/schema.sql（2026-10-04 已比對，entities 與 entity_mentions 的定義與 production 相同）：
-   ```bash
-   docker exec bible_rag_postgres createdb -U bible bible_rag_staging
-   docker exec -i bible_rag_postgres psql -U bible -d bible_rag_staging -v ON_ERROR_STOP=1 < scripts/db/schema.sql
-   ```
-   若已有上一次的 staging 庫，先執行 `docker exec bible_rag_postgres dropdb -U bible --if-exists bible_rag_staging`。**只對 staging 執行。**
-3. Qdrant 不需事先建立：8a 的 `embed_entities.py --recreate` 會建出 `bible_entities_vN`；同一個 vN 重跑時，`--recreate` 會清掉上一次 staging 的點。
-4. `source scripts/tools/staging.env`，並通過執行前檢查。
-5. 依「執行順序」的重灌鏈逐步執行（Step 4／4.1 跳過）。
-6. 第一次 staging 重建要實測各步耗時並填入下表；目前的耗時都是推論（計畫 §8）：
-
-   | 步驟 | 實測耗時 |
-   |---|---|
-   | 0、1(merge)、3、5、6.1、8a、9、10.1–10.5、7(replay)、8b、10.6、export --check | 2026-10-04 第 0 批實測：0=5s、3=5s、5=28s、6.1=1s、8a=26s、9=6s、10.1–10.5=19s、7=1s、8b=24s、10.6=6s，合計約 2 分鐘；`--stage ner` 另需 34 分鐘（1(merge) 本身 <10s） |
-
-### R2 驗證
-1. 10.6 依該批的判準通過（見 Step 10.6），而且 `export_event_registry.py --check` 結束碼 0。
-2. 通過該批的驗證門檻（計畫 §4）。與 live 的 diff 要逐項列出並解釋（預期中的差異見 Step 10.6）。staging 對 live 的比對用 diff_kg，在**沒有 source staging.env 的乾淨 shell**（新開的終端機）跑；10.6 的兩項則要在 staging 的 shell 跑：
-   ```bash
-   uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch0.yaml --json
-   ```
-   - `--a`、`--b` 各選 prod 或 staging（預設就是 prod 對 staging），只比 Neo4j：labels、relationships、ee_edges（`TYPE phase=P source=S`）、mentions、xrefs、entity_ids、descriptions（逐字）、aliases（集合）、registry。prod 端的守門會拒絕還帶著 staging 設定的 shell（結束碼 1，安全的失敗）。
-   - 允許清單放 `config/kg_diff_allow_<批次>.yaml`（git 追蹤，R2 時依實際 diff 建立，與該批紀錄一起 commit）。檔案只有 `version: 1` 與 `allow` 清單；每條要有 section、key（glob）、reason，計數類最多再加一個 `delta`（b − a）或 `max_abs_delta`；未知欄位（例如拼錯的 bound）或型別不對直接報錯，格式見 `diff_kg.py --help`。不在清單內的差異結束碼 1；沒用到的條目會列出，要刪。第 0 批不可放行 descriptions：stale 必須是 0。
-
-   第 0 批的門檻：
-   - registry 是 33 個事件；
-   - 三庫的 id 集合差為 0（`check_identity --target staging --fail-on id`）；
-   - E–E 各 phase 的邊數與 live 相同（diff_kg；允許的差異逐項列出）；
-   - 描述 replay 後，staging 與 live 逐字相同（Step 7 報告的 stale、missing 為 0，且 diff_kg 的描述逐字比對無差異）；
-   - H1、H2、H7 通過。
-3. 起指向 staging 的 backend，跑評估。backend-staging 只依賴 neo4j-staging，postgres、qdrant、ollama 用正在跑的 production 服務：
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d backend-staging
-   curl -f http://localhost:8001/api/v1/health
-   ```
-   - evaluation 端把 `BACKEND_URL` 設成 `http://localhost:8001`（環境變數優先於 evaluation/.env）。先跑 quick_retrieval_eval（100 題），有差異再跑 500 題（計畫 §6）。
-   - 第 0、1 批的 registry 與字典都不變，硬閘門是：預設組態 500 題的 sources 與 prompt 逐位相同（計畫 §6.3）。
-   - backend pytest（含 test_event_registry）照常在 host 的 backend venv 跑，不依賴 staging。
-   - backend-staging 用現有 image。要測新的 backend 程式碼，先 `docker compose build backend`，它只更新 image，不動正在跑的 production 容器；但在 R3 之前不要對 production 執行 `up -d`，否則 production 會換上新 image。
-   - 驗完停掉：`docker compose -f docker-compose.yml -f docker-compose.staging.yml stop backend-staging`。
-
-### R3 升版（第 0 批不做）
-順序規則：backend 程式碼的變更要向前相容，先部署 backend，再升資料（例如第 1B 批）；一個缺陷項目一個 commit，各自附探針，validate 失敗時才分得出是哪一項造成。
-1. Neo4j：從 staging dump，再載入正式 volume。停機約 1 分鐘，期間 /api/v1/entity 會出錯：
-   ```bash
-   mkdir -p bak/$D/promote
-   docker stop -t 60 bible_rag_neo4j_staging
-   docker run --rm --user 7474:7474 --entrypoint neo4j-admin \
-     -v bible_rag_neo4j_staging_data:/data neo4j:5.15-community \
-     database dump neo4j --to-stdout > bak/$D/promote/neo4j_staging.dump
-
-   docker stop -t 60 bible_rag_neo4j
-   docker run --rm -i --user 7474:7474 --entrypoint neo4j-admin \
-     -v bible_rag_neo4j_data:/data neo4j:5.15-community \
-     database load neo4j --from-stdin --overwrite-destination=true < bak/$D/promote/neo4j_staging.dump
-   docker start bible_rag_neo4j
-   ```
-   dump 前停掉 staging 是因為 community 版只能對停機的資料庫做 dump；之後還要用 staging 時再 `docker start bible_rag_neo4j_staging`。另一個做法是把 backend 的 `NEO4J_URI` 改指 staging，但 backend 容器的環境變數是啟動時的快照，必須重新建立容器才會生效。計畫 D15 建議用 dump/load。
-2. PG：從 staging 匯出 entities 與 entity_mentions，在一個 transaction 內換表：
-   ```bash
-   docker exec bible_rag_postgres pg_dump -U bible -d bible_rag_staging -t entities -t entity_mentions \
-     > bak/$D/promote/entity_tables_staging.sql
-   { echo 'DROP TABLE IF EXISTS public.entity_mentions, public.entities;'; cat bak/$D/promote/entity_tables_staging.sql; } \
-     | docker exec -i bible_rag_postgres psql -U bible -d bible_rag --single-transaction -v ON_ERROR_STOP=1
-   ```
-   plain dump 內含兩張表的定義、主鍵、索引、外鍵與資料。DROP 沒有加 CASCADE：若還有別的物件依賴這兩張表，整個 transaction 會失敗並回滾，production 不受影響。
-3. Qdrant：把 `.env` 的 `QDRANT_ENTITY_COLLECTION` 改成 `bible_entities_vN`（backend 設定 `qdrant_entity_collection`，見 backend/config.py；scripts 也讀同一個變數），再重新建立 backend 容器（第 4 步會一併完成）。舊 collection 留到下一批 R0 之後再刪。另一個做法是一次性改用 Qdrant alias；alias 不能與現有 collection 同名，所以 backend 要改指新的 alias 名。
-4. 程式碼、registry、字典隨 image 上線：`docker compose up -d --build backend`。backend 沒有 volume mount，只 restart 會跑舊 image；建置要走 uv 快取（README「Docker 建置快取」）。
-
-### R4 升版後檢查
-- 在 production 上執行 `validate_kg.py --live --target prod`、`export_event_registry.py --check`、`check_identity.py --target prod`。要在沒有 source staging.env 的新 shell 執行：validate_kg 與 check_identity 的 `--target prod` 讀 .env，shell 還帶著 staging 設定（`KG_TARGET=staging`、store 變數與 .env 不同、Neo4j 7688、bible_rag_staging）時會拒絕並結束碼 1，不會把 staging 當成 prod 報告；export_event_registry 沒有這層防護，只讀 `NEO4J_URI`，在 staging 的 shell 會默默檢查 staging 圖。
-- 抽查 /api/v1/entity（計畫 §6.4 列出各批的探針）。
-
-### R5 回滾
-- Neo4j：照 bak/README.md 的「還原指令」，載回 `bak/<日期>/neo4j/neo4j.dump`（停機約 1 分鐘）。
-- PG：用 R0 存的 `bak/<日期>/postgres/entity_tables.sql` 換回兩張表，指令同 R3 第 2 步。
-- Qdrant：把 `QDRANT_ENTITY_COLLECTION` 切回上一個 collection 名，再重新建立 backend 容器。
-- 程式碼與 registry：`git revert`，再 `docker compose up -d --build backend`。
-- 第 1D 批起有了編譯快照（`output/kg_snapshots/<ts>/`）：回滾等於重新載入上一份快照，比還原 dump 快，而且三庫一定一致。
-
-### 收尾
-```bash
-docker compose -f docker-compose.yml -f docker-compose.staging.yml stop backend-staging neo4j-staging
-docker compose -f docker-compose.yml -f docker-compose.staging.yml rm -f backend-staging neo4j-staging
-docker exec bible_rag_postgres dropdb -U bible bible_rag_staging
-docker volume rm bible_rag_neo4j_staging_data bible_rag_neo4j_staging_logs   # 確定不再需要時
-```
-- 已升版的 `bible_entities_vN` 就是 production 的 entity collection，不要刪。沒有升版的 staging collection 用 `curl -X DELETE http://localhost:6333/collections/<名稱>` 刪除，刪之前確認它不是 `.env` 正在用的名稱。
+| 節 | 內容 |
+|---|---|
+| 拓撲 | production 與 staging 的 Neo4j、PG、Qdrant、backend 對照；`docker-compose.staging.yml` 的 neo4j-staging、backend-staging |
+| 環境變數契約 | 腳本只從環境變數讀連線設定；`scripts/tools/staging.env` 的值；各腳本的連線盤點表 |
+| 執行前檢查 | 每次在 staging 跑寫入步驟之前：`source scripts/tools/staging.env`，再跑 `kg_target.py --require-staging neo4j postgres qdrant`，結束碼 0 才往下走 |
+| R0 備份 | `git tag`、三庫備份、PG 兩張實體表的 plain SQL、LLM 產物與 NER 半邊打包（`llm_artifacts.tgz`） |
+| R1 staging 建置 | 起 neo4j-staging、建 `bible_rag_staging`，再依本檔「執行順序」的重灌鏈執行；各步實測耗時 |
+| R2 驗證 | Step 10.6 判準、diff_kg（乾淨的 shell）、各批的驗證門檻、backend-staging 評估 |
+| R3 升版 | Neo4j dump／load、PG 換表、Qdrant collection 切換、`docker compose up -d --build backend` |
+| R4 升版後檢查 | 在沒有 source staging.env 的 shell 跑 `--target prod` 的檢查，抽查 /api/v1/entity |
+| R5 回滾 | Neo4j dump、R0 的 `entity_tables.sql`、collection 名切回、`git revert` |
+| 收尾 | 停掉並移除 staging 容器、資料庫與 volume |
 
 ---
 
@@ -778,7 +596,7 @@ docker compose up -d
 docker compose down
 ```
 
-staging（見「Staging 與升版流程」）一律指名服務：
+staging（見 [staging_promotion.md](staging_promotion.md)）一律指名服務：
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d neo4j-staging
 docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d backend-staging   # R2 才需要

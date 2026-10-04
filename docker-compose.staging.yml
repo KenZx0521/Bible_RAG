@@ -1,6 +1,6 @@
 # Staging stack for KG rebuilds and their validation before promotion
 # (docs/records/2026-10-04_kg_data_layer_fix_plan.md §3.7 R1/R2; runbook:
-# docs/build_database.md「Staging 與升版流程」). Always layered on the base file
+# docs/staging_promotion.md). Always layered on the base file
 # and always started by naming the service:
 #
 #   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d neo4j-staging

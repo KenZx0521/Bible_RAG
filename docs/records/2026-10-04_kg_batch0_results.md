@@ -1,7 +1,7 @@
 # KG 資料層修復第 0 批：執行結果（R0 備份、R1 staging 重建、R2 等價驗證）
 
 - **日期**：2026-10-04
-- **依據**：[2026-10-04_kg_data_layer_fix_plan.md](2026-10-04_kg_data_layer_fix_plan.md) §4 第 0 批；流程見 [../build_database.md](../build_database.md)「Staging 與升版流程」
+- **依據**：[2026-10-04_kg_data_layer_fix_plan.md](2026-10-04_kg_data_layer_fix_plan.md) §4 第 0 批；流程見 [../staging_promotion.md](../staging_promotion.md)「Staging 與升版流程」（2026-10-04 自 build_database.md 拆出）
 - **程式**：860a51d（第 0 批骨架）、7526e12（NER 決定性修正）；git tag `kg-pre-batch0`
 - **證據**：`2026-10-04_kg_fix/batch0_p1/`（各步 log、validate_kg 結果、diff_kg JSON、replay 報告）
 - **本批不升版**：正式三庫與 backend 都沒有改動；線上預設路徑（event_registry 靜態檔）不受影響。
