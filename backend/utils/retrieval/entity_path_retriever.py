@@ -35,6 +35,7 @@ WHERE NOT other.entity_id IN $entity_ids
   AND ALL(rel IN r WHERE NOT type(rel) IN $structural)
 WITH other, min(length(path)) AS hop_distance,
      [rel IN r | type(rel)] AS path_types
+ORDER BY hop_distance ASC, apoc.util.md5([other.entity_id] + path_types)
 LIMIT $entity_limit
 MATCH (other)-[:MENTIONS]-(p:Pericope)
 WITH other, p, hop_distance, path_types
@@ -47,7 +48,7 @@ RETURN p.id AS pericope_id,
        other.canonical_name AS via_entity_name,
        hop_distance,
        path_types
-ORDER BY hop_distance ASC
+ORDER BY hop_distance ASC, apoc.util.md5([p.id, other.entity_id] + path_types)
 LIMIT $limit
 """
 
@@ -126,8 +127,8 @@ async def retrieve_by_entity_query(
     restrictive — see module docstring).
 
     Why Neo4j (not Qdrant payload.pericope_ids): embed_entities.py writes only
-    an unsorted top-5 sample of pericope_ids into payload (Cypher LIMIT 5,
-    storage order). For hub entities like 掃羅 (69 mentions), the correct
+    a 5-pericope sample into payload (the first five by title). For hub
+    entities like 掃羅 (69 mentions), the correct
     pericopes (e.g. act:9:* for 保羅歸主) often miss that sample. Going through
     Neo4j MENTIONS directly returns the full mention set with deterministic
     hub-aware capping.

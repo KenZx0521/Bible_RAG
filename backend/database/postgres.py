@@ -322,7 +322,7 @@ async def search_entities_by_name(name: str, limit: int = 10) -> list[dict]:
             FROM entities
             WHERE canonical_name ILIKE $1
                OR aliases::text ILIKE $1
-            ORDER BY mention_count DESC
+            ORDER BY mention_count DESC, md5(entity_id)
             LIMIT $2
             """,
             f"%{name}%",
@@ -350,7 +350,7 @@ async def get_entity_mentions(entity_id: str, limit: int = 20) -> list[dict]:
             SELECT em.source_id, em.source_type, em.text_span, em.context
             FROM entity_mentions em
             WHERE em.entity_id = $1
-            ORDER BY em.source_id
+            ORDER BY em.source_id, md5(em.mention_id)
             LIMIT $2
             """,
             entity_id,

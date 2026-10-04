@@ -62,10 +62,10 @@ async def find_entity_by_name(name: str, limit: int = 5) -> list[dict]:
                    OR any(a IN e.aliases WHERE a CONTAINS $name))
             RETURN e.entity_id AS entity_id,
                    e.canonical_name AS canonical_name,
-                   labels(e) AS labels,
+                   apoc.coll.sort(labels(e)) AS labels,
                    e.description AS description,
                    e.mention_count AS mention_count
-            ORDER BY e.mention_count DESC
+            ORDER BY e.mention_count DESC, apoc.util.md5([e.entity_id])
             LIMIT $limit
             """,
             name=name,
@@ -92,11 +92,12 @@ async def get_entity_related_pericopes(entity_id: str, limit: int = 10) -> list[
             OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
             WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
-                   labels(p) AS labels,
+                   apoc.coll.sort(labels(p)) AS labels,
                    p.title AS title,
                    p.book_name AS book_name,
                    p.chapter_num AS chapter_num,
                    p.verse_range AS verse_range
+            ORDER BY apoc.util.md5([p.id])
             LIMIT $limit
             """,
             entity_id=entity_id,
@@ -133,6 +134,7 @@ async def get_pericopes_for_entities_hub_aware(
             WHERE p0:Pericope OR p0:Chunk
             OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
             WITH eid, CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
+            ORDER BY eid, apoc.util.md5([p.id])
             WITH eid, collect(DISTINCT p) AS all_p
             WHERE size(all_p) > 0
             WITH eid, all_p, size(all_p) AS total,
@@ -171,11 +173,12 @@ async def get_entities_shared_pericopes(entity_ids: list[str], limit: int = 10) 
             OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
             WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
-                   labels(p) AS labels,
+                   apoc.coll.sort(labels(p)) AS labels,
                    p.title AS title,
                    p.book_name AS book_name,
                    p.chapter_num AS chapter_num,
                    p.verse_range AS verse_range
+            ORDER BY apoc.util.md5([p.id])
             LIMIT $limit
             """,
             first_id=entity_ids[0],
@@ -201,12 +204,12 @@ async def get_cross_references(pericope_id: str, limit: int = 10) -> list[dict]:
             WHERE target.id <> $pericope_id
             WITH target, max(coalesce(r.votes, 999)) AS votes
             RETURN target.id AS id,
-                   labels(target) AS labels,
+                   apoc.coll.sort(labels(target)) AS labels,
                    target.title AS title,
                    target.book_name AS book_name,
                    target.chapter_num AS chapter_num,
                    votes
-            ORDER BY votes DESC
+            ORDER BY votes DESC, apoc.util.md5([target.id])
             LIMIT $limit
             """,
             pericope_id=pericope_id,
@@ -238,14 +241,14 @@ async def get_cross_references_multi_hop(
         "WITH target, count(DISTINCT seed) AS seed_support, "
         "     max(coalesce(r.votes, 999)) AS votes "
         "RETURN target.id AS id, "
-        "       labels(target) AS labels, "
+        "       apoc.coll.sort(labels(target)) AS labels, "
         "       target.title AS title, "
         "       target.book_name AS book_name, "
         "       target.chapter_num AS chapter_num, "
         "       target.verse_range AS verse_range, "
         "       1 AS hop_distance, "
         "       seed_support, votes "
-        "ORDER BY seed_support DESC, votes DESC "
+        "ORDER BY seed_support DESC, votes DESC, apoc.util.md5([target.id]) "
         "LIMIT $limit"
     )
     async with driver.session() as session:
@@ -264,13 +267,13 @@ async def get_cross_references_multi_hop(
         "WHERE NOT target.id IN $exclude "
         "WITH target, min(length(path)) AS hop_distance "
         "RETURN target.id AS id, "
-        "       labels(target) AS labels, "
+        "       apoc.coll.sort(labels(target)) AS labels, "
         "       target.title AS title, "
         "       target.book_name AS book_name, "
         "       target.chapter_num AS chapter_num, "
         "       target.verse_range AS verse_range, "
         "       hop_distance "
-        "ORDER BY hop_distance ASC "
+        "ORDER BY hop_distance ASC, apoc.util.md5([target.id]) "
         "LIMIT $limit"
     )
     async with driver.session() as session:
@@ -298,12 +301,12 @@ async def get_event_related_content(entity_id: str, limit: int = 10) -> list[dic
             OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
             WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
-                   labels(p) AS labels,
+                   apoc.coll.sort(labels(p)) AS labels,
                    p.title AS title,
                    p.book_name AS book_name,
                    p.chapter_num AS chapter_num,
                    p.verse_range AS verse_range
-            ORDER BY p.book_name ASC, p.chapter_num ASC, p.verse_range ASC
+            ORDER BY p.book_name ASC, p.chapter_num ASC, p.verse_range ASC, apoc.util.md5([p.id])
             LIMIT $limit
             """,
             entity_id=entity_id,
@@ -323,11 +326,12 @@ async def get_place_related_content(entity_id: str, limit: int = 10) -> list[dic
             OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(p0)
             WITH DISTINCT CASE WHEN p0:Chunk THEN coalesce(parent, p0) ELSE p0 END AS p
             RETURN p.id AS id,
-                   labels(p) AS labels,
+                   apoc.coll.sort(labels(p)) AS labels,
                    p.title AS title,
                    p.book_name AS book_name,
                    p.chapter_num AS chapter_num,
                    p.verse_range AS verse_range
+            ORDER BY apoc.util.md5([p.id])
             LIMIT $limit
             """,
             entity_id=entity_id,
@@ -350,7 +354,7 @@ async def find_events_by_keyword(keyword: str, limit: int = 5) -> list[dict]:
                    e.aliases AS aliases,
                    e.description AS description,
                    e.mention_count AS mention_count
-            ORDER BY e.mention_count DESC
+            ORDER BY e.mention_count DESC, apoc.util.md5([e.entity_id])
             LIMIT $limit
             """,
             keyword=keyword,
@@ -370,9 +374,9 @@ async def find_related_entities(entity_id: str, limit: int = 10) -> list[dict]:
             WITH other, count(p) AS shared_pericopes
             RETURN other.entity_id AS entity_id,
                    other.canonical_name AS canonical_name,
-                   labels(other) AS labels,
+                   apoc.coll.sort(labels(other)) AS labels,
                    shared_pericopes
-            ORDER BY shared_pericopes DESC
+            ORDER BY shared_pericopes DESC, apoc.util.md5([other.entity_id])
             LIMIT $limit
             """,
             entity_id=entity_id,
