@@ -8,12 +8,15 @@ Usage:
 
 import json
 import os
+import sys
 import argparse
 from pathlib import Path
 from typing import Generator
 
 from neo4j import GraphDatabase
 from dotenv import load_dotenv
+
+import kg_target
 
 # Load environment variables
 load_dotenv()
@@ -35,21 +38,43 @@ def read_jsonl(filepath: Path) -> Generator[dict, None, None]:
                 yield json.loads(line)
 
 
+def _write(session, query: str, **params) -> None:
+    """Run one auto-commit write and wait for its outcome.
+
+    session.run() only waits for the RUN reply. A failure (e.g. the
+    :Entity(entity_id) constraint refusing a twin) otherwise surfaces on the
+    next run(), blamed on the next row, or after the last one inside
+    Session.close(), which swallows it and lets the import look green.
+    """
+    session.run(query, **params).consume()
+
+
 def clear_database(driver):
     """Clear all nodes and relationships."""
     with driver.session() as session:
-        session.run("MATCH (n) DETACH DELETE n")
+        _write(session, "MATCH (n) DETACH DELETE n")
     print("  ✓ Database cleared")
 
 
 def create_constraints(driver):
-    """Create uniqueness constraints and indexes."""
+    """Create uniqueness constraints and indexes.
+
+    Raises if a constraint cannot be created under either syntax: a refused
+    constraint usually means duplicate keys already exist, and continuing
+    would leave the import unguarded while the run looks green.
+    """
     constraints = [
         # Bible hierarchy
         ("Book", "id"),
         ("Chapter", "id"),
         ("Pericope", "id"),
         ("Chunk", "id"),
+        # Global entity key (ID-7/H1): the per-type constraints below cannot
+        # stop one entity_id from existing under two type labels, which
+        # `MERGE (e:Entity:<Type> {entity_id: ...})` silently creates when the
+        # type differs. This also lets `(:Entity {entity_id})` lookups use an
+        # index instead of a label scan.
+        ("Entity", "entity_id"),
         # Entity types
         ("Person", "entity_id"),
         ("Place", "entity_id"),
@@ -58,22 +83,25 @@ def create_constraints(driver):
         ("Object", "entity_id"),
         ("Theme", "entity_id"),
     ]
-    
+
+    # _write() so each failure is raised for its own label (see _write).
     with driver.session() as session:
         for label, prop in constraints:
             try:
-                session.run(
-                    f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{label}) REQUIRE n.{prop} IS UNIQUE"
+                _write(
+                    session,
+                    f"CREATE CONSTRAINT IF NOT EXISTS FOR (n:{label}) REQUIRE n.{prop} IS UNIQUE",
                 )
-            except Exception:
+            except Exception as modern_err:
                 # Fallback for older Neo4j versions
                 try:
-                    session.run(
-                        f"CREATE CONSTRAINT ON (n:{label}) ASSERT n.{prop} IS UNIQUE"
-                    )
+                    _write(session, f"CREATE CONSTRAINT ON (n:{label}) ASSERT n.{prop} IS UNIQUE")
                 except Exception:
-                    pass
-    
+                    raise RuntimeError(
+                        f"could not create constraint on :{label}({prop}) "
+                        f"(duplicate keys?): {modern_err}"
+                    ) from modern_err
+
     print(f"  ✓ Created {len(constraints)} constraints")
 
 
@@ -115,7 +143,7 @@ def _insert_node_batch(driver, batch: list):
             props = item["props"]
             # Use MERGE to avoid duplicates
             query = f"MERGE (n:{labels} {{id: $id}}) SET n += $props"
-            session.run(query, id=props.get("id"), props=props)
+            _write(session, query, id=props.get("id"), props=props)
 
 
 def import_relationships(driver, filepath: Path, batch_size: int = 1000) -> int:
@@ -162,7 +190,8 @@ def _insert_relationship_batch(driver, batch: list):
             MERGE (a)-[r:{item['type']}]->(b)
             SET r += $props
             """
-            session.run(
+            _write(
+                session,
                 query,
                 start_id=item["start"],
                 end_id=item["end"],
@@ -218,7 +247,8 @@ def _insert_entity_batch(driver, batch: list):
                 n.mention_count = $mention_count,
                 n.aliases = $aliases
             """
-            session.run(
+            _write(
+                session,
                 query,
                 entity_id=item["entity_id"],
                 canonical_name=item["canonical_name"],
@@ -372,6 +402,9 @@ def main():
     print("Neo4j Import")
     print("=" * 60)
     
+    # This script clears the whole graph: a staging run must never reach prod.
+    kg_target.assert_target("neo4j")
+
     # Connect to Neo4j
     print("\nConnecting to Neo4j...")
     try:
@@ -382,7 +415,8 @@ def main():
         print("✓ Connected successfully")
     except Exception as e:
         print(f"✗ Connection failed: {e}")
-        return
+        # Non-zero so the rebuild chain stops here (docs/build_database.md).
+        sys.exit(1)
     
     try:
         # Clear database

@@ -28,6 +28,8 @@ from qdrant_client.http import models as qmodels
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from scripts.embeddings.embedder import BGEEmbedder  # noqa: E402
 
+import kg_target  # noqa: E402
+
 load_dotenv()
 logger = logging.getLogger("embed_entities")
 
@@ -176,7 +178,9 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=None,
                         help="Embed only first N entities (debug)")
     parser.add_argument("--qdrant-host", default=os.getenv("QDRANT_HOST", "localhost"))
-    parser.add_argument("--qdrant-port", type=int, default=int(os.getenv("QDRANT_HTTP_PORT", "6333")))
+    # QDRANT_PORT, when set, wins over QDRANT_HTTP_PORT (the name .env and compose use).
+    parser.add_argument("--qdrant-port", type=int,
+                        default=int(os.getenv("QDRANT_PORT") or os.getenv("QDRANT_HTTP_PORT", "6333")))
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -185,6 +189,10 @@ def main() -> int:
         format="%(asctime)s %(levelname)s %(name)s | %(message)s",
     )
 
+    # Under KG_TARGET=staging both stores must be the staging ones: --recreate
+    # drops the collection, and embedding the production graph into a staging
+    # collection would stage the wrong entities.
+    kg_target.assert_target("neo4j", "qdrant")
     client = QdrantClient(host=args.qdrant_host, port=args.qdrant_port)
     _ensure_collection(client, args.recreate)
 

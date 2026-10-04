@@ -31,6 +31,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
+import kg_target
+
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 
@@ -149,6 +151,9 @@ def main() -> int:
     parser.add_argument("input", type=str, help="Path to cross_references.txt")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    # Checked before the slow verse map too, and for --dry-run, whose
+    # before-count would otherwise describe production.
+    kg_target.assert_target("neo4j")
 
     tsk_path = Path(args.input)
     if not tsk_path.exists():

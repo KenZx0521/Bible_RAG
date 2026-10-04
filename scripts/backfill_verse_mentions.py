@@ -27,6 +27,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
+import kg_target
+
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 BATCH_SIZE = 2000
@@ -116,6 +118,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true",
                         help="Only report what would be backfilled")
     args = parser.parse_args()
+    kg_target.assert_target("neo4j")
 
     mentions_path = Path(args.output_dir) / "entity_mentions.jsonl"
     if not mentions_path.exists():

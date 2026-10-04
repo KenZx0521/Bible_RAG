@@ -1,0 +1,751 @@
+{
+  "format": "kg_quality_baseline/v1",
+  "description": "validate_kg quality gate (docs/records/2026-10-04_kg_data_layer_fix_plan.md §3.6). severity hard = must meet target (exit 1); record = must not regress past value + tolerance (exit 2); warn = report only. A check that errors, or a metric that is None without a declared reason (unmeasured), exits 1 at any severity. value is the stored baseline, moved only toward improvement by --ratchet; direction equal moves only with --accept; direction subset stores failing probe ids, any id outside the set is a regression and --ratchet only removes ids; count_of marks a count of such an id set, always stored as len(ids) (load rejects anything else). target_from names a hard target kept in another tracked file (step0_sha = config/step0_sha.json, check_step0's baseline), never copied here. hard_from = batch where a record check becomes hard; plan_reference = the plan's live figure, kept for comparison with the measured value.",
+  "checks": [
+    {
+      "id": "H1",
+      "title": "entity_id globally unique; :Entity(entity_id) uniqueness constraint exists",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "duplicates 0; constraint missing",
+      "query": "count entity_ids on >1 node (Entity or type label); SHOW CONSTRAINTS has UNIQUENESS|NODE_KEY on Entity.entity_id (snapshot: manifest.constraints)",
+      "metrics": {
+        "duplicate_ids": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "missing_constraint": {
+          "value": 1,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H2",
+      "title": "every Entity carries exactly one type label",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "0",
+      "query": "nodes labelled Entity whose type labels (Person/Place/Group/Event/Object/Theme) != 1; type-labelled nodes without :Entity",
+      "metrics": {
+        "bad_type_labels": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "missing_entity_label": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H3",
+      "title": "derived edges supported by co-occurrence in their source pericope",
+      "severity": "record",
+      "hard_from": "1A",
+      "plan_reference": "374",
+      "query": "Entity-Entity edges except phase 3 (prior), curated, and phase-5 inverses of priors (empty source): both ends MENTIONed by source_pericope_id or by one of its chunks; an empty source_pericope_id counts as unsupported",
+      "metrics": {
+        "unsupported": {
+          "value": 374,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H4",
+      "title": "entity names without leading/trailing whitespace",
+      "severity": "record",
+      "hard_from": "1C (P/P/G), 1D (all)",
+      "plan_reference": "180 (183 counting ids)",
+      "query": "canonical_name != canonical_name.strip()",
+      "metrics": {
+        "whitespace_names": {
+          "value": 180,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H5",
+      "title": "three stores agree: id set, type, canonical, aliases (list), description",
+      "severity": "record",
+      "hard_from": "1D",
+      "plan_reference": "id diff 0; PG description 3,045; Qdrant string aliases 9,093",
+      "query": "check_identity.run: PG entities and the Qdrant entity collection vs Neo4j (live only)",
+      "metrics": {
+        "neo4j_aliases_not_list": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_only_in_reference": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_only_in_store": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_type": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_canonical_name": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_aliases_not_list": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_aliases": {
+          "value": 14,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "pg_description": {
+          "value": 3045,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_only_in_reference": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_only_in_store": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_type": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_canonical_name": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_aliases_not_list": {
+          "value": 9093,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_aliases": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "qdrant_description": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H6",
+      "title": "P/P/G MENTIONS carry source_region and a start_pos",
+      "severity": "record",
+      "hard_from": "1C",
+      "plan_reference": "n/a (no source_region yet)",
+      "query": "non-curated MENTIONS edges to Person/Place/Group lacking source_region or start_pos",
+      "metrics": {
+        "missing_region_or_pos": {
+          "value": 30048,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H7",
+      "title": "embedding_queue sha unchanged; id prefix matches type label",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "1 mismatch (group:yehehua)",
+      "query": "sha256(output/embedding_queue.jsonl) (snapshot: manifest.embedding_queue_sha256) must equal config/step0_sha.json files[embedding_queue.jsonl].sha256 (target_from; re-recorded by check_step0.py --record); entity_id prefix vs its single type label, minus params.id_prefix_allowlist",
+      "params": {
+        "id_prefix_allowlist": {
+          "group:yehehua": "Person"
+        },
+        "allowlist_note": "group:yehehua was relabelled Person by cleanup_noise_entities.py; its id stays until entity_overrides.yaml (D9, batch 1D)"
+      },
+      "metrics": {
+        "embedding_queue_sha256": {
+          "value": null,
+          "direction": "equal",
+          "tolerance": 0,
+          "target_from": "step0_sha:embedding_queue.jsonl"
+        },
+        "prefix_mismatch": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H8",
+      "title": "CROSS_REFERENCES carry an explicit provenance flag",
+      "severity": "record",
+      "hard_from": "1B",
+      "plan_reference": "916",
+      "query": "CROSS_REFERENCES with curated IS NULL and votes IS NULL (curated-ness is only inferable from missing votes)",
+      "metrics": {
+        "no_provenance": {
+          "value": 916,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H9",
+      "title": "relation domain/range follows config/relations/biblical_relations.yaml",
+      "severity": "record",
+      "hard_from": "1A",
+      "plan_reference": ">=14",
+      "query": "Entity-Entity edges whose (head label, tail label) the schema entry rejects; edge types missing from the schema",
+      "metrics": {
+        "domain_range_violations": {
+          "value": 14,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "unknown_relation_types": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H10",
+      "title": "Event MENTIONS set unchanged (protects the event registry)",
+      "severity": "record",
+      "hard_from": "1C (every batch)",
+      "plan_reference": "2,227",
+      "query": "sorted (source label, source id, event id) of MENTIONS into Event: count and sha256; intentional change -> D1 review + --accept H10",
+      "metrics": {
+        "event_mentions": {
+          "value": 2227,
+          "direction": "equal",
+          "tolerance": 0,
+          "target": null
+        },
+        "fingerprint": {
+          "value": "e8f45e15c0fd9b0d68208af2f10fd0785ca390cd822ae6b1874dfff010597b0f",
+          "direction": "equal",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R1",
+      "title": "MENTIONS whose first position falls in the book-name region",
+      "severity": "record",
+      "hard_from": "1C",
+      "plan_reference": "1,938 (pure fake 1,745)",
+      "query": "MENTIONS with start_pos < len(book name of the source's book)",
+      "metrics": {
+        "book_region_mentions": {
+          "value": 1938,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R2",
+      "title": "dictionary-substring contamination (馬利亞 in 撒馬利亞, 以利亞 in 以利亞撒 …)",
+      "severity": "record",
+      "hard_from": "2B",
+      "plan_reference": "lower bound 548",
+      "query": "P/P/G MENTIONS whose text_span is a kg_probes.yaml substring probe and every body occurrence of it in the anchor text sits inside a longer name (probe left/right neighbour sets)",
+      "metrics": {
+        "contaminated": {
+          "value": 503,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R3",
+      "title": "entities mentioned under a surface that is neither canonical nor alias (homophone merges)",
+      "severity": "record",
+      "hard_from": "deferred-A",
+      "plan_reference": "169 Person / 268 all types (JSONL, all forms)",
+      "query": "stripped mention text_span outside {canonical} | aliases. Two readings, each with its own baseline (never compare one with the other): foreign_surface_entities / person = entities whose MENTIONS edge keeps such a span (the edge's first row, what live Neo4j stores; live and snapshot agree); all_forms_entities / all_forms_person = entities with such a span in ANY occurrence row (the plan's definition; 268/171 on the 2026-10 output/ JSONL), snapshot only: n/a live and on a --dump-snapshot of live, so its null baseline is first filled by --ratchet on a full snapshot",
+      "metrics": {
+        "foreign_surface_entities": {
+          "value": 264,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "person": {
+          "value": 169,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "all_forms_entities": {
+          "value": null,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "all_forms_person": {
+          "value": null,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R4",
+      "title": "supplementary cross-reference anchors misplaced",
+      "severity": "record",
+      "hard_from": "1B",
+      "plan_reference": "59",
+      "query": "supplementary CROSS_REFERENCES whose first source verse is outside the source pericope's verse_range, or first target verse outside the target's",
+      "metrics": {
+        "misaligned": {
+          "value": 59,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R5",
+      "title": "same canonical name under different types",
+      "severity": "record",
+      "hard_from": "deferred-A",
+      "plan_reference": "908 names",
+      "query": "stripped canonical names owned by entities of >=2 type labels",
+      "metrics": {
+        "cross_type_names": {
+          "value": 908,
+          "direction": "down",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R6",
+      "title": "kinship sanity: probes, FATHER_OF contradictions, female heads, functionality",
+      "severity": "record",
+      "hard_from": "1A",
+      "plan_reference": "contradictions 25 / female head >=40 / 53.6%",
+      "query": "failing R6 probes (failing_probes: ids, subset; probe_failures: their count); FATHER_OF a->b where b is asserted parent of a (FATHER_OF/MOTHER_OF b->a, SON_OF/DAUGHTER_OF a->b); FATHER_OF headed by kg_probes.yaml female_persons; share of FATHER_OF children with >=2 fathers",
+      "metrics": {
+        "probe_failures": {
+          "value": 3,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0,
+          "count_of": "failing_probes"
+        },
+        "failing_probes": {
+          "value": [
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah"
+          ],
+          "direction": "subset",
+          "tolerance": 0,
+          "target": []
+        },
+        "contradictions": {
+          "value": 25,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "female_head": {
+          "value": 42,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "functional_violation_rate": {
+          "value": 0.5357,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0.05
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      },
+      "ids_note": "failing ids = the probes kg_probes.yaml marks 'fails today'; their count equals the 2026-10-04 live failures, a live run reports any id that disagrees as new/fixed"
+    },
+    {
+      "id": "R7",
+      "title": "Events mentioned by a single pericope (observe)",
+      "severity": "record",
+      "hard_from": "deferred-B (observe only)",
+      "plan_reference": "1,535 / 1,714",
+      "query": "Event entities whose MENTIONS (chunk -> parent) reach exactly one pericope",
+      "metrics": {
+        "single_pericope_events": {
+          "value": 1535,
+          "direction": "none",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R8",
+      "title": "junk Event/Theme/Object names (cross-reference remnants, sentence fragments)",
+      "severity": "record",
+      "hard_from": "1D",
+      "plan_reference": "27 + 36 + 25",
+      "query": "E/O/T canonical_name that is empty or whitespace-padded, starts with （ ( ＊ *, contains a verse ref (26‧26), or ENDS in 。，！？；」 (a comma inside a title such as 復活在我，生命在我 does not count; dash-led subtitles such as －蛙災, 15 Events, are not counted pending a decision, as in the plan's 27), minus params.allow_names",
+      "params": {
+        "allow_names": [
+          "這是基督嗎？"
+        ]
+      },
+      "metrics": {
+        "junk_event": {
+          "value": 27,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "junk_theme": {
+          "value": 36,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "junk_object": {
+          "value": 25,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R9",
+      "title": "NER positions: no duplicates; text[start:end] == span",
+      "severity": "record",
+      "hard_from": "1C",
+      "plan_reference": "4,131 duplicates (JSONL); span check n/a",
+      "query": "occurrence rows with text_id: repeated (text_id, entity, start_pos); embedding_queue text slice != text_span. n/a (declared, exit 0) when no row carries text_id and start_pos: live Neo4j keeps one position per edge, a --dump-snapshot of live likewise, and a snapshot without text_id cannot be scored",
+      "metrics": {
+        "duplicate_positions": {
+          "value": 4146,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "span_mismatch": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "snapshot of output/entity_mentions.jsonl (legacy rows; positions index the full embedding_queue text)"
+      }
+    },
+    {
+      "id": "R10",
+      "title": "ambiguous or conflicting aliases",
+      "severity": "record",
+      "hard_from": "1D",
+      "plan_reference": ">=5",
+      "query": "alias surfaces listed by >=2 entities or equal to another entity's canonical_name",
+      "metrics": {
+        "conflicting_aliases": {
+          "value": 21,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "R11",
+      "title": "CROSS_REFERENCES carrying TSK votes",
+      "severity": "record",
+      "hard_from": "1B",
+      "plan_reference": "249,502 (target 250,358)",
+      "query": "CROSS_REFERENCES with votes IS NOT NULL",
+      "metrics": {
+        "tsk_votes_edges": {
+          "value": 249502,
+          "direction": "up",
+          "tolerance": 0,
+          "target": 250358
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "PROBES",
+      "title": "config/kg_probes.yaml facts hold",
+      "severity": "record",
+      "hard_from": "with the check each probe names",
+      "plan_reference": "-",
+      "query": "every fact: relation / mention / event_anchor / alias / xref present or absent as declared; book_region <= max. failing (subset) is the gate: a probe outside the stored ids is a regression even when failures (the count) is unchanged",
+      "metrics": {
+        "failures": {
+          "value": 13,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0,
+          "count_of": "failing"
+        },
+        "failing": {
+          "value": [
+            "alias-matthew-not-levi",
+            "alias-paul-not-saul",
+            "book-region-egypt",
+            "book-region-mark",
+            "book-region-matthew",
+            "edge-no-dan-orphan-nehemiah-wall",
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah",
+            "mention-not-elijah-in-eleazar",
+            "mention-not-mary-in-samaria",
+            "xref-heb1-0-not-curated-psa2",
+            "xref-rev20-not-curated-isa65"
+          ],
+          "direction": "subset",
+          "tolerance": 0,
+          "target": []
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      },
+      "ids_note": "failing ids = the probes kg_probes.yaml marks 'fails today'; their count equals the 2026-10-04 live failures, a live run reports any id that disagrees as new/fixed"
+    },
+    {
+      "id": "W",
+      "title": "label and relationship counts within ±tolerance_pct of the baseline",
+      "severity": "warn",
+      "hard_from": "0 (warning)",
+      "plan_reference": "-",
+      "tolerance_pct": 5,
+      "query": "Entity + type-label counts; Entity-Entity edge types, MENTIONS edges, CROSS_REFERENCES. Deliberate large moves (e.g. kinship 1,571 -> ~300) are recorded with --accept W",
+      "metrics": {
+        "histogram": {
+          "value": {
+            "labels": {
+              "Entity": 9124,
+              "Event": 1714,
+              "Group": 505,
+              "Object": 2200,
+              "Person": 2419,
+              "Place": 1299,
+              "Theme": 987
+            },
+            "relationships": {
+              "ALLY_OF": 64,
+              "ANCESTOR_OF": 49,
+              "BORN_IN": 11,
+              "BUILT": 16,
+              "CAUSED": 10,
+              "CROSS_REFERENCES": 250418,
+              "DAUGHTER_OF": 27,
+              "DESCENDANT_OF": 49,
+              "DESTROYED": 38,
+              "DIED_IN": 20,
+              "DISCIPLE_OF": 21,
+              "ENEMY_OF": 33,
+              "EXILED_TO": 20,
+              "FATHER_OF": 647,
+              "FOUNDED": 1,
+              "GAVE": 76,
+              "INITIATED": 384,
+              "LEADER_OF": 70,
+              "LOCATED_IN": 55,
+              "MEMBER_OF": 357,
+              "MENTIONS": 46205,
+              "MOTHER_OF": 44,
+              "NEAR": 29,
+              "OCCURRED_IN": 4313,
+              "ORIGINATED_FROM": 51,
+              "PARTICIPATED_IN": 7130,
+              "POSSESSED": 551,
+              "PRECEDED_BY": 16,
+              "RECEIVED": 171,
+              "RETURNED_FROM": 41,
+              "RULED": 144,
+              "SETTLED_IN": 223,
+              "SIBLING_OF": 48,
+              "SON_OF": 659,
+              "SPOUSE_OF": 48,
+              "SUCCEEDED_BY": 7,
+              "TEACHER_OF": 21,
+              "VICTIM_OF": 229,
+              "VISITED": 253
+            }
+          },
+          "direction": "none",
+          "tolerance": 0,
+          "target": null
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "D1",
+      "title": "export_event_registry.py --check passes against the target",
+      "severity": "hard",
+      "hard_from": "0",
+      "plan_reference": "pass",
+      "query": "run scripts/export_event_registry.py --check with NEO4J_URI = target (live only); registry changes need a reviewed diff",
+      "metrics": {
+        "drift": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    }
+  ]
+}

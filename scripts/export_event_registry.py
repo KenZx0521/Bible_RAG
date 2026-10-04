@@ -34,6 +34,11 @@ rule as `keyword_exact` in graph_retriever.retrieve_by_events. Aliases are NOT
 triggers by themselves: many were written for specific benchmark questions,
 and widening the trigger set needs held-out validation first.
 
+The core, registry_from_rows(), is a pure function of the anchor rows (the
+shape _ANCHOR_QUERY returns), so a registry can also be built offline from a
+JSONL projection of the graph (validate_kg --snapshot, rebuild simulations);
+build_registry() only adds the live Neo4j fetch.
+
 Usage (from the project root):
     scripts/.venv/bin/python scripts/export_event_registry.py           # write
     scripts/.venv/bin/python scripts/export_event_registry.py --check   # drift check
@@ -45,6 +50,7 @@ import argparse
 import ast
 import json
 import sys
+from collections.abc import Collection, Iterable, Mapping
 from datetime import datetime
 from pathlib import Path
 
@@ -55,7 +61,6 @@ sys.path.insert(0, str(_SCRIPT_DIR))
 from backfill_head_events import (  # noqa: E402  (also loads .env)
     ALIAS_INJECTIONS,
     NEW_EVENTS,
-    _pinyin_id,
     get_neo4j,
 )
 
@@ -79,7 +84,9 @@ def curated_event_ids() -> dict[str, str]:
     """entity_id → provenance tag, from the scripts that created the curation."""
     ids: dict[str, str] = {eid: "alias_injection" for eid in ALIAS_INJECTIONS}
     for ev in NEW_EVENTS:
-        ids[_pinyin_id(ev["canonical_name"])] = "head_event_backfill"
+        # The literal id the backfill wrote (ID-7), never one re-derived from
+        # the name: a pypinyin upgrade or a renamed event must not move it.
+        ids[ev["entity_id"]] = "head_event_backfill"
     for line in MANUAL_PATCHES.read_text(encoding="utf-8").splitlines():
         row = json.loads(line)
         if row.get("kind") == "node" and "Event" in row.get("labels", []):
@@ -97,36 +104,54 @@ def event_keywords() -> set[str]:
     raise RuntimeError(f"EVENT_KEYWORDS not found in {ENTITY_DICTS}")
 
 
-def canonical_key(book_order: dict[str, int]):
+def canonical_key(book_order: Mapping[str, int]):
     def key(pericope_id: str) -> tuple[int, int, int]:
         book, chapter, index = pericope_id.split(":")
         return book_order[book], int(chapter), int(index)
     return key
 
 
-def build_registry() -> dict:
-    curated = curated_event_ids()
-    keywords = event_keywords()
-    book_order = {
-        json.loads(line)["id"]: json.loads(line)["order"]
-        for line in BOOKS.read_text(encoding="utf-8").splitlines()
-    }
-    order = canonical_key(book_order)
+def load_book_order(path: Path = BOOKS) -> dict[str, int]:
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return {row["id"]: row["order"] for row in rows}
 
-    driver = get_neo4j()
-    try:
-        with driver.session() as session:
-            rows = {r["id"]: dict(r) for r in session.run(_ANCHOR_QUERY, ids=sorted(curated))}
-    finally:
-        driver.close()
 
-    missing = sorted(set(curated) - set(rows))
+def fetch_anchor_rows(driver, ids: Iterable[str]) -> list[dict]:
+    """One _ANCHOR_QUERY row per :Event node among ``ids`` (read-only)."""
+    with driver.session() as session:
+        return [dict(r) for r in session.run(_ANCHOR_QUERY, ids=sorted(ids))]
+
+
+def registry_from_rows(rows: Iterable[Mapping], curated: Mapping[str, str],
+                       keywords: Collection[str], book_order: Mapping[str, int],
+                       *, generated_at: str | None = None) -> dict:
+    """Build the registry from anchor rows; no I/O, inputs are not modified.
+
+    ``rows`` has the _ANCHOR_QUERY shape — {id, name, aliases, anchors}, one
+    per :Event node, anchors already rolled up from chunks to their parent
+    pericope. Rows outside ``curated`` are ignored, so an offline caller may
+    pass every event. A curated id without a row, or with two rows, raises.
+    """
+    by_id: dict[str, Mapping] = {}
+    duplicated: set[str] = set()
+    for row in rows:
+        if row["id"] not in curated:
+            continue
+        if row["id"] in by_id:
+            # Two nodes share the id (no :Entity constraint); picking either
+            # would make the registry depend on the graph's return order.
+            duplicated.add(row["id"])
+        by_id[row["id"]] = row
+    if duplicated:
+        raise RuntimeError(f"curated events on more than one node: {sorted(duplicated)}")
+    missing = sorted(set(curated) - set(by_id))
     if missing:
-        raise RuntimeError(f"curated events missing from Neo4j: {missing}")
+        raise RuntimeError(f"curated events missing from the graph: {missing}")
 
+    order = canonical_key(book_order)
     events, dropped = [], []
     for eid in sorted(curated):
-        row = rows[eid]
+        row = by_id[eid]
         names = {row["name"], *(row["aliases"] or [])}
         triggers = sorted(kw for kw in keywords if kw in names)
         anchors = sorted(row["anchors"], key=order)
@@ -146,13 +171,36 @@ def build_registry() -> dict:
 
     return {
         "version": 1,
-        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "generated_at": generated_at,
         "generator": "scripts/export_event_registry.py",
         "trigger_rule": "backend EVENT_KEYWORDS exactly equal to the event's canonical name or an alias",
         "anchor_order": "canonical: book order, chapter, pericope index",
         "events": events,
         "dropped": dropped,
     }
+
+
+def build_registry(driver=None) -> dict:
+    """The registry the live graph yields; opens (and closes) a driver if none is given."""
+    curated = curated_event_ids()
+    keywords = event_keywords()
+    book_order = load_book_order()
+
+    owned = driver is None
+    driver = get_neo4j() if owned else driver
+    try:
+        rows = fetch_anchor_rows(driver, curated)
+    finally:
+        if owned:
+            driver.close()
+
+    return registry_from_rows(rows, curated, keywords, book_order,
+                              generated_at=datetime.now().isoformat(timespec="seconds"))
+
+
+def render_registry(registry: dict) -> str:
+    """The exact text written to OUT_PATH."""
+    return json.dumps(registry, ensure_ascii=False, indent=2) + "\n"
 
 
 def _comparable(registry: dict) -> dict:
@@ -175,7 +223,7 @@ def main() -> int:
         return 0
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUT_PATH.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    OUT_PATH.write_text(render_registry(registry), encoding="utf-8")
     print(f"wrote {len(registry['events'])} events → {OUT_PATH}")
     for d in registry["dropped"]:
         print(f"  dropped {d['id']} ({d['name']}): {d['reason']}")

@@ -1,0 +1,105 @@
+# Staging stack for KG rebuilds and their validation before promotion
+# (docs/records/2026-10-04_kg_data_layer_fix_plan.md §3.7 R1/R2; runbook:
+# docs/build_database.md「Staging 與升版流程」). Always layered on the base file
+# and always started by naming the service:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d neo4j-staging
+#   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d backend-staging   # R2
+#
+# Of the three stores only Neo4j gets a second instance: Neo4j community serves
+# a single user database, so staging needs its own container and volume. PostgreSQL and
+# Qdrant stay shared with production and are isolated by name instead —
+# database bible_rag_staging and entity collection bible_entities_vN — which the
+# scripts pick up from POSTGRES_DB / QDRANT_ENTITY_COLLECTION. Those values live
+# in scripts/tools/staging.env, which both the scripts' shell and backend-staging
+# read; start neo4j-staging from a shell that sourced it (see that file).
+#
+# Both services carry the "staging" profile, so `up -d` without a service name
+# (with or without this file) never starts them by accident; naming the service
+# enables it. pull_policy never: both images must already be local (the host
+# link is ~50 KB/s, and a silent pull of a newer tag would break image parity).
+
+services:
+  # Same image, APOC setup, credentials and memory as the production `neo4j`
+  # service, so a staging dump loads into production unchanged (R3).
+  neo4j-staging:
+    image: neo4j:5.15-community
+    pull_policy: never
+    profiles: ["staging"]
+    container_name: bible_rag_neo4j_staging
+    restart: unless-stopped
+    entrypoint: ["bash", "-c", "rm -f /var/lib/neo4j/run/neo4j.pid && exec /startup/docker-entrypoint.sh neo4j"]
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4j_password}
+      # The 5.15 image bundles labs/apoc-5.15.0-core.jar; NEO4J_PLUGINS copies it
+      # into plugins/ at startup without a download.
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 1G
+    ports:
+      - "${NEO4J_STAGING_HTTP_PORT:-7475}:7474"
+      - "${NEO4J_STAGING_BOLT_PORT:-7688}:7687"
+    volumes:
+      - neo4j_staging_data:/data
+      - neo4j_staging_logs:/logs
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # R2: a second backend on the already-built image, reading staging Neo4j, the
+  # staging PG database and the staging entity collection. Passage collections
+  # and BM25 are shared (the Step 0 sha gate guarantees they did not change).
+  # To test new backend code here, `docker compose build backend` first (that
+  # retags the image without restarting the production container).
+  backend-staging:
+    image: bible_rag-backend:latest
+    pull_policy: never
+    profiles: ["staging"]
+    container_name: bible_rag_backend_staging
+    restart: "no"
+    ports:
+      - "${BACKEND_STAGING_PORT:-8001}:8000"
+    # POSTGRES_DB and QDRANT_ENTITY_COLLECTION come from the same file the
+    # scripts source, read from disk whatever the calling shell exported, so a
+    # bumped bible_entities_vN cannot leave the backend on the previous batch.
+    # Later files win over .env.
+    env_file:
+      - .env
+      - scripts/tools/staging.env
+    # Only container-network endpoints here: `environment` overrides env_file,
+    # and staging.env's NEO4J_URI is the host port, unreachable in-container.
+    environment:
+      POSTGRES_HOST: postgres
+      QDRANT_HOST: qdrant
+      NEO4J_URI: bolt://neo4j-staging:7687
+      OLLAMA_BASE_URL: http://ollama:11434
+    # Only neo4j-staging: `up` also converges every listed dependency, and the
+    # base file interpolates ${POSTGRES_DB} into the production postgres service.
+    # From a shell that exported the staging POSTGRES_DB, depending on postgres
+    # would recreate the production container. postgres/qdrant/ollama are the
+    # running production services and are assumed up.
+    depends_on:
+      neo4j-staging:
+        condition: service_healthy
+    volumes:
+      - model_cache:/root/.cache
+      - ./output/bm25_vocabulary.json:/app/backend/output/bm25_vocabulary.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+volumes:
+  # Fixed names (not project-prefixed by compose) so the dump/load commands in
+  # the runbook can name them directly, like bible_rag_neo4j_data.
+  neo4j_staging_data:
+    name: bible_rag_neo4j_staging_data
+  neo4j_staging_logs:
+    name: bible_rag_neo4j_staging_logs

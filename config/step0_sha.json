@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "generator": "scripts/tools/check_step0.py",
+  "recorded_at": "2026-10-04T10:53:55",
+  "files": {
+    "books.jsonl": {
+      "sha256": "bffdaf878290c6ea3144008085ac121d8deadcd502cc3594cc39104bb710b4bd",
+      "bytes": 13187,
+      "lines": 66
+    },
+    "chapters.jsonl": {
+      "sha256": "dcd9af257f08262f6524967cdea8d2402cd8ce430c0c1ff93cf5cad512c786ed",
+      "bytes": 357405,
+      "lines": 1189
+    },
+    "pericopes.jsonl": {
+      "sha256": "2e46fea4817c538ae4b5b4c6535491277674dc140c8b81dbf2fec8235a038c2c",
+      "bytes": 13929442,
+      "lines": 2779
+    },
+    "chunks.jsonl": {
+      "sha256": "46ca73105170489182c3bfb5c0ed6fbcef3083a21634197e0b9b62976a154f12",
+      "bytes": 2561148,
+      "lines": 431
+    },
+    "embedding_queue.jsonl": {
+      "sha256": "5d2ac0e5460c4d58f4c52e1073986da0bbfabd80ee8c3f3aa6f83030086a198b",
+      "bytes": 9992231,
+      "lines": 34072
+    }
+  }
+}

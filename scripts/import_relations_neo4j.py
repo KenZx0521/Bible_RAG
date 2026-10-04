@@ -22,6 +22,8 @@ from typing import Iterator
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
+import kg_target
+
 load_dotenv()
 
 logger = logging.getLogger("import_relations_neo4j")
@@ -123,6 +125,7 @@ def main() -> int:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s | %(message)s",
     )
+    kg_target.assert_target("neo4j")
 
     in_path = Path(args.path)
     if not in_path.exists():

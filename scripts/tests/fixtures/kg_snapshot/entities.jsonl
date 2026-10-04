@@ -1,0 +1,17 @@
+{"entity_id": "person:tala", "labels": ["Person"], "canonical_name": "他拉", "aliases": [], "description": ""}
+{"entity_id": "person:yabolahan", "labels": ["Person"], "canonical_name": "亞伯拉罕", "aliases": ["亞伯蘭"], "description": ""}
+{"entity_id": "person:nahe", "labels": ["Person"], "canonical_name": "拿鶴", "aliases": [], "description": ""}
+{"entity_id": "person:halan", "labels": ["Person"], "canonical_name": "哈蘭", "aliases": [], "description": ""}
+{"entity_id": "person:luode", "labels": ["Person"], "canonical_name": "羅得", "aliases": [], "description": ""}
+{"entity_id": "person:yisa", "labels": ["Person"], "canonical_name": "以撒", "aliases": [], "description": ""}
+{"entity_id": "person:yage", "labels": ["Person"], "canonical_name": "雅各", "aliases": [], "description": ""}
+{"entity_id": "person:make", "labels": ["Person"], "canonical_name": "馬可", "aliases": [], "description": ""}
+{"entity_id": "person:maliya", "labels": ["Person"], "canonical_name": "馬利亞", "aliases": [], "description": ""}
+{"entity_id": "person:bide", "labels": ["Person"], "canonical_name": "彼得", "aliases": [], "description": ""}
+{"entity_id": "place:aiji", "labels": ["Place"], "canonical_name": "埃及", "aliases": [], "description": ""}
+{"entity_id": "place:moliya", "labels": ["Place"], "canonical_name": "摩利亞", "aliases": [], "description": ""}
+{"entity_id": "group:yiselie", "labels": ["Group"], "canonical_name": "以色列", "aliases": [], "description": ""}
+{"entity_id": "event:xianyisa", "labels": ["Event"], "canonical_name": "獻以撒", "aliases": ["亞伯拉罕獻以撒"], "description": ""}
+{"entity_id": "event:bidehuojiu", "labels": ["Event"], "canonical_name": "彼得獲救", "aliases": [], "description": ""}
+{"entity_id": "object:jitan", "labels": ["Object"], "canonical_name": "祭壇", "aliases": [], "description": ""}
+{"entity_id": "theme:shiyan", "labels": ["Theme"], "canonical_name": "試驗", "aliases": [], "description": ""}

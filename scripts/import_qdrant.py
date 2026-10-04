@@ -16,18 +16,24 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from dotenv import load_dotenv
 
+import kg_target
+
 # Load environment variables
 load_dotenv()
 
 # Constants
-COLLECTION_NAME = "bible_embeddings"
+# Same env name as backend/config.py `qdrant_collection`. The passage collection
+# has no staging copy (staging shares it with production), so main() refuses
+# any KG_TARGET=staging run; the Step 0 sha gate normally skips Step 4 anyway.
+COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "bible_embeddings")
 VECTOR_DIM = 1024  # BGE-M3 dimension
 
 
 def get_qdrant_client() -> QdrantClient:
     """Create and return a Qdrant client."""
     host = os.getenv("QDRANT_HOST", "localhost")
-    port = int(os.getenv("QDRANT_HTTP_PORT", "6333"))
+    # QDRANT_PORT, when set, wins over QDRANT_HTTP_PORT (the name .env and compose use).
+    port = int(os.getenv("QDRANT_PORT") or os.getenv("QDRANT_HTTP_PORT", "6333"))
     return QdrantClient(host=host, port=port)
 
 
@@ -234,6 +240,9 @@ def main():
         help="Don't recreate collection if it exists",
     )
     args = parser.parse_args()
+    kg_target.refuse_under_staging(
+        f"import_qdrant.py writes the passage collection {COLLECTION_NAME}, "
+        "which staging shares with production")
     
     output_dir = Path(args.output_dir)
     embeddings_file = output_dir / "embeddings.jsonl"

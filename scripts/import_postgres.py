@@ -8,6 +8,7 @@ Usage:
 
 import json
 import os
+import sys
 import argparse
 from pathlib import Path
 from typing import Generator
@@ -15,6 +16,8 @@ from typing import Generator
 import psycopg2
 from psycopg2.extras import execute_values
 from dotenv import load_dotenv
+
+import kg_target
 
 # Load environment variables
 load_dotenv()
@@ -331,6 +334,9 @@ def main():
         help="Directory containing JSONL files (default: output)",
     )
     args = parser.parse_args()
+    # Truncates its tables: under KG_TARGET=staging, stop before a database
+    # name that falls back to .env's production one.
+    kg_target.assert_target("postgres")
     
     output_dir = Path(args.output_dir)
     
@@ -345,7 +351,8 @@ def main():
         print("✓ Connected successfully")
     except Exception as e:
         print(f"✗ Connection failed: {e}")
-        return
+        # Non-zero so the rebuild chain stops here (docs/build_database.md).
+        sys.exit(1)
     
     try:
         # Import in order (respecting foreign key constraints)

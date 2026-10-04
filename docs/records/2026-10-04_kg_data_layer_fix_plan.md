@@ -176,13 +176,13 @@
 ```
 K0   process_bible.py                決定性；embedding_queue/pericopes/chunks 的 sha 閘門（改了就不准進）
 K1a  extract_entities --stage ner    只抽「標題區＋本文」；位置用 CKIP idx；正規化；「但」用地理規則
-K1b  extract_entities --stage grounded  凍結 output/frozen/grounded_*.jsonl；只有新候選才跑 Phase 4
+K1b  extract_entities --stage freeze-grounded  凍結 output/frozen/grounded_*.jsonl；只有新候選才跑 Phase 4
 K1c  compile_entities.py（新）       overlay：孿生合併、junk 與停用詞、overrides、aliases（含歧義過濾）、id_migration
 KV0  validate_mentions.py（新）      硬閘門
 K6   relations                       第 1 批：沿用 relations.jsonl；2A 起：離線挖配對（含 chunk 上捲）＋R4 快取
 K6.05 relation_postprocess.py（新）  錨定規則、丟棄 R5、provenance 閘門、domain/range、source 欄位、校準
-K7   描述 replay                     快取命中才用；輸入變了就標 stale，在 2B 重生
 Kc   curated overlay                 第 1 批：沿用 10.4/10.5（字面 id、缺 id 硬失敗、aliases 合併）；2C 起改讀 events.yaml
+K7   描述 replay                     必須在 Kc 之後（titles_sha 以含 curated 邊的最終 MENTIONS 計算，見 §4 第 0 批）；快取命中才用；輸入變了就標 stale，在 2B 重生
 KV1  validate_kg --snapshot
 L    載入 staging                    PG entities/entity_mentions、Neo4j 全庫、Qdrant bible_entities_vN、Step 9 TSK（SET 語意）
 KV2  validate_kg --live --target staging；export_event_registry --check；backend pytest；評估
@@ -326,8 +326,8 @@ P    升版（見 3.7）
 ### 第 0 批：保全與管線骨架（不改資料語意、不升版）
 - **涵蓋**：M6（Step 1 的部分）、EV-06、EV-07（閘門）、EV-08（凍結）、ID-7（字面 id、硬失敗、約束）、XREF 的 missed#1（Step 0 進重灌鏈）、架構師的 P0/P1。
 - **要改的腳本與函式**
-  - `scripts/extract_entities.py`：新增 `--stage ner|grounded|merge`。grounded 半邊從現有 entities.jsonl 依型別拆出，寫成 `output/frozen/grounded_entities.jsonl` 與 `grounded_mentions.jsonl`（已驗證可無損拆分），附 manifest。`--ner-only`（:383-394、456-460）加覆寫保護：沒有 `--force` 就拒絕執行。
-  - `scripts/desc_generator.py`：每產生一條描述就寫入 `output/frozen/descriptions.jsonl`（entity_id、description、model、prompt_version、titles_sha、quality_flag）；新增 `--replay`；:59 加 ORDER BY。內容先不改。
+  - `scripts/extract_entities.py`：新增 `--stage ner|freeze-grounded|merge`。grounded 半邊從現有 entities.jsonl 依型別拆出，寫成 `output/frozen/grounded_entities.jsonl` 與 `grounded_mentions.jsonl`（已驗證可無損拆分），附 manifest。`--ner-only`（:383-394、456-460）加覆寫保護：沒有 `--force` 就拒絕執行。
+  - `scripts/desc_generator.py`：每產生一條描述就寫入 `output/frozen/descriptions.jsonl`（entity_id、description、model、temperature、prompt_version、titles_sha、quality_flag、git_commit）；新增 `--replay`；:59 加 ORDER BY。內容先不改。
   - 新增一次性腳本 `scripts/tools/export_live_state.py`（唯讀）：從 live Neo4j 匯出描述（3,045 條 P/P/G，加上 E/O/T）、aliases、labels、curated MENTIONS，作為快取的種子。
   - `scripts/backfill_manual_patches.py:236-245`：所有 node 列都用 `apoc.coll.toSet` 合併 aliases（排除與 canonical 相同的值）；:331 的 PG/Qdrant 同步，對 extracted 列只更新 aliases（不要走 ON CONFLICT 覆寫 description）；找不到 origin=extracted 的 id 時硬失敗，不可 MERGE ON CREATE。
   - `scripts/backfill_head_events.py`：NEW_EVENTS 改成字面 entity_id（18 個已知值，與 registry 一致），不再呼叫 `_pinyin_id`。
@@ -342,7 +342,11 @@ P    升版（見 3.7）
   - `test_manual_patches_aliases.py`：extracted 節點重放後保有 aliases；缺 id 時硬失敗。
   - `test_registry_rebuild_sim.py`：把 a6_simulate_rebuild 改成測試，registry 必須是 33 個事件、diff 為 0。
   - `test_validate_kg.py`：以固定的快照 fixture 驗證每項檢查。
-- **管線順序變更**：重灌鏈改為 0 → 1(merge) → 3 → 4（sha 未變就跳過）→ 5 → 6.1 → 7(replay) → 8 → 9 → 10.1–10.5 → 10.6（新）→ export。
+- **管線順序變更**：重灌鏈改為 0 → 1(merge) → 3 → 4（sha 未變就跳過）→ 5 → 6.1 → 8a(embed) → 9 → 10.1–10.5 → 7(replay --fail-on-stale) → 8b(embed --recreate) → 10.6（新）→ export_event_registry --check。
+- **與原計畫的偏離與理由**（實作時改定；指令與各步說明以 docs/build_database.md 為準）：
+  - replay 移到 10.5 之後。原順序是 6.1 → 7(replay) → 8 → 9 → 10.1–10.5。描述快取的種子由 `export_live_state.py` 從 live 匯出，titles_sha 取自 live 的 MENTIONS，也就是 10.x 之後的狀態（10.2 刪掉「但」的 733 條誤命中，10.4/10.5 補上 162 條 curated 邊）。replay 若排在 10.x 之前，place:dan、person:yeteluo、event:shanshangbaoxun 會判 stale，event:zuihoudewancan 判 missing；10.5 對 extracted 節點不寫描述，place:dan 與 person:yeteluo 的描述就永久遺失。新順序以 output/ JSONL 投影 live 的 MENTIONS 實測，7,946 條種子 stale = missing = 0（scripts/tests/test_export_live_state.py 模擬了新舊兩種順序）。
+  - Step 8 拆成 8a、8b。10.x 寫的 entity collection 必須先存在：10.2 在 `KG_TARGET=staging` 下刪點失敗會中止；10.4 的 reembed_qdrant 直接 upsert，collection 不存在就丟例外，而這時 Neo4j 與 PG 已寫完；10.5 在寫入前檢查 extracted 點，缺了就 SystemExit。8a 只為建出 collection（P/P/G 描述還是空的）；8b 在 replay 之後從最終的 Neo4j 重讀描述、aliases 與 MENTIONS 重嵌，涵蓋 10.x 寫進 Qdrant 的全部內容。另一個做法（10.4/10.5 加 `--skip-qdrant`，只跑一次 8）不成立，因為 10.2 在 staging 下仍需要 collection。
+  - 其他與原文不同、上方已就地更正的：Step 1 的階段名是 `freeze-grounded`；描述快取多記 temperature 與 git_commit（§3.1 原則 3）；replay 是閘門（`--fail-on-stale` 加 JSON 報告）。
 - **線上遷移**：無，不升版。只做 R0 備份，並在 staging 上做 P1 等價重建；diff 必須逐項列出並解釋。預期差異：verse remap 後的 start_pos 分布（start_pos=0 從 1,785 變 1,947，null 從 21,939 變 16,106）、mention_count，以及「但」的 370 條孤兒邊重新出現（10.3 仍在跑）。
 - **驗證門檻**：
   - staging 上 `export_event_registry --check` 結束碼 0，registry 是 33 個事件；
@@ -495,7 +499,7 @@ P    升版（見 3.7）
   - `test_compile_entities.py`（golden 小樣本；孿生合併；27/36/25 個 junk fixture 加上反例；停用詞）；
   - `test_alias_ambiguity.py`；
   - check_identity 在 staging 上的整合測試。
-- **管線順序變更**：Step 1 → **K1c 編譯（新）** → validate_mentions → Step 3（PG 的 entities 與 mentions）→ Step 5 → 6.05 → 6.1 → 7(replay) → 8 → 9 → 10.4 → 10.5 → 10.6。10.1 從鏈中移除；10.2 只剩斷言。
+- **管線順序變更**：Step 1 → **K1c 編譯（新）** → validate_mentions → Step 3（PG 的 entities 與 mentions）→ Step 5 → 6.05 → 6.1 → 8a → 9 → 10.4 → 10.5 → 7(replay) → 8b → 10.6。10.1 從鏈中移除；10.2 只剩斷言。replay 排在 10.5 之後、8 拆成 8a/8b 的理由同第 0 批。上面 import_postgres 要在 Step 3 帶描述，就得在編譯期用「套過 curated overlay 之後」的 MENTIONS 判 stale（等於把 Kc 移進編譯期，見 §3.2）；做不到時，PG 的描述改在 7(replay) 之後另行同步，不可拿編譯前的 MENTIONS 判 stale。
 - **線上遷移**：與 1C 同一波，§3.7 R0–R5。約 180 個空白 id 改名或合併後，舊 id 會回 404（沒有 curated 引用，評估檔也沒有引用）；redirect 留到延後-A（D8）。
 - **驗證門檻**：
   - H4 = 0（原 180）；同 (label, trim(name)) 有多個節點的情形為 0；

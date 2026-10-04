@@ -33,6 +33,7 @@ from neo4j import GraphDatabase
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from entity_extraction.entity_dict import PERSON_DICT, PLACE_DICT, GROUP_DICT  # noqa: E402
+import kg_target  # noqa: E402
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
@@ -100,6 +101,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    kg_target.assert_target("neo4j")
 
     driver = get_driver()
     try:

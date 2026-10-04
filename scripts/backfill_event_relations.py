@@ -30,6 +30,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
+import kg_target
+
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 
@@ -149,6 +151,7 @@ def main() -> int:
                         default=str(ROOT / "output" / "relations_unclassified.jsonl"))
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    kg_target.assert_target("neo4j")
 
     path = Path(args.input)
     if not path.exists():

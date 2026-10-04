@@ -1,0 +1,76 @@
+# Probes for the validate_kg test fixture (same schema as config/kg_probes.yaml).
+# Every fact holds on the clean fixture; tests mutate a copy to break one.
+version: 1
+
+facts:
+  - id: kin-terah-father-of-abraham
+    check: R6
+    kind: relation
+    head: person:tala
+    rel: FATHER_OF
+    tail: person:yabolahan
+    expect: present
+  - id: kin-lot-not-father-of-terah
+    check: R6
+    kind: relation
+    head: person:luode
+    rel: FATHER_OF
+    tail: person:tala
+    expect: absent
+  - id: mention-gen22-isaac
+    check: R1
+    kind: mention
+    source: gen:22:0
+    entity: person:yisa
+    expect: present
+  - id: mention-act12-mark-via-chunk
+    check: R1
+    kind: mention
+    source: act:12:1
+    entity: person:make
+    rollup: true
+    expect: present
+  - id: mention-act8-not-mary
+    check: R2
+    kind: mention
+    source: act:8:0
+    entity: person:maliya
+    rollup: true
+    expect: absent
+  - id: book-region-mark
+    check: R1
+    kind: book_region
+    entity: person:make
+    max: 0
+  - id: xref-heb1-psa2-curated
+    check: R4
+    kind: xref
+    source: heb:1:1
+    target: psa:2:0
+    provenance: curated
+    expect: present
+  - id: xref-heb1-0-not-curated-psa2
+    check: R4
+    kind: xref
+    source: heb:1:0
+    target: psa:2:0
+    provenance: curated
+    expect: absent
+  - id: registry-anchor-peter-rescue
+    check: H10
+    kind: event_anchor
+    event: event:bidehuojiu
+    pericope: act:12:1
+    expect: present
+  - id: alias-offering-isaac
+    check: D1
+    kind: alias
+    entity: event:xianyisa
+    alias: 亞伯拉罕獻以撒
+    expect: present
+
+substring_probes:
+  馬利亞: {left: 撒, right: ""}
+
+female_persons:
+  - person:maliya

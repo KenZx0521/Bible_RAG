@@ -19,6 +19,16 @@ Actions (all back up affected data to output/backups/ before writing):
 
 Usage:
     uv run python cleanup_noise_entities.py [--dry-run] [--actions dan,generic-events,yehehua]
+
+Under KG_TARGET=staging (scripts/tools/staging.env) the sync is strict:
+  - before Neo4j is touched, PostgreSQL and Qdrant must answer and hold the
+    tables (entities, entity_mentions) and the entity collection it writes;
+  - a failed connection or write stops the run instead of warning;
+  - PostgreSQL and Qdrant are synced to target ids, not only to what Neo4j still
+    holds: generic-events also deletes the generic Event ids PG or Qdrant still
+    have, yehehua re-syncs its id even when Neo4j is already relabeled. Both are
+    no-ops where already done, so a rerun finishes a sync that failed midway.
+Production keeps warning, skipping the sync and deciding from Neo4j as before.
 """
 
 from __future__ import annotations
@@ -34,10 +44,17 @@ from pathlib import Path
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
+import kg_target
+
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 
 BACKUP_DIR = ROOT / "output" / "backups"
+
+# Actions that also sync PostgreSQL and the Qdrant entity collection, and the
+# PostgreSQL tables they write.
+SYNCING_ACTIONS = {"generic-events", "yehehua"}
+SYNC_TABLES = ("entities", "entity_mentions")
 
 # --- place:dan geo classification (same rules validated on live data) ---
 PUNCT = set("，。；：、「」？！ \n\t^$（）－")
@@ -61,33 +78,88 @@ def get_neo4j():
     )
 
 
-def get_qdrant():
+def _sync_failed(store: str, error: Exception, strict: bool) -> None:
+    """Production keeps the historical warn-and-skip; staging must not.
+
+    A skipped sync leaves the three stores disagreeing, and on staging nobody
+    redoes it by hand: the rebuild is judged by those stores.
+    """
+    if strict:
+        raise SystemExit(
+            f"  ✗ {store} sync failed under KG_TARGET=staging: {error}\n"
+            "    Fix it and rerun the same --actions: staging syncs PostgreSQL and "
+            "Qdrant to the target ids even where Neo4j is already done."
+        ) from error
+
+
+def _entity_collection() -> str:
+    return os.getenv("QDRANT_ENTITY_COLLECTION", "bible_entities")
+
+
+def get_qdrant(strict: bool = False):
     try:
         from qdrant_client import QdrantClient
         client = QdrantClient(
             host=os.getenv("QDRANT_HOST", "localhost"),
-            port=int(os.getenv("QDRANT_HTTP_PORT", "6333")),
+            # QDRANT_PORT, when set, wins over QDRANT_HTTP_PORT (the name .env and compose use).
+            port=int(os.getenv("QDRANT_PORT") or os.getenv("QDRANT_HTTP_PORT", "6333")),
         )
         client.get_collections()
         return client
     except Exception as e:  # noqa: BLE001
+        _sync_failed("Qdrant", e, strict)
         print(f"  ⚠ Qdrant unavailable ({e}) — skip Qdrant sync, redo manually later")
         return None
 
 
-def get_postgres():
+def get_postgres(strict: bool = False):
     try:
         import psycopg2
         return psycopg2.connect(
             host=os.getenv("POSTGRES_HOST", "localhost"),
             port=os.getenv("POSTGRES_PORT", "5432"),
             dbname=os.getenv("POSTGRES_DB", "bible_rag"),
-            user=os.getenv("POSTGRES_USER", "postgres"),
-            password=os.getenv("POSTGRES_PASSWORD", ""),
+            # Fallbacks match docker-compose.yml like every other script; the old
+            # postgres/'' failed to connect without .env and the except below then
+            # skipped the PG sync silently.
+            user=os.getenv("POSTGRES_USER", "bible"),
+            password=os.getenv("POSTGRES_PASSWORD", "bible_password"),
         )
     except Exception as e:  # noqa: BLE001
+        _sync_failed("Postgres", e, strict)
         print(f"  ⚠ Postgres unavailable ({e}) — skip PG sync, redo manually later")
         return None
+
+
+def check_sync_stores() -> None:
+    """Staging: prove PG and Qdrant can take the sync before Neo4j is touched.
+
+    The actions write Neo4j first and sync afterwards, so failing only at sync
+    time would leave Neo4j cleaned and the other two stores not. Answering is
+    not enough: a missing collection or table fails the sync just the same.
+    """
+    collection = _entity_collection()
+    qdrant = get_qdrant(strict=True)
+    try:
+        has_collection = qdrant.collection_exists(collection)
+    finally:
+        qdrant.close()
+    if not has_collection:
+        raise SystemExit(f"  ✗ Qdrant has no collection {collection} to sync (Step 8a builds it)")
+
+    pg = get_postgres(strict=True)
+    try:
+        with pg.cursor() as cur:
+            missing = []
+            for table in SYNC_TABLES:
+                cur.execute("SELECT to_regclass(%s)", (table,))
+                if cur.fetchone()[0] is None:
+                    missing.append(table)
+    finally:
+        pg.close()
+    if missing:
+        raise SystemExit(f"  ✗ Postgres {os.getenv('POSTGRES_DB')} has no table "
+                         f"{', '.join(missing)} to sync (scripts/db/schema.sql creates them)")
 
 
 def entity_uuid(entity_id: str) -> str:
@@ -175,7 +247,44 @@ def action_dan(driver, dry_run: bool) -> None:
 
 # ------------------------------------------------------- generic events ----
 
-def action_generic_events(driver, dry_run: bool) -> None:
+def _generic_event_ids_in_sync_stores() -> set[str]:
+    """Staging: generic Event ids PostgreSQL or Qdrant still hold.
+
+    Neo4j is cleaned first, so after a sync that failed midway a rerun finds
+    nothing there; these are the ids that run left behind.
+    """
+    from qdrant_client import models
+
+    collection, ids, offset = _entity_collection(), set(), None
+    generic_events = models.Filter(must=[
+        models.FieldCondition(key="type", match=models.MatchValue(value="Event")),
+        models.FieldCondition(key="canonical_name",
+                              match=models.MatchAny(any=GENERIC_EVENT_STOPLIST)),
+    ])
+    qdrant = get_qdrant(strict=True)
+    try:
+        while True:
+            points, offset = qdrant.scroll(collection_name=collection, scroll_filter=generic_events,
+                                           limit=256, offset=offset, with_payload=["entity_id"])
+            ids |= {p.payload["entity_id"] for p in points}
+            if offset is None:
+                break
+    finally:
+        qdrant.close()
+
+    pg = get_postgres(strict=True)
+    try:
+        with pg.cursor() as cur:
+            cur.execute("SELECT entity_id FROM entities "
+                        "WHERE type = 'Event' AND canonical_name = ANY(%s)",
+                        (GENERIC_EVENT_STOPLIST,))
+            ids |= {row[0] for row in cur.fetchall()}
+    finally:
+        pg.close()
+    return ids
+
+
+def action_generic_events(driver, dry_run: bool, strict: bool = False) -> None:
     print("\n[generic-events] Deleting generic-noun Event nodes")
     with driver.session() as session:
         nodes = session.run(
@@ -187,42 +296,53 @@ def action_generic_events(driver, dry_run: bool) -> None:
             "       e.mention_count AS mc, properties(e) AS props, rels",
             stop=GENERIC_EVENT_STOPLIST,
         ).data()
-    if not nodes:
+    ids = [n["entity_id"] for n in nodes]
+    # Staging syncs the target ids, not just Neo4j's: an interrupted run has
+    # already deleted its nodes there. A dry run stays off PG and Qdrant.
+    leftover = sorted(_generic_event_ids_in_sync_stores() - set(ids)) if strict and not dry_run else []
+    if not nodes and not leftover:
         print("  Nothing matched")
         return
     for n in nodes:
         print(f"  {n['entity_id']} ({n['name']}, mc={n['mc']}, edges={len([r for r in n['rels'] if r['rel_type']])})")
     print(f"  Total: {len(nodes)} Event nodes")
+    if leftover:
+        print(f"  Gone from Neo4j, still in PostgreSQL/Qdrant: {', '.join(leftover)}")
 
     if dry_run:
         return
-    path = backup_path("generic_events")
-    with path.open("w", encoding="utf-8") as f:
-        for n in nodes:
-            f.write(json.dumps(n, ensure_ascii=False, default=str) + "\n")
-    print(f"  Backup: {path}")
+    if nodes:
+        path = backup_path("generic_events")
+        with path.open("w", encoding="utf-8") as f:
+            for n in nodes:
+                f.write(json.dumps(n, ensure_ascii=False, default=str) + "\n")
+        print(f"  Backup: {path}")
 
-    ids = [n["entity_id"] for n in nodes]
-    with driver.session() as session:
-        record = session.run(
-            "MATCH (e:Event) WHERE e.entity_id IN $ids DETACH DELETE e RETURN count(*) AS deleted",
-            ids=ids,
-        ).single()
-    print(f"  ✓ Neo4j: deleted {record['deleted'] if record else 0} nodes (with all edges)")
+        with driver.session() as session:
+            record = session.run(
+                "MATCH (e:Event) WHERE e.entity_id IN $ids DETACH DELETE e RETURN count(*) AS deleted",
+                ids=ids,
+            ).single()
+        print(f"  ✓ Neo4j: deleted {record['deleted'] if record else 0} nodes (with all edges)")
+    _sync_generic_event_deletes(ids + leftover, strict)
 
-    qdrant = get_qdrant()
+
+def _sync_generic_event_deletes(ids: list[str], strict: bool) -> None:
+    """Delete ``ids`` from Qdrant, then PostgreSQL; absent ids are no-ops."""
+    qdrant = get_qdrant(strict)
     if qdrant:
-        collection = os.getenv("QDRANT_ENTITY_COLLECTION", "bible_entities")
+        collection = _entity_collection()
         try:
             qdrant.delete(collection_name=collection,
                           points_selector=[entity_uuid(i) for i in ids], wait=True)
             print(f"  ✓ Qdrant: deleted {len(ids)} points from {collection}")
         except Exception as e:  # noqa: BLE001
+            _sync_failed("Qdrant", e, strict)
             print(f"  ⚠ Qdrant delete failed: {e}")
         finally:
             qdrant.close()
 
-    pg = get_postgres()
+    pg = get_postgres(strict)
     if pg:
         try:
             with pg.cursor() as cur:
@@ -234,6 +354,7 @@ def action_generic_events(driver, dry_run: bool) -> None:
             print(f"  ✓ Postgres: deleted {entities_deleted} entities, {mentions_deleted} mention rows")
         except Exception as e:  # noqa: BLE001
             pg.rollback()
+            _sync_failed("Postgres", e, strict)
             print(f"  ⚠ Postgres delete failed: {e}")
         finally:
             pg.close()
@@ -241,7 +362,7 @@ def action_generic_events(driver, dry_run: bool) -> None:
 
 # --------------------------------------------------------------- yehehua ----
 
-def action_yehehua(driver, dry_run: bool) -> None:
+def action_yehehua(driver, dry_run: bool, strict: bool = False) -> None:
     print("\n[yehehua] Relabeling group:yehehua Group → Person")
     with driver.session() as session:
         row = session.run(
@@ -251,19 +372,25 @@ def action_yehehua(driver, dry_run: bool) -> None:
         print("  group:yehehua not found — skip")
         return
     print(f"  Current labels: {row['labels']}")
-    if "Person" in row["labels"] and "Group" not in row["labels"]:
+    relabeled = "Person" in row["labels"] and "Group" not in row["labels"]
+    if relabeled and not strict:
         print("  Already relabeled — skip")
         return
+    if relabeled:
+        # Staging: an interrupted run may have relabeled Neo4j only. Re-syncing
+        # the one target id is a no-op where it already landed.
+        print("  Already relabeled in Neo4j — re-syncing PostgreSQL and Qdrant")
     if dry_run:
         return
 
-    with driver.session() as session:
-        session.run(
-            "MATCH (e:Entity {entity_id: 'group:yehehua'}) REMOVE e:Group SET e:Person"
-        )
-    print("  ✓ Neo4j: labels now [Person, Entity] (entity_id unchanged)")
+    if not relabeled:
+        with driver.session() as session:
+            session.run(
+                "MATCH (e:Entity {entity_id: 'group:yehehua'}) REMOVE e:Group SET e:Person"
+            )
+        print("  ✓ Neo4j: labels now [Person, Entity] (entity_id unchanged)")
 
-    pg = get_postgres()
+    pg = get_postgres(strict)
     if pg:
         try:
             with pg.cursor() as cur:
@@ -273,18 +400,26 @@ def action_yehehua(driver, dry_run: bool) -> None:
             print(f"  ✓ Postgres: {updated} row updated (type=Person)")
         except Exception as e:  # noqa: BLE001
             pg.rollback()
+            _sync_failed("Postgres", e, strict)
             print(f"  ⚠ Postgres update failed: {e}")
         finally:
             pg.close()
 
-    qdrant = get_qdrant()
+    qdrant = get_qdrant(strict)
     if qdrant:
-        collection = os.getenv("QDRANT_ENTITY_COLLECTION", "bible_entities")
+        collection = _entity_collection()
+        points = [entity_uuid("group:yehehua")]
+        if strict:
+            # An id list fails on a point the collection lacks (404); a filter
+            # selector makes that a no-op, as the target-id sync needs.
+            from qdrant_client import models
+            points = models.Filter(must=[models.HasIdCondition(has_id=points)])
         try:
             qdrant.set_payload(collection_name=collection, payload={"type": "Person"},
-                               points=[entity_uuid("group:yehehua")], wait=True)
+                               points=points, wait=True)
             print(f"  ✓ Qdrant: payload.type=Person in {collection}")
         except Exception as e:  # noqa: BLE001
+            _sync_failed("Qdrant", e, strict)
             print(f"  ⚠ Qdrant payload update failed: {e}")
         finally:
             qdrant.close()
@@ -296,15 +431,21 @@ def main() -> int:
     parser.add_argument("--actions", type=str, default="dan,generic-events,yehehua")
     args = parser.parse_args()
     actions = {a.strip() for a in args.actions.split(",") if a.strip()}
+    syncing = bool(actions & SYNCING_ACTIONS)
+
+    stores = ("neo4j", "postgres", "qdrant") if syncing else ("neo4j",)
+    strict = kg_target.assert_target(*stores) == "staging"
+    if strict and syncing and not args.dry_run:
+        check_sync_stores()
 
     driver = get_neo4j()
     try:
         if "dan" in actions:
             action_dan(driver, args.dry_run)
         if "generic-events" in actions:
-            action_generic_events(driver, args.dry_run)
+            action_generic_events(driver, args.dry_run, strict)
         if "yehehua" in actions:
-            action_yehehua(driver, args.dry_run)
+            action_yehehua(driver, args.dry_run, strict)
     finally:
         driver.close()
     print("\nDone" + (" (dry-run, nothing written)" if args.dry_run else ""))

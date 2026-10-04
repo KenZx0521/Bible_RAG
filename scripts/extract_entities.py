@@ -5,13 +5,27 @@ Entity Extraction Script for Bible RAG System.
 Default: Grounded pipeline (bible_md → Pericope Mining → POS → Rules → LLM Classifier)
 Legacy:  --legacy-llm uses old open-ended LLM extraction
 
+Staged (rebuilds): freeze the grounded Event/Object/Theme half once (Phase 4
+LLM verdicts have no cache), then re-run only NER and merge the two halves.
+
 Usage:
     # Grounded pipeline (new default)
     python scripts/extract_entities.py --bible-md-dir bible_md --output-dir output
     python scripts/extract_entities.py --bible-md-dir bible_md --sample 50
 
-    # NER only (unchanged)
-    python scripts/extract_entities.py --ner-only
+    # Staged Step 1 (rebuilds)
+    python scripts/extract_entities.py --stage freeze-grounded   # once, from a full build
+    python scripts/extract_entities.py --stage ner               # CKIP only, ~30 min
+    python scripts/extract_entities.py --stage merge             # -> entities.jsonl
+    # ner writes ner_manifest.json; merge refuses a sampled or unrecorded NER
+    # half, or one extracted from another queue than -i (default
+    # output/embedding_queue.jsonl), and freeze refuses an empty/partial
+    # grounded half without --force.
+    # A re-freeze that moves the grounded half >5% also needs
+    # --accept-grounded-drift (see entity_extraction/stages.py).
+
+    # Legacy NER only: entities.jsonl WITHOUT Event/Object/Theme
+    python scripts/extract_entities.py --ner-only --force
 
     # Legacy LLM pipeline
     python scripts/extract_entities.py --legacy-llm
@@ -37,6 +51,11 @@ from entity_extraction.config import (
     LLMConfig, CKIPConfig, ExtractionConfig,
     EntityExtractLLMConfig, GroundedConfig,
 )
+from entity_extraction.stages import (
+    ENTITIES_FILE, GROUNDED_DRIFT_TOLERANCE, GROUNDED_TYPES, MENTIONS_FILE,
+    NER_ENTITIES_FILE, NER_MANIFEST_FILE, NER_MENTIONS_FILE, StageError,
+    entity_sort_key, file_sha256, freeze_grounded, merge_stage, write_ner_manifest,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -60,7 +79,8 @@ def load_embedding_queue(input_path: Path) -> List[Dict]:
 def save_entities(entities: Dict[str, Entity], output_path: Path):
     """Save entities to JSONL file."""
     with open(output_path, "w", encoding="utf-8") as f:
-        for entity in sorted(entities.values(), key=lambda e: (e.type.value, -e.mention_count)):
+        for entity in sorted(entities.values(),
+                             key=lambda e: entity_sort_key(e.type.value, e.mention_count)):
             f.write(entity.to_json() + "\n")
     logger.info(f"Saved {len(entities)} entities to {output_path}")
 
@@ -152,7 +172,7 @@ def _candidates_to_entities(
     for c in candidates:
         if c.proposed_type is None:
             continue
-        if c.proposed_type not in {EntityType.EVENT, EntityType.OBJECT, EntityType.THEME}:
+        if c.proposed_type not in GROUNDED_TYPES:
             continue
 
         entity_id = _generate_entity_id(c.proposed_type, c.name)
@@ -288,7 +308,36 @@ def run_grounded_extraction(
     return _candidates_to_entities(final_candidates)
 
 
-def main():
+def extract_ner_half(input_path: Path, ckip_config: CKIPConfig, sample: int | None = None
+                     ) -> Tuple[Dict[str, Entity], List[EntityMention]]:
+    """NER normalised alone == the monolithic NER half (merges stay in-type)."""
+    if not input_path.exists():
+        logger.error(f"Input file not found: {input_path}")
+        sys.exit(1)
+    items = load_embedding_queue(input_path)
+    if sample:
+        items = items[:sample]
+    ner_entities, ner_mentions = run_ner_extraction(items, ckip_config)
+    return normalize_and_merge(ner_entities, {}, ner_mentions, [])
+
+
+def _run_snapshot_stage(args: argparse.Namespace) -> None:
+    """Dispatch --stage freeze-grounded / merge (pure file work, no models)."""
+    frozen_dir = args.output_dir / "frozen"
+    try:
+        if args.stage == "freeze-grounded":
+            freeze_grounded(args.output_dir / ENTITIES_FILE, args.output_dir / MENTIONS_FILE,
+                            frozen_dir, force=args.force, dry_run=args.dry_run,
+                            accept_drift=args.accept_grounded_drift)
+        else:
+            merge_stage(args.output_dir, frozen_dir, args.input, force=args.force,
+                        dry_run=args.dry_run)
+    except StageError as e:
+        logger.error(str(e))
+        sys.exit(1)
+
+
+def main(argv: List[str] | None = None):
     parser = argparse.ArgumentParser(
         description="Extract entities from Bible text."
     )
@@ -296,7 +345,8 @@ def main():
         "--input", "-i",
         type=Path,
         default=Path("output/embedding_queue.jsonl"),
-        help="Input JSONL file path (default: output/embedding_queue.jsonl)"
+        help="Input JSONL file path (default: output/embedding_queue.jsonl); "
+             "--stage merge checks that ner_*.jsonl were extracted from it"
     )
     parser.add_argument(
         "--output-dir", "-o",
@@ -313,7 +363,31 @@ def main():
     parser.add_argument(
         "--ner-only",
         action="store_true",
-        help="Run only NER extraction (no LLM calls)"
+        help="Legacy: entities.jsonl from NER only, drops Event/Object/Theme (needs --force)"
+    )
+    parser.add_argument(
+        "--stage",
+        choices=["ner", "freeze-grounded", "merge"],
+        default=None,
+        help="Staged Step 1; frozen grounded half lives in <output-dir>/frozen"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow --ner-only; re-freezing or freezing an empty/partial grounded half; "
+             "merging a sampled/unrecorded/stale NER half or over a grounded half that "
+             "differs"
+    )
+    parser.add_argument(
+        "--accept-grounded-drift",
+        action="store_true",
+        help=f"--stage freeze-grounded: allow the new grounded half to differ by more than "
+             f"{GROUNDED_DRIFT_TOLERANCE * 100:g}%% in line count from the snapshot it replaces"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="--stage freeze-grounded / merge: verify and report, write nothing"
     )
     parser.add_argument(
         "--legacy-llm",
@@ -355,7 +429,24 @@ def main():
         help="Enable verbose logging"
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+
+    if args.stage and (args.ner_only or args.legacy_llm):
+        parser.error("--stage cannot be combined with --ner-only or --legacy-llm")
+    if args.dry_run and args.stage not in ("freeze-grounded", "merge"):
+        parser.error("--dry-run only applies to --stage freeze-grounded / merge")
+    if args.accept_grounded_drift and args.stage != "freeze-grounded":
+        parser.error("--accept-grounded-drift only applies to --stage freeze-grounded")
+    # Refuse before any model loads: a forgotten --ner-only silently wiped the
+    # whole Event/Object/Theme half, which has no other reproducible source.
+    if args.ner_only and not args.force:
+        logger.error("--ner-only overwrites entities.jsonl / entity_mentions.jsonl with NER "
+                     "only, dropping every Event/Object/Theme entity. Use --stage ner (writes "
+                     "ner_*.jsonl) then --stage merge, or pass --force to overwrite anyway.")
+        sys.exit(1)
+    if args.stage in ("freeze-grounded", "merge"):
+        _run_snapshot_stage(args)
+        return
 
     # Load configurations
     llm_config = LLMConfig.from_env()
@@ -380,18 +471,24 @@ def main():
 
     # ── Decide pipeline ──
 
-    if args.ner_only:
-        # NER only (unchanged behavior)
-        if not args.input.exists():
-            logger.error(f"Input file not found: {args.input}")
-            sys.exit(1)
-        items = load_embedding_queue(args.input)
+    if args.stage == "ner":
         if args.sample:
-            items = items[:args.sample]
-        ner_entities, ner_mentions = run_ner_extraction(items, ckip_config)
-        all_entities, all_mentions = normalize_and_merge(
-            ner_entities, {}, ner_mentions, [],
-        )
+            logger.warning(f"--sample {args.sample}: ner_*.jsonl will hold a partial NER "
+                           f"half; --stage merge refuses it without --force")
+        queue_sha256 = file_sha256(args.input)  # what NER reads, not what is there after
+        entities, mentions = extract_ner_half(args.input, ckip_config, args.sample)
+        # Drop the old manifest before replacing the files it vouches for, so
+        # a crash between the writes leaves no manifest rather than a stale one.
+        (args.output_dir / NER_MANIFEST_FILE).unlink(missing_ok=True)
+        save_entities(entities, args.output_dir / NER_ENTITIES_FILE)
+        save_mentions(mentions, args.output_dir / NER_MENTIONS_FILE)
+        write_ner_manifest(args.output_dir, args.input, args.sample, queue_sha256)
+        logger.info("NER stage complete; next: --stage merge")
+        return
+
+    if args.ner_only:
+        # Legacy NER only (--force given): overwrites entities.jsonl below
+        all_entities, all_mentions = extract_ner_half(args.input, ckip_config, args.sample)
 
     elif args.legacy_llm:
         # Legacy LLM pipeline (old behavior)

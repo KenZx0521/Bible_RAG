@@ -23,7 +23,14 @@ alias-enriched text so entity_query sees the new phrasings).
 Rollback:
   * new nodes:  MATCH (e:Event {source:'head_event_backfill'}) DETACH DELETE e
                 (plus PG DELETE and Qdrant delete by entity_id payload)
-  * aliases:    restore from output/backups/head_events_<ts>.json
+  * aliases:    output/backups/head_events_<ts>.json restores Neo4j only: it
+                holds alias_targets_before (the Neo4j aliases of the
+                ALIAS_INJECTIONS targets) and nothing from PG or Qdrant. write_pg rewrites those
+                rows' PG aliases (merged and deduplicated, order not kept) and
+                reembed_qdrant overwrites their Qdrant payload and vectors, so
+                roll PG and Qdrant back from the R0 backup (docs/build_database.md
+                "R0 備份" / "R5 回滾": bak/<date>/postgres/entity_tables.sql, the
+                Qdrant snapshot or the previous entity collection).
 
 Usage:
     cd scripts && uv run python backfill_head_events.py [--dry-run] [--skip-qdrant]
@@ -40,12 +47,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-from pypinyin import lazy_pinyin
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _PROJECT_ROOT = _SCRIPT_DIR.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 sys.path.insert(0, str(_SCRIPT_DIR))
+
+import kg_target  # noqa: E402
 
 load_dotenv(_PROJECT_ROOT / ".env")
 
@@ -80,8 +88,15 @@ ALIAS_INJECTIONS: dict[str, list[str]] = {
 }
 
 # Curated new events. anchors = verified Pericope ids.
+# entity_id is a frozen literal (ID-7): it was once derived at run time from
+# the pinyin of canonical_name, so a pypinyin upgrade or a renamed event would
+# silently mint a new id and orphan everything keyed on the old one
+# (backend/data/event_registry.json, eval records). The values below are the
+# ids live Neo4j has carried since 046040a (checked read-only 2026-10-04);
+# export_event_registry reads them as-is. Never re-derive them from the name.
 NEW_EVENTS: list[dict] = [
     {
+        "entity_id": "event:zuihoudewancan",
         "canonical_name": "最後的晚餐",
         "aliases": ["主的晚餐", "設立聖餐", "逾越節晚餐"],
         "description": "耶穌受難前夕與十二門徒同守逾越節的筵席:設立聖餐(擘餅與杯)、為門徒洗腳、預言猶大出賣與彼得三次不認主。",
@@ -89,24 +104,28 @@ NEW_EVENTS: list[dict] = [
                     "mat:26:3", "mat:26:4", "mrk:14:3", "mrk:14:4"],
     },
     {
+        "entity_id": "event:keximanidaogao",
         "canonical_name": "客西馬尼禱告",
         "aliases": ["客西馬尼園禱告", "在客西馬尼禱告", "客西馬尼園的禱告", "橄欖山禱告"],
         "description": "最後晚餐後耶穌在客西馬尼園(橄欖山)極其傷痛地三次禱告「不要照我的意思,只要照你的意思」,門徒睡著,隨後猶大帶人捉拿耶穌。",
         "anchors": ["mat:26:6", "mrk:14:6", "luk:22:6"],
     },
     {
+        "entity_id": "event:wuxunjieshenglingjianglin",
         "canonical_name": "五旬節聖靈降臨",
         "aliases": ["五旬節", "聖靈降臨", "聖靈澆灌"],
         "description": "五旬節門徒聚集,聖靈如大風與火舌降臨,眾人被聖靈充滿說起別國的話,彼得講道後三千人受洗,教會誕生。",
         "anchors": ["act:2:0", "act:2:1"],
     },
     {
+        "entity_id": "event:babieta",
         "canonical_name": "巴別塔",
         "aliases": ["巴別塔事件", "變亂口音"],
         "description": "洪水後人類在示拿地要建造塔頂通天的城和塔傳揚己名,耶和華變亂他們的口音,使他們分散在全地。",
         "anchors": ["gen:11:0"],
     },
     {
+        "entity_id": "event:shizai",
         "canonical_name": "十災",
         "aliases": ["埃及十災", "十個災殃", "降災給埃及"],
         "description": "耶和華藉摩西向法老降下十樣災殃:血、蛙、虱、蠅、畜疫、瘡、雹、蝗、黑暗、擊殺長子,迫使法老容以色列人離開埃及。",
@@ -114,88 +133,97 @@ NEW_EVENTS: list[dict] = [
                     "exo:10:0", "exo:10:1", "exo:11:0", "exo:12:3"],
     },
     {
+        "entity_id": "event:yuyuejiedesheli",
         "canonical_name": "逾越節的設立",
         "aliases": ["逾越節", "第一個逾越節", "守逾越節"],
         "description": "出埃及前夕耶和華吩咐以色列人宰羔羊、把血塗在門框上,滅命的越過有血記號的家,擊殺埃及一切頭生的;此夜設立逾越節為永遠的定例。",
         "anchors": ["exo:12:0", "exo:12:2", "exo:12:5"],
     },
     {
+        "entity_id": "event:yabolahanzhiyue",
         "canonical_name": "亞伯拉罕之約",
         "aliases": ["上帝與亞伯蘭立約", "割禮之約", "與亞伯拉罕立約"],
         "description": "上帝與亞伯蘭立約應許後裔如天上繁星、賜迦南地為業,並以割禮為立約的記號,改名亞伯拉罕作多國之父。",
         "anchors": ["gen:15:0", "gen:17:0"],
     },
     {
+        "entity_id": "event:jinniudushijian",
         "canonical_name": "金牛犢事件",
         "aliases": ["金牛犢", "鑄造金牛犢", "拜金牛犢"],
         "description": "摩西在西奈山上遲延未下,亞倫用金環鑄了牛犢,百姓獻祭跪拜;摩西下山怒摔法版,擊碎牛犢,利未人殺了三千人。",
         "anchors": ["exo:32:0"],
     },
     {
+        "entity_id": "event:kuangyepiaoliu",
         "canonical_name": "曠野漂流",
         "aliases": ["曠野漂流四十年", "曠野四十年", "在曠野漂流"],
         "description": "十二探子報惡信後百姓埋怨不肯進迦南,耶和華懲罰那世代在曠野漂流四十年,倒斃曠野,唯迦勒與約書亞得進應許之地。",
         "anchors": ["num:14:0", "num:14:2", "num:14:3"],
     },
     {
+        "entity_id": "event:daochengroushen",
         "canonical_name": "道成肉身",
         "aliases": ["太初有道", "道成了肉身"],
         "description": "太初與上帝同在的道成了肉身,住在我們中間,充充滿滿地有恩典有真理,將父上帝表明出來。",
         "anchors": ["jhn:1:0"],
     },
     {
+        "entity_id": "event:yelusalengdahui",
         "canonical_name": "耶路撒冷大會",
         "aliases": ["耶路撒冷會議", "使徒會議"],
         "description": "使徒和長老在耶路撒冷聚會,議定外邦信徒不必受割禮守摩西律法,只要禁戒祭偶像之物、血、勒死的牲畜和姦淫,並發覆函通知眾教會。",
         "anchors": ["act:15:0", "act:15:1"],
     },
     {
+        "entity_id": "event:morideshenpan",
         "canonical_name": "末日的審判",
         "aliases": ["末日審判", "最後審判", "白色大寶座審判"],
         "description": "末日死了的人都站在白色大寶座前,案卷展開,照各人所行的受審判;名字沒有記在生命冊上的被扔進火湖。",
         "anchors": ["rev:20:2"],
     },
     {
+        "entity_id": "event:xintianxindi",
         "canonical_name": "新天新地",
         "aliases": ["新耶路撒冷", "聖城新耶路撒冷"],
         "description": "先前的天地過去,聖城新耶路撒冷由上帝那裡從天而降;上帝要親自與人同住,擦去一切眼淚,不再有死亡、悲哀、哭號、疼痛。",
         "anchors": ["rev:21:0", "rev:21:1"],
     },
     {
+        "entity_id": "event:yesubeidingshizijia",
         "canonical_name": "耶穌被釘十字架",
         "aliases": ["釘十字架", "耶穌受難", "十字架受死", "各各他"],
         "description": "耶穌被兵丁戲弄後帶到各各他釘十字架,與兩個強盜同釘;遍地黑暗,耶穌大聲喊叫斷氣,殿裡的幔子從上到下裂為兩半。",
         "anchors": ["mat:27:5", "mat:27:6", "mrk:15:3", "luk:23:3", "jhn:19:1"],
     },
     {
+        "entity_id": "event:yesushouxi",
         "canonical_name": "耶穌受洗",
         "aliases": ["耶穌接受約翰的洗", "在約旦河受洗"],
         "description": "耶穌從加利利來到約旦河受施洗約翰的洗,天忽然開了,聖靈彷彿鴿子降在他身上,天上有聲音說「這是我的愛子,我所喜悅的」。",
         "anchors": ["mat:3:1", "mrk:1:1", "luk:3:1"],
     },
     {
+        "entity_id": "event:saoluoshougaozuowang",
         "canonical_name": "掃羅受膏作王",
         "aliases": ["掃羅受膏", "掃羅作王", "撒母耳膏掃羅"],
         "description": "撒母耳私下用膏油膏掃羅作以色列的君王,後在米斯巴掣籤公開立掃羅,眾民呼喊「願王萬歲」,以色列從此進入王國時期。",
         "anchors": ["1sa:9:1", "1sa:10:1"],
     },
     {
+        "entity_id": "event:suoluomenjianzaoshengdian",
         "canonical_name": "所羅門建造聖殿",
         "aliases": ["建造聖殿", "所羅門獻殿", "奉獻聖殿", "獻殿禮"],
         "description": "所羅門用七年建造耶路撒冷聖殿,將約櫃運入至聖所,雲充滿殿宇;所羅門獻上獻殿禱告與祭物,將殿分別為聖歸給耶和華。",
         "anchors": ["1ki:6:0", "1ki:8:0", "1ki:8:2", "1ki:8:4"],
     },
     {
+        "entity_id": "event:diyicixuanjiaolvcheng",
         "canonical_name": "第一次宣教旅程",
         "aliases": ["保羅第一次宣教旅程", "第一次佈道旅程"],
         "description": "聖靈差遣巴拿巴和掃羅從安提阿出發,經塞浦路斯、彼西底的安提阿、以哥念、路司得傳道,建立外邦教會後回到安提阿。",
         "anchors": ["act:13:0", "act:13:1", "act:13:2", "act:14:0", "act:14:2"],
     },
 ]
-
-
-def _pinyin_id(name: str) -> str:
-    return "event:" + "".join(lazy_pinyin(name))
 
 
 # ---------------------------------------------------------------------------
@@ -220,6 +248,18 @@ def get_pg():
     )
 
 
+def qdrant_endpoint() -> tuple[str, int]:
+    # QDRANT_PORT, when set, wins over QDRANT_HTTP_PORT (the name .env and compose use).
+    return (os.getenv("QDRANT_HOST", "localhost"),
+            int(os.getenv("QDRANT_PORT") or os.getenv("QDRANT_HTTP_PORT", "6333")))
+
+
+def get_qdrant():
+    from qdrant_client import QdrantClient
+    host, port = qdrant_endpoint()
+    return QdrantClient(host=host, port=port)
+
+
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
@@ -227,7 +267,8 @@ def get_pg():
 def validate(session) -> list[dict]:
     """Check alias targets exist, anchors exist, and new ids don't collide.
 
-    Returns the NEW_EVENTS list enriched with entity_id, or raises.
+    Returns a copy of NEW_EVENTS (each entry carries its literal entity_id),
+    or raises.
     """
     problems: list[str] = []
 
@@ -252,7 +293,7 @@ def validate(session) -> list[dict]:
 
     enriched: list[dict] = []
     for ev in NEW_EVENTS:
-        eid = _pinyin_id(ev["canonical_name"])
+        eid = ev["entity_id"]
         rec = session.run(
             "OPTIONAL MATCH (e {entity_id: $eid}) RETURN e.canonical_name AS name",
             eid=eid,
@@ -260,10 +301,10 @@ def validate(session) -> list[dict]:
         existing = rec["name"] if rec else None
         if existing is not None and existing != ev["canonical_name"]:
             problems.append(
-                f"pinyin id collision: {eid} already used by {existing!r} "
+                f"id collision: {eid} already used by {existing!r} "
                 f"(wanted {ev['canonical_name']!r})"
             )
-        enriched.append({**ev, "entity_id": eid})
+        enriched.append(dict(ev))
 
     if problems:
         for p in problems:
@@ -374,7 +415,6 @@ def write_pg(conn, new_events: list[dict]) -> None:
 
 def reembed_qdrant(touched_ids: list[str]) -> None:
     """Re-embed touched entities into bible_entities with alias-enriched text."""
-    from qdrant_client import QdrantClient
     from qdrant_client import models as qmodels
     from embeddings.embedder import BGEEmbedder
     from embed_entities import _build_text, _entity_uuid, COLLECTION_NAME
@@ -416,10 +456,7 @@ def reembed_qdrant(touched_ids: list[str]) -> None:
     texts = [_build_text(e) for e in entities]
     vectors = embedder.encode_batch(texts, batch_size=16, show_progress=False)
 
-    client = QdrantClient(
-        host=os.getenv("QDRANT_HOST", "localhost"),
-        port=int(os.getenv("QDRANT_HTTP_PORT", "6333")),
-    )
+    client = get_qdrant()
     try:
         points = []
         for entity, vector in zip(entities, vectors):
@@ -466,6 +503,9 @@ def main() -> int:
                         help="skip the BGE re-embed step (Neo4j/PG only)")
     args = parser.parse_args()
 
+    # Every store, even with --skip-qdrant or --dry-run: a staging shell that
+    # exported only some of its settings is the mistake this guard catches.
+    kg_target.assert_target("neo4j", "postgres", "qdrant")
     driver = get_neo4j()
     try:
         with driver.session() as session:
