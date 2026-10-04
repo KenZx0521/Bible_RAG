@@ -1,0 +1,943 @@
+{
+  "origin": "live:staging (bolt://localhost:7688)",
+  "baseline": "/home/kenzx0521/Bible_RAG/config/kg_quality_baseline.json",
+  "partial": [],
+  "exit_code": 2,
+  "failures": [],
+  "hard_failures": [],
+  "regressions": [
+    "R1"
+  ],
+  "checks": {
+    "H1": {
+      "title": "entity_id globally unique; :Entity(entity_id) uniqueness constraint exists",
+      "severity": "hard",
+      "metrics": {
+        "duplicate_ids": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "missing_constraint": {
+          "value": 0,
+          "baseline": 1,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "constraints_declared": true
+      },
+      "samples": [],
+      "status": "ok"
+    },
+    "H2": {
+      "title": "every Entity carries exactly one type label",
+      "severity": "hard",
+      "metrics": {
+        "bad_type_labels": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "missing_entity_label": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {},
+      "samples": [],
+      "status": "ok"
+    },
+    "H3": {
+      "title": "derived edges supported by co-occurrence in their source pericope",
+      "severity": "record",
+      "metrics": {
+        "unsupported": {
+          "value": 374,
+          "baseline": 374,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "by_type": {
+          "OCCURRED_IN": 370,
+          "RULED": 3,
+          "NEAR": 1
+        },
+        "no_provenance": 0
+      },
+      "samples": [
+        "event:jihuang -OCCURRED_IN-> place:dan @ezk:7:1",
+        "event:wenyi -OCCURRED_IN-> place:dan @ezk:7:1",
+        "event:yanxi -OCCURRED_IN-> place:dan @est:1:0",
+        "event:jieqi -OCCURRED_IN-> place:dan @act:27:0",
+        "event:hongshui -OCCURRED_IN-> place:dan @dan:11:1",
+        "event:manaxibanzhipai -OCCURRED_IN-> place:dan @1ch:27:1",
+        "event:aige -OCCURRED_IN-> place:dan @ezk:19:0",
+        "event:xili -OCCURRED_IN-> place:dan @luk:3:0",
+        "event:dongfeng -OCCURRED_IN-> place:dan @exo:10:0",
+        "event:mala -OCCURRED_IN-> place:dan @1ch:7:3"
+      ],
+      "status": "ok"
+    },
+    "H4": {
+      "title": "entity names without leading/trailing whitespace",
+      "severity": "record",
+      "metrics": {
+        "whitespace_names": {
+          "value": 180,
+          "baseline": 180,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "ids_with_whitespace": 183
+      },
+      "samples": [
+        "event: yashalong",
+        "event: ya",
+        "group:anchun ",
+        "group: pasiluxiren",
+        "group: yiduozu",
+        "group: yabiyazu",
+        "group: salaizu",
+        "object: zhu",
+        "object: boasi",
+        "object: lv"
+      ],
+      "status": "ok"
+    },
+    "H5": {
+      "title": "three stores agree: id set, type, canonical, aliases (list), description",
+      "severity": "record",
+      "metrics": {
+        "neo4j_aliases_not_list": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "pg_only_in_reference": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "pg_only_in_store": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "pg_type": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "pg_canonical_name": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "pg_aliases_not_list": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "pg_aliases": {
+          "value": 10,
+          "baseline": 14,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "pg_description": {
+          "value": 3045,
+          "baseline": 3045,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "qdrant_only_in_reference": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "qdrant_only_in_store": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "qdrant_type": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "qdrant_canonical_name": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "qdrant_aliases_not_list": {
+          "value": 0,
+          "baseline": 9093,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "qdrant_aliases": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "qdrant_description": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "pg": "postgres:bible_rag_staging.entities",
+        "qdrant": "qdrant:bible_entities_v2"
+      },
+      "samples": [
+        {
+          "pg": {
+            "only_in_reference": [],
+            "only_in_store": [],
+            "type": [],
+            "canonical_name": [],
+            "aliases_not_list": [],
+            "aliases": [
+              {
+                "entity_id": "group:jidutu",
+                "reference": [
+                  "門徒"
+                ],
+                "store": []
+              },
+              {
+                "entity_id": "group:mentu",
+                "reference": [
+                  "門徒們"
+                ],
+                "store": []
+              },
+              {
+                "entity_id": "group:tianshi",
+                "reference": [
+                  "天使們"
+                ],
+                "store": []
+              }
+            ],
+            "description": [
+              {
+                "entity_id": "group: pasiluxiren",
+                "reference": "為閃、含、雅弗的後代。",
+                "store": ""
+              },
+              {
+                "entity_id": "group: salaizu",
+                "reference": "擔任族長職位的祭司。",
+                "store": ""
+              },
+              {
+                "entity_id": "group: yabiyazu",
+                "reference": "擔任族長的祭司。",
+                "store": ""
+              }
+            ]
+          }
+        },
+        {
+          "qdrant": {
+            "only_in_reference": [],
+            "only_in_store": [],
+            "type": [],
+            "canonical_name": [],
+            "aliases_not_list": [],
+            "aliases": [],
+            "description": []
+          }
+        }
+      ],
+      "status": "ok"
+    },
+    "H6": {
+      "title": "P/P/G MENTIONS carry source_region and a start_pos",
+      "severity": "record",
+      "metrics": {
+        "missing_region_or_pos": {
+          "value": 30048,
+          "baseline": 30048,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "ppg_mentions": 30048,
+        "no_start_pos": 0
+      },
+      "samples": [
+        "gen:32:1->group:yehehua",
+        "act:10:0:1->group:yehehua",
+        "act:10:0:0->group:yehehua",
+        "rev:18:0:0->group:yehehua",
+        "heb:7:0:1->group:yehehua",
+        "1co:9:0:0->group:yehehua",
+        "heb:11:0:1->group:yehehua",
+        "heb:11:0:2->group:yehehua",
+        "heb:7:0:0->group:yehehua",
+        "act:7:0:2->group:yehehua"
+      ],
+      "status": "ok"
+    },
+    "H7": {
+      "title": "embedding_queue sha unchanged; id prefix matches type label",
+      "severity": "hard",
+      "metrics": {
+        "embedding_queue_sha256": {
+          "value": "5d2ac0e5460c4d58f4c52e1073986da0bbfabd80ee8c3f3aa6f83030086a198b",
+          "baseline": null,
+          "target": "5d2ac0e5460c4d58f4c52e1073986da0bbfabd80ee8c3f3aa6f83030086a198b",
+          "direction": "equal",
+          "status": "ok"
+        },
+        "prefix_mismatch": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "allowlisted": [
+          "group:yehehua :Person"
+        ],
+        "texts_file_sha256": "5d2ac0e5460c4d58f4c52e1073986da0bbfabd80ee8c3f3aa6f83030086a198b"
+      },
+      "samples": [],
+      "status": "ok"
+    },
+    "H8": {
+      "title": "CROSS_REFERENCES carry an explicit provenance flag",
+      "severity": "record",
+      "metrics": {
+        "no_provenance": {
+          "value": 916,
+          "baseline": 916,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "by_source": {
+          "markdown": 774,
+          "supplementary": 142
+        }
+      },
+      "samples": [
+        "gen:5:0->1ch:1:0",
+        "gen:10:0->1ch:1:0",
+        "gen:11:1->1ch:1:0",
+        "gen:25:0->1ch:1:1",
+        "gen:25:2->1ch:1:1",
+        "gen:35:2->1ch:2:0",
+        "gen:36:0->1ch:1:2",
+        "gen:36:1->1ch:1:3",
+        "gen:36:2->1ch:1:4",
+        "exo:17:0->num:20:0"
+      ],
+      "status": "ok"
+    },
+    "H9": {
+      "title": "relation domain/range follows config/relations/biblical_relations.yaml",
+      "severity": "record",
+      "metrics": {
+        "domain_range_violations": {
+          "value": 14,
+          "baseline": 14,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "unknown_relation_types": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "violations": {
+          "LEADER_OF Person->Person": 7,
+          "SETTLED_IN Person->Place": 4,
+          "MEMBER_OF Person->Person": 2,
+          "ORIGINATED_FROM Person->Place": 1
+        },
+        "unknown": {}
+      },
+      "samples": [],
+      "status": "ok"
+    },
+    "H10": {
+      "title": "Event MENTIONS set unchanged (protects the event registry)",
+      "severity": "record",
+      "metrics": {
+        "event_mentions": {
+          "value": 2227,
+          "baseline": 2227,
+          "target": null,
+          "direction": "equal",
+          "status": "ok"
+        },
+        "fingerprint": {
+          "value": "e8f45e15c0fd9b0d68208af2f10fd0785ca390cd822ae6b1874dfff010597b0f",
+          "baseline": "e8f45e15c0fd9b0d68208af2f10fd0785ca390cd822ae6b1874dfff010597b0f",
+          "target": null,
+          "direction": "equal",
+          "status": "ok"
+        }
+      },
+      "detail": {},
+      "samples": [],
+      "status": "ok"
+    },
+    "R1": {
+      "title": "MENTIONS whose first position falls in the book-name region",
+      "severity": "record",
+      "metrics": {
+        "book_region_mentions": {
+          "value": 2124,
+          "baseline": 1938,
+          "target": 0,
+          "direction": "down",
+          "status": "regressed"
+        }
+      },
+      "detail": {
+        "by_source_label": {
+          "Pericope": 1892,
+          "Chunk": 232
+        },
+        "at_position_0": 1947,
+        "top_entities": {
+          "person:yelimi": 174,
+          "person:samuer": 157,
+          "person:matai": 153,
+          "person:yisaiya": 147,
+          "person:lujia": 146,
+          "person:yixijie": 133,
+          "place:aiji": 125,
+          "person:yuehan（shitu）": 109,
+          "group:shitu": 97,
+          "person:make": 96
+        }
+      },
+      "samples": [],
+      "status": "regressed"
+    },
+    "R2": {
+      "title": "dictionary-substring contamination (馬利亞 in 撒馬利亞, 以利亞 in 以利亞撒 …)",
+      "severity": "record",
+      "metrics": {
+        "contaminated": {
+          "value": 503,
+          "baseline": 503,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "by_span": {
+          "馬利亞": 93,
+          "以利亞": 82,
+          "利亞": 68,
+          "迦勒": 61,
+          "以利": 42,
+          "閃": 34,
+          "亞拿": 33,
+          "哈拿": 21,
+          "撒拉": 19,
+          "亞伯": 18,
+          "西拉": 13,
+          "含": 8,
+          "約拿": 6,
+          "腓力": 5
+        },
+        "unresolved_anchor_text": 0
+      },
+      "samples": [
+        "ezr:6:2->person:liya",
+        "act:10:0:0->person:liya",
+        "act:10:0:1->person:liya",
+        "gal:1:2->person:liya",
+        "act:25:0->person:liya",
+        "act:25:1->person:liya",
+        "act:23:2->person:liya",
+        "act:18:1->person:liya",
+        "act:20:0->person:liya",
+        "act:21:0->person:liya"
+      ],
+      "status": "ok"
+    },
+    "R3": {
+      "title": "entities mentioned under a surface that is neither canonical nor alias (homophone merges)",
+      "severity": "record",
+      "metrics": {
+        "foreign_surface_entities": {
+          "value": 264,
+          "baseline": 264,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "person": {
+          "value": 169,
+          "baseline": 169,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "all_forms_entities": {
+          "value": null,
+          "baseline": null,
+          "target": 0,
+          "direction": "down",
+          "status": "n/a",
+          "reason": "no occurrence rows: live Neo4j and its dump keep one span per edge"
+        },
+        "all_forms_person": {
+          "value": null,
+          "baseline": null,
+          "target": 0,
+          "direction": "down",
+          "status": "n/a",
+          "reason": "no occurrence rows: live Neo4j and its dump keep one span per edge"
+        }
+      },
+      "detail": {
+        "by_type": {
+          "Group": 5,
+          "Object": 45,
+          "Person": 169,
+          "Place": 37,
+          "Theme": 8
+        }
+      },
+      "samples": [
+        "group:balumiren ['巴路米人']",
+        "group:jiamiren ['迦米人']",
+        "group:milunren ['米倫人']",
+        "group:xisilun ['希斯倫']",
+        "group:yilan ['以攔']",
+        "object:dajun ['大君']",
+        "object:dengtai ['磴臺']",
+        "object:diji ['地基']",
+        "object:erzisajialiya ['兒子撒迦利亞']",
+        "object:erziyiliyasa ['兒子以利雅薩']"
+      ],
+      "status": "ok"
+    },
+    "R4": {
+      "title": "supplementary cross-reference anchors misplaced",
+      "severity": "record",
+      "metrics": {
+        "misaligned": {
+          "value": 59,
+          "baseline": 59,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "supplementary": 142,
+        "unparsed": 0
+      },
+      "samples": [
+        "mat:2:2[15] -> hos:11:0[1]",
+        "mat:2:3[18] -> jer:31:1[15]",
+        "mat:8:1[17] -> isa:53:0[4]",
+        "mat:11:0[10] -> mal:3:0[1]",
+        "mat:13:2[35] -> psa:78:0[2]",
+        "mat:21:3[42] -> psa:118:0[22-23]",
+        "mat:26:3[31] -> zec:13:1[7]",
+        "mat:27:4[46] -> psa:22:0[1]",
+        "mrk:12:1[10-11] -> psa:118:0[22-23]",
+        "mrk:15:3[34] -> psa:22:0[1]"
+      ],
+      "status": "ok"
+    },
+    "R5": {
+      "title": "same canonical name under different types",
+      "severity": "record",
+      "metrics": {
+        "cross_type_names": {
+          "value": 908,
+          "baseline": 908,
+          "target": null,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {},
+      "samples": [
+        "七星",
+        "上海",
+        "下伯‧和崙",
+        "乃幔",
+        "亞丁",
+        "亞們",
+        "亞克拉濱坡",
+        "亞別",
+        "亞利伊勒",
+        "亞割谷"
+      ],
+      "status": "ok"
+    },
+    "R6": {
+      "title": "kinship sanity: probes, FATHER_OF contradictions, female heads, functionality",
+      "severity": "record",
+      "metrics": {
+        "probe_failures": {
+          "value": 3,
+          "baseline": 3,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "failing_probes": {
+          "value": [
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah"
+          ],
+          "baseline": [
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah"
+          ],
+          "target": [],
+          "direction": "subset",
+          "status": "ok",
+          "new": [],
+          "fixed": []
+        },
+        "contradictions": {
+          "value": 25,
+          "baseline": 25,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "female_head": {
+          "value": 42,
+          "baseline": 42,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "functional_violation_rate": {
+          "value": 0.5357,
+          "baseline": 0.5357,
+          "target": 0.05,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "failing_probes": [
+          "kin-leah-not-father-of-isaac",
+          "kin-leah-not-father-of-reuben",
+          "kin-lot-not-father-of-terah"
+        ],
+        "children": 252,
+        "children_with_2plus_fathers": 135
+      },
+      "samples": [
+        "person:yesu->person:yage",
+        "person:yesu->person:xibitai",
+        "person:dawei->person:suoluomen",
+        "person:yage->person:yisa",
+        "person:yage->person:xibitai",
+        "person:yage->person:laban",
+        "person:suoluomen->person:dawei",
+        "person:baoluo->person:timotai",
+        "person:yabolahan->person:sala",
+        "person:yisa->person:yage"
+      ],
+      "status": "ok"
+    },
+    "R7": {
+      "title": "Events mentioned by a single pericope (observe)",
+      "severity": "record",
+      "metrics": {
+        "single_pericope_events": {
+          "value": 1535,
+          "baseline": 1535,
+          "target": null,
+          "direction": "none",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "events": 1714,
+        "unanchored": 0
+      },
+      "samples": [],
+      "status": "ok"
+    },
+    "R8": {
+      "title": "junk Event/Theme/Object names (cross-reference remnants, sentence fragments)",
+      "severity": "record",
+      "metrics": {
+        "junk_event": {
+          "value": 27,
+          "baseline": 27,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "junk_theme": {
+          "value": 36,
+          "baseline": 36,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "junk_object": {
+          "value": 25,
+          "baseline": 25,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {},
+      "samples": [
+        " 押沙龍",
+        " 押",
+        "的君」。",
+        "風，",
+        "獻的禱告。",
+        "（太21‧12－17；可11‧15－19；約",
+        "（太26‧17－25；可14‧12－21；約",
+        "（太26‧31－35；可14‧27－31；約",
+        " 主",
+        " 波阿斯",
+        " 驢",
+        " 殿"
+      ],
+      "status": "ok"
+    },
+    "R9": {
+      "title": "NER positions: no duplicates; text[start:end] == span",
+      "severity": "record",
+      "metrics": {
+        "duplicate_positions": {
+          "value": null,
+          "baseline": 4146,
+          "target": 0,
+          "direction": "down",
+          "status": "n/a",
+          "reason": "live Neo4j keeps one position per edge and no text_id"
+        },
+        "span_mismatch": {
+          "value": null,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "n/a",
+          "reason": "live Neo4j keeps one position per edge and no text_id"
+        }
+      },
+      "detail": {
+        "skipped": "live Neo4j keeps one position per edge and no text_id"
+      },
+      "samples": [],
+      "status": "skipped"
+    },
+    "R10": {
+      "title": "ambiguous or conflicting aliases",
+      "severity": "record",
+      "metrics": {
+        "conflicting_aliases": {
+          "value": 21,
+          "baseline": 21,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {},
+      "samples": [
+        "上帝與亞伯蘭立約: ['event:yabolahanzhiyue', 'theme:shangdiyuyabolanliyue']",
+        "主: ['group:yehehua', 'object: zhu']",
+        "保羅歸主: ['event:baoluoxushuguizhudejingguo', 'event:baoluoxushuguizhujingguo', 'event:saoluodezhuanbian']",
+        "利未: ['person:liwei', 'person:matai']",
+        "各各他: ['event:yesubeidingshizijia', 'place:gegeta']",
+        "在客西馬尼禱告: ['event:keximanidaogao', 'theme:zaikeximanidaogao']",
+        "奉獻聖殿: ['event:suoluomenjianzaoshengdian', 'object:fengxianshengdian']",
+        "守逾越節: ['event:yuyuejiedesheli', 'theme:shouyuyuejie']",
+        "掃羅: ['person:baoluo', 'person:saoluo']",
+        "掃羅歸主: ['event:baoluoxushuguizhudejingguo', 'event:baoluoxushuguizhujingguo', 'event:saoluodezhuanbian']"
+      ],
+      "status": "ok"
+    },
+    "R11": {
+      "title": "CROSS_REFERENCES carrying TSK votes",
+      "severity": "record",
+      "metrics": {
+        "tsk_votes_edges": {
+          "value": 249502,
+          "baseline": 249502,
+          "target": 250358,
+          "direction": "up",
+          "status": "ok"
+        }
+      },
+      "detail": {},
+      "samples": [],
+      "status": "ok"
+    },
+    "PROBES": {
+      "title": "config/kg_probes.yaml facts hold",
+      "severity": "record",
+      "metrics": {
+        "failures": {
+          "value": 13,
+          "baseline": 13,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        },
+        "failing": {
+          "value": [
+            "alias-matthew-not-levi",
+            "alias-paul-not-saul",
+            "book-region-egypt",
+            "book-region-mark",
+            "book-region-matthew",
+            "edge-no-dan-orphan-nehemiah-wall",
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah",
+            "mention-not-elijah-in-eleazar",
+            "mention-not-mary-in-samaria",
+            "xref-heb1-0-not-curated-psa2",
+            "xref-rev20-not-curated-isa65"
+          ],
+          "baseline": [
+            "alias-matthew-not-levi",
+            "alias-paul-not-saul",
+            "book-region-egypt",
+            "book-region-mark",
+            "book-region-matthew",
+            "edge-no-dan-orphan-nehemiah-wall",
+            "kin-leah-not-father-of-isaac",
+            "kin-leah-not-father-of-reuben",
+            "kin-lot-not-father-of-terah",
+            "mention-not-elijah-in-eleazar",
+            "mention-not-mary-in-samaria",
+            "xref-heb1-0-not-curated-psa2",
+            "xref-rev20-not-curated-isa65"
+          ],
+          "target": [],
+          "direction": "subset",
+          "status": "ok",
+          "new": [],
+          "fixed": []
+        }
+      },
+      "detail": {
+        "probes": 31
+      },
+      "samples": [
+        "alias-matthew-not-levi",
+        "alias-paul-not-saul",
+        "book-region-egypt",
+        "book-region-mark",
+        "book-region-matthew",
+        "edge-no-dan-orphan-nehemiah-wall",
+        "kin-leah-not-father-of-isaac",
+        "kin-leah-not-father-of-reuben",
+        "kin-lot-not-father-of-terah",
+        "mention-not-elijah-in-eleazar",
+        "mention-not-mary-in-samaria",
+        "xref-heb1-0-not-curated-psa2",
+        "xref-rev20-not-curated-isa65"
+      ],
+      "status": "ok"
+    },
+    "W": {
+      "title": "label and relationship counts within ±tolerance_pct of the baseline",
+      "severity": "warn",
+      "metrics": {},
+      "detail": {},
+      "samples": [],
+      "status": "ok",
+      "warnings": [],
+      "compared": 46
+    },
+    "D1": {
+      "title": "export_event_registry.py --check passes against the target",
+      "severity": "hard",
+      "metrics": {
+        "drift": {
+          "value": 0,
+          "baseline": 0,
+          "target": 0,
+          "direction": "down",
+          "status": "ok"
+        }
+      },
+      "detail": {
+        "exit_code": 0,
+        "output": "OK: /home/kenzx0521/Bible_RAG/backend/data/event_registry.json matches the live graph"
+      },
+      "samples": [],
+      "status": "ok"
+    }
+  }
+}

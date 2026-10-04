@@ -688,7 +688,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 
    | 步驟 | 實測耗時 |
    |---|---|
-   | 0、1(merge)、3、5、6.1、8a、9、10.1–10.5、7(replay)、8b、10.6、export --check | 待第 0 批等價重建時填入 |
+   | 0、1(merge)、3、5、6.1、8a、9、10.1–10.5、7(replay)、8b、10.6、export --check | 2026-10-04 第 0 批實測：0=5s、3=5s、5=28s、6.1=1s、8a=26s、9=6s、10.1–10.5=19s、7=1s、8b=24s、10.6=6s，合計約 2 分鐘；`--stage ner` 另需 34 分鐘（1(merge) 本身 <10s） |
 
 ### R2 驗證
 1. 10.6 依該批的判準通過（見 Step 10.6），而且 `export_event_registry.py --check` 結束碼 0。

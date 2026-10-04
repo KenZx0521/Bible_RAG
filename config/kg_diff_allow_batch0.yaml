@@ -1,0 +1,30 @@
+# diff_kg allowances for the batch-0 P1 equivalence rebuild (prod vs staging).
+# Measured 2026-10-04: these three are the only differences across labels,
+# relationships, ee_edges, mentions, xrefs, entity_ids, descriptions (verbatim),
+# aliases and the registry.
+#
+# All three are the same four SON_OF edges. The SON_OF edge set is identical
+# on both sides (659 = 659, same head/tail pairs). Each of the four edges is
+# produced twice — once by the prior/rule phase with no source pericope, once
+# by a later phase with one — and import_relations_neo4j's
+# apoc.merge.relationship writes properties only on create, so whichever row
+# is imported first decides extraction_phase and source_pericope_id. Live kept
+# the source-less copy; the staging rebuild keeps the copy with provenance:
+#   person:yage->person:yisa (gen:28:1), person:bianyamin->person:yage
+#   (gen:35:1), person:bianyamin->person:lajie (gen:35:1),
+#   person:dawei->person:yexi (1ch:29:2).
+# Plan item XREF/REL (onCreate-only merge) — revisit in batch 1A's Step 6.05.
+version: 1
+allow:
+  - section: ee_edges
+    key: "SON_OF phase=2 source=-"
+    delta: 1
+    reason: "same SON_OF edge set; first-imported duplicate decides extraction_phase (onCreate-only merge)"
+  - section: ee_edges
+    key: "SON_OF phase=4 source=-"
+    delta: 3
+    reason: "same SON_OF edge set; first-imported duplicate decides extraction_phase (onCreate-only merge)"
+  - section: ee_edges
+    key: "SON_OF phase=5 source=-"
+    delta: -4
+    reason: "same SON_OF edge set; first-imported duplicate decides extraction_phase (onCreate-only merge)"

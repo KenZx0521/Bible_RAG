@@ -1,0 +1,17 @@
+Identity check — target staging (bolt://localhost:7688), Neo4j entities: 9124; --fail-on id
+  pg (postgres:bible_rag_staging.entities, 9124 rows)
+    only_in_reference       0
+    only_in_store           0
+    type                    0  (not in --fail-on)
+    canonical_name          0  (not in --fail-on)
+    aliases_not_list        0  (not in --fail-on)
+    aliases                10  (not in --fail-on)  e.g. [{"entity_id": "group:jidutu", "reference": ["門徒"], "store": []}, {"entity_id": "group:mentu", "reference": ["門徒們"], "store": []}, {"entity_id": "group:tianshi", "reference": ["天使們"], "store": []}]
+    description          3045  (not in --fail-on)  e.g. [{"entity_id": "group: pasiluxiren", "reference": "為閃、含、雅弗的後代。", "store": ""}, {"entity_id": "group: salaizu", "reference": "擔任族長職位的祭司。", "store": ""}, {"entity_id": "group: yabiyazu", "reference": "擔任族長的祭司。", "store": ""}]
+  qdrant (qdrant:bible_entities_v2, 9124 rows)
+    only_in_reference       0
+    only_in_store           0
+    type                    0  (not in --fail-on)
+    canonical_name          0  (not in --fail-on)
+    aliases_not_list        0  (not in --fail-on)
+    aliases                 0  (not in --fail-on)
+    description             0  (not in --fail-on)

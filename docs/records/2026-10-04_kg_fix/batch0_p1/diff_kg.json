@@ -1,0 +1,33 @@
+{
+  "a": "prod (bolt://localhost:7687)",
+  "b": "staging (bolt://localhost:7688)",
+  "exit_code": 1,
+  "errors": [],
+  "differences": [
+    {
+      "section": "ee_edges",
+      "key": "SON_OF phase=2 source=-",
+      "a": 400,
+      "b": 401,
+      "delta": 1,
+      "allowed_by": null
+    },
+    {
+      "section": "ee_edges",
+      "key": "SON_OF phase=4 source=-",
+      "a": 34,
+      "b": 37,
+      "delta": 3,
+      "allowed_by": null
+    },
+    {
+      "section": "ee_edges",
+      "key": "SON_OF phase=5 source=-",
+      "a": 225,
+      "b": 221,
+      "delta": -4,
+      "allowed_by": null
+    }
+  ],
+  "unused_allowances": []
+}
