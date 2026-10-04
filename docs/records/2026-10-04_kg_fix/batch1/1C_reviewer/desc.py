@@ -1,3 +1,5 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, hashlib, collections
 from edges import *
 G = json.load(open("graphs.json"))
@@ -11,7 +13,7 @@ def titles_by_entity(edge_keys):
         if t: per[eid].add(t)
     return {e: sorted(s)[:6] for e, s in per.items()}
 cache = collections.defaultdict(dict)
-for l in open("/home/kenzx0521/Bible_RAG/output/frozen/descriptions.jsonl"):
+for l in open(BIBLE_RAG_ROOT + "/output/frozen/descriptions.jsonl"):
     d = json.loads(l); cache[d["entity_id"]][d["titles_sha"]] = d
 stg = G["staging"]
 all_edges_stg = [(m["lab"], m["sid"], m["eid"]) for m in stg["mentions"]]
@@ -38,7 +40,7 @@ ws = lambda e: any(c.isspace() or c == "　" for c in e)
 print("missing ws", sum(ws(e) for e in m1), "missing non-ws", sorted(e for e in m1 if not ws(e)))
 print("stale sample", sorted(s1)[:60])
 # carry-over: missing ws whose stripped twin id exists and has no own cache entry and sha matches
-import sys; sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+import sys; sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 tb = titles_by_entity(new_edges)
 carry = 0; twin_has_desc = 0; no_twin = 0
 for e in m1:

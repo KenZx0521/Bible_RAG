@@ -1,22 +1,24 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
-sys.path.insert(0,'/home/kenzx0521/Bible_RAG')
+sys.path.insert(0,BIBLE_RAG_ROOT)
 from collections import Counter, defaultdict
 from pathlib import Path
 from scripts.relation_extraction.schema_loader import RelationSchema
 from scripts.relation_extraction.pair_miner import _trim_grounding
 from scripts.relation_extraction.models import RelationCandidate
 from scripts.relation_extraction.rule_classifier import classify_by_rules
-schema = RelationSchema.load(Path('/home/kenzx0521/Bible_RAG/config/relations/biblical_relations.yaml'))
+schema = RelationSchema.load(Path(BIBLE_RAG_ROOT + '/config/relations/biblical_relations.yaml'))
 ENT={}
-for l in open('/home/kenzx0521/Bible_RAG/output/entities.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/entities.jsonl'):
     d=json.loads(l); ENT[d['entity_id']]=(d['canonical_name'], d['type'])
 P={}
-for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl'):
     d=json.loads(l); P[d['id']]=d['content']
-J=[json.loads(l) for l in open('/home/kenzx0521/Bible_RAG/output/relations.jsonl')]
+J=[json.loads(l) for l in open(BIBLE_RAG_ROOT + '/output/relations.jsonl')]
 rule_keys={(j['head_id'],j['tail_id'],j['relation']) for j in J if j['extraction_phase']==2}
 stats=Counter(); order=[]
-for l in open('/home/kenzx0521/Bible_RAG/output/relations_checkpoint.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/relations_checkpoint.jsonl'):
     k=json.loads(l)['pair_key']; a,b,pid=k.split('|',2)
     if a not in ENT or b not in ENT: stats['missing_entity']+=1; continue
     order.append((a,b,pid))

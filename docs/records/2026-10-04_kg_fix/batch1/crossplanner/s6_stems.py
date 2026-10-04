@@ -1,5 +1,7 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, json, pickle, re, collections
-R = "/home/kenzx0521/Bible_RAG"; D = os.path.dirname(os.path.abspath(__file__))
+R = BIBLE_RAG_ROOT; D = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, f"{R}/scripts")
 s = pickle.load(open(f"{D}/sim1c1d.pkl", "rb"))
 from entity_extraction.entity_dict import get_all_person_names, get_all_place_names, get_all_group_names

@@ -1,8 +1,10 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json,sys
-sys.path.insert(0,"/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0,BIBLE_RAG_ROOT + "/scripts")
 from entity_extraction.entity_dict import PERSON_DICT,PLACE_DICT,GROUP_DICT
 body=[]
-for l in open("/home/kenzx0521/Bible_RAG/output/embedding_queue.jsonl"):
+for l in open(BIBLE_RAG_ROOT + "/output/embedding_queue.jsonl"):
     r=json.loads(l)
     if r["type"]=="verse": t=r["text"]; body.append(t[t.find("：")+1:])
 B="\n".join(body)

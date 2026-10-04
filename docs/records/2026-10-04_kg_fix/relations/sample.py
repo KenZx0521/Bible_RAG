@@ -1,7 +1,9 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, random, re
 E = json.load(open('edges.json'))
 P = {}
-for line in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl'):
+for line in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl'):
     r = json.loads(line); P[r['id']] = r
 KIN = ['FATHER_OF','SON_OF','MOTHER_OF','DAUGHTER_OF','SIBLING_OF','SPOUSE_OF','ANCESTOR_OF','DESCENDANT_OF']
 def verse_ctx(pid, hn, tn):

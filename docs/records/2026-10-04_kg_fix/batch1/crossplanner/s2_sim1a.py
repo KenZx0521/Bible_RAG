@@ -4,11 +4,13 @@ LLM Event-Event edges; provenance gate (source pericope or its chunks MENTIONS b
 priors exempt); domain/range per biblical_relations.yaml with the final node label.
 Not simulated: anchored_rules additions (~77 per proto), prior-contradiction drops of
 same-type phase-4 edges (75 flagged only)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, pickle, json, collections, dataclasses
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 from kg_validate.registry import Context, load_baseline, load_probes, run_checks
 from relation_extraction.schema_loader import RelationSchema
-R = "/home/kenzx0521/Bible_RAG"
+R = BIBLE_RAG_ROOT
 D = os.path.dirname(os.path.abspath(__file__))
 g = pickle.load(open(f"{D}/graph_staging.pkl", "rb")); kg = g["kg"]
 schema = RelationSchema.load(__import__("pathlib").Path(f"{R}/config/relations/biblical_relations.yaml"))

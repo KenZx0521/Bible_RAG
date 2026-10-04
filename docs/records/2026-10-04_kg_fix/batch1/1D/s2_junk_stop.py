@@ -7,13 +7,15 @@ Proposed rule set for compile_entities (all on normalize_surface(name)):
   dict gate (plan 1D gate): Event whose normalized name is a P/P/G dict canonical or alias.
 Counts are reported on JSONL (output/entities.jsonl) and on the live export.
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, re, json
 from collections import Counter, defaultdict
 from pathlib import Path
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT)
 from ro import OUT, ROOT, jsonl, dump, neo4j, read
 from s1_whitespace import norm, load
 from entity_extraction.entity_dict import PERSON_DICT, PLACE_DICT, GROUP_DICT

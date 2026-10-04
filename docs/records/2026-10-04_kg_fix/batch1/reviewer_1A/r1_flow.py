@@ -3,6 +3,9 @@
 Does not import the planner's common.py / sim_1a.py. Reads output/*.jsonl,
 config yaml, and the prod edge dump (kgfix/relverify/edges.json). Writes only here.
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json
 import sys
 from collections import Counter, defaultdict
@@ -10,10 +13,10 @@ from pathlib import Path
 
 import yaml
 
-REPO = Path('/home/kenzx0521/Bible_RAG')
+REPO = Path(BIBLE_RAG_ROOT)
 OUT = REPO / 'output'
 HERE = Path(__file__).resolve().parent
-EDGES = Path('/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/relverify/edges.json')
+EDGES = Path(KGFIX_SP + '/kgfix/relverify/edges.json')
 sys.path.insert(0, str(REPO / 'scripts'))
 from cleanup_noise_entities import compute_dan_keep_sources, GENERIC_EVENT_STOPLIST  # noqa: E402
 

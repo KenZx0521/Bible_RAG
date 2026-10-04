@@ -13,9 +13,12 @@ occurrence only), we ALSO test whether the span string occurs anywhere in the
 body region ("body_any").  An edge is "real-evidence" if any mapped mention has
 body_any.  Classes: body / header_only / book_only / book+header_only.
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, re, collections, pickle
-ROOT = "/home/kenzx0521/Bible_RAG/output"
-OUT = "/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/mentions"
+ROOT = BIBLE_RAG_ROOT + "/output"
+OUT = KGFIX_SP + "/kgfix/mentions"
 
 books = {}
 for l in open(f"{ROOT}/books.jsonl", encoding="utf-8"):

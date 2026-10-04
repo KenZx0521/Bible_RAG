@@ -1,11 +1,13 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, json, pickle, collections
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 D = os.path.dirname(os.path.abspath(__file__))
 g = pickle.load(open(f"{D}/graph_staging.pkl", "rb")); ents = {e["eid"]: e for e in g["ents"]}
 gen = set()
 from cleanup_noise_entities import GENERIC_EVENT_STOPLIST
 miss = collections.Counter(); ex = []
-for l in open("/home/kenzx0521/Bible_RAG/output/relations.jsonl"):
+for l in open(BIBLE_RAG_ROOT + "/output/relations.jsonl"):
     r = json.loads(l)
     gone = [x for x in (r["head_id"], r["tail_id"]) if x not in ents]
     if gone:

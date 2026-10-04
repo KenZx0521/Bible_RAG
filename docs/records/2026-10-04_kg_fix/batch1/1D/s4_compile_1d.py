@@ -2,6 +2,8 @@
 
 Outputs s4_compile_1d.json. Pure JSONL; no DB.
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import hashlib, json, sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -9,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from ro import OUT, ROOT, jsonl, dump
 from compile_sim import (chain, compile_1d, replay, load_titles, protected, curated_alias_pairs)
 import export_event_registry as exr
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 from kg_validate.checks_r import _is_junk_name
 
 

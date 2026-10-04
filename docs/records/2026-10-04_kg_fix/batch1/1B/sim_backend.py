@@ -1,5 +1,8 @@
 """1B offline simulation of backend xref candidate lists: OLD vs TRANS (step 1 of deploy) vs NEW (step 2).
 (A) every Pericope as a single seed; (B) 500 questions, proxy seeds; (C) kg_xref 68 gold reachability."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, collections
 from common import *
 from xrefgraph import graphs
@@ -37,7 +40,7 @@ print('  (A) OLD→TRANS changed seeds by cause:', dict(cause))
 json.dump({p: d for p, d in per.items() if d['old'] != d['new']}, open(OUT / 'backend_single_seed_changed.json', 'w'))
 
 # (B) 500 questions, proxy seeds = pericope ids among the no-graph top-5 (bench/questions_table.json)
-QT = json.load(open('/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/bench/questions_table.json'))
+QT = json.load(open(KGFIX_SP + '/bench/questions_table.json'))
 rq = collections.Counter(); byroute = collections.defaultdict(collections.Counter); qlist = collections.defaultdict(list)
 for q in QT:
     route = q['route_nograph']

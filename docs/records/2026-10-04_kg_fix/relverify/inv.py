@@ -1,8 +1,11 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json
 from collections import Counter
-W='/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/relverify/'
+W=KGFIX_SP + '/kgfix/relverify/'
 E=json.load(open(W+'edges.json'))
-J=[json.loads(l) for l in open('/home/kenzx0521/Bible_RAG/output/relations.jsonl')]
+J=[json.loads(l) for l in open(BIBLE_RAG_ROOT + '/output/relations.jsonl')]
 KIN={'FATHER_OF','SON_OF','MOTHER_OF','DAUGHTER_OF','SIBLING_OF','SPOUSE_OF','ANCESTOR_OF','DESCENDANT_OF'}
 # use jsonl (pipeline truth) for source mapping
 jk={(j['head_id'],j['tail_id'],j['relation']):j for j in J}

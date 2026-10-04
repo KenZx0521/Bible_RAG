@@ -6,12 +6,14 @@ Nothing here writes to any store.
 """
 from __future__ import annotations
 
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json
 from pathlib import Path
 
 from dotenv import dotenv_values
 
-ROOT = Path("/home/kenzx0521/Bible_RAG")
+ROOT = Path(BIBLE_RAG_ROOT)
 OUT = ROOT / "output"
 ENV = {k: v for k, v in dotenv_values(ROOT / ".env").items() if v is not None}
 HERE = Path(__file__).resolve().parent

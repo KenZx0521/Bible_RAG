@@ -1,12 +1,14 @@
 """READ-only: single-seed one-hop Cypher (HEAD) on prod 7687 vs staging 7688; also full candidate list to detect tie-straddle."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, collections
 from dotenv import dotenv_values
 from neo4j import GraphDatabase, READ_ACCESS
-env=dotenv_values('/home/kenzx0521/Bible_RAG/.env'); auth=(env.get('NEO4J_USER','neo4j'),env.get('NEO4J_PASSWORD'))
+env=dotenv_values(BIBLE_RAG_ROOT + '/.env'); auth=(env.get('NEO4J_USER','neo4j'),env.get('NEO4J_PASSWORD'))
 CY=("MATCH (seed:Pericope) WHERE seed.id IN $ids MATCH (seed)-[r:CROSS_REFERENCES]-(target:Pericope) WHERE NOT target.id IN $ids "
     "WITH target, count(DISTINCT seed) AS seed_support, max(coalesce(r.votes, 999)) AS votes "
     "RETURN target.id AS id, seed_support, votes ORDER BY seed_support DESC, votes DESC LIMIT $limit")
-peri=[json.loads(l)['id'] for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl')]
+peri=[json.loads(l)['id'] for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl')]
 out={}
 for name,uri in (('prod','bolt://localhost:7687'),('stg','bolt://localhost:7688')):
     d=GraphDatabase.driver(uri,auth=auth); r={}

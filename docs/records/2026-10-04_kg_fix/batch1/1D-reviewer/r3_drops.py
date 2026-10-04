@@ -10,12 +10,14 @@ Own implementation of the plan text (not the planner's code):
 Reports: drops by type/rule, Event MENTIONS removed (H10 delta), and which surviving
 E/O/T names would still match R8's _is_junk_name or a digit rule (rule mismatch check).
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re, sys, unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
 from dotenv import dotenv_values
 
-ROOT = Path("/home/kenzx0521/Bible_RAG")
+ROOT = Path(BIBLE_RAG_ROOT)
 sys.path.insert(0, str(ROOT / "scripts"))
 from cleanup_noise_entities import GENERIC_EVENT_STOPLIST
 from backfill_head_events import ALIAS_INJECTIONS, NEW_EVENTS

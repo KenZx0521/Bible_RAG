@@ -1,8 +1,10 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json
 from collections import Counter
-J=[json.loads(l) for l in open('/home/kenzx0521/Bible_RAG/output/relations.jsonl')]
-U=[json.loads(l) for l in open('/home/kenzx0521/Bible_RAG/output/relations_unclassified.jsonl')]
-ck=[json.loads(l)['pair_key'] for l in open('/home/kenzx0521/Bible_RAG/output/relations_checkpoint.jsonl')]
+J=[json.loads(l) for l in open(BIBLE_RAG_ROOT + '/output/relations.jsonl')]
+U=[json.loads(l) for l in open(BIBLE_RAG_ROOT + '/output/relations_unclassified.jsonl')]
+ck=[json.loads(l)['pair_key'] for l in open(BIBLE_RAG_ROOT + '/output/relations_checkpoint.jsonl')]
 ckset=set(ck)
 print('ckpt lines',len(ck),'unique',len(ckset))
 def pk(h,t,p): a,b=sorted((h,t)); return f"{a}|{b}|{p}"

@@ -9,11 +9,13 @@ Then compares two resolvers:
            a key not in the table keeps the provisional id.
 Reports renames (old id gone), new homophone merges, and twin merges.
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
 from collections import Counter, defaultdict
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 from ro import OUT, jsonl, dump
 from s1_whitespace import norm, mint
 from entity_extraction.entity_dict import find_canonical_name

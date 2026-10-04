@@ -4,9 +4,12 @@ when its neighbour char is in the curated extension set for that span.
 An edge is contaminated when it has >=1 BODY mention and ALL body mentions are
 'ext' (no clean standalone occurrence) — book/header-only edges are excluded
 here (counted under the book-prefix defect)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, re, collections, pickle
-ROOT = "/home/kenzx0521/Bible_RAG/output"
-OUT = "/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/mentions"
+ROOT = BIBLE_RAG_ROOT + "/output"
+OUT = KGFIX_SP + "/kgfix/mentions"
 EXT = {  # span: (left-set, right-set)  — from neighbour analysis a3/a3b
     "馬利亞": (set("撒"), set()),                      # 撒馬利亞
     "以利亞": (set(), set("撒實敬薩利他巴")),            # 以利亞撒/實/敬/薩/利…

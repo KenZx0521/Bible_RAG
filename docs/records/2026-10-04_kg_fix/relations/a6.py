@@ -1,7 +1,9 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re
 from collections import Counter
 E = json.load(open('edges.json'))
-P = {json.loads(l)['id']: json.loads(l) for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl')}
+P = {json.loads(l)['id']: json.loads(l) for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl')}
 TRAPS = {'person:maliya': ('馬利亞', ['撒馬利亞']), 'person:yiliya': ('以利亞', ['以利亞撒','以利亞敬','以利亞實','以利亞巴','以利亞他','以利亞哈巴']),
          'person:liya': ('利亞', ['撒迦利亞','亞瑪利亞','西底家','以利亞','亞撒利亞','米利亞','示利亞','希利亞','瑪利亞','馬利亞','亞利亞','耶利亞','撒利亞','提利亞','亞瑪利雅']),
          'person:yana': ('亞拿', ['亞拿突','亞拿尼亞','亞拿巴','亞拿米勒','亞拿哈拉','亞拿雅','亞拿伯']),}

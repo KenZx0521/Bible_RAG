@@ -1,5 +1,7 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
-sys.path.insert(0, '/home/kenzx0521/Bible_RAG')
+sys.path.insert(0, BIBLE_RAG_ROOT)
 from collections import defaultdict, Counter
 from itertools import combinations
 from scripts.relation_extraction.schema_loader import RelationSchema
@@ -7,9 +9,9 @@ from scripts.relation_extraction.pair_miner import _trim_grounding
 from scripts.relation_extraction.models import RelationCandidate
 from scripts.relation_extraction.rule_classifier import classify_by_rules
 from pathlib import Path
-schema = RelationSchema.load(Path('/home/kenzx0521/Bible_RAG/config/relations/biblical_relations.yaml'))
+schema = RelationSchema.load(Path(BIBLE_RAG_ROOT + '/config/relations/biblical_relations.yaml'))
 M = json.load(open('ment.json'))
-P = {json.loads(l)['id']: json.loads(l)['content'] for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl')}
+P = {json.loads(l)['id']: json.loads(l)['content'] for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl')}
 by = defaultdict(dict)
 for m in M:
     if m['bf']: continue  # approximate pre-P0 state: exclude verse-backfilled mentions

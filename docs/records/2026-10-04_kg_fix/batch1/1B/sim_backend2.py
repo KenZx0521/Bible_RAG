@@ -2,6 +2,9 @@
 compute, per seed set, CERTAIN (key strictly inside the top-`limit`) and POSSIBLE (certain + the tie group at the cut)
 members. A membership change is counted only when it is certain under both states; weights are per target.
 (A) every Pericope as a single seed; (B) 500 questions with proxy seeds; (C) kg_xref 68 gold reach."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, collections
 from common import *
 from xrefgraph import graphs, HOP, TSKH
@@ -59,7 +62,7 @@ tie_sizes.sort(); print('    OLD tie-group size at the cut: median', tie_sizes[l
 print('    OLD→TRANS seeds:', [p for p in P if diff(state(gO,[p]), state(gT,[p]))['any']])
 
 # (B) questions
-QT = json.load(open('/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/bench/questions_table.json'))
+QT = json.load(open(KGFIX_SP + '/bench/questions_table.json'))
 B = collections.Counter(); br = collections.defaultdict(collections.Counter); ql = collections.defaultdict(list)
 for q in QT:
     route = q['route_nograph']

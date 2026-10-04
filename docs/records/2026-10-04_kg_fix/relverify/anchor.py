@@ -1,9 +1,12 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, re
 from collections import Counter, defaultdict
-W='/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/relverify/'
+W=KGFIX_SP + '/kgfix/relverify/'
 E=json.load(open(W+'edges.json'))
 P={}
-for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl'):
     d=json.loads(l); P[d['id']]=d['content']
 def clauses(t):
     # split into clauses by sentence-level punct (keep 、，)

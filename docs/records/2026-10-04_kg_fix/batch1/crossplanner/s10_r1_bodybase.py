@@ -1,7 +1,9 @@
 """If 1C stores body-relative start_pos (plan 1C import_neo4j: '位移一律相對於本文'), how many
 surviving edges would validate_kg R1 (start_pos < len(book name), full-text semantics) still count?"""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re, collections
-R = "/home/kenzx0521/Bible_RAG"
+R = BIBLE_RAG_ROOT
 books = {json.loads(l)["id"]: json.loads(l)["name"] for l in open(f"{R}/output/books.jsonl")}
 texts = {json.loads(l)["id"]: json.loads(l)["text"] for l in open(f"{R}/output/embedding_queue.jsonl")}
 ppg = {json.loads(l)["entity_id"] for l in open(f"{R}/output/entities.jsonl") if json.loads(l)["type"] in ("Person", "Place", "Group")}

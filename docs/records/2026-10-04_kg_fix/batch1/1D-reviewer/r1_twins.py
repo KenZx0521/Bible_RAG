@@ -10,11 +10,13 @@ Independent re-implementation (no planner code imported):
 Reads: output/frozen/live_state/20261004/entities.jsonl, output/entity_mentions.jsonl,
        output/entities.jsonl (mention_count). No DB.
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re, unicodedata, sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-OUT = Path("/home/kenzx0521/Bible_RAG/output")
+OUT = Path(BIBLE_RAG_ROOT + "/output")
 WS = re.compile(r"[\s　​‌‍﻿]")
 
 
@@ -89,7 +91,7 @@ res["dirty_rows_on_same_occurrence_as_survivor"] = same_occ
 res["same_occurrence_samples"] = samples
 
 # protected ids involved?
-reg = json.load(open("/home/kenzx0521/Bible_RAG/backend/data/event_registry.json"))
+reg = json.load(open(BIBLE_RAG_ROOT + "/backend/data/event_registry.json"))
 reg_ids = {e["id"] for e in reg["events"]}
 res["registry_ids_in_merge"] = sorted((set(merge) | set(merge.values())) & reg_ids)
 json.dump({**res, "merge": merge, "keep_ws": keep_ws}, open(Path(__file__).with_suffix(".json"), "w"),

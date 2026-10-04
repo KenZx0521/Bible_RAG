@@ -1,0 +1,4337 @@
+[
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_021",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "彌迦書關於伯利恆的預言如何在耶穌降生時應驗？",
+  "reference": "彌迦書 5:2; 馬太福音 2:1-6",
+  "points": [
+   "彌迦書5:2預言：伯利恆的以法他啊，將來必有一位從你那裏出來，在以色列中為我作掌權的",
+   "他的根源從亙古、從太初就有",
+   "希律王召齊祭司長和文士，問基督當生在何處",
+   "祭司長和文士引這預言回答：在猶太的伯利恆",
+   "耶穌果然生在伯利恆"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.8571,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8571,
+   "anchor": 0.5,
+   "mrr": 0.25,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8571,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.8571,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "mic:1:2|彌迦書1:10-16 敵人迫近耶路撒冷|book_anchor",
+   "mic:1:1|彌迦書1:2-9 為撒馬利亞和耶路撒冷唱哀歌|book_anchor",
+   "mat:2:0|馬太福音2:1-12 博士朝拜|hybrid_hybrid",
+   "luk:2:1|路加福音2:8-21 天使報喜訊給牧羊的人|hybrid_hybrid",
+   "mat:1:1|馬太福音1:18-25 耶穌基督降生|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "luk:2:0|路加福音2:1-7 耶穌降生|graph_event",
+   "mic:1:2|彌迦書1:10-16 敵人迫近耶路撒冷|book_anchor",
+   "mic:1:1|彌迦書1:2-9 為撒馬利亞和耶路撒冷唱哀歌|book_anchor",
+   "mat:2:0|馬太福音2:1-12 博士朝拜|hybrid_hybrid",
+   "luk:2:1|路加福音2:8-21 天使報喜訊給牧羊的人|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_022",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "何西阿書「從埃及召出我的兒子來」如何被馬太福音引用？",
+  "reference": "何西阿書 11:1; 馬太福音 2:13-15",
+  "points": [
+   "何西阿書11:1：以色列年幼的時候我愛他，就從埃及召出我的兒子來",
+   "原指上帝領以色列出埃及的歷史",
+   "天使指示約瑟帶著小孩子和他母親逃往埃及，躲避希律",
+   "住在那裏直到希律死了",
+   "馬太說這是要應驗主藉先知所說的話：我從埃及召出我的兒子來"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 0.75
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 0.5
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mat:2:1|馬太福音2:13-15 逃往埃及|hybrid_hybrid",
+   "hos:11:0|何西阿書11:1-11 憐愛叛民|hybrid_hybrid",
+   "mrk:1:0|馬可福音1:1-8 施洗約翰傳道|hybrid_hybrid",
+   "exo:13:2|出埃及記13:11-16 長子|hybrid_hybrid",
+   "mat:2:3|馬太福音2:19-23 從埃及回來|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mat:2:1|馬太福音2:13-15 逃往埃及|hybrid_hybrid",
+   "hos:11:0|何西阿書11:1-11 憐愛叛民|hybrid_hybrid",
+   "mrk:1:0|馬可福音1:1-8 施洗約翰傳道|hybrid_hybrid",
+   "exo:13:2|出埃及記13:11-16 長子|hybrid_hybrid",
+   "mat:2:3|馬太福音2:19-23 從埃及回來|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_023",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "耶利米書「拉結哭她兒女」的預言與伯利恆的哪個事件相連？",
+  "reference": "耶利米書 31:15; 馬太福音 2:16-18",
+  "points": [
+   "耶利米書31:15：在拉瑪聽見號咷痛哭的聲音，是拉結哭她兒女，不肯受安慰",
+   "希律見自己被博士愚弄，就大大發怒",
+   "差人將伯利恆城裏並四境所有的男孩，照著他向博士仔細查問的時候，凡兩歲以裏的都殺盡了",
+   "馬太說這就應了先知耶利米的話",
+   "因為他們都不在了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.75,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "mat:2:2|馬太福音2:16-18 屠殺男孩|hybrid_hybrid",
+   "gen:48:0|創世記48:1-22 雅各祝福以法蓮和瑪拿西|hybrid_hybrid",
+   "gen:35:1|創世記35:16-21 拉結去世|hybrid_hybrid",
+   "jer:31:1|耶利米書31:15-22 耶和華憐憫以色列|hybrid_hybrid",
+   "jer:51:8|耶利米書51:59-64 耶利米的信息傳到巴比倫|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mat:2:2|馬太福音2:16-18 屠殺男孩|graph",
+   "gen:48:0|創世記48:1-22 雅各祝福以法蓮和瑪拿西|hybrid_hybrid",
+   "gen:35:1|創世記35:16-21 拉結去世|hybrid_hybrid",
+   "rut:4:0|路得記4:1-12 波阿斯娶路得|graph",
+   "jdg:19:0|士師記19:1-30 利未人和他的妾|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_024",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "以賽亞書「在曠野有人聲喊著」的預言如何應驗在施洗約翰身上？",
+  "reference": "以賽亞書 40:3; 馬太福音 3:1-3",
+  "points": [
+   "以賽亞書40:3：有人聲喊著說，在曠野預備耶和華的路，在沙漠地修平我們上帝的道",
+   "施洗約翰出來，在猶太的曠野傳道",
+   "說：天國近了，你們應當悔改",
+   "馬太說：這人就是先知以賽亞所說的",
+   "在曠野有人聲喊著說：預備主的道，修直他的路"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "isa:40:0|以賽亞書40:1-11 安慰的話|book_anchor",
+   "isa:13:0|以賽亞書13:1-22 神要懲罰巴比倫|book_anchor",
+   "mrk:1:0|馬可福音1:1-8 施洗約翰傳道|hybrid_hybrid",
+   "luk:3:0|路加福音3:1-20 施洗約翰傳道|hybrid_hybrid",
+   "mat:3:0|馬太福音3:1-12 施洗約翰傳道|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:40:0|以賽亞書40:1-11 安慰的話|book_anchor",
+   "isa:13:0|以賽亞書13:1-22 神要懲罰巴比倫|book_anchor",
+   "mrk:1:0|馬可福音1:1-8 施洗約翰傳道|graph",
+   "luk:3:0|路加福音3:1-20 施洗約翰傳道|graph",
+   "mat:3:0|馬太福音3:1-12 施洗約翰傳道|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_025",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "耶穌在拿撒勒會堂宣讀以賽亞書哪段經文？他如何宣告其應驗？",
+  "reference": "以賽亞書 61:1-2; 路加福音 4:16-21",
+  "points": [
+   "以賽亞書61章：主耶和華的靈在我身上，因為耶和華用膏膏我，叫我傳好信息給謙卑的人",
+   "耶穌在安息日進了拿撒勒的會堂，有人把先知以賽亞的書交給他",
+   "他念：主的靈在我身上，因為他用膏膏我，叫我傳福音給貧窮的人，報告被擄的得釋放、瞎眼的得看見",
+   "報告上帝悅納人的禧年",
+   "耶穌對他們說：今天這經應驗在你們耳中了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R3",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.75,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.75,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.75,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.75,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "isa:13:0|以賽亞書13:1-22 神要懲罰巴比倫|book_anchor",
+   "isa:52:0|以賽亞書52:1-12 上帝要拯救耶路撒冷|book_anchor",
+   "luk:4:2|路加福音4:16-30 拿撒勒人厭棄耶穌|hybrid_hybrid",
+   "luk:24:2|路加福音24:36-49 向門徒顯現|hybrid_hybrid",
+   "luk:24:1|路加福音24:13-35 在以馬忤斯的路上|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:13:0|以賽亞書13:1-22 神要懲罰巴比倫|book_anchor",
+   "isa:52:0|以賽亞書52:1-12 上帝要拯救耶路撒冷|book_anchor",
+   "luk:4:2|路加福音4:16-30 拿撒勒人厭棄耶穌|hybrid_hybrid",
+   "luk:24:2|路加福音24:36-49 向門徒顯現|hybrid_hybrid",
+   "luk:24:1|路加福音24:13-35 在以馬忤斯的路上|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_026",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "以賽亞書關於西布倫、拿弗他利之地的預言如何在耶穌的事奉中應驗？",
+  "reference": "以賽亞書 9:1-2; 馬太福音 4:12-16",
+  "points": [
+   "以賽亞書9章預言：西布倫地、拿弗他利地……外邦人的加利利地必得著榮耀",
+   "那坐在黑暗裏的百姓看見了大光",
+   "耶穌聽見約翰下了監就退到加利利",
+   "離開拿撒勒，往迦百農去住，那地方靠海，在西布倫和拿弗他利的邊界上",
+   "馬太說這是要應驗先知以賽亞的話"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.7143,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.7143,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.7143,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.7143,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "isa:65:0|以賽亞書65:1-16 上帝對悖逆者的懲罰|book_anchor",
+   "isa:10:1|以賽亞書10:5-19 上帝用亞述王為工具|book_anchor",
+   "mat:4:1|馬太福音4:12-17 開始在加利利傳道|hybrid_hybrid",
+   "zec:9:0|撒迦利亞書9:1-8 審判鄰國|hybrid_hybrid",
+   "luk:4:2|路加福音4:16-30 拿撒勒人厭棄耶穌|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:65:0|以賽亞書65:1-16 上帝對悖逆者的懲罰|book_anchor",
+   "isa:37:2|以賽亞書37:21-38 以賽亞給王的信息|book_anchor",
+   "mat:4:1|馬太福音4:12-17 開始在加利利傳道|hybrid_hybrid",
+   "jdg:4:0|士師記4:1-24 底波拉和巴拉|graph",
+   "deu:27:1|申命記27:11-26 違命必受咒詛|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_027",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "馬太福音如何用以賽亞書53章解釋耶穌的醫治事工？",
+  "reference": "以賽亞書 53:4; 馬太福音 8:14-17",
+  "points": [
+   "耶穌醫好彼得的岳母，到了晚上有人帶著許多被鬼附的來到他跟前",
+   "他只用一句話就把鬼都趕出去，並且治好了一切有病的人",
+   "馬太說這是要應驗先知以賽亞的話",
+   "以賽亞書53:4：他誠然擔當我們的憂患，背負我們的痛苦",
+   "馬太引作：他代替我們的軟弱，擔當我們的疾病"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.2,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.1,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.2,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.0,
+   "strict": 0.75
+  },
+  "s2_gate": {
+   "vrec": 0.2,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.2,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "isa:53:0|以賽亞書53:1-12 (無標題)|sql_chapter",
+   "mat:13:1|馬太福音13:10-17 用比喻的目的|hybrid_hybrid",
+   "jhn:4:1|約翰福音4:43-54 耶穌治好大臣的兒子|hybrid_hybrid",
+   "mrk:6:5|馬可福音6:53-56 治好革尼撒勒的病人|hybrid_hybrid",
+   "mrk:6:0|馬可福音6:1-6 拿撒勒人厭棄耶穌|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:53:0|以賽亞書53:1-12 (無標題)|sql_chapter",
+   "mat:13:1|馬太福音13:10-17 用比喻的目的|hybrid_hybrid",
+   "jhn:4:1|約翰福音4:43-54 耶穌治好大臣的兒子|hybrid_hybrid",
+   "mrk:6:5|馬可福音6:53-56 治好革尼撒勒的病人|hybrid_hybrid",
+   "mrk:6:0|馬可福音6:1-6 拿撒勒人厭棄耶穌|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "sql_chapter",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_028",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "以賽亞書42章的僕人之歌如何被馬太福音用來描述耶穌的服事風格？",
+  "reference": "以賽亞書 42:1-4; 馬太福音 12:15-21",
+  "points": [
+   "法利賽人商議要除滅耶穌，耶穌就離開那裏，有許多人跟著他，他把病人都治好了",
+   "又囑咐他們不要給他傳名",
+   "馬太說這是要應驗先知以賽亞的話：看哪，我的僕人，我所揀選、所親愛、心裏所喜悅的",
+   "他不爭競不喧嚷，街上也沒有人聽見他的聲音",
+   "壓傷的蘆葦他不折斷，將殘的燈火他不吹滅，外邦人都要仰望他的名"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.3636,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.3636,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.3636,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.3636,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "isa:42:0|以賽亞書42:1-9 耶和華的僕人|sql_chapter",
+   "isa:42:3|以賽亞書42:18-25 以色列人不受教益|sql_chapter",
+   "isa:42:2|以賽亞書42:14-17 神應許幫助他的子民|sql_chapter",
+   "isa:42:1|以賽亞書42:10-13 頌讚之歌|sql_chapter",
+   "eph:6:1|以弗所書6:5-9 僕人和主人|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:42:0|以賽亞書42:1-9 耶和華的僕人|sql_chapter",
+   "act:20:3|使徒行傳20:17-38 保羅向以弗所長老發表談話|graph",
+   "isa:42:3|以賽亞書42:18-25 以色列人不受教益|sql_chapter",
+   "isa:42:2|以賽亞書42:14-17 神應許幫助他的子民|sql_chapter",
+   "isa:42:1|以賽亞書42:10-13 頌讚之歌|sql_chapter"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "sql_chapter",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_029",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "以賽亞書6章「聽是要聽見卻不明白」的預言，耶穌如何用來解釋比喻的功用？",
+  "reference": "以賽亞書 6:9-10; 馬太福音 13:10-15",
+  "points": [
+   "門徒問耶穌：對眾人講話為甚麼用比喻呢",
+   "耶穌說：因為天國的奧祕只叫你們知道，不叫他們知道",
+   "在他們身上正應了以賽亞的預言：你們聽是要聽見，卻不明白；看是要看見，卻不曉得",
+   "因為這百姓油蒙了心，耳朵發沉，眼睛閉著",
+   "恐怕眼睛看見，耳朵聽見，心裏明白，回轉過來，我就醫治他們"
+  ],
+  "route_graph": "R2",
+  "route_nograph": "R2",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mat:13:1|馬太福音13:10-17 用比喻的目的|hybrid_hybrid",
+   "mrk:4:1|馬可福音4:10-12 用比喻的目的|hybrid_hybrid",
+   "mrk:7:0|馬可福音7:1-23 古人的傳統|hybrid_hybrid",
+   "isa:6:0|以賽亞書6:1-13 主呼召以賽亞作先知|sql_chapter",
+   "jhn:10:0|約翰福音10:1-6 羊圈的比喻|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mat:13:1|馬太福音13:10-17 用比喻的目的|hybrid_hybrid",
+   "mrk:4:1|馬可福音4:10-12 用比喻的目的|hybrid_hybrid",
+   "mrk:7:0|馬可福音7:1-23 古人的傳統|hybrid_hybrid",
+   "isa:6:0|以賽亞書6:1-13 主呼召以賽亞作先知|sql_chapter",
+   "jhn:10:0|約翰福音10:1-6 羊圈的比喻|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "sql_chapter",
+   "semantic"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_030",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "「我要開口用比喻」出自哪篇詩篇？馬太福音如何引用？",
+  "reference": "詩篇 78:2; 馬太福音 13:34-35",
+  "points": [
+   "詩篇78:2：我要開口說比喻，我要說出古時的謎語",
+   "耶穌用比喻對眾人講這一切的話，若不用比喻就不對他們講甚麼",
+   "馬太說這是要應驗先知的話",
+   "我要開口用比喻，把創世以來所隱藏的事發明出來"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.75,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.75,
+   "strict": 0.6667
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "psa:78:0|詩篇78:1-72 上帝與他的子民|hybrid_hybrid",
+   "job:32:0|約伯記32:1-22 以利戶的話|hybrid_hybrid",
+   "mat:13:5|馬太福音13:34-35 用比喻的原因|hybrid_hybrid",
+   "psa:81:0|詩篇81:1-16 聖潔的詩|book_anchor",
+   "mat:13:1|馬太福音13:10-17 用比喻的目的|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "psa:78:0|詩篇78:1-72 上帝與他的子民|hybrid_hybrid",
+   "job:32:0|約伯記32:1-22 以利戶的話|hybrid_hybrid",
+   "act:1:2|使徒行傳1:12-26 接替猶大職分的人|graph",
+   "mat:13:5|馬太福音13:34-35 用比喻的原因|hybrid_hybrid",
+   "psa:81:0|詩篇81:1-16 聖潔的詩|book_anchor"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_031",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "「從嬰孩和吃奶的口中」這句詩篇如何在潔淨聖殿後被耶穌引用？",
+  "reference": "詩篇 8:2; 馬太福音 21:14-16",
+  "points": [
+   "耶穌在殿裏醫好了瞎子和瘸子",
+   "小孩子在殿裏喊著說：和散那歸於大衛的子孫",
+   "祭司長和文士看見就甚惱怒，問耶穌：這些人所說的，你聽見了嗎",
+   "耶穌回答：是的。經上說「你從嬰孩和吃奶的口中完全了讚美」的話，你們沒有念過嗎",
+   "引自詩篇8:2"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.3333,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.3333,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "psa:81:0|詩篇81:1-16 聖潔的詩|book_anchor",
+   "psa:132:0|詩篇132:1-18 聖殿頌|book_anchor",
+   "mat:21:1|馬太福音21:12-17 （可11‧15－19；路19‧45－48；約|hybrid_hybrid",
+   "psa:8:0|詩篇8:1-9 上帝的榮耀和人的尊貴|hybrid_hybrid",
+   "psa:78:0|詩篇78:1-72 上帝與他的子民|book_anchor"
+  ],
+  "graph_top5": [
+   "psa:81:0|詩篇81:1-16 聖潔的詩|book_anchor",
+   "psa:78:0|詩篇78:1-72 上帝與他的子民|book_anchor",
+   "mat:21:1|馬太福音21:12-17 （可11‧15－19；路19‧45－48；約|hybrid_hybrid",
+   "psa:8:0|詩篇8:1-9 上帝的榮耀和人的尊貴|hybrid_hybrid",
+   "2ch:29:1|歷代志下29:3-17 潔淨聖殿|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_032",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "撒迦利亞書「擊打牧人，羊就分散」的預言，耶穌何時引用？如何應驗？",
+  "reference": "撒迦利亞書 13:7; 馬太福音 26:31-35; 26:56",
+  "points": [
+   "撒迦利亞書13:7：刀劍哪，應當興起，攻擊我的牧人……擊打牧人，羊就分散",
+   "最後晚餐後往橄欖山去的路上，耶穌說：今夜你們為我的緣故都要跌倒",
+   "因為經上記著說：我要擊打牧人，羊就分散了",
+   "彼得說眾人雖然跌倒我總不能，耶穌預言他三次不認主",
+   "耶穌被捉拿時，門徒都離開他逃走了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.8571,
+   "anchor": 0.6667,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8571,
+   "anchor": 0.6667,
+   "mrr": 1.0,
+   "cov": 0.3,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8571,
+   "anchor": 0.6667,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.8571,
+   "anchor": 0.6667,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mat:26:5|馬太福音26:31-35 （可14‧27－31；路22‧31－34；約|hybrid_hybrid",
+   "mrk:14:5|馬可福音14:27-31 （太26‧31－35；路22‧31－34；約|hybrid_hybrid",
+   "luk:8:1|路加福音8:4-8 撒種的比喻|hybrid_hybrid",
+   "zec:11:1|撒迦利亞書11:4-17 兩個牧人|hybrid_hybrid",
+   "zec:13:1|撒迦利亞書13:7-9 牧人被殺|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mat:26:5|馬太福音26:31-35 （可14‧27－31；路22‧31－34；約|hybrid_hybrid",
+   "mrk:14:5|馬可福音14:27-31 （太26‧31－35；路22‧31－34；約|hybrid_hybrid",
+   "luk:8:1|路加福音8:4-8 撒種的比喻|hybrid_hybrid",
+   "zec:11:1|撒迦利亞書11:4-17 兩個牧人|hybrid_hybrid",
+   "zec:13:1|撒迦利亞書13:7-9 牧人被殺|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_033",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "詩篇41篇「吃過我飯的也用腳踢我」如何應驗在猶大身上？",
+  "reference": "詩篇 41:9; 約翰福音 13:18-30",
+  "points": [
+   "詩篇41:9：連我知己的朋友，我所倚靠、吃過我飯的也用腳踢我",
+   "耶穌在最後晚餐上說：現在要應驗經上的話，說：同我吃飯的人用腳踢我",
+   "耶穌心裏憂愁，明說：你們中間有一個人要賣我了",
+   "耶穌蘸一點餅遞給加略人西門的兒子猶大",
+   "猶大受了那點餅立刻就出去，那時候是夜間了"
+  ],
+  "route_graph": "R2",
+  "route_nograph": "R2",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.2857,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.2857,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.2857,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.2857,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "psa:41:0|詩篇41:1-13 病中祈禱|sql_chapter",
+   "jhn:13:0|約翰福音13:1-20 耶穌為門徒洗腳|hybrid_hybrid",
+   "isa:42:3|以賽亞書42:18-25 以色列人不受教益|hybrid_hybrid",
+   "deu:1:3|申命記1:34-46 耶和華刑罰以色列人|hybrid_hybrid",
+   "isa:63:0|以賽亞書63:1-6 耶和華恩待以色列|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "psa:41:0|詩篇41:1-13 病中祈禱|sql_chapter",
+   "jhn:13:0|約翰福音13:1-20 耶穌為門徒洗腳|hybrid_hybrid",
+   "isa:42:3|以賽亞書42:18-25 以色列人不受教益|hybrid_hybrid",
+   "deu:1:3|申命記1:34-46 耶和華刑罰以色列人|hybrid_hybrid",
+   "isa:63:0|以賽亞書63:1-6 耶和華恩待以色列|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "sql_chapter",
+   "semantic"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_034",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "詩篇69篇「拿醋給我喝」如何在十字架上應驗？",
+  "reference": "詩篇 69:21; 約翰福音 19:28-30",
+  "points": [
+   "詩篇69:21：他們拿苦膽給我當食物；我渴了，他們拿醋給我喝",
+   "耶穌知道各樣的事已經成了，為要使經上的話應驗，就說：我渴了",
+   "有一個器皿盛滿了醋放在那裏",
+   "他們就拿海絨蘸滿了醋，綁在牛膝草上，送到他口",
+   "耶穌嘗了那醋，就說：成了！便低下頭，將靈魂交付上帝了"
+  ],
+  "route_graph": "R2",
+  "route_nograph": "R2",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 0.8571
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "psa:69:0|詩篇69:1-36 求助的禱告|sql_chapter",
+   "jhn:19:2|約翰福音19:28-30 （太27‧45－56；可15‧33－41；路|hybrid_hybrid",
+   "luk:23:3|路加福音23:26-43 （太27‧32－44；可15‧21－32；約|hybrid_hybrid",
+   "mat:27:6|馬太福音27:45-56 （可15‧33－41；路23‧44－49；約|hybrid_hybrid",
+   "mrk:15:4|馬可福音15:33-41 （太27‧45－56；路23‧44－49；約|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "psa:69:0|詩篇69:1-36 求助的禱告|sql_chapter",
+   "jhn:19:2|約翰福音19:28-30 （太27‧45－56；可15‧33－41；路|hybrid_hybrid",
+   "luk:23:3|路加福音23:26-43 （太27‧32－44；可15‧21－32；約|hybrid_hybrid",
+   "mat:27:6|馬太福音27:45-56 （可15‧33－41；路23‧44－49；約|hybrid_hybrid",
+   "mrk:15:4|馬可福音15:33-41 （太27‧45－56；路23‧44－49；約|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "sql_chapter",
+   "semantic"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_035",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "「他的骨頭一根也不可折斷」的預言出自哪些舊約經文？如何在十字架上應驗？",
+  "reference": "出埃及記 12:46; 詩篇 34:20; 約翰福音 19:31-37",
+  "points": [
+   "出埃及記12:46規定逾越節羊羔的骨頭一根也不可折斷",
+   "詩篇34:20：又保全他一身的骨頭，連一根也不折斷",
+   "猶太人求彼拉多叫人打斷他們的腿，兵丁打斷了與耶穌同釘的兩個人的腿",
+   "來到耶穌那裏，見他已經死了，就不打斷他的腿；惟有一個兵拿槍扎他的肋旁",
+   "這些事成了，為要應驗經上的話說：他的骨頭一根也不可折斷"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.7778,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.7778,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.7778,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.7778,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "jhn:19:3|約翰福音19:31-37 肋旁被扎|hybrid_hybrid",
+   "jhn:19:1|約翰福音19:17-27 （太27‧32－44；可15‧21－32；路|hybrid_hybrid",
+   "jer:28:0|耶利米書28:1-17 耶利米和先知哈拿尼雅|hybrid_hybrid",
+   "mat:26:7|馬太福音26:47-56 （可14‧43－50；路22‧47－53；約|hybrid_hybrid",
+   "mrk:15:3|馬可福音15:21-32 （太27‧32－44；路23‧26－43；約|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "jhn:19:3|約翰福音19:31-37 肋旁被扎|hybrid_hybrid",
+   "jhn:19:1|約翰福音19:17-27 （太27‧32－44；可15‧21－32；路|graph",
+   "act:2:1|使徒行傳2:14-42 彼得在五旬節的講論|graph",
+   "jer:28:0|耶利米書28:1-17 耶利米和先知哈拿尼雅|hybrid_hybrid",
+   "mat:26:7|馬太福音26:47-56 （可14‧43－50；路22‧47－53；約|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_036",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "耶穌如何用詩篇110篇反問法利賽人關於基督身分的問題？",
+  "reference": "詩篇 110:1; 馬太福音 22:41-46",
+  "points": [
+   "耶穌問法利賽人：論到基督，你們的意見如何？他是誰的子孫呢？他們說是大衛的子孫",
+   "耶穌問：這樣，大衛被聖靈感動，怎麼還稱他為主",
+   "引詩篇110:1：主對我主說：你坐在我的右邊，等我把你仇敵放在你的腳下",
+   "大衛既稱他為主，他怎麼又是大衛的子孫呢",
+   "他們沒有一個人能回答一言"
+  ],
+  "route_graph": "R2",
+  "route_nograph": "R2",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "psa:110:0|詩篇110:1-7 耶和華及其所選之王|sql_chapter",
+   "mat:22:4|馬太福音22:41-46 大衛子孫的問題|hybrid_hybrid",
+   "mat:16:2|馬太福音16:13-20 彼得認耶穌為基督|hybrid_hybrid",
+   "mrk:8:4|馬可福音8:27-30 彼得認耶穌為基督|hybrid_hybrid",
+   "jhn:18:0|約翰福音18:1-11 （太26‧47－56；可14‧43－50；路|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "psa:110:0|詩篇110:1-7 耶和華及其所選之王|sql_chapter",
+   "mat:22:4|馬太福音22:41-46 大衛子孫的問題|hybrid_hybrid",
+   "mat:16:2|馬太福音16:13-20 彼得認耶穌為基督|hybrid_hybrid",
+   "mrk:8:4|馬可福音8:27-30 彼得認耶穌為基督|hybrid_hybrid",
+   "jhn:18:0|約翰福音18:1-11 （太26‧47－56；可14‧43－50；路|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "sql_chapter",
+   "semantic"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_037",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "初代教會受逼迫時如何引用詩篇第2篇禱告？",
+  "reference": "詩篇 2:1-2; 使徒行傳 4:23-31",
+  "points": [
+   "彼得約翰被公會恐嚇釋放後回到會友那裏，眾人同心合意地高聲禱告",
+   "引詩篇第2篇：外邦為甚麼爭鬧？萬民為甚麼謀算虛妄的事？世上的君王一齊起來，臣宰也聚集，要敵擋主並主的受膏者",
+   "希律和本丟彼拉多，外邦人和以色列民果然在這城裏聚集，要攻打你所膏的聖僕耶穌",
+   "成就你手和你意旨所預定必有的事",
+   "求主鑒察，一面叫你僕人大放膽量講你的道，一面伸出你的手來醫治疾病；禱告完了，聚會的地方震動，他們就都被聖靈充滿"
+  ],
+  "route_graph": "R2",
+  "route_nograph": "R2",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.1818,
+   "anchor": 0.5,
+   "mrr": 0.2,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.1818,
+   "anchor": 0.5,
+   "mrr": 0.2,
+   "cov": 0.2,
+   "strict": 0.875
+  },
+  "s2_gate": {
+   "vrec": 0.1818,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.1818,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "psa:69:0:1|詩篇69:18-36 求助的禱告|hybrid_hybrid",
+   "psa:31:0|詩篇31:1-24 信靠上帝的祈禱|hybrid_hybrid",
+   "1ti:2:0|提摩太前書2:1-15 有關禱告的指示|hybrid_hybrid",
+   "psa:102:0|詩篇102:1-28 遭難中的祈禱|hybrid_hybrid",
+   "psa:2:0|詩篇2:1-12 上帝所揀選的君王|sql_chapter"
+  ],
+  "graph_top5": [
+   "psa:69:0:1|詩篇69:18-36 求助的禱告|hybrid_hybrid",
+   "psa:31:0|詩篇31:1-24 信靠上帝的祈禱|hybrid_hybrid",
+   "1ti:2:0|提摩太前書2:1-15 有關禱告的指示|hybrid_hybrid",
+   "psa:102:0|詩篇102:1-28 遭難中的祈禱|hybrid_hybrid",
+   "psa:2:0|詩篇2:1-12 上帝所揀選的君王|sql_chapter"
+  ],
+  "graph_strategies_used": [
+   "sql_chapter",
+   "semantic"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_038",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "耶路撒冷會議上，雅各引用阿摩司書哪段預言支持接納外邦人？",
+  "reference": "阿摩司書 9:11-12; 使徒行傳 15:12-21",
+  "points": [
+   "巴拿巴和保羅述說上帝藉他們在外邦人中所行的神蹟奇事",
+   "雅各說：西門述說上帝當初怎樣眷顧外邦人，從他們中間選取百姓歸於自己的名下",
+   "眾先知的話也與這意思相合，引阿摩司書：我要回來，重新修造大衛倒塌的帳幕",
+   "叫餘剩的人，就是凡稱為我名下的外邦人，都尋求主",
+   "雅各裁定：不可難為那歸服上帝的外邦人"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "mrr": 0.5,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "mrr": 0.5,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "amo:5:0:1|阿摩司書5:15-27 呼籲以色列人悔改|book_anchor",
+   "act:15:0|使徒行傳15:1-21 耶路撒冷會議|hybrid_hybrid",
+   "ezk:11:0|以西結書11:1-13 耶路撒冷被判罪|sql_supplement",
+   "ezk:39:2|以西結書39:21-29 以色列的復興|hybrid_hybrid",
+   "amo:6:0|阿摩司書6:1-14 以色列的毀滅|book_anchor"
+  ],
+  "graph_top5": [
+   "amo:5:0:1|阿摩司書5:15-27 呼籲以色列人悔改|book_anchor",
+   "act:15:0|使徒行傳15:1-21 耶路撒冷會議|graph",
+   "ezk:39:2|以西結書39:21-29 以色列的復興|hybrid_hybrid",
+   "amo:6:0|阿摩司書6:1-14 以色列的毀滅|book_anchor",
+   "act:1:2|使徒行傳1:12-26 接替猶大職分的人|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_039",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "保羅和巴拿巴轉向外邦人時引用了以賽亞書哪句話？",
+  "reference": "以賽亞書 49:6; 使徒行傳 13:44-48",
+  "points": [
+   "在彼西底的安提阿，猶太人看見人多就滿心嫉妒，硬駁保羅所說的話",
+   "保羅和巴拿巴放膽說：上帝的道先講給你們原是應當的，只因你們棄絕這道，我們就轉向外邦人去",
+   "因為主曾這樣吩咐我們說：我已經立你作外邦人的光，叫你施行救恩，直到地極",
+   "引自以賽亞書49:6僕人之歌",
+   "外邦人聽見這話就歡喜了，讚美上帝的道，凡預定得永生的人都信了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "mrr": 0.25,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "mrr": 0.25,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "isa:46:0|以賽亞書46:1-13 (無標題)|book_anchor",
+   "isa:28:1|以賽亞書28:7-13 以賽亞和猶大酒醉的先知|book_anchor",
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|hybrid_hybrid",
+   "act:13:2:2|使徒行傳13:43-52 在彼西底的安提阿傳道|hybrid_hybrid",
+   "act:21:1|使徒行傳21:17-26 保羅訪問雅各|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:46:0|以賽亞書46:1-13 (無標題)|book_anchor",
+   "isa:28:1|以賽亞書28:7-13 以賽亞和猶大酒醉的先知|book_anchor",
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|hybrid_hybrid",
+   "act:13:2:2|使徒行傳13:43-52 在彼西底的安提阿傳道|hybrid_hybrid",
+   "act:15:0|使徒行傳15:1-21 耶路撒冷會議|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_040",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "瑪拉基書預言的「以利亞先來」，耶穌如何解釋其應驗？",
+  "reference": "瑪拉基書 3:1; 4:5-6; 馬太福音 11:7-15; 17:10-13",
+  "points": [
+   "瑪拉基書預言：我要差遣我的使者在我前面預備道路；大而可畏之日未到以前，我必差遣先知以利亞到你們那裏去",
+   "耶穌論施洗約翰：經上記著說「我要差遣我的使者在你前面預備道路」，所說的就是這個人",
+   "你們若肯領受，這人就是那應當來的以利亞",
+   "登山變像後門徒問：文士為甚麼說以利亞必須先來",
+   "耶穌說以利亞已經來了，人卻不認識他；門徒才明白他所說的是指著施洗的約翰"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.8125,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8125,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8125,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.8125,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mal:1:0|瑪拉基書1:1 (無標題)|book_anchor",
+   "mal:3:2|瑪拉基書3:13-18 上帝應許施憐憫|book_anchor",
+   "mat:17:0|馬太福音17:1-13 耶穌改變形像|hybrid_hybrid",
+   "mrk:9:1|馬可福音9:2-13 耶穌改變形像|hybrid_hybrid",
+   "mat:11:1|馬太福音11:2-19 施洗約翰的門徒來見耶穌|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mal:1:0|瑪拉基書1:1 (無標題)|book_anchor",
+   "mal:3:2|瑪拉基書3:13-18 上帝應許施憐憫|book_anchor",
+   "mat:17:0|馬太福音17:1-13 耶穌改變形像|hybrid_hybrid",
+   "mrk:9:1|馬可福音9:2-13 耶穌改變形像|hybrid_hybrid",
+   "mat:11:1|馬太福音11:2-19 施洗約翰的門徒來見耶穌|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_041",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "但以理書「人子駕雲而來」的異象，耶穌在受審時如何引用？",
+  "reference": "但以理書 7:13-14; 馬太福音 26:63-66",
+  "points": [
+   "但以理書7章：見有一位像人子的，駕著天雲而來，被領到亙古常在者面前，得了權柄、榮耀、國度",
+   "大祭司對耶穌說：我指著永生上帝叫你起誓告訴我們，你是上帝的兒子基督不是",
+   "耶穌說：你說的是。然而我告訴你們，後來你們要看見人子坐在那權能者的右邊，駕著天上的雲降臨",
+   "大祭司就撕開衣服說：他說了僭妄的話",
+   "眾人定他死罪"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.5,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.5,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "dan:5:1|但以理書5:13-31 但以理解釋牆上的字|book_anchor",
+   "mat:26:8|馬太福音26:57-68 （可14‧53－65；路22‧54－55，63－71；約|hybrid_hybrid",
+   "dan:8:1|但以理書8:15-27 天使加百列解釋異象|hybrid_hybrid",
+   "dan:7:1|但以理書7:9-14 永存者的異象|hybrid_hybrid",
+   "mrk:14:9|馬可福音14:53-65 （太26‧57－68；路22‧54－55，63－71；約|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "dan:5:1|但以理書5:13-31 但以理解釋牆上的字|book_anchor",
+   "mat:26:8|馬太福音26:57-68 （可14‧53－65；路22‧54－55，63－71；約|hybrid_hybrid",
+   "dan:8:1|但以理書8:15-27 天使加百列解釋異象|hybrid_hybrid",
+   "dan:7:1|但以理書7:9-14 永存者的異象|hybrid_hybrid",
+   "mrk:14:9|馬可福音14:53-65 （太26‧57－68；路22‧54－55，63－71；約|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_042",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "創世記3:15「女人的後裔要傷你的頭」被稱為「原始福音」，新約哪些經文呼應了它？",
+  "reference": "創世記 3:15; 加拉太書 4:4-5; 羅馬書 16:20",
+  "points": [
+   "創世記3:15：我又要叫你和女人彼此為仇，你的後裔和女人的後裔也彼此為仇",
+   "女人的後裔要傷你的頭，你要傷他的腳跟",
+   "加拉太書：及至時候滿足，上帝就差遣他的兒子，為女子所生，且生在律法以下",
+   "要把律法以下的人贖出來",
+   "羅馬書16:20：賜平安的上帝快要將撒但踐踏在你們腳下"
+  ],
+  "route_graph": "R1",
+  "route_nograph": "R1",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.25,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.25,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.25,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.25,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "gen:3:15|創世記3:15 上帝的宣判|verse_direct"
+  ],
+  "graph_top5": [
+   "gen:3:15|創世記3:15 上帝的宣判|verse_direct"
+  ],
+  "graph_strategies_used": [
+   "verse_direct"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_043",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "以賽亞書「耶西的根」的預言，保羅在羅馬書如何引用？",
+  "reference": "以賽亞書 11:1, 10; 羅馬書 15:8-12",
+  "points": [
+   "以賽亞書11章：從耶西的本必發一條，從他根生的枝子必結果實",
+   "到那日，耶西的根立作萬民的大旗，外邦人必尋求他",
+   "保羅說基督是為上帝真理作了受割禮人的執事，並叫外邦人因他的憐憫榮耀上帝",
+   "引以賽亞說：將來有耶西的根，就是那興起來要治理外邦的",
+   "外邦人要仰望他"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.125,
+   "anchor": 0.3333,
+   "mrr": 0.2,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.125,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.125,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|hybrid_hybrid",
+   "isa:11:1|以賽亞書11:10-16 流亡的人回鄉|book_anchor",
+   "rom:1:0|羅馬書1:1-7 祝福|hybrid_hybrid",
+   "luk:8:1|路加福音8:4-8 撒種的比喻|hybrid_hybrid",
+   "rom:15:1|羅馬書15:7-13 上帝的福音一視同仁|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|hybrid_hybrid",
+   "isa:11:1|以賽亞書11:10-16 流亡的人回鄉|book_anchor",
+   "rom:1:0|羅馬書1:1-7 祝福|hybrid_hybrid",
+   "act:16:3|使徒行傳16:16-40 在腓立比被囚|graph",
+   "luk:8:1|路加福音8:4-8 撒種的比喻|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_044",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "「死被得勝吞滅」與「死啊，你的毒鉤在哪裏」出自哪兩卷先知書？保羅如何引用？",
+  "reference": "以賽亞書 25:8; 何西阿書 13:14; 哥林多前書 15:54-57",
+  "points": [
+   "以賽亞書25:8：他已經吞滅死亡直到永遠，主耶和華必擦去各人臉上的眼淚",
+   "何西阿書13:14：我必救贖他們脫離陰間，救贖他們脫離死亡。死亡啊，你的災害在哪裏呢",
+   "保羅說：這必朽壞的既變成不朽壞的，這必死的既變成不死的",
+   "那時經上所記「死被得勝吞滅」的話就應驗了；死啊，你得勝的權勢在哪裏？死啊，你的毒鉤在哪裏",
+   "感謝上帝，使我們藉著我們的主耶穌基督得勝"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "s0_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "act:28:0|使徒行傳28:1-10 保羅在馬耳他島上|hybrid_hybrid",
+   "act:13:2:1|使徒行傳13:27-43 在彼西底的安提阿傳道|hybrid_hybrid",
+   "1sa:28:1|撒母耳記上28:3-25 掃羅求問女巫|hybrid_hybrid",
+   "mat:26:7|馬太福音26:47-56 （可14‧43－50；路22‧47－53；約|hybrid_hybrid",
+   "jer:15:0|耶利米書15:1-9 猶大百姓的厄運|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "act:13:2|使徒行傳13:13-52 在彼西底的安提阿傳道|graph",
+   "act:24:1|使徒行傳24:10-23 保羅為自己辯護|graph",
+   "act:14:1|使徒行傳14:8-20 在路司得傳道|graph",
+   "act:16:3|使徒行傳16:16-40 在腓立比被囚|graph",
+   "act:15:1|使徒行傳15:22-35 會議的覆函|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_045",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "「必有一位救主從錫安出來」的預言如何支撐保羅對以色列全家得救的盼望？",
+  "reference": "以賽亞書 59:20-21; 羅馬書 11:25-27",
+  "points": [
+   "以賽亞書59:20：必有一位救贖主來到錫安－雅各族中轉離過犯的人那裏",
+   "保羅說：我不願意你們不知道這奧祕，就是以色列人有幾分是硬心的",
+   "等到外邦人的數目添滿了，於是以色列全家都要得救",
+   "如經上所記：必有一位救主從錫安出來，要消除雅各家的一切罪惡",
+   "又說：我除去他們罪的時候，這就是我與他們所立的約"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "rom:11:2|羅馬書11:25-36 以色列人的復興|hybrid_hybrid",
+   "oba:1:4|俄巴底亞書1:17-21 以色列的勝利|hybrid_hybrid",
+   "isa:59:2|以賽亞書59:16-21 耶和華準備拯救他的子民|hybrid_hybrid",
+   "psa:53:0|詩篇53:1-6 人的邪惡|hybrid_hybrid",
+   "act:13:2|使徒行傳13:13-52 在彼西底的安提阿傳道|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "rom:11:2|羅馬書11:25-36 以色列人的復興|hybrid_hybrid",
+   "jol:2:3|約珥書2:28-32 耶和華的日子|graph",
+   "oba:1:4|俄巴底亞書1:17-21 以色列的勝利|graph",
+   "isa:59:2|以賽亞書59:16-21 耶和華準備拯救他的子民|hybrid_hybrid",
+   "act:13:2|使徒行傳13:13-52 在彼西底的安提阿傳道|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_046",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "prophecy_fulfillment",
+  "question": "耶穌用以賽亞書35章的哪些記號回答獄中施洗約翰的疑問？",
+  "reference": "以賽亞書 35:5-6; 馬太福音 11:2-6",
+  "points": [
+   "約翰在監裏聽見基督所做的事，就打發兩個門徒去問：那將要來的是你嗎？還是我們等候別人呢",
+   "以賽亞書35章預言：那時瞎子的眼必睜開，聾子的耳必開通，瘸子必跳躍像鹿",
+   "耶穌回答：你們去把所聽見所看見的事告訴約翰",
+   "就是瞎子看見，瘸子行走，長大痲瘋的潔淨，聾子聽見，死人復活，窮人有福音傳給他們",
+   "凡不因我跌倒的就有福了"
+  ],
+  "route_graph": "R2",
+  "route_nograph": "R2",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.2857,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.3,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.2857,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.2857,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.2857,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "isa:35:0|以賽亞書35:1-10 神聖之路|sql_chapter",
+   "luk:7:2|路加福音7:18-35 施洗約翰的門徒來見耶穌|hybrid_hybrid",
+   "jhn:3:1|約翰福音3:22-30 耶穌和施洗約翰|hybrid_hybrid",
+   "mat:3:1|馬太福音3:13-17 耶穌受洗|hybrid_hybrid",
+   "jhn:1:1|約翰福音1:19-28 施洗約翰的見證|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:35:0|以賽亞書35:1-10 神聖之路|sql_chapter",
+   "luk:7:2|路加福音7:18-35 施洗約翰的門徒來見耶穌|hybrid_hybrid",
+   "jhn:3:1|約翰福音3:22-30 耶穌和施洗約翰|hybrid_hybrid",
+   "mat:3:1|馬太福音3:13-17 耶穌受洗|hybrid_hybrid",
+   "jhn:1:1|約翰福音1:19-28 施洗約翰的見證|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "sql_chapter",
+   "semantic"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_047",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "曠野受試探時，耶穌三次引用申命記回應魔鬼；魔鬼又引用了哪篇詩篇？",
+  "reference": "申命記 8:3; 6:16; 6:13; 詩篇 91:11-12; 馬太福音 4:1-11",
+  "points": [
+   "第一試探（石頭變餅），耶穌引申命記8:3：人活著不是單靠食物，乃是靠上帝口裏所出的一切話",
+   "第二試探（殿頂跳下），魔鬼引詩篇91:11-12：主要為你吩咐他的使者用手托著你",
+   "耶穌引申命記6:16：不可試探主你的上帝",
+   "第三試探（萬國榮華），耶穌引申命記6:13：當拜主你的上帝，單要事奉他",
+   "魔鬼離開耶穌，有天使來伺候他"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.6875,
+   "anchor": 0.2,
+   "mrr": 0.5,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.6875,
+   "anchor": 0.2,
+   "mrr": 0.3333,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.6875,
+   "anchor": 0.2,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.6875,
+   "anchor": 0.2,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "luk:4:0|路加福音4:1-13 耶穌受試探|hybrid_hybrid",
+   "mat:4:0|馬太福音4:1-11 耶穌受試探|hybrid_hybrid",
+   "psa:57:0|詩篇57:1-11 求主施援|book_anchor",
+   "deu:8:1|申命記8:11-20 警告百姓不可忘記主|hybrid_hybrid",
+   "deu:10:0|申命記10:1-11 摩西重新接受十誡|book_anchor"
+  ],
+  "graph_top5": [
+   "deu:10:0|申命記10:1-11 摩西重新接受十誡|book_anchor",
+   "luk:4:0|路加福音4:1-13 耶穌受試探|graph_event",
+   "mat:4:0|馬太福音4:1-11 耶穌受試探|graph_event",
+   "heb:2:1|希伯來書2:5-18 救恩的元帥|graph",
+   "psa:106:0|詩篇106:1-48 上帝對他子民的良善|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_048",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "「愛人如己」出自舊約哪卷書？耶穌與保羅如何引用它？",
+  "reference": "利未記 19:18; 馬太福音 22:34-40; 羅馬書 13:8-10",
+  "points": [
+   "利未記19:18：不可報仇，也不可埋怨你本國的子民，卻要愛人如己",
+   "律法師試探耶穌問誡命中哪一條是最大的",
+   "耶穌說最大的是盡心盡性盡意愛主你的上帝，其次也相倣，就是要愛人如己",
+   "這兩條誡命是律法和先知一切道理的總綱",
+   "保羅說：愛人的就完全了律法；愛就完全了律法"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.2727,
+   "anchor": 0.3333,
+   "mrr": 0.5,
+   "cov": 0.8,
+   "strict": 0.875
+  },
+  "graph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.2727,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.2727,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "gal:5:1|加拉太書5:2-15 基督徒的自由|hybrid_hybrid",
+   "rom:13:1|羅馬書13:8-10 相愛如兄弟|hybrid_hybrid",
+   "jas:2:0|雅各書2:1-13 警告偏私|hybrid_hybrid",
+   "eph:5:2|以弗所書5:22-33 丈夫和妻子|hybrid_hybrid",
+   "luk:10:4|路加福音10:25-37 好撒馬利亞人|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|graph",
+   "act:13:2|使徒行傳13:13-52 在彼西底的安提阿傳道|graph",
+   "act:15:1|使徒行傳15:22-35 會議的覆函|graph",
+   "act:20:3|使徒行傳20:17-38 保羅向以弗所長老發表談話|graph",
+   "act:16:3|使徒行傳16:16-40 在腓立比被囚|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_049",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "馬可福音記載文士問最大的誡命時，耶穌引用申命記哪段話？那文士如何回應？",
+  "reference": "申命記 6:4-5; 馬可福音 12:28-34",
+  "points": [
+   "耶穌引申命記6:4-5：以色列啊，你要聽！主我們上帝是獨一的主",
+   "你要盡心、盡性、盡意、盡力愛主你的上帝",
+   "其次就是說：要愛人如己",
+   "文士回應：夫子說上帝是一位實在不錯；愛人如己，就比一切燔祭和各樣祭祀好的多",
+   "耶穌見他回答的有智慧，就對他說：你離上帝的國不遠了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.7778,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "mrk:12:3|馬可福音12:28-34 最大的誡命|hybrid_hybrid",
+   "mat:22:3|馬太福音22:34-40 最大的誡命|hybrid_hybrid",
+   "mrk:12:2|馬可福音12:18-27 復活的問題|sql_supplement",
+   "deu:6:0|申命記6:1-9 最大的誡命|hybrid_hybrid",
+   "mrk:12:1|馬可福音12:13-17 納稅給凱撒的問題|sql_supplement"
+  ],
+  "graph_top5": [
+   "mrk:12:3|馬可福音12:28-34 最大的誡命|hybrid_hybrid",
+   "mat:22:3|馬太福音22:34-40 最大的誡命|hybrid_hybrid",
+   "mat:23:0|馬太福音23:1-36 譴責文士和法利賽人|cross_ref_expand",
+   "luk:20:5|路加福音20:45-47 譴責文士|graph",
+   "mrk:12:5|馬可福音12:38-40 譴責文士|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_050",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "耶穌回應撒都該人復活的詰難時，引用了出埃及記哪句話？如何論證？",
+  "reference": "出埃及記 3:6; 馬太福音 22:23-33",
+  "points": [
+   "撒都該人常說沒有復活的事，用七兄弟娶一婦人的難題詰問耶穌",
+   "耶穌說：你們錯了，因為不明白聖經，也不曉得上帝的大能",
+   "當復活的時候，人也不娶也不嫁，乃像天上的使者一樣",
+   "論到死人復活，上帝說：我是亞伯拉罕的上帝，以撒的上帝，雅各的上帝，你們沒有念過嗎",
+   "上帝不是死人的上帝，乃是活人的上帝"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.5,
+   "cov": 0.4,
+   "strict": 0.75
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.5,
+   "cov": 0.6,
+   "strict": 0.8
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "exo:6:1|出埃及記6:2-13 上帝呼召摩西|book_anchor",
+   "exo:3:0:0|出埃及記3:1-13 上帝呼召摩西|book_anchor",
+   "mat:22:2|馬太福音22:23-33 復活的問題|hybrid_hybrid",
+   "mrk:12:2|馬可福音12:18-27 復活的問題|hybrid_hybrid",
+   "luk:20:3|路加福音20:27-40 復活的問題|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "exo:6:1|出埃及記6:2-13 上帝呼召摩西|book_anchor",
+   "exo:3:0:0|出埃及記3:1-13 上帝呼召摩西|book_anchor",
+   "mat:22:2|馬太福音22:23-33 復活的問題|graph",
+   "mrk:12:2|馬可福音12:18-27 復活的問題|graph",
+   "mat:16:0|馬太福音16:1-4 求主顯個神蹟|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_051",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "「我喜愛憐恤，不喜愛祭祀」——耶穌在什麼場合引用何西阿書這句話？",
+  "reference": "何西阿書 6:6; 馬太福音 9:10-13",
+  "points": [
+   "何西阿書6:6：我喜愛良善（或作憐恤），不喜愛祭祀",
+   "耶穌在馬太家坐席，好些稅吏和罪人與他一同吃飯",
+   "法利賽人質問：你們的先生為甚麼和稅吏並罪人一同吃飯呢",
+   "耶穌說：康健的人用不著醫生，有病的人才用得著。經上說「我喜愛憐恤，不喜愛祭祀」，這句話的意思你們且去揣摩",
+   "我來本不是召義人，乃是召罪人"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mat:9:1|馬太福音9:9-13 呼召馬太|hybrid_hybrid",
+   "mat:12:0|馬太福音12:1-8 安息日的問題|hybrid_hybrid",
+   "hos:6:0|何西阿書6:1-11 以色列無悔改誠意|hybrid_hybrid",
+   "psa:51:0|詩篇51:1-19 求主赦免|hybrid_hybrid",
+   "rom:9:1|羅馬書9:19-29 上帝的忿怒和憐憫|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mat:9:1|馬太福音9:9-13 呼召馬太|hybrid_hybrid",
+   "mat:12:0|馬太福音12:1-8 安息日的問題|hybrid_hybrid",
+   "hos:6:0|何西阿書6:1-11 以色列無悔改誠意|hybrid_hybrid",
+   "psa:51:0|詩篇51:1-19 求主赦免|hybrid_hybrid",
+   "rom:9:1|羅馬書9:19-29 上帝的忿怒和憐憫|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_052",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "耶穌用以賽亞書哪句話責備法利賽人的洗手傳統？",
+  "reference": "以賽亞書 29:13; 馬太福音 15:1-9",
+  "points": [
+   "法利賽人和文士質問：你的門徒為甚麼犯古人的遺傳呢？因為吃飯的時候，他們不洗手",
+   "耶穌反問：你們為甚麼因著你們的遺傳犯上帝的誡命呢",
+   "舉例：人只要對父母說「我所當奉給你的已經作了供獻」就可以不孝敬父母",
+   "以賽亞指著你們說的預言是不錯的：這百姓用嘴唇尊敬我，心卻遠離我",
+   "他們將人的吩咐當作道理教導人，所以拜我也是枉然"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.9,
+   "anchor": 0.5,
+   "mrr": 0.25,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.9,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.9,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.9,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "isa:50:0|以賽亞書50:1-3 (無標題)|book_anchor",
+   "isa:3:0|以賽亞書3:1-12 耶路撒冷的混亂|book_anchor",
+   "mrk:7:0|馬可福音7:1-23 古人的傳統|hybrid_hybrid",
+   "mat:15:0|馬太福音15:1-20 古人的傳統|hybrid_hybrid",
+   "luk:11:6|路加福音11:37-54 譴責法利賽人和文士|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:50:0|以賽亞書50:1-3 (無標題)|book_anchor",
+   "isa:3:0|以賽亞書3:1-12 耶路撒冷的混亂|book_anchor",
+   "mat:15:0|馬太福音15:1-20 古人的傳統|graph",
+   "mrk:7:0|馬可福音7:1-23 古人的傳統|hybrid_hybrid",
+   "luk:11:6|路加福音11:37-54 譴責法利賽人和文士|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_053",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "「二人成為一體」出自創世記哪裡？耶穌與保羅分別如何引用？",
+  "reference": "創世記 2:24; 馬太福音 19:3-9; 以弗所書 5:31-32",
+  "points": [
+   "創世記2:24：因此，人要離開父母，與妻子連合，二人成為一體",
+   "法利賽人試探耶穌問休妻的事，耶穌引這節說：既然如此，夫妻不再是兩個人，乃是一體的了",
+   "上帝配合的，人不可分開",
+   "摩西因為你們的心硬，所以許你們休妻，但起初並不是這樣",
+   "保羅在以弗所書引用後說：這是極大的奧祕，但我是指著基督和教會說的"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "s0_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "gen:35:0|創世記35:1-15 上帝在伯特利賜福雅各|book_anchor",
+   "act:17:2|使徒行傳17:16-34 保羅在雅典|hybrid_hybrid",
+   "act:17:0|使徒行傳17:1-9 帖撒羅尼迦的騷動|hybrid_hybrid",
+   "act:14:1|使徒行傳14:8-20 在路司得傳道|hybrid_hybrid",
+   "gen:48:0|創世記48:1-22 雅各祝福以法蓮和瑪拿西|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "gen:1:0|創世記1:1-31 上帝的創造|book_anchor",
+   "gen:35:0|創世記35:1-15 上帝在伯特利賜福雅各|book_anchor",
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|graph",
+   "act:13:2|使徒行傳13:13-52 在彼西底的安提阿傳道|graph",
+   "act:17:2|使徒行傳17:16-34 保羅在雅典|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_054",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "「以眼還眼，以牙還牙」的律法出自哪裡？耶穌在登山寶訓中如何回應？",
+  "reference": "出埃及記 21:23-25; 馬太福音 5:38-42",
+  "points": [
+   "出埃及記21章的賠償條例：以命償命，以眼還眼，以牙還牙，以手還手，以腳還腳",
+   "耶穌說：你們聽見有話說「以眼還眼，以牙還牙」，只是我告訴你們，不要與惡人作對",
+   "有人打你的右臉，連左臉也轉過來由他打",
+   "有人想要告你，要拿你的裏衣，連外衣也由他拿去",
+   "有人強逼你走一里路，你就同他走二里"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R4",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.625,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.625,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.625,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "jhn:9:0|約翰福音9:1-12 治好生來瞎眼的|hybrid_hybrid",
+   "lev:24:2|利未記24:10-23 公正的判例|hybrid_hybrid",
+   "mat:5:8|馬太福音5:38-42 論報復|hybrid_hybrid",
+   "deu:19:2|申命記19:15-21 有關證人的條例|hybrid_hybrid",
+   "mrk:7:0|馬可福音7:1-23 古人的傳統|sql_supplement"
+  ],
+  "graph_top5": [
+   "mat:5:8|馬太福音5:38-42 論報復|graph_event",
+   "lev:24:2|利未記24:10-23 公正的判例|hybrid_hybrid",
+   "jhn:9:0|約翰福音9:1-12 治好生來瞎眼的|hybrid_hybrid",
+   "deu:19:2|申命記19:15-21 有關證人的條例|hybrid_hybrid",
+   "mat:5:0|馬太福音5:1-2 山上寶訓|graph_event"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_055",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "摩西的休書條例出自哪裡？耶穌在登山寶訓怎樣論休妻？",
+  "reference": "申命記 24:1; 馬太福音 5:31-32",
+  "points": [
+   "申命記24:1：人若娶妻以後，見她有甚麼不合理的事，就可以寫休書交在她手中，打發她離開夫家",
+   "耶穌說：又有話說「人若休妻，就當給她休書」",
+   "只是我告訴你們，凡休妻的，若不是為淫亂的緣故，就是叫她作淫婦了",
+   "人若娶這被休的婦人，也是犯姦淫了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.6667,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.75,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.6667,
+   "anchor": 0.5,
+   "mrr": 0.2,
+   "cov": 0.75,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.6667,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.6667,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "mrk:10:0|馬可福音10:1-12 休妻的問題|hybrid_hybrid",
+   "mat:19:0|馬太福音19:1-12 休妻的問題|hybrid_hybrid",
+   "mat:5:6|馬太福音5:31-32 論休妻|hybrid_hybrid",
+   "isa:50:0|以賽亞書50:1-3 (無標題)|hybrid_hybrid",
+   "mat:19:2|馬太福音19:16-30 少年財主|sql_supplement"
+  ],
+  "graph_top5": [
+   "mat:5:0|馬太福音5:1-2 山上寶訓|graph_event",
+   "mrk:10:0|馬可福音10:1-12 休妻的問題|hybrid_hybrid",
+   "mat:19:0|馬太福音19:1-12 休妻的問題|hybrid_hybrid",
+   "luk:16:1|路加福音16:14-18 律法和上帝的國|cross_ref_expand",
+   "mat:5:6|馬太福音5:31-32 論休妻|graph_event"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_056",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "耶穌潔淨聖殿時把哪兩處先知的話合在一起引用？",
+  "reference": "以賽亞書 56:7; 耶利米書 7:11; 馬太福音 21:12-13",
+  "points": [
+   "耶穌進了上帝的殿，趕出殿裏一切做買賣的人，推倒兌換銀錢之人的桌子和賣鴿子之人的凳子",
+   "以賽亞書56:7：我的殿必稱為萬民禱告的殿",
+   "耶利米書7:11：這稱為我名下的殿在你們眼中豈可看為賊窩嗎",
+   "耶穌說：經上記著說「我的殿必稱為禱告的殿」，你們倒使它成為賊窩了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "mrr": 0.3333,
+   "cov": 0.375,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "mrr": 0.25,
+   "cov": 0.625,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "2ch:29:1|歷代志下29:3-17 潔淨聖殿|hybrid_hybrid",
+   "mrk:1:8|馬可福音1:40-45 潔淨長大痲瘋的人|hybrid_hybrid",
+   "mat:21:1|馬太福音21:12-17 （可11‧15－19；路19‧45－48；約|hybrid_hybrid",
+   "jhn:3:1|約翰福音3:22-30 耶穌和施洗約翰|hybrid_hybrid",
+   "mrk:1:0|馬可福音1:1-8 施洗約翰傳道|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "2ch:29:1|歷代志下29:3-17 潔淨聖殿|hybrid_hybrid",
+   "mrk:1:8|馬可福音1:40-45 潔淨長大痲瘋的人|hybrid_hybrid",
+   "mat:24:0|馬太福音24:1-2 預言聖殿被毀|graph",
+   "mat:21:1|馬太福音21:12-17 （可11‧15－19；路19‧45－48；約|hybrid_hybrid",
+   "luk:21:1|路加福音21:5-6 預言聖殿被毀|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_057",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "「義人必因信得生」在新約被引用於哪幾卷書？各自的重點是什麼？",
+  "reference": "哈巴谷書 2:4; 羅馬書 1:16-17; 加拉太書 3:11; 希伯來書 10:37-38",
+  "points": [
+   "哈巴谷書2:4：迦勒底人自高自大，心不正直；惟義人因信得生",
+   "羅馬書1:17：上帝的義正在這福音上顯明出來，這義是本於信以至於信，如經上所記「義人必因信得生」",
+   "加拉太書3:11：沒有一個人靠著律法在上帝面前稱義，因為經上說「義人必因信得生」",
+   "希伯來書10:38：只是義人必因信得生，他若退後，我心裏就不喜歡他",
+   "同一句話分別支撐福音的大綱、因信稱義的辯論與忍耐到底的勸勉"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.5,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.5,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 0.75
+  },
+  "s2_gate": {
+   "vrec": 0.5,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.5,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "rom:1:2|羅馬書1:16-17 福音是上帝的大能|hybrid_hybrid",
+   "gal:3:0|加拉太書3:1-14 律法和信心|hybrid_hybrid",
+   "rom:9:2|羅馬書9:30-33 以色列人和福音|hybrid_hybrid",
+   "rom:10:1|羅馬書10:5-21 求告主名的必要得救|hybrid_hybrid",
+   "rom:4:1|羅馬書4:13-25 應許因信而實現|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "rom:1:2|羅馬書1:16-17 福音是上帝的大能|hybrid_hybrid",
+   "gal:3:0|加拉太書3:1-14 律法和信心|hybrid_hybrid",
+   "rom:9:2|羅馬書9:30-33 以色列人和福音|hybrid_hybrid",
+   "heb:12:1|希伯來書12:14-29 警告棄絕上帝恩典的人|graph",
+   "jer:31:2|耶利米書31:23-40 上帝子民的光明前途|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_058",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "希伯來書如何引用詩篇95篇警告「不可硬著心」？",
+  "reference": "詩篇 95:7-11; 希伯來書 3:7-19; 4:1-11",
+  "points": [
+   "詩篇95篇：惟願你們今天聽他的話，不可硬著心，像當日在米利巴，就是在曠野的瑪撒",
+   "上帝起誓：他們斷不可進入我的安息",
+   "希伯來書引用並勸勉：你們要謹慎，免得你們中間或有人存著不信的惡心，把永生上帝離棄了",
+   "總要趁著還有今日，天天彼此相勸，免得你們中間有人被罪迷惑，心裏就剛硬了",
+   "必另有一安息日的安息為上帝的子民存留，務必竭力進入那安息"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.3,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "heb:3:1|希伯來書3:7-19 上帝子民的安息|hybrid_hybrid",
+   "psa:95:0|詩篇95:1-11 頌讚之詩|sql_chapter",
+   "heb:4:0|希伯來書4:1-13 (無標題)|hybrid_hybrid",
+   "heb:12:1|希伯來書12:14-29 警告棄絕上帝恩典的人|hybrid_hybrid",
+   "psa:81:0|詩篇81:1-16 聖潔的詩|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "heb:3:1|希伯來書3:7-19 上帝子民的安息|hybrid_hybrid",
+   "psa:95:0|詩篇95:1-11 頌讚之詩|sql_chapter",
+   "heb:4:0|希伯來書4:1-13 (無標題)|hybrid_hybrid",
+   "heb:12:1|希伯來書12:14-29 警告棄絕上帝恩典的人|hybrid_hybrid",
+   "psa:81:0|詩篇81:1-16 聖潔的詩|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "sql_chapter",
+   "book_anchor",
+   "cross_reference",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_059",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "「伸冤在我，我必報應」與「炭火堆在頭上」各出自哪裡？保羅如何併用？",
+  "reference": "申命記 32:35; 箴言 25:21-22; 羅馬書 12:19-21",
+  "points": [
+   "申命記32:35：他們失腳的時候，伸冤報應在我",
+   "箴言25:21-22：你的仇敵若餓了，就給他飯吃；若渴了，就給他水喝，因為你這樣行就是把炭火堆在他的頭上",
+   "保羅：不要自己伸冤，寧可讓步，聽憑主怒，因為經上記著「主說：伸冤在我，我必報應」",
+   "所以你的仇敵若餓了，就給他吃，若渴了，就給他喝",
+   "你不可為惡所勝，反要以善勝惡"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 0.625
+  },
+  "s2_gate": {
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.5,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "rom:12:1|羅馬書12:9-21 基督徒的生活守則|hybrid_hybrid",
+   "act:18:0|使徒行傳18:1-17 保羅在哥林多|hybrid_hybrid",
+   "heb:10:1|希伯來書10:19-39 勸勉和警告|hybrid_hybrid",
+   "act:21:2|使徒行傳21:27-36 保羅在聖殿裏被捕|hybrid_hybrid",
+   "act:26:0|使徒行傳26:1-11 保羅在亞基帕王面前申辯|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "rom:12:1|羅馬書12:9-21 基督徒的生活守則|hybrid_hybrid",
+   "act:18:0|使徒行傳18:1-17 保羅在哥林多|hybrid_hybrid",
+   "ezk:24:0|以西結書24:1-14 生銹的鍋|entity_query",
+   "heb:10:1|希伯來書10:19-39 勸勉和警告|hybrid_hybrid",
+   "act:21:2|使徒行傳21:27-36 保羅在聖殿裏被捕|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_060",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "雅各書如何引用創世記15:6論證「信心因著行為才得成全」？",
+  "reference": "創世記 15:6; 雅各書 2:20-24",
+  "points": [
+   "創世記15:6：亞伯蘭信耶和華，耶和華就以此為他的義",
+   "雅各問：虛浮的人哪，你願意知道沒有行為的信心是死的嗎",
+   "我們的祖宗亞伯拉罕把他兒子以撒獻在壇上，豈不是因行為稱義嗎",
+   "可見信心是與他的行為並行，而且信心因著行為才得成全",
+   "這就應驗經上所說「亞伯拉罕信上帝，這就算為他的義」，他又得稱為上帝的朋友"
+  ],
+  "route_graph": "R1",
+  "route_nograph": "R1",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.1667,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.1667,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.1667,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.1667,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "gen:15:6|創世記15:6 上帝與亞伯蘭立約|verse_direct"
+  ],
+  "graph_top5": [
+   "gen:15:6|創世記15:6 上帝與亞伯蘭立約|verse_direct"
+  ],
+  "graph_strategies_used": [
+   "verse_direct"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_061",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "保羅在羅馬書4章除了亞伯拉罕之外，還引用大衛的哪篇詩篇論稱義？",
+  "reference": "詩篇 32:1-2; 羅馬書 4:1-8",
+  "points": [
+   "保羅論亞伯拉罕：他信上帝，這就算為他的義；做工的得工價不算恩典，乃是該得的",
+   "惟有不做工的，只信稱罪人為義的上帝，他的信就算為義",
+   "正如大衛稱那在行為以外蒙上帝算為義的人是有福的",
+   "詩篇32:1-2：得赦免其過、遮蓋其罪的，這人是有福的",
+   "主不算為有罪的，這人是有福的"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.8,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.8,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "rom:4:0|羅馬書4:1-12 以亞伯拉罕為例|sql_chapter",
+   "rom:4:1|羅馬書4:13-25 應許因信而實現|sql_chapter",
+   "psa:87:0|詩篇87:1-7 錫安頌|book_anchor",
+   "1co:3:0|哥林多前書3:1-23 上帝的同工|hybrid_hybrid",
+   "1sa:25:1|撒母耳記上25:2-44 大衛和亞比該|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "psa:87:0|詩篇87:1-7 錫安頌|book_anchor",
+   "act:13:2|使徒行傳13:13-52 在彼西底的安提阿傳道|graph",
+   "rom:4:0|羅馬書4:1-12 以亞伯拉罕為例|sql_chapter",
+   "rom:4:1|羅馬書4:13-25 應許因信而實現|sql_chapter",
+   "jas:2:1|雅各書2:14-26 信心和行為|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "sql_chapter",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_062",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "nt_quotes_ot",
+  "question": "「眼睛未曾看見，耳朵未曾聽見」這句常被引用的話，原文出自哪裡？保羅的上下文是什麼？",
+  "reference": "以賽亞書 64:4; 哥林多前書 2:6-10",
+  "points": [
+   "以賽亞書64:4：從古以來，人未曾聽見、未曾耳聞、未曾眼見在你以外有甚麼神為等候他的人行事",
+   "保羅講的是上帝奧祕的智慧，就是上帝在萬世以前預定使我們得榮耀的",
+   "這智慧世上有權有位的人沒有一個知道的，他們若知道就不把榮耀的主釘在十字架上了",
+   "如經上所記：上帝為愛他的人所預備的，是眼睛未曾看見，耳朵未曾聽見，人心也未曾想到的",
+   "只有上帝藉著聖靈向我們顯明了"
+  ],
+  "route_graph": "fallback",
+  "route_nograph": "fallback",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "mrr": 0.2,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "mrr": 0.2,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.8333,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|hybrid_hybrid",
+   "act:19:0|使徒行傳19:1-10 保羅在以弗所|hybrid_hybrid",
+   "act:17:2|使徒行傳17:16-34 保羅在雅典|hybrid_hybrid",
+   "isa:48:0|以賽亞書48:1-11 上帝掌管未來|hybrid_hybrid",
+   "1co:2:1|哥林多前書2:6-16 上帝藉着聖靈啟示我們|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "act:28:2|使徒行傳28:17-31 保羅在羅馬傳道|hybrid_hybrid",
+   "act:19:0|使徒行傳19:1-10 保羅在以弗所|hybrid_hybrid",
+   "act:17:2|使徒行傳17:16-34 保羅在雅典|hybrid_hybrid",
+   "isa:48:0|以賽亞書48:1-11 上帝掌管未來|hybrid_hybrid",
+   "1co:2:1|哥林多前書2:6-16 上帝藉着聖靈啟示我們|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "hybrid"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_063",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "摩西在曠野舉銅蛇的事件如何預表基督被舉起？",
+  "reference": "民數記 21:4-9; 約翰福音 3:14-15",
+  "points": [
+   "百姓怨讟上帝和摩西，耶和華使火蛇進入百姓中間，被咬的多有死的",
+   "百姓認罪，摩西為他們禱告",
+   "耶和華吩咐製造一條火蛇掛在杆子上，凡被咬的一望這蛇就必得活",
+   "耶穌對尼哥德慕說：摩西在曠野怎樣舉蛇，人子也必照樣被舉起來",
+   "叫一切信他的都得永生"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "jhn:3:0|約翰福音3:1-21 耶穌與尼哥德慕|hybrid_hybrid",
+   "num:21:1|民數記21:4-9 銅製的蛇|hybrid_hybrid",
+   "exo:4:0|出埃及記4:1-17 上帝賜摩西行神蹟的權能|hybrid_hybrid",
+   "exo:34:0|出埃及記34:1-9 復造法版|hybrid_hybrid",
+   "exo:9:1|出埃及記9:8-12 －瘡災|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "jhn:3:0|約翰福音3:1-21 耶穌與尼哥德慕|hybrid_hybrid",
+   "num:21:1|民數記21:4-9 銅製的蛇|hybrid_hybrid",
+   "2ki:18:0|列王紀下18:1-12 猶大王希西家|graph",
+   "exo:4:0|出埃及記4:1-17 上帝賜摩西行神蹟的權能|hybrid_hybrid",
+   "exo:14:0|出埃及記14:1-31 過紅海|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_064",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "麥基洗德是誰？希伯來書如何以他論證基督更美的祭司職分？",
+  "reference": "創世記 14:17-20; 詩篇 110:4; 希伯來書 7:1-17",
+  "points": [
+   "創世記14章：撒冷王麥基洗德帶著餅和酒出來迎接殺敗諸王回來的亞伯蘭，他是至高上帝的祭司",
+   "亞伯蘭將所得的拿出十分之一來給他",
+   "詩篇110:4：耶和華起了誓決不後悔，你是照著麥基洗德的等次永遠為祭司",
+   "希伯來書：他名翻出來是仁義王，又是撒冷王就是平安王；無父無母無族譜，乃是與上帝的兒子相似",
+   "利未子孫尚在先祖亞伯拉罕身中時已藉他納了十分之一——可見麥基洗德的等次高過亞倫的等次"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.7727,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.9545,
+   "anchor": 0.6667,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.7727,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.7727,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "heb:7:0|希伯來書7:1-28 麥基洗德的祭司等次|hybrid_hybrid",
+   "heb:7:0:0|希伯來書7:1-14 麥基洗德的祭司等次|hybrid_hybrid",
+   "heb:5:0|希伯來書5:1-10 (無標題)|hybrid_hybrid",
+   "heb:7:0:1|希伯來書7:14-28 麥基洗德的祭司等次|hybrid_hybrid",
+   "heb:6:1|希伯來書6:13-20 上帝確切的應許|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "heb:7:0|希伯來書7:1-28 麥基洗德的祭司等次|graph",
+   "heb:7:0:0|希伯來書7:1-14 麥基洗德的祭司等次|hybrid_hybrid",
+   "heb:5:0|希伯來書5:1-10 (無標題)|graph",
+   "gen:14:1|創世記14:17-24 麥基洗德祝福亞伯蘭|graph",
+   "heb:6:1|希伯來書6:13-20 上帝確切的應許|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_065",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "「我們逾越節的羔羊」是什麼意思？保羅如何應用逾越節與除酵的預表？",
+  "reference": "出埃及記 12:1-13; 哥林多前書 5:6-8",
+  "points": [
+   "出埃及記12章：各家取無殘疾的羊羔宰殺，把血塗在門框門楣上",
+   "耶和華說：我一見這血，就越過你們去，這災殃不臨到你們身上滅你們",
+   "並要吃無酵餅，七日之內把酵從各家除去",
+   "保羅說：你們既是無酵的麵，應當把舊酵除淨，因為我們逾越節的羔羊基督已經被殺獻祭了",
+   "所以我們守這節不可用舊酵，也不可用惡毒、邪惡的酵，只用誠實真正的無酵餅"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.1875,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8125,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.1875,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "2ch:30:1|歷代志下30:13-22 守逾越節|hybrid_hybrid",
+   "ezr:6:3|以斯拉記6:19-22 守逾越節|hybrid_hybrid",
+   "1co:5:0|哥林多前書5:1-13 判斷淫亂的事件|hybrid_hybrid",
+   "num:9:0|民數記9:1-14 第二個逾越節|hybrid_hybrid",
+   "luk:22:1|路加福音22:7-13 （太26‧17－25；可14‧12－21；約|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "exo:12:0|出埃及記12:1-13 逾越節|graph_event",
+   "ezr:6:3|以斯拉記6:19-22 守逾越節|graph",
+   "2ch:30:1|歷代志下30:13-22 守逾越節|hybrid_hybrid",
+   "luk:22:1|路加福音22:7-13 （太26‧17－25；可14‧12－21；約|graph_event",
+   "ezk:45:3|以西結書45:18-25 節期|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_066",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "希伯來書如何以贖罪日的儀式對比基督一次獻上的救贖？",
+  "reference": "利未記 16章; 希伯來書 9章",
+  "points": [
+   "利未記16章：大祭司一年一次帶著血進至聖所，先為自己和本家贖罪，再為百姓",
+   "希伯來書：頭一層帳幕作現今的一個表樣，牛羊的血不能叫禮拜的人得以完全",
+   "基督已經來到，作了將來美事的大祭司，經過那更大更全備的帳幕",
+   "不用山羊和牛犢的血，乃用自己的血，只一次進入聖所，成了永遠贖罪的事",
+   "基督不是多次將自己獻上，像大祭司每年帶著牛羊血進入聖所，如今在這末世顯現一次，把自己獻為祭，好除掉罪"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.6935,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.6935,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.6935,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.6935,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "heb:9:1|希伯來書9:23-28 基督獻己為祭除掉了罪|hybrid_hybrid",
+   "heb:10:0|希伯來書10:1-18 (無標題)|hybrid_hybrid",
+   "heb:9:0|希伯來書9:1-22 地上和天上的聖所|hybrid_hybrid",
+   "lev:16:2|利未記16:29-34 守贖罪日|hybrid_hybrid",
+   "lev:16:1|利未記16:20-28 代罪羊|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "heb:9:1|希伯來書9:23-28 基督獻己為祭除掉了罪|hybrid_hybrid",
+   "heb:10:0|希伯來書10:1-18 (無標題)|hybrid_hybrid",
+   "heb:9:0|希伯來書9:1-22 地上和天上的聖所|hybrid_hybrid",
+   "lev:16:2|利未記16:29-34 守贖罪日|hybrid_hybrid",
+   "lev:16:1|利未記16:20-28 代罪羊|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_067",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "會幕的樣式與天上的實體有什麼關係？希伯來書如何引用「照著山上指示你的樣式」？",
+  "reference": "出埃及記 25:1-9; 25:40; 希伯來書 8:1-5",
+  "points": [
+   "耶和華吩咐：又當為我造聖所，使我可以住在他們中間",
+   "製造帳幕和其中的一切器具，都要照我所指示你的樣式",
+   "出埃及記25:40：要謹慎做這些物件，都要照著在山上指示你的樣式",
+   "希伯來書：我們有這樣的大祭司，已經坐在天上至大者寶座的右邊，在聖所，就是真帳幕裏作執事，這帳幕是主所支的，不是人所支的",
+   "他們供奉的事本是天上事的形狀和影像"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.4,
+   "anchor": 0.6667,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.5,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.4,
+   "anchor": 0.6667,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.4,
+   "anchor": 0.6667,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "heb:8:0|希伯來書8:1-13 更美之約的大祭司|hybrid_hybrid",
+   "exo:25:3|出埃及記25:31-40 燈臺|hybrid_hybrid",
+   "heb:1:1|希伯來書1:5-14 兒子遠超過天使|book_anchor",
+   "heb:10:1|希伯來書10:19-39 勸勉和警告|book_anchor",
+   "ezk:1:0|以西結書1:1-28 上帝的寶座|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "heb:10:1|希伯來書10:19-39 勸勉和警告|book_anchor",
+   "heb:8:0|希伯來書8:1-13 更美之約的大祭司|hybrid_hybrid",
+   "exo:25:3|出埃及記25:31-40 燈臺|hybrid_hybrid",
+   "exo:31:0|出埃及記31:1-11 會幕的技工|graph",
+   "exo:25:0|出埃及記25:1-9 奉獻聖所|cross_ref_expand"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_068",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "保羅如何以出埃及與曠野的事為「鑑戒」？「那磐石就是基督」是什麼意思？",
+  "reference": "出埃及記 17:1-7; 哥林多前書 10:1-13",
+  "points": [
+   "我們的祖宗從前都在雲下，都從海中經過，都在雲裏、海裏受洗歸了摩西",
+   "並且都吃了一樣的靈食，也都喝了一樣的靈水；所喝的是出於隨著他們的靈磐石，那磐石就是基督",
+   "但他們中間多半是上帝不喜歡的人，所以在曠野倒斃",
+   "這些事都是我們的鑑戒，叫我們不要貪戀惡事，像他們那樣",
+   "所以自己以為站得穩的，須要謹慎，免得跌倒；上帝是信實的，必不叫你們受試探過於所能受的"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R3",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.65,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.65,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.65,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.65,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "1co:10:0|哥林多前書10:1-22 警戒拜偶像的事|hybrid_hybrid",
+   "act:19:0|使徒行傳19:1-10 保羅在以弗所|hybrid_hybrid",
+   "act:13:2:0|使徒行傳13:13-27 在彼西底的安提阿傳道|hybrid_hybrid",
+   "act:17:2|使徒行傳17:16-34 保羅在雅典|hybrid_hybrid",
+   "luk:8:3|路加福音8:11-15 解明撒種的比喻|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "1co:10:0|哥林多前書10:1-22 警戒拜偶像的事|hybrid_hybrid",
+   "act:19:0|使徒行傳19:1-10 保羅在以弗所|hybrid_hybrid",
+   "act:13:2|使徒行傳13:13-52 在彼西底的安提阿傳道|graph",
+   "act:13:2:0|使徒行傳13:13-27 在彼西底的安提阿傳道|hybrid_hybrid",
+   "act:17:2|使徒行傳17:16-34 保羅在雅典|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_069",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "彼得前書如何以挪亞洪水預表洗禮？",
+  "reference": "創世記 6-8章; 彼得前書 3:18-22",
+  "points": [
+   "挪亞照上帝吩咐造方舟，洪水氾濫時只有八口藉著方舟得救",
+   "彼得說：當時進入方舟，藉著水得救的不多，只有八個人",
+   "這水所表明的洗禮，現在藉著耶穌基督復活也拯救你們",
+   "這洗禮本不在乎除掉肉體的污穢，只求在上帝面前有無虧的良心",
+   "耶穌已經進入天堂，在上帝的右邊，眾天使和有權柄的並有能力的，都服從了他"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.3288,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.5,
+   "strict": 0.75
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.3288,
+   "anchor": 0.5,
+   "mrr": 0.25,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.3288,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.3288,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "1pe:1:2|彼得前書1:13-25 應當過聖潔的生活|book_anchor",
+   "1pe:2:0|彼得前書2:1-10 活石和聖潔的國度|book_anchor",
+   "1pe:3:1|彼得前書3:8-22 為義受苦|hybrid_hybrid",
+   "2pe:2:0|彼得後書2:1-22 假先知和假師傅|hybrid_hybrid",
+   "gen:8:0|創世記8:1-19 洪水消退|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "isa:54:0|以賽亞書54:1-10 耶和華對以色列的愛|graph_event",
+   "1pe:1:2|彼得前書1:13-25 應當過聖潔的生活|book_anchor",
+   "1pe:2:0|彼得前書2:1-10 活石和聖潔的國度|book_anchor",
+   "1pe:3:1|彼得前書3:8-22 為義受苦|graph",
+   "gen:8:0|創世記8:1-19 洪水消退|graph_event"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_070",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "保羅如何在羅馬書5章以亞當預表基督？兩者的對比是什麼？",
+  "reference": "創世記 3章; 羅馬書 5:12-21",
+  "points": [
+   "這就如罪是從一人入了世界，死又是從罪來的，於是死就臨到眾人，因為眾人都犯了罪",
+   "亞當乃是那以後要來之人的預像",
+   "只是過犯不如恩賜：若因一人的過犯眾人都死了，何況上帝的恩典……豈不更加倍地臨到眾人嗎",
+   "因一人的悖逆，眾人成為罪人；照樣，因一人的順從，眾人也成為義了",
+   "罪在哪裏顯多，恩典就更顯多了"
+  ],
+  "route_graph": "R2",
+  "route_nograph": "R2",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.2941,
+   "anchor": 0.5,
+   "mrr": 0.5,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.2941,
+   "anchor": 0.5,
+   "mrr": 0.5,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.2941,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.2941,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "act:19:0|使徒行傳19:1-10 保羅在以弗所|hybrid_hybrid",
+   "rom:5:1|羅馬書5:12-21 亞當和基督|sql_chapter",
+   "1co:3:0|哥林多前書3:1-23 上帝的同工|hybrid_hybrid",
+   "rom:5:0|羅馬書5:1-11 因信稱義的福|sql_chapter",
+   "rom:1:0|羅馬書1:1-7 祝福|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "act:19:0|使徒行傳19:1-10 保羅在以弗所|hybrid_hybrid",
+   "rom:5:1|羅馬書5:12-21 亞當和基督|sql_chapter",
+   "1co:3:0|哥林多前書3:1-23 上帝的同工|hybrid_hybrid",
+   "rom:5:0|羅馬書5:1-11 因信稱義的福|sql_chapter",
+   "rom:1:0|羅馬書1:1-7 祝福|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "sql_chapter",
+   "semantic"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_071",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "希伯來書如何解讀亞伯拉罕獻以撒的信心？",
+  "reference": "創世記 22:1-19; 希伯來書 11:17-19",
+  "points": [
+   "上帝試驗亞伯拉罕，吩咐他把獨生的兒子以撒獻為燔祭",
+   "亞伯拉罕清早起來遵命前往摩利亞地，以撒問羊羔在哪裏，他說上帝必自己預備",
+   "希伯來書：亞伯拉罕因著信，被試驗的時候，就把以撒獻上",
+   "論到這兒子曾有話說：從以撒生的才要稱為你的後裔",
+   "他以為上帝還能叫人從死裏復活，他也彷彿從死中得回他的兒子來"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.1364,
+   "anchor": 0.5,
+   "mrr": 0.5,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.1364,
+   "anchor": 0.5,
+   "mrr": 0.3333,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.1364,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.1364,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "heb:3:0|希伯來書3:1-6 耶穌超越摩西|book_anchor",
+   "heb:11:0:1|希伯來書11:15-31 論信|hybrid_hybrid",
+   "heb:11:0|希伯來書11:1-40 論信|hybrid_hybrid",
+   "jas:2:1|雅各書2:14-26 信心和行為|hybrid_hybrid",
+   "heb:11:0:0|希伯來書11:1-15 論信|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "heb:3:0|希伯來書3:1-6 耶穌超越摩西|book_anchor",
+   "jas:2:1|雅各書2:14-26 信心和行為|graph",
+   "heb:11:0:1|希伯來書11:15-31 論信|hybrid_hybrid",
+   "heb:11:0|希伯來書11:1-40 論信|hybrid_hybrid",
+   "heb:11:0:0|希伯來書11:1-15 論信|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_072",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "「心裏的割禮」這個主題如何從申命記延伸到保羅書信？",
+  "reference": "申命記 30:6; 羅馬書 2:28-29; 歌羅西書 2:11-12",
+  "points": [
+   "申命記30:6：耶和華你上帝必將你心裏和你後裔心裏的污穢除掉",
+   "好叫你盡心盡性愛耶和華你的上帝",
+   "羅馬書：外面作猶太人的不是真猶太人，真割禮也不是外面肉身的割禮",
+   "惟有裏面作的才是真猶太人，真割禮也是心裏的，在乎靈，不在乎儀文",
+   "歌羅西書：你們在他裏面也受了不是人手所行的割禮，乃是基督使你們脫去肉體情慾的割禮"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.3,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.3,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "s0_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "deu:10:1|申命記10:12-22 上帝的要求|book_anchor",
+   "deu:1:2|申命記1:19-33 從加低斯‧巴尼亞派探子偵察|book_anchor",
+   "gal:5:1|加拉太書5:2-15 基督徒的自由|hybrid_hybrid",
+   "act:15:0|使徒行傳15:1-21 耶路撒冷會議|hybrid_hybrid",
+   "act:21:1|使徒行傳21:17-26 保羅訪問雅各|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "deu:10:1|申命記10:12-22 上帝的要求|book_anchor",
+   "deu:11:1|申命記11:8-32 應許之地的福澤|book_anchor",
+   "act:15:1|使徒行傳15:22-35 會議的覆函|graph",
+   "gal:5:1|加拉太書5:2-15 基督徒的自由|hybrid_hybrid",
+   "act:16:0|使徒行傳16:1-5 提摩太跟保羅、西拉同工|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_073",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "「我為你的殿心裏焦急，如同火燒」出自哪篇詩篇？門徒何時想起這話？",
+  "reference": "詩篇 69:9; 約翰福音 2:13-22",
+  "points": [
+   "詩篇69:9：因我為你的殿心裏焦急，如同火燒，並且辱罵你人的辱罵都落在我身上",
+   "耶穌潔淨聖殿，拿繩子做成鞭子把牛羊趕出殿去",
+   "他的門徒就想起經上記著說：我為你的殿心裏焦急，如同火燒",
+   "猶太人求神蹟，耶穌說：你們拆毀這殿，我三日內要再建立起來",
+   "他這話是以他的身體為殿；他從死裏復活以後，門徒就想起他說過這話，便信了聖經和耶穌所說的"
+  ],
+  "route_graph": "R6",
+  "route_nograph": "R6",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.3333,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 0.3333,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "psa:119:18|詩篇119:145-152 求主解救|book_anchor",
+   "psa:63:0|詩篇63:1-11 渴慕上帝|book_anchor",
+   "jhn:2:1|約翰福音2:13-22 （太21‧12－13；可11‧15－17；路|hybrid_hybrid",
+   "psa:69:0|詩篇69:1-36 求助的禱告|hybrid_hybrid",
+   "psa:119:17|詩篇119:137-144 耶和華律法的公正|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "psa:119:18|詩篇119:145-152 求主解救|book_anchor",
+   "psa:63:0|詩篇63:1-11 渴慕上帝|book_anchor",
+   "jhn:2:1|約翰福音2:13-22 （太21‧12－13；可11‧15－17；路|hybrid_hybrid",
+   "psa:69:0|詩篇69:1-36 求助的禱告|hybrid_hybrid",
+   "psa:119:17|詩篇119:137-144 耶和華律法的公正|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "graph_place",
+   "semantic",
+   "book_anchor",
+   "entity_path",
+   "cross_ref_expand",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_074",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "typology",
+  "question": "耶穌為門徒在安息日掐麥穗辯護時，引用了大衛的什麼先例？",
+  "reference": "撒母耳記上 21:1-6; 馬太福音 12:1-8",
+  "points": [
+   "門徒在安息日餓了，掐起麥穗來吃，法利賽人說他們做安息日不可做的事",
+   "耶穌說：經上記著大衛和跟從他的人飢餓之時所做的事，你們沒有念過嗎",
+   "他怎麼進了上帝的殿，吃了陳設餅——這餅不是他和跟從他的人可以吃得，惟獨祭司才可以吃",
+   "撒母耳記上21章：祭司亞希米勒把從耶和華面前撤下來的陳設餅給了大衛",
+   "耶穌宣告：在這裏有一人比殿更大；人子是安息日的主"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.5714,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.5714,
+   "anchor": 0.5,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.5714,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.5714,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mat:12:0|馬太福音12:1-8 安息日的問題|hybrid_hybrid",
+   "mrk:2:3|馬可福音2:23-28 安息日的問題|hybrid_hybrid",
+   "luk:6:0|路加福音6:1-5 安息日的問題|hybrid_hybrid",
+   "act:2:1:1|使徒行傳2:30-42 彼得在五旬節的講論|hybrid_hybrid",
+   "luk:20:4|路加福音20:41-44 大衛子孫的問題|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mat:12:0|馬太福音12:1-8 安息日的問題|hybrid_hybrid",
+   "mrk:2:3|馬可福音2:23-28 安息日的問題|hybrid_hybrid",
+   "luk:6:0|路加福音6:1-5 安息日的問題|hybrid_hybrid",
+   "act:2:1:1|使徒行傳2:30-42 彼得在五旬節的講論|hybrid_hybrid",
+   "luk:20:4|路加福音20:41-44 大衛子孫的問題|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_075",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "大衛數點百姓的記載，撒母耳記下與歷代志上有什麼著名的差異？事件經過如何？",
+  "reference": "撒母耳記下 24章; 歷代志上 21章",
+  "points": [
+   "撒母耳記下24:1說耶和華向以色列人發怒，就激動大衛數點百姓",
+   "歷代志上21:1說撒但起來攻擊以色列人，激動大衛數點他們",
+   "約押勸阻無效；數點後大衛心中自責：我行這事大有罪了",
+   "先知迦得傳話讓大衛在三樣災中選一樣，大衛選擇落在耶和華手裏，於是有瘟疫",
+   "大衛在耶布斯人阿珥楠（亞勞拿）的禾場築壇獻祭，瘟疫止住——那地後來成為聖殿的根基"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "1ch:21:0|歷代志上21:1-30 大衛數點以色列民|hybrid_hybrid",
+   "1ch:21:0:0|歷代志上21:1-14 大衛數點以色列民|hybrid_hybrid",
+   "2sa:24:0|撒母耳記下24:1-25 大衛調查人口|hybrid_hybrid",
+   "2sa:24:0:0|撒母耳記下24:1-13 大衛調查人口|hybrid_hybrid",
+   "1ch:27:1|歷代志上27:16-24 以色列各支派的行政長官|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "1ch:21:0|歷代志上21:1-30 大衛數點以色列民|hybrid_hybrid",
+   "1ch:21:0:0|歷代志上21:1-14 大衛數點以色列民|hybrid_hybrid",
+   "2sa:24:0|撒母耳記下24:1-25 大衛調查人口|hybrid_hybrid",
+   "2sa:24:0:0|撒母耳記下24:1-13 大衛調查人口|hybrid_hybrid",
+   "1ch:27:1|歷代志上27:16-24 以色列各支派的行政長官|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_076",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "所羅門獻殿的記載在列王紀上與歷代志下有什麼異同？",
+  "reference": "列王紀上 8章; 歷代志下 6-7章",
+  "points": [
+   "兩處都記載約櫃入殿後雲充滿耶和華的殿，祭司不能站立供職",
+   "所羅門的獻殿禱告內容大致相同：天和天上的天尚且不足你居住",
+   "歷代志下補充：禱告完了，有火從天上降下來，燒盡燔祭和別的祭",
+   "耶和華的榮光充滿了殿，眾人叩拜稱謝：他本為善，他的慈愛永遠長存",
+   "歷代志下記耶和華夜間向所羅門顯現應允禱告；歷代志下多了「這稱為我名下的子民，若是自卑、禱告……我必醫治他們的地」"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.1692,
+   "anchor": 0.3333,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 0.9412
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.1154,
+   "anchor": 0.6667,
+   "mrr": 1.0,
+   "cov": 0.3,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.1154,
+   "anchor": 0.6667,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.1692,
+   "anchor": 0.3333,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "2ch:7:0|歷代志下7:1-10 聖殿的奉獻禮|hybrid_hybrid",
+   "2ch:8:0|歷代志下8:1-18 所羅門的成就|hybrid_hybrid",
+   "1ki:9:2|列王紀上9:15-28 所羅門其他政績|hybrid_hybrid",
+   "2ch:3:0|歷代志下3:1-14 (無標題)|hybrid_hybrid",
+   "2ch:7:1|歷代志下7:11-22 上帝再次向所羅門顯現|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "1ki:8:4|列王紀上8:62-66 奉獻聖殿|graph_event",
+   "1ki:6:0|列王紀上6:1-10 所羅門建造聖殿|graph_event",
+   "2ch:7:0|歷代志下7:1-10 聖殿的奉獻禮|hybrid_hybrid",
+   "2ch:8:0|歷代志下8:1-18 所羅門的成就|hybrid_hybrid",
+   "1ki:9:2|列王紀上9:15-28 所羅門其他政績|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_077",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "約西亞守逾越節的記載，列王紀下與歷代志下的詳略有何不同？",
+  "reference": "列王紀下 23:21-23; 歷代志下 35:1-19",
+  "points": [
+   "列王紀下簡述：王吩咐眾民說，你們當照這約書上所寫的，向耶和華你們的上帝守逾越節",
+   "自從士師治理以色列人的時候起，實在沒有守過這樣的逾越節",
+   "歷代志下詳述：約西亞派定祭司利未人的班次，吩咐把聖約櫃安放在殿裏",
+   "王捐出羊羔山羊羔三萬隻、牛三千隻給眾民作逾越節的祭物",
+   "自從先知撒母耳以來，在以色列中沒有守過這樣的逾越節"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.8636,
+   "anchor": 0.5,
+   "mrr": 0.5,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.8636,
+   "anchor": 0.5,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "2ch:35:0:1|歷代志下35:11-19 約西亞守逾越節|hybrid_hybrid",
+   "2ch:35:0|歷代志下35:1-19 約西亞守逾越節|hybrid_hybrid",
+   "2ch:35:0:0|歷代志下35:1-11 約西亞守逾越節|hybrid_hybrid",
+   "2ch:30:1|歷代志下30:13-22 守逾越節|hybrid_hybrid",
+   "2ki:23:1|列王紀下23:21-23 約西亞守逾越節|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "exo:12:0|出埃及記12:1-13 逾越節|graph_event",
+   "2ch:35:0:1|歷代志下35:11-19 約西亞守逾越節|hybrid_hybrid",
+   "2ch:35:0|歷代志下35:1-19 約西亞守逾越節|hybrid_hybrid",
+   "2ch:35:0:0|歷代志下35:1-11 約西亞守逾越節|hybrid_hybrid",
+   "2ch:30:1|歷代志下30:13-22 守逾越節|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "book_anchor",
+   "cross_reference",
+   "graph",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_078",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "希西家病得要死又得醫治的事，在列王紀下、歷代志下與以賽亞書中如何互相補充？",
+  "reference": "列王紀下 20:1-11; 歷代志下 32:24-26; 以賽亞書 38章",
+  "points": [
+   "以賽亞奉命對希西家說：你當留遺命與你的家，因為你必死不能活了",
+   "希西家轉臉朝牆禱告，痛哭；耶和華應許加增他十五年的壽數",
+   "記號：日影在亞哈斯的日晷上往後退了十度",
+   "以賽亞書38章保留了希西家病癒後的感謝詩",
+   "歷代志下補充：希西家卻沒有照他所蒙的恩報答耶和華，因他心裏驕傲，後來與耶路撒冷居民一同自卑"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 1.0,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "2ki:20:0|列王紀下20:1-11 希西家病重康復|hybrid_hybrid",
+   "isa:38:0|以賽亞書38:1-22 希西家王的疾病和痊癒|hybrid_hybrid",
+   "2ch:32:1|歷代志下32:24-26 *王下20‧1－3，12－19；賽38‧1－3；39‧1－8*|hybrid_hybrid",
+   "2ch:32:3|歷代志下32:32-33 希西家逝世|hybrid_hybrid",
+   "2ch:32:2|歷代志下32:27-31 希西家的財富和尊榮|sql_supplement"
+  ],
+  "graph_top5": [
+   "2ki:20:0|列王紀下20:1-11 希西家病重康復|graph",
+   "isa:38:0|以賽亞書38:1-22 希西家王的疾病和痊癒|hybrid_hybrid",
+   "2ki:20:1|列王紀下20:12-19 從巴比倫來的使者|graph",
+   "2ki:18:0|列王紀下18:1-12 猶大王希西家|graph",
+   "2ch:32:1|歷代志下32:24-26 *王下20‧1－3，12－19；賽38‧1－3；39‧1－8*|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_079",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "西拿基立圍攻耶路撒冷的事件同時記載在哪兩卷書？結局如何？",
+  "reference": "列王紀下 18-19章; 以賽亞書 36-37章",
+  "points": [
+   "亞述王西拿基立差拉伯沙基到耶路撒冷，用猶大言語大聲羞辱耶和華，勸百姓投降",
+   "希西家撕裂衣服進了耶和華的殿，並差人求問以賽亞",
+   "希西家將亞述的恐嚇信在耶和華面前展開禱告",
+   "以賽亞傳耶和華的話：亞述王必不得來到這城，我為自己的緣故，又為我僕人大衛的緣故，必保護拯救這城",
+   "當夜耶和華的使者出去，在亞述營中殺了十八萬五千人；西拿基立回國後在他的神廟裏被兒子殺死"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.1866,
+   "anchor": 0.25,
+   "mrr": 0.5,
+   "cov": 0.2,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.1866,
+   "anchor": 0.25,
+   "mrr": 0.5,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.1866,
+   "anchor": 0.25,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.1866,
+   "anchor": 0.25,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "2ch:32:0|歷代志下32:1-23 *王下18‧13－37；19‧14－19，35－37；賽|hybrid_hybrid",
+   "2ki:18:1|列王紀下18:13-37 亞述人威脅耶路撒冷|hybrid_hybrid",
+   "jer:52:0|耶利米書52:1-11 耶路撒冷的陷落|hybrid_hybrid",
+   "2ch:32:0:0|歷代志下32:1-12 *王下18‧13－37；19‧14－19，35－37；賽|hybrid_hybrid",
+   "2ki:25:0|列王紀下25:1-7 耶路撒冷陷落|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "2ch:32:0|歷代志下32:1-23 *王下18‧13－37；19‧14－19，35－37；賽|graph",
+   "2ki:18:1|列王紀下18:13-37 亞述人威脅耶路撒冷|hybrid_hybrid",
+   "jer:52:0|耶利米書52:1-11 耶路撒冷的陷落|hybrid_hybrid",
+   "2ch:32:0:0|歷代志下32:1-12 *王下18‧13－37；19‧14－19，35－37；賽|hybrid_hybrid",
+   "2ki:25:0|列王紀下25:1-7 耶路撒冷陷落|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_080",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "烏西雅（亞撒利雅）王的記載，列王紀下與歷代志下有何詳略差異？他為何長大痲瘋？",
+  "reference": "列王紀下 15:1-7; 歷代志下 26章",
+  "points": [
+   "列王紀下稱他亞撒利雅，簡述：他行耶和華眼中看為正的事，只是邱壇還沒有廢去；耶和華降災與王，使他長大痲瘋直到死日",
+   "歷代志下詳述他的功業：與非利士人爭戰得勝、建造望樓、挖了許多井，又愛好農事",
+   "他既強盛就心高氣傲，以致行事邪僻，進耶和華的殿要在香壇上燒香",
+   "祭司亞撒利雅率八十個祭司阻擋：給耶和華燒香不是你的事，乃是亞倫子孫承接聖職祭司的事",
+   "烏西雅發怒時額上忽然發出大痲瘋，他就住在別的宮裏，與耶和華的殿隔絕"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "2ch:26:1|歷代志下26:16-23 烏西雅因驕傲受懲|hybrid_hybrid",
+   "2ki:15:0|列王紀下15:1-7 猶大王亞撒利雅|hybrid_hybrid",
+   "2ch:26:0|歷代志下26:1-15 猶大王烏西雅|hybrid_hybrid",
+   "2ki:5:0|列王紀下5:1-27 乃縵得醫治|hybrid_hybrid",
+   "2ki:5:0:0|列王紀下5:1-12 乃縵得醫治|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "2ch:26:1|歷代志下26:16-23 烏西雅因驕傲受懲|graph",
+   "2ki:15:0|列王紀下15:1-7 猶大王亞撒利雅|hybrid_hybrid",
+   "2ch:26:0|歷代志下26:1-15 猶大王烏西雅|graph",
+   "2ki:5:0|列王紀下5:1-27 乃縵得醫治|hybrid_hybrid",
+   "2ki:5:0:0|列王紀下5:1-12 乃縵得醫治|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_081",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "馬太福音與路加福音記載曠野三個試探的順序有何不同？",
+  "reference": "馬太福音 4:1-11; 路加福音 4:1-13",
+  "points": [
+   "兩卷都以石頭變餅為第一個試探",
+   "馬太的順序：石頭變餅、殿頂跳下、高山看萬國",
+   "路加的順序：石頭變餅、看天下萬國、殿頂跳下",
+   "耶穌的回應相同，都引申命記的話",
+   "路加結尾：魔鬼用完了各樣的試探，就暫時離開耶穌"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 0.75
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "luk:4:0|路加福音4:1-13 耶穌受試探|hybrid_hybrid",
+   "mat:4:0|馬太福音4:1-11 耶穌受試探|hybrid_hybrid",
+   "mrk:1:2|馬可福音1:12-13 耶穌受試探|hybrid_hybrid",
+   "luk:3:0|路加福音3:1-20 施洗約翰傳道|hybrid_hybrid",
+   "mat:11:1|馬太福音11:2-19 施洗約翰的門徒來見耶穌|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "luk:4:0|路加福音4:1-13 耶穌受試探|hybrid_hybrid",
+   "mat:4:0|馬太福音4:1-11 耶穌受試探|hybrid_hybrid",
+   "rev:12:0|啟示錄12:1-18 婦人和龍|cross_ref_expand",
+   "mrk:1:0|馬可福音1:1-8 施洗約翰傳道|cross_ref_expand",
+   "mrk:1:2|馬可福音1:12-13 耶穌受試探|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_082",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "登山變像在三卷符類福音中的記載有哪些共同要素與獨特細節？",
+  "reference": "馬太福音 17:1-13; 馬可福音 9:2-13; 路加福音 9:28-36",
+  "points": [
+   "三卷都記載：耶穌帶彼得、雅各、約翰暗暗地上了高山，在他們面前變了形像",
+   "有摩西、以利亞向他們顯現，同耶穌說話",
+   "彼得說：我們在這裏搭三座棚",
+   "有雲彩遮蓋他們，有聲音從雲彩裏出來說：這是我的愛子，你們要聽他",
+   "路加獨有：他們談論耶穌去世（原文是離世／出去）的事，就是他在耶路撒冷將要成的事；門徒打盹"
+  ],
+  "route_graph": "R4",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "mat:17:0|馬太福音17:1-13 耶穌改變形像|hybrid_hybrid",
+   "mrk:9:1|馬可福音9:2-13 耶穌改變形像|hybrid_hybrid",
+   "luk:3:0|路加福音3:1-20 施洗約翰傳道|hybrid_hybrid",
+   "luk:9:5|路加福音9:28-36 耶穌改變形像|hybrid_hybrid",
+   "mat:28:0|馬太福音28:1-10 耶穌復活|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mat:17:0|馬太福音17:1-13 耶穌改變形像|graph_event",
+   "mrk:9:1|馬可福音9:2-13 耶穌改變形像|graph_event",
+   "luk:3:0|路加福音3:1-20 施洗約翰傳道|hybrid_hybrid",
+   "luk:9:5|路加福音9:28-36 耶穌改變形像|graph_event",
+   "jhn:1:0|約翰福音1:1-18 道成肉身|cross_ref_expand"
+  ],
+  "graph_strategies_used": [
+   "graph_event",
+   "semantic",
+   "cross_ref_expand",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_083",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "彼得認信「你是基督」的場景，三卷符類福音的記載各有什麼側重？",
+  "reference": "馬太福音 16:13-20; 馬可福音 8:27-30; 路加福音 9:18-21",
+  "points": [
+   "耶穌在凱撒利亞腓立比境內問門徒：人說我人子是誰？門徒回答有人說是施洗的約翰、以利亞、耶利米或先知裏的一位",
+   "又問：你們說我是誰？彼得回答：你是基督，是永生上帝的兒子",
+   "馬太獨有：西門巴約拿，你是有福的，因為這不是屬血肉的指示你的，乃是我在天上的父指示的",
+   "你是彼得，我要把我的教會建造在這磐石上；我要把天國的鑰匙給你",
+   "馬可與路加簡潔記認信（你是基督／上帝所立的基督），三卷都記耶穌囑咐他們不可告訴人"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.9375,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.9375,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.9375,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.9375,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "mrk:8:4|馬可福音8:27-30 彼得認耶穌為基督|hybrid_hybrid",
+   "mat:16:2|馬太福音16:13-20 彼得認耶穌為基督|hybrid_hybrid",
+   "luk:9:3|路加福音9:18-20 彼得認耶穌為基督|hybrid_hybrid",
+   "mat:26:9|馬太福音26:69-75 （可14‧66－72；路22‧56－62；約|hybrid_hybrid",
+   "eph:1:1|以弗所書1:3-14 基督裏的屬靈福氣|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mrk:8:4|馬可福音8:27-30 彼得認耶穌為基督|graph",
+   "mat:16:2|馬太福音16:13-20 彼得認耶穌為基督|graph",
+   "luk:9:3|路加福音9:18-20 彼得認耶穌為基督|graph",
+   "jhn:1:3|約翰福音1:35-42 初次選召門徒|cross_ref_expand",
+   "jhn:11:1|約翰福音11:17-27 復活在我，生命在我|cross_ref_expand"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_084",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "設立聖餐的記載出現在哪四處經文？彼此有什麼異同？",
+  "reference": "馬太福音 26:26-29; 馬可福音 14:22-25; 路加福音 22:14-20; 哥林多前書 11:23-26",
+  "points": [
+   "三卷符類福音都記載：耶穌拿起餅來祝福，就擘開遞給門徒說，這是我的身體",
+   "又拿起杯來祝謝了遞給他們：這是我立約的血，為多人流出來的（馬太加「使罪得赦」）",
+   "路加獨有：你們也應當如此行，為的是記念我；並記兩次遞杯",
+   "哥林多前書是最早的文字記載：保羅說我當日傳給你們的，原是從主領受的",
+   "你們每逢吃這餅、喝這杯，是表明主的死，直等到他來"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 0.0,
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "mrr": 0.0,
+   "cov": 0.0,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.3684,
+   "anchor": 0.25,
+   "mrr": 0.5,
+   "cov": 0.5,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "s0_gate": {
+   "vrec": 0.0,
+   "anchor": 0.0,
+   "hit": 0.0
+  },
+  "context_changed_r3": true,
+  "nograph_top5": [
+   "ezk:1:0|以西結書1:1-28 上帝的寶座|hybrid_hybrid",
+   "2ch:7:0|歷代志下7:1-10 聖殿的奉獻禮|hybrid_hybrid",
+   "ezk:46:3|以西結書46:19-24 聖殿的廚房|hybrid_hybrid",
+   "2ch:4:0|歷代志下4:1-22 聖殿的設備|hybrid_hybrid",
+   "gen:1:0|創世記1:1-31 上帝的創造|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "ezk:1:0|以西結書1:1-28 上帝的寶座|hybrid_hybrid",
+   "luk:22:2|路加福音22:14-23 （太26‧26－30；可14‧22－26；林前|graph",
+   "2ch:7:0|歷代志下7:1-10 聖殿的奉獻禮|hybrid_hybrid",
+   "1co:11:2|哥林多前書11:17-22 聖餐時的混亂|graph",
+   "jhn:13:0|約翰福音13:1-20 耶穌為門徒洗腳|graph"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_085",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "四福音書記載空墳墓清晨的婦女名單與所見情景有何異同？",
+  "reference": "馬太福音 28:1-10; 馬可福音 16:1-8; 路加福音 24:1-12; 約翰福音 20:1-2",
+  "points": [
+   "馬太：抹大拉的馬利亞和那個馬利亞來看墳墓，有大地震，天使滾開石頭坐在上面",
+   "馬可：抹大拉的馬利亞、雅各的母親馬利亞並撒羅米買了香膏要去膏耶穌的身體",
+   "路加：抹大拉的馬利亞、約亞拿和雅各的母親馬利亞帶著香料到墳墓前，見兩個人站在旁邊，衣服放光",
+   "約翰：抹大拉的馬利亞清早天還黑的時候來到墳墓，看見石頭挪開，就跑去告訴西門彼得",
+   "共同核心：七日的頭一日清早，石頭已滾開，耶穌不在墳墓裏——他已經復活了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 0.9375,
+   "anchor": 0.75,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 0.9375,
+   "anchor": 0.75,
+   "mrr": 1.0,
+   "cov": 0.9,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 0.9375,
+   "anchor": 0.75,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 0.9375,
+   "anchor": 0.75,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "luk:24:0|路加福音24:1-12 耶穌復活|hybrid_hybrid",
+   "luk:24:1|路加福音24:13-35 在以馬忤斯的路上|hybrid_hybrid",
+   "mat:28:0|馬太福音28:1-10 耶穌復活|hybrid_hybrid",
+   "mat:27:6|馬太福音27:45-56 （可15‧33－41；路23‧44－49；約|hybrid_hybrid",
+   "mrk:16:0|馬可福音16:1-8 耶穌復活|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "luk:24:0|路加福音24:1-12 耶穌復活|hybrid_hybrid",
+   "luk:24:1|路加福音24:13-35 在以馬忤斯的路上|hybrid_hybrid",
+   "mat:28:0|馬太福音28:1-10 耶穌復活|cross_ref_expand",
+   "mat:27:6|馬太福音27:45-56 （可15‧33－41；路23‧44－49；約|hybrid_hybrid",
+   "mrk:16:0|馬可福音16:1-8 耶穌復活|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_086",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "迦百農癱子被縋下屋頂得醫治的記載，三卷福音書如何描述？耶穌先宣告什麼？",
+  "reference": "馬太福音 9:1-8; 馬可福音 2:1-12; 路加福音 5:17-26",
+  "points": [
+   "馬可記載人多得連門前都沒有空地，癱子是用四個人抬來的；路加記載他們上了房頂，從瓦間把他連褥子縋到當中",
+   "耶穌見他們的信心，就對癱子說：小子，你的罪赦了",
+   "文士心裏議論：這個人為甚麼這樣說呢？他說僭妄的話了。除了上帝以外，誰能赦罪呢",
+   "耶穌說：或對癱子說你的罪赦了，或說起來拿你的褥子行走，哪一樣容易呢",
+   "但要叫你們知道，人子在地上有赦罪的權柄，就吩咐癱子起來拿褥子回家去；眾人都驚奇歸榮耀與上帝"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.4,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mrk:2:0|馬可福音2:1-12 治好癱瘓病人|hybrid_hybrid",
+   "luk:5:2|路加福音5:17-26 治好癱瘓病人|hybrid_hybrid",
+   "mat:8:1|馬太福音8:5-13 治好百夫長的僕人|hybrid_hybrid",
+   "mat:9:0|馬太福音9:1-8 治好癱瘓病人|hybrid_hybrid",
+   "luk:7:0|路加福音7:1-10 治好百夫長的僕人|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "mrk:2:0|馬可福音2:1-12 治好癱瘓病人|hybrid_hybrid",
+   "luk:5:2|路加福音5:17-26 治好癱瘓病人|hybrid_hybrid",
+   "mat:8:1|馬太福音8:5-13 治好百夫長的僕人|hybrid_hybrid",
+   "mat:9:0|馬太福音9:1-8 治好癱瘓病人|hybrid_hybrid",
+   "luk:7:0|路加福音7:1-10 治好百夫長的僕人|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_087",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "平靜風浪的神蹟在三卷符類福音中如何記載？門徒與耶穌的對話有何差異？",
+  "reference": "馬太福音 8:23-27; 馬可福音 4:35-41; 路加福音 8:22-25",
+  "points": [
+   "耶穌和門徒渡海，海裏忽然起了暴風，船被波浪掩蓋，耶穌卻睡著了",
+   "馬可獨有細節：耶穌在船尾上枕著枕頭睡覺",
+   "門徒叫醒他：馬太記「主啊，救我們，我們喪命啦」；馬可記「夫子，我們喪命，你不顧嗎」",
+   "耶穌斥責風和海：住了吧！靜了吧！風就止住，大大地平靜了",
+   "耶穌責備門徒小信；眾人希奇說：這是怎樣的人？連風和海也聽從他了"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.8,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "luk:8:6|路加福音8:22-25 平靜風浪|hybrid_hybrid",
+   "mrk:4:7|馬可福音4:35-41 平靜風和海|hybrid_hybrid",
+   "mat:8:4|馬太福音8:23-27 平靜風和海|hybrid_hybrid",
+   "mat:14:2|馬太福音14:22-33 耶穌在海面上行走|hybrid_hybrid",
+   "luk:9:5|路加福音9:28-36 耶穌改變形像|hybrid_hybrid"
+  ],
+  "graph_top5": [
+   "luk:8:6|路加福音8:22-25 平靜風浪|hybrid_hybrid",
+   "mrk:4:7|馬可福音4:35-41 平靜風和海|hybrid_hybrid",
+   "mat:8:4|馬太福音8:23-27 平靜風和海|hybrid_hybrid",
+   "mat:14:2|馬太福音14:22-33 耶穌在海面上行走|hybrid_hybrid",
+   "luk:9:5|路加福音9:28-36 耶穌改變形像|hybrid_hybrid"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph",
+   "entity_query",
+   "sql_supplement"
+  ]
+ },
+ {
+  "qid": "GENERAL_BIBLE_QUESTION_088",
+  "type": "GENERAL_BIBLE_QUESTION",
+  "family": "parallel_account",
+  "question": "五餅二魚是唯一四卷福音書都記載的神蹟，各卷的記載有什麼獨特之處？",
+  "reference": "馬太福音 14:13-21; 馬可福音 6:30-44; 路加福音 9:10-17; 約翰福音 6:1-14",
+  "points": [
+   "共同核心：五個餅兩條魚，耶穌祝福擘開遞給門徒分給眾人，吃的人約有五千，剩下的零碎裝滿十二個籃子",
+   "馬可：耶穌看見許多的人就憐憫他們，因為他們如同羊沒有牧人一般；眾人一排一排地坐在青草地上",
+   "路加：事發於伯賽大附近，耶穌叫他們一排一排地坐下，每排大約五十個人",
+   "約翰獨有：是安得烈找到一個孩童帶著五個大麥餅、兩條魚",
+   "約翰的後續：眾人要強逼他作王，耶穌就退到山上；次日有生命之糧的講論"
+  ],
+  "route_graph": "R5",
+  "route_nograph": "R5",
+  "nograph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.7,
+   "strict": 1.0
+  },
+  "graph": {
+   "hit": 1.0,
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "mrr": 1.0,
+   "cov": 0.6,
+   "strict": 1.0
+  },
+  "s2_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "s0_gate": {
+   "vrec": 1.0,
+   "anchor": 1.0,
+   "hit": 1.0
+  },
+  "context_changed_r3": false,
+  "nograph_top5": [
+   "mrk:6:3|馬可福音6:30-44 耶穌給五千人吃飽|hybrid_hybrid",
+   "luk:9:2|路加福音9:10-17 耶穌給五千人吃飽|hybrid_hybrid",
+   "jhn:6:0|約翰福音6:1-15 耶穌給五千人吃飽|hybrid_hybrid",
+   "mat:14:1|馬太福音14:13-21 耶穌給五千人吃飽|hybrid_hybrid",
+   "jhn:6:2|約翰福音6:22-59 耶穌是生命的糧|sql_supplement"
+  ],
+  "graph_top5": [
+   "mrk:6:3|馬可福音6:30-44 耶穌給五千人吃飽|graph_event",
+   "luk:9:2|路加福音9:10-17 耶穌給五千人吃飽|graph_event",
+   "jhn:6:0|約翰福音6:1-15 耶穌給五千人吃飽|graph_event",
+   "mat:14:1|馬太福音14:13-21 耶穌給五千人吃飽|graph_event",
+   "jhn:6:2|約翰福音6:22-59 耶穌是生命的糧|cross_ref_expand"
+  ],
+  "graph_strategies_used": [
+   "semantic",
+   "cross_reference",
+   "graph_event",
+   "entity_query",
+   "sql_supplement"
+  ]
+ }
+]

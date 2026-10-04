@@ -1,9 +1,11 @@
 """Offline: simulate Step 6 R1 pair mining on (a) pre-P0 MENTIONS (pericope-type mentions only) and (b) current-code import (pericope + verse remap); compare with checkpoint."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
 from itertools import combinations
 from collections import defaultdict
 from pathlib import Path
-ROOT = Path("/home/kenzx0521/Bible_RAG")
+ROOT = Path(BIBLE_RAG_ROOT)
 sys.path.insert(0, str(ROOT))
 from scripts.relation_extraction.schema_loader import RelationSchema
 schema = RelationSchema.load(ROOT / "config/relations/biblical_relations.yaml")

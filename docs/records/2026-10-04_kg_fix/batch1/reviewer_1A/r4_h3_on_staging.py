@@ -1,11 +1,13 @@
 """Reviewer: score the planner's simulated relations_clean (gei/declared) for H3 and H9
 against the ACTUAL staging graph's MENTIONS/labels (READ only), instead of JSONL-derived support."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
 from collections import Counter
 from dotenv import dotenv_values
 from neo4j import GraphDatabase, READ_ACCESS
 import yaml
-env = dotenv_values('/home/kenzx0521/Bible_RAG/.env')
+env = dotenv_values(BIBLE_RAG_ROOT + '/.env')
 auth = (env.get('NEO4J_USER', 'neo4j'), env.get('NEO4J_PASSWORD', 'neo4j_password'))
 d = GraphDatabase.driver('bolt://localhost:7688', auth=auth)
 with d.session(default_access_mode=READ_ACCESS) as s:
@@ -15,7 +17,7 @@ with d.session(default_access_mode=READ_ACCESS) as s:
     lab = {r['id']: [x for x in r['l'] if x != 'Entity'][0] for r in s.run("MATCH (e:Entity) RETURN e.entity_id AS id, labels(e) AS l")}
 d.close()
 sup = {((cp.get(sid) if l == 'Chunk' else sid), e) for l, sid, e in ment}
-schema = yaml.safe_load(open('/home/kenzx0521/Bible_RAG/config/relations/biblical_relations.yaml'))['relations']
+schema = yaml.safe_load(open(BIBLE_RAG_ROOT + '/config/relations/biblical_relations.yaml'))['relations']
 def acc(rel, h, t):
     e = schema[rel]; ht, tt = lab.get(h), lab.get(t)
     ok = ht in e['domain_types'] and tt in e['range_types']

@@ -1,9 +1,12 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json
 from collections import Counter, defaultdict
 pp=defaultdict(list)
-for l in open('/home/kenzx0521/Bible_RAG/output/relations_checkpoint.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/relations_checkpoint.jsonl'):
     a,b,pid=json.loads(l)['pair_key'].split('|',2); pp[pid].append((a,b))
-M=json.load(open('/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/relations/ment.json'))
+M=json.load(open(KGFIX_SP + '/kgfix/relations/ment.json'))
 ents=defaultdict(set)
 for m in M:
     if not m['bf']: ents[m['pid']].add(m['eid'])

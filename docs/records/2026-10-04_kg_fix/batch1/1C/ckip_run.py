@@ -7,10 +7,12 @@ sequence with an attention mask), so tokens equal the one-at-a-time calls
 up to float noise; check_batch_equiv.py verifies that on a sample.
 Usage: python ckip_run.py [limit]
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, pickle, re, sys, time
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 from ckip_transformers.nlp import CkipNerChunker
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 CH = re.compile(r"^(\S+) 第\d+章 ")
 limit = int(sys.argv[1]) if len(sys.argv) > 1 else None
 items = [json.loads(l) for l in open(f"{ROOT}/embedding_queue.jsonl")]

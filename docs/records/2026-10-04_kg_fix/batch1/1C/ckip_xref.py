@@ -1,9 +1,11 @@
 """CKIP (GPU) on body-only text for the items whose title is a cross-reference
 remnant (same predicate as kg_validate R8 _XREF_REMNANT); writes
 ckip_raw_body_xref_gpu.pkl {id: tokens, idx relative to body_start}."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, pickle, re
 from ckip_transformers.nlp import CkipNerChunker
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 HDR_PC = re.compile(r"^(\S+) 第(\d+)章 (.*?) \(([\d\-]+)節\)：")
 HDR_V = re.compile(r"^(\S+) 第(\d+)章 (.*?) 第([\d\-]+)節：")
 X = re.compile(r"^[（(＊*]|\d+‧\d+")

@@ -1,7 +1,9 @@
 """Read-only fetch of the staging graph (bolt 7688, READ sessions) -> pickle.
 Staging == prod except the 4 SON_OF edge properties (batch-0 diff_kg)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import os, sys, pickle
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 from neo4j import GraphDatabase
 from check_identity import read_query
 from kg_validate.model import load_live

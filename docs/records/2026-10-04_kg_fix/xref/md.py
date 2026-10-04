@@ -1,5 +1,7 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, collections, re
-R='/home/kenzx0521/Bible_RAG/output/'
+R=BIBLE_RAG_ROOT + '/output/'
 peri={}; vmap={}; order=[]
 for l in open(R+'pericopes.jsonl'):
     p=json.loads(l); m=p['metadata']

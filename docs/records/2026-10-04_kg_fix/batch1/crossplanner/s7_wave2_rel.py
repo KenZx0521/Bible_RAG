@@ -1,6 +1,8 @@
 """Wave 2 effect on relations: 1A-clean edges re-gated with post-1C/1D MENTIONS and id remaps."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, pickle, collections
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 D = os.path.dirname(os.path.abspath(__file__))
 g = pickle.load(open(f"{D}/graph_staging.pkl", "rb")); kg = g["kg"]
 clean = pickle.load(open(f"{D}/sim1a_clean.pkl", "rb"))["clean"]

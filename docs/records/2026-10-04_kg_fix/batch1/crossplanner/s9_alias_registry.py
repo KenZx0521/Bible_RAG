@@ -1,7 +1,9 @@
 """Would 1D's alias-ambiguity rule (R10: alias owned by >=2 entities or equal to another
 entity's canonical -> ambiguous_aliases) strip a registry trigger? Read-only."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, json, pickle, collections
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 from export_event_registry import curated_event_ids, event_keywords
 D = os.path.dirname(os.path.abspath(__file__))
 kg = pickle.load(open(f"{D}/graph_staging.pkl", "rb"))["kg"]
@@ -12,7 +14,7 @@ for eid, r in kg.entities.items():
         owners[a.strip()].add(eid)
 conflict = {a for a, who in owners.items() if len(who) > 1 or canon.get(a, set()) - who}
 cur = curated_event_ids(); kw = event_keywords()
-reg = json.load(open("/home/kenzx0521/Bible_RAG/backend/data/event_registry.json"))
+reg = json.load(open(BIBLE_RAG_ROOT + "/backend/data/event_registry.json"))
 trig = {(e["id"], t) for e in reg["events"] for t in e["triggers"]}
 hit = []
 for eid in cur:

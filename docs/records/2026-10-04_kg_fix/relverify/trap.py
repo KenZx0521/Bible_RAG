@@ -1,12 +1,15 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, re
 from collections import Counter
-W='/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/relverify/'
+W=KGFIX_SP + '/kgfix/relverify/'
 E=json.load(open(W+'edges.json'))
 P={}
-for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl'):
     d=json.loads(l); P[d['id']]=d['content']
 # names of all entities sorted by length for longest-match
-ENT=[json.loads(l)['canonical_name'] for l in open('/home/kenzx0521/Bible_RAG/output/entities.jsonl')]
+ENT=[json.loads(l)['canonical_name'] for l in open(BIBLE_RAG_ROOT + '/output/entities.jsonl')]
 TRAPS={'馬利亞','以利亞','利亞','亞拿'}
 def only_substring(name, t):
     longer=[n for n in ENT if name in n and n!=name and n in t]

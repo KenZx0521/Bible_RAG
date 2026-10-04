@@ -1,9 +1,11 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json
 from collections import Counter
 P={}
-for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl'):
     d=json.loads(l); P[d['id']]=d['content']
-J=[json.loads(l) for l in open('/home/kenzx0521/Bible_RAG/output/relations.jsonl')]
+J=[json.loads(l) for l in open(BIBLE_RAG_ROOT + '/output/relations.jsonl')]
 c=Counter()
 for j in J:
     if j['extraction_phase']!=4: continue

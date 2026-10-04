@@ -1,9 +1,11 @@
 """Impact of MENTIONS fix on Step-6 relation outputs (read-only).
 bad pericope-level pairs = book-prefix-only + substring-contaminated (14 names, lower bound)
                           + place:dan non-geo (cleanup_noise_entities gate)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, pickle, collections, sys, re
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
+ROOT = BIBLE_RAG_ROOT + "/output"
 E = pickle.load(open("edges.pkl", "rb"))
 contam = set(pickle.load(open("contam_edges.pkl", "rb")))
 def klass(d):

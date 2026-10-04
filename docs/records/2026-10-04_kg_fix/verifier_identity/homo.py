@@ -1,10 +1,13 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, collections
 from pypinyin import lazy_pinyin, Style
 ents={}
-for l in open('/home/kenzx0521/Bible_RAG/output/entities.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/entities.jsonl'):
     e=json.loads(l); ents[e['entity_id']]=e
 spans=collections.defaultdict(collections.Counter)
-for l in open('/home/kenzx0521/Bible_RAG/output/entity_mentions.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/entity_mentions.jsonl'):
     m=json.loads(l); spans[m['entity_id']][m['text_span']]+=1
 bytype=collections.Counter(); ids=[]
 foreign_forms=0; minority=0; tone_unsep=0
@@ -32,13 +35,13 @@ ws=sum(1 for eid in ids if all(s.strip() in (ents[eid]['canonical_name'].strip()
 print('ids whose only foreign is whitespace variant',ws)
 # check person:lude canon & ordering
 print(ents['person:lude']['canonical_name'], spans['person:lude'])
-json.dump(ids, open('/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/verifier_identity/ids268.json','w'), ensure_ascii=False)
+json.dump(ids, open(KGFIX_SP + '/kgfix/verifier_identity/ids268.json','w'), ensure_ascii=False)
 idset=set(ids)
 for fn in ['relations.jsonl','relations_unclassified.jsonl']:
     tot=hit=sp=0; types=collections.Counter()
-    for l in open('/home/kenzx0521/Bible_RAG/output/'+fn):
+    for l in open(BIBLE_RAG_ROOT + '/output/'+fn):
         r=json.loads(l); tot+=1
         if r.get('head_id') in idset or r.get('tail_id') in idset:
             hit+=1; sp+= bool(r.get('source_pericope_id'))
     print(fn,tot,'touch268',hit,'with_src_pid',sp)
-r=json.loads(open('/home/kenzx0521/Bible_RAG/output/relations_unclassified.jsonl').readline()); print(sorted(r.keys()))
+r=json.loads(open(BIBLE_RAG_ROOT + '/output/relations_unclassified.jsonl').readline()); print(sorted(r.keys()))

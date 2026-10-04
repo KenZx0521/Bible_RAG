@@ -1,12 +1,15 @@
 """kg_xref 68 (2026-10-03 audit set, scratchpad kg_xref/): can xref expansion bring the missing gold group?
 C1: worst-case rank of the missing gold group from S0-retrieved gold seeds (single seed, as q_xref_rank.cypher), OLD vs NEW.
 C2: seeds = S0 top-5 pericopes (R5-style deduped[:5]); missing gold in the top-10 xref candidates (certain / possible)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, collections
 from common import *
 from xrefgraph import graphs
 gO, gT, gN = graphs()
 vmap, peri = load_pericopes()
-KX = '/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kg_xref/'
+KX = KGFIX_SP + '/kg_xref/'
 qp = json.load(open(KX + 'qparams.json'))
 sel = {x['qid'][-3:]: x for x in json.load(open(KX + 'sel.json'))}
 def worst_rank(g, seed, target):

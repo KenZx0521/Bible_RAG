@@ -1,7 +1,10 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, sys, collections, re
-sys.path.insert(0,'/home/kenzx0521/Bible_RAG')
+sys.path.insert(0,BIBLE_RAG_ROOT)
 from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS as S
-R='/home/kenzx0521/Bible_RAG/output/'
+R=BIBLE_RAG_ROOT + '/output/'
 peri={}
 vmap={}
 for l in open(R+'pericopes.jsonl'):
@@ -65,7 +68,7 @@ by_book=collections.Counter(x['start'].split(':')[0] for x in mis)
 tot_book=collections.Counter(x['start'].split(':')[0] for x in rows)
 print({b:f"{by_book[b]}/{tot_book[b]}" for b in tot_book})
 # collisions: correct pair already exists?
-json.dump(rows,open('/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/xref/supp_rows.json','w'),ensure_ascii=False,indent=1)
+json.dump(rows,open(KGFIX_SP + '/kgfix/xref/supp_rows.json','w'),ensure_ascii=False,indent=1)
 for x in mis[:80]:
     print(x['start'],x['svr'],'sv',x['sv'],'->',x['correct_src'],'|',x['end'],x['tv'],x['desc'])
 print('--- tgt partial out')

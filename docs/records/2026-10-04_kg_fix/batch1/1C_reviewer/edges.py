@@ -1,5 +1,7 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, collections
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 def ekey(r):
     sid, st = r["source_id"], r.get("source_type")
     if st == "verse" or ":v:" in sid: return ("Pericope", sid.split(":v:")[0], r["entity_id"])

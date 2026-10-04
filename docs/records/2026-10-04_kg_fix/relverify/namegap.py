@@ -1,13 +1,15 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json
 from collections import Counter
 ENT={}
-for l in open('/home/kenzx0521/Bible_RAG/output/entities.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/entities.jsonl'):
     d=json.loads(l); ENT[d['entity_id']]=(d['canonical_name'], d['type'])
 P={}
-for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl'):
     d=json.loads(l); P[d['id']]=d['content']
 c=Counter(); who=Counter()
-for l in open('/home/kenzx0521/Bible_RAG/output/relations_checkpoint.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/relations_checkpoint.jsonl'):
     a,b,pid=json.loads(l)['pair_key'].split('|',2)
     if a not in ENT or b not in ENT: continue
     t=P.get(pid,'')

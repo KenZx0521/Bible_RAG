@@ -2,10 +2,12 @@
 the left/right neighbouring characters so we can see which dictionary names are
 being matched inside longer proper names (撒馬利亞→馬利亞, 以利亞撒→以利亞...).
 Only verse items are used for occurrence counting (each verse once)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re, collections, sys
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 from entity_extraction.entity_dict import PERSON_DICT, PLACE_DICT, GROUP_DICT
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 books = {}
 for l in open(f"{ROOT}/books.jsonl", encoding="utf-8"):
     l = l.strip()

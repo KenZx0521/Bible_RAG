@@ -1,10 +1,12 @@
 """Reviewer: READ-only property-level diff prod vs staging beyond diff_kg (node props of
 Entity/Pericope/Chunk/Book, MENTIONS props, CROSS_REFERENCES props)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json
 from collections import Counter
 from dotenv import dotenv_values
 from neo4j import GraphDatabase, READ_ACCESS
-env = dotenv_values('/home/kenzx0521/Bible_RAG/.env')
+env = dotenv_values(BIBLE_RAG_ROOT + '/.env')
 auth = (env.get('NEO4J_USER', 'neo4j'), env.get('NEO4J_PASSWORD', 'neo4j_password'))
 Q = {
  'entity': "MATCH (e:Entity) RETURN e.entity_id AS k, properties(e) AS p, labels(e) AS l",

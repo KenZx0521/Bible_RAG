@@ -1,6 +1,8 @@
 """1A gate 'same-type directed relation without inverse name, n>=30: share head<tail in 0.3-0.7' on the 1A sim."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, pickle, collections
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
 D = os.path.dirname(os.path.abspath(__file__))
 kg = pickle.load(open(f"{D}/graph_staging.pkl", "rb"))["kg"]
 clean = pickle.load(open(f"{D}/sim1a_clean.pkl", "rb"))["clean"]

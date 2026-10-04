@@ -8,12 +8,14 @@ Variants: (1) curated (entity, alias) pairs exempt, (2) no exemption.
 Registry recomputed with the real export_event_registry.registry_from_rows.
 Also: which registry triggers are aliases at all (vs canonical names).
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
 from collections import defaultdict
 from pathlib import Path
 from dotenv import dotenv_values
 
-ROOT = Path("/home/kenzx0521/Bible_RAG")
+ROOT = Path(BIBLE_RAG_ROOT)
 sys.path.insert(0, str(ROOT / "scripts"))
 import export_event_registry as exr  # real code (read-only use)
 from backfill_head_events import ALIAS_INJECTIONS, NEW_EVENTS

@@ -9,8 +9,10 @@ S5 + '但' geo gate in NER (position-specific)                 M3   == batch-1C 
 S0..S4 get cleanup 10.2's place:dan edge filter applied after import (as the live chain does).
 Edges per import_neo4j (verse -> Pericope).  Writes chain_result.json.
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, pickle, re, sys, collections, unicodedata
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts"); sys.path.insert(0, "/home/kenzx0521/Bible_RAG"); sys.path.insert(0, ".")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts"); sys.path.insert(0, BIBLE_RAG_ROOT); sys.path.insert(0, ".")
 from entity_extraction.ner_extractor import NERExtractor, NERResult
 from entity_extraction.entity_normalizer import normalize_and_merge
 from edgelib import edge_key, edges_first_wins, load_texts, ROOT, PPG

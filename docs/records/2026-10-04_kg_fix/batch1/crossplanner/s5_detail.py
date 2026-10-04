@@ -1,6 +1,8 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, json, pickle, collections
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
-R = "/home/kenzx0521/Bible_RAG"; D = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
+R = BIBLE_RAG_ROOT; D = os.path.dirname(os.path.abspath(__file__))
 g = pickle.load(open(f"{D}/graph_staging.pkl", "rb")); edges, ents = g["edges"], g["ents"]
 s = pickle.load(open(f"{D}/sim1c1d.pkl", "rb")); d = json.load(open(f"{D}/sim1c1d_desc.json"))
 name = {e["eid"]: e["name"] for e in ents}

@@ -3,8 +3,10 @@ book region   = book name + ' 第N章 '
 title region  = title + ' (a-b節)' / ' 第n節' + '：'
 body          = text[text.find('：')+1:]
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re, collections
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 books = {b["id"]: b["name"] for b in map(json.loads, open(f"{ROOT}/books.jsonl")) }
 HDR_PC = re.compile(r"^(\S+) 第(\d+)章 (.*?) \(([\d\-]+)節\)：")
 HDR_V = re.compile(r"^(\S+) 第(\d+)章 (.*?) 第([\d\-]+)節：")

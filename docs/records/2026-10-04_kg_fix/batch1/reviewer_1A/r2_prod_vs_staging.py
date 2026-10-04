@@ -1,10 +1,12 @@
 """Reviewer: READ-only compare of prod (7687) vs staging (7688) node/MENTIONS properties
 that diff_kg does not look at (mention_count, MENTIONS start_pos). Credentials from .env."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, os
 from collections import Counter
 from dotenv import dotenv_values
 from neo4j import GraphDatabase, READ_ACCESS
-env = dotenv_values('/home/kenzx0521/Bible_RAG/.env')
+env = dotenv_values(BIBLE_RAG_ROOT + '/.env')
 auth = (env.get('NEO4J_USER', 'neo4j'), env.get('NEO4J_PASSWORD', 'neo4j_password'))
 Q_MC = "MATCH (e:Entity) RETURN e.entity_id AS id, e.mention_count AS mc"
 Q_SP = "MATCH (s)-[m:MENTIONS]->(e:Entity) RETURN coalesce(s.id,s.entity_id) AS s, e.entity_id AS e, m.start_pos AS sp"

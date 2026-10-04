@@ -11,8 +11,10 @@ mode final   : planner FINAL design (dict on title+body, CKIP full text with idx
                xref-remnant titles: region starts at body)
 Writes rrows_<mode>.jsonl (+ ents).
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, pickle, re, sys, unicodedata, collections
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts"); sys.path.insert(0, "/home/kenzx0521/Bible_RAG")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts"); sys.path.insert(0, BIBLE_RAG_ROOT)
 from entity_extraction.ner_extractor import NERExtractor, NERResult
 from entity_extraction.entity_dict import find_canonical_name
 from entity_extraction.models import Entity, EntityMention, EntityType, ExtractionMethod
@@ -20,7 +22,7 @@ from entity_extraction.entity_normalizer import normalize_and_merge
 from bible_chunking.config import CROSS_REF_ABBREV
 mode = sys.argv[1]
 STOPEX = set(sys.argv[2].split(",")) if len(sys.argv) > 2 else {"但", "珥"}
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 books = {b["id"]: b["name"] for b in map(json.loads, open(f"{ROOT}/books.jsonl"))}
 raw = pickle.load(open("../1C/ckip_raw_full_gpu.pkl", "rb"))
 ext = NERExtractor.__new__(NERExtractor); NERExtractor.__init__(ext)

@@ -1,9 +1,12 @@
 """Reviewer re-sim of 1-hop single-seed xref candidates under the C1+C2 Cypher
 (seed_support DESC, curated DESC, votes DESC, id ASC; limit 10; weight 0.75/0.60):
 old data vs new data. Seeds with <10 one-hop neighbours (fallback) reported separately."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, pickle, collections
-P='/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/batch1plan/1B-reviewer/'
-R='/home/kenzx0521/Bible_RAG/'
+P=KGFIX_SP + '/batch1plan/1B-reviewer/'
+R=BIBLE_RAG_ROOT + '/'
 pairs,_=pickle.load(open(P+'r2_tsk.pkl','rb'))
 xr=[json.loads(l) for l in open(R+'output/neo4j_relationships.jsonl')]
 md=set((r['start'],r['end']) for r in xr if r['type']=='CROSS_REFERENCES' and r['properties']['source']=='markdown')

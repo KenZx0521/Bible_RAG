@@ -1,0 +1,43 @@
+KG 現況稽核（nt_quotes_ot / prophecy_fulfillment / typology / parallel_account，68 題）
+--------------------------------------------------------------------------------
+檔案：
+  sel.json            68 題（從 bench/questions_table.json 篩出）
+  parse_refs.py/segs.json   reference → (book, chapter, v0, v1)
+  gold.json           金錨 pericope（q_gold_map.cypher）
+  qparams.json        每題 gold + S0/S1 top-5 pericope（R1 verse id 已手動改成 gen:3:1、gen:15:0）
+  q_xref_rank.cypher  各金錨群的最佳到達名次（含只從 S0 已取到的金錨出發的版本）
+  q_xref_R.cypher     R = 以單一書卷群為種子，帶進所有其他群所需的 worst-case 名次
+  q_supp_validate.cypher  supplementary 邊 verse 落點驗證：142 條中 59 條 NT 端錯位（41.5%）
+  q_seed_top.cypher   後端排序下種子的前 6 名鄰居
+  q_entity_reach.cypher / q_gold_events.cypher  實體、事件層的可達性
+  per_question.json   逐題判定
+
+排序模擬：照抄 backend/database/neo4j_db.py 的 get_cross_references，
+  score = max(coalesce(r.votes, 999))，DESC；worst-case rank = 分數 >= 目標分數的鄰居數（同分時算最差情況）。
+
+判定規則：
+  S0 若已取到部分金錨 → 從這些金錨出發，到缺漏群的最佳 worst-case 名次 d；
+  S0 若已涵蓋全部群 → 用 R；
+  S0 若沒有任何金錨 → 用 R，但最高只給 partial（沒有入口），除非有實體／事件 alias 可當入口。
+  yes：d≤5，或有實體／事件節點在 ≤10 段內涵蓋缺漏金錨、精確度 ≥1/3
+  partial：d 為 6–20，或只到得了一部分，或沒有入口
+  no：d>20 或無邊，且沒有實體／事件路徑
+
+結果：prophecy 20/6/0、nt_quotes 8/8/0、typology 6/6/0、parallel 14/0/0（yes/partial/no）
+
+關鍵觀察：
+ 1. 這四族能用的 KG 資料幾乎全是 CROSS_REFERENCES：TSK 249,502 條、supplementary 142 條、markdown 774 條。
+    人物、事件、主題層沒有任何「引用／應驗／預表」關係。Event 多半是段落標題的單點節點。
+ 2. supplementary 的 quotation/allusion 邊有 59/142 條 NT 端錯位（例：mat:2:2→hos:11:0 應為 mat:2:1；mat:8:1→isa:53:0 應為 mat:8:2）。
+    這些邊沒有 votes，後端排序給 999，會佔據 OT 種子的前幾名。
+ 3. TSK 很密，平均約 180 個鄰居，所以「到得了」不成問題，關鍵在排序。
+    OT 或總論段的度數高達 200–636，從 OT 端出發時 NT 金錨常落在 #7–#53；從 NT 端回 OT 通常 ≤#3。
+ 4. S0 漏掉某一群、而 KG 從 S0 已取到的金錨出發能在 ≤5 內補上的有 18 題：
+    021 025 026 028 038 039 042 052 056 060 061 062 064 065 076 079 084 085。
+    S1 實際補到的只有 4 題（064 065 076 084），全靠實體或事件路徑；靠 xref 補到的是 0 題，雖然 cross_reference 策略都有執行。
+ 5. S1 相對 S0 讓金錨群掉出前 5 的有 6 題：023 043 048 049 065(1co) 077。
+ 6. 平行記載能成功，是因為 markdown 平行邊加上「標題相同」的 Event。
+    標題不同就分裂（平靜風和海／平靜風浪、大衛調查人口／大衛數點以色列民）；
+    同人異名沒有處理（烏西雅被標成 Place、亞撒利雅把同名者合併成 29 段、亞勞拿／阿珥楠）。
+ 7. 有 5 題的 yes 靠的是 curated alias：065 逾越節、084 設立聖餐、082 登山變像、088 五餅二魚、076 所羅門獻殿。
+    其中 065、084 的 alias 是唯一的入口，有 dev 汙染風險。

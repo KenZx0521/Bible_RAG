@@ -1,12 +1,15 @@
 """How many seed sets would change at deploy step 1 if the transitional image also adds a target.id tiebreak?
 Compares the actual prod/staging outputs (tie_probe.json, HEAD Cypher) with the simulator's id-tiebreak OLD ranking,
 and validates the simulator: every prod output must be a valid tie-resolution of the simulated key order."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, collections
 from common import *
 from xrefgraph import graphs
 gO, gT, gN = graphs()
 tp = json.load(open(OUT / 'tie_probe.json'))
-QT = json.load(open('/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/bench/questions_table.json'))
+QT = json.load(open(KGFIX_SP + '/bench/questions_table.json'))
 vmap, peri = load_pericopes()
 sets = {}
 for q in QT:

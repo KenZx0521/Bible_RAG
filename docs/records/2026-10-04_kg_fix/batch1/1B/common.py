@@ -1,7 +1,9 @@
 """Shared offline loaders for the 1B simulation (read-only: output/*.jsonl, repo code)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys, collections, pickle
 from pathlib import Path
-ROOT = Path('/home/kenzx0521/Bible_RAG')
+ROOT = Path(BIBLE_RAG_ROOT)
 OUT = Path(__file__).parent
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / 'scripts'))
 

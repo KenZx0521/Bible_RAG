@@ -1,7 +1,9 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re
 from collections import Counter, defaultdict
 E = json.load(open('edges.json'))
-P = {json.loads(l)['id']: json.loads(l) for l in open('/home/kenzx0521/Bible_RAG/output/pericopes.jsonl')}
+P = {json.loads(l)['id']: json.loads(l) for l in open(BIBLE_RAG_ROOT + '/output/pericopes.jsonl')}
 def text(pid): return P.get(pid, {}).get('content', '')
 GAP = r'[^。；：，、\n]{0,6}?'  # allow titles like 先知/祭司
 def anchored_son(x_child, y_parent, t):

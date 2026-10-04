@@ -9,14 +9,16 @@ No database access here.
 """
 from __future__ import annotations
 
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT)
 from ro import OUT, ROOT, jsonl
 from s1_whitespace import norm, mint
 from s2_junk_stop import is_junk_title, dict_names, EV09_EXTRA

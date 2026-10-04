@@ -1,5 +1,7 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, collections, re
-ROOT="/home/kenzx0521/Bible_RAG/output"
+ROOT=BIBLE_RAG_ROOT + "/output"
 texts={}; verses=collections.defaultdict(list)
 for l in open(f"{ROOT}/embedding_queue.jsonl"):
     r=json.loads(l); t=r["text"]; b=t[t.find("：")+1:]

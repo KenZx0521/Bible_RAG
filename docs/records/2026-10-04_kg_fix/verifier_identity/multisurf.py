@@ -1,10 +1,12 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, collections
 ids=set(json.load(open('ids268.json')))
 ents={}
-for l in open('/home/kenzx0521/Bible_RAG/output/entities.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/entities.jsonl'):
     e=json.loads(l); ents[e['entity_id']]=e
 pairs=collections.defaultdict(set)
-for l in open('/home/kenzx0521/Bible_RAG/output/entity_mentions.jsonl'):
+for l in open(BIBLE_RAG_ROOT + '/output/entity_mentions.jsonl'):
     m=json.loads(l)
     if m['entity_id'] not in ids: continue
     sid=m['source_id']; st=m.get('source_type','')

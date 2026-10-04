@@ -1,8 +1,10 @@
 """S5b: frozen-table resolution applied ONLY to rows whose CKIP surface was padded
 (what 1C's normalize_surface changes). Expect: twin merges only; 0 renames; 0 new homophone merges."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, json
 from collections import Counter, defaultdict
-sys.path.insert(0, '.'); sys.path.insert(0, '/home/kenzx0521/Bible_RAG/scripts')
+sys.path.insert(0, '.'); sys.path.insert(0, BIBLE_RAG_ROOT + '/scripts')
 from ro import OUT, jsonl, dump
 from s1_whitespace import norm, mint
 from s5_id_resolution import frozen_id, live, ner_types

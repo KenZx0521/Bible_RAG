@@ -2,8 +2,10 @@
 tokens of the full-text run and the title+body run, in the body region only,
 per item kind: short texts (one CKIP segment both times) vs long ones (>510
 chars: the fixed 510-char segment cuts move when the prefix is dropped)."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, pickle, re, collections
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 CH = re.compile(r"^(\S+) 第\d+章 ")
 full = pickle.load(open("ckip_raw_full_gpu.pkl", "rb")); sub = pickle.load(open("ckip_raw_sub_gpu.pkl", "rb"))
 MAP = {"PERSON", "GPE", "LOC", "ORG", "NORP"}

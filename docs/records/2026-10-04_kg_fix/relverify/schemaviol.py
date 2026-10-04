@@ -1,10 +1,13 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
+KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, sys
-sys.path.insert(0,'/home/kenzx0521/Bible_RAG')
+sys.path.insert(0,BIBLE_RAG_ROOT)
 from collections import Counter
 from pathlib import Path
 from scripts.relation_extraction.schema_loader import RelationSchema
-S=RelationSchema.load(Path('/home/kenzx0521/Bible_RAG/config/relations/biblical_relations.yaml'))
-W='/tmp/claude-1001/-home-kenzx0521-Bible-RAG/b7e022b5-365b-41d1-9092-7a9860b09a84/scratchpad/kgfix/relverify/'
+S=RelationSchema.load(Path(BIBLE_RAG_ROOT + '/config/relations/biblical_relations.yaml'))
+W=KGFIX_SP + '/kgfix/relverify/'
 E=json.load(open(W+'edges.json'))
 c=Counter(); ex=Counter()
 for e in E:

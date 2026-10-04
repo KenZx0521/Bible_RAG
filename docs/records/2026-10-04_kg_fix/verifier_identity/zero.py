@@ -1,7 +1,9 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, glob
-sys.path.insert(0,'/home/kenzx0521/Bible_RAG/scripts')
+sys.path.insert(0,BIBLE_RAG_ROOT + '/scripts')
 from entity_extraction.entity_dict import PERSON_DICT, PLACE_DICT, GROUP_DICT
-txt=''.join(open(f,encoding='utf-8').read() for f in glob.glob('/home/kenzx0521/Bible_RAG/bible_md/**/*.md',recursive=True))
+txt=''.join(open(f,encoding='utf-8').read() for f in glob.glob(BIBLE_RAG_ROOT + '/bible_md/**/*.md',recursive=True))
 print(len(txt))
 for t,d in [('Person',PERSON_DICT),('Place',PLACE_DICT),('Group',GROUP_DICT)]:
     z=sorted({a for c,al in d.items() for a in al if txt.count(a)==0})

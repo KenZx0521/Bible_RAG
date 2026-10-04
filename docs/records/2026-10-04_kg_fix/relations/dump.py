@@ -1,7 +1,9 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
-load_dotenv('/home/kenzx0521/Bible_RAG/.env')
+load_dotenv(BIBLE_RAG_ROOT + '/.env')
 d = GraphDatabase.driver(os.getenv('NEO4J_URI'), auth=(os.getenv('NEO4J_USER'), os.getenv('NEO4J_PASSWORD')))
 Q = """
 MATCH (a:Entity)-[r]->(b:Entity) WHERE NOT type(r) IN ['MENTIONS','CROSS_REFERENCES']

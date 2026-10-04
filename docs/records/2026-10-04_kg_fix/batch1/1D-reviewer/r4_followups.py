@@ -6,12 +6,14 @@
   d) homophone collisions if whitespace ids were re-minted from clean names
   e) known-bad descriptions: in cache, not stale after 1C (1C expected_stale_FINAL.json)
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, re, sys
 from collections import Counter
 from pathlib import Path
 from pypinyin import lazy_pinyin
 
-ROOT = Path("/home/kenzx0521/Bible_RAG"); OUT = ROOT / "output"
+ROOT = Path(BIBLE_RAG_ROOT); OUT = ROOT / "output"
 SP = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from cleanup_noise_entities import compute_dan_keep_sources

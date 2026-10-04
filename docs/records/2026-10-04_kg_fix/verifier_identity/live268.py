@@ -1,7 +1,9 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import os, json
 from dotenv import load_dotenv
 from neo4j import GraphDatabase, READ_ACCESS
-load_dotenv('/home/kenzx0521/Bible_RAG/.env')
+load_dotenv(BIBLE_RAG_ROOT + '/.env')
 d = GraphDatabase.driver(os.getenv('NEO4J_URI'), auth=(os.getenv('NEO4J_USER'), os.getenv('NEO4J_PASSWORD')))
 ids = json.load(open('ids268.json'))
 def q(c, **p):
@@ -14,5 +16,5 @@ print(q("""MATCH (e:Entity)-[r]-(o:Entity) WHERE e.entity_id IN $ids AND type(r)
 WITH DISTINCT r RETURN count(r) AS rels, sum(CASE WHEN r.source_pericope_id IS NOT NULL AND r.source_pericope_id<>'' THEN 1 ELSE 0 END) AS with_src""", ids=ids))
 print(q("MATCH (a:Entity)-[r]->(b:Entity) RETURN count(r) AS all_entity_rels"))
 # curated ids intersection
-reg=json.load(open('/home/kenzx0521/Bible_RAG/backend/data/event_registry.json'))
+reg=json.load(open(BIBLE_RAG_ROOT + '/backend/data/event_registry.json'))
 print(type(reg), list(reg.keys())[:10] if isinstance(reg,dict) else len(reg))

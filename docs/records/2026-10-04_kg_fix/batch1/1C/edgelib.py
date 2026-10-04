@@ -1,7 +1,9 @@
 """Shared helpers: rows -> MENTIONS edges exactly as import_neo4j.py:286-341 does."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, hashlib, re
 from collections import defaultdict, OrderedDict
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 PPG = {"Person", "Place", "Group"}
 CH = re.compile(r"^(\S+) 第\d+章 ")
 

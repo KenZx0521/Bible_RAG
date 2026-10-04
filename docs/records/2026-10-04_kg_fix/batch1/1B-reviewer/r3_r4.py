@@ -1,5 +1,7 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, sys
-ROOT='/home/kenzx0521/Bible_RAG'
+ROOT=BIBLE_RAG_ROOT
 sys.path.insert(0, ROOT+'/scripts')
 from kg_validate.checks_r import _verses
 peri={}

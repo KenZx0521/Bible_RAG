@@ -20,14 +20,16 @@ Writes rows_<mode>[_<geo>].jsonl (entity_id, source_id, source_type, text_span,
 start_pos, end_pos, source_region) and ents_<mode>[_<geo>].jsonl.
 Usage: python ner_sim.py current|1c [ctx|pos] [limit]
 """
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import json, pickle, re, sys, unicodedata
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts")
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts")
+sys.path.insert(0, BIBLE_RAG_ROOT)
 from entity_extraction.ner_extractor import NERExtractor, NERResult
 from entity_extraction.entity_normalizer import normalize_and_merge
 from bible_chunking.config import CROSS_REF_ABBREV
 
-ROOT = "/home/kenzx0521/Bible_RAG/output"
+ROOT = BIBLE_RAG_ROOT + "/output"
 CH = re.compile(r"^(\S+) 第\d+章 ")
 mode = sys.argv[1]
 geo = sys.argv[2] if len(sys.argv) > 2 and mode == "1c" else None

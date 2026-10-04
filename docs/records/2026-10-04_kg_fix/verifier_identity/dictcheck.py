@@ -1,5 +1,7 @@
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, collections
-sys.path.insert(0,'/home/kenzx0521/Bible_RAG/scripts')
+sys.path.insert(0,BIBLE_RAG_ROOT + '/scripts')
 from entity_extraction.entity_dict import PERSON_DICT, PLACE_DICT, GROUP_DICT, find_canonical_name
 D={'Person':PERSON_DICT,'Place':PLACE_DICT,'Group':GROUP_DICT}
 types=collections.defaultdict(list)

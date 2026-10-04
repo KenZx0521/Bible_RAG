@@ -4,13 +4,15 @@ Inputs read-only: graph_staging.pkl (READ queries on 7688), output/*.jsonl, outp
 Approximation (inference): an edge survives 1C iff one of its JSONL occurrence rows has its
 span inside text[book_end:] (title+body). Dictionary hits are found at every occurrence, so
 this is exact for them; CKIP-only spans may or may not be re-tagged in the body."""
+import os  # archived evidence script: roots are parameters, see docs/records/2026-10-04_kg_fix/README.md
+BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 import sys, os, re, json, pickle, hashlib, collections
-sys.path.insert(0, "/home/kenzx0521/Bible_RAG/scripts"); sys.path.insert(0, "/home/kenzx0521/Bible_RAG")
+sys.path.insert(0, BIBLE_RAG_ROOT + "/scripts"); sys.path.insert(0, BIBLE_RAG_ROOT)
 from pypinyin import lazy_pinyin
 from bible_chunking.config import CROSS_REF_ABBREV
 from export_event_registry import curated_event_ids
 from kg_validate.checks_r import _is_junk_name
-R = "/home/kenzx0521/Bible_RAG"; D = os.path.dirname(os.path.abspath(__file__))
+R = BIBLE_RAG_ROOT; D = os.path.dirname(os.path.abspath(__file__))
 g = pickle.load(open(f"{D}/graph_staging.pkl", "rb")); kg, edges, ents = g["kg"], g["edges"], g["ents"]
 label = {e["eid"]: e["label"] for e in ents}; name = {e["eid"]: e["name"] for e in ents}
 PPG = {"Person", "Place", "Group"}
