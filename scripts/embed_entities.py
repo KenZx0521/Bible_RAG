@@ -38,8 +38,18 @@ COLLECTION_NAME = os.getenv("QDRANT_ENTITY_COLLECTION", "bible_entities")
 EMBEDDING_DIM = 1024
 
 
-_FETCH_ENTITIES_CYPHER = """
+def fetch_entities_cypher(where: str = "true") -> str:
+    """Entities matching `where` with up to five pericope titles and ids.
+
+    Rows are ordered by (title, pid) before collect(), so the titles that reach
+    the embedding text are the first five in code-point order, as in
+    desc_generator.titles_cypher. Without the ORDER BY, collect() followed
+    store order and two equivalent stores embedded different text.
+    backfill_head_events re-embeds with the same query.
+    """
+    return f"""
 MATCH (e:Entity)
+WHERE {where}
 OPTIONAL MATCH (e)<-[:MENTIONS]-(src)
 WHERE src:Pericope OR src:Chunk
 OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(src)
@@ -54,6 +64,7 @@ WITH e, src, parent,
        WHEN src:Chunk    THEN coalesce(parent.id, src.pericope_id)
        ELSE NULL
      END AS pid
+ORDER BY title, pid
 WITH e,
      [t IN collect(DISTINCT title) WHERE t IS NOT NULL AND t <> ''][0..5] AS pericope_titles,
      [i IN collect(DISTINCT pid)   WHERE i IS NOT NULL AND i <> ''][0..5] AS pericope_ids
@@ -66,6 +77,9 @@ RETURN e.entity_id AS entity_id,
        pericope_ids
 ORDER BY e.entity_id
 """
+
+
+_FETCH_ENTITIES_CYPHER = fetch_entities_cypher()
 
 
 def _build_text(entity: dict, max_chars: int = 200) -> str:

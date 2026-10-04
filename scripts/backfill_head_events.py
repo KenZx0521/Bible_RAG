@@ -417,28 +417,9 @@ def reembed_qdrant(touched_ids: list[str]) -> None:
     """Re-embed touched entities into bible_entities with alias-enriched text."""
     from qdrant_client import models as qmodels
     from embeddings.embedder import BGEEmbedder
-    from embed_entities import _build_text, _entity_uuid, COLLECTION_NAME
+    from embed_entities import _build_text, _entity_uuid, COLLECTION_NAME, fetch_entities_cypher
 
-    fetch_cypher = """
-    MATCH (e:Entity) WHERE e.entity_id IN $ids
-    OPTIONAL MATCH (e)<-[:MENTIONS]-(src)
-    WHERE src:Pericope OR src:Chunk
-    OPTIONAL MATCH (parent:Pericope)-[:CONTAINS]->(src)
-    WITH e, src, parent,
-         CASE WHEN src:Pericope THEN src.title
-              WHEN src:Chunk    THEN src.pericope_title ELSE NULL END AS title,
-         CASE WHEN src:Pericope THEN src.id
-              WHEN src:Chunk    THEN coalesce(parent.id, src.pericope_id) ELSE NULL END AS pid
-    WITH e,
-         [t IN collect(DISTINCT title) WHERE t IS NOT NULL AND t <> ''][0..5] AS pericope_titles,
-         [i IN collect(DISTINCT pid)   WHERE i IS NOT NULL AND i <> ''][0..5] AS pericope_ids
-    RETURN e.entity_id AS entity_id,
-           e.canonical_name AS canonical_name,
-           e.aliases AS aliases,
-           coalesce(e.description, '') AS description,
-           [l IN labels(e) WHERE l <> 'Entity'][0] AS type,
-           pericope_titles, pericope_ids
-    """
+    fetch_cypher = fetch_entities_cypher("e.entity_id IN $ids")
     driver = get_neo4j()
     try:
         with driver.session() as session:
