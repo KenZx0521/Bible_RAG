@@ -60,3 +60,27 @@ def test_detected_signals_are_identical_across_hash_seeds():
         outputs.add(subprocess.run([sys.executable, "-c", code], cwd=BACKEND, env=env,
                                    capture_output=True, text=True, check=True).stdout)
     assert len(outputs) == 1, outputs
+
+
+def test_chapter_pins_follow_verse_ref_order_across_hash_seeds():
+    """Two chapter-only references (GENERAL_BIBLE_QUESTION_004: 約翰福音1章 /
+    創世記1章): pins are prepended per target, so iterating the targets as a set
+    put either chapter first depending on PYTHONHASHSEED."""
+    code = (
+        "from utils.retrieval import router\n"
+        "from utils.verse_parser import VerseRef\n"
+        "refs = [VerseRef('jhn', '約翰福音', 1), VerseRef('gen', '創世記', 1)]\n"
+        "ranked = [{'id': f'rom:{i}:0', 'chapter_num': i, 'rerank_score': 0.5} for i in range(1, 6)]\n"
+        "pool = ranked + [{'id': f'{b}:1:{j}', 'chapter_num': 1, 'weight': 0.9}\n"
+        "                 for b in ('gen', 'jhn') for j in range(3)]\n"
+        "print([c['id'] for c in router._pin_chapter_candidates(ranked, pool, refs, top_k=5)])\n"
+    )
+    outputs = set()
+    for seed in ("1", "2", "3", "4", "5", "6"):
+        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": str(BACKEND)}
+        outputs.add(subprocess.run([sys.executable, "-c", code], cwd=BACKEND, env=env,
+                                   capture_output=True, text=True, check=True).stdout)
+    assert len(outputs) == 1, outputs
+    # verse_refs order: 約翰福音 is named first, so its pins are prepended first
+    # and the later 創世記 pins end up in front.
+    assert outputs.pop().startswith("['gen:1:0', 'gen:1:1', 'jhn:1:0', 'jhn:1:1'")

@@ -466,9 +466,11 @@ def _pin_chapter_candidates(
     when rank fusion is active) just above the current max so routers/query.py
     does not emit null scores.
     """
-    targets: set[tuple[str, int]] = {
+    # verse_refs order, not a set: pins are prepended per target and the tail
+    # truncated, so iterating a set made the core follow PYTHONHASHSEED.
+    targets: list[tuple[str, int]] = list(dict.fromkeys(
         (vr.book_id, vr.chapter) for vr in verse_refs if vr.verse_start is None
-    }
+    ))
     if not targets or not ranked:
         return ranked
 
