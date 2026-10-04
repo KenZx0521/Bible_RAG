@@ -1,0 +1,12 @@
+{
+ "moves": {
+  "moved_to_clean_twin": 150
+ },
+ "naive_moves": {
+  "naive_moved_existing": 167,
+  "naive_moved_new_id": 65
+ },
+ "old_ids_gone": 110,
+ "gone_all_have_clean_twin": true,
+ "entities_after": 4112
+}

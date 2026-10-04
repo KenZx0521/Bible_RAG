@@ -1,0 +1,160 @@
+{
+ "exempt": {
+  "moved_pairs": 7,
+  "moved_entities": 7,
+  "moved": [
+   [
+    "group:jidutu",
+    "門徒"
+   ],
+   [
+    "person:baoluo",
+    "掃羅"
+   ],
+   [
+    "person:bide",
+    "西門"
+   ],
+   [
+    "person:matai",
+    "利未"
+   ],
+   [
+    "person:shixiyuehan",
+    "約翰"
+   ],
+   [
+    "person:youda（jialveren）",
+    "猶大"
+   ],
+   [
+    "person:yuehan（shitu）",
+    "約翰"
+   ]
+  ],
+  "events": 33,
+  "equals_committed": true,
+  "events_lost": [],
+  "events_with_changed_triggers": []
+ },
+ "no_exempt": {
+  "moved_pairs": 25,
+  "moved_entities": 20,
+  "moved": [
+   [
+    "event:baoluoxushuguizhudejingguo",
+    "保羅歸主"
+   ],
+   [
+    "event:baoluoxushuguizhudejingguo",
+    "掃羅歸主"
+   ],
+   [
+    "event:baoluoxushuguizhujingguo",
+    "保羅歸主"
+   ],
+   [
+    "event:baoluoxushuguizhujingguo",
+    "掃羅歸主"
+   ],
+   [
+    "event:jinniudushijian",
+    "金牛犢"
+   ],
+   [
+    "event:keximanidaogao",
+    "在客西馬尼禱告"
+   ],
+   [
+    "event:saoluodezhuanbian",
+    "保羅歸主"
+   ],
+   [
+    "event:saoluodezhuanbian",
+    "掃羅歸主"
+   ],
+   [
+    "event:suoluomenjianzaoshengdian",
+    "奉獻聖殿"
+   ],
+   [
+    "event:wuxunjieshenglingjianglin",
+    "聖靈降臨"
+   ],
+   [
+    "event:xintianxindi",
+    "新耶路撒冷"
+   ],
+   [
+    "event:yabolahanzhiyue",
+    "上帝與亞伯蘭立約"
+   ],
+   [
+    "event:yelusalengdahui",
+    "耶路撒冷會議"
+   ],
+   [
+    "event:yesubeidingshizijia",
+    "各各他"
+   ],
+   [
+    "event:yuyuejiedesheli",
+    "守逾越節"
+   ],
+   [
+    "event:yuyuejiedesheli",
+    "第一個逾越節"
+   ],
+   [
+    "event:yuyuejiedesheli",
+    "逾越節"
+   ],
+   [
+    "group:jidutu",
+    "門徒"
+   ],
+   [
+    "person:baoluo",
+    "掃羅"
+   ],
+   [
+    "person:bide",
+    "西門"
+   ],
+   [
+    "person:matai",
+    "利未"
+   ],
+   [
+    "person:shixiyuehan",
+    "約翰"
+   ],
+   [
+    "person:yeteluo",
+    "流珥"
+   ],
+   [
+    "person:youda（jialveren）",
+    "猶大"
+   ],
+   [
+    "person:yuehan（shitu）",
+    "約翰"
+   ]
+  ],
+  "events": 28,
+  "equals_committed": false,
+  "events_lost": [
+   "event:baoluoxushuguizhudejingguo",
+   "event:baoluoxushuguizhujingguo",
+   "event:jinniudushijian",
+   "event:saoluodezhuanbian",
+   "event:yuyuejiedesheli"
+  ],
+  "events_with_changed_triggers": [
+   "event:wuxunjieshenglingjianglin"
+  ]
+ },
+ "committed_triggers_from_alias": 25,
+ "committed_triggers_from_alias_not_curated": []
+}

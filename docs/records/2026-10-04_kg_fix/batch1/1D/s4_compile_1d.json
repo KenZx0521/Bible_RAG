@@ -1,0 +1,8312 @@
+{
+ "keep|Event": {
+  "policy": "keep",
+  "dictname_scope": [
+   "Event"
+  ],
+  "stats": {
+   "normalized_names": 183,
+   "protected_would_hit": 0
+  },
+  "entities": {
+   "before": 9124,
+   "after": 8930
+  },
+  "by_type_before": {
+   "Event": 1714,
+   "Person": 2419,
+   "Group": 505,
+   "Object": 2200,
+   "Place": 1299,
+   "Theme": 987
+  },
+  "by_type_after": {
+   "Event": 1682,
+   "Person": 2355,
+   "Group": 501,
+   "Object": 2184,
+   "Place": 1257,
+   "Theme": 951
+  },
+  "id_migration": {
+   "rows": 210,
+   "by_op_rule_type": {
+    "merge|normalized_twin|Group": 4,
+    "merge|normalized_twin|Object": 6,
+    "merge|normalized_twin|Person": 64,
+    "merge|normalized_twin|Place": 42,
+    "drop|junk:too_short|Event": 1,
+    "drop|dictname|Event": 1,
+    "drop|junk:xref_remnant|Event": 19,
+    "drop|stop:generic24|Event": 16,
+    "drop|junk:fragment_end|Event": 6,
+    "drop|stop:ev09|Event": 5,
+    "drop|junk:too_short|Object": 10,
+    "drop|junk:fragment_end|Theme": 1,
+    "drop|junk:xref_remnant|Theme": 35
+   },
+   "by_op": {
+    "merge": 116,
+    "drop": 94
+   }
+  },
+  "protected_in_migration": [],
+  "mentions": {
+   "edges_before": 46205,
+   "edges_after": 45980,
+   "lost_keys": 287,
+   "new_keys": 62
+  },
+  "relations_jsonl": {
+   "rows": 6958,
+   "dropped_rows": 135,
+   "dropped_by_rule": {
+    "stop:generic24": 92,
+    "junk:xref_remnant": 24,
+    "dictname": 5,
+    "junk:too_short": 4,
+    "stop:ev09": 10
+   },
+   "rewritten_rows": 59,
+   "self_loops_after": 2,
+   "distinct_triples_before": 6958,
+   "distinct_triples_after": 6809
+  },
+  "replay": {
+   "written": 2929,
+   "unchanged": 4814,
+   "stale": 11,
+   "missing": 192
+  },
+  "replay_stale": [
+   "object:nahe",
+   "object:yinmai",
+   "object:zhuyehehua",
+   "person:yiduo",
+   "place:bala",
+   "place:bo‧yalaba",
+   "place:hasa‧shuya",
+   "place:jidisi",
+   "place:luode",
+   "place:xigela",
+   "place:yilun"
+  ],
+  "replay_missing_explained": 192,
+  "replay_missing_unexplained": [],
+  "descriptions_lost_by_type": {
+   "Object": 19,
+   "Person": 63,
+   "Place": 49,
+   "Event": 32,
+   "Group": 4,
+   "Theme": 36
+  },
+  "H4_whitespace_names": 0,
+  "ids_with_whitespace": 55,
+  "R8": {},
+  "R10_all": [
+   "上帝與亞伯蘭立約",
+   "保羅歸主",
+   "各各他",
+   "在客西馬尼禱告",
+   "奉獻聖殿",
+   "守逾越節",
+   "掃羅歸主",
+   "新耶路撒冷",
+   "流珥",
+   "第一個逾越節",
+   "耶路撒冷會議",
+   "聖靈降臨",
+   "逾越節",
+   "金牛犢"
+  ],
+  "R10_excl_curated": [],
+  "R10_before_all": 21,
+  "ambiguous_aliases": {
+   "group:jidutu": [
+    "門徒"
+   ],
+   "person:yuehan（shitu）": [
+    "約翰"
+   ],
+   "person:matai": [
+    "利未"
+   ],
+   "person:baoluo": [
+    "掃羅"
+   ],
+   "person:bide": [
+    "西門"
+   ],
+   "person:shixiyuehan": [
+    "約翰"
+   ],
+   "person:youda（jialveren）": [
+    "猶大"
+   ]
+  },
+  "R5_cross_type_names": {
+   "before": 908,
+   "after": 906
+  },
+  "H10": {
+   "before": 2227,
+   "after": 2165,
+   "same_fingerprint": false
+  },
+  "H10_event_mentions_removed_by_id": {
+   "event:xiaoyumoxi": 6,
+   "event:feng，": 1,
+   "event:lude。": 1,
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": 1,
+   "event:（tai26‧20－25；ke14‧17－21；lu": 1,
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": 1,
+   "event:（tai21‧12－13；ke11‧15－17；lu": 1,
+   "event: yashalong": 7,
+   "event:mala": 8,
+   "event:（tai26‧57－58，69－75；ke": 1,
+   "event:（tai26‧31－35；ke14‧27－31；lu": 1,
+   "event:（tai26‧26－30；ke14‧22－26；linqian": 1,
+   "event:masa": 5,
+   "event:（tai26‧26－30；lu22‧14－20；linqian": 1,
+   "event:（ke14‧22－26；lu22‧15－20；linqian": 1,
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": 1,
+   "event:yehehuaxiaoyu": 6,
+   "event:（tai27‧15－31；ke15‧6－20；lu": 1,
+   "event:（tai27‧45－56；ke15‧33－41；lu": 1,
+   "event:shine？": 1,
+   "event:（tai26‧47－56；ke14‧43－50；lu": 1,
+   "event:miliba": 3,
+   "event:（tai26‧59－66；ke14‧55－64；lu": 1,
+   "event:dejun」。": 1,
+   "event:tou！": 1,
+   "event:（tai28‧16－20；ke16‧14－18；lu": 1,
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": 1,
+   "event: ya": 2,
+   "event:zi。": 1,
+   "event:（tai26‧71－75；ke14‧69－72；lu": 1,
+   "event:（tai27‧57－61；ke15‧42－47；lu": 1,
+   "event:（tai27‧32－44；ke15‧21－32；lu": 1
+  },
+  "event_mentions_removed_protected": [],
+  "registry": {
+   "events_before": 33,
+   "events_after": 33,
+   "identical": true,
+   "equals_committed": true
+  },
+  "event_extraction_method_null": 0,
+  "H7_prefix_mismatch": [
+   "group:yehehua"
+  ],
+  "find_by_name_liwei_before": [
+   [
+    1249,
+    "person:matai",
+    "馬太"
+   ],
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ]
+  ],
+  "find_by_name_liwei_after": [
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ],
+   [
+    6,
+    "object:dixiongliweiren",
+    "弟兄利未人"
+   ]
+  ],
+  "migration_rows": [
+   {
+    "old_id": "group: pasiluxiren",
+    "new_id": "group:pasiluxiren",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yiduozu",
+    "new_id": "group:yiduozu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yabiyazu",
+    "new_id": "group:yabiyazu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: salaizu",
+    "new_id": "group:salaizu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "object: zhuyehehua",
+    "new_id": "object:zhuyehehua",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: nahe",
+    "new_id": "object:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: hushai",
+    "new_id": "object:hushai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: chebingzhang",
+    "new_id": "object:chebingzhang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yinmai",
+    "new_id": "object:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: jiadezisun",
+    "new_id": "object:jiadezisun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "person: wang",
+    "new_id": "person:wang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:yaha ",
+    "new_id": "person:yaha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yueashi",
+    "new_id": "person:yueashi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: milali",
+    "new_id": "person:milali",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shalong",
+    "new_id": "person:shalong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimaya",
+    "new_id": "person:shimaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: binaya",
+    "new_id": "person:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: annen",
+    "new_id": "person:annen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: haxue",
+    "new_id": "person:haxue",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hada",
+    "new_id": "person:hada",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yaxi",
+    "new_id": "person:yaxi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: laboshaji",
+    "new_id": "person:laboshaji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yagan",
+    "new_id": "person:yagan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hamo",
+    "new_id": "person:hamo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bani",
+    "new_id": "person:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yamaliya",
+    "new_id": "person:yamaliya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bila",
+    "new_id": "person:bila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nahe",
+    "new_id": "person:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanen",
+    "new_id": "person:hanen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimei",
+    "new_id": "person:shimei",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: wusa",
+    "new_id": "person:wusa",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bituli",
+    "new_id": "person:bituli",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: anlan",
+    "new_id": "person:anlan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimiya",
+    "new_id": "person:shimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yadaya",
+    "new_id": "person:yadaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bashihuer",
+    "new_id": "person:bashihuer",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:linqian ",
+    "new_id": "person:linqian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: lamai",
+    "new_id": "person:lamai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: pila",
+    "new_id": "person:pila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yiduo",
+    "new_id": "person:yiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shifatiya",
+    "new_id": "person:shifatiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: halin",
+    "new_id": "person:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanan",
+    "new_id": "person:hanan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shijiani",
+    "new_id": "person:shijiani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shala",
+    "new_id": "person:shala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: dishun",
+    "new_id": "person:dishun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nibo",
+    "new_id": "person:nibo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: naha",
+    "new_id": "person:naha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yinmai",
+    "new_id": "person:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: xinma",
+    "new_id": "person:xinma",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiduo",
+    "new_id": "person:jiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jilv",
+    "new_id": "person:jilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jide",
+    "new_id": "person:jide",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:luoshi ",
+    "new_id": "person:luoshi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: salu",
+    "new_id": "person:salu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: heba",
+    "new_id": "person:heba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: mishima",
+    "new_id": "person:mishima",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: miyamin",
+    "new_id": "person:miyamin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bisai",
+    "new_id": "person:bisai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hashun",
+    "new_id": "person:hashun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yihu",
+    "new_id": "person:yihu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nixiya",
+    "new_id": "person:nixiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yitu",
+    "new_id": "person:yitu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: tuoya",
+    "new_id": "person:tuoya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiasan",
+    "new_id": "person:jiasan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shoumen",
+    "new_id": "person:shoumen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nagai",
+    "new_id": "person:nagai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yatalu",
+    "new_id": "person:yatalu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bo‧ningla",
+    "new_id": "person:bo‧ningla",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: babo",
+    "new_id": "person:babo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: baxilv",
+    "new_id": "person:baxilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bake",
+    "new_id": "person:bake",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yewusi",
+    "new_id": "person:yewusi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hajia",
+    "new_id": "person:hajia",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "place: jiyila",
+    "new_id": "place:jiyila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yesilie",
+    "new_id": "place:yesilie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bala",
+    "new_id": "place:bala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: laji",
+    "new_id": "place:laji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xila",
+    "new_id": "place:xila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: binaya",
+    "new_id": "place:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: suola",
+    "new_id": "place:suola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduoniya",
+    "new_id": "place:yaduoniya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: geshan",
+    "new_id": "place:geshan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yilun",
+    "new_id": "place:yilun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bani",
+    "new_id": "place:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xifu",
+    "new_id": "place:xifu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishulan",
+    "new_id": "place:mishulan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaza",
+    "new_id": "place:yaza",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xigela",
+    "new_id": "place:xigela",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yemo",
+    "new_id": "place:yemo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidisi",
+    "new_id": "place:jidisi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidiluo",
+    "new_id": "place:jidiluo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: haduolan",
+    "new_id": "place:haduolan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hasa‧shuya",
+    "new_id": "place:hasa‧shuya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧su",
+    "new_id": "place:bo‧su",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: pilati",
+    "new_id": "place:pilati",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: luode",
+    "new_id": "place:luode",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaman",
+    "new_id": "place:yaman",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yileiduola",
+    "new_id": "place:yileiduola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: libawu",
+    "new_id": "place:libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalayin",
+    "new_id": "place:shalayin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dilian",
+    "new_id": "place:dilian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yifuta",
+    "new_id": "place:yifuta",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dana",
+    "new_id": "place:dana",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yanong",
+    "new_id": "place:yanong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧yalaba",
+    "new_id": "place:bo‧yalaba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧libawu",
+    "new_id": "place:bo‧libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalabin",
+    "new_id": "place:shalabin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dingna",
+    "new_id": "place:dingna",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduolaiyin",
+    "new_id": "place:yaduolaiyin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: matani",
+    "new_id": "place:matani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shilimiya",
+    "new_id": "place:shilimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: malu",
+    "new_id": "place:malu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: halin",
+    "new_id": "place:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishisabie",
+    "new_id": "place:mishisabie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hexiya",
+    "new_id": "place:hexiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "event: ya",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Event"
+   },
+   {
+    "old_id": "event: yashalong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:*wangxia18‧13－37；19‧14－19，35－37；sai",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:choushi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dahui",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dashi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dejun」。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:fenfu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:feng，",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:gongcheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jiannan",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jianzhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jieju",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:lude。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:mala",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:masa",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:miliba",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:rizi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shengri",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shine？",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shiyong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tanzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tou！",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:wenhou",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:xiaoyumoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:yehehuaxiaoyu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhangzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhenglun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zi。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zuoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（ke14‧22－26；lu22‧15－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai21‧12－13；ke11‧15－17；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧20－25；ke14‧17－21；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；ke14‧22－26；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；lu22‧14－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧31－35；ke14‧27－31；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧47－56；ke14‧43－50；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧57－58，69－75；ke",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧59－66；ke14‧55－64；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧71－75；ke14‧69－72；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧15－31；ke15‧6－20；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧1－2，11－14；ke15‧1－5；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧32－44；ke15‧21－32；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧45－56；ke15‧33－41；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧57－61；ke15‧42－47；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai28‧16－20；ke16‧14－18；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "object: che",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: cheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: dian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: huo",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ling",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lv",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: min",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: zhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "theme:xiandedaogao。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧15－19；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧12－21；lu22‧7－14，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧27－31；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧43－50；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧53－65；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧66－72；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧21－32；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧33－41；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧42－47；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧6－15；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke16‧14－18；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；ke11‧15－19；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；ke14‧12－21；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；lu22‧7－13，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；ke14‧27－31；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；ke14‧43－50；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧57－68；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧59－66；ke14‧55－64；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧69－75；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；ke15‧6－15；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；ke15‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；lu23‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；ke15‧21－32；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；ke15‧33－41；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；ke15‧42－47；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai28‧16－20；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   }
+  ],
+  "drop_list": {
+   "event: ya": "junk:too_short",
+   "event: yashalong": "dictname",
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": "junk:xref_remnant",
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": "junk:xref_remnant",
+   "event:choushi": "stop:generic24",
+   "event:dahui": "stop:generic24",
+   "event:dashi": "stop:generic24",
+   "event:dejun」。": "junk:fragment_end",
+   "event:fenfu": "stop:generic24",
+   "event:feng，": "junk:fragment_end",
+   "event:gongcheng": "stop:generic24",
+   "event:jiannan": "stop:generic24",
+   "event:jianzhu": "stop:generic24",
+   "event:jieju": "stop:generic24",
+   "event:lude。": "junk:fragment_end",
+   "event:mala": "stop:ev09",
+   "event:masa": "stop:ev09",
+   "event:miliba": "stop:ev09",
+   "event:rizi": "stop:generic24",
+   "event:shengri": "stop:generic24",
+   "event:shine？": "junk:fragment_end",
+   "event:shiyong": "stop:generic24",
+   "event:tanzi": "stop:generic24",
+   "event:tou！": "junk:fragment_end",
+   "event:wenhou": "stop:generic24",
+   "event:xiaoyumoxi": "stop:ev09",
+   "event:yehehuaxiaoyu": "stop:ev09",
+   "event:zhangzi": "stop:generic24",
+   "event:zhenglun": "stop:generic24",
+   "event:zi。": "junk:fragment_end",
+   "event:zuoxi": "stop:generic24",
+   "event:（ke14‧22－26；lu22‧15－20；linqian": "junk:xref_remnant",
+   "event:（tai21‧12－13；ke11‧15－17；lu": "junk:xref_remnant",
+   "event:（tai26‧20－25；ke14‧17－21；lu": "junk:xref_remnant",
+   "event:（tai26‧26－30；ke14‧22－26；linqian": "junk:xref_remnant",
+   "event:（tai26‧26－30；lu22‧14－20；linqian": "junk:xref_remnant",
+   "event:（tai26‧31－35；ke14‧27－31；lu": "junk:xref_remnant",
+   "event:（tai26‧47－56；ke14‧43－50；lu": "junk:xref_remnant",
+   "event:（tai26‧57－58，69－75；ke": "junk:xref_remnant",
+   "event:（tai26‧59－66；ke14‧55－64；lu": "junk:xref_remnant",
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": "junk:xref_remnant",
+   "event:（tai26‧71－75；ke14‧69－72；lu": "junk:xref_remnant",
+   "event:（tai27‧15－31；ke15‧6－20；lu": "junk:xref_remnant",
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": "junk:xref_remnant",
+   "event:（tai27‧32－44；ke15‧21－32；lu": "junk:xref_remnant",
+   "event:（tai27‧45－56；ke15‧33－41；lu": "junk:xref_remnant",
+   "event:（tai27‧57－61；ke15‧42－47；lu": "junk:xref_remnant",
+   "event:（tai28‧16－20；ke16‧14－18；lu": "junk:xref_remnant",
+   "object: che": "junk:too_short",
+   "object: cheng": "junk:too_short",
+   "object: dian": "junk:too_short",
+   "object: huo": "junk:too_short",
+   "object: ling": "junk:too_short",
+   "object: lun": "junk:too_short",
+   "object: lv": "junk:too_short",
+   "object: min": "junk:too_short",
+   "object: ren": "junk:too_short",
+   "object: zhu": "junk:too_short",
+   "theme:xiandedaogao。": "junk:fragment_end",
+   "theme:（ke11‧15－19；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（ke11‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（ke14‧12－21；lu22‧7－14，21－23；yue": "junk:xref_remnant",
+   "theme:（ke14‧27－31；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（ke14‧43－50；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（ke14‧53－65；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（ke14‧66－72；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（ke15‧21－32；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（ke15‧33－41；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（ke15‧42－47；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（ke15‧6－15；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（ke16‧14－18；lu24‧36－49；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；ke11‧15－19；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（tai21‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；ke14‧12－21；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；lu22‧7－13，21－23；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；ke14‧27－31；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；ke14‧43－50；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（tai26‧57－68；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（tai26‧59－66；ke14‧55－64；yue": "junk:xref_remnant",
+   "theme:（tai26‧69－75；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；ke15‧6－15；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；ke15‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；lu23‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；ke15‧21－32；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；ke15‧33－41；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；ke15‧42－47；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（tai28‧16－20；lu24‧36－49；yue": "junk:xref_remnant"
+  }
+ },
+ "keep|Event+Object+Theme": {
+  "policy": "keep",
+  "dictname_scope": [
+   "Event",
+   "Object",
+   "Theme"
+  ],
+  "stats": {
+   "normalized_names": 183,
+   "protected_would_hit": 0
+  },
+  "entities": {
+   "before": 9124,
+   "after": 8926
+  },
+  "by_type_before": {
+   "Event": 1714,
+   "Person": 2419,
+   "Group": 505,
+   "Object": 2200,
+   "Place": 1299,
+   "Theme": 987
+  },
+  "by_type_after": {
+   "Event": 1682,
+   "Person": 2355,
+   "Group": 501,
+   "Object": 2180,
+   "Place": 1257,
+   "Theme": 951
+  },
+  "id_migration": {
+   "rows": 214,
+   "by_op_rule_type": {
+    "merge|normalized_twin|Group": 4,
+    "merge|normalized_twin|Object": 6,
+    "merge|normalized_twin|Person": 64,
+    "merge|normalized_twin|Place": 42,
+    "drop|junk:too_short|Event": 1,
+    "drop|dictname|Event": 1,
+    "drop|junk:xref_remnant|Event": 19,
+    "drop|stop:generic24|Event": 16,
+    "drop|junk:fragment_end|Event": 6,
+    "drop|stop:ev09|Event": 5,
+    "drop|dictname|Object": 4,
+    "drop|junk:too_short|Object": 10,
+    "drop|junk:fragment_end|Theme": 1,
+    "drop|junk:xref_remnant|Theme": 35
+   },
+   "by_op": {
+    "merge": 116,
+    "drop": 98
+   }
+  },
+  "protected_in_migration": [],
+  "mentions": {
+   "edges_before": 46205,
+   "edges_after": 45966,
+   "lost_keys": 301,
+   "new_keys": 62
+  },
+  "relations_jsonl": {
+   "rows": 6958,
+   "dropped_rows": 135,
+   "dropped_by_rule": {
+    "stop:generic24": 92,
+    "junk:xref_remnant": 24,
+    "dictname": 5,
+    "junk:too_short": 4,
+    "stop:ev09": 10
+   },
+   "rewritten_rows": 59,
+   "self_loops_after": 2,
+   "distinct_triples_before": 6958,
+   "distinct_triples_after": 6809
+  },
+  "replay": {
+   "written": 2929,
+   "unchanged": 4810,
+   "stale": 11,
+   "missing": 196
+  },
+  "replay_stale": [
+   "object:nahe",
+   "object:yinmai",
+   "object:zhuyehehua",
+   "person:yiduo",
+   "place:bala",
+   "place:bo‧yalaba",
+   "place:hasa‧shuya",
+   "place:jidisi",
+   "place:luode",
+   "place:xigela",
+   "place:yilun"
+  ],
+  "replay_missing_explained": 196,
+  "replay_missing_unexplained": [],
+  "descriptions_lost_by_type": {
+   "Object": 23,
+   "Person": 63,
+   "Place": 49,
+   "Event": 32,
+   "Group": 4,
+   "Theme": 36
+  },
+  "H4_whitespace_names": 0,
+  "ids_with_whitespace": 51,
+  "R8": {},
+  "R10_all": [
+   "上帝與亞伯蘭立約",
+   "保羅歸主",
+   "各各他",
+   "在客西馬尼禱告",
+   "奉獻聖殿",
+   "守逾越節",
+   "掃羅歸主",
+   "新耶路撒冷",
+   "流珥",
+   "第一個逾越節",
+   "耶路撒冷會議",
+   "聖靈降臨",
+   "逾越節",
+   "金牛犢"
+  ],
+  "R10_excl_curated": [],
+  "R10_before_all": 21,
+  "ambiguous_aliases": {
+   "group:jidutu": [
+    "門徒"
+   ],
+   "person:yuehan（shitu）": [
+    "約翰"
+   ],
+   "person:matai": [
+    "利未"
+   ],
+   "person:baoluo": [
+    "掃羅"
+   ],
+   "person:bide": [
+    "西門"
+   ],
+   "person:shixiyuehan": [
+    "約翰"
+   ],
+   "person:youda（jialveren）": [
+    "猶大"
+   ]
+  },
+  "R5_cross_type_names": {
+   "before": 908,
+   "after": 902
+  },
+  "H10": {
+   "before": 2227,
+   "after": 2165,
+   "same_fingerprint": false
+  },
+  "H10_event_mentions_removed_by_id": {
+   "event:xiaoyumoxi": 6,
+   "event:feng，": 1,
+   "event:lude。": 1,
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": 1,
+   "event:（tai26‧20－25；ke14‧17－21；lu": 1,
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": 1,
+   "event:（tai21‧12－13；ke11‧15－17；lu": 1,
+   "event: yashalong": 7,
+   "event:mala": 8,
+   "event:（tai26‧57－58，69－75；ke": 1,
+   "event:（tai26‧31－35；ke14‧27－31；lu": 1,
+   "event:（tai26‧26－30；ke14‧22－26；linqian": 1,
+   "event:masa": 5,
+   "event:（tai26‧26－30；lu22‧14－20；linqian": 1,
+   "event:（ke14‧22－26；lu22‧15－20；linqian": 1,
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": 1,
+   "event:yehehuaxiaoyu": 6,
+   "event:（tai27‧15－31；ke15‧6－20；lu": 1,
+   "event:（tai27‧45－56；ke15‧33－41；lu": 1,
+   "event:shine？": 1,
+   "event:（tai26‧47－56；ke14‧43－50；lu": 1,
+   "event:miliba": 3,
+   "event:（tai26‧59－66；ke14‧55－64；lu": 1,
+   "event:dejun」。": 1,
+   "event:tou！": 1,
+   "event:（tai28‧16－20；ke16‧14－18；lu": 1,
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": 1,
+   "event: ya": 2,
+   "event:zi。": 1,
+   "event:（tai26‧71－75；ke14‧69－72；lu": 1,
+   "event:（tai27‧57－61；ke15‧42－47；lu": 1,
+   "event:（tai27‧32－44；ke15‧21－32；lu": 1
+  },
+  "event_mentions_removed_protected": [],
+  "registry": {
+   "events_before": 33,
+   "events_after": 33,
+   "identical": true,
+   "equals_committed": true
+  },
+  "event_extraction_method_null": 0,
+  "H7_prefix_mismatch": [
+   "group:yehehua"
+  ],
+  "find_by_name_liwei_before": [
+   [
+    1249,
+    "person:matai",
+    "馬太"
+   ],
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ]
+  ],
+  "find_by_name_liwei_after": [
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ],
+   [
+    6,
+    "object:dixiongliweiren",
+    "弟兄利未人"
+   ]
+  ],
+  "migration_rows": [
+   {
+    "old_id": "group: pasiluxiren",
+    "new_id": "group:pasiluxiren",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yiduozu",
+    "new_id": "group:yiduozu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yabiyazu",
+    "new_id": "group:yabiyazu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: salaizu",
+    "new_id": "group:salaizu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "object: zhuyehehua",
+    "new_id": "object:zhuyehehua",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: nahe",
+    "new_id": "object:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: hushai",
+    "new_id": "object:hushai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: chebingzhang",
+    "new_id": "object:chebingzhang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yinmai",
+    "new_id": "object:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: jiadezisun",
+    "new_id": "object:jiadezisun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "person: wang",
+    "new_id": "person:wang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:yaha ",
+    "new_id": "person:yaha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yueashi",
+    "new_id": "person:yueashi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: milali",
+    "new_id": "person:milali",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shalong",
+    "new_id": "person:shalong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimaya",
+    "new_id": "person:shimaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: binaya",
+    "new_id": "person:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: annen",
+    "new_id": "person:annen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: haxue",
+    "new_id": "person:haxue",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hada",
+    "new_id": "person:hada",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yaxi",
+    "new_id": "person:yaxi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: laboshaji",
+    "new_id": "person:laboshaji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yagan",
+    "new_id": "person:yagan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hamo",
+    "new_id": "person:hamo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bani",
+    "new_id": "person:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yamaliya",
+    "new_id": "person:yamaliya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bila",
+    "new_id": "person:bila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nahe",
+    "new_id": "person:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanen",
+    "new_id": "person:hanen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimei",
+    "new_id": "person:shimei",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: wusa",
+    "new_id": "person:wusa",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bituli",
+    "new_id": "person:bituli",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: anlan",
+    "new_id": "person:anlan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimiya",
+    "new_id": "person:shimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yadaya",
+    "new_id": "person:yadaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bashihuer",
+    "new_id": "person:bashihuer",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:linqian ",
+    "new_id": "person:linqian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: lamai",
+    "new_id": "person:lamai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: pila",
+    "new_id": "person:pila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yiduo",
+    "new_id": "person:yiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shifatiya",
+    "new_id": "person:shifatiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: halin",
+    "new_id": "person:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanan",
+    "new_id": "person:hanan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shijiani",
+    "new_id": "person:shijiani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shala",
+    "new_id": "person:shala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: dishun",
+    "new_id": "person:dishun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nibo",
+    "new_id": "person:nibo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: naha",
+    "new_id": "person:naha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yinmai",
+    "new_id": "person:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: xinma",
+    "new_id": "person:xinma",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiduo",
+    "new_id": "person:jiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jilv",
+    "new_id": "person:jilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jide",
+    "new_id": "person:jide",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:luoshi ",
+    "new_id": "person:luoshi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: salu",
+    "new_id": "person:salu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: heba",
+    "new_id": "person:heba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: mishima",
+    "new_id": "person:mishima",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: miyamin",
+    "new_id": "person:miyamin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bisai",
+    "new_id": "person:bisai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hashun",
+    "new_id": "person:hashun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yihu",
+    "new_id": "person:yihu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nixiya",
+    "new_id": "person:nixiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yitu",
+    "new_id": "person:yitu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: tuoya",
+    "new_id": "person:tuoya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiasan",
+    "new_id": "person:jiasan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shoumen",
+    "new_id": "person:shoumen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nagai",
+    "new_id": "person:nagai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yatalu",
+    "new_id": "person:yatalu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bo‧ningla",
+    "new_id": "person:bo‧ningla",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: babo",
+    "new_id": "person:babo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: baxilv",
+    "new_id": "person:baxilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bake",
+    "new_id": "person:bake",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yewusi",
+    "new_id": "person:yewusi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hajia",
+    "new_id": "person:hajia",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "place: jiyila",
+    "new_id": "place:jiyila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yesilie",
+    "new_id": "place:yesilie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bala",
+    "new_id": "place:bala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: laji",
+    "new_id": "place:laji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xila",
+    "new_id": "place:xila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: binaya",
+    "new_id": "place:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: suola",
+    "new_id": "place:suola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduoniya",
+    "new_id": "place:yaduoniya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: geshan",
+    "new_id": "place:geshan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yilun",
+    "new_id": "place:yilun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bani",
+    "new_id": "place:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xifu",
+    "new_id": "place:xifu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishulan",
+    "new_id": "place:mishulan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaza",
+    "new_id": "place:yaza",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xigela",
+    "new_id": "place:xigela",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yemo",
+    "new_id": "place:yemo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidisi",
+    "new_id": "place:jidisi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidiluo",
+    "new_id": "place:jidiluo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: haduolan",
+    "new_id": "place:haduolan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hasa‧shuya",
+    "new_id": "place:hasa‧shuya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧su",
+    "new_id": "place:bo‧su",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: pilati",
+    "new_id": "place:pilati",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: luode",
+    "new_id": "place:luode",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaman",
+    "new_id": "place:yaman",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yileiduola",
+    "new_id": "place:yileiduola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: libawu",
+    "new_id": "place:libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalayin",
+    "new_id": "place:shalayin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dilian",
+    "new_id": "place:dilian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yifuta",
+    "new_id": "place:yifuta",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dana",
+    "new_id": "place:dana",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yanong",
+    "new_id": "place:yanong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧yalaba",
+    "new_id": "place:bo‧yalaba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧libawu",
+    "new_id": "place:bo‧libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalabin",
+    "new_id": "place:shalabin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dingna",
+    "new_id": "place:dingna",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduolaiyin",
+    "new_id": "place:yaduolaiyin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: matani",
+    "new_id": "place:matani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shilimiya",
+    "new_id": "place:shilimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: malu",
+    "new_id": "place:malu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: halin",
+    "new_id": "place:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishisabie",
+    "new_id": "place:mishisabie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hexiya",
+    "new_id": "place:hexiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "event: ya",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Event"
+   },
+   {
+    "old_id": "event: yashalong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:*wangxia18‧13－37；19‧14－19，35－37；sai",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:choushi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dahui",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dashi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dejun」。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:fenfu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:feng，",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:gongcheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jiannan",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jianzhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jieju",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:lude。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:mala",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:masa",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:miliba",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:rizi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shengri",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shine？",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shiyong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tanzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tou！",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:wenhou",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:xiaoyumoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:yehehuaxiaoyu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhangzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhenglun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zi。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zuoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（ke14‧22－26；lu22‧15－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai21‧12－13；ke11‧15－17；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧20－25；ke14‧17－21；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；ke14‧22－26；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；lu22‧14－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧31－35；ke14‧27－31；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧47－56；ke14‧43－50；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧57－58，69－75；ke",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧59－66；ke14‧55－64；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧71－75；ke14‧69－72；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧15－31；ke15‧6－20；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧1－2，11－14；ke15‧1－5；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧32－44；ke15‧21－32；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧45－56；ke15‧33－41；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧57－61；ke15‧42－47；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai28‧16－20；ke16‧14－18；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "object: boasi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: che",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: cheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: dian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: feilishiren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: heren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: huo",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ling",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lv",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: min",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yamenren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: zhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "theme:xiandedaogao。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧15－19；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧12－21；lu22‧7－14，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧27－31；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧43－50；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧53－65；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧66－72；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧21－32；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧33－41；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧42－47；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧6－15；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke16‧14－18；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；ke11‧15－19；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；ke14‧12－21；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；lu22‧7－13，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；ke14‧27－31；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；ke14‧43－50；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧57－68；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧59－66；ke14‧55－64；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧69－75；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；ke15‧6－15；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；ke15‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；lu23‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；ke15‧21－32；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；ke15‧33－41；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；ke15‧42－47；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai28‧16－20；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   }
+  ],
+  "drop_list": {
+   "event: ya": "junk:too_short",
+   "event: yashalong": "dictname",
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": "junk:xref_remnant",
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": "junk:xref_remnant",
+   "event:choushi": "stop:generic24",
+   "event:dahui": "stop:generic24",
+   "event:dashi": "stop:generic24",
+   "event:dejun」。": "junk:fragment_end",
+   "event:fenfu": "stop:generic24",
+   "event:feng，": "junk:fragment_end",
+   "event:gongcheng": "stop:generic24",
+   "event:jiannan": "stop:generic24",
+   "event:jianzhu": "stop:generic24",
+   "event:jieju": "stop:generic24",
+   "event:lude。": "junk:fragment_end",
+   "event:mala": "stop:ev09",
+   "event:masa": "stop:ev09",
+   "event:miliba": "stop:ev09",
+   "event:rizi": "stop:generic24",
+   "event:shengri": "stop:generic24",
+   "event:shine？": "junk:fragment_end",
+   "event:shiyong": "stop:generic24",
+   "event:tanzi": "stop:generic24",
+   "event:tou！": "junk:fragment_end",
+   "event:wenhou": "stop:generic24",
+   "event:xiaoyumoxi": "stop:ev09",
+   "event:yehehuaxiaoyu": "stop:ev09",
+   "event:zhangzi": "stop:generic24",
+   "event:zhenglun": "stop:generic24",
+   "event:zi。": "junk:fragment_end",
+   "event:zuoxi": "stop:generic24",
+   "event:（ke14‧22－26；lu22‧15－20；linqian": "junk:xref_remnant",
+   "event:（tai21‧12－13；ke11‧15－17；lu": "junk:xref_remnant",
+   "event:（tai26‧20－25；ke14‧17－21；lu": "junk:xref_remnant",
+   "event:（tai26‧26－30；ke14‧22－26；linqian": "junk:xref_remnant",
+   "event:（tai26‧26－30；lu22‧14－20；linqian": "junk:xref_remnant",
+   "event:（tai26‧31－35；ke14‧27－31；lu": "junk:xref_remnant",
+   "event:（tai26‧47－56；ke14‧43－50；lu": "junk:xref_remnant",
+   "event:（tai26‧57－58，69－75；ke": "junk:xref_remnant",
+   "event:（tai26‧59－66；ke14‧55－64；lu": "junk:xref_remnant",
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": "junk:xref_remnant",
+   "event:（tai26‧71－75；ke14‧69－72；lu": "junk:xref_remnant",
+   "event:（tai27‧15－31；ke15‧6－20；lu": "junk:xref_remnant",
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": "junk:xref_remnant",
+   "event:（tai27‧32－44；ke15‧21－32；lu": "junk:xref_remnant",
+   "event:（tai27‧45－56；ke15‧33－41；lu": "junk:xref_remnant",
+   "event:（tai27‧57－61；ke15‧42－47；lu": "junk:xref_remnant",
+   "event:（tai28‧16－20；ke16‧14－18；lu": "junk:xref_remnant",
+   "object: boasi": "dictname",
+   "object: che": "junk:too_short",
+   "object: cheng": "junk:too_short",
+   "object: dian": "junk:too_short",
+   "object: feilishiren": "dictname",
+   "object: heren": "dictname",
+   "object: huo": "junk:too_short",
+   "object: ling": "junk:too_short",
+   "object: lun": "junk:too_short",
+   "object: lv": "junk:too_short",
+   "object: min": "junk:too_short",
+   "object: ren": "junk:too_short",
+   "object: yamenren": "dictname",
+   "object: zhu": "junk:too_short",
+   "theme:xiandedaogao。": "junk:fragment_end",
+   "theme:（ke11‧15－19；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（ke11‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（ke14‧12－21；lu22‧7－14，21－23；yue": "junk:xref_remnant",
+   "theme:（ke14‧27－31；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（ke14‧43－50；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（ke14‧53－65；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（ke14‧66－72；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（ke15‧21－32；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（ke15‧33－41；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（ke15‧42－47；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（ke15‧6－15；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（ke16‧14－18；lu24‧36－49；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；ke11‧15－19；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（tai21‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；ke14‧12－21；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；lu22‧7－13，21－23；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；ke14‧27－31；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；ke14‧43－50；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（tai26‧57－68；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（tai26‧59－66；ke14‧55－64；yue": "junk:xref_remnant",
+   "theme:（tai26‧69－75；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；ke15‧6－15；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；ke15‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；lu23‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；ke15‧21－32；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；ke15‧33－41；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；ke15‧42－47；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（tai28‧16－20；lu24‧36－49；yue": "junk:xref_remnant"
+  }
+ },
+ "rename|Event": {
+  "policy": "rename",
+  "dictname_scope": [
+   "Event"
+  ],
+  "stats": {
+   "normalized_names": 183,
+   "rename_collision_han_id": 14,
+   "protected_would_hit": 0
+  },
+  "entities": {
+   "before": 9124,
+   "after": 8930
+  },
+  "by_type_before": {
+   "Event": 1714,
+   "Person": 2419,
+   "Group": 505,
+   "Object": 2200,
+   "Place": 1299,
+   "Theme": 987
+  },
+  "by_type_after": {
+   "Event": 1682,
+   "Person": 2355,
+   "Group": 501,
+   "Object": 2184,
+   "Place": 1257,
+   "Theme": 951
+  },
+  "id_migration": {
+   "rows": 277,
+   "by_op_rule_type": {
+    "merge|normalized_twin|Group": 4,
+    "merge|normalized_twin|Object": 6,
+    "merge|normalized_twin|Person": 64,
+    "merge|normalized_twin|Place": 42,
+    "rename|normalized_id|Event": 2,
+    "rename|normalized_id|Group": 1,
+    "rename|normalized_id|Object": 19,
+    "rename|normalized_id|Person": 13,
+    "rename|normalized_id|Place": 32,
+    "drop|junk:xref_remnant|Event": 19,
+    "drop|stop:generic24|Event": 16,
+    "drop|junk:fragment_end|Event": 6,
+    "drop|stop:ev09|Event": 5,
+    "drop|junk:too_short|Event": 1,
+    "drop|dictname|Event": 1,
+    "drop|junk:too_short|Object": 10,
+    "drop|junk:fragment_end|Theme": 1,
+    "drop|junk:xref_remnant|Theme": 35
+   },
+   "by_op": {
+    "merge": 116,
+    "rename": 67,
+    "drop": 94
+   }
+  },
+  "protected_in_migration": [],
+  "mentions": {
+   "edges_before": 46205,
+   "edges_after": 45980,
+   "lost_keys": 378,
+   "new_keys": 153
+  },
+  "relations_jsonl": {
+   "rows": 6958,
+   "dropped_rows": 126,
+   "dropped_by_rule": {
+    "stop:generic24": 92,
+    "junk:xref_remnant": 24,
+    "stop:ev09": 10
+   },
+   "rewritten_rows": 91,
+   "self_loops_after": 2,
+   "distinct_triples_before": 6958,
+   "distinct_triples_after": 6818
+  },
+  "replay": {
+   "written": 2886,
+   "unchanged": 4805,
+   "stale": 11,
+   "missing": 244
+  },
+  "replay_stale": [
+   "object:nahe",
+   "object:yinmai",
+   "object:zhuyehehua",
+   "person:yiduo",
+   "place:bala",
+   "place:bo‧yalaba",
+   "place:hasa‧shuya",
+   "place:jidisi",
+   "place:luode",
+   "place:xigela",
+   "place:yilun"
+  ],
+  "replay_missing_explained": 244,
+  "replay_missing_unexplained": [],
+  "descriptions_lost_by_type": {
+   "Object": 28,
+   "Person": 75,
+   "Place": 80,
+   "Event": 32,
+   "Group": 4,
+   "Theme": 36
+  },
+  "H4_whitespace_names": 0,
+  "ids_with_whitespace": 0,
+  "R8": {},
+  "R10_all": [
+   "上帝與亞伯蘭立約",
+   "保羅歸主",
+   "各各他",
+   "在客西馬尼禱告",
+   "奉獻聖殿",
+   "守逾越節",
+   "掃羅歸主",
+   "新耶路撒冷",
+   "流珥",
+   "第一個逾越節",
+   "耶路撒冷會議",
+   "聖靈降臨",
+   "逾越節",
+   "金牛犢"
+  ],
+  "R10_excl_curated": [],
+  "R10_before_all": 21,
+  "ambiguous_aliases": {
+   "group:jidutu": [
+    "門徒"
+   ],
+   "person:yuehan（shitu）": [
+    "約翰"
+   ],
+   "person:matai": [
+    "利未"
+   ],
+   "person:baoluo": [
+    "掃羅"
+   ],
+   "person:bide": [
+    "西門"
+   ],
+   "person:shixiyuehan": [
+    "約翰"
+   ],
+   "person:youda（jialveren）": [
+    "猶大"
+   ]
+  },
+  "R5_cross_type_names": {
+   "before": 908,
+   "after": 906
+  },
+  "H10": {
+   "before": 2227,
+   "after": 2165,
+   "same_fingerprint": false
+  },
+  "H10_event_mentions_removed_by_id": {
+   "event:xiaoyumoxi": 6,
+   "event: yashalong": 7,
+   "event:（tai26‧31－35；ke14‧27－31；lu": 1,
+   "event:（tai26‧26－30；ke14‧22－26；linqian": 1,
+   "event:masa": 5,
+   "event:mala": 8,
+   "event:shine？": 1,
+   "event:dejun」。": 1,
+   "event:yehehuaxiaoyu": 6,
+   "event:zi。": 1,
+   "event:miliba": 3,
+   "event: ya": 2,
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": 1,
+   "event:（tai27‧45－56；ke15‧33－41；lu": 1,
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": 1,
+   "event:（tai27‧57－61；ke15‧42－47；lu": 1,
+   "event:（tai27‧32－44；ke15‧21－32；lu": 1,
+   "event:feng，": 1,
+   "event:lude。": 1,
+   "event:（tai26‧20－25；ke14‧17－21；lu": 1,
+   "event:（tai21‧12－13；ke11‧15－17；lu": 1,
+   "event:（tai26‧47－56；ke14‧43－50；lu": 1,
+   "event:（tai26‧59－66；ke14‧55－64；lu": 1,
+   "event:（tai28‧16－20；ke16‧14－18；lu": 1,
+   "event:（tai26‧71－75；ke14‧69－72；lu": 1,
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": 1,
+   "event:（tai26‧57－58，69－75；ke": 1,
+   "event:（tai26‧26－30；lu22‧14－20；linqian": 1,
+   "event:（ke14‧22－26；lu22‧15－20；linqian": 1,
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": 1,
+   "event:（tai27‧15－31；ke15‧6－20；lu": 1,
+   "event:tou！": 1
+  },
+  "event_mentions_removed_protected": [],
+  "registry": {
+   "events_before": 33,
+   "events_after": 33,
+   "identical": true,
+   "equals_committed": true
+  },
+  "event_extraction_method_null": 0,
+  "H7_prefix_mismatch": [
+   "group:yehehua"
+  ],
+  "find_by_name_liwei_before": [
+   [
+    1249,
+    "person:matai",
+    "馬太"
+   ],
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ]
+  ],
+  "find_by_name_liwei_after": [
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ],
+   [
+    6,
+    "object:dixiongliweiren",
+    "弟兄利未人"
+   ]
+  ],
+  "migration_rows": [
+   {
+    "old_id": "group: pasiluxiren",
+    "new_id": "group:pasiluxiren",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yiduozu",
+    "new_id": "group:yiduozu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yabiyazu",
+    "new_id": "group:yabiyazu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: salaizu",
+    "new_id": "group:salaizu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "object: zhuyehehua",
+    "new_id": "object:zhuyehehua",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: nahe",
+    "new_id": "object:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: hushai",
+    "new_id": "object:hushai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: chebingzhang",
+    "new_id": "object:chebingzhang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yinmai",
+    "new_id": "object:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: jiadezisun",
+    "new_id": "object:jiadezisun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "person: wang",
+    "new_id": "person:wang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:yaha ",
+    "new_id": "person:yaha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yueashi",
+    "new_id": "person:yueashi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: milali",
+    "new_id": "person:milali",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shalong",
+    "new_id": "person:shalong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimaya",
+    "new_id": "person:shimaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: binaya",
+    "new_id": "person:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: annen",
+    "new_id": "person:annen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: haxue",
+    "new_id": "person:haxue",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hada",
+    "new_id": "person:hada",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yaxi",
+    "new_id": "person:yaxi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: laboshaji",
+    "new_id": "person:laboshaji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yagan",
+    "new_id": "person:yagan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hamo",
+    "new_id": "person:hamo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bani",
+    "new_id": "person:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yamaliya",
+    "new_id": "person:yamaliya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bila",
+    "new_id": "person:bila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nahe",
+    "new_id": "person:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanen",
+    "new_id": "person:hanen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimei",
+    "new_id": "person:shimei",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: wusa",
+    "new_id": "person:wusa",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bituli",
+    "new_id": "person:bituli",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: anlan",
+    "new_id": "person:anlan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimiya",
+    "new_id": "person:shimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yadaya",
+    "new_id": "person:yadaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bashihuer",
+    "new_id": "person:bashihuer",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:linqian ",
+    "new_id": "person:linqian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: lamai",
+    "new_id": "person:lamai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: pila",
+    "new_id": "person:pila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yiduo",
+    "new_id": "person:yiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shifatiya",
+    "new_id": "person:shifatiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: halin",
+    "new_id": "person:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanan",
+    "new_id": "person:hanan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shijiani",
+    "new_id": "person:shijiani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shala",
+    "new_id": "person:shala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: dishun",
+    "new_id": "person:dishun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nibo",
+    "new_id": "person:nibo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: naha",
+    "new_id": "person:naha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yinmai",
+    "new_id": "person:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: xinma",
+    "new_id": "person:xinma",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiduo",
+    "new_id": "person:jiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jilv",
+    "new_id": "person:jilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jide",
+    "new_id": "person:jide",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:luoshi ",
+    "new_id": "person:luoshi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: salu",
+    "new_id": "person:salu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: heba",
+    "new_id": "person:heba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: mishima",
+    "new_id": "person:mishima",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: miyamin",
+    "new_id": "person:miyamin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bisai",
+    "new_id": "person:bisai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hashun",
+    "new_id": "person:hashun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yihu",
+    "new_id": "person:yihu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nixiya",
+    "new_id": "person:nixiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yitu",
+    "new_id": "person:yitu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: tuoya",
+    "new_id": "person:tuoya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiasan",
+    "new_id": "person:jiasan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shoumen",
+    "new_id": "person:shoumen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nagai",
+    "new_id": "person:nagai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yatalu",
+    "new_id": "person:yatalu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bo‧ningla",
+    "new_id": "person:bo‧ningla",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: babo",
+    "new_id": "person:babo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: baxilv",
+    "new_id": "person:baxilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bake",
+    "new_id": "person:bake",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yewusi",
+    "new_id": "person:yewusi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hajia",
+    "new_id": "person:hajia",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "place: jiyila",
+    "new_id": "place:jiyila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yesilie",
+    "new_id": "place:yesilie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bala",
+    "new_id": "place:bala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: laji",
+    "new_id": "place:laji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xila",
+    "new_id": "place:xila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: binaya",
+    "new_id": "place:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: suola",
+    "new_id": "place:suola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduoniya",
+    "new_id": "place:yaduoniya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: geshan",
+    "new_id": "place:geshan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yilun",
+    "new_id": "place:yilun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bani",
+    "new_id": "place:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xifu",
+    "new_id": "place:xifu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishulan",
+    "new_id": "place:mishulan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaza",
+    "new_id": "place:yaza",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xigela",
+    "new_id": "place:xigela",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yemo",
+    "new_id": "place:yemo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidisi",
+    "new_id": "place:jidisi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidiluo",
+    "new_id": "place:jidiluo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: haduolan",
+    "new_id": "place:haduolan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hasa‧shuya",
+    "new_id": "place:hasa‧shuya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧su",
+    "new_id": "place:bo‧su",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: pilati",
+    "new_id": "place:pilati",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: luode",
+    "new_id": "place:luode",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaman",
+    "new_id": "place:yaman",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yileiduola",
+    "new_id": "place:yileiduola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: libawu",
+    "new_id": "place:libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalayin",
+    "new_id": "place:shalayin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dilian",
+    "new_id": "place:dilian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yifuta",
+    "new_id": "place:yifuta",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dana",
+    "new_id": "place:dana",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yanong",
+    "new_id": "place:yanong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧yalaba",
+    "new_id": "place:bo‧yalaba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧libawu",
+    "new_id": "place:bo‧libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalabin",
+    "new_id": "place:shalabin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dingna",
+    "new_id": "place:dingna",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduolaiyin",
+    "new_id": "place:yaduolaiyin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: matani",
+    "new_id": "place:matani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shilimiya",
+    "new_id": "place:shilimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: malu",
+    "new_id": "place:malu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: halin",
+    "new_id": "place:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishisabie",
+    "new_id": "place:mishisabie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hexiya",
+    "new_id": "place:hexiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "event: ya",
+    "new_id": "event:ya",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Event"
+   },
+   {
+    "old_id": "event: yashalong",
+    "new_id": "event:yashalong",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Event"
+   },
+   {
+    "old_id": "group:anchun ",
+    "new_id": "group:anchun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Group"
+   },
+   {
+    "old_id": "object: boasi",
+    "new_id": "object:boasi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: che",
+    "new_id": "object:che",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: cheng",
+    "new_id": "object:cheng",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: dian",
+    "new_id": "object:dian",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: feilishiren",
+    "new_id": "object:feilishiren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: gemie",
+    "new_id": "object:gemie",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: heren",
+    "new_id": "object:heren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: huo",
+    "new_id": "object:huo",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: laboshaji",
+    "new_id": "object:laboshaji",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ling",
+    "new_id": "object:ling",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lun",
+    "new_id": "object:lun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lv",
+    "new_id": "object:lv",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: min",
+    "new_id": "object:min",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ren",
+    "new_id": "object:ren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: shafan",
+    "new_id": "object:shafan",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: shimei",
+    "new_id": "object:shimei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yamenren",
+    "new_id": "object:yamenren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yueashi",
+    "new_id": "object:yueashi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: zhu",
+    "new_id": "object:zhu",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "person: bixi",
+    "new_id": "person:bixi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bo‧majiabo",
+    "new_id": "person:伯‧瑪嘉博",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: lixun",
+    "new_id": "person:利汛",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: naiman",
+    "new_id": "person:乃縵",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yaer",
+    "new_id": "person:睚珥",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yala",
+    "new_id": "person:雅拉",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yana",
+    "new_id": "person:押拿",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yuetan",
+    "new_id": "person:約坦",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:bi shifei",
+    "new_id": "person:bishifei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:lu ",
+    "new_id": "person:路",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:mata halin",
+    "new_id": "person:matahalin",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:saba bibai",
+    "new_id": "person:sababibai",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:yue ",
+    "new_id": "person:yue",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "place: bashihuer",
+    "new_id": "place:bashihuer",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧pier",
+    "new_id": "place:bo‧pier",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: buni",
+    "new_id": "place:buni",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: ebalu",
+    "new_id": "place:ebalu",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hadie",
+    "new_id": "place:hadie",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hala",
+    "new_id": "place:哈拉",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: haluohei",
+    "new_id": "place:haluohei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hasa‧jiada",
+    "new_id": "place:hasa‧jiada",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hatu",
+    "new_id": "place:hatu",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hongta",
+    "new_id": "place:hongta",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jiaben",
+    "new_id": "place:jiaben",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jina",
+    "new_id": "place:基拿",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: lihong",
+    "new_id": "place:lihong",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: lijian",
+    "new_id": "place:lijian",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: limie",
+    "new_id": "place:limie",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: manadibai",
+    "new_id": "place:manadibai",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: maxiya",
+    "new_id": "place:瑪西亞",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mei‧yekun",
+    "new_id": "place:mei‧yekun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mijia",
+    "new_id": "place:米迦",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: nishan",
+    "new_id": "place:nishan",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: sake",
+    "new_id": "place:sake",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: waniya",
+    "new_id": "place:waniya",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xiasuo‧hadata",
+    "new_id": "place:xiasuo‧hadata",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xishi",
+    "new_id": "place:xishi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yadama",
+    "new_id": "place:yadama",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yalamilei",
+    "new_id": "place:yalamilei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yasali",
+    "new_id": "place:yasali",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaxiya",
+    "new_id": "place:亞希雅",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yi",
+    "new_id": "place:益",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yihude",
+    "new_id": "place:yihude",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yin",
+    "new_id": "place:yin",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place:anchun ",
+    "new_id": "place:anchun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "event:*wangxia18‧13－37；19‧14－19，35－37；sai",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:choushi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dahui",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dashi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dejun」。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:fenfu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:feng，",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:gongcheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jiannan",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jianzhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jieju",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:lude。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:mala",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:masa",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:miliba",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:rizi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shengri",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shine？",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shiyong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tanzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tou！",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:wenhou",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:xiaoyumoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:ya",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:yashalong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:yehehuaxiaoyu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhangzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhenglun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zi。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zuoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（ke14‧22－26；lu22‧15－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai21‧12－13；ke11‧15－17；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧20－25；ke14‧17－21；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；ke14‧22－26；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；lu22‧14－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧31－35；ke14‧27－31；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧47－56；ke14‧43－50；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧57－58，69－75；ke",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧59－66；ke14‧55－64；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧71－75；ke14‧69－72；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧15－31；ke15‧6－20；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧1－2，11－14；ke15‧1－5；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧32－44；ke15‧21－32；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧45－56；ke15‧33－41；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧57－61；ke15‧42－47；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai28‧16－20；ke16‧14－18；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "object:che",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:cheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:dian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:huo",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:ling",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:lun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:lv",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:min",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:ren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:zhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "theme:xiandedaogao。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧15－19；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧12－21；lu22‧7－14，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧27－31；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧43－50；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧53－65；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧66－72；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧21－32；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧33－41；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧42－47；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧6－15；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke16‧14－18；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；ke11‧15－19；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；ke14‧12－21；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；lu22‧7－13，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；ke14‧27－31；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；ke14‧43－50；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧57－68；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧59－66；ke14‧55－64；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧69－75；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；ke15‧6－15；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；ke15‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；lu23‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；ke15‧21－32；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；ke15‧33－41；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；ke15‧42－47；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai28‧16－20；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   }
+  ],
+  "drop_list": {
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": "junk:xref_remnant",
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": "junk:xref_remnant",
+   "event:choushi": "stop:generic24",
+   "event:dahui": "stop:generic24",
+   "event:dashi": "stop:generic24",
+   "event:dejun」。": "junk:fragment_end",
+   "event:fenfu": "stop:generic24",
+   "event:feng，": "junk:fragment_end",
+   "event:gongcheng": "stop:generic24",
+   "event:jiannan": "stop:generic24",
+   "event:jianzhu": "stop:generic24",
+   "event:jieju": "stop:generic24",
+   "event:lude。": "junk:fragment_end",
+   "event:mala": "stop:ev09",
+   "event:masa": "stop:ev09",
+   "event:miliba": "stop:ev09",
+   "event:rizi": "stop:generic24",
+   "event:shengri": "stop:generic24",
+   "event:shine？": "junk:fragment_end",
+   "event:shiyong": "stop:generic24",
+   "event:tanzi": "stop:generic24",
+   "event:tou！": "junk:fragment_end",
+   "event:wenhou": "stop:generic24",
+   "event:xiaoyumoxi": "stop:ev09",
+   "event:ya": "junk:too_short",
+   "event:yashalong": "dictname",
+   "event:yehehuaxiaoyu": "stop:ev09",
+   "event:zhangzi": "stop:generic24",
+   "event:zhenglun": "stop:generic24",
+   "event:zi。": "junk:fragment_end",
+   "event:zuoxi": "stop:generic24",
+   "event:（ke14‧22－26；lu22‧15－20；linqian": "junk:xref_remnant",
+   "event:（tai21‧12－13；ke11‧15－17；lu": "junk:xref_remnant",
+   "event:（tai26‧20－25；ke14‧17－21；lu": "junk:xref_remnant",
+   "event:（tai26‧26－30；ke14‧22－26；linqian": "junk:xref_remnant",
+   "event:（tai26‧26－30；lu22‧14－20；linqian": "junk:xref_remnant",
+   "event:（tai26‧31－35；ke14‧27－31；lu": "junk:xref_remnant",
+   "event:（tai26‧47－56；ke14‧43－50；lu": "junk:xref_remnant",
+   "event:（tai26‧57－58，69－75；ke": "junk:xref_remnant",
+   "event:（tai26‧59－66；ke14‧55－64；lu": "junk:xref_remnant",
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": "junk:xref_remnant",
+   "event:（tai26‧71－75；ke14‧69－72；lu": "junk:xref_remnant",
+   "event:（tai27‧15－31；ke15‧6－20；lu": "junk:xref_remnant",
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": "junk:xref_remnant",
+   "event:（tai27‧32－44；ke15‧21－32；lu": "junk:xref_remnant",
+   "event:（tai27‧45－56；ke15‧33－41；lu": "junk:xref_remnant",
+   "event:（tai27‧57－61；ke15‧42－47；lu": "junk:xref_remnant",
+   "event:（tai28‧16－20；ke16‧14－18；lu": "junk:xref_remnant",
+   "object:che": "junk:too_short",
+   "object:cheng": "junk:too_short",
+   "object:dian": "junk:too_short",
+   "object:huo": "junk:too_short",
+   "object:ling": "junk:too_short",
+   "object:lun": "junk:too_short",
+   "object:lv": "junk:too_short",
+   "object:min": "junk:too_short",
+   "object:ren": "junk:too_short",
+   "object:zhu": "junk:too_short",
+   "theme:xiandedaogao。": "junk:fragment_end",
+   "theme:（ke11‧15－19；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（ke11‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（ke14‧12－21；lu22‧7－14，21－23；yue": "junk:xref_remnant",
+   "theme:（ke14‧27－31；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（ke14‧43－50；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（ke14‧53－65；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（ke14‧66－72；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（ke15‧21－32；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（ke15‧33－41；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（ke15‧42－47；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（ke15‧6－15；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（ke16‧14－18；lu24‧36－49；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；ke11‧15－19；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（tai21‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；ke14‧12－21；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；lu22‧7－13，21－23；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；ke14‧27－31；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；ke14‧43－50；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（tai26‧57－68；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（tai26‧59－66；ke14‧55－64；yue": "junk:xref_remnant",
+   "theme:（tai26‧69－75；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；ke15‧6－15；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；ke15‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；lu23‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；ke15‧21－32；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；ke15‧33－41；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；ke15‧42－47；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（tai28‧16－20；lu24‧36－49；yue": "junk:xref_remnant"
+  }
+ },
+ "rename|Event+Object+Theme": {
+  "policy": "rename",
+  "dictname_scope": [
+   "Event",
+   "Object",
+   "Theme"
+  ],
+  "stats": {
+   "normalized_names": 183,
+   "rename_collision_han_id": 14,
+   "protected_would_hit": 0
+  },
+  "entities": {
+   "before": 9124,
+   "after": 8926
+  },
+  "by_type_before": {
+   "Event": 1714,
+   "Person": 2419,
+   "Group": 505,
+   "Object": 2200,
+   "Place": 1299,
+   "Theme": 987
+  },
+  "by_type_after": {
+   "Event": 1682,
+   "Person": 2355,
+   "Group": 501,
+   "Object": 2180,
+   "Place": 1257,
+   "Theme": 951
+  },
+  "id_migration": {
+   "rows": 281,
+   "by_op_rule_type": {
+    "merge|normalized_twin|Group": 4,
+    "merge|normalized_twin|Object": 6,
+    "merge|normalized_twin|Person": 64,
+    "merge|normalized_twin|Place": 42,
+    "rename|normalized_id|Event": 2,
+    "rename|normalized_id|Group": 1,
+    "rename|normalized_id|Object": 19,
+    "rename|normalized_id|Person": 13,
+    "rename|normalized_id|Place": 32,
+    "drop|junk:xref_remnant|Event": 19,
+    "drop|stop:generic24|Event": 16,
+    "drop|junk:fragment_end|Event": 6,
+    "drop|stop:ev09|Event": 5,
+    "drop|junk:too_short|Event": 1,
+    "drop|dictname|Event": 1,
+    "drop|dictname|Object": 4,
+    "drop|junk:too_short|Object": 10,
+    "drop|junk:fragment_end|Theme": 1,
+    "drop|junk:xref_remnant|Theme": 35
+   },
+   "by_op": {
+    "merge": 116,
+    "rename": 67,
+    "drop": 98
+   }
+  },
+  "protected_in_migration": [],
+  "mentions": {
+   "edges_before": 46205,
+   "edges_after": 45966,
+   "lost_keys": 378,
+   "new_keys": 139
+  },
+  "relations_jsonl": {
+   "rows": 6958,
+   "dropped_rows": 126,
+   "dropped_by_rule": {
+    "stop:generic24": 92,
+    "junk:xref_remnant": 24,
+    "stop:ev09": 10
+   },
+   "rewritten_rows": 91,
+   "self_loops_after": 2,
+   "distinct_triples_before": 6958,
+   "distinct_triples_after": 6818
+  },
+  "replay": {
+   "written": 2886,
+   "unchanged": 4805,
+   "stale": 11,
+   "missing": 244
+  },
+  "replay_stale": [
+   "object:nahe",
+   "object:yinmai",
+   "object:zhuyehehua",
+   "person:yiduo",
+   "place:bala",
+   "place:bo‧yalaba",
+   "place:hasa‧shuya",
+   "place:jidisi",
+   "place:luode",
+   "place:xigela",
+   "place:yilun"
+  ],
+  "replay_missing_explained": 244,
+  "replay_missing_unexplained": [],
+  "descriptions_lost_by_type": {
+   "Object": 28,
+   "Person": 75,
+   "Place": 80,
+   "Event": 32,
+   "Group": 4,
+   "Theme": 36
+  },
+  "H4_whitespace_names": 0,
+  "ids_with_whitespace": 0,
+  "R8": {},
+  "R10_all": [
+   "上帝與亞伯蘭立約",
+   "保羅歸主",
+   "各各他",
+   "在客西馬尼禱告",
+   "奉獻聖殿",
+   "守逾越節",
+   "掃羅歸主",
+   "新耶路撒冷",
+   "流珥",
+   "第一個逾越節",
+   "耶路撒冷會議",
+   "聖靈降臨",
+   "逾越節",
+   "金牛犢"
+  ],
+  "R10_excl_curated": [],
+  "R10_before_all": 21,
+  "ambiguous_aliases": {
+   "group:jidutu": [
+    "門徒"
+   ],
+   "person:yuehan（shitu）": [
+    "約翰"
+   ],
+   "person:matai": [
+    "利未"
+   ],
+   "person:baoluo": [
+    "掃羅"
+   ],
+   "person:bide": [
+    "西門"
+   ],
+   "person:shixiyuehan": [
+    "約翰"
+   ],
+   "person:youda（jialveren）": [
+    "猶大"
+   ]
+  },
+  "R5_cross_type_names": {
+   "before": 908,
+   "after": 902
+  },
+  "H10": {
+   "before": 2227,
+   "after": 2165,
+   "same_fingerprint": false
+  },
+  "H10_event_mentions_removed_by_id": {
+   "event:xiaoyumoxi": 6,
+   "event: yashalong": 7,
+   "event:（tai26‧31－35；ke14‧27－31；lu": 1,
+   "event:（tai26‧26－30；ke14‧22－26；linqian": 1,
+   "event:masa": 5,
+   "event:mala": 8,
+   "event:shine？": 1,
+   "event:dejun」。": 1,
+   "event:yehehuaxiaoyu": 6,
+   "event:zi。": 1,
+   "event:miliba": 3,
+   "event: ya": 2,
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": 1,
+   "event:（tai27‧45－56；ke15‧33－41；lu": 1,
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": 1,
+   "event:（tai27‧57－61；ke15‧42－47；lu": 1,
+   "event:（tai27‧32－44；ke15‧21－32；lu": 1,
+   "event:feng，": 1,
+   "event:lude。": 1,
+   "event:（tai26‧20－25；ke14‧17－21；lu": 1,
+   "event:（tai21‧12－13；ke11‧15－17；lu": 1,
+   "event:（tai26‧47－56；ke14‧43－50；lu": 1,
+   "event:（tai26‧59－66；ke14‧55－64；lu": 1,
+   "event:（tai28‧16－20；ke16‧14－18；lu": 1,
+   "event:（tai26‧71－75；ke14‧69－72；lu": 1,
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": 1,
+   "event:（tai26‧57－58，69－75；ke": 1,
+   "event:（tai26‧26－30；lu22‧14－20；linqian": 1,
+   "event:（ke14‧22－26；lu22‧15－20；linqian": 1,
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": 1,
+   "event:（tai27‧15－31；ke15‧6－20；lu": 1,
+   "event:tou！": 1
+  },
+  "event_mentions_removed_protected": [],
+  "registry": {
+   "events_before": 33,
+   "events_after": 33,
+   "identical": true,
+   "equals_committed": true
+  },
+  "event_extraction_method_null": 0,
+  "H7_prefix_mismatch": [
+   "group:yehehua"
+  ],
+  "find_by_name_liwei_before": [
+   [
+    1249,
+    "person:matai",
+    "馬太"
+   ],
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ]
+  ],
+  "find_by_name_liwei_after": [
+   [
+    1102,
+    "person:liwei",
+    "利未"
+   ],
+   [
+    892,
+    "group:liweiren",
+    "利未人"
+   ],
+   [
+    69,
+    "group:liweizhipai",
+    "利未支派"
+   ],
+   [
+    21,
+    "object:jisiliweiren",
+    "祭司利未人"
+   ],
+   [
+    6,
+    "object:dixiongliweiren",
+    "弟兄利未人"
+   ]
+  ],
+  "migration_rows": [
+   {
+    "old_id": "group: pasiluxiren",
+    "new_id": "group:pasiluxiren",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yiduozu",
+    "new_id": "group:yiduozu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: yabiyazu",
+    "new_id": "group:yabiyazu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "group: salaizu",
+    "new_id": "group:salaizu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Group"
+   },
+   {
+    "old_id": "object: zhuyehehua",
+    "new_id": "object:zhuyehehua",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: nahe",
+    "new_id": "object:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: hushai",
+    "new_id": "object:hushai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: chebingzhang",
+    "new_id": "object:chebingzhang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yinmai",
+    "new_id": "object:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: jiadezisun",
+    "new_id": "object:jiadezisun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Object"
+   },
+   {
+    "old_id": "person: wang",
+    "new_id": "person:wang",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:yaha ",
+    "new_id": "person:yaha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yueashi",
+    "new_id": "person:yueashi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: milali",
+    "new_id": "person:milali",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shalong",
+    "new_id": "person:shalong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimaya",
+    "new_id": "person:shimaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: binaya",
+    "new_id": "person:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: annen",
+    "new_id": "person:annen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: haxue",
+    "new_id": "person:haxue",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hada",
+    "new_id": "person:hada",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yaxi",
+    "new_id": "person:yaxi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: laboshaji",
+    "new_id": "person:laboshaji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yagan",
+    "new_id": "person:yagan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hamo",
+    "new_id": "person:hamo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bani",
+    "new_id": "person:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yamaliya",
+    "new_id": "person:yamaliya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bila",
+    "new_id": "person:bila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nahe",
+    "new_id": "person:nahe",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanen",
+    "new_id": "person:hanen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimei",
+    "new_id": "person:shimei",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: wusa",
+    "new_id": "person:wusa",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bituli",
+    "new_id": "person:bituli",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: anlan",
+    "new_id": "person:anlan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shimiya",
+    "new_id": "person:shimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yadaya",
+    "new_id": "person:yadaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bashihuer",
+    "new_id": "person:bashihuer",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:linqian ",
+    "new_id": "person:linqian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: lamai",
+    "new_id": "person:lamai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: pila",
+    "new_id": "person:pila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yiduo",
+    "new_id": "person:yiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shifatiya",
+    "new_id": "person:shifatiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: halin",
+    "new_id": "person:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hanan",
+    "new_id": "person:hanan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shijiani",
+    "new_id": "person:shijiani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shala",
+    "new_id": "person:shala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: dishun",
+    "new_id": "person:dishun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nibo",
+    "new_id": "person:nibo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: naha",
+    "new_id": "person:naha",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yinmai",
+    "new_id": "person:yinmai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: xinma",
+    "new_id": "person:xinma",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiduo",
+    "new_id": "person:jiduo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jilv",
+    "new_id": "person:jilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jide",
+    "new_id": "person:jide",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:luoshi ",
+    "new_id": "person:luoshi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: salu",
+    "new_id": "person:salu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: heba",
+    "new_id": "person:heba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: mishima",
+    "new_id": "person:mishima",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: miyamin",
+    "new_id": "person:miyamin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bisai",
+    "new_id": "person:bisai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hashun",
+    "new_id": "person:hashun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yihu",
+    "new_id": "person:yihu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nixiya",
+    "new_id": "person:nixiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yitu",
+    "new_id": "person:yitu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: tuoya",
+    "new_id": "person:tuoya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: jiasan",
+    "new_id": "person:jiasan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: shoumen",
+    "new_id": "person:shoumen",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: nagai",
+    "new_id": "person:nagai",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yatalu",
+    "new_id": "person:yatalu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bo‧ningla",
+    "new_id": "person:bo‧ningla",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: babo",
+    "new_id": "person:babo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: baxilv",
+    "new_id": "person:baxilv",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bake",
+    "new_id": "person:bake",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yewusi",
+    "new_id": "person:yewusi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: hajia",
+    "new_id": "person:hajia",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Person"
+   },
+   {
+    "old_id": "place: jiyila",
+    "new_id": "place:jiyila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yesilie",
+    "new_id": "place:yesilie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bala",
+    "new_id": "place:bala",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: laji",
+    "new_id": "place:laji",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xila",
+    "new_id": "place:xila",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: binaya",
+    "new_id": "place:binaya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: suola",
+    "new_id": "place:suola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduoniya",
+    "new_id": "place:yaduoniya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: geshan",
+    "new_id": "place:geshan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yilun",
+    "new_id": "place:yilun",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bani",
+    "new_id": "place:bani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xifu",
+    "new_id": "place:xifu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishulan",
+    "new_id": "place:mishulan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaza",
+    "new_id": "place:yaza",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xigela",
+    "new_id": "place:xigela",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yemo",
+    "new_id": "place:yemo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidisi",
+    "new_id": "place:jidisi",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jidiluo",
+    "new_id": "place:jidiluo",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: haduolan",
+    "new_id": "place:haduolan",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hasa‧shuya",
+    "new_id": "place:hasa‧shuya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧su",
+    "new_id": "place:bo‧su",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: pilati",
+    "new_id": "place:pilati",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: luode",
+    "new_id": "place:luode",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaman",
+    "new_id": "place:yaman",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yileiduola",
+    "new_id": "place:yileiduola",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: libawu",
+    "new_id": "place:libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalayin",
+    "new_id": "place:shalayin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dilian",
+    "new_id": "place:dilian",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yifuta",
+    "new_id": "place:yifuta",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dana",
+    "new_id": "place:dana",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yanong",
+    "new_id": "place:yanong",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧yalaba",
+    "new_id": "place:bo‧yalaba",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧libawu",
+    "new_id": "place:bo‧libawu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shalabin",
+    "new_id": "place:shalabin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: dingna",
+    "new_id": "place:dingna",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaduolaiyin",
+    "new_id": "place:yaduolaiyin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: matani",
+    "new_id": "place:matani",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: shilimiya",
+    "new_id": "place:shilimiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: malu",
+    "new_id": "place:malu",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: halin",
+    "new_id": "place:halin",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mishisabie",
+    "new_id": "place:mishisabie",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hexiya",
+    "new_id": "place:hexiya",
+    "op": "merge",
+    "rule": "normalized_twin",
+    "type": "Place"
+   },
+   {
+    "old_id": "event: ya",
+    "new_id": "event:ya",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Event"
+   },
+   {
+    "old_id": "event: yashalong",
+    "new_id": "event:yashalong",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Event"
+   },
+   {
+    "old_id": "group:anchun ",
+    "new_id": "group:anchun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Group"
+   },
+   {
+    "old_id": "object: boasi",
+    "new_id": "object:boasi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: che",
+    "new_id": "object:che",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: cheng",
+    "new_id": "object:cheng",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: dian",
+    "new_id": "object:dian",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: feilishiren",
+    "new_id": "object:feilishiren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: gemie",
+    "new_id": "object:gemie",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: heren",
+    "new_id": "object:heren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: huo",
+    "new_id": "object:huo",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: laboshaji",
+    "new_id": "object:laboshaji",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ling",
+    "new_id": "object:ling",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lun",
+    "new_id": "object:lun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: lv",
+    "new_id": "object:lv",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: min",
+    "new_id": "object:min",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: ren",
+    "new_id": "object:ren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: shafan",
+    "new_id": "object:shafan",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: shimei",
+    "new_id": "object:shimei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yamenren",
+    "new_id": "object:yamenren",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: yueashi",
+    "new_id": "object:yueashi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "object: zhu",
+    "new_id": "object:zhu",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Object"
+   },
+   {
+    "old_id": "person: bixi",
+    "new_id": "person:bixi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: bo‧majiabo",
+    "new_id": "person:伯‧瑪嘉博",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: lixun",
+    "new_id": "person:利汛",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: naiman",
+    "new_id": "person:乃縵",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yaer",
+    "new_id": "person:睚珥",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yala",
+    "new_id": "person:雅拉",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yana",
+    "new_id": "person:押拿",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person: yuetan",
+    "new_id": "person:約坦",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:bi shifei",
+    "new_id": "person:bishifei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:lu ",
+    "new_id": "person:路",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:mata halin",
+    "new_id": "person:matahalin",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:saba bibai",
+    "new_id": "person:sababibai",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "person:yue ",
+    "new_id": "person:yue",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Person"
+   },
+   {
+    "old_id": "place: bashihuer",
+    "new_id": "place:bashihuer",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: bo‧pier",
+    "new_id": "place:bo‧pier",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: buni",
+    "new_id": "place:buni",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: ebalu",
+    "new_id": "place:ebalu",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hadie",
+    "new_id": "place:hadie",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hala",
+    "new_id": "place:哈拉",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: haluohei",
+    "new_id": "place:haluohei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hasa‧jiada",
+    "new_id": "place:hasa‧jiada",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hatu",
+    "new_id": "place:hatu",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: hongta",
+    "new_id": "place:hongta",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jiaben",
+    "new_id": "place:jiaben",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: jina",
+    "new_id": "place:基拿",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: lihong",
+    "new_id": "place:lihong",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: lijian",
+    "new_id": "place:lijian",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: limie",
+    "new_id": "place:limie",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: manadibai",
+    "new_id": "place:manadibai",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: maxiya",
+    "new_id": "place:瑪西亞",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mei‧yekun",
+    "new_id": "place:mei‧yekun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: mijia",
+    "new_id": "place:米迦",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: nishan",
+    "new_id": "place:nishan",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: sake",
+    "new_id": "place:sake",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: waniya",
+    "new_id": "place:waniya",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xiasuo‧hadata",
+    "new_id": "place:xiasuo‧hadata",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: xishi",
+    "new_id": "place:xishi",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yadama",
+    "new_id": "place:yadama",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yalamilei",
+    "new_id": "place:yalamilei",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yasali",
+    "new_id": "place:yasali",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yaxiya",
+    "new_id": "place:亞希雅",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yi",
+    "new_id": "place:益",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yihude",
+    "new_id": "place:yihude",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place: yin",
+    "new_id": "place:yin",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "place:anchun ",
+    "new_id": "place:anchun",
+    "op": "rename",
+    "rule": "normalized_id",
+    "type": "Place"
+   },
+   {
+    "old_id": "event:*wangxia18‧13－37；19‧14－19，35－37；sai",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:choushi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dahui",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dashi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:dejun」。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:fenfu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:feng，",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:gongcheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jiannan",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jianzhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:jieju",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:lude。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:mala",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:masa",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:miliba",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:rizi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shengri",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shine？",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:shiyong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tanzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:tou！",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:wenhou",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:xiaoyumoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:ya",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:yashalong",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:yehehuaxiaoyu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:ev09",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhangzi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zhenglun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zi。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:zuoxi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "stop:generic24",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（ke14‧22－26；lu22‧15－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai21‧12－13；ke11‧15－17；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧20－25；ke14‧17－21；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；ke14‧22－26；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧26－30；lu22‧14－20；linqian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧31－35；ke14‧27－31；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧47－56；ke14‧43－50；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧57－58，69－75；ke",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧59－66；ke14‧55－64；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai26‧71－75；ke14‧69－72；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧15－31；ke15‧6－20；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧1－2，11－14；ke15‧1－5；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧32－44；ke15‧21－32；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧45－56；ke15‧33－41；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai27‧57－61；ke15‧42－47；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "event:（tai28‧16－20；ke16‧14－18；lu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Event"
+   },
+   {
+    "old_id": "object:boasi",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:che",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:cheng",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:dian",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:feilishiren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:heren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:huo",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:ling",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:lun",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:lv",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:min",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:ren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:yamenren",
+    "new_id": null,
+    "op": "drop",
+    "rule": "dictname",
+    "type": "Object"
+   },
+   {
+    "old_id": "object:zhu",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:too_short",
+    "type": "Object"
+   },
+   {
+    "old_id": "theme:xiandedaogao。",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:fragment_end",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧15－19；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke11‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧12－21；lu22‧7－14，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧27－31；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧43－50；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧53－65；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke14‧66－72；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧21－32；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧33－41；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧42－47；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke15‧6－15；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（ke16‧14－18；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；ke11‧15－19；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧12－17；lu19‧45－48；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai21‧1－11；lu19‧28－40；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；ke14‧12－21；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧17－25；lu22‧7－13，21－23；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；ke14‧27－31；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧31－35；lu22‧31－34；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；ke14‧43－50；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧47－56；lu22‧47－53；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧57－68；lu22‧54－55，63－71；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧59－66；ke14‧55－64；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai26‧69－75；lu22‧56－62；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；ke15‧6－15；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧15－26；lu23‧13－25；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；ke15‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧1－2，11－14；lu23‧1－5；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；ke15‧21－32；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧32－44；lu23‧26－43；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；ke15‧33－41；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧45－56；lu23‧44－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；ke15‧42－47；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai27‧57－61；lu23‧50－56；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   },
+   {
+    "old_id": "theme:（tai28‧16－20；lu24‧36－49；yue",
+    "new_id": null,
+    "op": "drop",
+    "rule": "junk:xref_remnant",
+    "type": "Theme"
+   }
+  ],
+  "drop_list": {
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": "junk:xref_remnant",
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": "junk:xref_remnant",
+   "event:choushi": "stop:generic24",
+   "event:dahui": "stop:generic24",
+   "event:dashi": "stop:generic24",
+   "event:dejun」。": "junk:fragment_end",
+   "event:fenfu": "stop:generic24",
+   "event:feng，": "junk:fragment_end",
+   "event:gongcheng": "stop:generic24",
+   "event:jiannan": "stop:generic24",
+   "event:jianzhu": "stop:generic24",
+   "event:jieju": "stop:generic24",
+   "event:lude。": "junk:fragment_end",
+   "event:mala": "stop:ev09",
+   "event:masa": "stop:ev09",
+   "event:miliba": "stop:ev09",
+   "event:rizi": "stop:generic24",
+   "event:shengri": "stop:generic24",
+   "event:shine？": "junk:fragment_end",
+   "event:shiyong": "stop:generic24",
+   "event:tanzi": "stop:generic24",
+   "event:tou！": "junk:fragment_end",
+   "event:wenhou": "stop:generic24",
+   "event:xiaoyumoxi": "stop:ev09",
+   "event:ya": "junk:too_short",
+   "event:yashalong": "dictname",
+   "event:yehehuaxiaoyu": "stop:ev09",
+   "event:zhangzi": "stop:generic24",
+   "event:zhenglun": "stop:generic24",
+   "event:zi。": "junk:fragment_end",
+   "event:zuoxi": "stop:generic24",
+   "event:（ke14‧22－26；lu22‧15－20；linqian": "junk:xref_remnant",
+   "event:（tai21‧12－13；ke11‧15－17；lu": "junk:xref_remnant",
+   "event:（tai26‧20－25；ke14‧17－21；lu": "junk:xref_remnant",
+   "event:（tai26‧26－30；ke14‧22－26；linqian": "junk:xref_remnant",
+   "event:（tai26‧26－30；lu22‧14－20；linqian": "junk:xref_remnant",
+   "event:（tai26‧31－35；ke14‧27－31；lu": "junk:xref_remnant",
+   "event:（tai26‧47－56；ke14‧43－50；lu": "junk:xref_remnant",
+   "event:（tai26‧57－58，69－75；ke": "junk:xref_remnant",
+   "event:（tai26‧59－66；ke14‧55－64；lu": "junk:xref_remnant",
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": "junk:xref_remnant",
+   "event:（tai26‧71－75；ke14‧69－72；lu": "junk:xref_remnant",
+   "event:（tai27‧15－31；ke15‧6－20；lu": "junk:xref_remnant",
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": "junk:xref_remnant",
+   "event:（tai27‧32－44；ke15‧21－32；lu": "junk:xref_remnant",
+   "event:（tai27‧45－56；ke15‧33－41；lu": "junk:xref_remnant",
+   "event:（tai27‧57－61；ke15‧42－47；lu": "junk:xref_remnant",
+   "event:（tai28‧16－20；ke16‧14－18；lu": "junk:xref_remnant",
+   "object:boasi": "dictname",
+   "object:che": "junk:too_short",
+   "object:cheng": "junk:too_short",
+   "object:dian": "junk:too_short",
+   "object:feilishiren": "dictname",
+   "object:heren": "dictname",
+   "object:huo": "junk:too_short",
+   "object:ling": "junk:too_short",
+   "object:lun": "junk:too_short",
+   "object:lv": "junk:too_short",
+   "object:min": "junk:too_short",
+   "object:ren": "junk:too_short",
+   "object:yamenren": "dictname",
+   "object:zhu": "junk:too_short",
+   "theme:xiandedaogao。": "junk:fragment_end",
+   "theme:（ke11‧15－19；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（ke11‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（ke14‧12－21；lu22‧7－14，21－23；yue": "junk:xref_remnant",
+   "theme:（ke14‧27－31；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（ke14‧43－50；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（ke14‧53－65；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（ke14‧66－72；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（ke15‧21－32；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（ke15‧33－41；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（ke15‧42－47；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（ke15‧6－15；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（ke16‧14－18；lu24‧36－49；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；ke11‧15－19；yue": "junk:xref_remnant",
+   "theme:（tai21‧12－17；lu19‧45－48；yue": "junk:xref_remnant",
+   "theme:（tai21‧1－11；lu19‧28－40；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；ke14‧12－21；yue": "junk:xref_remnant",
+   "theme:（tai26‧17－25；lu22‧7－13，21－23；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；ke14‧27－31；yue": "junk:xref_remnant",
+   "theme:（tai26‧31－35；lu22‧31－34；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；ke14‧43－50；yue": "junk:xref_remnant",
+   "theme:（tai26‧47－56；lu22‧47－53；yue": "junk:xref_remnant",
+   "theme:（tai26‧57－68；lu22‧54－55，63－71；yue": "junk:xref_remnant",
+   "theme:（tai26‧59－66；ke14‧55－64；yue": "junk:xref_remnant",
+   "theme:（tai26‧69－75；lu22‧56－62；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；ke15‧6－15；yue": "junk:xref_remnant",
+   "theme:（tai27‧15－26；lu23‧13－25；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；ke15‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧1－2，11－14；lu23‧1－5；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；ke15‧21－32；yue": "junk:xref_remnant",
+   "theme:（tai27‧32－44；lu23‧26－43；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；ke15‧33－41；yue": "junk:xref_remnant",
+   "theme:（tai27‧45－56；lu23‧44－49；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；ke15‧42－47；yue": "junk:xref_remnant",
+   "theme:（tai27‧57－61；lu23‧50－56；yue": "junk:xref_remnant",
+   "theme:（tai28‧16－20；lu24‧36－49；yue": "junk:xref_remnant"
+  }
+ }
+}

@@ -1,0 +1,31 @@
+{
+ "mention_count_diff_entities": 4,
+ "mc_samples": [
+  [
+   "event:baoluoxushuguizhudejingguo",
+   4,
+   1
+  ],
+  [
+   "event:baoluoxushuguizhujingguo",
+   4,
+   1
+  ],
+  [
+   "event:shanshangbaoxun",
+   23,
+   1
+  ],
+  [
+   "person:yeteluo",
+   3,
+   30
+  ]
+ ],
+ "mentions_both": 46205,
+ "start_pos_diff_edges": 5782,
+ "start_pos_null_prod": 21939,
+ "start_pos_null_staging": 16157,
+ "start_pos0_prod": 1785,
+ "start_pos0_staging": 1947
+}

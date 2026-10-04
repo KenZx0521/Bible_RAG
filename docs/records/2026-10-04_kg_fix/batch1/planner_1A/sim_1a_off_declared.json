@@ -1,0 +1,240 @@
+{
+ "begot_mode": "off",
+ "surface_mode": "declared",
+ "log": {
+  "input": 6958,
+  "input_kin": 1571,
+  "anchored_raw": 524,
+  "anchored_unique": 427,
+  "gate_drops_due_to_dan_filter": {
+   "NEAR": 1
+  },
+  "direction_unverified": {
+   "LOCATED_IN": 47,
+   "SUCCEEDED_BY": 1
+  },
+  "multi_source_keys": 6,
+  "output": 5795
+ },
+ "anchored_stats": {
+  "foreign_surface_skipped": 2366,
+  "P1_child_of": 402,
+  "P4_wife": 9,
+  "ambiguous_name": 155,
+  "P2_is_child_of": 113
+ },
+ "drops": {
+  "1_rule_phase2": {
+   "SON_OF": 401,
+   "MEMBER_OF": 25,
+   "BUILT": 9,
+   "FATHER_OF": 140,
+   "ANCESTOR_OF": 7,
+   "SUCCEEDED_BY": 2,
+   "RULED": 65,
+   "SIBLING_OF": 16,
+   "SPOUSE_OF": 22,
+   "DAUGHTER_OF": 23,
+   "DESCENDANT_OF": 9,
+   "MOTHER_OF": 29,
+   "RETURNED_FROM": 13,
+   "LOCATED_IN": 4,
+   "BORN_IN": 1,
+   "EXILED_TO": 6
+  },
+  "2_inverse_phase5": {
+   "SON_OF": 221,
+   "TEACHER_OF": 13,
+   "DISCIPLE_OF": 7,
+   "FATHER_OF": 462,
+   "DESCENDANT_OF": 22,
+   "ANCESTOR_OF": 27
+  },
+  "3_llm_event_event": {
+   "PRECEDED_BY": 24,
+   "CAUSED": 14
+  },
+  "4_domain_range": {
+   "LEADER_OF": 7,
+   "MEMBER_OF": 1,
+   "SETTLED_IN": 4,
+   "ORIGINATED_FROM": 1
+  },
+  "5_provenance_gate": {
+   "NEAR": 1
+  },
+  "6_contradicts_prior_direction": {
+   "LOCATED_IN": 1
+  },
+  "7_kin_direction_conflict": {
+   "SON_OF": 1
+  },
+  "7b_undirected_duplicate": {
+   "ENEMY_OF": 1,
+   "ALLY_OF": 1,
+   "SPOUSE_OF": 4
+  }
+ },
+ "drops_total": {
+  "1_rule_phase2": 772,
+  "2_inverse_phase5": 752,
+  "3_llm_event_event": 38,
+  "4_domain_range": 13,
+  "5_provenance_gate": 1,
+  "6_contradicts_prior_direction": 1,
+  "7_kin_direction_conflict": 1,
+  "7b_undirected_duplicate": 6
+ },
+ "kin_drops": {
+  "1_rule_phase2": 647,
+  "2_inverse_phase5": 732,
+  "7_kin_direction_conflict": 1,
+  "7b_undirected_duplicate": 4
+ },
+ "final_by_source": {
+  "prior": 64,
+  "llm": 5313,
+  "anchored_rule": 418
+ },
+ "final_kin_total": 608,
+ "final_kin_by_rel": {
+  "FATHER_OF": 45,
+  "MOTHER_OF": 15,
+  "DESCENDANT_OF": 18,
+  "SON_OF": 441,
+  "DAUGHTER_OF": 13,
+  "ANCESTOR_OF": 15,
+  "SPOUSE_OF": 29,
+  "SIBLING_OF": 32
+ },
+ "final_kin_by_source": {
+  "prior": 30,
+  "llm": 160,
+  "anchored_rule": 418
+ },
+ "final_by_rel": {
+  "ALLY_OF": 63,
+  "ANCESTOR_OF": 15,
+  "BORN_IN": 10,
+  "BUILT": 7,
+  "DAUGHTER_OF": 13,
+  "DESCENDANT_OF": 18,
+  "DESTROYED": 38,
+  "DIED_IN": 20,
+  "DISCIPLE_OF": 14,
+  "ENEMY_OF": 32,
+  "EXILED_TO": 14,
+  "FATHER_OF": 45,
+  "FOUNDED": 1,
+  "GAVE": 76,
+  "INITIATED": 403,
+  "LEADER_OF": 63,
+  "LOCATED_IN": 50,
+  "MEMBER_OF": 331,
+  "MOTHER_OF": 15,
+  "NEAR": 28,
+  "OCCURRED_IN": 919,
+  "ORIGINATED_FROM": 50,
+  "PARTICIPATED_IN": 1521,
+  "POSSESSED": 551,
+  "RECEIVED": 171,
+  "RETURNED_FROM": 28,
+  "RULED": 79,
+  "SETTLED_IN": 219,
+  "SIBLING_OF": 32,
+  "SON_OF": 441,
+  "SPOUSE_OF": 29,
+  "SUCCEEDED_BY": 5,
+  "TEACHER_OF": 8,
+  "VICTIM_OF": 233,
+  "VISITED": 253
+ },
+ "r6_relations_jsonl_before": {
+  "FATHER_OF": 647,
+  "contradictions": 25,
+  "female_head": 42,
+  "children": 252,
+  "children_2plus_fathers": 135,
+  "functional_violation_rate": 0.5357
+ },
+ "r6_live_before": {
+  "FATHER_OF": 647,
+  "contradictions": 25,
+  "female_head": 42,
+  "children": 252,
+  "children_2plus_fathers": 135,
+  "functional_violation_rate": 0.5357
+ },
+ "r6_after": {
+  "FATHER_OF": 45,
+  "contradictions": 0,
+  "female_head": 0,
+  "children": 42,
+  "children_2plus_fathers": 3,
+  "functional_violation_rate": 0.0714,
+  "contra_samples": [],
+  "female_samples": []
+ },
+ "kin_conflicts": [
+  [
+   "person:bilijia",
+   "SON_OF",
+   "person:mishulan",
+   "anchored_rule",
+   "llm"
+  ]
+ ],
+ "kin_conflicts_n": 1,
+ "probes": {
+  "edge-no-dan-orphan-nehemiah-wall": true,
+  "kin-terah-father-of-abraham": true,
+  "kin-abraham-father-of-isaac": true,
+  "kin-jacob-father-of-joseph": true,
+  "kin-lot-not-father-of-terah": true,
+  "kin-isaac-not-father-of-abraham": true,
+  "kin-leah-not-father-of-reuben": true,
+  "kin-leah-not-father-of-isaac": true
+ },
+ "same_type_directed_head_lt_tail": {
+  "FATHER_OF": [
+   45,
+   0.933
+  ],
+  "MOTHER_OF": [
+   15,
+   0.933
+  ],
+  "SUCCEEDED_BY": [
+   5,
+   0.8
+  ],
+  "DISCIPLE_OF": [
+   14,
+   0.929
+  ],
+  "TEACHER_OF": [
+   8,
+   1.0
+  ],
+  "LOCATED_IN": [
+   50,
+   0.98
+  ],
+  "DESCENDANT_OF": [
+   18,
+   1.0
+  ],
+  "SON_OF": [
+   441,
+   0.51
+  ],
+  "DAUGHTER_OF": [
+   13,
+   0.923
+  ],
+  "ANCESTOR_OF": [
+   15,
+   1.0
+  ]
+ }
+}

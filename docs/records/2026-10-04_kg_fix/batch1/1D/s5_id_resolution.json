@@ -1,0 +1,248 @@
+{
+ "ner_rows": 153449,
+ "twin_keys_in_table": 116,
+ "naive": {
+  "resolver": "naive",
+  "entities": 4098,
+  "ids_with_2plus_canonicals": 217,
+  "old_ner_ids_gone": 156,
+  "gone_with_whitespace": 156,
+  "gone_sample": [
+   "group: pasiluxiren",
+   "group: salaizu",
+   "group: yabiyazu",
+   "group: yiduozu",
+   "group:anchun ",
+   "person: anlan",
+   "person: annen",
+   "person: babo",
+   "person: bake",
+   "person: bani",
+   "person: bashihuer",
+   "person: baxilv",
+   "person: bila",
+   "person: binaya",
+   "person: bisai",
+   "person: bituli",
+   "person: bixi",
+   "person: bo‧majiabo",
+   "person: bo‧ningla",
+   "person: dishun"
+  ],
+  "multi_sample": {
+   "person:yabo": [
+    "亞伯",
+    "押卜",
+    "雅博"
+   ],
+   "person:yada": [
+    "亞大",
+    "亞達",
+    "雅大"
+   ],
+   "person:xila": [
+    "希拉",
+    "希臘",
+    "洗拉",
+    "西拉"
+   ],
+   "person:yaba": [
+    "亞巴",
+    "啞巴",
+    "雅八"
+   ],
+   "person:tuba": [
+    "土八",
+    "土巴"
+   ],
+   "person:yali": [
+    "雅利",
+    "雅立"
+   ],
+   "person:yafu": [
+    "亞弗",
+    "雅弗"
+   ],
+   "person:yalie": [
+    "亞列",
+    "雅列"
+   ],
+   "place:yalie": [
+    "亞列",
+    "雅列"
+   ],
+   "person:yana": [
+    "亞拿",
+    "亞那",
+    "押拿",
+    "雅拿"
+   ],
+   "person:gushi": [
+    "古實",
+    "古示"
+   ],
+   "place:yajia": [
+    "亞甲",
+    "押甲"
+   ],
+   "place:lihe": [
+    "利合",
+    "利河"
+   ],
+   "person:xibo": [
+    "希伯",
+    "洗玻",
+    "西撥"
+   ],
+   "place:yilan": [
+    "以攔",
+    "以蘭",
+    "益蘭"
+   ],
+   "place:wusa": [
+    "烏撒",
+    "烏薩"
+   ],
+   "person:madai": [
+    "瑪代",
+    "瑪玳"
+   ],
+   "person:xiba": [
+    "洗巴",
+    "西巴"
+   ],
+   "person:yilan": [
+    "以攔",
+    "益蘭"
+   ],
+   "person:lude": [
+    "路得",
+    "路德"
+   ]
+  }
+ },
+ "frozen": {
+  "resolver": "frozen",
+  "entities": 4112,
+  "ids_with_2plus_canonicals": 207,
+  "old_ner_ids_gone": 110,
+  "gone_with_whitespace": 110,
+  "gone_sample": [
+   "group: pasiluxiren",
+   "group: salaizu",
+   "group: yabiyazu",
+   "group: yiduozu",
+   "person: anlan",
+   "person: annen",
+   "person: babo",
+   "person: bake",
+   "person: bani",
+   "person: bashihuer",
+   "person: baxilv",
+   "person: bila",
+   "person: binaya",
+   "person: bisai",
+   "person: bituli",
+   "person: bo‧ningla",
+   "person: dishun",
+   "person: hada",
+   "person: hajia",
+   "person: halin"
+  ],
+  "multi_sample": {
+   "person:yabo": [
+    "亞伯",
+    "押卜",
+    "雅博"
+   ],
+   "person:yada": [
+    "亞大",
+    "亞達",
+    "雅大"
+   ],
+   "person:xila": [
+    "希拉",
+    "希臘",
+    "洗拉",
+    "西拉"
+   ],
+   "person:yaba": [
+    "亞巴",
+    "啞巴",
+    "雅八"
+   ],
+   "person:tuba": [
+    "土八",
+    "土巴"
+   ],
+   "person:yali": [
+    "雅利",
+    "雅立"
+   ],
+   "person:yafu": [
+    "亞弗",
+    "雅弗"
+   ],
+   "person:yalie": [
+    "亞列",
+    "雅列"
+   ],
+   "place:yalie": [
+    "亞列",
+    "雅列"
+   ],
+   "person:yana": [
+    "亞拿",
+    "亞那",
+    "雅拿"
+   ],
+   "person:gushi": [
+    "古實",
+    "古示"
+   ],
+   "place:yajia": [
+    "亞甲",
+    "押甲"
+   ],
+   "place:lihe": [
+    "利合",
+    "利河"
+   ],
+   "person:xibo": [
+    "希伯",
+    "洗玻",
+    "西撥"
+   ],
+   "place:yilan": [
+    "以攔",
+    "以蘭",
+    "益蘭"
+   ],
+   "place:wusa": [
+    "烏撒",
+    "烏薩"
+   ],
+   "person:madai": [
+    "瑪代",
+    "瑪玳"
+   ],
+   "person:xiba": [
+    "洗巴",
+    "西巴"
+   ],
+   "person:yilan": [
+    "以攔",
+    "益蘭"
+   ],
+   "person:lude": [
+    "路得",
+    "路德"
+   ]
+  }
+ },
+ "rows_changed_id": {
+  "naive": 232,
+  "frozen": 239
+ },
+ "current_ids_with_2plus_canonicals": 215
+}

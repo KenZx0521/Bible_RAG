@@ -1,0 +1,458 @@
+[
+ {
+  "q": "021",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "mic"
+  ],
+  "OLD_worst": 1,
+  "OLD_best": 1,
+  "OLD_c2": "certain",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "025",
+  "family": "prophecy_fulfillment",
+  "route": "R3",
+  "missing": [
+   "isa"
+  ],
+  "OLD_worst": 3,
+  "OLD_best": 1,
+  "OLD_c2": "no",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "026",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "isa"
+  ],
+  "OLD_worst": 3,
+  "OLD_best": 1,
+  "OLD_c2": "no",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "027",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "mat"
+  ],
+  "OLD_worst": 9,
+  "OLD_best": 9,
+  "OLD_c2": "no",
+  "NEW_worst": 2,
+  "NEW_best": 2,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "028",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "mat"
+  ],
+  "OLD_worst": 1,
+  "OLD_best": 1,
+  "OLD_c2": "no",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "035",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "exo",
+   "psa"
+  ],
+  "OLD_worst": 3,
+  "OLD_best": 3,
+  "OLD_c2": "no",
+  "NEW_worst": 2,
+  "NEW_best": 2,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "037",
+  "family": "prophecy_fulfillment",
+  "route": "R2",
+  "missing": [
+   "act"
+  ],
+  "OLD_worst": 8,
+  "OLD_best": 8,
+  "OLD_c2": "no",
+  "NEW_worst": 7,
+  "NEW_best": 7,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "038",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "amo"
+  ],
+  "OLD_worst": 2,
+  "OLD_best": 2,
+  "OLD_c2": "no",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "039",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "isa"
+  ],
+  "OLD_worst": 5,
+  "OLD_best": 5,
+  "OLD_c2": "no",
+  "NEW_worst": 5,
+  "NEW_best": 5,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "040",
+  "family": "prophecy_fulfillment",
+  "route": "R5",
+  "missing": [
+   "mal"
+  ],
+  "OLD_worst": 7,
+  "OLD_best": 7,
+  "OLD_c2": "certain",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "042",
+  "family": "prophecy_fulfillment",
+  "route": "R1",
+  "missing": [
+   "gal",
+   "rom"
+  ],
+  "OLD_worst": 1,
+  "OLD_best": 1,
+  "OLD_c2": "certain",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "046",
+  "family": "prophecy_fulfillment",
+  "route": "R2",
+  "missing": [
+   "mat"
+  ],
+  "OLD_worst": 9,
+  "OLD_best": 9,
+  "OLD_c2": "certain",
+  "NEW_worst": 9,
+  "NEW_best": 9,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "047",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "deu",
+   "psa"
+  ],
+  "OLD_worst": 4,
+  "OLD_best": 1,
+  "OLD_c2": "certain",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "048",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "lev",
+   "mat"
+  ],
+  "OLD_worst": 1,
+  "OLD_best": 1,
+  "OLD_c2": "certain",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "052",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "isa"
+  ],
+  "OLD_worst": 3,
+  "OLD_best": 3,
+  "OLD_c2": "no",
+  "NEW_worst": 3,
+  "NEW_best": 3,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "054",
+  "family": "nt_quotes_ot",
+  "route": "R4",
+  "missing": [
+   "exo"
+  ],
+  "OLD_worst": 8,
+  "OLD_best": 8,
+  "OLD_c2": "certain",
+  "NEW_worst": 8,
+  "NEW_best": 8,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "055",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "deu"
+  ],
+  "OLD_worst": 7,
+  "OLD_best": 7,
+  "OLD_c2": "certain",
+  "NEW_worst": 7,
+  "NEW_best": 7,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "056",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "isa",
+   "jer"
+  ],
+  "OLD_worst": 2,
+  "OLD_best": 2,
+  "OLD_c2": "no",
+  "NEW_worst": 2,
+  "NEW_best": 2,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "057",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "hab",
+   "heb"
+  ],
+  "OLD_worst": 2,
+  "OLD_best": 2,
+  "OLD_c2": "no",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "059",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "deu",
+   "pro"
+  ],
+  "OLD_worst": 11,
+  "OLD_best": 10,
+  "OLD_c2": "no",
+  "NEW_worst": 11,
+  "NEW_best": 10,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "060",
+  "family": "nt_quotes_ot",
+  "route": "R1",
+  "missing": [
+   "jas"
+  ],
+  "OLD_worst": 5,
+  "OLD_best": 5,
+  "OLD_c2": "certain",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "061",
+  "family": "nt_quotes_ot",
+  "route": "R5",
+  "missing": [
+   "psa"
+  ],
+  "OLD_worst": 2,
+  "OLD_best": 1,
+  "OLD_c2": "no",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "062",
+  "family": "nt_quotes_ot",
+  "route": "fallback",
+  "missing": [
+   "isa"
+  ],
+  "OLD_worst": 2,
+  "OLD_best": 2,
+  "OLD_c2": "no",
+  "NEW_worst": 2,
+  "NEW_best": 2,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "064",
+  "family": "typology",
+  "route": "R5",
+  "missing": [
+   "gen",
+   "psa"
+  ],
+  "OLD_worst": 1,
+  "OLD_best": 1,
+  "OLD_c2": "certain",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "065",
+  "family": "typology",
+  "route": "R5",
+  "missing": [
+   "exo"
+  ],
+  "OLD_worst": 39,
+  "OLD_best": 30,
+  "OLD_c2": "certain",
+  "NEW_worst": 39,
+  "NEW_best": 30,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "068",
+  "family": "typology",
+  "route": "R3",
+  "missing": [
+   "exo"
+  ],
+  "OLD_worst": 44,
+  "OLD_best": 40,
+  "OLD_c2": "no",
+  "NEW_worst": 44,
+  "NEW_best": 40,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "070",
+  "family": "typology",
+  "route": "R2",
+  "missing": [
+   "gen"
+  ],
+  "OLD_worst": 18,
+  "OLD_best": 15,
+  "OLD_c2": "no",
+  "NEW_worst": 18,
+  "NEW_best": 15,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "071",
+  "family": "typology",
+  "route": "R5",
+  "missing": [
+   "gen"
+  ],
+  "OLD_worst": 53,
+  "OLD_best": 53,
+  "OLD_c2": "no",
+  "NEW_worst": 3,
+  "NEW_best": 3,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "074",
+  "family": "typology",
+  "route": "R5",
+  "missing": [
+   "1sa"
+  ],
+  "OLD_worst": 6,
+  "OLD_best": 6,
+  "OLD_c2": "certain",
+  "NEW_worst": 6,
+  "NEW_best": 6,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "076",
+  "family": "parallel_account",
+  "route": "R5",
+  "missing": [
+   "1ki"
+  ],
+  "OLD_worst": 1,
+  "OLD_best": 1,
+  "OLD_c2": "no",
+  "NEW_worst": 1,
+  "NEW_best": 1,
+  "NEW_c2": "no"
+ },
+ {
+  "q": "079",
+  "family": "parallel_account",
+  "route": "R5",
+  "missing": [
+   "isa"
+  ],
+  "OLD_worst": 2,
+  "OLD_best": 1,
+  "OLD_c2": "certain",
+  "NEW_worst": 2,
+  "NEW_best": 1,
+  "NEW_c2": "certain"
+ },
+ {
+  "q": "085",
+  "family": "parallel_account",
+  "route": "R5",
+  "missing": [
+   "jhn"
+  ],
+  "OLD_worst": 3,
+  "OLD_best": 1,
+  "OLD_c2": "certain",
+  "NEW_worst": 2,
+  "NEW_best": 2,
+  "NEW_c2": "certain"
+ }
+]

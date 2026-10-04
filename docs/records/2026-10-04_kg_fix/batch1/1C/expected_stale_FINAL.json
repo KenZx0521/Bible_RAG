@@ -1,0 +1,2144 @@
+{
+ "stale": [
+  {
+   "entity_id": "group:shitu",
+   "canonical_name": "使徒",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "一個身體有許多肢體",
+    "主再來的應許",
+    "主藉使徒行了許多神蹟奇事",
+    "亞拿尼亞和撒非喇",
+    "亞波羅在以弗所講道"
+   ],
+   "new_titles": [
+    "一個身體有許多肢體",
+    "主再來的應許",
+    "主藉使徒行了許多神蹟奇事",
+    "亞拿尼亞和撒非喇",
+    "使徒們在庇哩亞傳道",
+    "使徒受迫害"
+   ],
+   "current_titles_sha": "f1d4f549ad22e37ef540a62ed5350c7baf424263752c4d72f72eeed0942c2162"
+  },
+  {
+   "entity_id": "person:amosi",
+   "canonical_name": "阿摩司",
+   "cause": "book_region",
+   "old_titles": [
+    "一筐水果的異象",
+    "上帝審判以色列",
+    "以色列的失敗",
+    "以色列的毀滅",
+    "呼籲以色列人悔改",
+    "準繩的異象"
+   ],
+   "new_titles": [
+    "一筐水果的異象",
+    "準繩的異象",
+    "阿摩司和亞瑪謝"
+   ],
+   "current_titles_sha": "5abe78d12f1a5875f4bb5f66d3cc894fa1b2e283b30a1caa875e7f429c2849c0"
+  },
+  {
+   "entity_id": "person:bide",
+   "canonical_name": "彼得",
+   "cause": "book_region",
+   "old_titles": [
+    "上帝恩賜的好管家",
+    "上帝的同工",
+    "不饒恕人的惡僕",
+    "主再來的應許",
+    "主藉使徒行了許多神蹟奇事",
+    "亞拿尼亞和撒非喇"
+   ],
+   "new_titles": [
+    "上帝的同工",
+    "不饒恕人的惡僕",
+    "主藉使徒行了許多神蹟奇事",
+    "亞拿尼亞和撒非喇",
+    "以尼雅得醫治",
+    "使徒受迫害"
+   ],
+   "current_titles_sha": "21dbb6f9aceab1d1059e4d25e8d9ea34d2a6fff7ad688e11cf5c8e0b92a8e9fb"
+  },
+  {
+   "entity_id": "person:danyili",
+   "canonical_name": "但以理",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "三人獲釋且得高升",
+    "上帝把夢的意思指示但以理",
+    "伯沙撒王的宴會",
+    "但以理在尼布甲尼撒的宮廷裏",
+    "但以理在獅子坑中"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "上帝把夢的意思指示但以理",
+    "伯沙撒王的宴會",
+    "但以理在尼布甲尼撒的宮廷裏",
+    "但以理在獅子坑中",
+    "但以理為同胞禱告"
+   ],
+   "current_titles_sha": "d108ec40e7244127d8c691f983e7d8fa798f798aaf8bb8c7cbc37dd557319981"
+  },
+  {
+   "entity_id": "person:ebadiya",
+   "canonical_name": "俄巴底亞",
+   "cause": "book_region",
+   "old_titles": [
+    "上帝要審判萬國",
+    "以東受罰的原因",
+    "以色列各支派的行政長官",
+    "以色列的勝利",
+    "以薩迦的後裔",
+    "從被擄之地回來的人"
+   ],
+   "new_titles": [
+    "以色列各支派的行政長官",
+    "以薩迦的後裔",
+    "從被擄之地回來的人",
+    "掃羅王的家族",
+    "掃羅王的祖先和後代",
+    "耶哥尼雅的後裔"
+   ],
+   "current_titles_sha": "40f8a5375523b49de7b6e64f7b3c5e834786fd7ab34c9986f9a5db0a687c4087"
+  },
+  {
+   "entity_id": "person:feili",
+   "canonical_name": "腓力",
+   "cause": "book_region",
+   "old_titles": [
+    "保羅上耶路撒冷",
+    "保羅為自己辯護",
+    "保羅為阿尼西謀請求",
+    "保羅被帶到亞基帕王面前",
+    "保羅被解交腓力斯巡撫",
+    "十二使徒"
+   ],
+   "new_titles": [
+    "保羅上耶路撒冷",
+    "保羅為自己辯護",
+    "保羅被帶到亞基帕王面前",
+    "保羅被解交腓力斯巡撫",
+    "十二使徒",
+    "呼召腓力和拿但業"
+   ],
+   "current_titles_sha": "f62e12053a88fd657481b33ed72976275f20c10e837482b48826e1199116f898"
+  },
+  {
+   "entity_id": "person:fuyin",
+   "canonical_name": "福音",
+   "cause": "book_region",
+   "old_titles": [
+    "以色列人的復興",
+    "基督再來時的審判",
+    "治好瞎子巴底買",
+    "耶穌改變形像",
+    "耶穌預言受難和復活",
+    "財主尋求永生之道"
+   ],
+   "new_titles": [
+    "以色列人的復興",
+    "基督再來時的審判",
+    "耶穌預言受難和復活",
+    "財主尋求永生之道"
+   ],
+   "current_titles_sha": "dbf56667a3d45b53887d1ac7aa85feafafc04df843ace7d2c337d4d03fd3c311"
+  },
+  {
+   "entity_id": "person:geluoxi",
+   "canonical_name": "歌羅西",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "勸導",
+    "問候",
+    "基督的位格和工作",
+    "新生活的本分",
+    "最後的問候"
+   ],
+   "new_titles": [
+    "問候"
+   ],
+   "current_titles_sha": "d5d189a3d606f7ee1de2eeace919864371e05be7bbe379368c038074aa9cf334"
+  },
+  {
+   "entity_id": "person:habagu",
+   "canonical_name": "哈巴谷",
+   "cause": "book_region",
+   "old_titles": [
+    "不義的結局",
+    "哈巴谷又向耶和華訴苦",
+    "哈巴谷為不公平而訴苦",
+    "哈巴谷的祈禱",
+    "耶和華回答哈巴谷",
+    "耶和華的回答"
+   ],
+   "new_titles": [
+    "哈巴谷又向耶和華訴苦",
+    "哈巴谷為不公平而訴苦",
+    "哈巴谷的祈禱",
+    "耶和華回答哈巴谷"
+   ],
+   "current_titles_sha": "9036835bafa1aef2fe1c7aa00a38c247974da0c81f6be0d116196a2cc76fd48e"
+  },
+  {
+   "entity_id": "person:hagai",
+   "canonical_name": "哈該",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "先知向祭司請教",
+    "新殿的榮耀",
+    "百姓順從耶和華的命令",
+    "耶和華命令重建聖殿",
+    "耶和華給所羅巴伯的應許"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "先知向祭司請教",
+    "新殿的榮耀",
+    "耶和華命令重建聖殿",
+    "耶和華給所羅巴伯的應許",
+    "聖殿奉獻典禮"
+   ],
+   "current_titles_sha": "250fa4956826812ccaa6e19560856ee0817811a0ad4f6d0c767cba6d353b8223"
+  },
+  {
+   "entity_id": "person:hexia",
+   "canonical_name": "何希阿",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝審判以色列",
+    "上帝對他子民的愛",
+    "上帝的忿怒和憐憫",
+    "不貞的歌篾－不忠的以色列",
+    "以色列人因拜偶像被定罪"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "上帝的忿怒和憐憫",
+    "何西阿勸告以色列人",
+    "何西阿和那不貞的婦人",
+    "何西阿宣布以色列受懲罰",
+    "何西阿的妻子和兒女"
+   ],
+   "current_titles_sha": "c4aa1f91ea84136617034ad8ff7edaae36a731d1ef59c7eb33715b34dbce73fc"
+  },
+  {
+   "entity_id": "person:jialatai",
+   "canonical_name": "加拉太",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "保羅在安提阿責備彼得",
+    "保羅怎樣成為使徒",
+    "保羅被其他的使徒接納",
+    "保羅關懷加拉太人",
+    "各人的重擔要互相擔當"
+   ],
+   "new_titles": [
+    "問候",
+    "捐助聖徒"
+   ],
+   "current_titles_sha": "191bb0fb2f5582ebb11155cc65cf12d8055287c63bdace95fb6baa6880f2404e"
+  },
+  {
+   "entity_id": "person:liewang",
+   "canonical_name": "列王",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "乃縵得醫治",
+    "亞述人定居於以色列人中",
+    "以色列王亞哈",
+    "以色列王何細亞",
+    "以色列王暗利"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "以色列王亞哈",
+    "以色列王暗利",
+    "勝利之歌",
+    "大衛和拔示巴",
+    "大衛攻取拉巴城"
+   ],
+   "current_titles_sha": "c6ad074f278a6e44a55948add17d8d23d9eefc6d14e545dbaac45f4c47b1c494"
+  },
+  {
+   "entity_id": "person:liwei",
+   "canonical_name": "利未",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "五旬收穫節",
+    "亞倫獻祭",
+    "亞倫的杖",
+    "代罪羊",
+    "以斯拉為聖殿招集利未人"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "亞倫的杖",
+    "以斯拉為聖殿招集利未人",
+    "以色列人在埃及受虐待",
+    "住在耶路撒冷的聖殿守衛",
+    "其他職守"
+   ],
+   "current_titles_sha": "f68bc68e61291e0fcd41f0797deabee9ae9c69e97911fcc994003ad498071cfb"
+  },
+  {
+   "entity_id": "person:lujia",
+   "canonical_name": "路加",
+   "cause": "book_region",
+   "old_titles": [
+    "一個污鬼附身的人",
+    "七十個人回來",
+    "上帝國的來到",
+    "不悔改的城有禍了",
+    "不接待主的村莊",
+    "不敵擋你們就是幫助你們"
+   ],
+   "new_titles": [
+    "最後的問候",
+    "最後的問安",
+    "私事的囑咐"
+   ],
+   "current_titles_sha": "ae578ddae1b90a24a50c69f55d51fe5488fc63e361b6a19fafdd5b40411e3640"
+  },
+  {
+   "entity_id": "person:make",
+   "canonical_name": "馬可",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "一個婦人的信心",
+    "一個污鬼附身的人",
+    "不敵擋我們就是幫助我們",
+    "人子的降臨",
+    "休妻的問題"
+   ],
+   "new_titles": [
+    "保羅和巴拿巴分手",
+    "問安",
+    "希律的死",
+    "彼得獲救出獄",
+    "最後的問候",
+    "最後的問安"
+   ],
+   "current_titles_sha": "0d6b339339647bdb6ac26c5585c67202a4dc0d68616e29d2b3629b68393b6099"
+  },
+  {
+   "entity_id": "person:malaji",
+   "canonical_name": "瑪拉基",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝應許施憐憫",
+    "十分之一捐獻",
+    "審判之日已近",
+    "斥責祭司",
+    "百姓對上帝不忠"
+   ],
+   "new_titles": [
+    "(無標題)"
+   ],
+   "current_titles_sha": "ccb738e972a75463bddc4788758487df7fd6785d03e2c81ebd1e99b0e9292c06"
+  },
+  {
+   "entity_id": "person:matai",
+   "canonical_name": "馬太",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝所揀選的僕人",
+    "不是和平，而是刀劍",
+    "不要憂慮",
+    "不要論斷人",
+    "不饒恕人的惡僕"
+   ],
+   "new_titles": [
+    "十二使徒",
+    "呼召馬太",
+    "挑選十二門徒",
+    "接替猶大職分的人",
+    "私事的囑咐",
+    "設立十二門徒"
+   ],
+   "current_titles_sha": "c2bbc90196cf55e51298f69a00b25dba62aedeacdc001730185dbf9565181405"
+  },
+  {
+   "entity_id": "person:mijia",
+   "canonical_name": "密迦",
+   "cause": "book_region",
+   "old_titles": [
+    "他拉的後代",
+    "以撒娶妻",
+    "以色列人歸回本國",
+    "以色列人的腐敗",
+    "住在耶路撒冷的人",
+    "住在耶路撒冷的利未人"
+   ],
+   "new_titles": [
+    "他拉的後代",
+    "以撒娶妻",
+    "住在耶路撒冷的人",
+    "住在耶路撒冷的利未人",
+    "利未人名單",
+    "利未人的職務"
+   ],
+   "current_titles_sha": "4054d9f0233bc2a162798f8856e6fe434e90ce72df3e6b93bc4c83490b88e9ff"
+  },
+  {
+   "entity_id": "person:niximi",
+   "canonical_name": "尼希米",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "以斯拉向民眾宣讀律法書",
+    "以色列人承認他們的罪",
+    "住在耶路撒冷的人",
+    "住棚節",
+    "作族長的祭司"
+   ],
+   "new_titles": [
+    "以斯拉向民眾宣讀律法書",
+    "在公約上簽名的人",
+    "城牆落成時尼希米行奉獻之禮",
+    "尼希米勝過阻撓他工作的人",
+    "尼希米大公無私",
+    "尼希米的改革"
+   ],
+   "current_titles_sha": "4208f2ea499b2d6a0c485524f08c399f74f3ca2fd6a69c67b1a0f559e52fe933"
+  },
+  {
+   "entity_id": "person:tiduo",
+   "canonical_name": "提多",
+   "cause": "book_region",
+   "old_titles": [
+    "保羅在哥林多",
+    "保羅為教會悔改而歡樂",
+    "保羅的憂愁和安慰",
+    "保羅被其他的使徒接納",
+    "保羅關心哥林多教會",
+    "個人的指示和問安"
+   ],
+   "new_titles": [
+    "保羅在哥林多",
+    "保羅為教會悔改而歡樂",
+    "保羅的憂愁和安慰",
+    "保羅被其他的使徒接納",
+    "保羅關心哥林多教會",
+    "問候"
+   ],
+   "current_titles_sha": "2d3225756e9208ab8b1fcb53be1af4c9ee40baa8e5b7e98e0923025b1298b1df"
+  },
+  {
+   "entity_id": "person:xibo",
+   "canonical_name": "希伯",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝子民的安息",
+    "以掃的子孫",
+    "以掃的後裔",
+    "作族長的祭司",
+    "便雅憫的後裔"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "以掃的子孫",
+    "以掃的後裔",
+    "作族長的祭司",
+    "便雅憫的後裔",
+    "保羅敘述歸主經過"
+   ],
+   "current_titles_sha": "862cb8e9a78d526757aece0d3da89c78db009f14720067e54681aad00cb4292d"
+  },
+  {
+   "entity_id": "person:xibolai",
+   "canonical_name": "希伯來",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝子民的安息",
+    "上帝確切的應許",
+    "上帝藉着他兒子說話",
+    "主的管教",
+    "以色列人在埃及受虐待"
+   ],
+   "new_titles": [
+    "以色列人在埃及受虐待",
+    "約瑟為法老解夢",
+    "違背釋放奴隸的約",
+    "（太27‧32－44；可15‧21－32；路"
+   ],
+   "current_titles_sha": "7211e2b7d173914dc5241ef1bc3d6058fdc305cca1d39465415a879e7ea0ed6c"
+  },
+  {
+   "entity_id": "person:xifanya",
+   "canonical_name": "西番亞",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "歡樂之歌",
+    "為約書亞加冕",
+    "猶大人被擄",
+    "猶大人被擄到巴比倫",
+    "示瑪雅的信件"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "為約書亞加冕",
+    "猶大人被擄",
+    "猶大人被擄到巴比倫",
+    "示瑪雅的信件",
+    "聖殿中的歌者"
+   ],
+   "current_titles_sha": "547f6250bf1be2c2559924db8f795ec7f411151dc23443b345a9e194cdbd3f5b"
+  },
+  {
+   "entity_id": "person:yelimi",
+   "canonical_name": "耶利米",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝子民的光明前途",
+    "上帝審判列國",
+    "上帝審判哥尼雅",
+    "上帝審判巴比倫",
+    "上帝的子民拜偶像"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "以伯‧米勒的希望",
+    "但以理為同胞禱告",
+    "作族長的祭司",
+    "兩個異象",
+    "兩筐無花果"
+   ],
+   "current_titles_sha": "ccc85c9296dbc0c62c16705f081416f467774f1f8a656bb41966c534fa661ffa"
+  },
+  {
+   "entity_id": "person:yeteluo",
+   "canonical_name": "葉忒羅",
+   "cause": "dictionary_drift",
+   "old_titles": [
+    "上帝呼召摩西",
+    "摩西返回埃及",
+    "葉忒羅訪問摩西",
+    "選立百姓的官長"
+   ],
+   "new_titles": [
+    "上帝呼召摩西",
+    "以掃的子孫",
+    "以掃的後裔",
+    "摩西返回埃及",
+    "摩西逃往米甸",
+    "葉忒羅訪問摩西"
+   ],
+   "current_titles_sha": "4aa44aaa19f38b1f88b6f590f4975b5a4d7bfa89a195629075acb98b500a79c0"
+  },
+  {
+   "entity_id": "person:yiduo",
+   "canonical_name": "易多",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "(無標題)",
+    "以斯拉為聖殿招集利未人",
+    "以色列各支派的行政長官",
+    "利未的其餘後裔",
+    "所羅門的臣僕",
+    "耶和華呼喚子民歸向他"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "以斯拉為聖殿招集利未人",
+    "以色列各支派的行政長官",
+    "利未的其餘後裔",
+    "所羅門的臣僕",
+    "祭司和利未人的名單"
+   ],
+   "current_titles_sha": "721860cbdcf6409ea788b343dd7a48f40e03fe725e3fde235d40650c220b972b"
+  },
+  {
+   "entity_id": "person:yisaiya",
+   "canonical_name": "以賽亞",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "*王下18‧13－37；19‧14－19，35－37；賽",
+    "一首讚美詩",
+    "上帝使他的百姓得勝",
+    "上帝對悖逆者的懲罰",
+    "上帝所揀選的僕人"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "*王下18‧13－37；19‧14－19，35－37；賽",
+    "上帝所揀選的僕人",
+    "上帝的忿怒和憐憫",
+    "上帝的福音一視同仁",
+    "主呼召以賽亞作先知"
+   ],
+   "current_titles_sha": "290f43f87dd88683820c20afaced11742c535c31e684dc360e63034bee8ef0a1"
+  },
+  {
+   "entity_id": "person:yisila",
+   "canonical_name": "以斯拉",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "亞達薛西王給以斯拉的文件",
+    "以斯拉到達耶路撒冷",
+    "以斯拉向民眾宣讀律法書",
+    "以斯拉為聖殿招集利未人",
+    "以斯拉稱頌耶和華"
+   ],
+   "new_titles": [
+    "亞達薛西王給以斯拉的文件",
+    "以斯拉到達耶路撒冷",
+    "以斯拉向民眾宣讀律法書",
+    "以斯拉為聖殿招集利未人",
+    "以斯拉稱頌耶和華",
+    "以斯拉領百姓禁食禱告"
+   ],
+   "current_titles_sha": "75d94be46dad525c1cd1129f5a5dad54e32853a98de6868e96c394e7dfa0eec0"
+  },
+  {
+   "entity_id": "person:yisitie",
+   "canonical_name": "以斯帖",
+   "cause": "book_region",
+   "old_titles": [
+    "亞哈隨魯和末底改的功績",
+    "亞哈隨魯王廢瓦實提王后",
+    "以斯帖為王和哈曼設筵席",
+    "以斯帖被立為王后",
+    "哈曼被處死",
+    "哈曼陰謀殺末底改"
+   ],
+   "new_titles": [
+    "以斯帖為王和哈曼設筵席",
+    "以斯帖被立為王后",
+    "哈曼被處死",
+    "哈曼陰謀殺末底改",
+    "普珥日",
+    "末底改救王的命"
+   ],
+   "current_titles_sha": "ed250429ddffbaaa5849e38fec6c5735ba0982c4f041d9e57bb3fa695fa6fcd6"
+  },
+  {
+   "entity_id": "person:yixijie",
+   "canonical_name": "以西結",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝審判兩姊妹",
+    "上帝審判妹妹",
+    "上帝審判耶路撒冷",
+    "上帝對將來的應許",
+    "上帝對流亡者的應許"
+   ],
+   "new_titles": [
+    "上帝指派以西結作守望者",
+    "上帝的寶座",
+    "上帝選召以西結作先知",
+    "以西結剃髮",
+    "以西結暫成啞巴",
+    "以西結被帶到耶路撒冷"
+   ],
+   "current_titles_sha": "33540f6d2a52f68c93e63e65b7842f868c4c07da38e4757e0cf54d96e6172775"
+  },
+  {
+   "entity_id": "person:yuehan（shitu）",
+   "canonical_name": "約翰（使徒）",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝就是光",
+    "上帝就是愛",
+    "上帝為他兒子作的見證",
+    "上帝的兒女",
+    "上帝的羔羊"
+   ],
+   "new_titles": [
+    "上帝的羔羊",
+    "不接待主的村莊",
+    "不敵擋你們就是幫助你們",
+    "不敵擋我們就是幫助我們",
+    "亞波羅在以弗所講道",
+    "保羅和巴拿巴分手"
+   ],
+   "current_titles_sha": "13a343c2c97ad5985f02a85da1bc80143bae6c0bd18b48d7e7005fa8c47b2b12"
+  },
+  {
+   "entity_id": "person:yueshuya",
+   "canonical_name": "約書亞",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝命令約書亞征服迦南",
+    "亞干犯罪",
+    "以法蓮支派",
+    "以法蓮的後裔",
+    "以色列人得地為業"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "上帝命令約書亞征服迦南",
+    "亞干犯罪",
+    "以法蓮的後裔",
+    "以色列人過約旦河",
+    "以色列王亞哈"
+   ],
+   "current_titles_sha": "22d7ead00661e05a4f223d1031f0d5f17250f674b6bab46e3fbc415d8ca94bc2"
+  },
+  {
+   "entity_id": "place:ba",
+   "canonical_name": "巴",
+   "cause": "ckip_position_or_other",
+   "old_titles": [
+    "以撒跟亞比米勒立約",
+    "分給便雅憫支派的土地",
+    "基甸擊敗米甸人",
+    "居住其他城鎮的人",
+    "從特羅亞到米利都",
+    "示巴反叛"
+   ],
+   "new_titles": [
+    "基甸擊敗米甸人",
+    "從特羅亞到米利都",
+    "示巴反叛",
+    "預言施洗約翰的誕生"
+   ],
+   "current_titles_sha": "fdac6406dfd1dff78feac59cb93d310556de9f052015c9d7e32bd0b4040242b0"
+  },
+  {
+   "entity_id": "place:bala",
+   "canonical_name": "巴拉",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "分給但支派的土地",
+    "分給便雅憫支派的土地",
+    "分給猶大支派的土地",
+    "分給西緬支派的土地",
+    "底波拉和巴拉",
+    "所羅門的成就"
+   ],
+   "new_titles": [
+    "分給但支派的土地",
+    "分給便雅憫支派的土地",
+    "分給猶大支派的土地",
+    "分給西緬支派的土地",
+    "底波拉和巴拉",
+    "所羅門其他政績"
+   ],
+   "current_titles_sha": "6f0e1b08430ae5aa1428d7bfb713580e4e5ea260813694735f9ba5dd45c4a878"
+  },
+  {
+   "entity_id": "place:bo‧yalaba",
+   "canonical_name": "伯‧亞拉巴",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "猶大所得的城邑"
+   ],
+   "new_titles": [
+    "分給便雅憫支派的土地",
+    "猶大所得的城邑"
+   ],
+   "current_titles_sha": "a3d1ca7304a78b4e6dc9cfe5022979593349b4a77afc4991f3bc6ed739ddb8c7"
+  },
+  {
+   "entity_id": "place:fa",
+   "canonical_name": "法",
+   "cause": "ckip_position_or_other",
+   "old_titles": [
+    "亞伯拉罕的其他後代",
+    "以實瑪利的後裔",
+    "拉結去世",
+    "波阿斯娶路得",
+    "約沙法的功績"
+   ],
+   "new_titles": [
+    "亞伯拉罕的其他後代",
+    "以實瑪利的後裔",
+    "拉結去世",
+    "波阿斯娶路得",
+    "約沙法的功績",
+    "雅各祝福以法蓮和瑪拿西"
+   ],
+   "current_titles_sha": "0ccf1b27110336edb1bfa1817c0545929d5fc94aea66ee00992ecb742abf43e3"
+  },
+  {
+   "entity_id": "place:feilibi",
+   "canonical_name": "腓立比",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "以基督的心為心",
+    "保羅再訪問馬其頓和希臘",
+    "保羅在帖撒羅尼迦工作",
+    "保羅為腓立比信徒禱告",
+    "保羅的勸導"
+   ],
+   "new_titles": [
+    "保羅再訪問馬其頓和希臘",
+    "保羅在帖撒羅尼迦工作",
+    "保羅為腓立比信徒禱告",
+    "呂底亞歸主",
+    "問候",
+    "在腓立比被囚"
+   ],
+   "current_titles_sha": "a8bd4d6147a11ed509e1b4eb194a07710f1e321a23868ddd671bbeaac51e74df"
+  },
+  {
+   "entity_id": "place:gelinduo",
+   "canonical_name": "哥林多",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "一個身體有許多肢體",
+    "上帝的同工",
+    "上帝藉着聖靈啟示我們",
+    "不按理吃主的晚餐",
+    "使徒的工作"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "保羅在以弗所",
+    "保羅在哥林多",
+    "保羅延期訪問哥林多",
+    "保羅關心哥林多教會",
+    "問候"
+   ],
+   "current_titles_sha": "45a7476109c40cfbcb805b6deb61dd8638120be4fed8061727de43166f14dd87"
+  },
+  {
+   "entity_id": "place:habagu",
+   "canonical_name": "哈巴谷",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "不義的結局",
+    "哈巴谷又向耶和華訴苦",
+    "哈巴谷為不公平而訴苦",
+    "哈巴谷的祈禱"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "哈巴谷又向耶和華訴苦",
+    "哈巴谷為不公平而訴苦",
+    "哈巴谷的祈禱"
+   ],
+   "current_titles_sha": "ff568280fb4d9c3d50fc654698fb3d9767a18e1658e57e5fa90d23caf615a25c"
+  },
+  {
+   "entity_id": "place:hala",
+   "canonical_name": "哈臘",
+   "cause": "ckip_position_or_other",
+   "old_titles": [
+    "二支派半人叛逆上帝",
+    "以色列王何細亞",
+    "猶大王希西家"
+   ],
+   "new_titles": [
+    "二支派半人叛逆上帝",
+    "以色列王何細亞",
+    "在公約上簽名的人",
+    "猶大王希西家"
+   ],
+   "current_titles_sha": "b0b546f2cac7761d8c48dd10a4b625de5f63044d0581ac235a45372f97ebb2a7"
+  },
+  {
+   "entity_id": "place:hasa‧shuya",
+   "canonical_name": "哈薩‧書亞",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "居住其他城鎮的人",
+    "西緬的後裔"
+   ],
+   "new_titles": [
+    "分給西緬支派的土地",
+    "居住其他城鎮的人",
+    "猶大所得的城邑",
+    "西緬的後裔"
+   ],
+   "current_titles_sha": "b07bef7cf6ee973fe57891eab624a7e4017714ed05a3d6cf8a65d378645a6cf4"
+  },
+  {
+   "entity_id": "place:jidisi",
+   "canonical_name": "基低斯",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "以色列王比加",
+    "利未支派的居地",
+    "底波拉和巴拉"
+   ],
+   "new_titles": [
+    "以色列王比加",
+    "分給拿弗他利支派的土地",
+    "利未支派的居地",
+    "底波拉和巴拉",
+    "猶大所得的城邑"
+   ],
+   "current_titles_sha": "ad9f1da3f9c3ab25c83223893df284490294773aed6850b01688470fc2b95e73"
+  },
+  {
+   "entity_id": "place:luode",
+   "canonical_name": "羅德",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "便雅憫的後裔"
+   ],
+   "new_titles": [
+    "便雅憫的後裔",
+    "居住其他城鎮的人"
+   ],
+   "current_titles_sha": "085f6244e9e73a080b84526c6cebe7a58a3257ed7fa9c9a05a2b891c1fc30fa7"
+  },
+  {
+   "entity_id": "place:luoma",
+   "canonical_name": "羅馬",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝揀選以色列人",
+    "上帝的公義判斷",
+    "上帝的忿怒和憐憫",
+    "上帝的愛",
+    "上帝的福音一視同仁"
+   ],
+   "new_titles": [
+    "(無標題)",
+    "以弗所的暴動",
+    "保羅在哥林多",
+    "保羅在羅馬傳道",
+    "保羅坐船往羅馬",
+    "保羅抵達羅馬"
+   ],
+   "current_titles_sha": "8389b6967229b0e1f98e935d197c2fee6839ce2a49c3bdd2e05c3253fac0e5b4"
+  },
+  {
+   "entity_id": "place:mijia",
+   "canonical_name": "密加",
+   "cause": "ckip_position_or_other",
+   "old_titles": [
+    "從埃及到摩押",
+    "米迦和但支派",
+    "西瑪拿西半支派"
+   ],
+   "new_titles": [
+    "在公約上簽名的人",
+    "從埃及到摩押",
+    "米迦和但支派",
+    "西瑪拿西半支派"
+   ],
+   "current_titles_sha": "202514e275e5c5128f289eac68306d043b4a25afdb593597265876c31113170c"
+  },
+  {
+   "entity_id": "place:tiesaluonijia",
+   "canonical_name": "帖撒羅尼迦",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "上帝所悅納的生活",
+    "不法的人",
+    "主的降臨",
+    "使徒們在庇哩亞傳道",
+    "保羅再訪問馬其頓和希臘"
+   ],
+   "new_titles": [
+    "使徒們在庇哩亞傳道",
+    "保羅再訪問馬其頓和希臘",
+    "保羅在帖撒羅尼迦工作",
+    "保羅坐船往羅馬",
+    "保羅希望再訪問帖撒羅尼迦教會",
+    "問候"
+   ],
+   "current_titles_sha": "3c9b8ea0d8a56eab764932ae75223e2b2169658d9e34aaaea7ae23e8b5f96972"
+  },
+  {
+   "entity_id": "place:xigela",
+   "canonical_name": "洗革拉",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "居住其他城鎮的人",
+    "猶大所得的城邑",
+    "與亞瑪力人爭戰"
+   ],
+   "new_titles": [
+    "分給西緬支派的土地",
+    "居住其他城鎮的人",
+    "猶大所得的城邑",
+    "與亞瑪力人爭戰"
+   ],
+   "current_titles_sha": "14637425018c214e69e81d845a0ea2262f9bb5008cc17d8fffea11c0534046a1"
+  },
+  {
+   "entity_id": "place:xinai",
+   "canonical_name": "西奈",
+   "cause": "ckip_position_or_other",
+   "old_titles": [
+    "亞倫的兒子們",
+    "以色列的第一次人口普查",
+    "利未人男丁的統計",
+    "嗎哪和鵪鶉",
+    "從埃及到摩押",
+    "摩西祝福以色列眾支派"
+   ],
+   "new_titles": [
+    "亞倫的兒子們",
+    "以色列人在西奈山",
+    "以色列的第一次人口普查",
+    "利未人男丁的統計",
+    "嗎哪和鵪鶉",
+    "從埃及到摩押"
+   ],
+   "current_titles_sha": "4e5dae34e6b88562dfe0e1ef66931a456e631ab210c952e276d48c875faa8e35"
+  },
+  {
+   "entity_id": "place:yi",
+   "canonical_name": "以",
+   "cause": "ckip_position_or_other",
+   "old_titles": [
+    "在以哥念傳道",
+    "從埃及到摩押",
+    "拉結去世",
+    "第二次的人口普查",
+    "胸牌",
+    "製胸牌"
+   ],
+   "new_titles": [
+    "以實瑪利的後裔",
+    "以弗所的暴動",
+    "公綿羊、公山羊的異象",
+    "在以哥念傳道",
+    "基大利被委派為總督",
+    "大衛作猶大和以色列王"
+   ],
+   "current_titles_sha": "2efdc59f33ae8db3dbf33967d0689ce9b07d3da56974e492313edddb6884ab41"
+  },
+  {
+   "entity_id": "place:yifusuo",
+   "canonical_name": "以弗所",
+   "cause": "book_region",
+   "old_titles": [
+    "(無標題)",
+    "丈夫和妻子",
+    "亞波羅在以弗所講道",
+    "以弗所的暴動",
+    "保羅向以弗所長老發表談話",
+    "保羅回到安提阿"
+   ],
+   "new_titles": [
+    "亞波羅在以弗所講道",
+    "以弗所的暴動",
+    "保羅向以弗所長老發表談話",
+    "保羅回到安提阿",
+    "保羅在以弗所",
+    "保羅在聖殿裏被捕"
+   ],
+   "current_titles_sha": "c5c2c9f9ba2d5c59253958c622e302201cee169fe227885e6ca4aa7b99bcb09c"
+  },
+  {
+   "entity_id": "place:yilun",
+   "canonical_name": "以倫",
+   "cause": "whitespace_merge",
+   "old_titles": [
+    "以比讚、以倫、押頓",
+    "第二次的人口普查"
+   ],
+   "new_titles": [
+    "以比讚、以倫、押頓",
+    "分給但支派的土地",
+    "第二次的人口普查"
+   ],
+   "current_titles_sha": "859f5d9ec98b951cd275eeca08ba70cdbe43434043d33dff473b4103ffc0ac9c"
+  }
+ ],
+ "missing": [
+  {
+   "entity_id": "group: pasiluxiren",
+   "canonical_name": " 帕斯魯細人",
+   "cause": "whitespace_merge",
+   "successor": "group:pasiluxiren",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "group: salaizu",
+   "canonical_name": " 撒來族",
+   "cause": "whitespace_merge",
+   "successor": "group:salaizu",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "group: yabiyazu",
+   "canonical_name": " 亞比雅族",
+   "cause": "whitespace_merge",
+   "successor": "group:yabiyazu",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "group: yiduozu",
+   "canonical_name": " 易多族",
+   "cause": "whitespace_merge",
+   "successor": "group:yiduozu",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "person: anlan",
+   "canonical_name": " 暗蘭",
+   "cause": "whitespace_merge",
+   "successor": "person:anlan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: babo",
+   "canonical_name": " 巴卜",
+   "cause": "whitespace_merge",
+   "successor": "person:babo",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "person: bake",
+   "canonical_name": " 巴柯",
+   "cause": "whitespace_merge",
+   "successor": "person:bake",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "person: bani",
+   "canonical_name": " 巴尼",
+   "cause": "whitespace_merge",
+   "successor": "person:bani",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: bashihuer",
+   "canonical_name": " 巴施戶珥",
+   "cause": "whitespace_merge",
+   "successor": "person:bashihuer",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: baxilv",
+   "canonical_name": " 巴洗律",
+   "cause": "whitespace_merge",
+   "successor": "person:baxilv",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "person: bila",
+   "canonical_name": " 比拉",
+   "cause": "whitespace_merge",
+   "successor": "person:bila",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: binaya",
+   "canonical_name": " 比拿雅",
+   "cause": "whitespace_merge",
+   "successor": "person:binaya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: bisai",
+   "canonical_name": " 比賽",
+   "cause": "whitespace_merge",
+   "successor": "person:bisai",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: bituli",
+   "canonical_name": " 彼土利",
+   "cause": "whitespace_merge",
+   "successor": "person:bituli",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: bixi",
+   "canonical_name": " 比悉",
+   "cause": "whitespace_merge",
+   "successor": "person:bixi",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "person: bo‧majiabo",
+   "canonical_name": " 伯‧瑪嘉博",
+   "cause": "whitespace_merge",
+   "successor": "person:bo‧majiabo",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: bo‧ningla",
+   "canonical_name": " 伯‧寧拉",
+   "cause": "whitespace_merge",
+   "successor": "person:bo‧ningla",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: dishun",
+   "canonical_name": " 底順",
+   "cause": "whitespace_merge",
+   "successor": "person:dishun",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: hada",
+   "canonical_name": " 哈大",
+   "cause": "whitespace_merge",
+   "successor": "person:hada",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: hajia",
+   "canonical_name": " 哈甲",
+   "cause": "whitespace_merge",
+   "successor": "person:hajia",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "person: halin",
+   "canonical_name": " 哈琳",
+   "cause": "whitespace_merge",
+   "successor": "person:halin",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: hamo",
+   "canonical_name": " 哈抹",
+   "cause": "whitespace_merge",
+   "successor": "person:hamo",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: hanan",
+   "canonical_name": " 哈難",
+   "cause": "whitespace_merge",
+   "successor": "person:hanan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: hanen",
+   "canonical_name": " 哈嫩",
+   "cause": "whitespace_merge",
+   "successor": "person:hanen",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: hashun",
+   "canonical_name": " 哈順",
+   "cause": "whitespace_merge",
+   "successor": "person:hashun",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: haxue",
+   "canonical_name": " 哈薛",
+   "cause": "whitespace_merge",
+   "successor": "person:haxue",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: heba",
+   "canonical_name": " 何巴",
+   "cause": "whitespace_merge",
+   "successor": "person:heba",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: jiasan",
+   "canonical_name": " 迦散",
+   "cause": "whitespace_merge",
+   "successor": "person:jiasan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: jide",
+   "canonical_name": " 吉德",
+   "cause": "whitespace_merge",
+   "successor": "person:jide",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: jiduo",
+   "canonical_name": " 基多",
+   "cause": "whitespace_merge",
+   "successor": "person:jiduo",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: jilv",
+   "canonical_name": " 基綠",
+   "cause": "whitespace_merge",
+   "successor": "person:jilv",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: laboshaji",
+   "canonical_name": " 拉伯沙基",
+   "cause": "whitespace_merge",
+   "successor": "person:laboshaji",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: lamai",
+   "canonical_name": " 拉麥",
+   "cause": "whitespace_merge",
+   "successor": "person:lamai",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: lixun",
+   "canonical_name": " 利汛",
+   "cause": "whitespace_merge",
+   "successor": "person:lixun",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: milali",
+   "canonical_name": " 米拉利",
+   "cause": "whitespace_merge",
+   "successor": "person:milali",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: mishima",
+   "canonical_name": " 米施瑪",
+   "cause": "whitespace_merge",
+   "successor": "person:mishima",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: miyamin",
+   "canonical_name": " 米雅民",
+   "cause": "whitespace_merge",
+   "successor": "person:miyamin",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: nagai",
+   "canonical_name": " 拿該",
+   "cause": "whitespace_merge",
+   "successor": "person:nagai",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: naha",
+   "canonical_name": " 拿哈",
+   "cause": "whitespace_merge",
+   "successor": "person:naha",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: nahe",
+   "canonical_name": " 拿鶴",
+   "cause": "whitespace_merge",
+   "successor": "person:nahe",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: naiman",
+   "canonical_name": " 乃縵",
+   "cause": "whitespace_merge",
+   "successor": "person:naiman",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: nibo",
+   "canonical_name": " 尼波",
+   "cause": "whitespace_merge",
+   "successor": "person:nibo",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: nixiya",
+   "canonical_name": " 尼細亞",
+   "cause": "whitespace_merge",
+   "successor": "person:nixiya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: pila",
+   "canonical_name": " 辟拉",
+   "cause": "whitespace_merge",
+   "successor": "person:pila",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: salu",
+   "canonical_name": " 撒路",
+   "cause": "whitespace_merge",
+   "successor": "person:salu",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shala",
+   "canonical_name": " 沙拉",
+   "cause": "whitespace_merge",
+   "successor": "person:shala",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shalong",
+   "canonical_name": " 沙龍",
+   "cause": "whitespace_merge",
+   "successor": "person:shalong",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shifatiya",
+   "canonical_name": " 示法提雅",
+   "cause": "whitespace_merge",
+   "successor": "person:shifatiya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shijiani",
+   "canonical_name": " 示迦尼",
+   "cause": "whitespace_merge",
+   "successor": "person:shijiani",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shimaya",
+   "canonical_name": " 示瑪雅",
+   "cause": "whitespace_merge",
+   "successor": "person:shimaya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shimei",
+   "canonical_name": " 示每",
+   "cause": "whitespace_merge",
+   "successor": "person:shimei",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shimiya",
+   "canonical_name": " 示米亞",
+   "cause": "whitespace_merge",
+   "successor": "person:shimiya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: shoumen",
+   "canonical_name": " 守門",
+   "cause": "whitespace_merge",
+   "successor": "person:shoumen",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: tuoya",
+   "canonical_name": " 陀亞",
+   "cause": "whitespace_merge",
+   "successor": "person:tuoya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: wang",
+   "canonical_name": " 王",
+   "cause": "whitespace_merge",
+   "successor": "person:wang",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: wusa",
+   "canonical_name": " 烏撒",
+   "cause": "whitespace_merge",
+   "successor": "person:wusa",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: xinma",
+   "canonical_name": " 薪瑪",
+   "cause": "whitespace_merge",
+   "successor": "person:xinma",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yadaya",
+   "canonical_name": " 亞大雅",
+   "cause": "whitespace_merge",
+   "successor": "person:yadaya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yagan",
+   "canonical_name": " 亞干",
+   "cause": "whitespace_merge",
+   "successor": "person:yagan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yala",
+   "canonical_name": " 雅拉",
+   "cause": "whitespace_merge",
+   "successor": "person:yala",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yamaliya",
+   "canonical_name": " 亞瑪利雅",
+   "cause": "whitespace_merge",
+   "successor": "person:yamaliya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yana",
+   "canonical_name": " 押拿",
+   "cause": "whitespace_merge",
+   "successor": "person:yana",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yatalu",
+   "canonical_name": " 亞他錄",
+   "cause": "whitespace_merge",
+   "successor": "person:yatalu",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yaxi",
+   "canonical_name": " 亞惜",
+   "cause": "whitespace_merge",
+   "successor": "person:yaxi",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yewusi",
+   "canonical_name": " 耶烏斯",
+   "cause": "whitespace_merge",
+   "successor": "person:yewusi",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "person: yiduo",
+   "canonical_name": " 易多",
+   "cause": "whitespace_merge",
+   "successor": "person:yiduo",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yihu",
+   "canonical_name": " 以忽",
+   "cause": "whitespace_merge",
+   "successor": "person:yihu",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yinmai",
+   "canonical_name": " 音麥",
+   "cause": "whitespace_merge",
+   "successor": "person:yinmai",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yitu",
+   "canonical_name": " 伊突",
+   "cause": "whitespace_merge",
+   "successor": "person:yitu",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person: yuetan",
+   "canonical_name": " 約坦",
+   "cause": "whitespace_merge",
+   "successor": "person:yuetan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:liewangji",
+   "canonical_name": "列王紀",
+   "cause": "book_region_only",
+   "successor": null,
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:linqian ",
+   "canonical_name": "林前 ",
+   "cause": "whitespace_merge",
+   "successor": null,
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:liuer",
+   "canonical_name": "流珥",
+   "cause": "dictionary_drift",
+   "successor": null,
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:lu ",
+   "canonical_name": "路 ",
+   "cause": "whitespace_merge",
+   "successor": "person:lu",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:luoshi ",
+   "canonical_name": "羅實 ",
+   "cause": "whitespace_merge",
+   "successor": "person:luoshi",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:niximiji",
+   "canonical_name": "尼西米記",
+   "cause": "book_region_only",
+   "successor": null,
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:yaha ",
+   "canonical_name": "亞哈 ",
+   "cause": "whitespace_merge",
+   "successor": "person:yaha",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "person:yue ",
+   "canonical_name": "約 ",
+   "cause": "whitespace_merge",
+   "successor": null,
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: bala",
+   "canonical_name": " 巴拉",
+   "cause": "whitespace_merge",
+   "successor": "place:bala",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: bani",
+   "canonical_name": " 巴尼",
+   "cause": "whitespace_merge",
+   "successor": "place:bani",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: bashihuer",
+   "canonical_name": " 巴施戶珥",
+   "cause": "whitespace_merge",
+   "successor": "place:bashihuer",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: binaya",
+   "canonical_name": " 比拿雅",
+   "cause": "whitespace_merge",
+   "successor": "place:binaya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: bo‧libawu",
+   "canonical_name": " 伯‧利巴勿",
+   "cause": "whitespace_merge",
+   "successor": "place:bo‧libawu",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: bo‧pier",
+   "canonical_name": " 伯‧毗珥",
+   "cause": "whitespace_merge",
+   "successor": "place:bo‧pier",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: bo‧su",
+   "canonical_name": " 伯‧夙",
+   "cause": "whitespace_merge",
+   "successor": "place:bo‧su",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: bo‧yalaba",
+   "canonical_name": " 伯‧亞拉巴",
+   "cause": "whitespace_merge",
+   "successor": "place:bo‧yalaba",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: buni",
+   "canonical_name": " 布尼",
+   "cause": "whitespace_merge",
+   "successor": "place:buni",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: dana",
+   "canonical_name": " 大拿",
+   "cause": "whitespace_merge",
+   "successor": "place:dana",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: dilian",
+   "canonical_name": " 底連",
+   "cause": "whitespace_merge",
+   "successor": "place:dilian",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: dingna",
+   "canonical_name": " 丁拿",
+   "cause": "whitespace_merge",
+   "successor": "place:dingna",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: ebalu",
+   "canonical_name": " 俄巴路",
+   "cause": "whitespace_merge",
+   "successor": "place:ebalu",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: geshan",
+   "canonical_name": " 歌珊",
+   "cause": "whitespace_merge",
+   "successor": "place:geshan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: hadie",
+   "canonical_name": " 哈疊",
+   "cause": "whitespace_merge",
+   "successor": "place:hadie",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: haduolan",
+   "canonical_name": " 哈多蘭",
+   "cause": "whitespace_merge",
+   "successor": "place:haduolan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: hala",
+   "canonical_name": " 哈拉",
+   "cause": "whitespace_merge",
+   "successor": "place:hala",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: halin",
+   "canonical_name": " 哈琳",
+   "cause": "whitespace_merge",
+   "successor": "place:halin",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: haluohei",
+   "canonical_name": " 哈羅黑",
+   "cause": "whitespace_merge",
+   "successor": "place:haluohei",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: hasa‧jiada",
+   "canonical_name": " 哈薩‧迦大",
+   "cause": "whitespace_merge",
+   "successor": "place:hasa‧jiada",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: hasa‧shuya",
+   "canonical_name": " 哈薩‧書亞",
+   "cause": "whitespace_merge",
+   "successor": "place:hasa‧shuya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: hatu",
+   "canonical_name": " 哈突",
+   "cause": "whitespace_merge",
+   "successor": "place:hatu",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: hexiya",
+   "canonical_name": " 何細亞",
+   "cause": "whitespace_merge",
+   "successor": "place:hexiya",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: hongta",
+   "canonical_name": " 宏他",
+   "cause": "whitespace_merge",
+   "successor": "place:hongta",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: jiaben",
+   "canonical_name": " 迦本",
+   "cause": "whitespace_merge",
+   "successor": "place:jiaben",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: jidiluo",
+   "canonical_name": " 基低羅",
+   "cause": "whitespace_merge",
+   "successor": "place:jidiluo",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: jidisi",
+   "canonical_name": " 基低斯",
+   "cause": "whitespace_merge",
+   "successor": "place:jidisi",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: jina",
+   "canonical_name": " 基拿",
+   "cause": "whitespace_merge",
+   "successor": "place:jina",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: jiyila",
+   "canonical_name": " 基伊拉",
+   "cause": "whitespace_merge",
+   "successor": "place:jiyila",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: laji",
+   "canonical_name": " 拉吉",
+   "cause": "whitespace_merge",
+   "successor": "place:laji",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: libawu",
+   "canonical_name": " 利巴勿",
+   "cause": "whitespace_merge",
+   "successor": "place:libawu",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: lihong",
+   "canonical_name": " 利宏",
+   "cause": "whitespace_merge",
+   "successor": "place:lihong",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: lijian",
+   "canonical_name": " 利堅",
+   "cause": "whitespace_merge",
+   "successor": "place:lijian",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: limie",
+   "canonical_name": " 利篾",
+   "cause": "whitespace_merge",
+   "successor": "place:limie",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: luode",
+   "canonical_name": " 羅德",
+   "cause": "whitespace_merge",
+   "successor": "place:luode",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: malu",
+   "canonical_name": " 瑪鹿",
+   "cause": "whitespace_merge",
+   "successor": "place:malu",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: manadibai",
+   "canonical_name": " 瑪拿底拜",
+   "cause": "whitespace_merge",
+   "successor": "place:manadibai",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: matani",
+   "canonical_name": " 瑪他尼",
+   "cause": "whitespace_merge",
+   "successor": "place:matani",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: maxiya",
+   "canonical_name": " 瑪西亞",
+   "cause": "whitespace_merge",
+   "successor": "place:maxiya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: mei‧yekun",
+   "canonical_name": " 美‧耶昆",
+   "cause": "whitespace_merge",
+   "successor": "place:mei‧yekun",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: mijia",
+   "canonical_name": " 米迦",
+   "cause": "whitespace_merge",
+   "successor": "place:mijia",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: mishisabie",
+   "canonical_name": " 米示薩別",
+   "cause": "whitespace_merge",
+   "successor": "place:mishisabie",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: mishulan",
+   "canonical_name": " 米書蘭",
+   "cause": "whitespace_merge",
+   "successor": "place:mishulan",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: nishan",
+   "canonical_name": " 匿珊",
+   "cause": "whitespace_merge",
+   "successor": "place:nishan",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: pilati",
+   "canonical_name": " 毗拉提",
+   "cause": "whitespace_merge",
+   "successor": "place:pilati",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: sake",
+   "canonical_name": " 撒刻",
+   "cause": "whitespace_merge",
+   "successor": "place:sake",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: shalabin",
+   "canonical_name": " 沙拉賓",
+   "cause": "whitespace_merge",
+   "successor": "place:shalabin",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: shalayin",
+   "canonical_name": " 沙拉音",
+   "cause": "whitespace_merge",
+   "successor": "place:shalayin",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: shilimiya",
+   "canonical_name": " 示利米雅",
+   "cause": "whitespace_merge",
+   "successor": "place:shilimiya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: suola",
+   "canonical_name": " 瑣拉",
+   "cause": "whitespace_merge",
+   "successor": "place:suola",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: waniya",
+   "canonical_name": " 瓦尼雅",
+   "cause": "whitespace_merge",
+   "successor": "place:waniya",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: xiasuo‧hadata",
+   "canonical_name": " 夏瑣‧哈大他",
+   "cause": "whitespace_merge",
+   "successor": "place:xiasuo‧hadata",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: xifu",
+   "canonical_name": " 西弗",
+   "cause": "whitespace_merge",
+   "successor": "place:xifu",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: xigela",
+   "canonical_name": " 洗革拉",
+   "cause": "whitespace_merge",
+   "successor": "place:xigela",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: xila",
+   "canonical_name": " 洗拉",
+   "cause": "whitespace_merge",
+   "successor": "place:xila",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: xishi",
+   "canonical_name": " 希實",
+   "cause": "whitespace_merge",
+   "successor": "place:xishi",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yadama",
+   "canonical_name": " 亞大瑪",
+   "cause": "whitespace_merge",
+   "successor": "place:yadama",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yaduolaiyin",
+   "canonical_name": " 亞多萊音",
+   "cause": "whitespace_merge",
+   "successor": "place:yaduolaiyin",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yaduoniya",
+   "canonical_name": " 亞多尼雅",
+   "cause": "whitespace_merge",
+   "successor": "place:yaduoniya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: yalamilei",
+   "canonical_name": " 亞拉米勒",
+   "cause": "whitespace_merge",
+   "successor": "place:yalamilei",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yaman",
+   "canonical_name": " 亞曼",
+   "cause": "whitespace_merge",
+   "successor": "place:yaman",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yanong",
+   "canonical_name": " 雅農",
+   "cause": "whitespace_merge",
+   "successor": "place:yanong",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yasali",
+   "canonical_name": " 亞薩利",
+   "cause": "whitespace_merge",
+   "successor": "place:yasali",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yaxiya",
+   "canonical_name": " 亞希雅",
+   "cause": "whitespace_merge",
+   "successor": "place:yaxiya",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: yaza",
+   "canonical_name": " 雅雜",
+   "cause": "whitespace_merge",
+   "successor": "place:yaza",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: yemo",
+   "canonical_name": " 耶末",
+   "cause": "whitespace_merge",
+   "successor": "place:yemo",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: yesilie",
+   "canonical_name": " 耶斯列",
+   "cause": "whitespace_merge",
+   "successor": "place:yesilie",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: yi",
+   "canonical_name": " 益",
+   "cause": "whitespace_merge",
+   "successor": "place:yi",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: yifuta",
+   "canonical_name": " 益弗他",
+   "cause": "whitespace_merge",
+   "successor": "place:yifuta",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yihude",
+   "canonical_name": " 伊胡得",
+   "cause": "whitespace_merge",
+   "successor": "place:yihude",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yileiduola",
+   "canonical_name": " 伊勒多臘",
+   "cause": "whitespace_merge",
+   "successor": "place:yileiduola",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place: yilun",
+   "canonical_name": " 以倫",
+   "cause": "whitespace_merge",
+   "successor": "place:yilun",
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place: yin",
+   "canonical_name": " 音",
+   "cause": "whitespace_merge",
+   "successor": "place:yin",
+   "carry_over_possible": true
+  },
+  {
+   "entity_id": "place:e",
+   "canonical_name": "俄",
+   "cause": "book_abbreviation",
+   "successor": null,
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place:niximi",
+   "canonical_name": "尼西米",
+   "cause": "book_region_only",
+   "successor": null,
+   "carry_over_possible": false
+  },
+  {
+   "entity_id": "place:niximiji",
+   "canonical_name": "尼西米記",
+   "cause": "book_region_only",
+   "successor": null,
+   "carry_over_possible": false
+  }
+ ]
+}

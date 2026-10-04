@@ -1,0 +1,85 @@
+{
+ "twin_losers": 116,
+ "drops_by_type_rule": {
+  "Event|stop:ev09": 5,
+  "Event|dictname": 1,
+  "Event|junk:short": 1,
+  "Event|junk:frag": 6,
+  "Event|junk:xref": 19,
+  "Object|junk:short": 10,
+  "Object|dictname": 4,
+  "Theme|junk:frag": 1,
+  "Theme|junk:xref": 35
+ },
+ "drops_by_type": {
+  "Event": 32,
+  "Object": 14,
+  "Theme": 36
+ },
+ "protected_that_match_a_rule": [
+  [
+   "event:babieta",
+   "巴別塔",
+   "dictname"
+  ]
+ ],
+ "event_mentions_staging": 2227,
+ "event_mentions_removed": 62,
+ "events_dropped": 32,
+ "survivors_R8_junk_after_normalize": [
+  "這是基督嗎？"
+ ],
+ "dash_led_events_kept": 15,
+ "dropped_names_sample": {
+  "junk:frag": [
+   "子。",
+   "時呢？",
+   "獻的禱告。",
+   "的君」。",
+   "錄的。",
+   "頭！",
+   "風，"
+  ],
+  "stop:ev09": [
+   "曉諭摩西",
+   "瑪拉",
+   "瑪撒",
+   "米利巴",
+   "耶和華曉諭"
+  ],
+  "junk:short": [
+   " 主",
+   " 人",
+   " 城",
+   " 押",
+   " 殿",
+   " 民",
+   " 火",
+   " 車",
+   " 輪",
+   " 靈",
+   " 驢"
+  ],
+  "dictname": [
+   " 亞捫人",
+   " 押沙龍",
+   " 波阿斯",
+   " 赫人",
+   " 非利士人"
+  ],
+  "junk:xref": [
+   "*王下18‧13－37；19‧14－19，35－37；賽",
+   "*王下20‧1－3，12－19；賽38‧1－3；39‧1－8*",
+   "（可11‧15－19；路19‧45－48；約",
+   "（可11‧1－11；路19‧28－40；約",
+   "（可14‧12－21；路22‧7－14，21－23；約",
+   "（可14‧22－26；路22‧15－20；林前",
+   "（可14‧27－31；路22‧31－34；約",
+   "（可14‧43－50；路22‧47－53；約",
+   "（可14‧53－65；路22‧54－55，63－71；約",
+   "（可14‧66－72；路22‧56－62；約",
+   "（可15‧21－32；路23‧26－43；約",
+   "（可15‧33－41；路23‧44－49；約"
+  ]
+ }
+}

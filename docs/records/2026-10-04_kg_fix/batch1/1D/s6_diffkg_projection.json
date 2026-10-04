@@ -1,0 +1,163 @@
+{
+ "labels": {
+  "Event": -32,
+  "Group": -4,
+  "Object": -20,
+  "Person": -64,
+  "Place": -42,
+  "Theme": -36,
+  "Entity": -198
+ },
+ "mentions": {
+  "Chunk source=-": -9,
+  "Pericope source=-": -230
+ },
+ "relationships_MENTIONS": -239,
+ "ee_edges": {
+  "CAUSED phase=4 source=-": -1,
+  "FATHER_OF phase=5 source=-": -1,
+  "GAVE phase=4 source=-": -1,
+  "INITIATED phase=4 source=-": -5,
+  "MEMBER_OF phase=4 source=-": -1,
+  "OCCURRED_IN phase=4 source=-": -5,
+  "PARTICIPATED_IN phase=4 source=-": -29,
+  "POSSESSED phase=4 source=-": -4,
+  "PRECEDED_BY phase=4 source=-": -3,
+  "SIBLING_OF phase=4 source=-": -1,
+  "SON_OF phase=5 source=-": -1,
+  "VICTIM_OF phase=4 source=-": -5
+ },
+ "ee_total": {
+  "before": 6866,
+  "after": 6809
+ },
+ "self_loops_after": 2,
+ "relationships_semantic": {
+  "GAVE": -1,
+  "POSSESSED": -4,
+  "SON_OF": -1,
+  "FATHER_OF": -1,
+  "SIBLING_OF": -1,
+  "VICTIM_OF": -5,
+  "OCCURRED_IN": -5,
+  "INITIATED": -5,
+  "MEMBER_OF": -1,
+  "CAUSED": -1,
+  "PRECEDED_BY": -3,
+  "PARTICIPATED_IN": -29
+ },
+ "entity_ids": {
+  "only_a": 198,
+  "only_b": 0,
+  "explained_by_id_migration": 198
+ },
+ "descriptions": {
+  "n": 31,
+  "emptied_stale": [
+   "person:yiduo",
+   "place:bala",
+   "place:bo‧yalaba",
+   "place:hasa‧shuya",
+   "place:jidisi",
+   "place:luode",
+   "place:xigela",
+   "place:yilun"
+  ],
+  "filled_inherited": [
+   "group:salaizu",
+   "group:yabiyazu",
+   "group:yiduozu",
+   "person:babo",
+   "person:bake",
+   "person:baxilv",
+   "person:hajia",
+   "person:linqian",
+   "person:yewusi",
+   "place:bo‧libawu",
+   "place:dana",
+   "place:dilian",
+   "place:dingna",
+   "place:hexiya",
+   "place:libawu",
+   "place:mishisabie",
+   "place:shalabin",
+   "place:shalayin",
+   "place:yaduolaiyin",
+   "place:yaman",
+   "place:yanong",
+   "place:yifuta",
+   "place:yileiduola"
+  ],
+  "other": []
+ },
+ "aliases": {
+  "n": 7,
+  "lost_to_ambiguous": {
+   "person:matai": [
+    [
+     "利未"
+    ],
+    []
+   ],
+   "person:bide": [
+    [
+     "磯法",
+     "西門",
+     "西門彼得"
+    ],
+    [
+     "磯法",
+     "西門彼得"
+    ]
+   ],
+   "person:yuehan（shitu）": [
+    [
+     "約翰"
+    ],
+    []
+   ],
+   "person:baoluo": [
+    [
+     "掃羅"
+    ],
+    []
+   ],
+   "person:shixiyuehan": [
+    [
+     "約翰"
+    ],
+    []
+   ],
+   "group:jidutu": [
+    [
+     "門徒"
+    ],
+    []
+   ],
+   "person:youda（jialveren）": [
+    [
+     "加略人猶大",
+     "猶大"
+    ],
+    [
+     "加略人猶大"
+    ]
+   ]
+  },
+  "gained": {}
+ },
+ "replay": {
+  "written": 2929,
+  "unchanged": 4810,
+  "stale": 11,
+  "missing": 196
+ },
+ "inherited": 23,
+ "ppg_descriptions": {
+  "before": 3045,
+  "after": 2952
+ },
+ "dict_name_events_after": [
+  "event:babieta"
+ ]
+}

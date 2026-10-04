@@ -1,0 +1,6937 @@
+[
+ {
+  "i": 0,
+  "src_id": "mat:1:2",
+  "tgt_id": "isa:7:0",
+  "sv": "22-23",
+  "tv": "14",
+  "desc": "童女懷孕生子",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "mat:1:1"
+  ],
+  "tgt_pids": [
+   "isa:7:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:1:1": [
+    22,
+    23
+   ]
+  },
+  "tgt_parts": {
+   "isa:7:1": [
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:1:1",
+    "isa:7:1"
+   ]
+  ],
+  "tsk_votes": 144,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 1,
+  "src_id": "mat:2:0",
+  "tgt_id": "mic:5:0",
+  "sv": "6",
+  "tv": "2",
+  "desc": "伯利恆出君王",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:2:0",
+   "mic:5:1"
+  ],
+  "src_pids": [
+   "mat:2:0"
+  ],
+  "tgt_pids": [
+   "mic:5:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:2:0": [
+    6
+   ]
+  },
+  "tgt_parts": {
+   "mic:5:1": [
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:2:0",
+    "mic:5:1"
+   ]
+  ],
+  "tsk_votes": 130,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 2,
+  "src_id": "mat:2:2",
+  "tgt_id": "hos:11:0",
+  "sv": "15",
+  "tv": "1",
+  "desc": "從埃及召出我的兒子",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:2:2",
+   "hos:11:0"
+  ],
+  "src_pids": [
+   "mat:2:1"
+  ],
+  "tgt_pids": [
+   "hos:11:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:2:1": [
+    15
+   ]
+  },
+  "tgt_parts": {
+   "hos:11:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:2:1",
+    "hos:11:0"
+   ]
+  ],
+  "tsk_votes": 69,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 3,
+  "src_id": "mat:2:3",
+  "tgt_id": "jer:31:2",
+  "sv": "18",
+  "tv": "15",
+  "desc": "拉結為兒女哀哭",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:2:3",
+   "jer:31:1"
+  ],
+  "src_pids": [
+   "mat:2:2"
+  ],
+  "tgt_pids": [
+   "jer:31:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:2:2": [
+    18
+   ]
+  },
+  "tgt_parts": {
+   "jer:31:1": [
+    15
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:2:2",
+    "jer:31:1"
+   ]
+  ],
+  "tsk_votes": 83,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 4,
+  "src_id": "mat:3:0",
+  "tgt_id": "isa:40:0",
+  "sv": "3",
+  "tv": "3",
+  "desc": "在曠野有人聲喊著說",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:3:0",
+   "isa:40:0"
+  ],
+  "src_pids": [
+   "mat:3:0"
+  ],
+  "tgt_pids": [
+   "isa:40:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:3:0": [
+    3
+   ]
+  },
+  "tgt_parts": {
+   "isa:40:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:3:0",
+    "isa:40:0"
+   ]
+  ],
+  "tsk_votes": 63,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 5,
+  "src_id": "mat:4:0",
+  "tgt_id": "deu:8:0",
+  "sv": "4",
+  "tv": "3",
+  "desc": "人活著不是單靠食物",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:4:0",
+   "deu:8:0"
+  ],
+  "src_pids": [
+   "mat:4:0"
+  ],
+  "tgt_pids": [
+   "deu:8:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:4:0": [
+    4
+   ]
+  },
+  "tgt_parts": {
+   "deu:8:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:4:0",
+    "deu:8:0"
+   ]
+  ],
+  "tsk_votes": 349,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 6,
+  "src_id": "mat:4:0",
+  "tgt_id": "deu:6:0",
+  "sv": "7",
+  "tv": "16",
+  "desc": "不可試探主你的神",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:4:0",
+   "deu:6:1"
+  ],
+  "src_pids": [
+   "mat:4:0"
+  ],
+  "tgt_pids": [
+   "deu:6:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:4:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "deu:6:1": [
+    16
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:4:0",
+    "deu:6:1"
+   ]
+  ],
+  "tsk_votes": 99,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 7,
+  "src_id": "mat:4:0",
+  "tgt_id": "deu:6:0",
+  "sv": "10",
+  "tv": "13",
+  "desc": "當拜主你的神單要事奉他",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:4:0",
+   "deu:6:1"
+  ],
+  "src_pids": [
+   "mat:4:0"
+  ],
+  "tgt_pids": [
+   "deu:6:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:4:0": [
+    10
+   ]
+  },
+  "tgt_parts": {
+   "deu:6:1": [
+    13
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:4:0",
+    "deu:6:1"
+   ]
+  ],
+  "tsk_votes": 99,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 8,
+  "src_id": "mat:4:1",
+  "tgt_id": "isa:9:0",
+  "sv": "15-16",
+  "tv": "1-2",
+  "desc": "在黑暗中的百姓看見了大光",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:4:1",
+   "isa:9:0"
+  ],
+  "src_pids": [
+   "mat:4:1"
+  ],
+  "tgt_pids": [
+   "isa:9:0",
+   "isa:9:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:4:1": [
+    15,
+    16
+   ]
+  },
+  "tgt_parts": {
+   "isa:9:0": [
+    1
+   ],
+   "isa:9:1": [
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:4:1",
+    "isa:9:0"
+   ],
+   [
+    "mat:4:1",
+    "isa:9:1"
+   ]
+  ],
+  "tsk_votes": 51,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged+fanout"
+ },
+ {
+  "i": 9,
+  "src_id": "mat:8:1",
+  "tgt_id": "isa:53:0",
+  "sv": "17",
+  "tv": "4",
+  "desc": "他代替我們的軟弱",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:8:1",
+   "isa:53:0"
+  ],
+  "src_pids": [
+   "mat:8:2"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:8:2": [
+    17
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:8:2",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 86,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 10,
+  "src_id": "mat:11:0",
+  "tgt_id": "mal:3:0",
+  "sv": "10",
+  "tv": "1",
+  "desc": "我差遣我的使者在你前面",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:11:0",
+   "mal:3:0"
+  ],
+  "src_pids": [
+   "mat:11:1"
+  ],
+  "tgt_pids": [
+   "mal:3:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:11:1": [
+    10
+   ]
+  },
+  "tgt_parts": {
+   "mal:3:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:11:1",
+    "mal:3:0"
+   ]
+  ],
+  "tsk_votes": 46,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 11,
+  "src_id": "mat:12:2",
+  "tgt_id": "isa:42:0",
+  "sv": "18-21",
+  "tv": "1-4",
+  "desc": "看哪我的僕人",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:12:2",
+   "isa:42:0"
+  ],
+  "src_pids": [
+   "mat:12:2"
+  ],
+  "tgt_pids": [
+   "isa:42:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:12:2": [
+    18,
+    19,
+    20,
+    21
+   ]
+  },
+  "tgt_parts": {
+   "isa:42:0": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:12:2",
+    "isa:42:0"
+   ]
+  ],
+  "tsk_votes": 45,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 12,
+  "src_id": "mat:13:2",
+  "tgt_id": "psa:78:0",
+  "sv": "35",
+  "tv": "2",
+  "desc": "我要開口用比喻",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:13:2",
+   "psa:78:0"
+  ],
+  "src_pids": [
+   "mat:13:5"
+  ],
+  "tgt_pids": [
+   "psa:78:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:13:5": [
+    35
+   ]
+  },
+  "tgt_parts": {
+   "psa:78:0": [
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:13:5",
+    "psa:78:0"
+   ]
+  ],
+  "tsk_votes": 144,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 13,
+  "src_id": "mat:21:0",
+  "tgt_id": "zec:9:0",
+  "sv": "5",
+  "tv": "9",
+  "desc": "你的王騎著驢來",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:21:0",
+   "zec:9:1"
+  ],
+  "src_pids": [
+   "mat:21:0"
+  ],
+  "tgt_pids": [
+   "zec:9:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:21:0": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "zec:9:1": [
+    9
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:21:0",
+    "zec:9:1"
+   ]
+  ],
+  "tsk_votes": 85,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 14,
+  "src_id": "mat:21:0",
+  "tgt_id": "isa:62:0",
+  "sv": "5",
+  "tv": "11",
+  "desc": "你的拯救者來了",
+  "ref_type": "allusion",
+  "old_pair": [
+   "mat:21:0",
+   "isa:62:0"
+  ],
+  "src_pids": [
+   "mat:21:0"
+  ],
+  "tgt_pids": [
+   "isa:62:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:21:0": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "isa:62:0": [
+    11
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:21:0",
+    "isa:62:0"
+   ]
+  ],
+  "tsk_votes": 57,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 15,
+  "src_id": "mat:21:3",
+  "tgt_id": "psa:118:0",
+  "sv": "42",
+  "tv": "22-23",
+  "desc": "匠人所棄的石頭已作了房角石",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:21:3",
+   "psa:118:0"
+  ],
+  "src_pids": [
+   "mat:21:5"
+  ],
+  "tgt_pids": [
+   "psa:118:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:21:5": [
+    42
+   ]
+  },
+  "tgt_parts": {
+   "psa:118:0": [
+    22,
+    23
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:21:5",
+    "psa:118:0"
+   ]
+  ],
+  "tsk_votes": 67,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 16,
+  "src_id": "mat:22:3",
+  "tgt_id": "deu:6:0",
+  "sv": "37",
+  "tv": "5",
+  "desc": "你要盡心盡性盡意愛主你的神",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:22:3",
+   "deu:6:0"
+  ],
+  "src_pids": [
+   "mat:22:3"
+  ],
+  "tgt_pids": [
+   "deu:6:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:22:3": [
+    37
+   ]
+  },
+  "tgt_parts": {
+   "deu:6:0": [
+    5
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:22:3",
+    "deu:6:0"
+   ]
+  ],
+  "tsk_votes": 102,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 17,
+  "src_id": "mat:22:3",
+  "tgt_id": "lev:19:0",
+  "sv": "39",
+  "tv": "18",
+  "desc": "愛人如己",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:22:3",
+   "lev:19:0"
+  ],
+  "src_pids": [
+   "mat:22:3"
+  ],
+  "tgt_pids": [
+   "lev:19:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:22:3": [
+    39
+   ]
+  },
+  "tgt_parts": {
+   "lev:19:0": [
+    18
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:22:3",
+    "lev:19:0"
+   ]
+  ],
+  "tsk_votes": 41,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 18,
+  "src_id": "mat:26:3",
+  "tgt_id": "zec:13:0",
+  "sv": "31",
+  "tv": "7",
+  "desc": "擊打牧人羊就分散",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:26:3",
+   "zec:13:1"
+  ],
+  "src_pids": [
+   "mat:26:5"
+  ],
+  "tgt_pids": [
+   "zec:13:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:26:5": [
+    31
+   ]
+  },
+  "tgt_parts": {
+   "zec:13:1": [
+    7
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:26:5",
+    "zec:13:1"
+   ]
+  ],
+  "tsk_votes": 49,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 19,
+  "src_id": "mat:27:1",
+  "tgt_id": "zec:11:0",
+  "sv": "9",
+  "tv": "12-13",
+  "desc": "三十塊錢",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:27:1",
+   "zec:11:1"
+  ],
+  "src_pids": [
+   "mat:27:1"
+  ],
+  "tgt_pids": [
+   "zec:11:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:27:1": [
+    9
+   ]
+  },
+  "tgt_parts": {
+   "zec:11:1": [
+    12,
+    13
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:27:1",
+    "zec:11:1"
+   ]
+  ],
+  "tsk_votes": 37,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 20,
+  "src_id": "mat:27:4",
+  "tgt_id": "psa:22:0",
+  "sv": "46",
+  "tv": "1",
+  "desc": "我的神為什麼離棄我",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mat:27:4",
+   "psa:22:0"
+  ],
+  "src_pids": [
+   "mat:27:6"
+  ],
+  "tgt_pids": [
+   "psa:22:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mat:27:6": [
+    46
+   ]
+  },
+  "tgt_parts": {
+   "psa:22:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mat:27:6",
+    "psa:22:0"
+   ]
+  ],
+  "tsk_votes": 64,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 21,
+  "src_id": "mrk:1:0",
+  "tgt_id": "isa:40:0",
+  "sv": "3",
+  "tv": "3",
+  "desc": "在曠野有人聲喊著說",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mrk:1:0",
+   "isa:40:0"
+  ],
+  "src_pids": [
+   "mrk:1:0"
+  ],
+  "tgt_pids": [
+   "isa:40:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mrk:1:0": [
+    3
+   ]
+  },
+  "tgt_parts": {
+   "isa:40:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mrk:1:0",
+    "isa:40:0"
+   ]
+  ],
+  "tsk_votes": 84,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 22,
+  "src_id": "mrk:1:0",
+  "tgt_id": "mal:3:0",
+  "sv": "2",
+  "tv": "1",
+  "desc": "差遣使者在你前面",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mrk:1:0",
+   "mal:3:0"
+  ],
+  "src_pids": [
+   "mrk:1:0"
+  ],
+  "tgt_pids": [
+   "mal:3:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mrk:1:0": [
+    2
+   ]
+  },
+  "tgt_parts": {
+   "mal:3:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mrk:1:0",
+    "mal:3:0"
+   ]
+  ],
+  "tsk_votes": 40,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 23,
+  "src_id": "mrk:12:1",
+  "tgt_id": "psa:118:0",
+  "sv": "10-11",
+  "tv": "22-23",
+  "desc": "匠人所棄的石頭",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mrk:12:1",
+   "psa:118:0"
+  ],
+  "src_pids": [
+   "mrk:12:0"
+  ],
+  "tgt_pids": [
+   "psa:118:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mrk:12:0": [
+    10,
+    11
+   ]
+  },
+  "tgt_parts": {
+   "psa:118:0": [
+    22,
+    23
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mrk:12:0",
+    "psa:118:0"
+   ]
+  ],
+  "tsk_votes": 44,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 24,
+  "src_id": "mrk:12:3",
+  "tgt_id": "deu:6:0",
+  "sv": "29-30",
+  "tv": "4-5",
+  "desc": "你要盡心愛主你的神",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mrk:12:3",
+   "deu:6:0"
+  ],
+  "src_pids": [
+   "mrk:12:3"
+  ],
+  "tgt_pids": [
+   "deu:6:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mrk:12:3": [
+    29,
+    30
+   ]
+  },
+  "tgt_parts": {
+   "deu:6:0": [
+    4,
+    5
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mrk:12:3",
+    "deu:6:0"
+   ]
+  ],
+  "tsk_votes": 121,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 25,
+  "src_id": "mrk:15:3",
+  "tgt_id": "psa:22:0",
+  "sv": "34",
+  "tv": "1",
+  "desc": "我的神為什麼離棄我",
+  "ref_type": "quotation",
+  "old_pair": [
+   "mrk:15:3",
+   "psa:22:0"
+  ],
+  "src_pids": [
+   "mrk:15:4"
+  ],
+  "tgt_pids": [
+   "psa:22:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "mrk:15:4": [
+    34
+   ]
+  },
+  "tgt_parts": {
+   "psa:22:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "mrk:15:4",
+    "psa:22:0"
+   ]
+  ],
+  "tsk_votes": 46,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 26,
+  "src_id": "luk:1:5",
+  "tgt_id": "mal:4:0",
+  "sv": "17",
+  "tv": "5-6",
+  "desc": "以利亞的心志能力",
+  "ref_type": "allusion",
+  "old_pair": [
+   "luk:1:5",
+   "mal:4:0"
+  ],
+  "src_pids": [
+   "luk:1:1"
+  ],
+  "tgt_pids": [
+   "mal:4:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "luk:1:1": [
+    17
+   ]
+  },
+  "tgt_parts": {
+   "mal:4:0": [
+    5,
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "luk:1:1",
+    "mal:4:0"
+   ]
+  ],
+  "tsk_votes": 38,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 27,
+  "src_id": "luk:3:0",
+  "tgt_id": "isa:40:0",
+  "sv": "4-6",
+  "tv": "3-5",
+  "desc": "在曠野有人聲喊著說",
+  "ref_type": "quotation",
+  "old_pair": [
+   "luk:3:0",
+   "isa:40:0"
+  ],
+  "src_pids": [
+   "luk:3:0"
+  ],
+  "tgt_pids": [
+   "isa:40:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "luk:3:0": [
+    4,
+    5,
+    6
+   ]
+  },
+  "tgt_parts": {
+   "isa:40:0": [
+    3,
+    4,
+    5
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "luk:3:0",
+    "isa:40:0"
+   ]
+  ],
+  "tsk_votes": 28,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 28,
+  "src_id": "luk:4:2",
+  "tgt_id": "isa:61:0",
+  "sv": "18-19",
+  "tv": "1-2",
+  "desc": "主的靈在我身上因為他膏了我",
+  "ref_type": "quotation",
+  "old_pair": [
+   "luk:4:2",
+   "isa:61:0"
+  ],
+  "src_pids": [
+   "luk:4:2"
+  ],
+  "tgt_pids": [
+   "isa:61:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "luk:4:2": [
+    18,
+    19
+   ]
+  },
+  "tgt_parts": {
+   "isa:61:0": [
+    1,
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "luk:4:2",
+    "isa:61:0"
+   ]
+  ],
+  "tsk_votes": 280,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 29,
+  "src_id": "luk:20:2",
+  "tgt_id": "psa:118:0",
+  "sv": "17",
+  "tv": "22",
+  "desc": "匠人所棄的石頭",
+  "ref_type": "quotation",
+  "old_pair": [
+   "luk:20:2",
+   "psa:118:0"
+  ],
+  "src_pids": [
+   "luk:20:1"
+  ],
+  "tgt_pids": [
+   "psa:118:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "luk:20:1": [
+    17
+   ]
+  },
+  "tgt_parts": {
+   "psa:118:0": [
+    22
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "luk:20:1",
+    "psa:118:0"
+   ]
+  ],
+  "tsk_votes": 58,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 30,
+  "src_id": "luk:22:5",
+  "tgt_id": "isa:53:0",
+  "sv": "37",
+  "tv": "12",
+  "desc": "他被列在罪犯之中",
+  "ref_type": "quotation",
+  "old_pair": [
+   "luk:22:5",
+   "isa:53:0"
+  ],
+  "src_pids": [
+   "luk:22:5"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "luk:22:5": [
+    37
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    12
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "luk:22:5",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 26,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 31,
+  "src_id": "jhn:1:0",
+  "tgt_id": "gen:1:0",
+  "sv": "1-3",
+  "tv": "1",
+  "desc": "太初有道（起初神創造）",
+  "ref_type": "allusion",
+  "old_pair": [
+   "jhn:1:0",
+   "gen:1:0"
+  ],
+  "src_pids": [
+   "jhn:1:0"
+  ],
+  "tgt_pids": [
+   "gen:1:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:1:0": [
+    1,
+    2,
+    3
+   ]
+  },
+  "tgt_parts": {
+   "gen:1:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:1:0",
+    "gen:1:0"
+   ]
+  ],
+  "tsk_votes": 304,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 32,
+  "src_id": "jhn:2:2",
+  "tgt_id": "psa:69:0",
+  "sv": "17",
+  "tv": "9",
+  "desc": "我為你的殿心裏焦急",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:2:2",
+   "psa:69:0"
+  ],
+  "src_pids": [
+   "jhn:2:1"
+  ],
+  "tgt_pids": [
+   "psa:69:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:2:1": [
+    17
+   ]
+  },
+  "tgt_parts": {
+   "psa:69:0": [
+    9
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:2:1",
+    "psa:69:0"
+   ]
+  ],
+  "tsk_votes": 75,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 33,
+  "src_id": "jhn:6:3",
+  "tgt_id": "psa:78:0",
+  "sv": "31",
+  "tv": "24",
+  "desc": "他從天上賜下糧食給他們吃",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:6:3",
+   "psa:78:0"
+  ],
+  "src_pids": [
+   "jhn:6:2"
+  ],
+  "tgt_pids": [
+   "psa:78:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:6:2": [
+    31
+   ]
+  },
+  "tgt_parts": {
+   "psa:78:0": [
+    24
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:6:2",
+    "psa:78:0"
+   ]
+  ],
+  "tsk_votes": 9,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 34,
+  "src_id": "jhn:10:2",
+  "tgt_id": "psa:82:0",
+  "sv": "34",
+  "tv": "6",
+  "desc": "我曾說你們是神",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:10:2",
+   "psa:82:0"
+  ],
+  "src_pids": [
+   "jhn:10:2"
+  ],
+  "tgt_pids": [
+   "psa:82:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:10:2": [
+    34
+   ]
+  },
+  "tgt_parts": {
+   "psa:82:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:10:2",
+    "psa:82:0"
+   ]
+  ],
+  "tsk_votes": 111,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 35,
+  "src_id": "jhn:12:2",
+  "tgt_id": "isa:53:0",
+  "sv": "38",
+  "tv": "1",
+  "desc": "主啊誰信我們所傳的",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:12:2",
+   "isa:53:0"
+  ],
+  "src_pids": [
+   "jhn:12:5"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:12:5": [
+    38
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:12:5",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 66,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 36,
+  "src_id": "jhn:12:2",
+  "tgt_id": "isa:6:0",
+  "sv": "40",
+  "tv": "10",
+  "desc": "使他們瞎了眼硬了心",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:12:2",
+   "isa:6:0"
+  ],
+  "src_pids": [
+   "jhn:12:5"
+  ],
+  "tgt_pids": [
+   "isa:6:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:12:5": [
+    40
+   ]
+  },
+  "tgt_parts": {
+   "isa:6:0": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:12:5",
+    "isa:6:0"
+   ]
+  ],
+  "tsk_votes": 57,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 37,
+  "src_id": "jhn:12:3",
+  "tgt_id": "zec:9:0",
+  "sv": "15",
+  "tv": "9",
+  "desc": "你的王騎著驢駒來",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:12:3",
+   "zec:9:1"
+  ],
+  "src_pids": [
+   "jhn:12:2"
+  ],
+  "tgt_pids": [
+   "zec:9:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:12:2": [
+    15
+   ]
+  },
+  "tgt_parts": {
+   "zec:9:1": [
+    9
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:12:2",
+    "zec:9:1"
+   ]
+  ],
+  "tsk_votes": 49,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 38,
+  "src_id": "jhn:19:3",
+  "tgt_id": "psa:22:0",
+  "sv": "24",
+  "tv": "18",
+  "desc": "他們分了我的外衣",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:19:3",
+   "psa:22:0"
+  ],
+  "src_pids": [
+   "jhn:19:1"
+  ],
+  "tgt_pids": [
+   "psa:22:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:19:1": [
+    24
+   ]
+  },
+  "tgt_parts": {
+   "psa:22:0": [
+    18
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:19:1",
+    "psa:22:0"
+   ]
+  ],
+  "tsk_votes": 49,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 39,
+  "src_id": "jhn:19:3",
+  "tgt_id": "zec:12:0",
+  "sv": "37",
+  "tv": "10",
+  "desc": "他們要仰望自己所扎的人",
+  "ref_type": "quotation",
+  "old_pair": [
+   "jhn:19:3",
+   "zec:12:0"
+  ],
+  "src_pids": [
+   "jhn:19:3"
+  ],
+  "tgt_pids": [
+   "zec:12:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jhn:19:3": [
+    37
+   ]
+  },
+  "tgt_parts": {
+   "zec:12:0": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jhn:19:3",
+    "zec:12:0"
+   ]
+  ],
+  "tsk_votes": 24,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 40,
+  "src_id": "act:2:1",
+  "tgt_id": "jol:2:0",
+  "sv": "17-21",
+  "tv": "28-32",
+  "desc": "以後我要將我的靈澆灌",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:2:1",
+   "jol:2:3"
+  ],
+  "src_pids": [
+   "act:2:1"
+  ],
+  "tgt_pids": [
+   "jol:2:3"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:2:1": [
+    17,
+    18,
+    19,
+    20,
+    21
+   ]
+  },
+  "tgt_parts": {
+   "jol:2:3": [
+    28,
+    29,
+    30,
+    31,
+    32
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:2:1",
+    "jol:2:3"
+   ]
+  ],
+  "tsk_votes": 139,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 41,
+  "src_id": "act:2:1",
+  "tgt_id": "psa:16:0",
+  "sv": "25-28",
+  "tv": "8-11",
+  "desc": "你必不將我的靈魂撇在陰間",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:2:1",
+   "psa:16:0"
+  ],
+  "src_pids": [
+   "act:2:1"
+  ],
+  "tgt_pids": [
+   "psa:16:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:2:1": [
+    25,
+    26,
+    27,
+    28
+   ]
+  },
+  "tgt_parts": {
+   "psa:16:0": [
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:2:1",
+    "psa:16:0"
+   ]
+  ],
+  "tsk_votes": 92,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 42,
+  "src_id": "act:2:2",
+  "tgt_id": "psa:110:0",
+  "sv": "34-35",
+  "tv": "1",
+  "desc": "主對我主說你坐在我的右邊",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:2:2",
+   "psa:110:0"
+  ],
+  "src_pids": [
+   "act:2:1"
+  ],
+  "tgt_pids": [
+   "psa:110:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:2:1": [
+    34,
+    35
+   ]
+  },
+  "tgt_parts": {
+   "psa:110:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:2:1",
+    "psa:110:0"
+   ]
+  ],
+  "tsk_votes": 34,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 43,
+  "src_id": "act:4:0",
+  "tgt_id": "psa:118:0",
+  "sv": "11",
+  "tv": "22",
+  "desc": "匠人所棄的石頭已作了房角石",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:4:0",
+   "psa:118:0"
+  ],
+  "src_pids": [
+   "act:4:0"
+  ],
+  "tgt_pids": [
+   "psa:118:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:4:0": [
+    11
+   ]
+  },
+  "tgt_parts": {
+   "psa:118:0": [
+    22
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:4:0",
+    "psa:118:0"
+   ]
+  ],
+  "tsk_votes": 50,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 44,
+  "src_id": "act:8:3",
+  "tgt_id": "isa:53:0",
+  "sv": "32-33",
+  "tv": "7-8",
+  "desc": "他像羊被牽到宰殺之地",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "act:8:2"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:8:2": [
+    32,
+    33
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    7,
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:8:2",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 68,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 45,
+  "src_id": "act:13:2",
+  "tgt_id": "psa:2:0",
+  "sv": "33",
+  "tv": "7",
+  "desc": "你是我的兒子我今日生你",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:13:2",
+   "psa:2:0"
+  ],
+  "src_pids": [
+   "act:13:2"
+  ],
+  "tgt_pids": [
+   "psa:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:13:2": [
+    33
+   ]
+  },
+  "tgt_parts": {
+   "psa:2:0": [
+    7
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:13:2",
+    "psa:2:0"
+   ]
+  ],
+  "tsk_votes": 47,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 46,
+  "src_id": "act:13:2",
+  "tgt_id": "isa:55:0",
+  "sv": "34",
+  "tv": "3",
+  "desc": "我必將所應許大衛那聖潔可靠的恩典賜給你們",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:13:2",
+   "isa:55:0"
+  ],
+  "src_pids": [
+   "act:13:2"
+  ],
+  "tgt_pids": [
+   "isa:55:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:13:2": [
+    34
+   ]
+  },
+  "tgt_parts": {
+   "isa:55:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:13:2",
+    "isa:55:0"
+   ]
+  ],
+  "tsk_votes": 10,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 47,
+  "src_id": "act:13:2",
+  "tgt_id": "psa:16:0",
+  "sv": "35",
+  "tv": "10",
+  "desc": "你必不叫你的聖者見朽壞",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:13:2",
+   "psa:16:0"
+  ],
+  "src_pids": [
+   "act:13:2"
+  ],
+  "tgt_pids": [
+   "psa:16:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:13:2": [
+    35
+   ]
+  },
+  "tgt_parts": {
+   "psa:16:0": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:13:2",
+    "psa:16:0"
+   ]
+  ],
+  "tsk_votes": 31,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 48,
+  "src_id": "act:15:1",
+  "tgt_id": "amo:9:0",
+  "sv": "16-17",
+  "tv": "11-12",
+  "desc": "重新修造大衛倒塌的帳幕",
+  "ref_type": "quotation",
+  "old_pair": [
+   "act:15:1",
+   "amo:9:1"
+  ],
+  "src_pids": [
+   "act:15:0"
+  ],
+  "tgt_pids": [
+   "amo:9:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "act:15:0": [
+    16,
+    17
+   ]
+  },
+  "tgt_parts": {
+   "amo:9:1": [
+    11,
+    12
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "act:15:0",
+    "amo:9:1"
+   ]
+  ],
+  "tsk_votes": 63,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 49,
+  "src_id": "rom:1:1",
+  "tgt_id": "hab:2:0",
+  "sv": "17",
+  "tv": "4",
+  "desc": "義人必因信得生",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:1:1",
+   "hab:2:0"
+  ],
+  "src_pids": [
+   "rom:1:2"
+  ],
+  "tgt_pids": [
+   "hab:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:1:2": [
+    17
+   ]
+  },
+  "tgt_parts": {
+   "hab:2:0": [
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:1:2",
+    "hab:2:0"
+   ]
+  ],
+  "tsk_votes": 91,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 50,
+  "src_id": "rom:3:2",
+  "tgt_id": "psa:14:0",
+  "sv": "10-12",
+  "tv": "1-3",
+  "desc": "沒有義人連一個也沒有",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:3:2",
+   "psa:14:0"
+  ],
+  "src_pids": [
+   "rom:3:1"
+  ],
+  "tgt_pids": [
+   "psa:14:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:3:1": [
+    10,
+    11,
+    12
+   ]
+  },
+  "tgt_parts": {
+   "psa:14:0": [
+    1,
+    2,
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:3:1",
+    "psa:14:0"
+   ]
+  ],
+  "tsk_votes": 128,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 51,
+  "src_id": "rom:3:2",
+  "tgt_id": "psa:5:0",
+  "sv": "13",
+  "tv": "9",
+  "desc": "他們的喉嚨是敞開的墳墓",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:3:2",
+   "psa:5:0"
+  ],
+  "src_pids": [
+   "rom:3:1"
+  ],
+  "tgt_pids": [
+   "psa:5:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:3:1": [
+    13
+   ]
+  },
+  "tgt_parts": {
+   "psa:5:0": [
+    9
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:3:1",
+    "psa:5:0"
+   ]
+  ],
+  "tsk_votes": 24,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 52,
+  "src_id": "rom:3:2",
+  "tgt_id": "psa:140:0",
+  "sv": "13",
+  "tv": "3",
+  "desc": "嘴唇裏有虺蛇的毒氣",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:3:2",
+   "psa:140:0"
+  ],
+  "src_pids": [
+   "rom:3:1"
+  ],
+  "tgt_pids": [
+   "psa:140:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:3:1": [
+    13
+   ]
+  },
+  "tgt_parts": {
+   "psa:140:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:3:1",
+    "psa:140:0"
+   ]
+  ],
+  "tsk_votes": 21,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 53,
+  "src_id": "rom:3:2",
+  "tgt_id": "psa:10:0",
+  "sv": "14",
+  "tv": "7",
+  "desc": "他們滿口是咒罵苦毒",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:3:2",
+   "psa:10:0"
+  ],
+  "src_pids": [
+   "rom:3:1"
+  ],
+  "tgt_pids": [
+   "psa:10:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:3:1": [
+    14
+   ]
+  },
+  "tgt_parts": {
+   "psa:10:0": [
+    7
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:3:1",
+    "psa:10:0"
+   ]
+  ],
+  "tsk_votes": 16,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 54,
+  "src_id": "rom:3:2",
+  "tgt_id": "isa:59:0",
+  "sv": "15-17",
+  "tv": "7-8",
+  "desc": "殺人流血他們的腳飛跑",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:3:2",
+   "isa:59:0"
+  ],
+  "src_pids": [
+   "rom:3:1"
+  ],
+  "tgt_pids": [
+   "isa:59:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:3:1": [
+    15,
+    16,
+    17
+   ]
+  },
+  "tgt_parts": {
+   "isa:59:0": [
+    7,
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:3:1",
+    "isa:59:0"
+   ]
+  ],
+  "tsk_votes": 18,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 55,
+  "src_id": "rom:3:2",
+  "tgt_id": "psa:36:0",
+  "sv": "18",
+  "tv": "1",
+  "desc": "他眼中不怕神",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:3:2",
+   "psa:36:0"
+  ],
+  "src_pids": [
+   "rom:3:1"
+  ],
+  "tgt_pids": [
+   "psa:36:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:3:1": [
+    18
+   ]
+  },
+  "tgt_parts": {
+   "psa:36:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:3:1",
+    "psa:36:0"
+   ]
+  ],
+  "tsk_votes": 17,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 56,
+  "src_id": "rom:4:0",
+  "tgt_id": "gen:15:0",
+  "sv": "3",
+  "tv": "6",
+  "desc": "亞伯拉罕信神就算為他的義",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:4:0",
+   "gen:15:0"
+  ],
+  "src_pids": [
+   "rom:4:0"
+  ],
+  "tgt_pids": [
+   "gen:15:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:4:0": [
+    3
+   ]
+  },
+  "tgt_parts": {
+   "gen:15:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:4:0",
+    "gen:15:0"
+   ]
+  ],
+  "tsk_votes": 54,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 57,
+  "src_id": "rom:4:0",
+  "tgt_id": "psa:32:0",
+  "sv": "7-8",
+  "tv": "1-2",
+  "desc": "得赦免其過的人是有福的",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:4:0",
+   "psa:32:0"
+  ],
+  "src_pids": [
+   "rom:4:0"
+  ],
+  "tgt_pids": [
+   "psa:32:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:4:0": [
+    7,
+    8
+   ]
+  },
+  "tgt_parts": {
+   "psa:32:0": [
+    1,
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:4:0",
+    "psa:32:0"
+   ]
+  ],
+  "tsk_votes": 59,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 58,
+  "src_id": "rom:8:3",
+  "tgt_id": "psa:44:0",
+  "sv": "36",
+  "tv": "22",
+  "desc": "為你的緣故我們終日被殺",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "rom:8:2"
+  ],
+  "tgt_pids": [
+   "psa:44:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:8:2": [
+    36
+   ]
+  },
+  "tgt_parts": {
+   "psa:44:0": [
+    22
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:8:2",
+    "psa:44:0"
+   ]
+  ],
+  "tsk_votes": 57,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 59,
+  "src_id": "rom:9:1",
+  "tgt_id": "gen:21:0",
+  "sv": "7",
+  "tv": "12",
+  "desc": "從以撒生的才要稱為你的後裔",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rom:9:1",
+   "gen:21:1"
+  ],
+  "src_pids": [
+   "rom:9:0"
+  ],
+  "tgt_pids": [
+   "gen:21:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:9:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "gen:21:1": [
+    12
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:9:0",
+    "gen:21:1"
+   ]
+  ],
+  "tsk_votes": 19,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 60,
+  "src_id": "rom:9:2",
+  "tgt_id": "exo:33:0",
+  "sv": "15",
+  "tv": "19",
+  "desc": "我要憐憫誰就憐憫誰",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:9:2",
+   "exo:33:2"
+  ],
+  "src_pids": [
+   "rom:9:0"
+  ],
+  "tgt_pids": [
+   "exo:33:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:9:0": [
+    15
+   ]
+  },
+  "tgt_parts": {
+   "exo:33:2": [
+    19
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:9:0",
+    "exo:33:2"
+   ]
+  ],
+  "tsk_votes": 43,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 61,
+  "src_id": "rom:9:2",
+  "tgt_id": "exo:9:0",
+  "sv": "17",
+  "tv": "16",
+  "desc": "我將你興起來特要在你身上彰顯我的權能",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:9:2",
+   "exo:9:2"
+  ],
+  "src_pids": [
+   "rom:9:0"
+  ],
+  "tgt_pids": [
+   "exo:9:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:9:0": [
+    17
+   ]
+  },
+  "tgt_parts": {
+   "exo:9:2": [
+    16
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:9:0",
+    "exo:9:2"
+   ]
+  ],
+  "tsk_votes": 34,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 62,
+  "src_id": "rom:9:3",
+  "tgt_id": "isa:28:0",
+  "sv": "33",
+  "tv": "16",
+  "desc": "在錫安放一塊絆腳石",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "rom:9:2"
+  ],
+  "tgt_pids": [
+   "isa:28:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:9:2": [
+    33
+   ]
+  },
+  "tgt_parts": {
+   "isa:28:2": [
+    16
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:9:2",
+    "isa:28:2"
+   ]
+  ],
+  "tsk_votes": 67,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 63,
+  "src_id": "rom:9:3",
+  "tgt_id": "isa:8:0",
+  "sv": "33",
+  "tv": "14",
+  "desc": "作了絆腳的石頭跌人的磐石",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "rom:9:2"
+  ],
+  "tgt_pids": [
+   "isa:8:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:9:2": [
+    33
+   ]
+  },
+  "tgt_parts": {
+   "isa:8:2": [
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:9:2",
+    "isa:8:2"
+   ]
+  ],
+  "tsk_votes": 18,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 64,
+  "src_id": "rom:10:0",
+  "tgt_id": "deu:30:0",
+  "sv": "6-8",
+  "tv": "12-14",
+  "desc": "這道離你不遠",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:10:0",
+   "deu:30:0"
+  ],
+  "src_pids": [
+   "rom:10:1"
+  ],
+  "tgt_pids": [
+   "deu:30:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:10:1": [
+    6,
+    7,
+    8
+   ]
+  },
+  "tgt_parts": {
+   "deu:30:0": [
+    12,
+    13,
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:10:1",
+    "deu:30:0"
+   ]
+  ],
+  "tsk_votes": 46,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 65,
+  "src_id": "rom:10:0",
+  "tgt_id": "isa:28:0",
+  "sv": "11",
+  "tv": "16",
+  "desc": "信靠他的人必不至於羞愧",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:10:0",
+   "isa:28:2"
+  ],
+  "src_pids": [
+   "rom:10:1"
+  ],
+  "tgt_pids": [
+   "isa:28:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:10:1": [
+    11
+   ]
+  },
+  "tgt_parts": {
+   "isa:28:2": [
+    16
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:10:1",
+    "isa:28:2"
+   ]
+  ],
+  "tsk_votes": 60,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 66,
+  "src_id": "rom:10:0",
+  "tgt_id": "jol:2:0",
+  "sv": "13",
+  "tv": "32",
+  "desc": "凡求告主名的就必得救",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:10:0",
+   "jol:2:3"
+  ],
+  "src_pids": [
+   "rom:10:1"
+  ],
+  "tgt_pids": [
+   "jol:2:3"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:10:1": [
+    13
+   ]
+  },
+  "tgt_parts": {
+   "jol:2:3": [
+    32
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:10:1",
+    "jol:2:3"
+   ]
+  ],
+  "tsk_votes": 103,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 67,
+  "src_id": "rom:10:1",
+  "tgt_id": "isa:52:0",
+  "sv": "15",
+  "tv": "7",
+  "desc": "報福音傳喜信的人的腳蹤何等佳美",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:10:1",
+   "isa:52:0"
+  ],
+  "src_pids": [
+   "rom:10:1"
+  ],
+  "tgt_pids": [
+   "isa:52:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:10:1": [
+    15
+   ]
+  },
+  "tgt_parts": {
+   "isa:52:0": [
+    7
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:10:1",
+    "isa:52:0"
+   ]
+  ],
+  "tsk_votes": 71,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 68,
+  "src_id": "rom:10:1",
+  "tgt_id": "isa:53:0",
+  "sv": "16",
+  "tv": "1",
+  "desc": "主啊誰信我們所傳的呢",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:10:1",
+   "isa:53:0"
+  ],
+  "src_pids": [
+   "rom:10:1"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:10:1": [
+    16
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:10:1",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 47,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 69,
+  "src_id": "rom:11:0",
+  "tgt_id": "1ki:19:0",
+  "sv": "3-4",
+  "tv": "10,18",
+  "desc": "我為自己留下七千人",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:11:0",
+   "1ki:19:0"
+  ],
+  "src_pids": [
+   "rom:11:0"
+  ],
+  "tgt_pids": [
+   "1ki:19:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:11:0": [
+    3,
+    4
+   ]
+  },
+  "tgt_parts": {
+   "1ki:19:0": [
+    10,
+    18
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:11:0",
+    "1ki:19:0"
+   ]
+  ],
+  "tsk_votes": 19,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 70,
+  "src_id": "rom:11:1",
+  "tgt_id": "isa:29:0",
+  "sv": "8",
+  "tv": "10",
+  "desc": "神給他們昏迷的心",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:11:1",
+   "isa:29:2"
+  ],
+  "src_pids": [
+   "rom:11:0"
+  ],
+  "tgt_pids": [
+   "isa:29:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:11:0": [
+    8
+   ]
+  },
+  "tgt_parts": {
+   "isa:29:2": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:11:0",
+    "isa:29:2"
+   ]
+  ],
+  "tsk_votes": 27,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 71,
+  "src_id": "rom:11:1",
+  "tgt_id": "psa:69:0",
+  "sv": "9-10",
+  "tv": "22-23",
+  "desc": "願他們的筵席變為網羅",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:11:1",
+   "psa:69:0"
+  ],
+  "src_pids": [
+   "rom:11:0"
+  ],
+  "tgt_pids": [
+   "psa:69:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:11:0": [
+    9,
+    10
+   ]
+  },
+  "tgt_parts": {
+   "psa:69:0": [
+    22,
+    23
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:11:0",
+    "psa:69:0"
+   ]
+  ],
+  "tsk_votes": 30,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 72,
+  "src_id": "rom:11:2",
+  "tgt_id": "isa:59:0",
+  "sv": "26-27",
+  "tv": "20-21",
+  "desc": "必有一位救主從錫安出來",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:11:2",
+   "isa:59:2"
+  ],
+  "src_pids": [
+   "rom:11:2"
+  ],
+  "tgt_pids": [
+   "isa:59:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:11:2": [
+    26,
+    27
+   ]
+  },
+  "tgt_parts": {
+   "isa:59:2": [
+    20,
+    21
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:11:2",
+    "isa:59:2"
+   ]
+  ],
+  "tsk_votes": 49,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 73,
+  "src_id": "rom:15:1",
+  "tgt_id": "psa:69:0",
+  "sv": "3",
+  "tv": "9",
+  "desc": "辱罵你人的辱罵都落在我身上",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:15:1",
+   "psa:69:0"
+  ],
+  "src_pids": [
+   "rom:15:0"
+  ],
+  "tgt_pids": [
+   "psa:69:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:15:0": [
+    3
+   ]
+  },
+  "tgt_parts": {
+   "psa:69:0": [
+    9
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:15:0",
+    "psa:69:0"
+   ]
+  ],
+  "tsk_votes": 48,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 74,
+  "src_id": "rom:15:1",
+  "tgt_id": "isa:11:0",
+  "sv": "12",
+  "tv": "10",
+  "desc": "耶西的根要興起來",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rom:15:1",
+   "isa:11:1"
+  ],
+  "src_pids": [
+   "rom:15:1"
+  ],
+  "tgt_pids": [
+   "isa:11:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rom:15:1": [
+    12
+   ]
+  },
+  "tgt_parts": {
+   "isa:11:1": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rom:15:1",
+    "isa:11:1"
+   ]
+  ],
+  "tsk_votes": 30,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 75,
+  "src_id": "1co:1:1",
+  "tgt_id": "isa:29:0",
+  "sv": "19",
+  "tv": "14",
+  "desc": "我要滅絕智慧人的智慧",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1co:1:1",
+   "isa:29:2"
+  ],
+  "src_pids": [
+   "1co:1:2"
+  ],
+  "tgt_pids": [
+   "isa:29:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1co:1:2": [
+    19
+   ]
+  },
+  "tgt_parts": {
+   "isa:29:2": [
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1co:1:2",
+    "isa:29:2"
+   ]
+  ],
+  "tsk_votes": 57,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 76,
+  "src_id": "1co:3:1",
+  "tgt_id": "job:5:0",
+  "sv": "19",
+  "tv": "13",
+  "desc": "他叫有智慧的中了自己的詭計",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "1co:3:0"
+  ],
+  "tgt_pids": [
+   "job:5:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1co:3:0": [
+    19
+   ]
+  },
+  "tgt_parts": {
+   "job:5:0": [
+    13
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1co:3:0",
+    "job:5:0"
+   ]
+  ],
+  "tsk_votes": 49,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 77,
+  "src_id": "1co:3:1",
+  "tgt_id": "psa:94:0",
+  "sv": "20",
+  "tv": "11",
+  "desc": "主知道智慧人的意念是虛妄的",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "1co:3:0"
+  ],
+  "tgt_pids": [
+   "psa:94:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1co:3:0": [
+    20
+   ]
+  },
+  "tgt_parts": {
+   "psa:94:0": [
+    11
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1co:3:0",
+    "psa:94:0"
+   ]
+  ],
+  "tsk_votes": 26,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 78,
+  "src_id": "1co:10:0",
+  "tgt_id": "exo:32:0",
+  "sv": "7",
+  "tv": "6",
+  "desc": "百姓坐下吃喝起來玩耍",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1co:10:0",
+   "exo:32:0"
+  ],
+  "src_pids": [
+   "1co:10:0"
+  ],
+  "tgt_pids": [
+   "exo:32:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1co:10:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "exo:32:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1co:10:0",
+    "exo:32:0"
+   ]
+  ],
+  "tsk_votes": 34,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 79,
+  "src_id": "1co:15:3",
+  "tgt_id": "isa:25:0",
+  "sv": "54",
+  "tv": "8",
+  "desc": "死被得勝吞滅了",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "1co:15:2"
+  ],
+  "tgt_pids": [
+   "isa:25:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1co:15:2": [
+    54
+   ]
+  },
+  "tgt_parts": {
+   "isa:25:1": [
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1co:15:2",
+    "isa:25:1"
+   ]
+  ],
+  "tsk_votes": 31,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 80,
+  "src_id": "1co:15:3",
+  "tgt_id": "hos:13:0",
+  "sv": "55",
+  "tv": "14",
+  "desc": "死啊你得勝的權勢在哪裏",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "1co:15:2"
+  ],
+  "tgt_pids": [
+   "hos:13:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1co:15:2": [
+    55
+   ]
+  },
+  "tgt_parts": {
+   "hos:13:0": [
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1co:15:2",
+    "hos:13:0"
+   ]
+  ],
+  "tsk_votes": 30,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 81,
+  "src_id": "2co:4:0",
+  "tgt_id": "gen:1:0",
+  "sv": "6",
+  "tv": "3",
+  "desc": "那吩咐光從黑暗裏照出來的神",
+  "ref_type": "allusion",
+  "old_pair": [
+   "2co:4:0",
+   "gen:1:0"
+  ],
+  "src_pids": [
+   "2co:4:0"
+  ],
+  "tgt_pids": [
+   "gen:1:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "2co:4:0": [
+    6
+   ]
+  },
+  "tgt_parts": {
+   "gen:1:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "2co:4:0",
+    "gen:1:0"
+   ]
+  ],
+  "tsk_votes": 65,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 82,
+  "src_id": "2co:6:1",
+  "tgt_id": "isa:49:0",
+  "sv": "2",
+  "tv": "8",
+  "desc": "在悅納的時候我應允了你",
+  "ref_type": "quotation",
+  "old_pair": [
+   "2co:6:1",
+   "isa:49:1"
+  ],
+  "src_pids": [
+   "2co:6:0"
+  ],
+  "tgt_pids": [
+   "isa:49:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "2co:6:0": [
+    2
+   ]
+  },
+  "tgt_parts": {
+   "isa:49:1": [
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "2co:6:0",
+    "isa:49:1"
+   ]
+  ],
+  "tsk_votes": 70,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 83,
+  "src_id": "2co:6:2",
+  "tgt_id": "lev:26:0",
+  "sv": "16",
+  "tv": "12",
+  "desc": "我要在他們中間居住",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "2co:6:1"
+  ],
+  "tgt_pids": [
+   "lev:26:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "2co:6:1": [
+    16
+   ]
+  },
+  "tgt_parts": {
+   "lev:26:0": [
+    12
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "2co:6:1",
+    "lev:26:0"
+   ]
+  ],
+  "tsk_votes": 270,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 84,
+  "src_id": "gal:3:1",
+  "tgt_id": "gen:15:0",
+  "sv": "6",
+  "tv": "6",
+  "desc": "亞伯拉罕信神就算為他的義",
+  "ref_type": "quotation",
+  "old_pair": [
+   "gal:3:1",
+   "gen:15:0"
+  ],
+  "src_pids": [
+   "gal:3:0"
+  ],
+  "tgt_pids": [
+   "gen:15:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "gal:3:0": [
+    6
+   ]
+  },
+  "tgt_parts": {
+   "gen:15:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "gal:3:0",
+    "gen:15:0"
+   ]
+  ],
+  "tsk_votes": 56,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 85,
+  "src_id": "gal:3:1",
+  "tgt_id": "gen:12:0",
+  "sv": "8",
+  "tv": "3",
+  "desc": "萬國都必因你得福",
+  "ref_type": "quotation",
+  "old_pair": [
+   "gal:3:1",
+   "gen:12:0"
+  ],
+  "src_pids": [
+   "gal:3:0"
+  ],
+  "tgt_pids": [
+   "gen:12:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "gal:3:0": [
+    8
+   ]
+  },
+  "tgt_parts": {
+   "gen:12:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "gal:3:0",
+    "gen:12:0"
+   ]
+  ],
+  "tsk_votes": 35,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 86,
+  "src_id": "gal:3:1",
+  "tgt_id": "deu:27:0",
+  "sv": "10",
+  "tv": "26",
+  "desc": "凡不常照律法書上所記一切之事去行的就被咒詛",
+  "ref_type": "quotation",
+  "old_pair": [
+   "gal:3:1",
+   "deu:27:1"
+  ],
+  "src_pids": [
+   "gal:3:0"
+  ],
+  "tgt_pids": [
+   "deu:27:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "gal:3:0": [
+    10
+   ]
+  },
+  "tgt_parts": {
+   "deu:27:1": [
+    26
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "gal:3:0",
+    "deu:27:1"
+   ]
+  ],
+  "tsk_votes": 70,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 87,
+  "src_id": "gal:3:1",
+  "tgt_id": "hab:2:0",
+  "sv": "11",
+  "tv": "4",
+  "desc": "義人必因信得生",
+  "ref_type": "quotation",
+  "old_pair": [
+   "gal:3:1",
+   "hab:2:0"
+  ],
+  "src_pids": [
+   "gal:3:0"
+  ],
+  "tgt_pids": [
+   "hab:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "gal:3:0": [
+    11
+   ]
+  },
+  "tgt_parts": {
+   "hab:2:0": [
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "gal:3:0",
+    "hab:2:0"
+   ]
+  ],
+  "tsk_votes": 43,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 88,
+  "src_id": "gal:3:1",
+  "tgt_id": "deu:21:0",
+  "sv": "13",
+  "tv": "23",
+  "desc": "凡掛在木頭上都是被咒詛的",
+  "ref_type": "quotation",
+  "old_pair": [
+   "gal:3:1",
+   "deu:21:4"
+  ],
+  "src_pids": [
+   "gal:3:0"
+  ],
+  "tgt_pids": [
+   "deu:21:4"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "gal:3:0": [
+    13
+   ]
+  },
+  "tgt_parts": {
+   "deu:21:4": [
+    23
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "gal:3:0",
+    "deu:21:4"
+   ]
+  ],
+  "tsk_votes": 58,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 89,
+  "src_id": "gal:4:2",
+  "tgt_id": "gen:21:0",
+  "sv": "30",
+  "tv": "10",
+  "desc": "把使女和她兒子趕出去",
+  "ref_type": "quotation",
+  "old_pair": [
+   "gal:4:2",
+   "gen:21:1"
+  ],
+  "src_pids": [
+   "gal:4:2"
+  ],
+  "tgt_pids": [
+   "gen:21:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "gal:4:2": [
+    30
+   ]
+  },
+  "tgt_parts": {
+   "gen:21:1": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "gal:4:2",
+    "gen:21:1"
+   ]
+  ],
+  "tsk_votes": 19,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 90,
+  "src_id": "eph:4:0",
+  "tgt_id": "psa:68:0",
+  "sv": "8",
+  "tv": "18",
+  "desc": "他升上高天擄掠了仇敵",
+  "ref_type": "quotation",
+  "old_pair": [
+   "eph:4:0",
+   "psa:68:0"
+  ],
+  "src_pids": [
+   "eph:4:0"
+  ],
+  "tgt_pids": [
+   "psa:68:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "eph:4:0": [
+    8
+   ]
+  },
+  "tgt_parts": {
+   "psa:68:0": [
+    18
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "eph:4:0",
+    "psa:68:0"
+   ]
+  ],
+  "tsk_votes": 76,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 91,
+  "src_id": "eph:5:3",
+  "tgt_id": "gen:2:0",
+  "sv": "31",
+  "tv": "24",
+  "desc": "人要離開父母與妻子連合二人成為一體",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "eph:5:2"
+  ],
+  "tgt_pids": [
+   "gen:2:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "eph:5:2": [
+    31
+   ]
+  },
+  "tgt_parts": {
+   "gen:2:1": [
+    24
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "eph:5:2",
+    "gen:2:1"
+   ]
+  ],
+  "tsk_votes": 60,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 92,
+  "src_id": "eph:6:0",
+  "tgt_id": "exo:20:0",
+  "sv": "2-3",
+  "tv": "12",
+  "desc": "要孝敬父母使你得福在世長壽",
+  "ref_type": "quotation",
+  "old_pair": [
+   "eph:6:0",
+   "exo:20:0"
+  ],
+  "src_pids": [
+   "eph:6:0"
+  ],
+  "tgt_pids": [
+   "exo:20:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "eph:6:0": [
+    2,
+    3
+   ]
+  },
+  "tgt_parts": {
+   "exo:20:0": [
+    12
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "eph:6:0",
+    "exo:20:0"
+   ]
+  ],
+  "tsk_votes": 66,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 93,
+  "src_id": "php:2:0",
+  "tgt_id": "isa:45:0",
+  "sv": "10-11",
+  "tv": "23",
+  "desc": "萬膝都要跪拜萬口都要宣認",
+  "ref_type": "quotation",
+  "old_pair": [
+   "php:2:0",
+   "isa:45:2"
+  ],
+  "src_pids": [
+   "php:2:0"
+  ],
+  "tgt_pids": [
+   "isa:45:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "php:2:0": [
+    10,
+    11
+   ]
+  },
+  "tgt_parts": {
+   "isa:45:2": [
+    23
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "php:2:0",
+    "isa:45:2"
+   ]
+  ],
+  "tsk_votes": 62,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 94,
+  "src_id": "heb:1:0",
+  "tgt_id": "psa:2:0",
+  "sv": "5",
+  "tv": "7",
+  "desc": "你是我的兒子我今日生你",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:1:0",
+   "psa:2:0"
+  ],
+  "src_pids": [
+   "heb:1:1"
+  ],
+  "tgt_pids": [
+   "psa:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:1:1": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "psa:2:0": [
+    7
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:1:1",
+    "psa:2:0"
+   ]
+  ],
+  "tsk_votes": 61,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 95,
+  "src_id": "heb:1:0",
+  "tgt_id": "2sa:7:0",
+  "sv": "5",
+  "tv": "14",
+  "desc": "我要作他的父他要作我的子",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:1:0",
+   "2sa:7:0"
+  ],
+  "src_pids": [
+   "heb:1:1"
+  ],
+  "tgt_pids": [
+   "2sa:7:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:1:1": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "2sa:7:0": [
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:1:1",
+    "2sa:7:0"
+   ]
+  ],
+  "tsk_votes": 19,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 96,
+  "src_id": "heb:1:0",
+  "tgt_id": "psa:104:0",
+  "sv": "7",
+  "tv": "4",
+  "desc": "以風為使者以火焰為僕役",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:1:0",
+   "psa:104:0"
+  ],
+  "src_pids": [
+   "heb:1:1"
+  ],
+  "tgt_pids": [
+   "psa:104:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:1:1": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "psa:104:0": [
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:1:1",
+    "psa:104:0"
+   ]
+  ],
+  "tsk_votes": 37,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 97,
+  "src_id": "heb:1:0",
+  "tgt_id": "psa:45:0",
+  "sv": "8-9",
+  "tv": "6-7",
+  "desc": "你的寶座是永永遠遠的",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:1:0",
+   "psa:45:0"
+  ],
+  "src_pids": [
+   "heb:1:1"
+  ],
+  "tgt_pids": [
+   "psa:45:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:1:1": [
+    8,
+    9
+   ]
+  },
+  "tgt_parts": {
+   "psa:45:0": [
+    6,
+    7
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:1:1",
+    "psa:45:0"
+   ]
+  ],
+  "tsk_votes": 79,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 98,
+  "src_id": "heb:1:0",
+  "tgt_id": "psa:102:0",
+  "sv": "10-12",
+  "tv": "25-27",
+  "desc": "你起初立了地的根基",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:1:0",
+   "psa:102:0"
+  ],
+  "src_pids": [
+   "heb:1:1"
+  ],
+  "tgt_pids": [
+   "psa:102:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:1:1": [
+    10,
+    11,
+    12
+   ]
+  },
+  "tgt_parts": {
+   "psa:102:0": [
+    25,
+    26,
+    27
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:1:1",
+    "psa:102:0"
+   ]
+  ],
+  "tsk_votes": 34,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 99,
+  "src_id": "heb:1:0",
+  "tgt_id": "psa:110:0",
+  "sv": "13",
+  "tv": "1",
+  "desc": "你坐在我的右邊",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:1:0",
+   "psa:110:0"
+  ],
+  "src_pids": [
+   "heb:1:1"
+  ],
+  "tgt_pids": [
+   "psa:110:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:1:1": [
+    13
+   ]
+  },
+  "tgt_parts": {
+   "psa:110:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:1:1",
+    "psa:110:0"
+   ]
+  ],
+  "tsk_votes": 47,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 100,
+  "src_id": "heb:2:0",
+  "tgt_id": "psa:8:0",
+  "sv": "6-8",
+  "tv": "4-6",
+  "desc": "人算什麼你竟顧念他",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:2:0",
+   "psa:8:0"
+  ],
+  "src_pids": [
+   "heb:2:1"
+  ],
+  "tgt_pids": [
+   "psa:8:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:2:1": [
+    6,
+    7,
+    8
+   ]
+  },
+  "tgt_parts": {
+   "psa:8:0": [
+    4,
+    5,
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:2:1",
+    "psa:8:0"
+   ]
+  ],
+  "tsk_votes": 39,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 101,
+  "src_id": "heb:2:0",
+  "tgt_id": "psa:22:0",
+  "sv": "12",
+  "tv": "22",
+  "desc": "我要將你的名傳與我的弟兄",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:2:0",
+   "psa:22:0"
+  ],
+  "src_pids": [
+   "heb:2:1"
+  ],
+  "tgt_pids": [
+   "psa:22:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:2:1": [
+    12
+   ]
+  },
+  "tgt_parts": {
+   "psa:22:0": [
+    22
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:2:1",
+    "psa:22:0"
+   ]
+  ],
+  "tsk_votes": 31,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 102,
+  "src_id": "heb:2:0",
+  "tgt_id": "isa:8:0",
+  "sv": "13",
+  "tv": "17-18",
+  "desc": "看哪我與神所給我的兒女",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:2:0",
+   "isa:8:3"
+  ],
+  "src_pids": [
+   "heb:2:1"
+  ],
+  "tgt_pids": [
+   "isa:8:3"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:2:1": [
+    13
+   ]
+  },
+  "tgt_parts": {
+   "isa:8:3": [
+    17,
+    18
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:2:1",
+    "isa:8:3"
+   ]
+  ],
+  "tsk_votes": 24,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 103,
+  "src_id": "heb:3:0",
+  "tgt_id": "psa:95:0",
+  "sv": "7-11",
+  "tv": "7-11",
+  "desc": "你們今日若聽他的話就不可硬著心",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:3:0",
+   "psa:95:0"
+  ],
+  "src_pids": [
+   "heb:3:1"
+  ],
+  "tgt_pids": [
+   "psa:95:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:3:1": [
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "tgt_parts": {
+   "psa:95:0": [
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:3:1",
+    "psa:95:0"
+   ]
+  ],
+  "tsk_votes": 135,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 104,
+  "src_id": "heb:3:1",
+  "tgt_id": "psa:95:0",
+  "sv": "15",
+  "tv": "7-8",
+  "desc": "不可硬著心",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:3:1",
+   "psa:95:0"
+  ],
+  "src_pids": [
+   "heb:3:1"
+  ],
+  "tgt_pids": [
+   "psa:95:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:3:1": [
+    15
+   ]
+  },
+  "tgt_parts": {
+   "psa:95:0": [
+    7,
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:3:1",
+    "psa:95:0"
+   ]
+  ],
+  "tsk_votes": 135,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 105,
+  "src_id": "heb:4:0",
+  "tgt_id": "gen:2:0",
+  "sv": "4",
+  "tv": "2",
+  "desc": "到第七日神歇了一切的工",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:4:0",
+   "gen:2:0"
+  ],
+  "src_pids": [
+   "heb:4:0"
+  ],
+  "tgt_pids": [
+   "gen:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:4:0": [
+    4
+   ]
+  },
+  "tgt_parts": {
+   "gen:2:0": [
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:4:0",
+    "gen:2:0"
+   ]
+  ],
+  "tsk_votes": 20,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 106,
+  "src_id": "heb:4:0",
+  "tgt_id": "psa:95:0",
+  "sv": "3,5,7",
+  "tv": "11",
+  "desc": "他們斷不可進入我的安息",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:4:0",
+   "psa:95:0"
+  ],
+  "src_pids": [
+   "heb:4:0"
+  ],
+  "tgt_pids": [
+   "psa:95:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:4:0": [
+    3,
+    5,
+    7
+   ]
+  },
+  "tgt_parts": {
+   "psa:95:0": [
+    11
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:4:0",
+    "psa:95:0"
+   ]
+  ],
+  "tsk_votes": 19,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 107,
+  "src_id": "heb:5:0",
+  "tgt_id": "psa:2:0",
+  "sv": "5",
+  "tv": "7",
+  "desc": "你是我的兒子我今日生你",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:5:0",
+   "psa:2:0"
+  ],
+  "src_pids": [
+   "heb:5:0"
+  ],
+  "tgt_pids": [
+   "psa:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:5:0": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "psa:2:0": [
+    7
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:5:0",
+    "psa:2:0"
+   ]
+  ],
+  "tsk_votes": 50,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 108,
+  "src_id": "heb:5:0",
+  "tgt_id": "psa:110:0",
+  "sv": "6",
+  "tv": "4",
+  "desc": "你是照著麥基洗德的等次永遠為祭司",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:5:0",
+   "psa:110:0"
+  ],
+  "src_pids": [
+   "heb:5:0"
+  ],
+  "tgt_pids": [
+   "psa:110:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:5:0": [
+    6
+   ]
+  },
+  "tgt_parts": {
+   "psa:110:0": [
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:5:0",
+    "psa:110:0"
+   ]
+  ],
+  "tsk_votes": 24,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 109,
+  "src_id": "heb:7:0",
+  "tgt_id": "gen:14:0",
+  "sv": "1-2",
+  "tv": "18-20",
+  "desc": "麥基洗德迎接亞伯拉罕",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:7:0",
+   "gen:14:1"
+  ],
+  "src_pids": [
+   "heb:7:0"
+  ],
+  "tgt_pids": [
+   "gen:14:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:7:0": [
+    1,
+    2
+   ]
+  },
+  "tgt_parts": {
+   "gen:14:1": [
+    18,
+    19,
+    20
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:7:0",
+    "gen:14:1"
+   ]
+  ],
+  "tsk_votes": 18,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 110,
+  "src_id": "heb:7:1",
+  "tgt_id": "psa:110:0",
+  "sv": "17,21",
+  "tv": "4",
+  "desc": "照著麥基洗德的等次永遠為祭司",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "heb:7:0"
+  ],
+  "tgt_pids": [
+   "psa:110:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:7:0": [
+    17,
+    21
+   ]
+  },
+  "tgt_parts": {
+   "psa:110:0": [
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:7:0",
+    "psa:110:0"
+   ]
+  ],
+  "tsk_votes": 25,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 111,
+  "src_id": "heb:8:0",
+  "tgt_id": "jer:31:0",
+  "sv": "8-12",
+  "tv": "31-34",
+  "desc": "我要與以色列家另立新約",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:8:0",
+   "jer:31:2"
+  ],
+  "src_pids": [
+   "heb:8:0"
+  ],
+  "tgt_pids": [
+   "jer:31:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:8:0": [
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  "tgt_parts": {
+   "jer:31:2": [
+    31,
+    32,
+    33,
+    34
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:8:0",
+    "jer:31:2"
+   ]
+  ],
+  "tsk_votes": 247,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 112,
+  "src_id": "heb:10:0",
+  "tgt_id": "psa:40:0",
+  "sv": "5-7",
+  "tv": "6-8",
+  "desc": "祭物和禮物是你不願意的",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:10:0",
+   "psa:40:0"
+  ],
+  "src_pids": [
+   "heb:10:0"
+  ],
+  "tgt_pids": [
+   "psa:40:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:10:0": [
+    5,
+    6,
+    7
+   ]
+  },
+  "tgt_parts": {
+   "psa:40:0": [
+    6,
+    7,
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:10:0",
+    "psa:40:0"
+   ]
+  ],
+  "tsk_votes": 48,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 113,
+  "src_id": "heb:10:1",
+  "tgt_id": "jer:31:0",
+  "sv": "16-17",
+  "tv": "33-34",
+  "desc": "我要將我的律法放在他們心上",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:10:1",
+   "jer:31:2"
+  ],
+  "src_pids": [
+   "heb:10:0"
+  ],
+  "tgt_pids": [
+   "jer:31:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:10:0": [
+    16,
+    17
+   ]
+  },
+  "tgt_parts": {
+   "jer:31:2": [
+    33,
+    34
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:10:0",
+    "jer:31:2"
+   ]
+  ],
+  "tsk_votes": 94,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 114,
+  "src_id": "heb:10:2",
+  "tgt_id": "hab:2:0",
+  "sv": "37-38",
+  "tv": "3-4",
+  "desc": "義人必因信得生",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "heb:10:1"
+  ],
+  "tgt_pids": [
+   "hab:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:10:1": [
+    37,
+    38
+   ]
+  },
+  "tgt_parts": {
+   "hab:2:0": [
+    3,
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:10:1",
+    "hab:2:0"
+   ]
+  ],
+  "tsk_votes": 49,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 115,
+  "src_id": "heb:11:0",
+  "tgt_id": "gen:1:0",
+  "sv": "3",
+  "tv": "1",
+  "desc": "因著信我們知道諸世界是藉神話造成的",
+  "ref_type": "allusion",
+  "old_pair": [
+   "heb:11:0",
+   "gen:1:0"
+  ],
+  "src_pids": [
+   "heb:11:0"
+  ],
+  "tgt_pids": [
+   "gen:1:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:11:0": [
+    3
+   ]
+  },
+  "tgt_parts": {
+   "gen:1:0": [
+    1
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:11:0",
+    "gen:1:0"
+   ]
+  ],
+  "tsk_votes": 238,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 116,
+  "src_id": "heb:11:0",
+  "tgt_id": "gen:4:0",
+  "sv": "4",
+  "tv": "3-5",
+  "desc": "亞伯因著信獻祭與神",
+  "ref_type": "allusion",
+  "old_pair": [
+   "heb:11:0",
+   "gen:4:0"
+  ],
+  "src_pids": [
+   "heb:11:0"
+  ],
+  "tgt_pids": [
+   "gen:4:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:11:0": [
+    4
+   ]
+  },
+  "tgt_parts": {
+   "gen:4:0": [
+    3,
+    4,
+    5
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:11:0",
+    "gen:4:0"
+   ]
+  ],
+  "tsk_votes": 24,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 117,
+  "src_id": "heb:11:0",
+  "tgt_id": "gen:5:0",
+  "sv": "5",
+  "tv": "24",
+  "desc": "以諾因著信被接去",
+  "ref_type": "allusion",
+  "old_pair": [
+   "heb:11:0",
+   "gen:5:0"
+  ],
+  "src_pids": [
+   "heb:11:0"
+  ],
+  "tgt_pids": [
+   "gen:5:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:11:0": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "gen:5:0": [
+    24
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:11:0",
+    "gen:5:0"
+   ]
+  ],
+  "tsk_votes": 22,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 118,
+  "src_id": "heb:11:0",
+  "tgt_id": "gen:6:0",
+  "sv": "7",
+  "tv": "13-22",
+  "desc": "挪亞因著信預備了方舟",
+  "ref_type": "allusion",
+  "old_pair": [
+   "heb:11:0",
+   "gen:6:1"
+  ],
+  "src_pids": [
+   "heb:11:0"
+  ],
+  "tgt_pids": [
+   "gen:6:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:11:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "gen:6:1": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:11:0",
+    "gen:6:1"
+   ]
+  ],
+  "tsk_votes": 15,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 119,
+  "src_id": "heb:11:0",
+  "tgt_id": "gen:12:0",
+  "sv": "8-10",
+  "tv": "1-4",
+  "desc": "亞伯拉罕因著信蒙召出去",
+  "ref_type": "allusion",
+  "old_pair": [
+   "heb:11:0",
+   "gen:12:0"
+  ],
+  "src_pids": [
+   "heb:11:0"
+  ],
+  "tgt_pids": [
+   "gen:12:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:11:0": [
+    8,
+    9,
+    10
+   ]
+  },
+  "tgt_parts": {
+   "gen:12:0": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:11:0",
+    "gen:12:0"
+   ]
+  ],
+  "tsk_votes": 52,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 120,
+  "src_id": "heb:11:1",
+  "tgt_id": "gen:22:0",
+  "sv": "17-19",
+  "tv": "1-14",
+  "desc": "亞伯拉罕因著信獻以撒",
+  "ref_type": "allusion",
+  "old_pair": null,
+  "src_pids": [
+   "heb:11:0"
+  ],
+  "tgt_pids": [
+   "gen:22:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:11:0": [
+    17,
+    18,
+    19
+   ]
+  },
+  "tgt_parts": {
+   "gen:22:0": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:11:0",
+    "gen:22:0"
+   ]
+  ],
+  "tsk_votes": 28,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 121,
+  "src_id": "heb:12:0",
+  "tgt_id": "pro:3:0",
+  "sv": "5-6",
+  "tv": "11-12",
+  "desc": "我兒不可輕看主的管教",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:12:0",
+   "pro:3:0"
+  ],
+  "src_pids": [
+   "heb:12:0"
+  ],
+  "tgt_pids": [
+   "pro:3:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:12:0": [
+    5,
+    6
+   ]
+  },
+  "tgt_parts": {
+   "pro:3:0": [
+    11,
+    12
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:12:0",
+    "pro:3:0"
+   ]
+  ],
+  "tsk_votes": 61,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 122,
+  "src_id": "heb:12:1",
+  "tgt_id": "hag:2:0",
+  "sv": "26",
+  "tv": "6",
+  "desc": "再一次我不單要震動地還要震動天",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:12:1",
+   "hag:2:0"
+  ],
+  "src_pids": [
+   "heb:12:1"
+  ],
+  "tgt_pids": [
+   "hag:2:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:12:1": [
+    26
+   ]
+  },
+  "tgt_parts": {
+   "hag:2:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:12:1",
+    "hag:2:0"
+   ]
+  ],
+  "tsk_votes": 21,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 123,
+  "src_id": "heb:13:0",
+  "tgt_id": "deu:31:0",
+  "sv": "5",
+  "tv": "6",
+  "desc": "我總不撇下你也不丟棄你",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:13:0",
+   "deu:31:0"
+  ],
+  "src_pids": [
+   "heb:13:0"
+  ],
+  "tgt_pids": [
+   "deu:31:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:13:0": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "deu:31:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:13:0",
+    "deu:31:0"
+   ]
+  ],
+  "tsk_votes": 159,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 124,
+  "src_id": "heb:13:0",
+  "tgt_id": "psa:118:0",
+  "sv": "6",
+  "tv": "6",
+  "desc": "主是幫助我的我必不懼怕",
+  "ref_type": "quotation",
+  "old_pair": [
+   "heb:13:0",
+   "psa:118:0"
+  ],
+  "src_pids": [
+   "heb:13:0"
+  ],
+  "tgt_pids": [
+   "psa:118:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "heb:13:0": [
+    6
+   ]
+  },
+  "tgt_parts": {
+   "psa:118:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "heb:13:0",
+    "psa:118:0"
+   ]
+  ],
+  "tsk_votes": 299,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 125,
+  "src_id": "jas:2:2",
+  "tgt_id": "gen:15:0",
+  "sv": "23",
+  "tv": "6",
+  "desc": "亞伯拉罕信神就算為他的義",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "jas:2:1"
+  ],
+  "tgt_pids": [
+   "gen:15:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jas:2:1": [
+    23
+   ]
+  },
+  "tgt_parts": {
+   "gen:15:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jas:2:1",
+    "gen:15:0"
+   ]
+  ],
+  "tsk_votes": 80,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 126,
+  "src_id": "jas:2:2",
+  "tgt_id": "lev:19:0",
+  "sv": "8",
+  "tv": "18",
+  "desc": "要愛人如己",
+  "ref_type": "quotation",
+  "old_pair": null,
+  "src_pids": [
+   "jas:2:0"
+  ],
+  "tgt_pids": [
+   "lev:19:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jas:2:0": [
+    8
+   ]
+  },
+  "tgt_parts": {
+   "lev:19:0": [
+    18
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jas:2:0",
+    "lev:19:0"
+   ]
+  ],
+  "tsk_votes": 21,
+  "old_src_ok": false,
+  "old_tgt_ok": false,
+  "cls": "previously_dropped"
+ },
+ {
+  "i": 127,
+  "src_id": "1pe:1:1",
+  "tgt_id": "lev:19:0",
+  "sv": "16",
+  "tv": "2",
+  "desc": "你們要聖潔因為我是聖潔的",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:1:1",
+   "lev:19:0"
+  ],
+  "src_pids": [
+   "1pe:1:2"
+  ],
+  "tgt_pids": [
+   "lev:19:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:1:2": [
+    16
+   ]
+  },
+  "tgt_parts": {
+   "lev:19:0": [
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:1:2",
+    "lev:19:0"
+   ]
+  ],
+  "tsk_votes": 67,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 128,
+  "src_id": "1pe:1:2",
+  "tgt_id": "isa:40:0",
+  "sv": "24-25",
+  "tv": "6-8",
+  "desc": "凡有血氣的盡都如草惟有主的道是永存的",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:1:2",
+   "isa:40:0"
+  ],
+  "src_pids": [
+   "1pe:1:2"
+  ],
+  "tgt_pids": [
+   "isa:40:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:1:2": [
+    24,
+    25
+   ]
+  },
+  "tgt_parts": {
+   "isa:40:0": [
+    6,
+    7,
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:1:2",
+    "isa:40:0"
+   ]
+  ],
+  "tsk_votes": 52,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 129,
+  "src_id": "1pe:2:0",
+  "tgt_id": "isa:28:0",
+  "sv": "6",
+  "tv": "16",
+  "desc": "在錫安放一塊石頭作為根基是寶貴的房角石",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:0",
+   "isa:28:2"
+  ],
+  "src_pids": [
+   "1pe:2:0"
+  ],
+  "tgt_pids": [
+   "isa:28:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:0": [
+    6
+   ]
+  },
+  "tgt_parts": {
+   "isa:28:2": [
+    16
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:0",
+    "isa:28:2"
+   ]
+  ],
+  "tsk_votes": 79,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 130,
+  "src_id": "1pe:2:0",
+  "tgt_id": "psa:118:0",
+  "sv": "7",
+  "tv": "22",
+  "desc": "匠人所棄的石頭已作了房角的頭塊石頭",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:0",
+   "psa:118:0"
+  ],
+  "src_pids": [
+   "1pe:2:0"
+  ],
+  "tgt_pids": [
+   "psa:118:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "psa:118:0": [
+    22
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:0",
+    "psa:118:0"
+   ]
+  ],
+  "tsk_votes": 49,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 131,
+  "src_id": "1pe:2:0",
+  "tgt_id": "isa:8:0",
+  "sv": "8",
+  "tv": "14",
+  "desc": "作了絆腳的石頭跌人的磐石",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:0",
+   "isa:8:2"
+  ],
+  "src_pids": [
+   "1pe:2:0"
+  ],
+  "tgt_pids": [
+   "isa:8:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:0": [
+    8
+   ]
+  },
+  "tgt_parts": {
+   "isa:8:2": [
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:0",
+    "isa:8:2"
+   ]
+  ],
+  "tsk_votes": 27,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 132,
+  "src_id": "1pe:2:0",
+  "tgt_id": "exo:19:0",
+  "sv": "9",
+  "tv": "5-6",
+  "desc": "你們是被揀選的族類是有君尊的祭司",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:0",
+   "exo:19:0"
+  ],
+  "src_pids": [
+   "1pe:2:0"
+  ],
+  "tgt_pids": [
+   "exo:19:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:0": [
+    9
+   ]
+  },
+  "tgt_parts": {
+   "exo:19:0": [
+    5,
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:0",
+    "exo:19:0"
+   ]
+  ],
+  "tsk_votes": 180,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 133,
+  "src_id": "1pe:2:0",
+  "tgt_id": "hos:2:0",
+  "sv": "10",
+  "tv": "23",
+  "desc": "從前不是子民現在卻是神的子民",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:0",
+   "hos:2:2"
+  ],
+  "src_pids": [
+   "1pe:2:0"
+  ],
+  "tgt_pids": [
+   "hos:2:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:0": [
+    10
+   ]
+  },
+  "tgt_parts": {
+   "hos:2:2": [
+    23
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:0",
+    "hos:2:2"
+   ]
+  ],
+  "tsk_votes": 53,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 134,
+  "src_id": "1pe:2:2",
+  "tgt_id": "isa:53:0",
+  "sv": "22",
+  "tv": "9",
+  "desc": "他並沒有犯罪口裏也沒有詭詐",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:2",
+   "isa:53:0"
+  ],
+  "src_pids": [
+   "1pe:2:2"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:2": [
+    22
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    9
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:2",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 204,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 135,
+  "src_id": "1pe:2:2",
+  "tgt_id": "isa:53:0",
+  "sv": "24",
+  "tv": "5-6",
+  "desc": "因他受的鞭傷你們得了醫治",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:2",
+   "isa:53:0"
+  ],
+  "src_pids": [
+   "1pe:2:2"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:2": [
+    24
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    5,
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:2",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 204,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 136,
+  "src_id": "1pe:2:2",
+  "tgt_id": "isa:53:0",
+  "sv": "25",
+  "tv": "6",
+  "desc": "你們從前好像迷路的羊",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:2:2",
+   "isa:53:0"
+  ],
+  "src_pids": [
+   "1pe:2:2"
+  ],
+  "tgt_pids": [
+   "isa:53:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:2:2": [
+    25
+   ]
+  },
+  "tgt_parts": {
+   "isa:53:0": [
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:2:2",
+    "isa:53:0"
+   ]
+  ],
+  "tsk_votes": 204,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 137,
+  "src_id": "1pe:3:1",
+  "tgt_id": "psa:34:0",
+  "sv": "10-12",
+  "tv": "12-16",
+  "desc": "主的眼看顧義人主的耳聽他們的呼求",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:3:1",
+   "psa:34:0"
+  ],
+  "src_pids": [
+   "1pe:3:1"
+  ],
+  "tgt_pids": [
+   "psa:34:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:3:1": [
+    10,
+    11,
+    12
+   ]
+  },
+  "tgt_parts": {
+   "psa:34:0": [
+    12,
+    13,
+    14,
+    15,
+    16
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:3:1",
+    "psa:34:0"
+   ]
+  ],
+  "tsk_votes": 73,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 138,
+  "src_id": "1pe:3:1",
+  "tgt_id": "isa:8:0",
+  "sv": "14-15",
+  "tv": "12-13",
+  "desc": "不要怕人的威嚇也不要驚慌",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:3:1",
+   "isa:8:2"
+  ],
+  "src_pids": [
+   "1pe:3:1"
+  ],
+  "tgt_pids": [
+   "isa:8:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:3:1": [
+    14,
+    15
+   ]
+  },
+  "tgt_parts": {
+   "isa:8:2": [
+    12,
+    13
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:3:1",
+    "isa:8:2"
+   ]
+  ],
+  "tsk_votes": 13,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 139,
+  "src_id": "1pe:5:0",
+  "tgt_id": "pro:3:0",
+  "sv": "5",
+  "tv": "34",
+  "desc": "神阻擋驕傲的人賜恩給謙卑的人",
+  "ref_type": "quotation",
+  "old_pair": [
+   "1pe:5:0",
+   "pro:3:0"
+  ],
+  "src_pids": [
+   "1pe:5:0"
+  ],
+  "tgt_pids": [
+   "pro:3:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "1pe:5:0": [
+    5
+   ]
+  },
+  "tgt_parts": {
+   "pro:3:0": [
+    34
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "1pe:5:0",
+    "pro:3:0"
+   ]
+  ],
+  "tsk_votes": 50,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 140,
+  "src_id": "2pe:2:0",
+  "tgt_id": "pro:26:0",
+  "sv": "22",
+  "tv": "11",
+  "desc": "狗所吐的他轉過來又吃",
+  "ref_type": "quotation",
+  "old_pair": [
+   "2pe:2:0",
+   "pro:26:0"
+  ],
+  "src_pids": [
+   "2pe:2:0"
+  ],
+  "tgt_pids": [
+   "pro:26:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "2pe:2:0": [
+    22
+   ]
+  },
+  "tgt_parts": {
+   "pro:26:0": [
+    11
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "2pe:2:0",
+    "pro:26:0"
+   ]
+  ],
+  "tsk_votes": 27,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 141,
+  "src_id": "jud:1:0",
+  "tgt_id": "zec:3:0",
+  "sv": "9",
+  "tv": "2",
+  "desc": "主責備你吧",
+  "ref_type": "allusion",
+  "old_pair": [
+   "jud:1:0",
+   "zec:3:0"
+  ],
+  "src_pids": [
+   "jud:1:1"
+  ],
+  "tgt_pids": [
+   "zec:3:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "jud:1:1": [
+    9
+   ]
+  },
+  "tgt_parts": {
+   "zec:3:0": [
+    2
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "jud:1:1",
+    "zec:3:0"
+   ]
+  ],
+  "tsk_votes": 30,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 142,
+  "src_id": "rev:1:0",
+  "tgt_id": "dan:7:0",
+  "sv": "7",
+  "tv": "13",
+  "desc": "看哪他駕雲降臨",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:1:0",
+   "dan:7:1"
+  ],
+  "src_pids": [
+   "rev:1:0"
+  ],
+  "tgt_pids": [
+   "dan:7:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:1:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "dan:7:1": [
+    13
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:1:0",
+    "dan:7:1"
+   ]
+  ],
+  "tsk_votes": 71,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 143,
+  "src_id": "rev:1:0",
+  "tgt_id": "zec:12:0",
+  "sv": "7",
+  "tv": "10",
+  "desc": "連刺他的人也要看見他",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:1:0",
+   "zec:12:0"
+  ],
+  "src_pids": [
+   "rev:1:0"
+  ],
+  "tgt_pids": [
+   "zec:12:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:1:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "zec:12:0": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:1:0",
+    "zec:12:0"
+   ]
+  ],
+  "tsk_votes": 47,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 144,
+  "src_id": "rev:1:0",
+  "tgt_id": "dan:10:0",
+  "sv": "13-16",
+  "tv": "5-6",
+  "desc": "人子的形像",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:1:0",
+   "dan:10:0"
+  ],
+  "src_pids": [
+   "rev:1:1"
+  ],
+  "tgt_pids": [
+   "dan:10:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:1:1": [
+    13,
+    14,
+    15,
+    16
+   ]
+  },
+  "tgt_parts": {
+   "dan:10:0": [
+    5,
+    6
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:1:1",
+    "dan:10:0"
+   ]
+  ],
+  "tsk_votes": 18,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 145,
+  "src_id": "rev:2:0",
+  "tgt_id": "gen:2:0",
+  "sv": "7",
+  "tv": "9",
+  "desc": "生命樹",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:2:0",
+   "gen:2:1"
+  ],
+  "src_pids": [
+   "rev:2:0"
+  ],
+  "tgt_pids": [
+   "gen:2:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:2:0": [
+    7
+   ]
+  },
+  "tgt_parts": {
+   "gen:2:1": [
+    9
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:2:0",
+    "gen:2:1"
+   ]
+  ],
+  "tsk_votes": 18,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 146,
+  "src_id": "rev:4:0",
+  "tgt_id": "isa:6:0",
+  "sv": "8",
+  "tv": "3",
+  "desc": "聖哉聖哉聖哉",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:4:0",
+   "isa:6:0"
+  ],
+  "src_pids": [
+   "rev:4:0"
+  ],
+  "tgt_pids": [
+   "isa:6:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:4:0": [
+    8
+   ]
+  },
+  "tgt_parts": {
+   "isa:6:0": [
+    3
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:4:0",
+    "isa:6:0"
+   ]
+  ],
+  "tsk_votes": 31,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 147,
+  "src_id": "rev:4:0",
+  "tgt_id": "ezk:1:0",
+  "sv": "6-7",
+  "tv": "5-10",
+  "desc": "四活物的形像",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:4:0",
+   "ezk:1:0"
+  ],
+  "src_pids": [
+   "rev:4:0"
+  ],
+  "tgt_pids": [
+   "ezk:1:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:4:0": [
+    6,
+    7
+   ]
+  },
+  "tgt_parts": {
+   "ezk:1:0": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:4:0",
+    "ezk:1:0"
+   ]
+  ],
+  "tsk_votes": 21,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 148,
+  "src_id": "rev:5:0",
+  "tgt_id": "dan:7:0",
+  "sv": "5-6",
+  "tv": "13-14",
+  "desc": "被殺的羔羊配得權柄",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:5:0",
+   "dan:7:1"
+  ],
+  "src_pids": [
+   "rev:5:0"
+  ],
+  "tgt_pids": [
+   "dan:7:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:5:0": [
+    5,
+    6
+   ]
+  },
+  "tgt_parts": {
+   "dan:7:1": [
+    13,
+    14
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:5:0",
+    "dan:7:1"
+   ]
+  ],
+  "tsk_votes": 13,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 149,
+  "src_id": "rev:7:0",
+  "tgt_id": "isa:49:0",
+  "sv": "16-17",
+  "tv": "10",
+  "desc": "不再飢不再渴",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:7:0",
+   "isa:49:1"
+  ],
+  "src_pids": [
+   "rev:7:1"
+  ],
+  "tgt_pids": [
+   "isa:49:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:7:1": [
+    16,
+    17
+   ]
+  },
+  "tgt_parts": {
+   "isa:49:1": [
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:7:1",
+    "isa:49:1"
+   ]
+  ],
+  "tsk_votes": 16,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "fix_src"
+ },
+ {
+  "i": 150,
+  "src_id": "rev:11:1",
+  "tgt_id": "dan:7:0",
+  "sv": "15",
+  "tv": "14,27",
+  "desc": "世上的國成了我主基督的國",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:11:1",
+   "dan:7:1"
+  ],
+  "src_pids": [
+   "rev:11:1"
+  ],
+  "tgt_pids": [
+   "dan:7:1",
+   "dan:7:2"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:11:1": [
+    15
+   ]
+  },
+  "tgt_parts": {
+   "dan:7:1": [
+    14
+   ],
+   "dan:7:2": [
+    27
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:11:1",
+    "dan:7:1"
+   ],
+   [
+    "rev:11:1",
+    "dan:7:2"
+   ]
+  ],
+  "tsk_votes": 21,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged+fanout"
+ },
+ {
+  "i": 151,
+  "src_id": "rev:15:0",
+  "tgt_id": "exo:15:0",
+  "sv": "3-4",
+  "tv": "1-18",
+  "desc": "摩西的歌",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:15:0",
+   "exo:15:0"
+  ],
+  "src_pids": [
+   "rev:15:0"
+  ],
+  "tgt_pids": [
+   "exo:15:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:15:0": [
+    3,
+    4
+   ]
+  },
+  "tgt_parts": {
+   "exo:15:0": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:15:0",
+    "exo:15:0"
+   ]
+  ],
+  "tsk_votes": 29,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 152,
+  "src_id": "rev:18:0",
+  "tgt_id": "isa:13:0",
+  "sv": "2",
+  "tv": "19-22",
+  "desc": "巴比倫傾倒了",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:18:0",
+   "isa:13:0"
+  ],
+  "src_pids": [
+   "rev:18:0"
+  ],
+  "tgt_pids": [
+   "isa:13:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:18:0": [
+    2
+   ]
+  },
+  "tgt_parts": {
+   "isa:13:0": [
+    19,
+    20,
+    21,
+    22
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:18:0",
+    "isa:13:0"
+   ]
+  ],
+  "tsk_votes": 5,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 153,
+  "src_id": "rev:18:0",
+  "tgt_id": "jer:51:0",
+  "sv": "2-8",
+  "tv": "6-9,45",
+  "desc": "巴比倫大城傾倒了",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:18:0",
+   "jer:51:0"
+  ],
+  "src_pids": [
+   "rev:18:0"
+  ],
+  "tgt_pids": [
+   "jer:51:0",
+   "jer:51:5"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:18:0": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ]
+  },
+  "tgt_parts": {
+   "jer:51:0": [
+    6,
+    7,
+    8,
+    9
+   ],
+   "jer:51:5": [
+    45
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:18:0",
+    "jer:51:0"
+   ],
+   [
+    "rev:18:0",
+    "jer:51:5"
+   ]
+  ],
+  "tsk_votes": 22,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged+fanout"
+ },
+ {
+  "i": 154,
+  "src_id": "rev:19:1",
+  "tgt_id": "psa:118:0",
+  "sv": "1",
+  "tv": "1",
+  "desc": "哈利路亞",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:19:1",
+   "psa:118:0"
+  ],
+  "src_pids": [
+   "rev:19:0"
+  ],
+  "tgt_pids": [
+   "psa:118:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:19:0": [
+    1
+   ]
+  },
+  "tgt_parts": {
+   "psa:118:0": [
+    1
+   ]
+  },
+  "action": "delete_xref2",
+  "new_pairs": [],
+  "tsk_votes": 3,
+  "old_src_ok": false,
+  "old_tgt_ok": true,
+  "cls": "delete_xref2"
+ },
+ {
+  "i": 155,
+  "src_id": "rev:19:2",
+  "tgt_id": "dan:7:0",
+  "sv": "11-16",
+  "tv": "13-14",
+  "desc": "萬王之王萬主之主",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:19:2",
+   "dan:7:1"
+  ],
+  "src_pids": [
+   "rev:19:2"
+  ],
+  "tgt_pids": [
+   "dan:7:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:19:2": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+   ]
+  },
+  "tgt_parts": {
+   "dan:7:1": [
+    13,
+    14
+   ]
+  },
+  "action": "retarget_xref2",
+  "new_pairs": [],
+  "tsk_votes": 8,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "retarget_xref2"
+ },
+ {
+  "i": 156,
+  "src_id": "rev:20:0",
+  "tgt_id": "isa:65:0",
+  "sv": "4",
+  "tv": "17",
+  "desc": "新天新地",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:20:0",
+   "isa:65:1"
+  ],
+  "src_pids": [
+   "rev:20:0"
+  ],
+  "tgt_pids": [
+   "isa:65:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:20:0": [
+    4
+   ]
+  },
+  "tgt_parts": {
+   "isa:65:1": [
+    17
+   ]
+  },
+  "action": "delete_xref2",
+  "new_pairs": [],
+  "tsk_votes": 2,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "delete_xref2"
+ },
+ {
+  "i": 157,
+  "src_id": "rev:21:0",
+  "tgt_id": "isa:65:0",
+  "sv": "1",
+  "tv": "17",
+  "desc": "我造新天新地",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rev:21:0",
+   "isa:65:1"
+  ],
+  "src_pids": [
+   "rev:21:0"
+  ],
+  "tgt_pids": [
+   "isa:65:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:21:0": [
+    1
+   ]
+  },
+  "tgt_parts": {
+   "isa:65:1": [
+    17
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:21:0",
+    "isa:65:1"
+   ]
+  ],
+  "tsk_votes": 48,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 158,
+  "src_id": "rev:21:0",
+  "tgt_id": "isa:25:0",
+  "sv": "4",
+  "tv": "8",
+  "desc": "神要擦去他們一切的眼淚",
+  "ref_type": "quotation",
+  "old_pair": [
+   "rev:21:0",
+   "isa:25:1"
+  ],
+  "src_pids": [
+   "rev:21:0"
+  ],
+  "tgt_pids": [
+   "isa:25:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:21:0": [
+    4
+   ]
+  },
+  "tgt_parts": {
+   "isa:25:1": [
+    8
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:21:0",
+    "isa:25:1"
+   ]
+  ],
+  "tsk_votes": 94,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 159,
+  "src_id": "rev:22:0",
+  "tgt_id": "gen:2:0",
+  "sv": "1-2",
+  "tv": "9-10",
+  "desc": "生命樹和生命河",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:22:0",
+   "gen:2:1"
+  ],
+  "src_pids": [
+   "rev:22:0"
+  ],
+  "tgt_pids": [
+   "gen:2:1"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:22:0": [
+    1,
+    2
+   ]
+  },
+  "tgt_parts": {
+   "gen:2:1": [
+    9,
+    10
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:22:0",
+    "gen:2:1"
+   ]
+  ],
+  "tsk_votes": 17,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ },
+ {
+  "i": 160,
+  "src_id": "rev:22:0",
+  "tgt_id": "ezk:47:0",
+  "sv": "1",
+  "tv": "1-12",
+  "desc": "生命水的河",
+  "ref_type": "allusion",
+  "old_pair": [
+   "rev:22:0",
+   "ezk:47:0"
+  ],
+  "src_pids": [
+   "rev:22:0"
+  ],
+  "tgt_pids": [
+   "ezk:47:0"
+  ],
+  "src_missing": [],
+  "tgt_missing": [],
+  "src_parts": {
+   "rev:22:0": [
+    1
+   ]
+  },
+  "tgt_parts": {
+   "ezk:47:0": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ]
+  },
+  "action": "keep",
+  "new_pairs": [
+   [
+    "rev:22:0",
+    "ezk:47:0"
+   ]
+  ],
+  "tsk_votes": 25,
+  "old_src_ok": true,
+  "old_tgt_ok": true,
+  "cls": "unchanged"
+ }
+]

@@ -1,0 +1,363 @@
+# Draft allowlist for the batch-1A staging rebuild (prod vs staging), generated from the
+# offline simulation; regenerate after implementation and review every number.
+version: 1
+allow:
+  - section: relationships
+    key: "ALLY_OF"
+    delta: -1
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "ANCESTOR_OF"
+    delta: -34
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "BORN_IN"
+    delta: -1
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "BUILT"
+    delta: -9
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "CAUSED"
+    delta: -10
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "DAUGHTER_OF"
+    delta: -14
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "DESCENDANT_OF"
+    delta: -31
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "DISCIPLE_OF"
+    delta: -7
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "ENEMY_OF"
+    delta: -1
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "EXILED_TO"
+    delta: -6
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "FATHER_OF"
+    delta: -595
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "LEADER_OF"
+    delta: -7
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "LOCATED_IN"
+    delta: -5
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "MEMBER_OF"
+    delta: -26
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "MOTHER_OF"
+    delta: -29
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "NEAR"
+    delta: -1
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "OCCURRED_IN"
+    delta: -3419
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "ORIGINATED_FROM"
+    delta: -1
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "PARTICIPATED_IN"
+    delta: -5641
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "PRECEDED_BY"
+    delta: -16
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "RETURNED_FROM"
+    delta: -13
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "RULED"
+    delta: -65
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "SETTLED_IN"
+    delta: -4
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "SIBLING_OF"
+    delta: -16
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "SON_OF"
+    delta: -218
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "SPOUSE_OF"
+    delta: -19
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "SUCCEEDED_BY"
+    delta: -2
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: relationships
+    key: "TEACHER_OF"
+    delta: -13
+    reason: "1A Step 6.05: 規則邊/反向邊/10.3 共現邊退場、LLM E–E 丟棄、domain/range 與 provenance 閘門、錨定規則加入（預測值來自離線模擬 sim_1a.py --begot gei --surface declared）"
+  - section: ee_edges
+    key: "* source=-"
+    reason: "1A：所有語意邊改由 6.05 寫入 source，舊的無 source 鍵整組消失（H11 source_null=0 為硬門檻，保證 b=0）"
+  - section: ee_edges
+    key: "ALLY_OF phase=3 source=prior"
+    delta: 2
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "ALLY_OF phase=4 source=llm"
+    delta: 61
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "ANCESTOR_OF phase=4 source=llm"
+    delta: 15
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "BORN_IN phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "BORN_IN phase=4 source=llm"
+    delta: 9
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "BUILT phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "BUILT phase=4 source=llm"
+    delta: 6
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "DAUGHTER_OF phase=4 source=llm"
+    delta: 4
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "DAUGHTER_OF phase=6 source=anchored_rule"
+    delta: 9
+    reason: "1A：錨定規則輸出 source=anchored_rule、phase=6（D3(a)：只輸出句型可定性別者）"
+  - section: ee_edges
+    key: "DESCENDANT_OF phase=4 source=llm"
+    delta: 18
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "DESTROYED phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "DESTROYED phase=4 source=llm"
+    delta: 37
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "DIED_IN phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "DIED_IN phase=4 source=llm"
+    delta: 19
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "DISCIPLE_OF phase=3 source=prior"
+    delta: 4
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "DISCIPLE_OF phase=4 source=llm"
+    delta: 10
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "ENEMY_OF phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "ENEMY_OF phase=4 source=llm"
+    delta: 31
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "EXILED_TO phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "EXILED_TO phase=4 source=llm"
+    delta: 13
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "FATHER_OF phase=3 source=prior"
+    delta: 12
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "FATHER_OF phase=4 source=llm"
+    delta: 33
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "FATHER_OF phase=6 source=anchored_rule"
+    delta: 7
+    reason: "1A：錨定規則輸出 source=anchored_rule、phase=6（D3(a)：只輸出句型可定性別者）"
+  - section: ee_edges
+    key: "FOUNDED phase=4 source=llm"
+    delta: 1
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "GAVE phase=4 source=llm"
+    delta: 76
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "INITIATED phase=4 source=llm"
+    delta: 384
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "LEADER_OF phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "LEADER_OF phase=4 source=llm"
+    delta: 62
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "LOCATED_IN phase=3 source=prior"
+    delta: 3
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "LOCATED_IN phase=4 source=llm"
+    delta: 47
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "MEMBER_OF phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "MEMBER_OF phase=4 source=llm"
+    delta: 330
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "MOTHER_OF phase=3 source=prior"
+    delta: 7
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "MOTHER_OF phase=4 source=llm"
+    delta: 8
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "NEAR phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "NEAR phase=4 source=llm"
+    delta: 27
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "OCCURRED_IN phase=4 source=llm"
+    delta: 894
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "ORIGINATED_FROM phase=4 source=llm"
+    delta: 50
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "PARTICIPATED_IN phase=4 source=llm"
+    delta: 1489
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "POSSESSED phase=4 source=llm"
+    delta: 551
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "RECEIVED phase=3 source=prior"
+    delta: 1
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "RECEIVED phase=4 source=llm"
+    delta: 170
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "RETURNED_FROM phase=3 source=prior"
+    delta: 2
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "RETURNED_FROM phase=4 source=llm"
+    delta: 26
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "RULED phase=3 source=prior"
+    delta: 3
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "RULED phase=4 source=llm"
+    delta: 76
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "SETTLED_IN phase=4 source=llm"
+    delta: 219
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "SIBLING_OF phase=3 source=prior"
+    delta: 4
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "SIBLING_OF phase=4 source=llm"
+    delta: 28
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "SON_OF phase=4 source=llm"
+    delta: 37
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "SON_OF phase=6 source=anchored_rule"
+    delta: 404
+    reason: "1A：錨定規則輸出 source=anchored_rule、phase=6（D3(a)：只輸出句型可定性別者）"
+  - section: ee_edges
+    key: "SPOUSE_OF phase=3 source=prior"
+    delta: 7
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "SPOUSE_OF phase=4 source=llm"
+    delta: 17
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "SPOUSE_OF phase=6 source=anchored_rule"
+    delta: 5
+    reason: "1A：錨定規則輸出 source=anchored_rule、phase=6（D3(a)：只輸出句型可定性別者）"
+  - section: ee_edges
+    key: "SUCCEEDED_BY phase=3 source=prior"
+    delta: 4
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "SUCCEEDED_BY phase=4 source=llm"
+    delta: 1
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "TEACHER_OF phase=3 source=prior"
+    delta: 2
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "TEACHER_OF phase=4 source=llm"
+    delta: 6
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "VICTIM_OF phase=4 source=llm"
+    delta: 229
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"
+  - section: ee_edges
+    key: "VISITED phase=3 source=prior"
+    delta: 4
+    reason: "1A：prior 邊帶 source=prior、phase=3"
+  - section: ee_edges
+    key: "VISITED phase=4 source=llm"
+    delta: 249
+    reason: "1A：LLM 邊帶 source=llm、phase=4（扣除 E–E、domain/range、閘門、矛盾、無向重複）"

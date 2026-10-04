@@ -1,0 +1,2498 @@
+{
+ "live": {
+  "label": "live",
+  "entities": 9124,
+  "padded_names": 180,
+  "inner_space_names": 3,
+  "ids_with_space": 183,
+  "dirty_total": 183,
+  "dirty_by_type": {
+   "Person": 77,
+   "Place": 74,
+   "Object": 25,
+   "Group": 5,
+   "Event": 2
+  },
+  "same_type_twin": 116,
+  "same_type_twin_by_type": {
+   "Group": 4,
+   "Object": 6,
+   "Person": 64,
+   "Place": 42
+  },
+  "any_type_twin": 153,
+  "cross_type_only": 37,
+  "cross_type_only_by_type": {
+   "Event": 1,
+   "Object": 9,
+   "Person": 4,
+   "Place": 23
+  },
+  "no_twin": 30,
+  "no_twin_by_type": {
+   "Event": 1,
+   "Group": 1,
+   "Object": 10,
+   "Person": 9,
+   "Place": 9
+  },
+  "rename_id_collides_with_other_name": 14,
+  "twin_id_equals_minted": 116,
+  "dirty_groups_with_2plus": 0
+ },
+ "live_lists": {
+  "same": [
+   [
+    "group: pasiluxiren",
+    "group:pasiluxiren"
+   ],
+   [
+    "group: salaizu",
+    "group:salaizu"
+   ],
+   [
+    "group: yabiyazu",
+    "group:yabiyazu"
+   ],
+   [
+    "group: yiduozu",
+    "group:yiduozu"
+   ],
+   [
+    "object: chebingzhang",
+    "object:chebingzhang"
+   ],
+   [
+    "object: hushai",
+    "object:hushai"
+   ],
+   [
+    "object: jiadezisun",
+    "object:jiadezisun"
+   ],
+   [
+    "object: nahe",
+    "object:nahe"
+   ],
+   [
+    "object: yinmai",
+    "object:yinmai"
+   ],
+   [
+    "object: zhuyehehua",
+    "object:zhuyehehua"
+   ],
+   [
+    "person: anlan",
+    "person:anlan"
+   ],
+   [
+    "person: annen",
+    "person:annen"
+   ],
+   [
+    "person: babo",
+    "person:babo"
+   ],
+   [
+    "person: bake",
+    "person:bake"
+   ],
+   [
+    "person: bani",
+    "person:bani"
+   ],
+   [
+    "person: bashihuer",
+    "person:bashihuer"
+   ],
+   [
+    "person: baxilv",
+    "person:baxilv"
+   ],
+   [
+    "person: bila",
+    "person:bila"
+   ],
+   [
+    "person: binaya",
+    "person:binaya"
+   ],
+   [
+    "person: bisai",
+    "person:bisai"
+   ],
+   [
+    "person: bituli",
+    "person:bituli"
+   ],
+   [
+    "person: bo‧ningla",
+    "person:bo‧ningla"
+   ],
+   [
+    "person: dishun",
+    "person:dishun"
+   ],
+   [
+    "person: hada",
+    "person:hada"
+   ],
+   [
+    "person: hajia",
+    "person:hajia"
+   ],
+   [
+    "person: halin",
+    "person:halin"
+   ],
+   [
+    "person: hamo",
+    "person:hamo"
+   ],
+   [
+    "person: hanan",
+    "person:hanan"
+   ],
+   [
+    "person: hanen",
+    "person:hanen"
+   ],
+   [
+    "person: hashun",
+    "person:hashun"
+   ],
+   [
+    "person: haxue",
+    "person:haxue"
+   ],
+   [
+    "person: heba",
+    "person:heba"
+   ],
+   [
+    "person: jiasan",
+    "person:jiasan"
+   ],
+   [
+    "person: jide",
+    "person:jide"
+   ],
+   [
+    "person: jiduo",
+    "person:jiduo"
+   ],
+   [
+    "person: jilv",
+    "person:jilv"
+   ],
+   [
+    "person: laboshaji",
+    "person:laboshaji"
+   ],
+   [
+    "person: lamai",
+    "person:lamai"
+   ],
+   [
+    "person: milali",
+    "person:milali"
+   ],
+   [
+    "person: mishima",
+    "person:mishima"
+   ],
+   [
+    "person: miyamin",
+    "person:miyamin"
+   ],
+   [
+    "person: nagai",
+    "person:nagai"
+   ],
+   [
+    "person: naha",
+    "person:naha"
+   ],
+   [
+    "person: nahe",
+    "person:nahe"
+   ],
+   [
+    "person: nibo",
+    "person:nibo"
+   ],
+   [
+    "person: nixiya",
+    "person:nixiya"
+   ],
+   [
+    "person: pila",
+    "person:pila"
+   ],
+   [
+    "person: salu",
+    "person:salu"
+   ],
+   [
+    "person: shala",
+    "person:shala"
+   ],
+   [
+    "person: shalong",
+    "person:shalong"
+   ],
+   [
+    "person: shifatiya",
+    "person:shifatiya"
+   ],
+   [
+    "person: shijiani",
+    "person:shijiani"
+   ],
+   [
+    "person: shimaya",
+    "person:shimaya"
+   ],
+   [
+    "person: shimei",
+    "person:shimei"
+   ],
+   [
+    "person: shimiya",
+    "person:shimiya"
+   ],
+   [
+    "person: shoumen",
+    "person:shoumen"
+   ],
+   [
+    "person: tuoya",
+    "person:tuoya"
+   ],
+   [
+    "person: wang",
+    "person:wang"
+   ],
+   [
+    "person: wusa",
+    "person:wusa"
+   ],
+   [
+    "person: xinma",
+    "person:xinma"
+   ],
+   [
+    "person: yadaya",
+    "person:yadaya"
+   ],
+   [
+    "person: yagan",
+    "person:yagan"
+   ],
+   [
+    "person: yamaliya",
+    "person:yamaliya"
+   ],
+   [
+    "person: yatalu",
+    "person:yatalu"
+   ],
+   [
+    "person: yaxi",
+    "person:yaxi"
+   ],
+   [
+    "person: yewusi",
+    "person:yewusi"
+   ],
+   [
+    "person: yiduo",
+    "person:yiduo"
+   ],
+   [
+    "person: yihu",
+    "person:yihu"
+   ],
+   [
+    "person: yinmai",
+    "person:yinmai"
+   ],
+   [
+    "person: yitu",
+    "person:yitu"
+   ],
+   [
+    "person: yueashi",
+    "person:yueashi"
+   ],
+   [
+    "person:linqian ",
+    "person:linqian"
+   ],
+   [
+    "person:luoshi ",
+    "person:luoshi"
+   ],
+   [
+    "person:yaha ",
+    "person:yaha"
+   ],
+   [
+    "place: bala",
+    "place:bala"
+   ],
+   [
+    "place: bani",
+    "place:bani"
+   ],
+   [
+    "place: binaya",
+    "place:binaya"
+   ],
+   [
+    "place: bo‧libawu",
+    "place:bo‧libawu"
+   ],
+   [
+    "place: bo‧su",
+    "place:bo‧su"
+   ],
+   [
+    "place: bo‧yalaba",
+    "place:bo‧yalaba"
+   ],
+   [
+    "place: dana",
+    "place:dana"
+   ],
+   [
+    "place: dilian",
+    "place:dilian"
+   ],
+   [
+    "place: dingna",
+    "place:dingna"
+   ],
+   [
+    "place: geshan",
+    "place:geshan"
+   ],
+   [
+    "place: haduolan",
+    "place:haduolan"
+   ],
+   [
+    "place: halin",
+    "place:halin"
+   ],
+   [
+    "place: hasa‧shuya",
+    "place:hasa‧shuya"
+   ],
+   [
+    "place: hexiya",
+    "place:hexiya"
+   ],
+   [
+    "place: jidiluo",
+    "place:jidiluo"
+   ],
+   [
+    "place: jidisi",
+    "place:jidisi"
+   ],
+   [
+    "place: jiyila",
+    "place:jiyila"
+   ],
+   [
+    "place: laji",
+    "place:laji"
+   ],
+   [
+    "place: libawu",
+    "place:libawu"
+   ],
+   [
+    "place: luode",
+    "place:luode"
+   ],
+   [
+    "place: malu",
+    "place:malu"
+   ],
+   [
+    "place: matani",
+    "place:matani"
+   ],
+   [
+    "place: mishisabie",
+    "place:mishisabie"
+   ],
+   [
+    "place: mishulan",
+    "place:mishulan"
+   ],
+   [
+    "place: pilati",
+    "place:pilati"
+   ],
+   [
+    "place: shalabin",
+    "place:shalabin"
+   ],
+   [
+    "place: shalayin",
+    "place:shalayin"
+   ],
+   [
+    "place: shilimiya",
+    "place:shilimiya"
+   ],
+   [
+    "place: suola",
+    "place:suola"
+   ],
+   [
+    "place: xifu",
+    "place:xifu"
+   ],
+   [
+    "place: xigela",
+    "place:xigela"
+   ],
+   [
+    "place: xila",
+    "place:xila"
+   ],
+   [
+    "place: yaduolaiyin",
+    "place:yaduolaiyin"
+   ],
+   [
+    "place: yaduoniya",
+    "place:yaduoniya"
+   ],
+   [
+    "place: yaman",
+    "place:yaman"
+   ],
+   [
+    "place: yanong",
+    "place:yanong"
+   ],
+   [
+    "place: yaza",
+    "place:yaza"
+   ],
+   [
+    "place: yemo",
+    "place:yemo"
+   ],
+   [
+    "place: yesilie",
+    "place:yesilie"
+   ],
+   [
+    "place: yifuta",
+    "place:yifuta"
+   ],
+   [
+    "place: yileiduola",
+    "place:yileiduola"
+   ],
+   [
+    "place: yilun",
+    "place:yilun"
+   ]
+  ],
+  "cross": [
+   [
+    "event: yashalong",
+    [
+     "person:yashalong"
+    ]
+   ],
+   [
+    "object: boasi",
+    [
+     "person:boasi"
+    ]
+   ],
+   [
+    "object: feilishiren",
+    [
+     "group:feilishiren"
+    ]
+   ],
+   [
+    "object: gemie",
+    [
+     "person:gemie",
+     "place:gemie"
+    ]
+   ],
+   [
+    "object: heren",
+    [
+     "group:heren"
+    ]
+   ],
+   [
+    "object: laboshaji",
+    [
+     "person:laboshaji"
+    ]
+   ],
+   [
+    "object: shafan",
+    [
+     "person:shafan"
+    ]
+   ],
+   [
+    "object: shimei",
+    [
+     "person:shimei",
+     "place:shimei"
+    ]
+   ],
+   [
+    "object: yamenren",
+    [
+     "group:yamenren"
+    ]
+   ],
+   [
+    "object: yueashi",
+    [
+     "person:yueashi",
+     "place:yueashi"
+    ]
+   ],
+   [
+    "person: bixi",
+    [
+     "object:bixi",
+     "place:bixi"
+    ]
+   ],
+   [
+    "person: yaer",
+    [
+     "event:yaer"
+    ]
+   ],
+   [
+    "person: yuetan",
+    [
+     "place:yuetan"
+    ]
+   ],
+   [
+    "person:yue ",
+    [
+     "place:yue"
+    ]
+   ],
+   [
+    "place: bashihuer",
+    [
+     "person:bashihuer"
+    ]
+   ],
+   [
+    "place: bo‧pier",
+    [
+     "person:bo‧pier"
+    ]
+   ],
+   [
+    "place: buni",
+    [
+     "person:buni"
+    ]
+   ],
+   [
+    "place: hala",
+    [
+     "person:hala"
+    ]
+   ],
+   [
+    "place: haluohei",
+    [
+     "person:haluohei"
+    ]
+   ],
+   [
+    "place: hasa‧jiada",
+    [
+     "person:hasa‧jiada"
+    ]
+   ],
+   [
+    "place: hatu",
+    [
+     "person:hatu"
+    ]
+   ],
+   [
+    "place: hongta",
+    [
+     "person:hongta"
+    ]
+   ],
+   [
+    "place: jiaben",
+    [
+     "person:jiaben"
+    ]
+   ],
+   [
+    "place: lihong",
+    [
+     "person:lihong"
+    ]
+   ],
+   [
+    "place: lijian",
+    [
+     "person:lijian"
+    ]
+   ],
+   [
+    "place: limie",
+    [
+     "person:limie"
+    ]
+   ],
+   [
+    "place: manadibai",
+    [
+     "person:manadibai"
+    ]
+   ],
+   [
+    "place: mei‧yekun",
+    [
+     "person:mei‧yekun"
+    ]
+   ],
+   [
+    "place: nishan",
+    [
+     "person:nishan"
+    ]
+   ],
+   [
+    "place: sake",
+    [
+     "person:sake"
+    ]
+   ],
+   [
+    "place: waniya",
+    [
+     "person:waniya"
+    ]
+   ],
+   [
+    "place: xiasuo‧hadata",
+    [
+     "person:xiasuo‧hadata"
+    ]
+   ],
+   [
+    "place: xishi",
+    [
+     "person:xishi"
+    ]
+   ],
+   [
+    "place: yadama",
+    [
+     "person:yadama"
+    ]
+   ],
+   [
+    "place: yalamilei",
+    [
+     "person:yalamilei"
+    ]
+   ],
+   [
+    "place: yasali",
+    [
+     "person:yasali"
+    ]
+   ],
+   [
+    "place: yihude",
+    [
+     "person:yihude"
+    ]
+   ]
+  ],
+  "none": [
+   "event: ya",
+   "group:anchun ",
+   "object: che",
+   "object: cheng",
+   "object: dian",
+   "object: huo",
+   "object: ling",
+   "object: lun",
+   "object: lv",
+   "object: min",
+   "object: ren",
+   "object: zhu",
+   "person: bo‧majiabo",
+   "person: lixun",
+   "person: naiman",
+   "person: yala",
+   "person: yana",
+   "person:bi shifei",
+   "person:lu ",
+   "person:mata halin",
+   "person:saba bibai",
+   "place: ebalu",
+   "place: hadie",
+   "place: jina",
+   "place: maxiya",
+   "place: mijia",
+   "place: yaxiya",
+   "place: yi",
+   "place: yin",
+   "place:anchun "
+  ],
+  "collide": [
+   [
+    "person: bo‧majiabo",
+    "person:bo‧majiabo",
+    "伯‧瑪加博"
+   ],
+   [
+    "person: lixun",
+    "person:lixun",
+    "利遜"
+   ],
+   [
+    "person: naiman",
+    "person:naiman",
+    "乃幔"
+   ],
+   [
+    "person: yaer",
+    "person:yaer",
+    "亞珥"
+   ],
+   [
+    "person: yala",
+    "person:yala",
+    "亞拉"
+   ],
+   [
+    "person: yana",
+    "person:yana",
+    "亞拿"
+   ],
+   [
+    "person: yuetan",
+    "person:yuetan",
+    "約坍"
+   ],
+   [
+    "person:lu ",
+    "person:lu",
+    "魯"
+   ],
+   [
+    "place: hala",
+    "place:hala",
+    "哈臘"
+   ],
+   [
+    "place: jina",
+    "place:jina",
+    "基納"
+   ],
+   [
+    "place: maxiya",
+    "place:maxiya",
+    "瑪西雅"
+   ],
+   [
+    "place: mijia",
+    "place:mijia",
+    "密加"
+   ],
+   [
+    "place: yaxiya",
+    "place:yaxiya",
+    "雅西雅"
+   ],
+   [
+    "place: yi",
+    "place:yi",
+    "以"
+   ]
+  ]
+ },
+ "jsonl": {
+  "label": "jsonl",
+  "entities": 9120,
+  "padded_names": 180,
+  "inner_space_names": 3,
+  "ids_with_space": 183,
+  "dirty_total": 183,
+  "dirty_by_type": {
+   "Person": 77,
+   "Place": 74,
+   "Object": 25,
+   "Group": 5,
+   "Event": 2
+  },
+  "same_type_twin": 116,
+  "same_type_twin_by_type": {
+   "Group": 4,
+   "Object": 6,
+   "Person": 64,
+   "Place": 42
+  },
+  "any_type_twin": 153,
+  "cross_type_only": 37,
+  "cross_type_only_by_type": {
+   "Event": 1,
+   "Object": 9,
+   "Person": 4,
+   "Place": 23
+  },
+  "no_twin": 30,
+  "no_twin_by_type": {
+   "Event": 1,
+   "Group": 1,
+   "Object": 10,
+   "Person": 9,
+   "Place": 9
+  },
+  "rename_id_collides_with_other_name": 14,
+  "twin_id_equals_minted": 116,
+  "dirty_groups_with_2plus": 0
+ },
+ "jsonl_lists": {
+  "same": [
+   [
+    "group: pasiluxiren",
+    "group:pasiluxiren"
+   ],
+   [
+    "group: salaizu",
+    "group:salaizu"
+   ],
+   [
+    "group: yabiyazu",
+    "group:yabiyazu"
+   ],
+   [
+    "group: yiduozu",
+    "group:yiduozu"
+   ],
+   [
+    "object: chebingzhang",
+    "object:chebingzhang"
+   ],
+   [
+    "object: hushai",
+    "object:hushai"
+   ],
+   [
+    "object: jiadezisun",
+    "object:jiadezisun"
+   ],
+   [
+    "object: nahe",
+    "object:nahe"
+   ],
+   [
+    "object: yinmai",
+    "object:yinmai"
+   ],
+   [
+    "object: zhuyehehua",
+    "object:zhuyehehua"
+   ],
+   [
+    "person: anlan",
+    "person:anlan"
+   ],
+   [
+    "person: annen",
+    "person:annen"
+   ],
+   [
+    "person: babo",
+    "person:babo"
+   ],
+   [
+    "person: bake",
+    "person:bake"
+   ],
+   [
+    "person: bani",
+    "person:bani"
+   ],
+   [
+    "person: bashihuer",
+    "person:bashihuer"
+   ],
+   [
+    "person: baxilv",
+    "person:baxilv"
+   ],
+   [
+    "person: bila",
+    "person:bila"
+   ],
+   [
+    "person: binaya",
+    "person:binaya"
+   ],
+   [
+    "person: bisai",
+    "person:bisai"
+   ],
+   [
+    "person: bituli",
+    "person:bituli"
+   ],
+   [
+    "person: bo‧ningla",
+    "person:bo‧ningla"
+   ],
+   [
+    "person: dishun",
+    "person:dishun"
+   ],
+   [
+    "person: hada",
+    "person:hada"
+   ],
+   [
+    "person: hajia",
+    "person:hajia"
+   ],
+   [
+    "person: halin",
+    "person:halin"
+   ],
+   [
+    "person: hamo",
+    "person:hamo"
+   ],
+   [
+    "person: hanan",
+    "person:hanan"
+   ],
+   [
+    "person: hanen",
+    "person:hanen"
+   ],
+   [
+    "person: hashun",
+    "person:hashun"
+   ],
+   [
+    "person: haxue",
+    "person:haxue"
+   ],
+   [
+    "person: heba",
+    "person:heba"
+   ],
+   [
+    "person: jiasan",
+    "person:jiasan"
+   ],
+   [
+    "person: jide",
+    "person:jide"
+   ],
+   [
+    "person: jiduo",
+    "person:jiduo"
+   ],
+   [
+    "person: jilv",
+    "person:jilv"
+   ],
+   [
+    "person: laboshaji",
+    "person:laboshaji"
+   ],
+   [
+    "person: lamai",
+    "person:lamai"
+   ],
+   [
+    "person: milali",
+    "person:milali"
+   ],
+   [
+    "person: mishima",
+    "person:mishima"
+   ],
+   [
+    "person: miyamin",
+    "person:miyamin"
+   ],
+   [
+    "person: nagai",
+    "person:nagai"
+   ],
+   [
+    "person: naha",
+    "person:naha"
+   ],
+   [
+    "person: nahe",
+    "person:nahe"
+   ],
+   [
+    "person: nibo",
+    "person:nibo"
+   ],
+   [
+    "person: nixiya",
+    "person:nixiya"
+   ],
+   [
+    "person: pila",
+    "person:pila"
+   ],
+   [
+    "person: salu",
+    "person:salu"
+   ],
+   [
+    "person: shala",
+    "person:shala"
+   ],
+   [
+    "person: shalong",
+    "person:shalong"
+   ],
+   [
+    "person: shifatiya",
+    "person:shifatiya"
+   ],
+   [
+    "person: shijiani",
+    "person:shijiani"
+   ],
+   [
+    "person: shimaya",
+    "person:shimaya"
+   ],
+   [
+    "person: shimei",
+    "person:shimei"
+   ],
+   [
+    "person: shimiya",
+    "person:shimiya"
+   ],
+   [
+    "person: shoumen",
+    "person:shoumen"
+   ],
+   [
+    "person: tuoya",
+    "person:tuoya"
+   ],
+   [
+    "person: wang",
+    "person:wang"
+   ],
+   [
+    "person: wusa",
+    "person:wusa"
+   ],
+   [
+    "person: xinma",
+    "person:xinma"
+   ],
+   [
+    "person: yadaya",
+    "person:yadaya"
+   ],
+   [
+    "person: yagan",
+    "person:yagan"
+   ],
+   [
+    "person: yamaliya",
+    "person:yamaliya"
+   ],
+   [
+    "person: yatalu",
+    "person:yatalu"
+   ],
+   [
+    "person: yaxi",
+    "person:yaxi"
+   ],
+   [
+    "person: yewusi",
+    "person:yewusi"
+   ],
+   [
+    "person: yiduo",
+    "person:yiduo"
+   ],
+   [
+    "person: yihu",
+    "person:yihu"
+   ],
+   [
+    "person: yinmai",
+    "person:yinmai"
+   ],
+   [
+    "person: yitu",
+    "person:yitu"
+   ],
+   [
+    "person: yueashi",
+    "person:yueashi"
+   ],
+   [
+    "person:linqian ",
+    "person:linqian"
+   ],
+   [
+    "person:luoshi ",
+    "person:luoshi"
+   ],
+   [
+    "person:yaha ",
+    "person:yaha"
+   ],
+   [
+    "place: bala",
+    "place:bala"
+   ],
+   [
+    "place: bani",
+    "place:bani"
+   ],
+   [
+    "place: binaya",
+    "place:binaya"
+   ],
+   [
+    "place: bo‧libawu",
+    "place:bo‧libawu"
+   ],
+   [
+    "place: bo‧su",
+    "place:bo‧su"
+   ],
+   [
+    "place: bo‧yalaba",
+    "place:bo‧yalaba"
+   ],
+   [
+    "place: dana",
+    "place:dana"
+   ],
+   [
+    "place: dilian",
+    "place:dilian"
+   ],
+   [
+    "place: dingna",
+    "place:dingna"
+   ],
+   [
+    "place: geshan",
+    "place:geshan"
+   ],
+   [
+    "place: haduolan",
+    "place:haduolan"
+   ],
+   [
+    "place: halin",
+    "place:halin"
+   ],
+   [
+    "place: hasa‧shuya",
+    "place:hasa‧shuya"
+   ],
+   [
+    "place: hexiya",
+    "place:hexiya"
+   ],
+   [
+    "place: jidiluo",
+    "place:jidiluo"
+   ],
+   [
+    "place: jidisi",
+    "place:jidisi"
+   ],
+   [
+    "place: jiyila",
+    "place:jiyila"
+   ],
+   [
+    "place: laji",
+    "place:laji"
+   ],
+   [
+    "place: libawu",
+    "place:libawu"
+   ],
+   [
+    "place: luode",
+    "place:luode"
+   ],
+   [
+    "place: malu",
+    "place:malu"
+   ],
+   [
+    "place: matani",
+    "place:matani"
+   ],
+   [
+    "place: mishisabie",
+    "place:mishisabie"
+   ],
+   [
+    "place: mishulan",
+    "place:mishulan"
+   ],
+   [
+    "place: pilati",
+    "place:pilati"
+   ],
+   [
+    "place: shalabin",
+    "place:shalabin"
+   ],
+   [
+    "place: shalayin",
+    "place:shalayin"
+   ],
+   [
+    "place: shilimiya",
+    "place:shilimiya"
+   ],
+   [
+    "place: suola",
+    "place:suola"
+   ],
+   [
+    "place: xifu",
+    "place:xifu"
+   ],
+   [
+    "place: xigela",
+    "place:xigela"
+   ],
+   [
+    "place: xila",
+    "place:xila"
+   ],
+   [
+    "place: yaduolaiyin",
+    "place:yaduolaiyin"
+   ],
+   [
+    "place: yaduoniya",
+    "place:yaduoniya"
+   ],
+   [
+    "place: yaman",
+    "place:yaman"
+   ],
+   [
+    "place: yanong",
+    "place:yanong"
+   ],
+   [
+    "place: yaza",
+    "place:yaza"
+   ],
+   [
+    "place: yemo",
+    "place:yemo"
+   ],
+   [
+    "place: yesilie",
+    "place:yesilie"
+   ],
+   [
+    "place: yifuta",
+    "place:yifuta"
+   ],
+   [
+    "place: yileiduola",
+    "place:yileiduola"
+   ],
+   [
+    "place: yilun",
+    "place:yilun"
+   ]
+  ],
+  "cross": [
+   [
+    "event: yashalong",
+    [
+     "person:yashalong"
+    ]
+   ],
+   [
+    "object: boasi",
+    [
+     "person:boasi"
+    ]
+   ],
+   [
+    "object: feilishiren",
+    [
+     "group:feilishiren"
+    ]
+   ],
+   [
+    "object: gemie",
+    [
+     "person:gemie",
+     "place:gemie"
+    ]
+   ],
+   [
+    "object: heren",
+    [
+     "group:heren"
+    ]
+   ],
+   [
+    "object: laboshaji",
+    [
+     "person:laboshaji"
+    ]
+   ],
+   [
+    "object: shafan",
+    [
+     "person:shafan"
+    ]
+   ],
+   [
+    "object: shimei",
+    [
+     "person:shimei",
+     "place:shimei"
+    ]
+   ],
+   [
+    "object: yamenren",
+    [
+     "group:yamenren"
+    ]
+   ],
+   [
+    "object: yueashi",
+    [
+     "person:yueashi",
+     "place:yueashi"
+    ]
+   ],
+   [
+    "person: bixi",
+    [
+     "object:bixi",
+     "place:bixi"
+    ]
+   ],
+   [
+    "person: yaer",
+    [
+     "event:yaer"
+    ]
+   ],
+   [
+    "person: yuetan",
+    [
+     "place:yuetan"
+    ]
+   ],
+   [
+    "person:yue ",
+    [
+     "place:yue"
+    ]
+   ],
+   [
+    "place: bashihuer",
+    [
+     "person:bashihuer"
+    ]
+   ],
+   [
+    "place: bo‧pier",
+    [
+     "person:bo‧pier"
+    ]
+   ],
+   [
+    "place: buni",
+    [
+     "person:buni"
+    ]
+   ],
+   [
+    "place: hala",
+    [
+     "person:hala"
+    ]
+   ],
+   [
+    "place: haluohei",
+    [
+     "person:haluohei"
+    ]
+   ],
+   [
+    "place: hasa‧jiada",
+    [
+     "person:hasa‧jiada"
+    ]
+   ],
+   [
+    "place: hatu",
+    [
+     "person:hatu"
+    ]
+   ],
+   [
+    "place: hongta",
+    [
+     "person:hongta"
+    ]
+   ],
+   [
+    "place: jiaben",
+    [
+     "person:jiaben"
+    ]
+   ],
+   [
+    "place: lihong",
+    [
+     "person:lihong"
+    ]
+   ],
+   [
+    "place: lijian",
+    [
+     "person:lijian"
+    ]
+   ],
+   [
+    "place: limie",
+    [
+     "person:limie"
+    ]
+   ],
+   [
+    "place: manadibai",
+    [
+     "person:manadibai"
+    ]
+   ],
+   [
+    "place: mei‧yekun",
+    [
+     "person:mei‧yekun"
+    ]
+   ],
+   [
+    "place: nishan",
+    [
+     "person:nishan"
+    ]
+   ],
+   [
+    "place: sake",
+    [
+     "person:sake"
+    ]
+   ],
+   [
+    "place: waniya",
+    [
+     "person:waniya"
+    ]
+   ],
+   [
+    "place: xiasuo‧hadata",
+    [
+     "person:xiasuo‧hadata"
+    ]
+   ],
+   [
+    "place: xishi",
+    [
+     "person:xishi"
+    ]
+   ],
+   [
+    "place: yadama",
+    [
+     "person:yadama"
+    ]
+   ],
+   [
+    "place: yalamilei",
+    [
+     "person:yalamilei"
+    ]
+   ],
+   [
+    "place: yasali",
+    [
+     "person:yasali"
+    ]
+   ],
+   [
+    "place: yihude",
+    [
+     "person:yihude"
+    ]
+   ]
+  ],
+  "none": [
+   "event: ya",
+   "group:anchun ",
+   "object: che",
+   "object: cheng",
+   "object: dian",
+   "object: huo",
+   "object: ling",
+   "object: lun",
+   "object: lv",
+   "object: min",
+   "object: ren",
+   "object: zhu",
+   "person: bo‧majiabo",
+   "person: lixun",
+   "person: naiman",
+   "person: yala",
+   "person: yana",
+   "person:bi shifei",
+   "person:lu ",
+   "person:mata halin",
+   "person:saba bibai",
+   "place: ebalu",
+   "place: hadie",
+   "place: jina",
+   "place: maxiya",
+   "place: mijia",
+   "place: yaxiya",
+   "place: yi",
+   "place: yin",
+   "place:anchun "
+  ],
+  "collide": [
+   [
+    "person: bo‧majiabo",
+    "person:bo‧majiabo",
+    "伯‧瑪加博"
+   ],
+   [
+    "person: lixun",
+    "person:lixun",
+    "利遜"
+   ],
+   [
+    "person: naiman",
+    "person:naiman",
+    "乃幔"
+   ],
+   [
+    "person: yaer",
+    "person:yaer",
+    "亞珥"
+   ],
+   [
+    "person: yala",
+    "person:yala",
+    "亞拉"
+   ],
+   [
+    "person: yana",
+    "person:yana",
+    "亞拿"
+   ],
+   [
+    "person: yuetan",
+    "person:yuetan",
+    "約坍"
+   ],
+   [
+    "person:lu ",
+    "person:lu",
+    "魯"
+   ],
+   [
+    "place: hala",
+    "place:hala",
+    "哈臘"
+   ],
+   [
+    "place: jina",
+    "place:jina",
+    "基納"
+   ],
+   [
+    "place: maxiya",
+    "place:maxiya",
+    "瑪西雅"
+   ],
+   [
+    "place: mijia",
+    "place:mijia",
+    "密加"
+   ],
+   [
+    "place: yaxiya",
+    "place:yaxiya",
+    "雅西雅"
+   ],
+   [
+    "place: yi",
+    "place:yi",
+    "以"
+   ]
+  ]
+ },
+ "ner_half": {
+  "label": "ner_half",
+  "entities": 4222,
+  "padded_names": 153,
+  "inner_space_names": 3,
+  "ids_with_space": 156,
+  "dirty_total": 156,
+  "dirty_by_type": {
+   "Person": 77,
+   "Place": 74,
+   "Group": 5
+  },
+  "same_type_twin": 110,
+  "same_type_twin_by_type": {
+   "Group": 4,
+   "Person": 64,
+   "Place": 42
+  },
+  "any_type_twin": 136,
+  "cross_type_only": 26,
+  "cross_type_only_by_type": {
+   "Person": 3,
+   "Place": 23
+  },
+  "no_twin": 20,
+  "no_twin_by_type": {
+   "Group": 1,
+   "Person": 10,
+   "Place": 9
+  },
+  "rename_id_collides_with_other_name": 14,
+  "twin_id_equals_minted": 110,
+  "dirty_groups_with_2plus": 0
+ },
+ "ner_half_lists": {
+  "same": [
+   [
+    "group: pasiluxiren",
+    "group:pasiluxiren"
+   ],
+   [
+    "group: salaizu",
+    "group:salaizu"
+   ],
+   [
+    "group: yabiyazu",
+    "group:yabiyazu"
+   ],
+   [
+    "group: yiduozu",
+    "group:yiduozu"
+   ],
+   [
+    "person: anlan",
+    "person:anlan"
+   ],
+   [
+    "person: annen",
+    "person:annen"
+   ],
+   [
+    "person: babo",
+    "person:babo"
+   ],
+   [
+    "person: bake",
+    "person:bake"
+   ],
+   [
+    "person: bani",
+    "person:bani"
+   ],
+   [
+    "person: bashihuer",
+    "person:bashihuer"
+   ],
+   [
+    "person: baxilv",
+    "person:baxilv"
+   ],
+   [
+    "person: bila",
+    "person:bila"
+   ],
+   [
+    "person: binaya",
+    "person:binaya"
+   ],
+   [
+    "person: bisai",
+    "person:bisai"
+   ],
+   [
+    "person: bituli",
+    "person:bituli"
+   ],
+   [
+    "person: bo‧ningla",
+    "person:bo‧ningla"
+   ],
+   [
+    "person: dishun",
+    "person:dishun"
+   ],
+   [
+    "person: hada",
+    "person:hada"
+   ],
+   [
+    "person: hajia",
+    "person:hajia"
+   ],
+   [
+    "person: halin",
+    "person:halin"
+   ],
+   [
+    "person: hamo",
+    "person:hamo"
+   ],
+   [
+    "person: hanan",
+    "person:hanan"
+   ],
+   [
+    "person: hanen",
+    "person:hanen"
+   ],
+   [
+    "person: hashun",
+    "person:hashun"
+   ],
+   [
+    "person: haxue",
+    "person:haxue"
+   ],
+   [
+    "person: heba",
+    "person:heba"
+   ],
+   [
+    "person: jiasan",
+    "person:jiasan"
+   ],
+   [
+    "person: jide",
+    "person:jide"
+   ],
+   [
+    "person: jiduo",
+    "person:jiduo"
+   ],
+   [
+    "person: jilv",
+    "person:jilv"
+   ],
+   [
+    "person: laboshaji",
+    "person:laboshaji"
+   ],
+   [
+    "person: lamai",
+    "person:lamai"
+   ],
+   [
+    "person: milali",
+    "person:milali"
+   ],
+   [
+    "person: mishima",
+    "person:mishima"
+   ],
+   [
+    "person: miyamin",
+    "person:miyamin"
+   ],
+   [
+    "person: nagai",
+    "person:nagai"
+   ],
+   [
+    "person: naha",
+    "person:naha"
+   ],
+   [
+    "person: nahe",
+    "person:nahe"
+   ],
+   [
+    "person: nibo",
+    "person:nibo"
+   ],
+   [
+    "person: nixiya",
+    "person:nixiya"
+   ],
+   [
+    "person: pila",
+    "person:pila"
+   ],
+   [
+    "person: salu",
+    "person:salu"
+   ],
+   [
+    "person: shala",
+    "person:shala"
+   ],
+   [
+    "person: shalong",
+    "person:shalong"
+   ],
+   [
+    "person: shifatiya",
+    "person:shifatiya"
+   ],
+   [
+    "person: shijiani",
+    "person:shijiani"
+   ],
+   [
+    "person: shimaya",
+    "person:shimaya"
+   ],
+   [
+    "person: shimei",
+    "person:shimei"
+   ],
+   [
+    "person: shimiya",
+    "person:shimiya"
+   ],
+   [
+    "person: shoumen",
+    "person:shoumen"
+   ],
+   [
+    "person: tuoya",
+    "person:tuoya"
+   ],
+   [
+    "person: wang",
+    "person:wang"
+   ],
+   [
+    "person: wusa",
+    "person:wusa"
+   ],
+   [
+    "person: xinma",
+    "person:xinma"
+   ],
+   [
+    "person: yadaya",
+    "person:yadaya"
+   ],
+   [
+    "person: yagan",
+    "person:yagan"
+   ],
+   [
+    "person: yamaliya",
+    "person:yamaliya"
+   ],
+   [
+    "person: yatalu",
+    "person:yatalu"
+   ],
+   [
+    "person: yaxi",
+    "person:yaxi"
+   ],
+   [
+    "person: yewusi",
+    "person:yewusi"
+   ],
+   [
+    "person: yiduo",
+    "person:yiduo"
+   ],
+   [
+    "person: yihu",
+    "person:yihu"
+   ],
+   [
+    "person: yinmai",
+    "person:yinmai"
+   ],
+   [
+    "person: yitu",
+    "person:yitu"
+   ],
+   [
+    "person: yueashi",
+    "person:yueashi"
+   ],
+   [
+    "person:linqian ",
+    "person:linqian"
+   ],
+   [
+    "person:luoshi ",
+    "person:luoshi"
+   ],
+   [
+    "person:yaha ",
+    "person:yaha"
+   ],
+   [
+    "place: bala",
+    "place:bala"
+   ],
+   [
+    "place: bani",
+    "place:bani"
+   ],
+   [
+    "place: binaya",
+    "place:binaya"
+   ],
+   [
+    "place: bo‧libawu",
+    "place:bo‧libawu"
+   ],
+   [
+    "place: bo‧su",
+    "place:bo‧su"
+   ],
+   [
+    "place: bo‧yalaba",
+    "place:bo‧yalaba"
+   ],
+   [
+    "place: dana",
+    "place:dana"
+   ],
+   [
+    "place: dilian",
+    "place:dilian"
+   ],
+   [
+    "place: dingna",
+    "place:dingna"
+   ],
+   [
+    "place: geshan",
+    "place:geshan"
+   ],
+   [
+    "place: haduolan",
+    "place:haduolan"
+   ],
+   [
+    "place: halin",
+    "place:halin"
+   ],
+   [
+    "place: hasa‧shuya",
+    "place:hasa‧shuya"
+   ],
+   [
+    "place: hexiya",
+    "place:hexiya"
+   ],
+   [
+    "place: jidiluo",
+    "place:jidiluo"
+   ],
+   [
+    "place: jidisi",
+    "place:jidisi"
+   ],
+   [
+    "place: jiyila",
+    "place:jiyila"
+   ],
+   [
+    "place: laji",
+    "place:laji"
+   ],
+   [
+    "place: libawu",
+    "place:libawu"
+   ],
+   [
+    "place: luode",
+    "place:luode"
+   ],
+   [
+    "place: malu",
+    "place:malu"
+   ],
+   [
+    "place: matani",
+    "place:matani"
+   ],
+   [
+    "place: mishisabie",
+    "place:mishisabie"
+   ],
+   [
+    "place: mishulan",
+    "place:mishulan"
+   ],
+   [
+    "place: pilati",
+    "place:pilati"
+   ],
+   [
+    "place: shalabin",
+    "place:shalabin"
+   ],
+   [
+    "place: shalayin",
+    "place:shalayin"
+   ],
+   [
+    "place: shilimiya",
+    "place:shilimiya"
+   ],
+   [
+    "place: suola",
+    "place:suola"
+   ],
+   [
+    "place: xifu",
+    "place:xifu"
+   ],
+   [
+    "place: xigela",
+    "place:xigela"
+   ],
+   [
+    "place: xila",
+    "place:xila"
+   ],
+   [
+    "place: yaduolaiyin",
+    "place:yaduolaiyin"
+   ],
+   [
+    "place: yaduoniya",
+    "place:yaduoniya"
+   ],
+   [
+    "place: yaman",
+    "place:yaman"
+   ],
+   [
+    "place: yanong",
+    "place:yanong"
+   ],
+   [
+    "place: yaza",
+    "place:yaza"
+   ],
+   [
+    "place: yemo",
+    "place:yemo"
+   ],
+   [
+    "place: yesilie",
+    "place:yesilie"
+   ],
+   [
+    "place: yifuta",
+    "place:yifuta"
+   ],
+   [
+    "place: yileiduola",
+    "place:yileiduola"
+   ],
+   [
+    "place: yilun",
+    "place:yilun"
+   ]
+  ],
+  "cross": [
+   [
+    "person: bixi",
+    [
+     "place:bixi"
+    ]
+   ],
+   [
+    "person: yuetan",
+    [
+     "place:yuetan"
+    ]
+   ],
+   [
+    "person:yue ",
+    [
+     "place:yue"
+    ]
+   ],
+   [
+    "place: bashihuer",
+    [
+     "person:bashihuer"
+    ]
+   ],
+   [
+    "place: bo‧pier",
+    [
+     "person:bo‧pier"
+    ]
+   ],
+   [
+    "place: buni",
+    [
+     "person:buni"
+    ]
+   ],
+   [
+    "place: hala",
+    [
+     "person:hala"
+    ]
+   ],
+   [
+    "place: haluohei",
+    [
+     "person:haluohei"
+    ]
+   ],
+   [
+    "place: hasa‧jiada",
+    [
+     "person:hasa‧jiada"
+    ]
+   ],
+   [
+    "place: hatu",
+    [
+     "person:hatu"
+    ]
+   ],
+   [
+    "place: hongta",
+    [
+     "person:hongta"
+    ]
+   ],
+   [
+    "place: jiaben",
+    [
+     "person:jiaben"
+    ]
+   ],
+   [
+    "place: lihong",
+    [
+     "person:lihong"
+    ]
+   ],
+   [
+    "place: lijian",
+    [
+     "person:lijian"
+    ]
+   ],
+   [
+    "place: limie",
+    [
+     "person:limie"
+    ]
+   ],
+   [
+    "place: manadibai",
+    [
+     "person:manadibai"
+    ]
+   ],
+   [
+    "place: mei‧yekun",
+    [
+     "person:mei‧yekun"
+    ]
+   ],
+   [
+    "place: nishan",
+    [
+     "person:nishan"
+    ]
+   ],
+   [
+    "place: sake",
+    [
+     "person:sake"
+    ]
+   ],
+   [
+    "place: waniya",
+    [
+     "person:waniya"
+    ]
+   ],
+   [
+    "place: xiasuo‧hadata",
+    [
+     "person:xiasuo‧hadata"
+    ]
+   ],
+   [
+    "place: xishi",
+    [
+     "person:xishi"
+    ]
+   ],
+   [
+    "place: yadama",
+    [
+     "person:yadama"
+    ]
+   ],
+   [
+    "place: yalamilei",
+    [
+     "person:yalamilei"
+    ]
+   ],
+   [
+    "place: yasali",
+    [
+     "person:yasali"
+    ]
+   ],
+   [
+    "place: yihude",
+    [
+     "person:yihude"
+    ]
+   ]
+  ],
+  "none": [
+   "group:anchun ",
+   "person: bo‧majiabo",
+   "person: lixun",
+   "person: naiman",
+   "person: yaer",
+   "person: yala",
+   "person: yana",
+   "person:bi shifei",
+   "person:lu ",
+   "person:mata halin",
+   "person:saba bibai",
+   "place: ebalu",
+   "place: hadie",
+   "place: jina",
+   "place: maxiya",
+   "place: mijia",
+   "place: yaxiya",
+   "place: yi",
+   "place: yin",
+   "place:anchun "
+  ],
+  "collide": [
+   [
+    "person: bo‧majiabo",
+    "person:bo‧majiabo",
+    "伯‧瑪加博"
+   ],
+   [
+    "person: lixun",
+    "person:lixun",
+    "利遜"
+   ],
+   [
+    "person: naiman",
+    "person:naiman",
+    "乃幔"
+   ],
+   [
+    "person: yaer",
+    "person:yaer",
+    "亞珥"
+   ],
+   [
+    "person: yala",
+    "person:yala",
+    "亞拉"
+   ],
+   [
+    "person: yana",
+    "person:yana",
+    "亞拿"
+   ],
+   [
+    "person: yuetan",
+    "person:yuetan",
+    "約坍"
+   ],
+   [
+    "person:lu ",
+    "person:lu",
+    "魯"
+   ],
+   [
+    "place: hala",
+    "place:hala",
+    "哈臘"
+   ],
+   [
+    "place: jina",
+    "place:jina",
+    "基納"
+   ],
+   [
+    "place: maxiya",
+    "place:maxiya",
+    "瑪西雅"
+   ],
+   [
+    "place: mijia",
+    "place:mijia",
+    "密加"
+   ],
+   [
+    "place: yaxiya",
+    "place:yaxiya",
+    "雅西雅"
+   ],
+   [
+    "place: yi",
+    "place:yi",
+    "以"
+   ]
+  ]
+ },
+ "grounded_half": {
+  "label": "grounded_half",
+  "entities": 4897,
+  "padded_names": 27,
+  "inner_space_names": 0,
+  "ids_with_space": 27,
+  "dirty_total": 27,
+  "dirty_by_type": {
+   "Object": 25,
+   "Event": 2
+  },
+  "same_type_twin": 6,
+  "same_type_twin_by_type": {
+   "Object": 6
+  },
+  "any_type_twin": 6,
+  "cross_type_only": 0,
+  "cross_type_only_by_type": {},
+  "no_twin": 21,
+  "no_twin_by_type": {
+   "Event": 2,
+   "Object": 19
+  },
+  "rename_id_collides_with_other_name": 0,
+  "twin_id_equals_minted": 6,
+  "dirty_groups_with_2plus": 0
+ },
+ "grounded_half_lists": {
+  "same": [
+   [
+    "object: chebingzhang",
+    "object:chebingzhang"
+   ],
+   [
+    "object: hushai",
+    "object:hushai"
+   ],
+   [
+    "object: jiadezisun",
+    "object:jiadezisun"
+   ],
+   [
+    "object: nahe",
+    "object:nahe"
+   ],
+   [
+    "object: yinmai",
+    "object:yinmai"
+   ],
+   [
+    "object: zhuyehehua",
+    "object:zhuyehehua"
+   ]
+  ],
+  "cross": [],
+  "none": [
+   "event: ya",
+   "event: yashalong",
+   "object: boasi",
+   "object: che",
+   "object: cheng",
+   "object: dian",
+   "object: feilishiren",
+   "object: gemie",
+   "object: heren",
+   "object: huo",
+   "object: laboshaji",
+   "object: ling",
+   "object: lun",
+   "object: lv",
+   "object: min",
+   "object: ren",
+   "object: shafan",
+   "object: shimei",
+   "object: yamenren",
+   "object: yueashi",
+   "object: zhu"
+  ],
+  "collide": []
+ },
+ "jsonl_dirty_by_half": {
+  "ner": 156,
+  "grounded": 27
+ }
+}

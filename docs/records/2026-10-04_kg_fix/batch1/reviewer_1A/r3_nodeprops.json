@@ -1,0 +1,78 @@
+{
+ "entity": {
+  "only_prod": 0,
+  "only_staging": 0,
+  "field_diffs": {
+   "mention_count": 4,
+   "created_from": 2
+  },
+  "samples": {
+   "mention_count": [
+    "person:yeteluo",
+    "3",
+    "30"
+   ],
+   "created_from": [
+    "event:shounanzhou",
+    "None",
+    "manual_patch"
+   ]
+  }
+ },
+ "pericope": {
+  "only_prod": 0,
+  "only_staging": 0,
+  "field_diffs": {},
+  "samples": {}
+ },
+ "chunk": {
+  "only_prod": 0,
+  "only_staging": 0,
+  "field_diffs": {},
+  "samples": {}
+ },
+ "mentions": {
+  "only_prod": 0,
+  "only_staging": 0,
+  "field_diffs": {
+   "source_granularity": 40261,
+   "verse_mention_freq": 5782,
+   "start_pos": 5782,
+   "backfilled": 5782,
+   "end_pos": 5782,
+   "created_from": 106
+  },
+  "samples": {
+   "source_granularity": [
+    "luk:9:3>event:biderenyesuweijidu",
+    "None",
+    "pericope"
+   ],
+   "verse_mention_freq": [
+    "jer:50:4>place:yiselie",
+    "1",
+    "None"
+   ],
+   "start_pos": [
+    "jer:50:4>place:yiselie",
+    "None",
+    "87"
+   ],
+   "backfilled": [
+    "jer:50:4>place:yiselie",
+    "True",
+    "None"
+   ],
+   "end_pos": [
+    "jer:50:4>place:yiselie",
+    "None",
+    "90"
+   ],
+   "created_from": [
+    "luk:23:4>event:shounanzhou",
+    "None",
+    "manual_patch"
+   ]
+  }
+ }
+}

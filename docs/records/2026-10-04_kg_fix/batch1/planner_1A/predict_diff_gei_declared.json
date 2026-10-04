@@ -1,0 +1,901 @@
+{
+ "final_edges": 5722,
+ "live_edges": 15926,
+ "delta": -10204,
+ "kin_final": 615,
+ "kin_live": 1571,
+ "H3_unsupported": 0,
+ "H3_samples": [],
+ "H9_violations": 0,
+ "H9_live": 14,
+ "H9_live_by": {
+  "SETTLED_IN|phase=4|bf=False|group:yehehua->place:saleng": 1,
+  "SETTLED_IN|phase=4|bf=False|group:yehehua->place:yelusaleng": 1,
+  "SETTLED_IN|phase=4|bf=False|group:yehehua->place:shengdian": 1,
+  "SETTLED_IN|phase=4|bf=False|group:yehehua->place:huimu": 1,
+  "ORIGINATED_FROM|phase=4|bf=False|group:yehehua->place:shengdian": 1,
+  "LEADER_OF|phase=4|bf=False|person:dawei->group:yehehua": 1,
+  "LEADER_OF|phase=4|bf=False|person:yelimi->group:yehehua": 1,
+  "MEMBER_OF|phase=2|bf=False|person:yelimi->group:yehehua": 1,
+  "LEADER_OF|phase=4|bf=False|person:moxi->group:yehehua": 1,
+  "LEADER_OF|phase=4|bf=False|person:saoluo->group:yehehua": 1,
+  "LEADER_OF|phase=4|bf=False|person:yiliya->group:yehehua": 1,
+  "LEADER_OF|phase=4|bf=False|person:feiniha->group:yehehua": 1,
+  "MEMBER_OF|phase=4|bf=False|person:shadela->group:yehehua": 1,
+  "LEADER_OF|phase=4|bf=False|person:hefuni->group:yehehua": 1
+ },
+ "R6": {
+  "FATHER_OF": 52,
+  "contradictions": 0,
+  "female_head": 0,
+  "children": 49,
+  "children_2plus_fathers": 3,
+  "functional_violation_rate": 0.0612
+ },
+ "parent_child_pairs_encoded_both_ways": 17,
+ "source_null": 0,
+ "relationships_diff": {
+  "ALLY_OF": [
+   64,
+   63,
+   -1
+  ],
+  "ANCESTOR_OF": [
+   49,
+   15,
+   -34
+  ],
+  "BORN_IN": [
+   11,
+   10,
+   -1
+  ],
+  "BUILT": [
+   16,
+   7,
+   -9
+  ],
+  "CAUSED": [
+   10,
+   0,
+   -10
+  ],
+  "DAUGHTER_OF": [
+   27,
+   13,
+   -14
+  ],
+  "DESCENDANT_OF": [
+   49,
+   18,
+   -31
+  ],
+  "DISCIPLE_OF": [
+   21,
+   14,
+   -7
+  ],
+  "ENEMY_OF": [
+   33,
+   32,
+   -1
+  ],
+  "EXILED_TO": [
+   20,
+   14,
+   -6
+  ],
+  "FATHER_OF": [
+   647,
+   52,
+   -595
+  ],
+  "LEADER_OF": [
+   70,
+   63,
+   -7
+  ],
+  "LOCATED_IN": [
+   55,
+   50,
+   -5
+  ],
+  "MEMBER_OF": [
+   357,
+   331,
+   -26
+  ],
+  "MOTHER_OF": [
+   44,
+   15,
+   -29
+  ],
+  "NEAR": [
+   29,
+   28,
+   -1
+  ],
+  "OCCURRED_IN": [
+   4313,
+   894,
+   -3419
+  ],
+  "ORIGINATED_FROM": [
+   51,
+   50,
+   -1
+  ],
+  "PARTICIPATED_IN": [
+   7130,
+   1489,
+   -5641
+  ],
+  "PRECEDED_BY": [
+   16,
+   0,
+   -16
+  ],
+  "RETURNED_FROM": [
+   41,
+   28,
+   -13
+  ],
+  "RULED": [
+   144,
+   79,
+   -65
+  ],
+  "SETTLED_IN": [
+   223,
+   219,
+   -4
+  ],
+  "SIBLING_OF": [
+   48,
+   32,
+   -16
+  ],
+  "SON_OF": [
+   659,
+   441,
+   -218
+  ],
+  "SPOUSE_OF": [
+   48,
+   29,
+   -19
+  ],
+  "SUCCEEDED_BY": [
+   7,
+   5,
+   -2
+  ],
+  "TEACHER_OF": [
+   21,
+   8,
+   -13
+  ]
+ },
+ "ee_edges_diff": {
+  "ALLY_OF phase=3 source=-": [
+   2,
+   0,
+   -2
+  ],
+  "ALLY_OF phase=3 source=prior": [
+   0,
+   2,
+   2
+  ],
+  "ALLY_OF phase=4 source=-": [
+   62,
+   0,
+   -62
+  ],
+  "ALLY_OF phase=4 source=llm": [
+   0,
+   61,
+   61
+  ],
+  "ANCESTOR_OF phase=2 source=-": [
+   7,
+   0,
+   -7
+  ],
+  "ANCESTOR_OF phase=4 source=-": [
+   15,
+   0,
+   -15
+  ],
+  "ANCESTOR_OF phase=4 source=llm": [
+   0,
+   15,
+   15
+  ],
+  "ANCESTOR_OF phase=5 source=-": [
+   27,
+   0,
+   -27
+  ],
+  "BORN_IN phase=2 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "BORN_IN phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "BORN_IN phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "BORN_IN phase=4 source=-": [
+   9,
+   0,
+   -9
+  ],
+  "BORN_IN phase=4 source=llm": [
+   0,
+   9,
+   9
+  ],
+  "BUILT phase=2 source=-": [
+   9,
+   0,
+   -9
+  ],
+  "BUILT phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "BUILT phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "BUILT phase=4 source=-": [
+   6,
+   0,
+   -6
+  ],
+  "BUILT phase=4 source=llm": [
+   0,
+   6,
+   6
+  ],
+  "CAUSED phase=4 source=-": [
+   10,
+   0,
+   -10
+  ],
+  "DAUGHTER_OF phase=2 source=-": [
+   23,
+   0,
+   -23
+  ],
+  "DAUGHTER_OF phase=4 source=-": [
+   4,
+   0,
+   -4
+  ],
+  "DAUGHTER_OF phase=4 source=llm": [
+   0,
+   4,
+   4
+  ],
+  "DAUGHTER_OF phase=6 source=anchored_rule": [
+   0,
+   9,
+   9
+  ],
+  "DESCENDANT_OF phase=2 source=-": [
+   9,
+   0,
+   -9
+  ],
+  "DESCENDANT_OF phase=4 source=-": [
+   18,
+   0,
+   -18
+  ],
+  "DESCENDANT_OF phase=4 source=llm": [
+   0,
+   18,
+   18
+  ],
+  "DESCENDANT_OF phase=5 source=-": [
+   22,
+   0,
+   -22
+  ],
+  "DESTROYED phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "DESTROYED phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "DESTROYED phase=4 source=-": [
+   37,
+   0,
+   -37
+  ],
+  "DESTROYED phase=4 source=llm": [
+   0,
+   37,
+   37
+  ],
+  "DIED_IN phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "DIED_IN phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "DIED_IN phase=4 source=-": [
+   19,
+   0,
+   -19
+  ],
+  "DIED_IN phase=4 source=llm": [
+   0,
+   19,
+   19
+  ],
+  "DISCIPLE_OF phase=3 source=-": [
+   4,
+   0,
+   -4
+  ],
+  "DISCIPLE_OF phase=3 source=prior": [
+   0,
+   4,
+   4
+  ],
+  "DISCIPLE_OF phase=4 source=-": [
+   10,
+   0,
+   -10
+  ],
+  "DISCIPLE_OF phase=4 source=llm": [
+   0,
+   10,
+   10
+  ],
+  "DISCIPLE_OF phase=5 source=-": [
+   7,
+   0,
+   -7
+  ],
+  "ENEMY_OF phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "ENEMY_OF phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "ENEMY_OF phase=4 source=-": [
+   32,
+   0,
+   -32
+  ],
+  "ENEMY_OF phase=4 source=llm": [
+   0,
+   31,
+   31
+  ],
+  "EXILED_TO phase=2 source=-": [
+   6,
+   0,
+   -6
+  ],
+  "EXILED_TO phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "EXILED_TO phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "EXILED_TO phase=4 source=-": [
+   13,
+   0,
+   -13
+  ],
+  "EXILED_TO phase=4 source=llm": [
+   0,
+   13,
+   13
+  ],
+  "FATHER_OF phase=2 source=-": [
+   140,
+   0,
+   -140
+  ],
+  "FATHER_OF phase=3 source=-": [
+   12,
+   0,
+   -12
+  ],
+  "FATHER_OF phase=3 source=prior": [
+   0,
+   12,
+   12
+  ],
+  "FATHER_OF phase=4 source=-": [
+   33,
+   0,
+   -33
+  ],
+  "FATHER_OF phase=4 source=llm": [
+   0,
+   33,
+   33
+  ],
+  "FATHER_OF phase=5 source=-": [
+   462,
+   0,
+   -462
+  ],
+  "FATHER_OF phase=6 source=anchored_rule": [
+   0,
+   7,
+   7
+  ],
+  "FOUNDED phase=4 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "FOUNDED phase=4 source=llm": [
+   0,
+   1,
+   1
+  ],
+  "GAVE phase=4 source=-": [
+   76,
+   0,
+   -76
+  ],
+  "GAVE phase=4 source=llm": [
+   0,
+   76,
+   76
+  ],
+  "INITIATED phase=4 source=-": [
+   384,
+   0,
+   -384
+  ],
+  "INITIATED phase=4 source=llm": [
+   0,
+   384,
+   384
+  ],
+  "LEADER_OF phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "LEADER_OF phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "LEADER_OF phase=4 source=-": [
+   69,
+   0,
+   -69
+  ],
+  "LEADER_OF phase=4 source=llm": [
+   0,
+   62,
+   62
+  ],
+  "LOCATED_IN phase=2 source=-": [
+   4,
+   0,
+   -4
+  ],
+  "LOCATED_IN phase=3 source=-": [
+   3,
+   0,
+   -3
+  ],
+  "LOCATED_IN phase=3 source=prior": [
+   0,
+   3,
+   3
+  ],
+  "LOCATED_IN phase=4 source=-": [
+   48,
+   0,
+   -48
+  ],
+  "LOCATED_IN phase=4 source=llm": [
+   0,
+   47,
+   47
+  ],
+  "MEMBER_OF phase=2 source=-": [
+   25,
+   0,
+   -25
+  ],
+  "MEMBER_OF phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "MEMBER_OF phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "MEMBER_OF phase=4 source=-": [
+   331,
+   0,
+   -331
+  ],
+  "MEMBER_OF phase=4 source=llm": [
+   0,
+   330,
+   330
+  ],
+  "MOTHER_OF phase=2 source=-": [
+   29,
+   0,
+   -29
+  ],
+  "MOTHER_OF phase=3 source=-": [
+   7,
+   0,
+   -7
+  ],
+  "MOTHER_OF phase=3 source=prior": [
+   0,
+   7,
+   7
+  ],
+  "MOTHER_OF phase=4 source=-": [
+   8,
+   0,
+   -8
+  ],
+  "MOTHER_OF phase=4 source=llm": [
+   0,
+   8,
+   8
+  ],
+  "NEAR phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "NEAR phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "NEAR phase=4 source=-": [
+   28,
+   0,
+   -28
+  ],
+  "NEAR phase=4 source=llm": [
+   0,
+   27,
+   27
+  ],
+  "OCCURRED_IN phase=4 source=-": [
+   894,
+   0,
+   -894
+  ],
+  "OCCURRED_IN phase=4 source=llm": [
+   0,
+   894,
+   894
+  ],
+  "OCCURRED_IN phase=5 source=-": [
+   3419,
+   0,
+   -3419
+  ],
+  "ORIGINATED_FROM phase=4 source=-": [
+   51,
+   0,
+   -51
+  ],
+  "ORIGINATED_FROM phase=4 source=llm": [
+   0,
+   50,
+   50
+  ],
+  "PARTICIPATED_IN phase=4 source=-": [
+   1489,
+   0,
+   -1489
+  ],
+  "PARTICIPATED_IN phase=4 source=llm": [
+   0,
+   1489,
+   1489
+  ],
+  "PARTICIPATED_IN phase=5 source=-": [
+   5641,
+   0,
+   -5641
+  ],
+  "POSSESSED phase=4 source=-": [
+   551,
+   0,
+   -551
+  ],
+  "POSSESSED phase=4 source=llm": [
+   0,
+   551,
+   551
+  ],
+  "PRECEDED_BY phase=4 source=-": [
+   16,
+   0,
+   -16
+  ],
+  "RECEIVED phase=3 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "RECEIVED phase=3 source=prior": [
+   0,
+   1,
+   1
+  ],
+  "RECEIVED phase=4 source=-": [
+   170,
+   0,
+   -170
+  ],
+  "RECEIVED phase=4 source=llm": [
+   0,
+   170,
+   170
+  ],
+  "RETURNED_FROM phase=2 source=-": [
+   13,
+   0,
+   -13
+  ],
+  "RETURNED_FROM phase=3 source=-": [
+   2,
+   0,
+   -2
+  ],
+  "RETURNED_FROM phase=3 source=prior": [
+   0,
+   2,
+   2
+  ],
+  "RETURNED_FROM phase=4 source=-": [
+   26,
+   0,
+   -26
+  ],
+  "RETURNED_FROM phase=4 source=llm": [
+   0,
+   26,
+   26
+  ],
+  "RULED phase=2 source=-": [
+   65,
+   0,
+   -65
+  ],
+  "RULED phase=3 source=-": [
+   3,
+   0,
+   -3
+  ],
+  "RULED phase=3 source=prior": [
+   0,
+   3,
+   3
+  ],
+  "RULED phase=4 source=-": [
+   76,
+   0,
+   -76
+  ],
+  "RULED phase=4 source=llm": [
+   0,
+   76,
+   76
+  ],
+  "SETTLED_IN phase=4 source=-": [
+   223,
+   0,
+   -223
+  ],
+  "SETTLED_IN phase=4 source=llm": [
+   0,
+   219,
+   219
+  ],
+  "SIBLING_OF phase=2 source=-": [
+   16,
+   0,
+   -16
+  ],
+  "SIBLING_OF phase=3 source=-": [
+   4,
+   0,
+   -4
+  ],
+  "SIBLING_OF phase=3 source=prior": [
+   0,
+   4,
+   4
+  ],
+  "SIBLING_OF phase=4 source=-": [
+   28,
+   0,
+   -28
+  ],
+  "SIBLING_OF phase=4 source=llm": [
+   0,
+   28,
+   28
+  ],
+  "SON_OF phase=2 source=-": [
+   400,
+   0,
+   -400
+  ],
+  "SON_OF phase=4 source=-": [
+   34,
+   0,
+   -34
+  ],
+  "SON_OF phase=4 source=llm": [
+   0,
+   37,
+   37
+  ],
+  "SON_OF phase=5 source=-": [
+   225,
+   0,
+   -225
+  ],
+  "SON_OF phase=6 source=anchored_rule": [
+   0,
+   404,
+   404
+  ],
+  "SPOUSE_OF phase=2 source=-": [
+   22,
+   0,
+   -22
+  ],
+  "SPOUSE_OF phase=3 source=-": [
+   7,
+   0,
+   -7
+  ],
+  "SPOUSE_OF phase=3 source=prior": [
+   0,
+   7,
+   7
+  ],
+  "SPOUSE_OF phase=4 source=-": [
+   19,
+   0,
+   -19
+  ],
+  "SPOUSE_OF phase=4 source=llm": [
+   0,
+   17,
+   17
+  ],
+  "SPOUSE_OF phase=6 source=anchored_rule": [
+   0,
+   5,
+   5
+  ],
+  "SUCCEEDED_BY phase=2 source=-": [
+   2,
+   0,
+   -2
+  ],
+  "SUCCEEDED_BY phase=3 source=-": [
+   4,
+   0,
+   -4
+  ],
+  "SUCCEEDED_BY phase=3 source=prior": [
+   0,
+   4,
+   4
+  ],
+  "SUCCEEDED_BY phase=4 source=-": [
+   1,
+   0,
+   -1
+  ],
+  "SUCCEEDED_BY phase=4 source=llm": [
+   0,
+   1,
+   1
+  ],
+  "TEACHER_OF phase=3 source=-": [
+   2,
+   0,
+   -2
+  ],
+  "TEACHER_OF phase=3 source=prior": [
+   0,
+   2,
+   2
+  ],
+  "TEACHER_OF phase=4 source=-": [
+   6,
+   0,
+   -6
+  ],
+  "TEACHER_OF phase=4 source=llm": [
+   0,
+   6,
+   6
+  ],
+  "TEACHER_OF phase=5 source=-": [
+   13,
+   0,
+   -13
+  ],
+  "VICTIM_OF phase=4 source=-": [
+   229,
+   0,
+   -229
+  ],
+  "VICTIM_OF phase=4 source=llm": [
+   0,
+   229,
+   229
+  ],
+  "VISITED phase=3 source=-": [
+   4,
+   0,
+   -4
+  ],
+  "VISITED phase=3 source=prior": [
+   0,
+   4,
+   4
+  ],
+  "VISITED phase=4 source=-": [
+   249,
+   0,
+   -249
+  ],
+  "VISITED phase=4 source=llm": [
+   0,
+   249,
+   249
+  ]
+ }
+}

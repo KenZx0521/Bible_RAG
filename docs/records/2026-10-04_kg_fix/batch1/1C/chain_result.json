@@ -1,0 +1,125 @@
+{
+ "S0": {
+  "entities": 4222,
+  "rows": 153449,
+  "edges": 30051
+ },
+ "S1": {
+  "entities": 4225,
+  "rows": 153483,
+  "edges": 30072,
+  "edges_removed": 3,
+  "edges_added": 24,
+  "entities_gone": 0,
+  "entities_new": 3,
+  "removed_by_type_flip_or_rename": null,
+  "removed_but_same_name_elsewhere_same_source": 0,
+  "removed_samples": [
+   "jos:18:1->巴",
+   "gen:26:1->巴",
+   "neh:11:1->巴"
+  ],
+  "added_samples": [
+   "lev:7:1:1->西奈",
+   "gen:48:0->法",
+   "jos:15:0->亞",
+   "2ki:17:0->以色",
+   "num:33:0:0->以",
+   "2ch:16:0->以"
+  ]
+ },
+ "S2": {
+  "entities": 4285,
+  "rows": 133875,
+  "edges": 28603,
+  "edges_removed": 3181,
+  "edges_added": 1712,
+  "entities_gone": 549,
+  "entities_new": 609,
+  "removed_by_type_flip_or_rename": null,
+  "removed_but_same_name_elsewhere_same_source": 193,
+  "removed_samples": [
+   "lev:16:2->利未",
+   "jer:10:0->烏法",
+   "jas:1:1->雅各",
+   "luk:19:3->路加",
+   "lev:14:0:1->利未",
+   "gal:1:2->加拉太"
+  ],
+  "added_samples": [
+   "amo:6:0->榮華",
+   "2ki:10:5->耶戶",
+   "pro:30:0->四極",
+   "1ki:10:2->屯車",
+   "gen:36:1->底順",
+   "2ch:26:0->立亞瑪謝"
+  ]
+ },
+ "S3": {
+  "entities": 4282,
+  "rows": 133792,
+  "edges": 28567,
+  "edges_removed": 54,
+  "edges_added": 18,
+  "entities_gone": 8,
+  "entities_new": 5,
+  "removed_by_type_flip_or_rename": null,
+  "removed_but_same_name_elsewhere_same_source": 2,
+  "removed_samples": [
+   "jhn:18:3->路 ",
+   "2ch:32:0->王下",
+   "mrk:11:2->約 ",
+   "mrk:15:4->百",
+   "mat:26:4->林前 ",
+   "mrk:14:5->約 "
+  ],
+  "added_samples": [
+   "mat:27:6->拉馬撒巴",
+   "mat:21:0->王",
+   "mrk:15:5->百夫長",
+   "luk:23:3->兵丁",
+   "2ch:32:0:0->西拿基立",
+   "mrk:15:4->拉馬撒巴"
+  ]
+ },
+ "S4": {
+  "entities": 4138,
+  "rows": 133792,
+  "edges": 28461,
+  "edges_removed": 212,
+  "edges_added": 106,
+  "entities_gone": 176,
+  "entities_new": 32,
+  "removed_by_type_flip_or_rename": null,
+  "removed_but_same_name_elsewhere_same_source": 99,
+  "removed_samples": [
+   "1ch:9:5-> 基多",
+   "exo:16:0->鵪鶉 ",
+   "1ki:22:3->亞哈謝 ",
+   "ezr:2:0:1-> 尼細亞",
+   "1ch:8:0-> 以忽",
+   "2sa:19:0->王 "
+  ],
+  "added_samples": [
+   "jos:15:2:0->迦本",
+   "neh:10:0->哈羅黑",
+   "neh:7:1:1->巴卜",
+   "jos:15:2:0->基低斯",
+   "1ki:9:2->巴拉",
+   "gen:10:0->阿斐"
+  ]
+ },
+ "S5": {
+  "entities": 4138,
+  "rows": 131960,
+  "edges": 28461,
+  "edges_removed": 0,
+  "edges_added": 0,
+  "entities_gone": 0,
+  "entities_new": 0,
+  "removed_by_type_flip_or_rename": null,
+  "removed_but_same_name_elsewhere_same_source": 0,
+  "removed_samples": [],
+  "added_samples": []
+ }
+}

@@ -1,0 +1,214 @@
+group: pasiluxiren
+group: yiduozu
+group: yabiyazu
+group: salaizu
+object: zhuyehehua
+object: nahe
+object: hushai
+object: chebingzhang
+object: yinmai
+object: jiadezisun
+person: wang
+person:yaha 
+person: yueashi
+person: milali
+person: shalong
+person: shimaya
+person: binaya
+person: annen
+person: haxue
+person: hada
+person: yaxi
+person: laboshaji
+person: yagan
+person: hamo
+person: bani
+person: yamaliya
+person: bila
+person: nahe
+person: hanen
+person: shimei
+person: wusa
+person: bituli
+person: anlan
+person: shimiya
+person: yadaya
+person: bashihuer
+person:linqian 
+person: lamai
+person: pila
+person: yiduo
+person: shifatiya
+person: halin
+person: hanan
+person: shijiani
+person: shala
+person: dishun
+person: nibo
+person: naha
+person: yinmai
+person: xinma
+person: jiduo
+person: jilv
+person: jide
+person:luoshi 
+person: salu
+person: heba
+person: mishima
+person: miyamin
+person: bisai
+person: hashun
+person: yihu
+person: nixiya
+person: yitu
+person: tuoya
+person: jiasan
+person: shoumen
+person: nagai
+person: yatalu
+person: bo‧ningla
+person: babo
+person: baxilv
+person: bake
+person: yewusi
+person: hajia
+place: jiyila
+place: yesilie
+place: bala
+place: laji
+place: xila
+place: binaya
+place: suola
+place: yaduoniya
+place: geshan
+place: yilun
+place: bani
+place: xifu
+place: mishulan
+place: yaza
+place: xigela
+place: yemo
+place: jidisi
+place: jidiluo
+place: haduolan
+place: hasa‧shuya
+place: bo‧su
+place: pilati
+place: luode
+place: yaman
+place: yileiduola
+place: libawu
+place: shalayin
+place: dilian
+place: yifuta
+place: dana
+place: yanong
+place: bo‧yalaba
+place: bo‧libawu
+place: shalabin
+place: dingna
+place: yaduolaiyin
+place: matani
+place: shilimiya
+place: malu
+place: halin
+place: mishisabie
+place: hexiya
+event: ya
+event: yashalong
+event:*wangxia18‧13－37；19‧14－19，35－37；sai
+event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*
+event:choushi
+event:dahui
+event:dashi
+event:dejun」。
+event:fenfu
+event:feng，
+event:gongcheng
+event:jiannan
+event:jianzhu
+event:jieju
+event:lude。
+event:mala
+event:masa
+event:miliba
+event:rizi
+event:shengri
+event:shine？
+event:shiyong
+event:tanzi
+event:tou！
+event:wenhou
+event:xiaoyumoxi
+event:yehehuaxiaoyu
+event:zhangzi
+event:zhenglun
+event:zi。
+event:zuoxi
+event:（ke14‧22－26；lu22‧15－20；linqian
+event:（tai21‧12－13；ke11‧15－17；lu
+event:（tai26‧20－25；ke14‧17－21；lu
+event:（tai26‧26－30；ke14‧22－26；linqian
+event:（tai26‧26－30；lu22‧14－20；linqian
+event:（tai26‧31－35；ke14‧27－31；lu
+event:（tai26‧47－56；ke14‧43－50；lu
+event:（tai26‧57－58，69－75；ke
+event:（tai26‧59－66；ke14‧55－64；lu
+event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)
+event:（tai26‧71－75；ke14‧69－72；lu
+event:（tai27‧15－31；ke15‧6－20；lu
+event:（tai27‧1－2，11－14；ke15‧1－5；lu
+event:（tai27‧32－44；ke15‧21－32；lu
+event:（tai27‧45－56；ke15‧33－41；lu
+event:（tai27‧57－61；ke15‧42－47；lu
+event:（tai28‧16－20；ke16‧14－18；lu
+object: boasi
+object: che
+object: cheng
+object: dian
+object: feilishiren
+object: heren
+object: huo
+object: ling
+object: lun
+object: lv
+object: min
+object: ren
+object: yamenren
+object: zhu
+theme:xiandedaogao。
+theme:（ke11‧15－19；lu19‧45－48；yue
+theme:（ke11‧1－11；lu19‧28－40；yue
+theme:（ke14‧12－21；lu22‧7－14，21－23；yue
+theme:（ke14‧27－31；lu22‧31－34；yue
+theme:（ke14‧43－50；lu22‧47－53；yue
+theme:（ke14‧53－65；lu22‧54－55，63－71；yue
+theme:（ke14‧66－72；lu22‧56－62；yue
+theme:（ke15‧21－32；lu23‧26－43；yue
+theme:（ke15‧33－41；lu23‧44－49；yue
+theme:（ke15‧42－47；lu23‧50－56；yue
+theme:（ke15‧6－15；lu23‧13－25；yue
+theme:（ke16‧14－18；lu24‧36－49；yue
+theme:（tai21‧12－17；ke11‧15－19；yue
+theme:（tai21‧12－17；lu19‧45－48；yue
+theme:（tai21‧1－11；lu19‧28－40；yue
+theme:（tai26‧17－25；ke14‧12－21；yue
+theme:（tai26‧17－25；lu22‧7－13，21－23；yue
+theme:（tai26‧31－35；ke14‧27－31；yue
+theme:（tai26‧31－35；lu22‧31－34；yue
+theme:（tai26‧47－56；ke14‧43－50；yue
+theme:（tai26‧47－56；lu22‧47－53；yue
+theme:（tai26‧57－68；lu22‧54－55，63－71；yue
+theme:（tai26‧59－66；ke14‧55－64；yue
+theme:（tai26‧69－75；lu22‧56－62；yue
+theme:（tai27‧15－26；ke15‧6－15；yue
+theme:（tai27‧15－26；lu23‧13－25；yue
+theme:（tai27‧1－2，11－14；ke15‧1－5；yue
+theme:（tai27‧1－2，11－14；lu23‧1－5；yue
+theme:（tai27‧32－44；ke15‧21－32；yue
+theme:（tai27‧32－44；lu23‧26－43；yue
+theme:（tai27‧45－56；ke15‧33－41；yue
+theme:（tai27‧45－56；lu23‧44－49；yue
+theme:（tai27‧57－61；ke15‧42－47；yue
+theme:（tai27‧57－61；lu23‧50－56；yue
+theme:（tai28‧16－20；lu24‧36－49；yue

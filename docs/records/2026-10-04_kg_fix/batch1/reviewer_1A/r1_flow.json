@@ -1,0 +1,256 @@
+{
+ "input": 6958,
+ "dup_keys": 0,
+ "phase_counts": {
+  "3": 64,
+  "2": 772,
+  "4": 5370,
+  "5": 752
+ },
+ "missing_endpoint_in_entities_jsonl": {},
+ "drops": {
+  "rule": [
+   772,
+   {
+    "SON_OF": 401,
+    "MEMBER_OF": 25,
+    "BUILT": 9,
+    "FATHER_OF": 140,
+    "ANCESTOR_OF": 7,
+    "SUCCEEDED_BY": 2,
+    "RULED": 65,
+    "SIBLING_OF": 16,
+    "SPOUSE_OF": 22,
+    "DAUGHTER_OF": 23,
+    "DESCENDANT_OF": 9,
+    "MOTHER_OF": 29,
+    "RETURNED_FROM": 13,
+    "LOCATED_IN": 4,
+    "BORN_IN": 1,
+    "EXILED_TO": 6
+   }
+  ],
+  "llm_EE": [
+   38,
+   {
+    "PRECEDED_BY": 24,
+    "CAUSED": 14
+   }
+  ],
+  "gate": [
+   1,
+   {
+    "NEAR": 1
+   }
+  ],
+  "gate_due_to_dan": [
+   1,
+   {
+    "NEAR": 1
+   }
+  ],
+  "domain_range": [
+   13,
+   {
+    "LEADER_OF": 7,
+    "MEMBER_OF": 1,
+    "SETTLED_IN": 4,
+    "ORIGINATED_FROM": 1
+   }
+  ],
+  "inverse": [
+   752,
+   {
+    "SON_OF": 221,
+    "TEACHER_OF": 13,
+    "DISCIPLE_OF": 7,
+    "FATHER_OF": 462,
+    "DESCENDANT_OF": 22,
+    "ANCESTOR_OF": 27
+   }
+  ]
+ },
+ "same_type_noinv_types": [
+  "CAUSED",
+  "LOCATED_IN",
+  "PRECEDED_BY",
+  "SUCCEEDED_BY"
+ ],
+ "flagged_direction_unverified": {
+  "LOCATED_IN": 47,
+  "SUCCEEDED_BY": 1
+ },
+ "contradicts_prior": [
+  [
+   "place:jialili",
+   "LOCATED_IN",
+   "place:nasalei"
+  ]
+ ],
+ "would_be_flagged_if_noinv_derived_after_C6a": {
+  "SON_OF": 37,
+  "FATHER_OF": 33,
+  "DAUGHTER_OF": 4,
+  "MOTHER_OF": 8
+ },
+ "kept_non_anchored": 5381,
+ "kept_kin_by_phase": {
+  "3": 30,
+  "4": 162
+ },
+ "kept_kin_total": 192,
+ "generic_event_ids": 16,
+ "kept_edges_on_generic_events": 80,
+ "live_total": 15926,
+ "kept_after_10.2_total": 5301,
+ "rel_live_vs_kept_nonanchored": {
+  "ALLY_OF": [
+   64,
+   64
+  ],
+  "ANCESTOR_OF": [
+   49,
+   15
+  ],
+  "BORN_IN": [
+   11,
+   10
+  ],
+  "BUILT": [
+   16,
+   7
+  ],
+  "CAUSED": [
+   10,
+   0
+  ],
+  "DAUGHTER_OF": [
+   27,
+   4
+  ],
+  "DESCENDANT_OF": [
+   49,
+   18
+  ],
+  "DESTROYED": [
+   38,
+   38
+  ],
+  "DIED_IN": [
+   20,
+   20
+  ],
+  "DISCIPLE_OF": [
+   21,
+   14
+  ],
+  "ENEMY_OF": [
+   33,
+   33
+  ],
+  "EXILED_TO": [
+   20,
+   14
+  ],
+  "FATHER_OF": [
+   647,
+   45
+  ],
+  "FOUNDED": [
+   1,
+   1
+  ],
+  "GAVE": [
+   76,
+   76
+  ],
+  "INITIATED": [
+   384,
+   384
+  ],
+  "LEADER_OF": [
+   70,
+   63
+  ],
+  "LOCATED_IN": [
+   55,
+   50
+  ],
+  "MEMBER_OF": [
+   357,
+   331
+  ],
+  "MOTHER_OF": [
+   44,
+   15
+  ],
+  "NEAR": [
+   29,
+   28
+  ],
+  "OCCURRED_IN": [
+   4313,
+   894
+  ],
+  "ORIGINATED_FROM": [
+   51,
+   50
+  ],
+  "PARTICIPATED_IN": [
+   7130,
+   1489
+  ],
+  "POSSESSED": [
+   551,
+   551
+  ],
+  "PRECEDED_BY": [
+   16,
+   0
+  ],
+  "RECEIVED": [
+   171,
+   171
+  ],
+  "RETURNED_FROM": [
+   41,
+   28
+  ],
+  "RULED": [
+   144,
+   79
+  ],
+  "SETTLED_IN": [
+   223,
+   219
+  ],
+  "SIBLING_OF": [
+   48,
+   32
+  ],
+  "SON_OF": [
+   659,
+   37
+  ],
+  "SPOUSE_OF": [
+   48,
+   26
+  ],
+  "SUCCEEDED_BY": [
+   7,
+   5
+  ],
+  "TEACHER_OF": [
+   21,
+   8
+  ],
+  "VICTIM_OF": [
+   229,
+   229
+  ],
+  "VISITED": [
+   253,
+   253
+  ]
+ }
+}

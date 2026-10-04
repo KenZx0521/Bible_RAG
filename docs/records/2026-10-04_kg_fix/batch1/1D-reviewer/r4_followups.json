@@ -1,0 +1,73 @@
+{
+ "a_liwei_rank_after_1C_1D": [
+  [
+   892,
+   "group:liweiren"
+  ],
+  [
+   173,
+   "person:liwei"
+  ],
+  [
+   69,
+   "group:liweizhipai"
+  ],
+  [
+   21,
+   "object:jisiliweiren"
+  ]
+ ],
+ "b_yeteluo_rows_after_1C": {
+  "1ch:1:2|流珥": 4,
+  "1ch:9:0|流珥": 2,
+  "exo:18:0|葉忒羅": 25,
+  "exo:2:1|流珥": 2,
+  "exo:3:0|葉忒羅": 2,
+  "exo:4:1|葉忒羅": 4,
+  "gen:36:0|流珥": 10,
+  "num:10:1|流珥": 2
+ },
+ "c_pg_rows": {
+  "jsonl_rows": 173896,
+  "drop_rows": 308,
+  "dan_removed": 1791,
+  "dan_kept_rows": 91,
+  "after": 171797
+ },
+ "d_remint_homophone_collisions": [
+  "person: bo‧majiabo(伯‧瑪嘉博) -> person:bo‧majiabo(伯‧瑪加博)",
+  "person: lixun(利汛) -> person:lixun(利遜)",
+  "person: naiman(乃縵) -> person:naiman(乃幔)",
+  "person: yaer(睚珥) -> person:yaer(亞珥)",
+  "person: yala(雅拉) -> person:yala(亞拉)",
+  "person: yana(押拿) -> person:yana(亞拿)",
+  "person: yuetan(約坦) -> person:yuetan(約坍)",
+  "person:lu (路) -> person:lu(魯)",
+  "place: hala(哈拉) -> place:hala(哈臘)",
+  "place: jina(基拿) -> place:jina(基納)",
+  "place: maxiya(瑪西亞) -> place:maxiya(瑪西雅)",
+  "place: mijia(米迦) -> place:mijia(密加)",
+  "place: yaxiya(亞希雅) -> place:yaxiya(雅西雅)",
+  "place: yi(益) -> place:yi(以)"
+ ],
+ "e_known_bad_exposed": {
+  "person:maliya": {
+   "stale_after_1C": false,
+   "desc": [
+    "出現在用以賽亞的兒子作為記號、問安、耶路撒冷會議、彼得獲救出獄、掃羅在耶路撒冷及福音傳到撒馬利亞等敘事中。"
+   ],
+   "quality_flag": [
+    "unreviewed"
+   ]
+  },
+  "person:lajie": {
+   "stale_after_1C": false,
+   "desc": [
+    "她是雅各的妻子，其子為以法蓮與瑪拿西，並在雅各帶領家屬前往埃及的過程中隨行。"
+   ],
+   "quality_flag": [
+    "unreviewed"
+   ]
+  }
+ }
+}

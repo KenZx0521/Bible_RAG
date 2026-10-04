@@ -1,0 +1,37 @@
+{
+ "live_with_10.3": {
+  "events": 1714,
+  "with_participant": 1424,
+  "pct_participant": 83.1,
+  "with_place": 1280,
+  "pct_place": 74.7,
+  "with_any_semantic_edge": 1531,
+  "pct_any": 89.3
+ },
+ "live_without_10.3": {
+  "events": 1714,
+  "with_participant": 583,
+  "pct_participant": 34.0,
+  "with_place": 539,
+  "pct_place": 31.4,
+  "with_any_semantic_edge": 1059,
+  "pct_any": 61.8
+ },
+ "live_10.3_edges": {
+  "OCCURRED_IN": 3419,
+  "PARTICIPATED_IN": 5641
+ },
+ "live_10.3_edges_to_place_dan": {
+  "OCCURRED_IN": 384
+ },
+ "relations_clean_sim_gei_declared.jsonl": {
+  "events": 1714,
+  "with_participant": 583,
+  "pct_participant": 34.0,
+  "with_place": 539,
+  "pct_place": 31.4,
+  "with_any_semantic_edge": 1050,
+  "pct_any": 61.3,
+  "dropped_missing_endpoint_after_10.2": 80
+ }
+}

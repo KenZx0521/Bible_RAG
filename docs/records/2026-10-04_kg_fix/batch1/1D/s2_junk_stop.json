@@ -1,0 +1,959 @@
+{
+ "protected_ids": 37,
+ "registry_ids": 33,
+ "live": {
+  "by_rule_type": {
+   "dictname:Person|Event": 1,
+   "dictname:Place|Event": 1,
+   "junk:fragment_end|Event": 6,
+   "junk:fragment_end|Theme": 1,
+   "junk:too_short|Event": 1,
+   "junk:too_short|Object": 10,
+   "junk:xref_remnant|Event": 19,
+   "junk:xref_remnant|Theme": 35,
+   "stop:ev09|Event": 5
+  },
+  "junk_by_type": {
+   "Event": 26,
+   "Object": 10,
+   "Theme": 36
+  },
+  "stop_events": 5,
+  "dictname_events": 2,
+  "protected_hit": [
+   "event:babieta"
+  ],
+  "registry_hit": [
+   "event:babieta"
+  ],
+  "list": {
+   "event: ya": [
+    "junk:too_short",
+    "Event",
+    " 押"
+   ],
+   "event: yashalong": [
+    "dictname:Person",
+    "Event",
+    " 押沙龍"
+   ],
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": [
+    "junk:xref_remnant",
+    "Event",
+    "*王下18‧13－37；19‧14－19，35－37；賽"
+   ],
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": [
+    "junk:xref_remnant",
+    "Event",
+    "*王下20‧1－3，12－19；賽38‧1－3；39‧1－8*"
+   ],
+   "event:babieta": [
+    "dictname:Place",
+    "Event",
+    "巴別塔"
+   ],
+   "event:dejun」。": [
+    "junk:fragment_end",
+    "Event",
+    "的君」。"
+   ],
+   "event:feng，": [
+    "junk:fragment_end",
+    "Event",
+    "風，"
+   ],
+   "event:lude。": [
+    "junk:fragment_end",
+    "Event",
+    "錄的。"
+   ],
+   "event:mala": [
+    "stop:ev09",
+    "Event",
+    "瑪拉"
+   ],
+   "event:masa": [
+    "stop:ev09",
+    "Event",
+    "瑪撒"
+   ],
+   "event:miliba": [
+    "stop:ev09",
+    "Event",
+    "米利巴"
+   ],
+   "event:shine？": [
+    "junk:fragment_end",
+    "Event",
+    "時呢？"
+   ],
+   "event:tou！": [
+    "junk:fragment_end",
+    "Event",
+    "頭！"
+   ],
+   "event:xiaoyumoxi": [
+    "stop:ev09",
+    "Event",
+    "曉諭摩西"
+   ],
+   "event:yehehuaxiaoyu": [
+    "stop:ev09",
+    "Event",
+    "耶和華曉諭"
+   ],
+   "event:zi。": [
+    "junk:fragment_end",
+    "Event",
+    "子。"
+   ],
+   "event:（ke14‧22－26；lu22‧15－20；linqian": [
+    "junk:xref_remnant",
+    "Event",
+    "（可14‧22－26；路22‧15－20；林前"
+   ],
+   "event:（tai21‧12－13；ke11‧15－17；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太21‧12－13；可11‧15－17；路"
+   ],
+   "event:（tai26‧20－25；ke14‧17－21；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧20－25；可14‧17－21；路"
+   ],
+   "event:（tai26‧26－30；ke14‧22－26；linqian": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧26－30；可14‧22－26；林前"
+   ],
+   "event:（tai26‧26－30；lu22‧14－20；linqian": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧26－30；路22‧14－20；林前"
+   ],
+   "event:（tai26‧31－35；ke14‧27－31；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧31－35；可14‧27－31；路"
+   ],
+   "event:（tai26‧47－56；ke14‧43－50；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧47－56；可14‧43－50；路"
+   ],
+   "event:（tai26‧57－58，69－75；ke": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧57－58，69－75；可"
+   ],
+   "event:（tai26‧59－66；ke14‧55－64；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧59－66；可14‧55－64；路"
+   ],
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧69－70；可14‧66－68；路22‧55－57)"
+   ],
+   "event:（tai26‧71－75；ke14‧69－72；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧71－75；可14‧69－72；路"
+   ],
+   "event:（tai27‧15－31；ke15‧6－20；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧15－31；可15‧6－20；路"
+   ],
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧1－2，11－14；可15‧1－5；路"
+   ],
+   "event:（tai27‧32－44；ke15‧21－32；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧32－44；可15‧21－32；路"
+   ],
+   "event:（tai27‧45－56；ke15‧33－41；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧45－56；可15‧33－41；路"
+   ],
+   "event:（tai27‧57－61；ke15‧42－47；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧57－61；可15‧42－47；路"
+   ],
+   "event:（tai28‧16－20；ke16‧14－18；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太28‧16－20；可16‧14－18；路"
+   ],
+   "object: che": [
+    "junk:too_short",
+    "Object",
+    " 車"
+   ],
+   "object: cheng": [
+    "junk:too_short",
+    "Object",
+    " 城"
+   ],
+   "object: dian": [
+    "junk:too_short",
+    "Object",
+    " 殿"
+   ],
+   "object: huo": [
+    "junk:too_short",
+    "Object",
+    " 火"
+   ],
+   "object: ling": [
+    "junk:too_short",
+    "Object",
+    " 靈"
+   ],
+   "object: lun": [
+    "junk:too_short",
+    "Object",
+    " 輪"
+   ],
+   "object: lv": [
+    "junk:too_short",
+    "Object",
+    " 驢"
+   ],
+   "object: min": [
+    "junk:too_short",
+    "Object",
+    " 民"
+   ],
+   "object: ren": [
+    "junk:too_short",
+    "Object",
+    " 人"
+   ],
+   "object: zhu": [
+    "junk:too_short",
+    "Object",
+    " 主"
+   ],
+   "theme:xiandedaogao。": [
+    "junk:fragment_end",
+    "Theme",
+    "獻的禱告。"
+   ],
+   "theme:（ke11‧15－19；lu19‧45－48；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可11‧15－19；路19‧45－48；約"
+   ],
+   "theme:（ke11‧1－11；lu19‧28－40；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可11‧1－11；路19‧28－40；約"
+   ],
+   "theme:（ke14‧12－21；lu22‧7－14，21－23；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧12－21；路22‧7－14，21－23；約"
+   ],
+   "theme:（ke14‧27－31；lu22‧31－34；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧27－31；路22‧31－34；約"
+   ],
+   "theme:（ke14‧43－50；lu22‧47－53；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧43－50；路22‧47－53；約"
+   ],
+   "theme:（ke14‧53－65；lu22‧54－55，63－71；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧53－65；路22‧54－55，63－71；約"
+   ],
+   "theme:（ke14‧66－72；lu22‧56－62；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧66－72；路22‧56－62；約"
+   ],
+   "theme:（ke15‧21－32；lu23‧26－43；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧21－32；路23‧26－43；約"
+   ],
+   "theme:（ke15‧33－41；lu23‧44－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧33－41；路23‧44－49；約"
+   ],
+   "theme:（ke15‧42－47；lu23‧50－56；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧42－47；路23‧50－56；約"
+   ],
+   "theme:（ke15‧6－15；lu23‧13－25；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧6－15；路23‧13－25；約"
+   ],
+   "theme:（ke16‧14－18；lu24‧36－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可16‧14－18；路24‧36－49；約"
+   ],
+   "theme:（tai21‧12－17；ke11‧15－19；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太21‧12－17；可11‧15－19；約"
+   ],
+   "theme:（tai21‧12－17；lu19‧45－48；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太21‧12－17；路19‧45－48；約"
+   ],
+   "theme:（tai21‧1－11；lu19‧28－40；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太21‧1－11；路19‧28－40；約"
+   ],
+   "theme:（tai26‧17－25；ke14‧12－21；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧17－25；可14‧12－21；約"
+   ],
+   "theme:（tai26‧17－25；lu22‧7－13，21－23；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧17－25；路22‧7－13，21－23；約"
+   ],
+   "theme:（tai26‧31－35；ke14‧27－31；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧31－35；可14‧27－31；約"
+   ],
+   "theme:（tai26‧31－35；lu22‧31－34；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧31－35；路22‧31－34；約"
+   ],
+   "theme:（tai26‧47－56；ke14‧43－50；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧47－56；可14‧43－50；約"
+   ],
+   "theme:（tai26‧47－56；lu22‧47－53；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧47－56；路22‧47－53；約"
+   ],
+   "theme:（tai26‧57－68；lu22‧54－55，63－71；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧57－68；路22‧54－55，63－71；約"
+   ],
+   "theme:（tai26‧59－66；ke14‧55－64；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧59－66；可14‧55－64；約"
+   ],
+   "theme:（tai26‧69－75；lu22‧56－62；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧69－75；路22‧56－62；約"
+   ],
+   "theme:（tai27‧15－26；ke15‧6－15；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧15－26；可15‧6－15；約"
+   ],
+   "theme:（tai27‧15－26；lu23‧13－25；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧15－26；路23‧13－25；約"
+   ],
+   "theme:（tai27‧1－2，11－14；ke15‧1－5；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧1－2，11－14；可15‧1－5；約"
+   ],
+   "theme:（tai27‧1－2，11－14；lu23‧1－5；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧1－2，11－14；路23‧1－5；約"
+   ],
+   "theme:（tai27‧32－44；ke15‧21－32；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧32－44；可15‧21－32；約"
+   ],
+   "theme:（tai27‧32－44；lu23‧26－43；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧32－44；路23‧26－43；約"
+   ],
+   "theme:（tai27‧45－56；ke15‧33－41；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧45－56；可15‧33－41；約"
+   ],
+   "theme:（tai27‧45－56；lu23‧44－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧45－56；路23‧44－49；約"
+   ],
+   "theme:（tai27‧57－61；ke15‧42－47；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧57－61；可15‧42－47；約"
+   ],
+   "theme:（tai27‧57－61；lu23‧50－56；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧57－61；路23‧50－56；約"
+   ],
+   "theme:（tai28‧16－20；lu24‧36－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太28‧16－20；路24‧36－49；約"
+   ]
+  }
+ },
+ "jsonl": {
+  "by_rule_type": {
+   "dictname:Person|Event": 1,
+   "junk:fragment_end|Event": 6,
+   "junk:fragment_end|Theme": 1,
+   "junk:too_short|Event": 1,
+   "junk:too_short|Object": 10,
+   "junk:xref_remnant|Event": 19,
+   "junk:xref_remnant|Theme": 35,
+   "stop:ev09|Event": 5,
+   "stop:generic24|Event": 16
+  },
+  "junk_by_type": {
+   "Event": 26,
+   "Object": 10,
+   "Theme": 36
+  },
+  "stop_events": 21,
+  "dictname_events": 1,
+  "protected_hit": [],
+  "registry_hit": [],
+  "list": {
+   "event: ya": [
+    "junk:too_short",
+    "Event",
+    " 押"
+   ],
+   "event: yashalong": [
+    "dictname:Person",
+    "Event",
+    " 押沙龍"
+   ],
+   "event:*wangxia18‧13－37；19‧14－19，35－37；sai": [
+    "junk:xref_remnant",
+    "Event",
+    "*王下18‧13－37；19‧14－19，35－37；賽"
+   ],
+   "event:*wangxia20‧1－3，12－19；sai38‧1－3；39‧1－8*": [
+    "junk:xref_remnant",
+    "Event",
+    "*王下20‧1－3，12－19；賽38‧1－3；39‧1－8*"
+   ],
+   "event:choushi": [
+    "stop:generic24",
+    "Event",
+    "醜事"
+   ],
+   "event:dahui": [
+    "stop:generic24",
+    "Event",
+    "大會"
+   ],
+   "event:dashi": [
+    "stop:generic24",
+    "Event",
+    "大事"
+   ],
+   "event:dejun」。": [
+    "junk:fragment_end",
+    "Event",
+    "的君」。"
+   ],
+   "event:fenfu": [
+    "stop:generic24",
+    "Event",
+    "吩咐"
+   ],
+   "event:feng，": [
+    "junk:fragment_end",
+    "Event",
+    "風，"
+   ],
+   "event:gongcheng": [
+    "stop:generic24",
+    "Event",
+    "工程"
+   ],
+   "event:jiannan": [
+    "stop:generic24",
+    "Event",
+    "艱難"
+   ],
+   "event:jianzhu": [
+    "stop:generic24",
+    "Event",
+    "建築"
+   ],
+   "event:jieju": [
+    "stop:generic24",
+    "Event",
+    "結局"
+   ],
+   "event:lude。": [
+    "junk:fragment_end",
+    "Event",
+    "錄的。"
+   ],
+   "event:mala": [
+    "stop:ev09",
+    "Event",
+    "瑪拉"
+   ],
+   "event:masa": [
+    "stop:ev09",
+    "Event",
+    "瑪撒"
+   ],
+   "event:miliba": [
+    "stop:ev09",
+    "Event",
+    "米利巴"
+   ],
+   "event:rizi": [
+    "stop:generic24",
+    "Event",
+    "日子"
+   ],
+   "event:shengri": [
+    "stop:generic24",
+    "Event",
+    "生日"
+   ],
+   "event:shine？": [
+    "junk:fragment_end",
+    "Event",
+    "時呢？"
+   ],
+   "event:shiyong": [
+    "stop:generic24",
+    "Event",
+    "使用"
+   ],
+   "event:tanzi": [
+    "stop:generic24",
+    "Event",
+    "探子"
+   ],
+   "event:tou！": [
+    "junk:fragment_end",
+    "Event",
+    "頭！"
+   ],
+   "event:wenhou": [
+    "stop:generic24",
+    "Event",
+    "問候"
+   ],
+   "event:xiaoyumoxi": [
+    "stop:ev09",
+    "Event",
+    "曉諭摩西"
+   ],
+   "event:yehehuaxiaoyu": [
+    "stop:ev09",
+    "Event",
+    "耶和華曉諭"
+   ],
+   "event:zhangzi": [
+    "stop:generic24",
+    "Event",
+    "長子"
+   ],
+   "event:zhenglun": [
+    "stop:generic24",
+    "Event",
+    "爭論"
+   ],
+   "event:zi。": [
+    "junk:fragment_end",
+    "Event",
+    "子。"
+   ],
+   "event:zuoxi": [
+    "stop:generic24",
+    "Event",
+    "坐席"
+   ],
+   "event:（ke14‧22－26；lu22‧15－20；linqian": [
+    "junk:xref_remnant",
+    "Event",
+    "（可14‧22－26；路22‧15－20；林前"
+   ],
+   "event:（tai21‧12－13；ke11‧15－17；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太21‧12－13；可11‧15－17；路"
+   ],
+   "event:（tai26‧20－25；ke14‧17－21；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧20－25；可14‧17－21；路"
+   ],
+   "event:（tai26‧26－30；ke14‧22－26；linqian": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧26－30；可14‧22－26；林前"
+   ],
+   "event:（tai26‧26－30；lu22‧14－20；linqian": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧26－30；路22‧14－20；林前"
+   ],
+   "event:（tai26‧31－35；ke14‧27－31；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧31－35；可14‧27－31；路"
+   ],
+   "event:（tai26‧47－56；ke14‧43－50；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧47－56；可14‧43－50；路"
+   ],
+   "event:（tai26‧57－58，69－75；ke": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧57－58，69－75；可"
+   ],
+   "event:（tai26‧59－66；ke14‧55－64；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧59－66；可14‧55－64；路"
+   ],
+   "event:（tai26‧69－70；ke14‧66－68；lu22‧55－57)": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧69－70；可14‧66－68；路22‧55－57)"
+   ],
+   "event:（tai26‧71－75；ke14‧69－72；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太26‧71－75；可14‧69－72；路"
+   ],
+   "event:（tai27‧15－31；ke15‧6－20；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧15－31；可15‧6－20；路"
+   ],
+   "event:（tai27‧1－2，11－14；ke15‧1－5；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧1－2，11－14；可15‧1－5；路"
+   ],
+   "event:（tai27‧32－44；ke15‧21－32；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧32－44；可15‧21－32；路"
+   ],
+   "event:（tai27‧45－56；ke15‧33－41；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧45－56；可15‧33－41；路"
+   ],
+   "event:（tai27‧57－61；ke15‧42－47；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太27‧57－61；可15‧42－47；路"
+   ],
+   "event:（tai28‧16－20；ke16‧14－18；lu": [
+    "junk:xref_remnant",
+    "Event",
+    "（太28‧16－20；可16‧14－18；路"
+   ],
+   "object: che": [
+    "junk:too_short",
+    "Object",
+    " 車"
+   ],
+   "object: cheng": [
+    "junk:too_short",
+    "Object",
+    " 城"
+   ],
+   "object: dian": [
+    "junk:too_short",
+    "Object",
+    " 殿"
+   ],
+   "object: huo": [
+    "junk:too_short",
+    "Object",
+    " 火"
+   ],
+   "object: ling": [
+    "junk:too_short",
+    "Object",
+    " 靈"
+   ],
+   "object: lun": [
+    "junk:too_short",
+    "Object",
+    " 輪"
+   ],
+   "object: lv": [
+    "junk:too_short",
+    "Object",
+    " 驢"
+   ],
+   "object: min": [
+    "junk:too_short",
+    "Object",
+    " 民"
+   ],
+   "object: ren": [
+    "junk:too_short",
+    "Object",
+    " 人"
+   ],
+   "object: zhu": [
+    "junk:too_short",
+    "Object",
+    " 主"
+   ],
+   "theme:xiandedaogao。": [
+    "junk:fragment_end",
+    "Theme",
+    "獻的禱告。"
+   ],
+   "theme:（ke11‧15－19；lu19‧45－48；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可11‧15－19；路19‧45－48；約"
+   ],
+   "theme:（ke11‧1－11；lu19‧28－40；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可11‧1－11；路19‧28－40；約"
+   ],
+   "theme:（ke14‧12－21；lu22‧7－14，21－23；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧12－21；路22‧7－14，21－23；約"
+   ],
+   "theme:（ke14‧27－31；lu22‧31－34；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧27－31；路22‧31－34；約"
+   ],
+   "theme:（ke14‧43－50；lu22‧47－53；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧43－50；路22‧47－53；約"
+   ],
+   "theme:（ke14‧53－65；lu22‧54－55，63－71；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧53－65；路22‧54－55，63－71；約"
+   ],
+   "theme:（ke14‧66－72；lu22‧56－62；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可14‧66－72；路22‧56－62；約"
+   ],
+   "theme:（ke15‧21－32；lu23‧26－43；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧21－32；路23‧26－43；約"
+   ],
+   "theme:（ke15‧33－41；lu23‧44－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧33－41；路23‧44－49；約"
+   ],
+   "theme:（ke15‧42－47；lu23‧50－56；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧42－47；路23‧50－56；約"
+   ],
+   "theme:（ke15‧6－15；lu23‧13－25；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可15‧6－15；路23‧13－25；約"
+   ],
+   "theme:（ke16‧14－18；lu24‧36－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（可16‧14－18；路24‧36－49；約"
+   ],
+   "theme:（tai21‧12－17；ke11‧15－19；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太21‧12－17；可11‧15－19；約"
+   ],
+   "theme:（tai21‧12－17；lu19‧45－48；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太21‧12－17；路19‧45－48；約"
+   ],
+   "theme:（tai21‧1－11；lu19‧28－40；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太21‧1－11；路19‧28－40；約"
+   ],
+   "theme:（tai26‧17－25；ke14‧12－21；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧17－25；可14‧12－21；約"
+   ],
+   "theme:（tai26‧17－25；lu22‧7－13，21－23；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧17－25；路22‧7－13，21－23；約"
+   ],
+   "theme:（tai26‧31－35；ke14‧27－31；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧31－35；可14‧27－31；約"
+   ],
+   "theme:（tai26‧31－35；lu22‧31－34；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧31－35；路22‧31－34；約"
+   ],
+   "theme:（tai26‧47－56；ke14‧43－50；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧47－56；可14‧43－50；約"
+   ],
+   "theme:（tai26‧47－56；lu22‧47－53；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧47－56；路22‧47－53；約"
+   ],
+   "theme:（tai26‧57－68；lu22‧54－55，63－71；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧57－68；路22‧54－55，63－71；約"
+   ],
+   "theme:（tai26‧59－66；ke14‧55－64；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧59－66；可14‧55－64；約"
+   ],
+   "theme:（tai26‧69－75；lu22‧56－62；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太26‧69－75；路22‧56－62；約"
+   ],
+   "theme:（tai27‧15－26；ke15‧6－15；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧15－26；可15‧6－15；約"
+   ],
+   "theme:（tai27‧15－26；lu23‧13－25；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧15－26；路23‧13－25；約"
+   ],
+   "theme:（tai27‧1－2，11－14；ke15‧1－5；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧1－2，11－14；可15‧1－5；約"
+   ],
+   "theme:（tai27‧1－2，11－14；lu23‧1－5；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧1－2，11－14；路23‧1－5；約"
+   ],
+   "theme:（tai27‧32－44；ke15‧21－32；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧32－44；可15‧21－32；約"
+   ],
+   "theme:（tai27‧32－44；lu23‧26－43；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧32－44；路23‧26－43；約"
+   ],
+   "theme:（tai27‧45－56；ke15‧33－41；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧45－56；可15‧33－41；約"
+   ],
+   "theme:（tai27‧45－56；lu23‧44－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧45－56；路23‧44－49；約"
+   ],
+   "theme:（tai27‧57－61；ke15‧42－47；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧57－61；可15‧42－47；約"
+   ],
+   "theme:（tai27‧57－61；lu23‧50－56；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太27‧57－61；路23‧50－56；約"
+   ],
+   "theme:（tai28‧16－20；lu24‧36－49；yue": [
+    "junk:xref_remnant",
+    "Theme",
+    "（太28‧16－20；路24‧36－49；約"
+   ]
+  },
+  "mentions_jsonl": {
+   "junk": 118,
+   "stop": 160,
+   "dictname": 10
+  },
+  "relations_jsonl_edges": {
+   "junk": 28,
+   "stop": 102,
+   "dictname": 5
+  },
+  "dictname_title_derived": 0
+ },
+ "live_edges": {
+  "junk|Event": {
+   "n": 26,
+   "mentions": 27,
+   "rels": 100
+  },
+  "dictname|Event": {
+   "n": 2,
+   "mentions": 8,
+   "rels": 39
+  },
+  "stop|Event": {
+   "n": 5,
+   "mentions": 28,
+   "rels": 139
+  },
+  "junk|Object": {
+   "n": 10,
+   "mentions": 43,
+   "rels": 3
+  },
+  "junk|Theme": {
+   "n": 36,
+   "mentions": 36,
+   "rels": 0
+  }
+ }
+}
