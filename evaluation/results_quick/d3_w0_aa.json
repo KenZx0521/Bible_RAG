@@ -1,0 +1,128 @@
+{
+  "label": "w0_aa",
+  "mode": "live",
+  "inputs": {
+    "control": {
+      "name": "prod",
+      "url": "http://localhost:8000",
+      "label": "d3_prod_w0_aa"
+    },
+    "treatment": {
+      "name": "stg",
+      "url": "http://localhost:8001",
+      "label": "d3_stg_w0_aa"
+    }
+  },
+  "created_at": "2026-10-04T16:09:09+00:00",
+  "params": {
+    "quick_eval_args": [
+      "--top-k",
+      "5",
+      "--metric-k",
+      "6",
+      "--include-context"
+    ],
+    "max_rounds": 2,
+    "route_residual_max": null,
+    "calibrate": true
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "asked": [
+        "EVENT_QUESTION_069",
+        "EVENT_QUESTION_079",
+        "EVENT_QUESTION_096",
+        "GENERAL_BIBLE_QUESTION_059",
+        "GENERAL_BIBLE_QUESTION_062",
+        "GENERAL_BIBLE_QUESTION_065",
+        "GENERAL_BIBLE_QUESTION_073",
+        "GENERAL_BIBLE_QUESTION_086",
+        "PERSON_QUESTION_030",
+        "PERSON_QUESTION_091",
+        "TOPIC_QUESTION_068"
+      ],
+      "routes": {
+        "EVENT_QUESTION_079": {
+          "control": "R4",
+          "treatment": "fallback"
+        },
+        "GENERAL_BIBLE_QUESTION_062": {
+          "control": "R5",
+          "treatment": "fallback"
+        },
+        "GENERAL_BIBLE_QUESTION_065": {
+          "control": "R5",
+          "treatment": "R4"
+        },
+        "GENERAL_BIBLE_QUESTION_086": {
+          "control": "R4",
+          "treatment": "R5"
+        },
+        "TOPIC_QUESTION_068": {
+          "control": "fallback",
+          "treatment": "R4"
+        }
+      },
+      "still_route_mismatch": [
+        "EVENT_QUESTION_079",
+        "GENERAL_BIBLE_QUESTION_062",
+        "GENERAL_BIBLE_QUESTION_065",
+        "GENERAL_BIBLE_QUESTION_086",
+        "TOPIC_QUESTION_068"
+      ]
+    },
+    {
+      "round": 2,
+      "asked": [
+        "EVENT_QUESTION_079",
+        "GENERAL_BIBLE_QUESTION_062",
+        "GENERAL_BIBLE_QUESTION_065",
+        "GENERAL_BIBLE_QUESTION_086",
+        "TOPIC_QUESTION_068"
+      ],
+      "routes": {},
+      "still_route_mismatch": []
+    }
+  ],
+  "route_residual": [],
+  "criteria": {
+    "graph_strategies_identical": true,
+    "same_route_identical": true,
+    "no_invalid": true,
+    "all_paired": true,
+    "route_residual_within_r0": null
+  },
+  "passed": true,
+  "identity": {
+    "top_k": 5,
+    "n_paired": 500,
+    "unpaired": {
+      "control_only": [],
+      "treatment_only": []
+    },
+    "invalid": [],
+    "route_mismatch": [],
+    "routes": {},
+    "same_route": 500,
+    "identical": 500,
+    "mismatches": {},
+    "strategies": {
+      "identical": true,
+      "control": {
+        "event_registry": 500
+      },
+      "treatment": {
+        "event_registry": 500
+      },
+      "per_question_mismatch": [],
+      "unreported": []
+    },
+    "passed": true
+  },
+  "r0_measured": 0,
+  "merged_runs": {
+    "control": "/home/kenzx0521/Bible_RAG/evaluation/results_quick/d3_prod_w0_aa_merged.json",
+    "treatment": "/home/kenzx0521/Bible_RAG/evaluation/results_quick/d3_stg_w0_aa_merged.json"
+  }
+}
