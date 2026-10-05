@@ -8,6 +8,12 @@ the direction. That exemption used to be read off `inverse`, which only R5
 reads and which C6a nulls for every gendered relation; read that way, every llm
 kinship edge would be flagged. `direction_pairs` is a table of its own, and
 id_order_relations() is derived from it and the domain/range alone.
+
+REL-02 (C6a): `inverse` is read only by R5, which extract_relations runs only
+with --inverse. A gendered relation has no single reverse (FATHER_OF(x, y)
+reads back as SON_OF or DAUGHTER_OF depending on y), and R5 wrote SON_OF for
+daughters and FATHER_OF for mothers, so only the two gender-neutral pairs keep
+an inverse.
 """
 
 from __future__ import annotations
@@ -18,6 +24,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from relation_extraction import extract_relations
+from relation_extraction.models import ExtractedRelation, ExtractionPhase
 from relation_extraction.schema_loader import RelationSchema
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,6 +37,10 @@ DIRECTION_PAIRS = (
     ("ANCESTOR_OF", "DESCENDANT_OF"), ("TEACHER_OF", "DISCIPLE_OF"),
 )
 ID_ORDER = {"CAUSED", "LOCATED_IN", "PRECEDED_BY", "SUCCEEDED_BY"}
+GENDERED = {"FATHER_OF", "MOTHER_OF", "SON_OF", "DAUGHTER_OF"}
+# the only inverses R5 may write: each reads the same tie from the other end whatever the sexes
+INVERSES = {"ANCESTOR_OF": "DESCENDANT_OF", "DESCENDANT_OF": "ANCESTOR_OF",
+            "TEACHER_OF": "DISCIPLE_OF", "DISCIPLE_OF": "TEACHER_OF"}
 
 # each table breaks exactly one rule; SIBLING_OF is undirected, BORN_IN is
 # Person→Place and LOCATED_IN Place→Place, so they do not mirror
@@ -76,3 +88,57 @@ def test_malformed_direction_pairs_fail_to_load(tmp_path, case):
     path.write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
     with pytest.raises(ValueError, match="direction_pairs"):
         RelationSchema.load(path)
+
+
+def test_declared_inverses_are_gender_neutral_and_mirrored(schema):
+    declared = {e.name: e.inverse for e in schema.iter_entries() if e.inverse}
+    assert declared == INVERSES
+    assert not GENDERED & (set(declared) | set(declared.values()))
+    for name, inverse in declared.items():
+        assert schema.inverse_of(inverse) == name
+        # a direction pair is checked on load to be two directed relations with mirrored domain/range
+        assert (name, inverse) in schema.direction_pairs or (inverse, name) in schema.direction_pairs
+
+
+def test_id_order_relations_unchanged_after_inverse_nulling(schema):
+    # the four gendered relations now lack an inverse, like the id-order ones: read off
+    # `inverse` they would be id-order (82 llm rows flagged); read off direction_pairs they are not
+    same_type_without_inverse = {
+        e.name for e in schema.iter_entries()
+        if e.direction == "directed" and not e.inverse and set(e.domain_types) == set(e.range_types)}
+    assert same_type_without_inverse == ID_ORDER | GENDERED
+    assert schema.id_order_relations() == ID_ORDER
+
+
+def _triple(head: str, relation: str, tail: str, confidence: float) -> ExtractedRelation:
+    return ExtractedRelation(head_id=head, tail_id=tail, relation=relation, confidence=confidence,
+                             evidence_span="", source_pericope_id="gen:5:1",
+                             extraction_phase=ExtractionPhase.GROUNDED_LLM)
+
+
+def test_r5_is_off_by_default(monkeypatch, schema):
+    assert extract_relations._parse_args([]).inverse is False
+    assert extract_relations._parse_args(["--inverse"]).inverse is True
+    with pytest.raises(SystemExit):
+        extract_relations._parse_args(["--no-inverse"])
+
+    calls, materialize = [], extract_relations.materialize_inverses
+
+    def spy(triples, schema_):
+        calls.append(len(triples))
+        return materialize(triples, schema_)
+
+    monkeypatch.setattr(extract_relations, "materialize_inverses", spy)
+    triples = [_triple("person:a", "FATHER_OF", "person:b", 0.7),
+               _triple("person:a", "FATHER_OF", "person:b", 0.8),
+               _triple("person:c", "ANCESTOR_OF", "person:d", 0.7)]
+    kept = extract_relations._finalize_triples(triples, schema, inverse=False)
+    assert calls == []
+    assert [(t.relation, t.confidence) for t in kept] == [("FATHER_OF", 0.8), ("ANCESTOR_OF", 0.7)]
+
+    # opt in: R5 runs once over every row; FATHER_OF has no inverse left, ANCESTOR_OF does
+    kept = extract_relations._finalize_triples(triples, schema, inverse=True)
+    assert calls == [3] and len(triples) == 3
+    derived = [(t.head_id, t.relation, t.tail_id) for t in kept
+               if t.extraction_phase == ExtractionPhase.INVERSE_DERIVED]
+    assert derived == [("person:d", "DESCENDANT_OF", "person:c")]

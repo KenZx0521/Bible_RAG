@@ -3,7 +3,11 @@
 Run as:
 
     python -m scripts.relation_extraction.extract_relations \\
-        [--limit-pericopes N] [--no-llm] [--resume]
+        [--limit-pericopes N] [--no-llm] [--inverse] [--resume]
+
+Phase R5 (inverse materialisation) runs only with --inverse (REL-02): 6.05
+drops inverse rows anyway, and the schema keeps an inverse only for the two
+gender-neutral pairs (ANCESTOR_OF/DESCENDANT_OF, TEACHER_OF/DISCIPLE_OF).
 """
 
 from __future__ import annotations
@@ -34,7 +38,7 @@ from .schema_loader import RelationSchema
 logger = logging.getLogger("relation_extraction")
 
 
-def _parse_args() -> argparse.Namespace:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--limit-pericopes", type=int, default=None,
                         help="Process only the first N pericopes (debug aid).")
@@ -44,12 +48,12 @@ def _parse_args() -> argparse.Namespace:
                         help="Skip Phase R4 LLM classification (rules + priors only).")
     parser.add_argument("--no-priors", action="store_true",
                         help="Skip Phase R3 priors loading.")
-    parser.add_argument("--no-inverse", action="store_true",
-                        help="Skip Phase R5 inverse materialization.")
+    parser.add_argument("--inverse", action="store_true",
+                        help="Run Phase R5 inverse materialization (off by default).")
     parser.add_argument("--resume", action="store_true",
                         help="Skip pairs already present in checkpoint file.")
     parser.add_argument("--verbose", action="store_true")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def _build_pg_connection():
@@ -102,6 +106,15 @@ def _dedup_triples(triples: list[ExtractedRelation]) -> list[ExtractedRelation]:
         if existing is None or t.confidence > existing.confidence:
             by_key[key] = t
     return list(by_key.values())
+
+
+def _finalize_triples(
+    all_triples: list[ExtractedRelation], schema: RelationSchema, inverse: bool,
+) -> list[ExtractedRelation]:
+    """The rows written to relations.jsonl: R5 inverses only when asked, then dedup."""
+    if inverse:
+        all_triples = all_triples + materialize_inverses(all_triples, schema)
+    return _dedup_triples(all_triples)
 
 
 def _select_pericopes(driver, args) -> list[str]:
@@ -213,11 +226,7 @@ def main() -> int:
                             len(llm_pending))
                 unclassified_pairs.extend(llm_pending)
 
-        if not args.no_inverse:
-            inverses = materialize_inverses(all_triples, schema)
-            all_triples.extend(inverses)
-
-        all_triples = _dedup_triples(all_triples)
+        all_triples = _finalize_triples(all_triples, schema, args.inverse)
         out_count = _persist_results(all_triples, pipeline_cfg.output_path)
         logger.info("Wrote %d triples to %s", out_count, pipeline_cfg.output_path)
 

@@ -10,13 +10,13 @@
 #   domain_types     : entity types allowed as the head (subject)
 #   range_types      : entity types allowed as the tail (object)
 #   direction        : directed | undirected
-#   inverse          : relation written automatically in reverse direction (or null)
+#   inverse          : reverse relation (or null), read only by opt-in R5 (`--inverse`); see end of file
 #   description_zh   : human-readable Chinese semantics
 #   prompt_signals   : surface-form keywords used by Phase R2 rule classifier
 #   examples         : grounding examples used in few-shot prompt
 #   confidence_priors: defaults applied per extraction phase
 
-version: "1.0"
+version: "1.1"
 description: "聖經敘事級關係本體 (詮釋學/typology 留 P3 擴張)"
 
 relations:
@@ -28,7 +28,7 @@ relations:
     domain_types: [Person]
     range_types: [Person]
     direction: directed
-    inverse: SON_OF
+    inverse: null
     description_zh: "X 是 Y 的父親 (生育意義上)"
     prompt_signals: ["生", "之父", "為...父", "父親"]
     examples:
@@ -40,7 +40,7 @@ relations:
     domain_types: [Person]
     range_types: [Person]
     direction: directed
-    inverse: SON_OF
+    inverse: null
     description_zh: "X 是 Y 的母親"
     prompt_signals: ["母親", "其母", "生子"]
     examples:
@@ -51,7 +51,7 @@ relations:
     domain_types: [Person]
     range_types: [Person]
     direction: directed
-    inverse: FATHER_OF
+    inverse: null
     description_zh: "X 是 Y 的兒子"
     prompt_signals: ["...的兒子", "屬...", "之子"]
     examples:
@@ -62,7 +62,7 @@ relations:
     domain_types: [Person]
     range_types: [Person]
     direction: directed
-    inverse: FATHER_OF
+    inverse: null
     description_zh: "X 是 Y 的女兒"
     prompt_signals: ["...的女兒", "之女"]
     examples:
@@ -471,8 +471,13 @@ relations:
 # relations (RelationSchema.id_order_relations()): CAUSED, LOCATED_IN,
 # PRECEDED_BY and SUCCEEDED_BY. Their llm rows arrive in id order, and 6.05
 # flags them direction_verified: false; validate_kg H11 counts the unflagged.
-# This table is separate from `inverse`, which only R5 reads: nulling an
-# inverse does not change which relations are id-order.
+# This table is separate from `inverse`, which only Phase R5 reads, and R5
+# runs only with `extract_relations --inverse` (6.05 drops inverse rows
+# anyway). A gendered relation has no single reverse: FATHER_OF(x, y) reads
+# back as SON_OF or DAUGHTER_OF depending on y, and R5 wrote SON_OF for
+# daughters. So FATHER_OF, MOTHER_OF, SON_OF and DAUGHTER_OF have inverse
+# null (1.1, REL-02), and only ANCESTOR_OF <-> DESCENDANT_OF and
+# TEACHER_OF <-> DISCIPLE_OF keep one; the four are still not id-order.
 direction_pairs:
   - [FATHER_OF, SON_OF]
   - [FATHER_OF, DAUGHTER_OF]
