@@ -19,6 +19,16 @@ no (head_id, relation, tail_id) key may appear twice; otherwise the run exits
 never reaches the graph. An undirected pair written both ways is two keys and
 passes: the --rules none P1 control keeps such pairs.
 
+Nor is the file stacked on an old layer. The semantic layer is every
+Entity-Entity edge but MENTIONS and CROSS_REFERENCES; Step 5 rebuilds the graph
+without one, and only 6.1 (and the legacy 10.3) add to it. So a graph that
+already holds one is not fresh from Step 5, and the run stops (exit 1) before a
+write: "Step 5 empties the graph". --replace, refused outside a staging shell
+(kg_target.require_staging) before connecting, instead deletes the whole layer
+-- 10.3's edges too -- as the first statement of the transaction that writes
+the file, so the layer becomes exactly the file and a failure rolls the delete
+back with the writes. The standard chain never passes --replace.
+
 Nothing is skipped silently: one read first lists the endpoints the file
 references that the graph lacks, and any missing id stops the run (exit 1)
 before a write. Inside the transaction each statement must write exactly as
@@ -26,10 +36,12 @@ many edges as it was sent rows, or the whole import rolls back (exit 1).
 
 Usage:
     python scripts/import_relations_neo4j.py [path/to/relations_clean.jsonl] [--report PATH]
+        [--replace]
 
-Exit codes: 0 imported (or the file is empty); 1 a missing endpoint or a
-written mismatch, nothing written; 2 no input file, or the input contract
-refused it, before connecting.
+Exit codes: 0 imported (or the file is empty); 1 a semantic layer already in
+the graph (without --replace), a missing endpoint or a written mismatch,
+nothing written; 2 no input file, or the input contract refused it, before
+connecting. --replace outside a staging shell exits before connecting.
 """
 
 from __future__ import annotations
@@ -156,6 +168,17 @@ RETURN id
 """
 
 
+# The semantic layer 6.1 writes: every Entity-Entity edge but MENTIONS and
+# CROSS_REFERENCES. Step 5's own edges join Book/Chapter/Pericope/Chunk nodes,
+# and 10.4/10.5 add only MENTIONS, so after Step 5 the layer is empty.
+_LAYER = """
+MATCH (:Entity)-[r]->(:Entity)
+WHERE NOT type(r) IN ['MENTIONS', 'CROSS_REFERENCES']
+"""
+_COUNT_LAYER_CYPHER = _LAYER + "RETURN count(r) AS edges\n"
+_DELETE_LAYER_CYPHER = _LAYER + "DELETE r\nRETURN count(r) AS edges\n"
+
+
 class WrittenMismatch(RuntimeError):
     """A statement wrote a different number of edges than it was sent rows.
 
@@ -188,6 +211,21 @@ def _report_missing(missing: list[str], rows: list[dict], path: Path) -> None:
                  "nothing written: %s", len(missing), hit, path, ", ".join(missing))
 
 
+def _layer_edges(tx, query: str = _COUNT_LAYER_CYPHER) -> int:
+    """Transaction function: the semantic layer's edge count (or, given the
+    delete, how many it deleted)."""
+    record = tx.run(query).single()
+    return int(record["edges"]) if record else 0
+
+
+def _report_layer(edges: int) -> None:
+    logger.error("The graph already holds %d semantic edge(s) (Entity-Entity, not MENTIONS or "
+                 "CROSS_REFERENCES); nothing written. Step 5 empties the graph, and 6.1 runs "
+                 "right after it, so this would stack the file on an old layer. To rebuild "
+                 "the layer on staging, run with --replace from a shell that sourced "
+                 "scripts/tools/staging.env.", edges)
+
+
 def _write_all(tx, rows: list[dict], batch_size: int) -> int:
     """Transaction function: every batch in the same transaction, each checked."""
     written = 0
@@ -202,15 +240,38 @@ def _write_all(tx, rows: list[dict], batch_size: int) -> int:
     return written
 
 
-def _import_rows(driver, rows: list[dict], batch_size: int, path: Path) -> int:
-    """Endpoint pre-check, then one write transaction. Returns the exit code."""
+def _replace_all(tx, rows: list[dict], batch_size: int) -> tuple[int, int]:
+    """Transaction function for --replace: delete the layer, then write every
+    row. (deleted, written); a WrittenMismatch rolls the delete back too."""
+    deleted = _layer_edges(tx, _DELETE_LAYER_CYPHER)
+    return deleted, _write_all(tx, rows, batch_size)
+
+
+def _write(session, rows: list[dict], batch_size: int, replace: bool) -> int:
+    """The one write transaction; with replace, its first statement deletes the layer."""
+    if not replace:
+        return session.execute_write(_write_all, rows, batch_size)
+    deleted, written = session.execute_write(_replace_all, rows, batch_size)
+    logger.warning("--replace: deleted the old layer's %d edge(s) in the same transaction",
+                   deleted)
+    return written
+
+
+def _import_rows(driver, rows: list[dict], batch_size: int, path: Path,
+                 replace: bool = False) -> int:
+    """Empty-layer guard (unless replace) and endpoint pre-check, then one write
+    transaction. Returns the exit code."""
     with driver.session() as session:
+        edges = 0 if replace else session.execute_read(_layer_edges)
+        if edges:
+            _report_layer(edges)
+            return 1
         missing = session.execute_read(_missing_endpoints, _endpoint_ids(rows))
         if missing:
             _report_missing(missing, rows, path)
             return 1
         try:
-            written = session.execute_write(_write_all, rows, batch_size)
+            written = _write(session, rows, batch_size, replace)
         except WrittenMismatch as exc:
             logger.error("Rolled back, nothing written: %s", exc)
             return 1
@@ -252,6 +313,10 @@ def _parser() -> argparse.ArgumentParser:
                         help="6.05's report on that file (default: the .report.json beside it)")
     parser.add_argument("--batch-size", type=int, default=500,
                         help="rows per statement; every statement is in one transaction")
+    parser.add_argument("--replace", action="store_true",
+                        help="staging only (needs a shell that sourced scripts/tools/staging.env): "
+                             "delete the whole semantic layer, 10.3's edges too, in the "
+                             "transaction that writes the file; the standard chain never passes it")
     parser.add_argument("--verbose", action="store_true")
     return parser
 
@@ -264,6 +329,9 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s %(levelname)s %(name)s | %(message)s",
     )
     kg_target.assert_target("neo4j")
+    if args.replace:
+        logger.warning("--replace: the semantic layer of %s will be deleted and rewritten",
+                       kg_target.require_staging("neo4j")["neo4j"])
 
     in_path = args.path
     if not in_path.exists():
@@ -293,7 +361,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     try:
-        return _import_rows(driver, rows, args.batch_size, in_path)
+        return _import_rows(driver, rows, args.batch_size, in_path, args.replace)
     finally:
         driver.close()
 

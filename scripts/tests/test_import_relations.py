@@ -19,11 +19,21 @@ the report's pp_version on every row, give every row head_id, relation,
 tail_id and source, and hold each key once; otherwise the run exits 2 before
 it connects.
 
+Nor is the file stacked on an old layer: 6.1 imported into whatever graph it
+reached, so a re-run on a built graph kept every edge the new file no longer
+has (§6 #11). Step 5 rebuilds the graph without a single Entity-Entity edge
+besides MENTIONS and CROSS_REFERENCES, so finding one means 6.1 (or 10.3) has
+already run there: the import stops (exit 1) before any write. Only --replace,
+from a staging shell (kg_target.require_staging), deletes that layer, inside
+the transaction that writes the file; the standard chain never passes it.
+
 The fake driver records auto-commit statements (session.run) separately from
 statements run inside session.execute_read and session.execute_write, modelled
 on test_import_constraints.py. It holds a set of entity_ids for the endpoint
-read, and a write transaction commits only if its work returns. Files are
-written by _db_env_helpers.write_relations_clean, with a matching report.
+read and a count of the semantic-layer edges already in the graph, and a write
+transaction commits only if its work returns. Files are written by
+_db_env_helpers.write_relations_clean, with a matching report. Every test runs
+in a shell without KG_TARGET unless it takes the staging_target fixture.
 """
 
 import json
@@ -33,13 +43,17 @@ import sys
 import pytest
 
 import import_relations_neo4j
-from _db_env_helpers import PP_VERSION, write_relations_clean
+# staging_target is a pytest fixture: importing it is what makes it available here.
+from _db_env_helpers import PP_VERSION, staging_target, write_relations_clean  # noqa: F401
 from relation_extraction import relation_postprocess as pp
 
 KEY = ("head_id", "relation", "tail_id")
 REQUIRED = ("head_id", "relation", "tail_id", "source")
 MERGE_WITHOUT_MAPS = re.compile(
     r"apoc\.merge\.relationship\(\s*h,\s*row\.relation,\s*\{\},\s*\{\},\s*t,\s*\{\}\s*\)")
+# The semantic layer: every Entity-Entity edge but MENTIONS and CROSS_REFERENCES.
+LAYER = re.compile(r"MATCH \(:Entity\)-\[r\]->\(:Entity\)\s+"
+                   r"WHERE NOT type\(r\) IN \['MENTIONS', 'CROSS_REFERENCES'\]\s")
 
 
 class _Result:
@@ -63,7 +77,9 @@ class _Tx:
         self._log.append((query, params))
         if "ids" in params:
             return _Result([{"id": i} for i in params["ids"] if not self._driver.has(i)])
-        return _Result([{"written": self._driver.written(params["rows"])}])
+        if "rows" in params:
+            return _Result([{"written": self._driver.written(params["rows"])}])
+        return _Result([{"edges": self._driver.layer}])   # the layer's count, or its delete
 
 
 class _Session:
@@ -98,10 +114,11 @@ class _Session:
 
 class _FakeDriver:
     """entities: the entity_ids in the graph (None: every id is there).
-    written: rows of one write statement -> the edge count it reports."""
+    written: rows of one write statement -> the edge count it reports.
+    layer: the semantic-layer edges already in the graph (Step 5 leaves 0)."""
 
-    def __init__(self, entities: set[str] | None = None, written=len):
-        self.entities, self.written = entities, written
+    def __init__(self, entities: set[str] | None = None, written=len, layer: int = 0):
+        self.entities, self.written, self.layer = entities, written, layer
         self.autocommit: list[tuple[str, dict]] = []
         self.reads: list[tuple[str, dict]] = []
         self.in_tx: list[tuple[str, dict]] = []
@@ -122,6 +139,13 @@ class _FakeDriver:
         pass
 
 
+@pytest.fixture(autouse=True)
+def _shell_without_target(monkeypatch):
+    """The standard chain's shell; the staging_target fixture, set up after
+    this one, exports a staging shell instead."""
+    monkeypatch.delenv("KG_TARGET", raising=False)
+
+
 def _row(head, relation, tail, **extra) -> dict:
     """A row as 6.05 stamps it (pp_version); tests add source and the rest."""
     return {"head_id": head, "relation": relation, "tail_id": tail,
@@ -131,7 +155,6 @@ def _row(head, relation, tail, **extra) -> dict:
 def _main(monkeypatch, argv: list[str], driver: _FakeDriver | None = None,
           code: int = 0) -> _FakeDriver:
     driver = driver or _FakeDriver()
-    monkeypatch.delenv("KG_TARGET", raising=False)
     monkeypatch.setattr(import_relations_neo4j.GraphDatabase, "driver", driver.connect)
     monkeypatch.setattr(sys, "argv", ["import_relations_neo4j.py", *argv])
 
@@ -203,7 +226,7 @@ def test_missing_endpoint_exits_1_before_any_write(monkeypatch, tmp_path, caplog
 
     assert driver.transactions == 0
     assert _merges(driver.autocommit + driver.in_tx) == []
-    assert [params for _, params in driver.reads] == [
+    assert [params for _, params in driver.reads if "ids" in params] == [
         {"ids": ["person:a", "person:b", "person:liuer"]}]
     assert "person:liuer" in caplog.text
     assert "2 row(s)" in caplog.text
@@ -326,3 +349,65 @@ def test_missing_required_field_refused(field, value, monkeypatch, tmp_path, cap
 
     assert driver.connections == 0
     assert f"row 2: no {field}" in caplog.text
+
+
+# --- the empty-layer guard; --replace is staging-only -------------------------
+
+def _layer_statements(statements: list[tuple[str, dict]], verb: str) -> list[str]:
+    """The statements on the semantic layer that contain verb (count(r) or DELETE)."""
+    return [q for q, _ in statements if LAYER.search(q) and verb in q]
+
+
+def test_non_empty_layer_without_replace_exits_1(monkeypatch, tmp_path, caplog):
+    # The graph already holds 15,926 semantic edges (prod and staging today:
+    # 6.1 and 10.3 have run there). Importing again would stack this file on
+    # them, keeping every edge it no longer has, so the run stops before any
+    # write; the standard chain runs 6.1 right after Step 5, never with --replace.
+    driver = _FakeDriver(layer=15926)
+
+    _import(monkeypatch, tmp_path, TWO_ROWS, driver=driver, code=1)
+
+    assert driver.transactions == 0
+    assert _merges(driver.autocommit + driver.in_tx) == []
+    assert len(_layer_statements(driver.reads, "count(r)")) == 1
+    assert _layer_statements(driver.autocommit + driver.reads + driver.in_tx, "DELETE") == []
+    assert "15926" in caplog.text
+    assert "Step 5 empties the graph" in caplog.text
+
+
+@pytest.mark.parametrize("target", [None, "prod"])
+def test_replace_refused_outside_staging(target, monkeypatch, tmp_path):
+    # --replace deletes a whole layer: from a shell that has not sourced
+    # staging.env (KG_TARGET unset or prod), it stops before connecting.
+    if target:
+        monkeypatch.setenv("KG_TARGET", target)
+    driver = _FakeDriver(layer=3)
+
+    with pytest.raises(SystemExit) as exc:
+        _import(monkeypatch, tmp_path, TWO_ROWS, "--replace", driver=driver)
+
+    assert "KG_TARGET is not staging" in str(exc.value)
+    assert driver.connections == 0
+
+
+def test_replace_deletes_then_writes_in_one_transaction(staging_target, monkeypatch,
+                                                        tmp_path, caplog):
+    # On staging, --replace deletes the old layer as the first statement of the
+    # transaction that writes the file: the layer becomes exactly the file.
+    driver = _FakeDriver(layer=7)
+
+    _import(monkeypatch, tmp_path, TWO_ROWS, "--replace", "--batch-size", "1", driver=driver)
+
+    assert (driver.transactions, driver.committed) == (1, 1)
+    queries = [q for q, _ in driver.in_tx]
+    assert _layer_statements(driver.in_tx, "DELETE r") == queries[:1]
+    assert len(_merges(driver.in_tx)) == 2 == len(queries) - 1
+    assert _layer_statements(driver.autocommit + driver.reads, "DELETE") == []
+    assert "7 edge(s)" in caplog.text
+
+    # A written mismatch rolls the delete back with the writes.
+    failing = _FakeDriver(layer=7, written=lambda sent: len(sent) - 1)
+    _import(monkeypatch, tmp_path / "fail", TWO_ROWS, "--replace", driver=failing, code=1)
+
+    assert (failing.transactions, failing.committed, failing.rolled_back) == (1, 0, 1)
+    assert _layer_statements(failing.in_tx, "DELETE r") == [failing.in_tx[0][0]]
