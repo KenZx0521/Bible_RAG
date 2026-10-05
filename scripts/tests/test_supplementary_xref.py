@@ -15,9 +15,9 @@ marks with '?' what CrossRefParser left unread: the end verse of a
 cross-chapter ref ('-?') and the ranges after a comma (',?').
 
 fixtures/xref/supp_expected_anchors.json is the golden [anchor, start, end]
-table, sorted: golden_s3.json of docs/records/2026-10-04_kg_fix/batch1/w1_1B/
-(equal after json.load) less the two XREF-2 deletions (1B-C5a), one row per
-line.
+table, sorted: golden_final.json of docs/records/2026-10-04_kg_fix/batch1/w1_1B/
+(equal after json.load; golden_s3.json less the two XREF-2 deletions of 1B-C5a
+and with the X2 retarget of 1B-C5b), one row per line.
 """
 
 import json
@@ -153,6 +153,21 @@ def test_xref2_deleted_definitions_absent(step0):
     rows, _ = step0
     supp_pairs = {(r["start"], r["end"]) for r in rows if r["properties"].get("supp_anchors")}
     assert supp_pairs.isdisjoint(XREF2_DELETED.values())
+
+
+def test_x2_rev19_16_anchors_dan_2_47(step0):
+    # X2 (1B-C5b): rev 19:11-16 → dan 7:13-14 had no verse-level TSK support;
+    # 萬王之王萬主之主 is re-anchored as rev 19:16 → dan 2:47 (evidence in
+    # test_supp_defs_frozen.RETARGETED). rev:19:2 → dan:7:1 is left to TSK.
+    definitions = {(ref.src, ref.tgt) for ref in SUPPLEMENTARY_CROSS_REFS}
+    assert ("rev 19:16", "dan 2:47") in definitions
+    assert ("rev 19:11-16", "dan 7:13-14") not in definitions
+    rows, _ = step0
+    supp = {(r["start"], r["end"]): r["properties"]["supp_anchors"]
+            for r in rows if r["properties"].get("supp_anchors")}
+    assert {end for start, end in supp if start == "rev:19:2"} == {"dan:2:3"}
+    assert supp[("rev:19:2", "dan:2:3")] == ["rev 19:16>dan 2:47"]
+    assert ("rev:19:2", "dan:7:1") not in {(r["start"], r["end"]) for r in rows}
 
 
 def test_step0_writes_one_curated_row_per_pair(step0):

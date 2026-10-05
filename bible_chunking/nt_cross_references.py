@@ -444,7 +444,9 @@ SUPPLEMENTARY_CROSS_REFS: list[SupplementaryCrossRef] = [
                           "巴比倫大城傾倒了"),
     # rev 19:1 → psa 118:1 and rev 20:4 → isa 65:17 are deleted (XREF-2): no
     # verse-level TSK support (scripts/tests/test_supp_defs_frozen.py DELETED).
-    SupplementaryCrossRef("rev 19:11-16", "dan 7:13-14", "allusion",
+    # Was rev 19:11-16 → dan 7:13-14, which no verse-level TSK supports (X2,
+    # test_supp_defs_frozen.py RETARGETED); dan 2:47 萬神之神、萬王之主.
+    SupplementaryCrossRef("rev 19:16", "dan 2:47", "allusion",
                           "萬王之王萬主之主"),
     SupplementaryCrossRef("rev 21:1", "isa 65:17", "quotation",
                           "我造新天新地"),

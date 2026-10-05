@@ -62,7 +62,13 @@ DELETED: set[tuple[str, str]] = {
     ("rev 20:4", "isa 65:17"),
     ("rev 19:1", "psa 118:1"),
 }
-RETARGETED: dict[tuple[str, str], tuple[str, str]] = {}
+RETARGETED: dict[tuple[str, str], tuple[str, str]] = {
+    # X2 (1B-C5b, D10 (a)): no verse of rev 19:11-16 has TSK to dan 7:13-14
+    # (w1_1B/sup_s3.py). 萬王之王萬主之主 is rev 19:16, and TSK Rev.19.16 →
+    # Dan.2.47 萬神之神、萬王之主 has votes 8 (reverse 3). rev:19:2 → dan:7:1
+    # stays a TSK edge (Rev.19.20 → Dan.7.7-14, votes 8).
+    ("rev 19:11-16", "dan 7:13-14"): ("rev 19:16", "dan 2:47"),
+}
 
 
 def _converted(row) -> tuple[str, str]:
