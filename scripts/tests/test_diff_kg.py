@@ -388,6 +388,45 @@ def test_cli_passes_when_every_difference_is_allowed(two_targets, tmp_path, caps
     assert "1B re-anchors" in out and "exit 0" in out
 
 
+def stale_allow(tmp_path) -> str:
+    """Allows two_targets' one difference, plus an entry that matches nothing."""
+    return write_allow(tmp_path, [
+        {"section": "xrefs", "key": "source=markdown", "delta": -1, "reason": "1B re-anchors one edge"},
+        {"section": "xrefs", "key": "source=supplementary", "delta": 2, "reason": "stale fragment"}])
+
+
+def test_fail_on_unused_exits_1_when_an_allowance_matches_nothing(two_targets, tmp_path, capsys):
+    allow = stale_allow(tmp_path)
+    assert dk.main(["--no-registry", "--allow", allow, "--fail-on-unused", "--json"]) == 1
+    report = json.loads(capsys.readouterr().out)
+    assert report["exit_code"] == 1 and report["fail_on_unused"] is True and report["errors"] == []
+    assert [d["allowed_by"] for d in report["differences"]] == ["1B re-anchors one edge"]
+    assert [e["reason"] for e in report["unused_allowances"]] == ["stale fragment"]
+
+    assert dk.main(["--no-registry", "--allow", allow, "--fail-on-unused"]) == 1
+    out = capsys.readouterr().out
+    assert "unused allowance: xrefs source=supplementary (stale fragment)" in out
+    assert "exit 1: 0 differences not allowed, 0 errors, 1 unused allowances" in out
+
+    # every entry used: the flag alone does not fail
+    used = write_allow(tmp_path, [{"section": "xrefs", "key": "source=markdown", "delta": -1, "reason": "r"}])
+    assert dk.main(["--no-registry", "--allow", used, "--fail-on-unused"]) == 0
+    assert "exit 0: every difference is allowed and every allowance is used" in capsys.readouterr().out
+
+
+def test_unused_is_informational_without_the_flag(two_targets, tmp_path, capsys):
+    allow = stale_allow(tmp_path)
+    assert dk.main(["--no-registry", "--allow", allow, "--json"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["exit_code"] == 0 and report["fail_on_unused"] is False
+    assert [e["reason"] for e in report["unused_allowances"]] == ["stale fragment"]
+
+    assert dk.main(["--no-registry", "--allow", allow]) == 0
+    out = capsys.readouterr().out
+    assert "unused allowance: xrefs source=supplementary (stale fragment)" in out
+    assert out.rstrip().endswith("exit 0: every difference is allowed")  # default wording unchanged
+
+
 def test_cli_unreadable_target_exits_1(monkeypatch, capsys):
     def refuse(name):
         raise ValueError("--target prod refused: shell NEO4J_URI=bolt://localhost:7688 differs")

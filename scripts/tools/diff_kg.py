@@ -27,7 +27,9 @@ Unset properties print as "-" in keys.
 
 Allowed differences come from a YAML file (--allow). Every difference not
 matched by an entry exits 1; entries that matched nothing are listed so a
-stale allowance gets noticed. Entry fields: section, key (fnmatch glob over
+stale allowance gets noticed, and with --fail-on-unused they exit 1 as well (a
+difference uses only the first entry it matches, so an entry shadowed by an
+earlier one counts as unused). Entry fields: section, key (fnmatch glob over
 the keys above), reason (both non-empty strings, required), and for the count
 sections and mention_count at most one bound: delta (exact b - a, an integer)
 or max_abs_delta (a non-negative integer). Validation is strict: an unknown field (a misspelt
@@ -51,9 +53,11 @@ builder's auto-commit runs).
 Usage (from the project root):
     scripts/.venv/bin/python scripts/tools/diff_kg.py                       # prod vs staging
     scripts/.venv/bin/python scripts/tools/diff_kg.py --allow <allow.yaml> --json
+    scripts/.venv/bin/python scripts/tools/diff_kg.py --a prod --b staging --allow <allow.yaml> --fail-on-unused --json
 
-Exit code: 0 every difference is allowed; 1 a difference is not allowed, or
-a target / the registry could not be read.
+Exit code: 0 every difference is allowed (and, under --fail-on-unused, every
+allow entry matched one); 1 a difference is not allowed, an allow entry matched
+nothing under --fail-on-unused, or a target / the registry could not be read.
 """
 
 from __future__ import annotations
@@ -304,10 +308,16 @@ def print_report(report: dict, samples: int) -> None:
         print(f"  unused allowance: {entry['section']} {entry['key']} ({entry['reason']})")
     for error in report["errors"]:
         print(f"  ERROR {error}")
+    print(f"exit {report['exit_code']}: {_exit_reason(report)}")
+
+
+def _exit_reason(report: dict) -> str:
+    strict = report["fail_on_unused"]
+    if report["exit_code"] == 0:
+        return "every difference is allowed" + (" and every allowance is used" if strict else "")
     unallowed = sum(d["allowed_by"] is None for d in report["differences"])
-    reason = "every difference is allowed" if report["exit_code"] == 0 else \
-        f"{unallowed} differences not allowed, {len(report['errors'])} errors"
-    print(f"exit {report['exit_code']}: {reason}")
+    reason = f"{unallowed} differences not allowed, {len(report['errors'])} errors"
+    return reason + (f", {len(report['unused_allowances'])} unused allowances" if strict else "")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -318,6 +328,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-registry", action="store_true", help="skip the export_event_registry diff")
     parser.add_argument("--samples", type=int, default=10, help="differences printed per section")
     parser.add_argument("--json", action="store_true", help="print the full report as JSON")
+    parser.add_argument("--fail-on-unused", action="store_true",
+                        help="exit 1 when an allow entry matched no difference (without it they are only listed)")
     args = parser.parse_args(argv)
     if args.a == args.b:
         parser.error("--a and --b must name different targets")
@@ -339,8 +351,9 @@ def main(argv: list[str] | None = None) -> int:
             driver.close()
 
     classified, unused = classify(diffs, allow)
-    failed = errors or any(d["allowed_by"] is None for d in classified)
-    report = {"a": names["a"], "b": names["b"], "exit_code": 1 if failed else 0, "errors": errors,
+    failed = errors or any(d["allowed_by"] is None for d in classified) or (args.fail_on_unused and unused)
+    report = {"a": names["a"], "b": names["b"], "exit_code": 1 if failed else 0,
+              "fail_on_unused": args.fail_on_unused, "errors": errors,
               "differences": classified, "unused_allowances": unused}
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
