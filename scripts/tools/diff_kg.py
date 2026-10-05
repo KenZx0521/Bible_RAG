@@ -20,7 +20,7 @@ compares two graphs. This does, on Neo4j (the store retrieval reads):
                    only equals itself
   mention_count    Entity.mention_count per entity_id on both sides (missing == null,
                    which never equals a number); a delta only between two numbers
-  registry        export_event_registry.build_registry() run against each side's
+  registry         export_event_registry.build_registry() run against each side's
                    read-only driver: one key per event that differs, plus "dropped:<id>"
                    for the dropped list
 Unset properties print as "-" in keys.
@@ -32,14 +32,16 @@ difference uses only the first entry it matches, so an entry shadowed by an
 earlier one counts as unused). Entry fields: section, key (fnmatch glob over
 the keys above), reason (both non-empty strings, required), and for the count
 sections and mention_count at most one bound: delta (exact b - a, an integer)
-or max_abs_delta (a non-negative integer). Validation is strict: an unknown field (a misspelt
-bound such as max_delta) or a mistyped value is an error, never ignored,
-because an ignored bound would make the entry allow any delta. Two entries
-with the same section and key (the same glob string, whatever their bounds)
-are an error too: an overlap must fail when the file is loaded or merged, not
-as an unused entry at R2; give different deltas different exact keys. So is a
-repeated mapping key (plain YAML keeps the last value: an entry's second delta
-would win silently). The file holds version: 1 and allow, nothing else:
+or max_abs_delta (a non-negative integer). Validation is strict: an unknown
+field (a misspelt bound such as max_delta) or a mistyped value is an error,
+never ignored, because an ignored bound would make the entry allow any delta.
+Two entries with the same section and key (the same glob string, whatever
+their bounds) are an error too: a verbatim repeat must fail when the file is
+loaded or merged, not as an unused entry at R2; give different deltas
+different exact keys. So is a repeated mapping key (plain YAML keeps the last
+value: an entry's second delta would win silently). Overlapping globs that are
+different strings (event:* next to event:x) are not detected and still need a
+manual check. The file holds version: 1 and allow, nothing else:
 
     version: 1
     allow:
@@ -56,7 +58,9 @@ fragment, joins their allow lists in the order given under one version: 1,
 refuses a section and key repeated across fragments, checks that the entry
 count is the fragments' sum, writes the file with each fragment's name,
 sha256 and count as comments (not its path, so the bytes do not depend on
-how a path is spelt) and prints the file's sha256. It reads no target. With
+how a path is spelt) and prints the file's sha256. It reads no target, and
+the diff's own flags (--fail-on-unused, --json, --no-registry, --samples) are
+a usage error with it: a merge's exit 0 must not read as a passed diff. With
 --sha-out it also writes that sha256 as a sha256sum line ("<sha256>  <the
 --merge-out path as given>"), so `sha256sum -c` run where the merge ran checks
 it. W1 commits that file with the expected files before the rebuild; the
@@ -78,9 +82,11 @@ Usage (from the project root):
 
 Exit code: 0 every difference is allowed (and, under --fail-on-unused, every
 allow entry matched one); 1 a difference is not allowed, an allow entry matched
-nothing under --fail-on-unused, or a target / the registry could not be read.
---merge-out: 0 written; 1 a fragment is unreadable or invalid or two fragments
-overlap (nothing written, --sha-out included).
+nothing under --fail-on-unused, a target / the registry could not be read, or
+the --allow file is unreadable or invalid (including a repeated section/key;
+checked before any target is read). --merge-out: 0 written; 1 a fragment is
+unreadable or invalid or two fragments repeat a section and key (nothing
+written, --sha-out included). Either way 2 is a usage error.
 """
 
 from __future__ import annotations
@@ -429,6 +435,12 @@ def _exit_reason(report: dict) -> str:
 
 def _merge(parser, args) -> int:
     """--merge-out: the --allow fragments as one allowlist file; reads no target, writes nothing on an error."""
+    # --a / --b cannot be told from their defaults; the other diff flags would be ignored silently
+    diff_flags = [flag for flag, given in (("--fail-on-unused", args.fail_on_unused), ("--json", args.json),
+                                           ("--no-registry", args.no_registry),
+                                           ("--samples", args.samples != parser.get_default("samples"))) if given]
+    if diff_flags:
+        parser.error(f"--merge-out does not diff; drop {' '.join(diff_flags)}")
     if not args.allow:
         parser.error("--merge-out needs the fragments as --allow, one per fragment, in order")
     out, sha_out = args.merge_out, args.sha_out
@@ -488,7 +500,11 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--a and --b must name different targets")
     if args.allow and len(args.allow) > 1:
         parser.error("a diff takes one merged --allow file (one per wave); join fragments with --merge-out first")
-    allow = load_allowlist(args.allow[0]) if args.allow else []
+    try:
+        allow = load_allowlist(args.allow[0]) if args.allow else []
+    except (OSError, ValueError) as e:  # before any target is read, like _merge
+        print(f"ERROR: --allow: {e}", file=sys.stderr)
+        return 1
 
     drivers, names = {}, {}
     try:

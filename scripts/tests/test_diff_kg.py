@@ -386,6 +386,10 @@ def test_allow_list_keeps_distinct_keys_and_the_same_key_in_another_section(tmp_
                # an overlapping glob is a different key: only verbatim repeats are refused
                {"section": "mention_count", "key": "event:*", "max_abs_delta": 3, "reason": "glob"}]
     assert dk.load_allowlist(write_allow(tmp_path, entries)) == entries
+    # --help claims no more than that (staging_promotion.md R2: 互相涵蓋的 glob 仍要人工確認)
+    doc = " ".join(dk.__doc__.split())
+    assert "a verbatim repeat must fail" in doc and "an overlap must fail" not in doc
+    assert "Overlapping globs that are different strings (event:* next to event:x) are not detected" in doc
 
 
 # ---------------------------------------------------------------------------
@@ -513,12 +517,17 @@ def test_unused_is_informational_without_the_flag(two_targets, tmp_path, capsys)
     assert out.rstrip().endswith("exit 0: every difference is allowed")  # default wording unchanged
 
 
-def test_cli_refuses_a_repeated_allow_key_before_reading_a_target(monkeypatch, tmp_path):
-    def no_target(name):
-        raise AssertionError("a target was resolved before the allowlist was validated")
-    monkeypatch.setattr(dk, "resolve_target", no_target)
-    with pytest.raises(ValueError, match=r"allow\[1\] repeats"):
-        dk.main(["--no-registry", "--allow", write_allow(tmp_path, [K10, K10]), "--fail-on-unused"])
+def test_cli_refuses_a_repeated_allow_key_before_reading_a_target(monkeypatch, tmp_path, capsys):
+    resolved = []
+    monkeypatch.setattr(dk, "resolve_target", resolved.append)
+    assert dk.main(["--no-registry", "--allow", write_allow(tmp_path, [K10, K10]), "--fail-on-unused"]) == 1
+    assert dk.main(["--no-registry", "--allow", str(tmp_path / "missing.yaml"), "--json"]) == 1
+    captured = capsys.readouterr()
+    assert resolved == [] and captured.out == ""                      # no target, no report
+    errors = captured.err.splitlines()                                # one line each, no traceback
+    assert len(errors) == 2 and all(line.startswith("ERROR: --allow: ") for line in errors)
+    assert "allow[1] repeats" in errors[0] and "missing.yaml" in errors[1]
+    assert "the --allow file is unreadable or invalid" in " ".join(dk.__doc__.split())
 
 
 def test_cli_unreadable_target_exits_1(monkeypatch, capsys):
@@ -614,6 +623,11 @@ def test_sha_out_is_not_written_when_the_merge_fails(tmp_path, no_target, capsys
     (["--sha-out", "m.sha256", "--allow", "a.yaml"], "--sha-out needs --merge-out"),
     (["--merge-out", "m.yaml", "--sha-out", "./m.yaml", "--allow", "a.yaml"], "--sha-out would overwrite"),
     (["--merge-out", "m.yaml", "--sha-out", "x.yaml", "--allow", "x.yaml"], "--sha-out would overwrite"),
+    # the diff-only flags: a merge exits 0 without a diff, which must not read as a passed gate
+    (["--merge-out", "m.yaml", "--allow", "a.yaml", "--fail-on-unused"],
+     "--merge-out does not diff; drop --fail-on-unused"),
+    (["--merge-out", "m.yaml", "--allow", "a.yaml", "--no-registry"], "--merge-out does not diff; drop --no-registry"),
+    (["--merge-out", "m.yaml", "--allow", "a.yaml", "--json", "--samples", "3"], "drop --json --samples"),
 ])
 def test_merge_out_and_allow_usage_errors_exit_2(argv, message, tmp_path, monkeypatch, no_target, capsys):
     monkeypatch.chdir(tmp_path)

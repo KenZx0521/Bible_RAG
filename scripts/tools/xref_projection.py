@@ -6,10 +6,15 @@ neo4j_relationships.jsonl and SETs the row's properties; it refuses a
 duplicate pair. Step 9 (import_tsk_crossrefs) refuses a graph with an edge
 whose curated or tsk is unset, then MERGEs every TSK pericope pair:
 ON CREATE source 'tsk', curated false; on every pair votes, verse_pairs and
-tsk = true. step5_edges and step9_edges replay both on an empty graph, refusing
-what the pipeline refuses. summarize gives the expect file's counts, the keys
-of diff_kg's xref_provenance section and curated_xrefs.edge_fingerprint, all
-of which xref_probe fingerprint also reads from a live graph.
+tsk = true. step5_edges and step9_edges replay both on an empty graph and
+refuse what Step 5 and Step 9's precondition refuse row by row: a duplicate
+pair, a row with curated or tsk unset. They do not replay Step 9's other gates
+(at least one curated edge, the per-verse support gate of supplementary
+anchors, the counts after the write) or validate_output's; validate_output,
+run before expect in the W1 chain, and Step 9 itself enforce those. summarize
+gives the expect file's counts, the keys of diff_kg's xref_provenance section
+and curated_xrefs.edge_fingerprint, all of which xref_probe fingerprint also
+reads from a live graph.
 
 Pure: no I/O (PROVENANCE_CYPHER is only a string). Edges are
 {(a, b): {source, curated, tsk, votes, verse_pairs}}.

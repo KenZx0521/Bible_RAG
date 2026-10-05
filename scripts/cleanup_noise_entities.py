@@ -68,6 +68,7 @@ BACKUP_DIR = ROOT / "output" / "backups"
 SYNCING_ACTIONS = {"generic-events", "yehehua"}
 SYNC_TABLES = ("entities", "entity_mentions")
 
+
 def get_neo4j():
     return GraphDatabase.driver(
         os.getenv("NEO4J_URI", "bolt://localhost:7687"),

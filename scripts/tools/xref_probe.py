@@ -14,15 +14,19 @@ flags are flat, so --help lists all of them.
            (JSONL of {a, b, source, curated, votes}). Writes {version, params,
            edges_from, rows}: 'single:<pid>' (multi-hop), 'legacy:<pid>'
            (1-hop legacy) and 'q:<qid>' (multi-hop from the set), each row
-           [id, hop, curated, weight].
+           [id, hop, curated, weight]. No edges, or a seed file that is not
+           version 1, exits 1 and writes nothing.
   compare  --pred against --measured, each a full document or a bare
            key -> rows map (the archived planner files). Rows compare as JSON
-           (0 is not false, 1 is not 1.0). Exit 1 when the params differ
-           (when both carry them), the key sets differ, a row list differs, or
-           a sentinel fails in either file: for each SENTINEL_PAIRS pair, both
-           ways, single:<x> and legacy:<x> must hold the partner with curated
-           false and weight 0.60. Those are the three TSK edges with votes
-           >= 999 that the pre-C1 coalesce(r.votes, 999) rule ranked as curated.
+           (0 is not false, 1 is not 1.0). Exit 1 when a full document lacks
+           params or two full documents carry different ones (a bare map has
+           none: printed as not compared), the key sets differ, a row list
+           differs, or a sentinel fails in either file: for each SENTINEL_PAIRS
+           pair, both ways, single:<x> and legacy:<x> must hold the partner
+           with curated false and weight 0.60. Those are the three TSK edges
+           with votes >= 999 that the pre-C1 coalesce(r.votes, 999) rule
+           ranked as curated. At most SHOWN (10) keys of each kind are listed;
+           the last line counts every problem.
   deploy-guard
            `docker exec <--container> cat` (read only) of the backend's xref
            code, GUARD_FILES. Exit 1 unless the container reads r.curated, has
@@ -42,7 +46,8 @@ flags are flat, so --help lists all of them.
   fingerprint
            curated_xrefs.edge_fingerprint and the xref_provenance counts of
            --target prod|staging (READ sessions). With --expect, exit 1 unless
-           both equal the expect file's.
+           both equal the expect file's; that file is read, and must be
+           version 1, before the target is.
   allow    1B's fragment of the merged W1 allowlist, in diff_kg's --allow YAML,
            from an --expect file and prod's diff_kg.read_profile (READ
            sessions, check_identity guards: a shell without the staging
@@ -50,6 +55,7 @@ flags are flat, so --help lists all of them.
            differing key of relationships CROSS_REFERENCES, xrefs and
            xref_provenance. Never mention_count: the merged allowlist takes it
            from 1A's residuals_allow.yaml only. Run it right after expect.
+           An --out that is the --expect file is a usage error.
 
 The measured side is backend probes/xref_measure (1B-T2): same seed file, the
 real retriever functions.
@@ -65,7 +71,8 @@ Usage (from the project root):
     $PY scripts/tools/xref_probe.py allow --expect xref.json --out xref_allow.yaml
 
 Exit code: 0 done / everything matches; 1 a difference, a failed sentinel or
-guard, or an unreadable input or target.
+guard, or an unreadable input or target; 2 a usage error (argparse: a missing
+or conflicting flag).
 """
 
 from __future__ import annotations
@@ -199,11 +206,29 @@ def _cmd_predict(args) -> int:
 
 # ---------------------------------------------------------------- compare
 
-def _split(doc) -> tuple[dict | None, dict]:
-    """(params or None, rows) of a full document or a bare key -> rows map."""
-    if isinstance(doc.get("rows"), dict):
-        return doc.get("params"), doc["rows"]
-    return None, doc
+def _is_full(doc) -> bool:
+    """A {version, params, ..., rows} document, not a bare key -> rows map (the archived planner files)."""
+    return isinstance(doc.get("rows"), dict)
+
+
+def _rows(doc) -> dict:
+    """The key -> rows map of a full document or a bare one."""
+    return doc["rows"] if _is_full(doc) else doc
+
+
+def params_problems(pred_doc, measured_doc) -> list[str]:
+    """A full document must carry params, and two full documents equal ones; a bare
+    map has none, so the check is printed as not compared instead."""
+    docs = {"pred": pred_doc, "measured": measured_doc}
+    bare = [side for side, doc in docs.items() if not _is_full(doc)]
+    params = {side: doc.get("params") for side, doc in docs.items() if side not in bare}
+    problems = [f"params missing in {side}" for side, value in params.items() if value is None]
+    if bare:
+        what = "is a bare map" if len(bare) == 1 else "are bare maps"
+        print(f"params: not compared ({' and '.join(bare)} {what})")
+    elif not problems and params["pred"] != params["measured"]:
+        problems.append(f"params differ: pred {params['pred']} measured {params['measured']}")
+    return problems
 
 
 def sentinel_failures(rows: dict) -> tuple[int, list[str]]:
@@ -228,12 +253,11 @@ def _first_difference(pred: list, meas: list) -> str:
     return f"{len(pred)} vs {len(meas)} rows, first difference at #{i}: pred {a} measured {b}"
 
 
-def compare(pred_doc, measured_doc) -> list[str]:
-    """Problems of measured against pred (prints the counts); empty means equal."""
-    (pp, pred), (mp, meas) = _split(pred_doc), _split(measured_doc)
-    problems = []
-    if pp is not None and mp is not None and pp != mp:
-        problems.append(f"params differ: pred {pp} measured {mp}")
+def compare(pred_doc, measured_doc) -> tuple[list[str], int]:
+    """(problems, how many there are) of measured against pred, printing the counts. The list
+    names at most SHOWN keys found on each side only and SHOWN differing keys; empty means equal."""
+    pred, meas = _rows(pred_doc), _rows(measured_doc)
+    problems = params_problems(pred_doc, measured_doc)
     only_p, only_m = sorted(set(pred) - set(meas)), sorted(set(meas) - set(pred))
     print(f"keys: pred {len(pred)}, measured {len(meas)}, only in pred {len(only_p)}, "
           f"only in measured {len(only_m)}")
@@ -248,15 +272,19 @@ def compare(pred_doc, measured_doc) -> list[str]:
         sentinel_counts.append(f"{checked - len(failures)}/{checked} in {side}")
         problems += [f"sentinel ({side}): {f}" for f in failures]
     print("sentinels " + ", ".join(sentinel_counts))
-    return problems
+    hidden = sum(max(len(keys) - SHOWN, 0) for keys in (only_p, only_m, differ))
+    return problems, len(problems) + hidden
 
 
 def _cmd_compare(args) -> int:
-    problems = compare(_read_json(args.pred), _read_json(args.measured))
+    problems, total = compare(_read_json(args.pred), _read_json(args.measured))
     for problem in problems:
         print(f"  {problem}")
-    print("exit 0: prediction equals measurement" if not problems else f"exit 1: {len(problems)} problems")
-    return 1 if problems else 0
+    if not problems:
+        print("exit 0: prediction equals measurement")
+        return 0
+    print(f"exit 1: {total} problems" + (f" ({len(problems)} shown)" if total > len(problems) else ""))
+    return 1
 
 
 # ---------------------------------------------------------------- deploy-guard
@@ -369,6 +397,11 @@ def _cmd_expect(args) -> int:
 
 
 def _cmd_fingerprint(args) -> int:
+    expected = None
+    if args.expect is not None:  # an unreadable or wrong --expect fails before the edge table is streamed
+        expected = _read_json(args.expect)
+        if expected.get("version") != 1:
+            raise ValueError(f"{args.expect}: not a version-1 expect file")
     (rows, provenance), source = _read_target(args.target, EDGE_FINGERPRINT_CYPHER,
                                               xref_projection.PROVENANCE_CYPHER)
     live = xref_projection.live_summary(rows, provenance)
@@ -376,9 +409,9 @@ def _cmd_fingerprint(args) -> int:
           f"({source['target']} {source['neo4j_uri']}, {live['edges']:,} edges)")
     for key, n in live["xref_provenance"].items():
         print(f"  {key}: {n:,}")
-    if args.expect is None:
+    if expected is None:
         return 0
-    problems = xref_projection.expectation_problems(live, _read_json(args.expect))
+    problems = xref_projection.expectation_problems(live, expected)
     for problem in problems:
         print(f"  {problem}")
     print(f"exit 0: {source['target']} equals {args.expect}" if not problems
@@ -480,6 +513,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("predict needs exactly one of --target and --edges")
     if args.action == "allow" and args.target == "staging":
         parser.error("allow reads prod, diff_kg's --a side; --target staging does not apply")
+    if args.action == "allow" and args.out.resolve() == args.expect.resolve():
+        parser.error(f"allow --out would overwrite the expect file {args.out}")
     try:
         return ACTIONS[args.action](args)
     except Exception as e:  # noqa: BLE001  (an unreadable input or target is never "equal")

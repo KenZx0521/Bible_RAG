@@ -13,6 +13,7 @@ expect (1B-T3) replays Steps 5 and 9 on a tiny Step 0 output and TSK file;
 fingerprint reads the same table back through the fake driver. allow turns
 that expect file and a fake prod profile into 1B's allowlist fragment: exact
 YAML that diff_kg loads, covering 1B's sections and never mention_count.
+The input and usage guards are in test_xref_probe_guards.py.
 """
 
 from __future__ import annotations
@@ -304,11 +305,33 @@ def test_compare_exact_and_sentinels(tmp_path, capsys):
     assert run_compare(tmp_path, full(curated), curated) == 1
 
 
-def test_compare_params_and_key_sets(tmp_path):
+def test_compare_params_and_key_sets(tmp_path, capsys):
     rows = sentinel_rows()
     assert run_compare(tmp_path, full(rows), full(rows, params={"max_hops": 2, "limit": 30})) == 1
     fewer = {k: v for k, v in rows.items() if k != "q:Q1"}
     assert run_compare(tmp_path, full(rows), fewer) == 1
+    capsys.readouterr()
+    # a full document must carry params; only a bare map (the archived files) skips the check, and says so
+    no_params = {k: v for k, v in full(rows).items() if k != "params"}
+    assert run_compare(tmp_path, full(rows), no_params) == 1
+    assert run_compare(tmp_path, no_params, rows) == 1
+    out = capsys.readouterr().out
+    assert "params missing in measured" in out and "params missing in pred" in out
+    assert run_compare(tmp_path, full(rows), rows) == 0
+    assert "params: not compared (measured is a bare map)" in capsys.readouterr().out
+
+
+def test_compare_counts_every_problem_not_only_the_shown_ones(tmp_path, capsys):
+    rows, other = sentinel_rows(), {"max_hops": 2, "limit": 30}
+    pred = {**rows, **{f"q:Q{i:02d}": [["gen:1:0", 1, True, 0.75]] for i in range(12)}}
+    assert run_compare(tmp_path, full(pred), full({**pred, **{f"q:Q{i:02d}": [] for i in range(12)}})) == 1
+    out = capsys.readouterr().out
+    assert "rows: 12 of 23 shared keys differ" in out and out.count("first difference at") == xp.SHOWN
+    assert out.rstrip().endswith("exit 1: 12 problems (10 shown)")
+    assert run_compare(tmp_path, full(pred), full(rows, params=other)) == 1      # params + 12 only in pred
+    assert capsys.readouterr().out.rstrip().endswith("exit 1: 13 problems (11 shown)")
+    assert run_compare(tmp_path, full(rows), full(rows, params=other)) == 1
+    assert capsys.readouterr().out.rstrip().endswith("exit 1: 1 problems")
 
 
 # ---------------------------------------------------------------- deploy-guard
