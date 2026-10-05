@@ -252,7 +252,7 @@
     {
       "id": "H8",
       "title": "CROSS_REFERENCES carry an explicit provenance flag",
-      "severity": "record",
+      "severity": "hard",
       "hard_from": "1B",
       "plan_reference": "no_provenance 916; unflagged 250,418; flag_mismatch 0",
       "query": "CROSS_REFERENCES: no_provenance = curated IS NULL AND votes IS NULL (before 1B curated-ness is only inferable from missing votes); unflagged = curated IS NULL OR tsk IS NULL; flag_mismatch = curated set and != (curated_sources non-empty), or tsk set and != (votes IS NOT NULL)",

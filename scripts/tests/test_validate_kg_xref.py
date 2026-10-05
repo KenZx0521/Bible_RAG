@@ -19,6 +19,10 @@ no anchors, so R4 falls back to its legacy scalars.
 R11 counts the edges carrying TSK votes and, since Step 9 writes tsk and
 votes together, the edges flagged tsk without votes (tsk_flag_without_votes).
 
+All three are hard (target 0, R11's count equal to W1's 250,358 TSK edges):
+one bad edge fails the gate (exit 1). The gate tests score the fixture against
+its own TSK edge count (pin_data_count_targets).
+
 config/kg_probes.yaml pins single pairs: nine 1B probes fail on prod today and
 pass once W1 is loaded, and one passes on both but fails if the XREF-2
 deletion (1B-C5a) were undone.
@@ -37,7 +41,9 @@ from _validate_kg_helpers import (
     SHIPPED_BASELINE,
     SHIPPED_PROBES,
     append_row,
+    cli,
     edit_rows,
+    fresh_baseline,
     measure,
     read_rows,
     write_rows,
@@ -147,6 +153,20 @@ def test_shipped_h8_records_the_new_metrics(snap):
         assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0), name
 
 
+@pytest.mark.parametrize("pair,changes,name", [(TSK, {"tsk": None}, "unflagged"),
+                                               (MD, {"curated_sources": None}, "flag_mismatch")],
+                         ids=["unflagged", "flag_mismatch"])
+def test_h8_hard_failure_exit_1(snap, tmp_path, capsys, pair, changes, name):
+    # hard since 1B: a single edge missing a flag, or whose flag its evidence
+    # contradicts, fails the gate; as a record check it could only regress
+    baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys)[0] == 0
+    edit_rows(snap / "cross_references.jsonl", _row(pair), **changes)
+    code, report = cli(snap, baseline, capsys)
+    assert code == 1 and report["hard_failures"] == ["H8"]
+    assert report["checks"]["H8"]["metrics"][name]["status"] == "fail"
+
+
 # ---------------------------------------------------------------------------
 # R4: each supplementary anchor judged against the edge's pericopes
 # ---------------------------------------------------------------------------
@@ -252,6 +272,15 @@ def test_shipped_r4_records_the_new_metrics(snap):
         assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0), name
 
 
+def test_r4_hard_failure_exit_1(snap, tmp_path, capsys):
+    baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys)[0] == 0
+    _anchors(snap, "heb 1:3>psa 2:7")  # outside heb:1:1, as in test_r4_anchor_wrong_pericope
+    code, report = cli(snap, baseline, capsys)
+    assert code == 1 and report["hard_failures"] == ["R4"]
+    assert report["checks"]["R4"]["metrics"]["misaligned"]["status"] == "fail"
+
+
 # ---------------------------------------------------------------------------
 # R11: TSK votes, and no tsk flag without them
 # ---------------------------------------------------------------------------
@@ -287,6 +316,21 @@ def test_shipped_r11_records_the_new_metric(snap):
     spec = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "R11")
     m = spec["metrics"]["tsk_flag_without_votes"]
     assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0)
+    # W1's TSK edge count on the current TSK file and pericopes (2D re-accepts
+    # it); equal, since under 'up' 250,400 edges would pass
+    votes = spec["metrics"]["tsk_votes_edges"]
+    assert (votes["direction"], votes["tolerance"], votes["target"]) == ("equal", 0, 250358)
+
+
+def test_r11_equal_rejects_extra_tsk_edges(snap, tmp_path, capsys):
+    # fresh_baseline pins the target to the fixture's own count, 1
+    baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys)[0] == 0
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, "curated": False, "tsk": True})  # flagged: H8 stays 0
+    code, report = cli(snap, baseline, capsys)
+    assert code == 1 and report["hard_failures"] == ["R11"]
+    m = report["checks"]["R11"]["metrics"]["tsk_votes_edges"]
+    assert (m["value"], m["target"], m["status"]) == (2, 1, "fail")
 
 
 # ---------------------------------------------------------------------------

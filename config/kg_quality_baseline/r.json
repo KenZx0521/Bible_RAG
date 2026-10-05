@@ -82,7 +82,7 @@
     {
       "id": "R4",
       "title": "supplementary cross-reference anchors misplaced",
-      "severity": "record",
+      "severity": "hard",
       "hard_from": "1B",
       "plan_reference": "misaligned 59; misaligned_any_verse 62; unparsed 0",
       "query": "supplementary CROSS_REFERENCES (source or curated_sources), each supp_anchors entry 'book ch:vs>book ch:vs' judged against the edge's two pericopes (book, chapter and verse_range): misaligned = an end's first verse outside, misaligned_any_verse = any verse outside, unparsed = an anchor or a verse_range that cannot be read; an edge without anchors (built before 1B) is judged by source_verses/target_verses instead. md_anchors are not judged (XREF-5, 2D)",
@@ -287,14 +287,14 @@
     {
       "id": "R11",
       "title": "CROSS_REFERENCES carrying TSK votes",
-      "severity": "record",
+      "severity": "hard",
       "hard_from": "1B",
       "plan_reference": "tsk_votes_edges 249,502 (target 250,358); tsk_flag_without_votes 0",
       "query": "CROSS_REFERENCES: tsk_votes_edges = votes IS NOT NULL; tsk_flag_without_votes = tsk = true AND votes IS NULL (Step 9 writes tsk and votes together)",
       "metrics": {
         "tsk_votes_edges": {
           "value": 249502,
-          "direction": "up",
+          "direction": "equal",
           "tolerance": 0,
           "target": 250358
         },

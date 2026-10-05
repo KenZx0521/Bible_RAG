@@ -22,6 +22,8 @@ MAX_LINES = 800
 # parts must hold exactly these checks (a check added later extends the list).
 PRE_SPLIT_IDS = [*(f"H{i}" for i in range(1, 11)), *(f"R{i}" for i in range(1, 12)), "PROBES", "W", "D1"]
 FAMILY = {"h.json": r"H\d+", "r.json": r"R\d+", "misc.json": r"(?!H\d|R\d).+"}
+# Record checks turned hard when their batch landed (hard_from), one set per batch.
+HARD_FROM_1B = {"H8", "R4", "R11"}
 
 
 # ---------------------------------------------------------------------------
@@ -33,7 +35,8 @@ def test_shipped_baseline_covers_every_check_with_batch0_severities():
     ids = {c["id"] for c in doc["checks"]}
     assert ids == set(vk.CHECKS)
     severity = {c["id"]: c["severity"] for c in doc["checks"]}
-    assert {i for i, s in severity.items() if s == "hard"} == {"H1", "H2", "H7", "D1"}
+    assert {i for i, s in severity.items() if s == "hard"} == {"H1", "H2", "H7", "D1"} | HARD_FROM_1B
+    assert {c["hard_from"] for c in doc["checks"] if c["id"] in HARD_FROM_1B} == {"1B"}
     assert severity["W"] == "warn"
     for check in doc["checks"]:
         assert check.get("query"), check["id"]
