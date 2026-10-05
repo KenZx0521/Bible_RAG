@@ -30,8 +30,10 @@ e.g. a record ratchet inside a hard check: it regresses (exit 2), never fails.
 Hard checks per batch (`hard_from` holds the batch; on a record check, the
 batch at which it is planned to become hard):
   0    H1, H2, H7, D1
-  1A   H11 (relation provenance: every prod edge predates the source property,
-       so prod fails it until the W1 promotion; gate staging before that)
+  1A   H3, H9, H11, R6; R6's functionality readings (functional_violation_rate
+       and the every-encoding multi-parent counts) stay record ratchets (K3).
+       Prod fails all four until the W1 promotion (H11: every prod edge
+       predates the source property), so gate staging before that.
 A check that raised (error), or a metric that came back None without a
 declared reason (unmeasured), exits 1 whatever its severity: a check that did
 not run never passes. Declared n/a (D1 and H5 on a snapshot; R3 all-forms and
@@ -45,8 +47,9 @@ ratchet: an intentional change is approved with --accept ID (it cannot bypass
 a hard target, only the stored record value). Direction "subset" (PROBES
 .failing, R6.failing_probes) stores the failing probe ids: any id outside the
 stored set is a regression even when the count is unchanged, and --ratchet
-only removes ids. Their counts (failures, probe_failures) carry count_of and
-are always stored as len(ids). H7's sha target is read from config/step0_sha.json
+only removes ids; R6 is hard, so there the target [] fails any failing probe.
+Their counts (failures, probe_failures) carry count_of and are always stored
+as len(ids). H7's sha target is read from config/step0_sha.json
 (--step0-sha), the file check_step0.py records, and is never copied here.
 
 Snapshot format kg_snapshot/v1 (JSONL = one object per line). Every file is

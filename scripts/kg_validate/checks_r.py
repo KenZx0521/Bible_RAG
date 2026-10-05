@@ -1,4 +1,6 @@
-"""R checks (plan §3.6): ratcheted records R1–R11."""
+"""R checks (plan §3.6): R1–R11. Which are hard, and from which batch, is the
+baseline's call (severity, hard_from in config/kg_quality_baseline/r.json;
+listed in validate_kg.py)."""
 
 from __future__ import annotations
 

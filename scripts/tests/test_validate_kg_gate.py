@@ -38,13 +38,19 @@ from _validate_kg_helpers import (
 # snap is a pytest fixture: importing it is what makes it available here.
 from _validate_kg_helpers import snap  # noqa: F401
 
+# The record-mechanics tests (regression exit 2, ratchet, tolerance, probe swap,
+# write-back) break H3 with unsupported edges and R6 with a probe swap. Both
+# are hard from 1A, so those tests score them as record checks, explicitly;
+# test_shipped_h3_h9_and_r6_are_hard holds the shipped severities.
+H3_R6_AS_RECORD = {"H3": "record", "R6": "record"}
+
 
 # ---------------------------------------------------------------------------
 # exit codes, ratchet, warnings
 # ---------------------------------------------------------------------------
 
 def test_exit_codes_pass_hard_fail_and_regression(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     code, _ = cli(snap, baseline, capsys, "--ratchet")
     assert code == 0
     code, report = cli(snap, baseline, capsys)
@@ -95,8 +101,25 @@ def test_record_metric_inside_a_hard_check_regresses_without_failing(snap, tmp_p
     assert r6["metrics"]["functional_violation_rate"]["status"] == "regressed"
 
 
-def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
+@pytest.mark.parametrize("check_id,row,name", [
+    ("H3", unsupported_edge(), "unsupported"),
+    # 雅各 VISITED 馬可: a Person where the schema's range is Place; a prior, so H3 exempts it
+    ("H9", {**_prior_father("person:yage", "person:make"), "relation": "VISITED"}, "domain_range_violations"),
+    ("R6", _prior_father("person:maliya", "person:make"), "female_head"),
+])
+def test_shipped_h3_h9_and_r6_are_hard(snap, tmp_path, capsys, check_id, row, name):
+    # batch-1 plan §2.1: one defect a record check would only call a regression
+    # (exit 2) fails the shipped 1A gate
     baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys, "--ratchet")[0] == 0
+    append_row(snap / "relations.jsonl", row)
+    code, report = cli(snap, baseline, capsys)
+    assert (code, report["hard_failures"], report["regressions"]) == (1, [check_id], [])
+    assert report["checks"][check_id]["metrics"][name]["status"] == "fail"
+
+
+def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     append_row(snap / "relations.jsonl", unsupported_edge())
     append_row(snap / "relations.jsonl", unsupported_edge(head_id="person:bide"))
     cli(snap, baseline, capsys, "--ratchet")
@@ -126,7 +149,7 @@ def test_ratchet_raises_up_direction_metric(snap, tmp_path, capsys):
 
 
 def test_tolerance_absorbs_small_regressions(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     cli(snap, baseline, capsys, "--ratchet")
     doc = json.loads(baseline.read_text(encoding="utf-8"))
     next(c for c in doc["checks"] if c["id"] == "H3")["metrics"]["unsupported"]["tolerance"] = 1
@@ -164,7 +187,7 @@ def test_w_histogram_drift_warns_without_failing(snap, tmp_path, capsys):
 def test_probe_swap_with_unchanged_count_is_a_regression(snap, tmp_path, capsys):
     """A must-hold probe breaking while a known failure heals keeps the count:
     the per-id baseline still flags it (edges lost in a rebuild, review E-1)."""
-    baseline = fresh_baseline(tmp_path, snap)
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     lot = {"head_id": "person:luode", "relation": "FATHER_OF", "tail_id": "person:tala",
            "source_pericope_id": "gen:11:2", "extraction_phase": 2, "source": "rule"}
     append_row(snap / "relations.jsonl", lot)
@@ -303,13 +326,15 @@ def test_unusable_live_target_exits_1_with_a_message(monkeypatch, capsys, uri, m
 # the split baseline directory: read merged, written back part by part
 # ---------------------------------------------------------------------------
 
-def split_baseline(tmp_path: Path, snap: Path) -> Path:
-    """fresh_baseline's cleared values, kept in the shipped split layout."""
+def split_baseline(tmp_path: Path, snap: Path, severities: dict[str, str] | None = None) -> Path:
+    """fresh_baseline's cleared values and severity overrides, kept in the
+    shipped split layout."""
     dest = tmp_path / "baseline"
     shutil.copytree(SHIPPED_BASELINE, dest)
     for part in dest.glob("*.json"):
         doc = json.loads(part.read_text(encoding="utf-8"))
         for check in doc.get("checks", []):
+            check["severity"] = (severities or {}).get(check["id"], check["severity"])
             for metric in check["metrics"].values():
                 metric["value"] = None
         part.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -325,14 +350,14 @@ def _rewritten_by(baseline: Path, run) -> set[str]:
 
 
 def test_ratchet_and_accept_write_each_check_back_to_its_part(snap, tmp_path, capsys):
-    baseline = split_baseline(tmp_path, snap)
+    baseline = split_baseline(tmp_path, snap, H3_R6_AS_RECORD)
 
     def run(*extra: str):
         return lambda: cli(snap, baseline, capsys, *extra)
 
     append_row(snap / "relations.jsonl", unsupported_edge())
     assert _rewritten_by(baseline, run("--ratchet")) == {"h.json", "r.json", "misc.json"}  # nulls filled
-    single = fresh_baseline(tmp_path, snap)  # the same run on one file stores the same checks
+    single = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)  # the same run on one file stores the same checks
     assert cli(snap, single, capsys, "--ratchet")[0] == 0
     assert vk.load_baseline(baseline)["checks"] == vk.load_baseline(single)["checks"]
 

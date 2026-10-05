@@ -24,7 +24,11 @@ PRE_SPLIT_IDS = [*(f"H{i}" for i in range(1, 12)), *(f"R{i}" for i in range(1, 1
 FAMILY = {"h.json": r"H\d+", "r.json": r"R\d+", "misc.json": r"(?!H\d|R\d).+"}
 # The hard checks, keyed by the batch that made them hard (their hard_from);
 # a batch that hardens a check adds its own key.
-HARD_BY_BATCH = {"0": {"H1", "H2", "H7", "D1"}, "1A": {"H11"}}
+HARD_BY_BATCH = {"0": {"H1", "H2", "H7", "D1"}, "1A": {"H3", "H9", "H11", "R6"}}
+# K3 (batch-1 plan §2.1): R6 gates contradictions, female heads and its probes;
+# its functionality readings stay record ratchets (≤5% is deferred-A).
+R6_RECORD_METRICS = {"functional_violation_rate", "children_with_2plus_nonfemale_parents",
+                     "children_with_gt2_parents"}
 
 
 # ---------------------------------------------------------------------------
@@ -44,6 +48,15 @@ def test_shipped_baseline_covers_every_check_with_batch_severities():
         assert check.get("query"), check["id"]
         for name, m in check["metrics"].items():
             assert {"value", "direction", "tolerance"} <= set(m), (check["id"], name)
+
+
+def test_shipped_r6_keeps_its_functionality_metrics_record():
+    doc = vk.load_baseline(SHIPPED_BASELINE)
+    overridden = {(c["id"], name): m["severity"]
+                  for c in doc["checks"] for name, m in c["metrics"].items() if "severity" in m}
+    assert overridden == {("R6", name): "record" for name in R6_RECORD_METRICS}
+    rate = next(c for c in doc["checks"] if c["id"] == "R6")["metrics"]["functional_violation_rate"]
+    assert rate["target"] == 0.05  # kept for reference: the ratchet, not 5%, is what gates
 
 
 def test_shipped_baseline_keeps_probe_ids_and_no_step0_sha_copy():

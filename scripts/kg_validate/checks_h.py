@@ -1,5 +1,6 @@
-"""H checks (plan §3.6): batch-0 hard gates H1, H2, H7, the H3–H10 records
-and batch 1A's hard gate H11 (relation provenance).
+"""H checks (plan §3.6): H1–H11, H11 being batch 1A's relation provenance.
+Which are hard, and from which batch, is the baseline's call (severity,
+hard_from in config/kg_quality_baseline/h.json; listed in validate_kg.py).
 
 D1 (export_event_registry --check) is registered by scripts/validate_kg.py,
 which owns the subprocess it runs.
@@ -76,7 +77,7 @@ def check_h7(kg: KG, ctx: Context) -> CheckResult:
 
 
 # ---------------------------------------------------------------------------
-# Record checks: H3–H10
+# H3–H10: record checks until their batch (hard_from) hardens them
 # ---------------------------------------------------------------------------
 
 def _h3_exempt(r: dict) -> bool:

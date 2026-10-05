@@ -7,7 +7,8 @@ snap is a pytest fixture: a test module gets it by importing it.
 
 Exit codes and ratchet direction run through main() against a baseline built
 from the shipped config/kg_quality_baseline/ with its values cleared, so the
-shipped severities/directions are what is being tested.
+shipped severities/directions are what is being tested; a test of the record
+mechanics that breaks a hard check on purpose relabels it (`severities`).
 """
 
 from __future__ import annotations
@@ -70,12 +71,14 @@ def write_step0_sha(path: Path, sha: str) -> None:
                     encoding="utf-8")
 
 
-def fresh_baseline(tmp_path: Path, snap: Path) -> Path:
+def fresh_baseline(tmp_path: Path, snap: Path, severities: dict[str, str] | None = None) -> Path:
     """Shipped specs with every value cleared; H7's sha target (step0_sha.json
     next to the baseline, see cli) = the fixture's. Written as one file: the
-    shipped parts merged, exactly as the gate reads them."""
+    shipped parts merged, exactly as the gate reads them. `severities` ({check
+    id: severity}) overrides the shipped severity of the checks it names."""
     doc = vk.load_baseline(SHIPPED_BASELINE)
     for check in doc["checks"]:
+        check["severity"] = (severities or {}).get(check["id"], check["severity"])
         for metric in check["metrics"].values():
             metric["value"] = None
     write_step0_sha(tmp_path / "step0_sha.json", _sha(snap / "embedding_queue.jsonl"))
