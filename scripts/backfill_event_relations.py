@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
-"""Salvage Event-related unclassified relation pairs (P0 repair).
+"""Salvage Event-related unclassified relation pairs (P0 repair; legacy only).
 
 77,953 mined pairs never got a relation type from the LLM classifier
 (gemma3:4b) and sit in relations_unclassified.jsonl. The Event-related
-subset is directly usable to fill the near-empty event layer:
+subset was used to fill the near-empty event layer:
 
     Event–Person  →  (Person)-[:PARTICIPATED_IN]->(Event)
     Event–Place   →  (Event)-[:OCCURRED_IN]->(Place)
 
-These are pericope-cooccurrence signals, not verified assertions, so edges
-are written with confidence=0.35, extraction_phase=5 and
-notes='cooccurrence-backfill'. MERGE ... ON CREATE never touches existing
+These are pericope-cooccurrence signals, not verified assertions (strict
+precision about 0.2, REL-06), and they reach the graph after Step 6.05, so
+its provenance gate never sees them. Step 10.3 is therefore out of the
+default chain (D2, K7): without --legacy-cooccurrence the script exits 2
+before it checks KG_TARGET or connects. The flag exists only for the K8 P1
+control and for reproducing the paper's numbers.
+
+With the flag, edges are written with source='cooccurrence',
+extraction_phase=7 (ExtractionPhase.COOCCURRENCE; it was 5, shared with R5's
+inverse edges, REL-09), confidence=0.35, notes='cooccurrence-backfill' and
+backfilled=true. MERGE ... ON CREATE never touches existing
 classifier-produced edges. Event–Event pairs (277) are skipped: temporal
 direction (PRECEDED_BY/CAUSED) cannot be inferred from cooccurrence.
 
 Usage:
-    uv run python backfill_event_relations.py [--dry-run]
+    uv run python backfill_event_relations.py --legacy-cooccurrence [--dry-run]
 """
 
 from __future__ import annotations
@@ -31,13 +39,25 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
 import kg_target
+from relation_extraction.models import PHASE_OF_SOURCE
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 
 BATCH_SIZE = 2000
 CONFIDENCE = 0.35
-PHASE = 5  # cooccurrence backfill (R2 rule=2, R4 llm=4 in existing data)
+SOURCE = "cooccurrence"
+PHASE = PHASE_OF_SOURCE[SOURCE]  # 7; was 5, the phase R5's inverse edges also carry
+
+RETIRED = (
+    "Step 10.3 is retired from the default build chain (D2, K7): it promotes "
+    "same-pericope co-occurrence to typed PARTICIPATED_IN/OCCURRED_IN edges "
+    "(strict precision about 0.2), read from the 2026-05 relations_unclassified.jsonl "
+    "snapshot after Step 6.05, so the 6.05 provenance gate never sees them.\n"
+    "Nothing was written. Pass --legacy-cooccurrence only to build the P1 control "
+    "(K8) or to reproduce the paper's numbers; its edges carry "
+    f"source='{SOURCE}' and extraction_phase={PHASE}."
+)
 
 _MERGE_PARTICIPATED = """
 UNWIND $rows AS row
@@ -46,6 +66,7 @@ MATCH (ev:Event:Entity {entity_id: row.event_id})
 MERGE (p)-[r:PARTICIPATED_IN]->(ev)
 ON CREATE SET r.confidence = $confidence,
               r.extraction_phase = $phase,
+              r.source = $source,
               r.notes = 'cooccurrence-backfill',
               r.evidence_count = row.evidence_count,
               r.source_pericope_id = row.source_pericope_id,
@@ -62,6 +83,7 @@ MATCH (pl:Place:Entity {entity_id: row.place_id})
 MERGE (ev)-[r:OCCURRED_IN]->(pl)
 ON CREATE SET r.confidence = $confidence,
               r.extraction_phase = $phase,
+              r.source = $source,
               r.notes = 'cooccurrence-backfill',
               r.evidence_count = row.evidence_count,
               r.source_pericope_id = row.source_pericope_id,
@@ -127,7 +149,8 @@ def run_batches(driver, cypher: str, rows: list[dict], label: str) -> dict:
     for start in range(0, len(rows), BATCH_SIZE):
         batch = rows[start:start + BATCH_SIZE]
         with driver.session() as session:
-            record = session.run(cypher, rows=batch, confidence=CONFIDENCE, phase=PHASE).single()
+            record = session.run(cypher, rows=batch, confidence=CONFIDENCE,
+                                 phase=PHASE, source=SOURCE).single()
             matched = int(record["matched"]) if record else 0
             created = int(record["created"]) if record else 0
         stats["matched"] += matched
@@ -145,12 +168,42 @@ def coverage(driver) -> dict:
         return dict(record) if record else {}
 
 
-def main() -> int:
+def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=str,
                         default=str(ROOT / "output" / "relations_unclassified.jsonl"))
+    parser.add_argument("--legacy-cooccurrence", action="store_true",
+                        help="run the retired Step 10.3 (P1 control / paper reproduction only)")
     parser.add_argument("--dry-run", action="store_true")
-    args = parser.parse_args()
+    return parser
+
+
+def backfill(driver, participated: list[dict], occurred: list[dict], dry_run: bool) -> int:
+    before = coverage(driver)
+    print(f"\nBefore: {before['with_participant']:,}/{before['total']:,} events "
+          f"with participant, {before['with_place']:,}/{before['total']:,} with place")
+
+    if dry_run:
+        print("[dry-run] nothing written")
+        return 0
+
+    print("\nImporting...")
+    run_batches(driver, _MERGE_PARTICIPATED, participated, "PARTICIPATED_IN")
+    run_batches(driver, _MERGE_OCCURRED, occurred, "OCCURRED_IN")
+
+    after = coverage(driver)
+    print(f"\nAfter:  {after['with_participant']:,}/{after['total']:,} events "
+          f"with participant ({before['with_participant']:,} before), "
+          f"{after['with_place']:,}/{after['total']:,} with place "
+          f"({before['with_place']:,} before)")
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _parser().parse_args(argv)
+    if not args.legacy_cooccurrence:
+        print(RETIRED, file=sys.stderr)
+        return 2
     kg_target.assert_target("neo4j")
 
     path = Path(args.input)
@@ -159,33 +212,16 @@ def main() -> int:
         return 2
 
     participated, occurred, ee_skipped = load_pairs(path)
-    print(f"Event–Person pairs: {sum(1 for _ in participated):,} unique "
+    print(f"Event–Person pairs: {len(participated):,} unique "
           f"→ PARTICIPATED_IN candidates")
     print(f"Event–Place pairs:  {len(occurred):,} unique → OCCURRED_IN candidates")
     print(f"Event–Event pairs skipped (no temporal direction inferable): {ee_skipped:,}")
 
     driver = get_driver()
     try:
-        before = coverage(driver)
-        print(f"\nBefore: {before['with_participant']:,}/{before['total']:,} events "
-              f"with participant, {before['with_place']:,}/{before['total']:,} with place")
-
-        if args.dry_run:
-            print("[dry-run] nothing written")
-            return 0
-
-        print("\nImporting...")
-        run_batches(driver, _MERGE_PARTICIPATED, participated, "PARTICIPATED_IN")
-        run_batches(driver, _MERGE_OCCURRED, occurred, "OCCURRED_IN")
-
-        after = coverage(driver)
-        print(f"\nAfter:  {after['with_participant']:,}/{after['total']:,} events "
-              f"with participant ({before['with_participant']:,} before), "
-              f"{after['with_place']:,}/{after['total']:,} with place "
-              f"({before['with_place']:,} before)")
+        return backfill(driver, participated, occurred, args.dry_run)
     finally:
         driver.close()
-    return 0
 
 
 if __name__ == "__main__":

@@ -83,7 +83,8 @@ WRITERS = {
         backfill_aliases, ("neo4j",), ((backfill_aliases, "get_driver"),)),
     "backfill_event_relations": Writer(
         backfill_event_relations, ("neo4j",), ((backfill_event_relations, "get_driver"),),
-        argv=lambda tmp: ["--input", _file(tmp / "relations_unclassified.jsonl")]),
+        argv=lambda tmp: ["--legacy-cooccurrence",   # without it main() exits 2 first
+                          "--input", _file(tmp / "relations_unclassified.jsonl")]),
     "backfill_verse_mentions": Writer(
         backfill_verse_mentions, ("neo4j",), ((backfill_verse_mentions, "get_driver"),),
         argv=_output_dir_with({"entity_mentions.jsonl": '{"source_type": "verse", '
