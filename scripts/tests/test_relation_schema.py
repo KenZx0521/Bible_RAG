@@ -14,6 +14,11 @@ with --inverse. A gendered relation has no single reverse (FATHER_OF(x, y)
 reads back as SON_OF or DAUGHTER_OF depending on y), and R5 wrote SON_OF for
 daughters and FATHER_OF for mothers, so only the two gender-neutral pairs keep
 an inverse.
+
+REL-03 (C6c): PRECEDED_BY(X, Y) reads "X is preceded by Y", so Y is the earlier
+event. The description and the example said the opposite (X before Y, head
+創世, tail 洪水). No code reads either field (the classifier prompt lists only
+relation names), so this is the documentation half of REL-03.
 """
 
 from __future__ import annotations
@@ -142,3 +147,13 @@ def test_r5_is_off_by_default(monkeypatch, schema):
     derived = [(t.head_id, t.relation, t.tail_id) for t in kept
                if t.extraction_phase == ExtractionPhase.INVERSE_DERIVED]
     assert derived == [("person:d", "DESCENDANT_OF", "person:c")]
+
+
+def test_preceded_by_description_and_example_agree_with_the_name(schema):
+    entry = schema.get("PRECEDED_BY")
+    assert entry.description_zh == "事件 X 之前先發生了事件 Y（Y 早於 X）"
+    assert entry.examples == [{"head": "洪水", "tail": "創世", "sentence": "創世之後不久便有洪水"}]
+    # the example's sentence names the tail first, then 之後, then the head: the tail is earlier
+    (example,) = entry.examples
+    sentence = example["sentence"]
+    assert sentence.index(example["tail"]) < sentence.index("之後") < sentence.index(example["head"])

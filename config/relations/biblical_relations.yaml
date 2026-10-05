@@ -384,9 +384,9 @@ relations:
     range_types: [Event]
     direction: directed
     inverse: null
-    description_zh: "事件 X 發生在 Y 之前"
+    description_zh: "事件 X 之前先發生了事件 Y（Y 早於 X）"
     examples:
-      - {head: "創世", tail: "洪水", sentence: "創世之後不久便有洪水"}
+      - {head: "洪水", tail: "創世", sentence: "創世之後不久便有洪水"}
     confidence_priors: {rule_match: 0.65, prior: 0.85, llm_class: 0.58}
 
   CAUSED:
