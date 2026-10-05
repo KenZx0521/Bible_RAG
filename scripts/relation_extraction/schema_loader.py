@@ -1,7 +1,7 @@
 """Load biblical_relations.yaml and provide candidate-set lookups.
 
-The schema is the closed candidate pool for both rule and LLM classifiers,
-ensuring nothing outside the ontology can be emitted.
+The schema is the closed candidate pool for the R4 LLM classifier, ensuring
+nothing outside the ontology can be emitted; 6.05 checks domain/range against it.
 
 Its `direction_pairs` table names the directed relations whose reading
 direction is carried by the relation name (FATHER_OF vs SON_OF). The 6.05
@@ -59,7 +59,6 @@ class RelationSchema:
                 direction=str(body.get("direction") or "directed"),
                 inverse=body.get("inverse"),
                 description_zh=str(body.get("description_zh") or ""),
-                prompt_signals=list(body.get("prompt_signals") or []),
                 examples=list(body.get("examples") or []),
                 confidence_priors=dict(body.get("confidence_priors") or {}),
             )

@@ -5,6 +5,9 @@ Run as:
     python -m scripts.relation_extraction.extract_relations \\
         [--limit-pericopes N] [--no-llm] [--inverse] [--resume]
 
+There is no R2 rule path (REL-01): every mined candidate goes to R4, and
+6.05's anchored slot rules stand in for R2's yaml keyword match.
+
 Phase R5 (inverse materialisation) runs only with --inverse (REL-02): 6.05
 drops inverse rows anyway, and the schema keeps an inverse only for the two
 gender-neutral pairs (ANCESTOR_OF/DESCENDANT_OF, TEACHER_OF/DISCIPLE_OF).
@@ -32,7 +35,6 @@ from .inverse_materializer import materialize_inverses
 from .models import ExtractedRelation, ExtractionPhase, RelationCandidate
 from .pair_miner import list_pericopes_with_entities, mine_pairs
 from .priors_loader import load_priors, resolve_priors
-from .rule_classifier import classify_by_rules
 from .schema_loader import RelationSchema
 
 logger = logging.getLogger("relation_extraction")
@@ -45,7 +47,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--pericope-id", type=str, default=None,
                         help="Process only this single pericope id.")
     parser.add_argument("--no-llm", action="store_true",
-                        help="Skip Phase R4 LLM classification (rules + priors only).")
+                        help="Skip Phase R4 LLM classification (priors only).")
     parser.add_argument("--no-priors", action="store_true",
                         help="Skip Phase R3 priors loading.")
     parser.add_argument("--inverse", action="store_true",
@@ -184,19 +186,7 @@ def main() -> int:
         with _checkpoint_writer(pipeline_cfg.checkpoint_path, args.resume) as ckpt_fp:
             tracked = _stream_with_checkpoint(pair_iter, seen, ckpt_fp)
 
-            llm_pending: list[RelationCandidate] = []
-            rule_hits = 0
-            for cand in tracked:
-                rule_match = classify_by_rules(cand, schema)
-                if rule_match and rule_match.confidence >= pipeline_cfg.rule_confidence_floor:
-                    key = (rule_match.head_id, rule_match.tail_id, rule_match.relation)
-                    if key not in prior_keys:
-                        all_triples.append(rule_match)
-                        rule_hits += 1
-                    continue
-                llm_pending.append(cand)
-
-            logger.info("Phase R2: %d rule-hit triples", rule_hits)
+            llm_pending: list[RelationCandidate] = list(tracked)
 
             if llm_pending and not args.no_llm:
                 logger.info("Phase R4: %d candidates queued for LLM (model=%s)",

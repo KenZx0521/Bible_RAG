@@ -16,7 +16,7 @@ class ExtractionPhase(IntEnum):
     """Provenance of an extracted relation triple."""
 
     PAIR_MINED = 1     # candidate only — not yet classified
-    RULE_MATCH = 2     # regex/keyword surface form match
+    RULE_MATCH = 2     # legacy R2 keyword match (R2 removed, REL-01; old rows still load)
     DOMAIN_PRIOR = 3   # listed in biblical_priors.yaml
     GROUNDED_LLM = 4   # LLM picked from schema candidate set
     INVERSE_DERIVED = 5  # auto-materialised from another relation's inverse
@@ -159,7 +159,6 @@ class RelationSchemaEntry:
     direction: str  # "directed" | "undirected"
     inverse: Optional[str]
     description_zh: str
-    prompt_signals: list[str]
     examples: list[dict] = field(default_factory=list)
     confidence_priors: dict = field(default_factory=dict)
 
