@@ -135,10 +135,10 @@ uv run --project scripts python scripts/validate_output.py output
 
 ### 交叉引用（第 1B 批起）
 - **supplementary 定義用經文座標**：`bible_chunking/nt_cross_references.py` 的 159 筆定義兩端都寫成 `book ch:verses`（例：`rev 19:16` → `dan 2:47`）。process_bible 用 `bible_chunking/curated_xrefs.py` 逐節查出所在段落，每個觸及的（來源段, 目標段）產生一個錨點字串（`rev 18:2-8>jer 51:45`，只帶落在該段落對上的節）；一筆定義最多扇出到 3 個段落對。舊碼來源端直接用段落 id、目標端只看第一節，59 筆錯位、16 筆被靜默丟掉（XREF-1）。
-- **fail-fast**：任一筆定義解析失敗（缺節、跨章、扇出超過 3、格式錯），就逐條列出並結束碼 1，在寫任何 JSONL 之前停下。
+- **fail-fast**：任一筆定義解析失敗（缺節、跨章、扇出超過 3、兩端落在同一段落、格式錯），就逐條列出並結束碼 1，在寫任何 JSONL 之前停下。
 - **每個段落對一列**：markdown 與 supplementary 依 (start, end) 聚合成一列，屬性見 Step 5。markdown 引用只到段落層級，錨點的來源節記 `?`；解析器沒讀到的部分也記 `?`，不寫成看似合法的值：跨章範圍的終點（`deu 2:26-?`，14 個）與逗號後的範圍（`2ki 25:18-21,?`，8 個），留給第 2D 批（XREF-5）。
 - **只改 neo4j_relationships.jsonl 的 CROSS_REFERENCES 列**：上面 5 個閘門檔不變，check_step0 照樣結束碼 0。
-- **validate_output 的交叉引用閘門**（錯誤即結束碼 1）：重複的段落對；端點不是 Pericope；curated 列的旗標與出處清單不齊（`curated`、`tsk`、`curated_sources`、`source`、各來源清單的長度）；任何 None 值；supplementary 錨點的書卷、章、節不在端點段落內；定義覆蓋（由定義解析出的錨點與列上的錨點，以多重集合相等）。markdown 與 supplementary 重疊、`-?`、`,?` 只發警告。
+- **validate_output 的交叉引用閘門**（錯誤即結束碼 1）：重複的段落對；端點不是 Pericope；curated 列的旗標與出處清單不齊（`curated`、`tsk`、`curated_sources`、`source`、各來源清單的長度）；任何 None 值；supplementary 錨點的書卷、章、節不在端點段落內；定義覆蓋（由定義解析出的錨點與列上的錨點，以多重集合相等）；`supp_tsk_exempt_anchors` 與定義的 tsk_exempt 不符（清單裡有定義沒帶 tsk_exempt 的錨點，或帶 tsk_exempt 的定義有錨點不在清單內，同樣以多重集合比對；Step 9 的節級支撐閘門會跳過清單內的錨點，多一筆就等於放行）。markdown 與 supplementary 重疊、`-?`、`,?` 只發警告。
 - W1 的 Step 0（neo4j_relationships.jsonl sha256 `d2389c73…`，2026-10-05 重跑）：CROSS_REFERENCES 932 列（markdown 774、supplementary 158）、重複段落對 0、非 Pericope 端點 0、supplementary 錨點 162、定義覆蓋 159/159；警告為 `-?` 14 個、`,?` 8 個，另有既有的 embedding queue 計數警告。1B 之前的 output/ 會被擋下：重複段落對 2 個、919 列沒有 curated 旗標、定義覆蓋 0/159。
 
 ---
@@ -580,7 +580,7 @@ uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_ref
 ### 閘門（第 1B 批起；任一不過就結束碼 1）
 - **寫入之前**（`--dry-run` 也跑；只用 READ session，一個 MERGE 都不送）：
   - 旗標前置條件：CROSS_REFERENCES 中 `curated` 或 `tsk` 未設的邊必須是 0。第 1 批之前建的圖（例如第 0 批的 staging）一律拒絕，不會寫一半。
-  - curated 邊至少一條。Step 5 找不到 `neo4j_relationships.jsonl` 時不會失敗，只是一條交叉引用都不建；這時照跑 Step 9 只會建出 250,358 條純 TSK 邊，attached_to_curated 是 0，寫入後的計數閘門照樣全過。所以 `Before:` 一行是 `(0 curated)` 時一律拒絕，要先重跑 Step 5。
+  - curated 邊至少一條。Step 5 找不到 `neo4j_relationships.jsonl` 時不會失敗，只是一條交叉引用都不建；這時照跑 Step 9 只會建出 250,358 條純 TSK 邊，attached_to_curated 是 0，寫入後的計數閘門照樣全過。所以 `Before:` 一行是 `(0 curated)` 時一律拒絕：先確認 `output/neo4j_relationships.jsonl` 存在（缺了要重跑 Step 0，並跑過 check_step0 與 validate_output），再重跑 Step 5。只重跑 Step 5 會再跳過一次，什麼都不變。
   - supplementary 節級支撐，只認同向：圖上每個 supplementary 錨點都要有一筆 TSK，從錨點的某個來源節指向某個目標節（定義的方向）。只有反向支撐或完全沒有支撐的錨點，除非列在 `supp_tsk_exempt_anchors`，否則逐筆印出兩個方向的最大 votes。用節級而不用段落級，是因為段落級連 XREF-2 刪掉的錯誤定義都「有支撐」。W1 印出 `supplementary anchors: 162 on 158 edges, tsk_exempt 0`，162 個錨點全部有同向支撐。
 - **寫入之後**：matched 等於 TSK 段落對數、count(tsk) 等於段落對數、count(tsk 且 curated) 等於 attached_to_curated、旗標未設的邊為 0。
 

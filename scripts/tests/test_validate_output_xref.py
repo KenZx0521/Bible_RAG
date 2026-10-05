@@ -12,7 +12,8 @@ before anything is imported:
   the source; a None value or list element; a supplementary anchor that does
   not parse or names verses outside its endpoint pericopes; and definition
   coverage: the anchors in the rows must be, as a multiset of (start, end,
-  anchor), exactly what the definitions resolve to.
+  anchor), exactly what the definitions resolve to, and the
+  supp_tsk_exempt_anchors exactly the anchors of the tsk_exempt definitions.
 - warnings: markdown∩supplementary pairs (X4, aggregated; expected after 2D)
   and markdown anchors marked '-?' or ',?' (XREF-5, owned by 2D). Markdown
   verses are not checked.
@@ -53,6 +54,9 @@ DEFINITIONS = [
     SimpleNamespace(src="mat 4:15-16", tgt="isa 9:1-2", ref_type="quotation",
                     description="外邦的加利利", tsk_exempt=None),
 ]
+# DEFINITIONS with the first one tsk_exempt: its anchor must be listed exempt
+EXEMPT_DEFINITIONS = [SimpleNamespace(**{**vars(DEFINITIONS[0]), "tsk_exempt": "reason"}),
+                      DEFINITIONS[1]]
 
 
 def _supp(start: str, end: str, anchor: str, description: str) -> dict:
@@ -177,16 +181,25 @@ ERROR_CASES = {
                        "anchor missing from the rows: mat:4:0→isa:9:1 'mat 4:15-16>isa 9:2'"),
     "extra anchor": (_extra_anchor,
                      "anchor from no definition: mat:1:0→isa:7:0 'mat 1:22>isa 7:14'"),
-}
+    # Step 9's support gate skips every listed anchor: a stray entry fails open
+    "exempt anchor without an exempt definition": (
+        _set("mat:1:0", "isa:7:0", "supp_tsk_exempt_anchors", ["mat 1:23>isa 7:14"]),
+        "tsk_exempt anchor whose definition has no tsk_exempt: "
+        "mat:1:0→isa:7:0 'mat 1:23>isa 7:14'"),
+    "exempt definition anchor not listed": (
+        lambda rows: None,
+        "tsk_exempt definition anchor not in supp_tsk_exempt_anchors: "
+        "mat:1:0→isa:7:0 'mat 1:23>isa 7:14'", EXEMPT_DEFINITIONS),
+}  # (mutate the rows, expected error[, definitions instead of DEFINITIONS])
 
 
 @pytest.mark.parametrize("case", ERROR_CASES)
 def test_each_error_class_fails_the_gate(case):
-    mutate, expected = ERROR_CASES[case]
+    mutate, expected, *definitions = ERROR_CASES[case]
     rows = _rows()
     mutate(rows)
 
-    errors, _, _ = _check(rows)
+    errors, _, _ = _check(rows, *definitions)
 
     assert any(expected in error for error in errors), errors
 
@@ -195,7 +208,7 @@ def test_tsk_exempt_anchors_of_the_pair_pass():
     rows = _rows()
     _props(rows, "mat:1:0", "isa:7:0")["supp_tsk_exempt_anchors"] = ["mat 1:23>isa 7:14"]
 
-    errors, warnings, _ = _check(rows)
+    errors, warnings, _ = _check(rows, EXEMPT_DEFINITIONS)
 
     assert (errors, warnings) == ([], [])
 

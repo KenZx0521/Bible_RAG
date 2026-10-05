@@ -34,7 +34,8 @@ CURATED_SOURCE_LISTS = {
     "markdown": ("md_ref_texts", "md_anchors"),
     "supplementary": ("supp_anchors", "supp_ref_types", "supp_descriptions"),
 }
-TSK_EXEMPT_LIST = "supp_tsk_exempt_anchors"  # optional, a subset of supp_anchors
+# optional: a subset of supp_anchors, exactly the anchors of tsk_exempt definitions
+TSK_EXEMPT_LIST = "supp_tsk_exempt_anchors"
 MAX_LISTED = 10  # lines printed per cross-reference check; the rest are counted
 SAMPLES = 3      # examples quoted in a warning
 
@@ -197,10 +198,24 @@ def _anchor_problems(xrefs: List[dict], verses_of: Mapping[str, Set[int]]) -> Li
     return lines
 
 
-def _anchor_keys(xrefs: List[dict]) -> Counter:
-    """The supplementary anchors in the rows, as a multiset of (start, end, anchor)."""
+def _anchor_keys(xrefs: List[dict], name: str = "supp_anchors") -> Counter:
+    """The anchors of one list in the rows, as a multiset of (start, end, anchor)."""
     return Counter((str(row.get("start")), str(row.get("end")), text) for row in xrefs
-                   for text in _str_list(row["properties"].get("supp_anchors")))
+                   for text in _str_list(row["properties"].get(name)))
+
+
+def _exempt_coverage(xrefs: List[dict], anchors: Iterable) -> List[Tuple[List[str], str]]:
+    """TSK_EXEMPT_LIST must be, as a multiset of (start, end, anchor), exactly the
+    anchors of the definitions with tsk_exempt: Step 9's support gate skips every
+    listed anchor, so a stray entry would let an unsupported anchor through."""
+    expected = Counter((a.start, a.end, a.text) for a in anchors if a.tsk_exempt is not None)
+    listed = _anchor_keys(xrefs, TSK_EXEMPT_LIST)
+    extra = [f"tsk_exempt anchor whose definition has no tsk_exempt: {s}→{e} {t!r}"
+             for s, e, t in sorted((listed - expected).elements())]
+    missing = [f"tsk_exempt definition anchor not in {TSK_EXEMPT_LIST}: {s}→{e} {t!r}"
+               for s, e, t in sorted((expected - listed).elements())]
+    return [(extra, "tsk_exempt anchor whose definition has no tsk_exempt"),
+            (missing, f"tsk_exempt definition anchor not in {TSK_EXEMPT_LIST}")]
 
 
 def _coverage(xrefs: List[dict], definitions: List,
@@ -209,8 +224,9 @@ def _coverage(xrefs: List[dict], definitions: List,
 
     The anchors in the rows must equal what the definitions resolve to: a
     definition with none of its anchors is reported once, the missing anchors
-    of a partly present one each, and every anchor left over as extra."""
-    _, unresolved = resolve_definitions(definitions, verse_map)
+    of a partly present one each, and every anchor left over as extra. The
+    exempt anchors are checked the same way (_exempt_coverage)."""
+    resolved, unresolved = resolve_definitions(definitions, verse_map)
     remaining = _anchor_keys(xrefs)
     without, missing, covered = [], [], 0
     for i, definition in enumerate(definitions):
@@ -230,7 +246,8 @@ def _coverage(xrefs: List[dict], definitions: List,
     extra = [f"anchor from no definition: {s}→{e} {t!r}"
              for s, e, t in sorted((+remaining).elements())]
     return [(unresolved, "definition does not resolve"), (without, "definition without anchors"),
-            (missing, "anchor missing from the rows"), (extra, "anchor from no definition")], covered
+            (missing, "anchor missing from the rows"), (extra, "anchor from no definition"),
+            *_exempt_coverage(xrefs, resolved)], covered
 
 
 def _marker_warnings(xrefs: List[dict]) -> Tuple[List[str], Dict[str, int]]:
@@ -266,7 +283,8 @@ def validate_cross_references(rels: Iterable[dict], pericopes: Iterable[dict],
     Errors: duplicate pairs, endpoints that are not a Pericope, curated
     flags, source lists missing or misaligned, None values, supplementary
     anchors that do not parse or leave their pericopes, and definition
-    coverage. Warnings: see _marker_warnings."""
+    coverage, of the anchors and of the tsk_exempt anchors. Warnings: see
+    _marker_warnings."""
     xrefs = [row for row in rels if row.get("type") == "CROSS_REFERENCES"]
     pericopes, definitions = list(pericopes), list(definitions)
     verse_map = verse_map_from_pericopes(pericopes)

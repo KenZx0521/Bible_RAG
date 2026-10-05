@@ -327,7 +327,8 @@ def test_w1_runbook_documents_the_xref_probe_and_diff_kg_flags():
 
 def test_step0_documents_the_xref_gate_and_that_1b_leaves_pericopes_alone():
     s0 = section(doc_text(), "Step 0:")
-    for needle in ("validate_output.py", "932", "162", "159/159", "-?", "neo4j_relationships.jsonl"):
+    for needle in ("validate_output.py", "932", "162", "159/159", "-?", "neo4j_relationships.jsonl",
+                   "兩端落在同一段落", "supp_tsk_exempt_anchors"):
         assert needle in s0, needle
     assert "第 1B、2D 批會改 pericopes.jsonl" not in s0
     assert "1B/2D touch pericopes.jsonl" not in read(CHECK_STEP0)
@@ -343,9 +344,9 @@ def test_step5_and_step9_document_the_1b_properties_gates_and_rollback():
     s9 = section(doc_text(), "Step 9:")
     for needle in ("--dry-run", "同向", "250,358", "249,434", "924", "250,366", "created 0",
                    "xref_probe.py fingerprint --target staging --expect", "從 Step 5",
-                   "curated 邊至少一條", "不在指紋內", "validate_output"):
+                   "curated 邊至少一條", "不在指紋內", "validate_output", "缺了要重跑 Step 0"):
         assert needle in s9, needle
-    assert "DELETE r" not in s9
+    assert "DELETE r" not in s9 and "要先重跑 Step 5" not in s9
 
 
 def test_10_6_lists_the_hard_1b_checks_with_their_w1_values():

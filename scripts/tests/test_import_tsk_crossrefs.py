@@ -282,7 +282,9 @@ def test_precondition_no_curated_edge_exits_1_before_any_write(edges, flags, mon
     assert all(s.get("default_access_mode") == READ_ACCESS for s in graph.sessions)
     err = capsys.readouterr().err
     assert f"0 of {len(edges)} CROSS_REFERENCES edges are curated" in err
-    assert "neo4j_relationships.jsonl" in err
+    # rerunning Step 5 alone skips the missing file again: Step 0 has to restore it
+    assert "restore output/neo4j_relationships.jsonl (Step 0" in err
+    assert "rerun Step 5 first" not in err
     assert graph.closed
 
 

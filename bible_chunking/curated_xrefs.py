@@ -7,8 +7,9 @@ import_tsk_crossrefs.build_verse_map). A definition whose verses straddle a
 pericope boundary yields one anchor per touched (source, target) pericope
 pair, each carrying only that pair's verses, at most MAX_FANOUT per
 definition: 'rev 18:2-8>jer 51:6-9' (jer:51:0) and 'rev 18:2-8>jer 51:45'
-(jer:51:5). Anything that does not resolve cleanly is an error; nothing falls
-back to a chapter or skips silently.
+(jer:51:5). Anything that does not resolve cleanly is an error, a pair whose
+two ends are one pericope included; nothing falls back to a chapter or skips
+silently.
 
 aggregate_curated folds those anchors and the markdown refs into one
 CROSS_REFERENCES row per (start, end) pair (Step 5 MERGEs on the pair, so a
@@ -162,13 +163,18 @@ def _resolve_ends(src_text: str, tgt_text: str,
 
 def build_anchors(src_text: str, tgt_text: str, verse_map: VerseMap, *, ref_type: str,
                   description: str, tsk_exempt: str | None = None) -> list[Anchor]:
-    """One Anchor per touched (source pericope, target pericope) pair, source-major."""
+    """One Anchor per touched (source pericope, target pericope) pair, source-major.
+    A pair whose two ends are one pericope fails the whole definition: TSK drops
+    self-loops (aggregate_tsk), so no curated edge may be one."""
     (src, src_parts), (tgt, tgt_parts) = _resolve_ends(src_text, tgt_text, verse_map)
     fanout = len(src_parts) * len(tgt_parts)
     if fanout > MAX_FANOUT:
         raise XrefDefinitionError(
             f"{src_text!r}>{tgt_text!r}: {fanout} pericope pairs (max {MAX_FANOUT}): "
             f"{', '.join(src_parts)} × {', '.join(tgt_parts)}")
+    loops = [pid for pid in src_parts if pid in tgt_parts]
+    if loops:
+        raise XrefDefinitionError(f"{src_text!r}>{tgt_text!r}: both ends in {', '.join(loops)}")
     return [
         Anchor(start, end,
                format_anchor(src._replace(verses=src_verses), tgt._replace(verses=tgt_verses)),

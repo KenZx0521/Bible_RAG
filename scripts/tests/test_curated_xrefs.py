@@ -141,6 +141,19 @@ def test_fanout_over_3_is_an_error():
     assert "4 pericope pairs" in message and "mat:4:0" in message and "isa:9:1" in message
 
 
+@pytest.mark.parametrize("src, tgt, loop", [
+    ("rev 18:2", "rev 18:3", "rev:18:0"),
+    ("isa 9:1", "isa 9:2-3", "isa:9:0"),  # one of two pairs loops: the whole definition fails
+])
+def test_both_ends_in_one_pericope_is_an_error(src, tgt, loop):
+    # a self-loop: TSK drops them (aggregate_tsk), so no curated edge may be one
+    with pytest.raises(XrefDefinitionError) as err:
+        build_anchors(src, tgt, VMAP, ref_type="allusion", description="d")
+    assert err.value.errors == (f"{src!r}>{tgt!r}: both ends in {loop}",)
+    anchors, errors = resolve_definitions([define(src, tgt)], VMAP)
+    assert (anchors, errors) == ([], [f"definition 0: {src!r}>{tgt!r}: both ends in {loop}"])
+
+
 def test_resolve_definitions_collects_all_errors():
     defs = [
         define("rev 18:2-8", "jer 51:6-9,45"),          # 2 anchors

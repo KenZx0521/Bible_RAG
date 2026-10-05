@@ -321,7 +321,9 @@ def precondition_failures(driver) -> list[str]:
     if not counts["curated"]:
         return [f"0 of {counts['total']:,} CROSS_REFERENCES edges are curated: Step 5 loaded "
                 "no markdown or supplementary edge (it skips a missing "
-                "output/neo4j_relationships.jsonl without failing); rerun Step 5 first"]
+                "output/neo4j_relationships.jsonl without failing): restore "
+                "output/neo4j_relationships.jsonl (Step 0, check_step0, validate_output) "
+                "and rerun Step 5"]
     return []
 
 
