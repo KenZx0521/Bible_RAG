@@ -16,6 +16,12 @@ Pipeline:
      already carries curated and tsk, as Step 5 writes every curated row and
      this script every TSK edge. A graph built before batch 1 is refused
      before anything is written.
+     Support gate (read only, also on --dry-run): every supplementary anchor
+     on the graph ('rev 19:16>dan 2:47') needs a TSK line from one of its
+     source verses to one of its target verses, unless the edge lists it in
+     supp_tsk_exempt_anchors. Support only in reverse does not count. The
+     check is per verse because at pericope level every definition, the
+     wrong ones included, has TSK support (XREF-1/2).
   5. MERGE into Neo4j. votes, verse_pairs and tsk = true are SET on every
      matched pair, including a pair Step 5 wrote as a curated edge (its source
      and curated stay; before batch 1 such a pair kept no votes, XREF-4). A
@@ -39,6 +45,7 @@ import os
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Iterable, Mapping
 
 from dotenv import load_dotenv
 from neo4j import READ_ACCESS, GraphDatabase
@@ -49,7 +56,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
-from bible_chunking.curated_xrefs import EDGE_FINGERPRINT_CYPHER, edge_fingerprint  # noqa: E402
+from bible_chunking.curated_xrefs import (  # noqa: E402
+    EDGE_FINGERPRINT_CYPHER, XrefDefinitionError, edge_fingerprint, parse_anchor)
 
 BATCH_SIZE = 5000
 MAX_RANGE_VERSES = 60  # sanity cap when expanding "to" ranges
@@ -97,6 +105,16 @@ MATCH (a:Pericope)-[r:CROSS_REFERENCES]->(b:Pericope)
 WHERE r.curated = true
 RETURN a.id AS a, b.id AS b
 """
+
+# The lists Step 5 writes on a supplementary edge (curated_xrefs.aggregate_curated).
+_SUPP_ANCHORS_CYPHER = """
+MATCH (a:Pericope)-[r:CROSS_REFERENCES]->(b:Pericope)
+WHERE r.supp_anchors IS NOT NULL
+RETURN a.id AS a, b.id AS b, r.supp_anchors AS anchors,
+       coalesce(r.supp_tsk_exempt_anchors, []) AS exempt
+"""
+
+Verse = tuple[str, int, int]
 
 
 def get_driver():
@@ -148,31 +166,29 @@ def parse_ref(ref: str) -> tuple[str, int, int] | None:
         return None
 
 
+def to_verses(ref: str) -> list[Verse]:
+    """A 'to' ref's verses: a single verse, a same-chapter range capped at
+    MAX_RANGE_VERSES past its start, or a cross-chapter range's two endpoints."""
+    if "-" not in ref:
+        single = parse_ref(ref)
+        return [single] if single else []
+    lo_s, hi_s = ref.split("-", 1)
+    lo, hi = parse_ref(lo_s), parse_ref(hi_s)
+    if not lo or not hi:
+        return []
+    if lo[0] == hi[0] and lo[1] == hi[1]:  # same book+chapter
+        return [(lo[0], lo[1], n) for n in range(lo[2], min(hi[2], lo[2] + MAX_RANGE_VERSES) + 1)]
+    return [lo, hi]  # cross-chapter range: endpoints only
+
+
 def expand_to_range(ref: str, vmap: dict) -> list[str]:
     """Resolve a 'to' ref (single verse or range) to pericope ids."""
-    if "-" in ref:
-        lo_s, hi_s = ref.split("-", 1)
-        lo, hi = parse_ref(lo_s), parse_ref(hi_s)
-        if not lo or not hi:
-            return []
-        peris: list[str] = []
-        if lo[0] == hi[0] and lo[1] == hi[1]:  # same book+chapter
-            span = range(lo[2], min(hi[2], lo[2] + MAX_RANGE_VERSES) + 1)
-            for n in span:
-                p = vmap.get((lo[0], lo[1], n))
-                if p and p not in peris:
-                    peris.append(p)
-        else:  # cross-chapter range: endpoints only
-            for point in (lo, hi):
-                p = vmap.get(point)
-                if p and p not in peris:
-                    peris.append(p)
-        return peris
-    single = parse_ref(ref)
-    if not single:
-        return []
-    p = vmap.get(single)
-    return [p] if p else []
+    peris: list[str] = []
+    for verse in to_verses(ref):
+        p = vmap.get(verse)
+        if p and p not in peris:
+            peris.append(p)
+    return peris
 
 
 def aggregate_tsk(tsk_path: Path, vmap: dict) -> tuple[dict, dict]:
@@ -216,6 +232,69 @@ def aggregate_tsk(tsk_path: Path, vmap: dict) -> tuple[dict, dict]:
     return dict(pairs), stats
 
 
+def build_verse_pair_index(tsk_path: Path) -> dict[tuple[Verse, Verse], int]:
+    """(from verse, to verse) → max votes over the TSK lines with votes >= 0,
+    'to' ranges expanded by to_verses. No pericope map: the support gate looks
+    up an anchor's own verses."""
+    index: dict[tuple[Verse, Verse], int] = {}
+    with tsk_path.open("r", encoding="utf-8") as f:
+        next(f)  # header
+        for line in f:
+            cols = line.rstrip("\n").split("\t")
+            if len(cols) < 3:
+                continue
+            try:
+                votes = int(cols[2])
+            except ValueError:
+                continue
+            from_ref = parse_ref(cols[0])
+            if votes < 0 or not from_ref:
+                continue
+            for to_ref in to_verses(cols[1]):
+                key = (from_ref, to_ref)
+                index[key] = max(index.get(key, votes), votes)
+    return index
+
+
+def anchor_votes(anchor: str, index: Mapping) -> tuple[int | None, int | None]:
+    """Max votes of the anchor's (source verse, target verse) pairs, forward and
+    reverse (target verse → source verse); None where no pair has a TSK line."""
+    src, tgt = parse_anchor(anchor)
+    pairs = [((src.book, src.chapter, s), (tgt.book, tgt.chapter, t))
+             for s in src.verses for t in tgt.verses]
+    forward = [index[pair] for pair in pairs if pair in index]
+    reverse = [index[(t, s)] for s, t in pairs if (t, s) in index]
+    return max(forward, default=None), max(reverse, default=None)
+
+
+def _votes(value: int | None) -> str:
+    return "none" if value is None else str(value)
+
+
+def _anchor_failure(pair: str, anchor: str, index: Mapping) -> str | None:
+    try:
+        forward, reverse = anchor_votes(anchor, index)
+    except XrefDefinitionError as err:  # the message quotes the anchor
+        return f"{pair} {'; '.join(err.errors)}"
+    if forward is not None:
+        return None
+    return (f"{pair} {anchor!r}: forward votes none, reverse votes {_votes(reverse)}"
+            + (" (reverse only)" if reverse is not None else ""))
+
+
+def unsupported_anchors(rows: Iterable[Mapping], index: Mapping) -> list[str]:
+    """One line per anchor of _SUPP_ANCHORS_CYPHER's rows with no forward TSK
+    verse pair and no tsk_exempt entry, in (a, b) order."""
+    failures = []
+    for row in sorted(rows, key=lambda r: (r["a"], r["b"])):
+        for anchor in row["anchors"]:
+            failure = None if anchor in row["exempt"] else _anchor_failure(
+                f"{row['a']}→{row['b']}", anchor, index)
+            if failure:
+                failures.append(failure)
+    return failures
+
+
 def _read(driver, cypher: str) -> list[dict]:
     """One statement in a READ transaction (the server rejects writes)."""
     with driver.session(default_access_mode=READ_ACCESS) as session:
@@ -237,6 +316,14 @@ def precondition_failures(driver) -> list[str]:
     return [f"{counts['unflagged']:,} of {counts['total']:,} CROSS_REFERENCES edges have "
             "curated or tsk unset: run Step 9 only on a graph Step 5 just built from a "
             "batch-1 Step 0 output"]
+
+
+def support_failures(driver, index: Mapping) -> list[str]:
+    """The support gate over the graph's supplementary anchors (XREF-1/2)."""
+    rows = _read(driver, _SUPP_ANCHORS_CYPHER)
+    print(f"  supplementary anchors: {sum(len(r['anchors']) for r in rows):,} on "
+          f"{len(rows):,} edges, tsk_exempt {sum(len(r['exempt']) for r in rows):,}")
+    return unsupported_anchors(rows, index)
 
 
 def read_curated_pairs(driver) -> set[tuple[str, str]]:
@@ -277,12 +364,15 @@ def _fail(header: str, failures: list[str]) -> int:
     return 1
 
 
-def _load(driver, rows: list[dict], dry_run: bool) -> int:
+def _load(driver, rows: list[dict], index: Mapping, dry_run: bool) -> int:
     """Steps 4-6 of the module docstring; every read is a READ session."""
     failures = precondition_failures(driver)
     if failures:
         return _fail("Precondition failed, nothing written:", failures)
-    # 1B-C6b: the supplementary anchors' TSK support gate goes here.
+    failures = support_failures(driver, index)
+    if failures:
+        return _fail("Supplementary anchors without same-direction TSK support (fix the "
+                     "anchor or give it a tsk_exempt reason), nothing written:", failures)
     pairs = {(row["from_id"], row["to_id"]) for row in rows}
     attached = len(pairs & read_curated_pairs(driver))
     print(f"  attached_to_curated {attached:,} (TSK pairs that are a curated edge)")
@@ -321,10 +411,12 @@ def _run(args: argparse.Namespace) -> int:
         {"from_id": a, "to_id": b, "votes": v["votes"], "verse_pairs": v["verse_pairs"]}
         for (a, b), v in pairs.items()
     ]
+    index = build_verse_pair_index(tsk_path)
+    print(f"  TSK verse pairs (support gate): {len(index):,}")
 
     driver = get_driver()
     try:
-        return _load(driver, rows, args.dry_run)
+        return _load(driver, rows, index, args.dry_run)
     finally:
         driver.close()
 
@@ -333,7 +425,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=str, help="Path to cross_references.txt")
     parser.add_argument("--dry-run", action="store_true",
-                        help="run the precondition and count attached_to_curated, write nothing")
+                        help="run the precondition and the support gate and count "
+                             "attached_to_curated, write nothing")
     return _run(parser.parse_args(argv))
 
 

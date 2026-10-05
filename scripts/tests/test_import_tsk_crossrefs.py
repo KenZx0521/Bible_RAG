@@ -9,6 +9,11 @@ and tsk are SET on every matched pair; ON CREATE only marks a pure TSK edge
 - before any write, also on --dry-run: no CROSS_REFERENCES edge may lack the
   curated or tsk flag. A graph built before 1B (batch-0 staging, crit#5) is
   refused instead of half rewritten;
+- then, also on --dry-run, every supplementary anchor on the graph needs a TSK
+  verse pair in its own direction, source verse → target verse, unless the
+  edge lists it in supp_tsk_exempt_anchors. Reverse-only support is not
+  enough (crit#6). The gate is verse-level: at pericope level every
+  definition, the 3 XREF-2 ones included, looks supported (deviation #14);
 - after the write: matched == rows, count(tsk) == rows, count(tsk and curated)
   == attached_to_curated, no unflagged edge. Then the edge fingerprint.
 
@@ -18,6 +23,7 @@ out; the MERGE text itself is pinned by test_merge_cypher_sets_votes_uncondition
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from types import SimpleNamespace
@@ -26,13 +32,16 @@ import pytest
 from neo4j import READ_ACCESS
 
 import import_tsk_crossrefs as its
-from bible_chunking.curated_xrefs import EDGE_FINGERPRINT_CYPHER, edge_fingerprint
+from bible_chunking.curated_xrefs import (EDGE_FINGERPRINT_CYPHER, Anchor, aggregate_curated,
+                                          edge_fingerprint)
 
 ROOT = Path(__file__).resolve().parents[2]
 TSK = ROOT / "output/cross_references_tsk.txt"
 QUEUE = ROOT / "output/embedding_queue.jsonl"
+SUPP_FIXTURE = ROOT / "scripts/tests/fixtures/xref/supp_expected_anchors.json"
 needs_output = pytest.mark.skipif(not (TSK.is_file() and QUEUE.is_file()),
                                   reason="needs output/cross_references_tsk.txt and embedding_queue.jsonl")
+needs_tsk = pytest.mark.skipif(not TSK.is_file(), reason="needs output/cross_references_tsk.txt")
 
 VMAP = {("gen", 1, 1): "gen:1:0", ("gen", 1, 2): "gen:1:0", ("gen", 1, 3): "gen:1:1",
         ("exo", 1, 1): "exo:1:0", ("mat", 1, 1): "mat:1:0"}
@@ -53,14 +62,17 @@ PAIRS = {("gen:1:0", "exo:1:0"): {"votes": 10, "verse_pairs": 2},
 PERICOPES = ("gen:1:0", "gen:1:1", "exo:1:0", "mat:1:0")
 
 
-def curated(source: str) -> dict:
-    """A Step 5 curated row (aggregate_curated): flagged, no votes."""
-    return {"source": source, "curated": True, "tsk": False, "curated_sources": [source]}
+def curated(source: str, **lists) -> dict:
+    """A Step 5 curated row (aggregate_curated): flagged, no votes, the source's lists."""
+    return {"source": source, "curated": True, "tsk": False, "curated_sources": [source], **lists}
 
+
+SUPP_ANCHOR = "gen 1:1-2>exo 1:1"   # forward: Gen.1.1→Exod.1.1 (10), Gen.1.2→Exod.1.1 (4)
+SUPP_EDGE = curated("supplementary", supp_anchors=[SUPP_ANCHOR])
 
 # Step 5 output: one curated pair TSK also has, one it does not.
-STEP5_EDGES = (("gen:1:0", "exo:1:0", curated("markdown")),
-               ("exo:1:0", "gen:1:0", curated("supplementary")))
+STEP5_EDGES = (("gen:1:0", "exo:1:0", SUPP_EDGE),
+               ("exo:1:0", "gen:1:0", curated("markdown")))
 
 
 # ---------------------------------------------------------------- fake driver
@@ -117,6 +129,10 @@ class FakeGraph:
                             if p.get("curated") is True])
         if cypher == EDGE_FINGERPRINT_CYPHER:
             return _Result(self.fingerprint_rows())
+        if cypher == its._SUPP_ANCHORS_CYPHER:
+            return _Result([{"a": a, "b": b, "anchors": p["supp_anchors"],
+                             "exempt": p.get("supp_tsk_exempt_anchors", [])}
+                            for (a, b), p in self.edges.items() if "supp_anchors" in p])
         raise AssertionError(f"unexpected query: {cypher}")
 
     def fingerprint_rows(self) -> list[dict]:
@@ -257,8 +273,8 @@ def test_count_gates_pass_exit_0(monkeypatch, tmp_path, capsys):
     out = capsys.readouterr().out
     assert "created 3, attached_to_curated 1, matched 4" in out
     assert graph.edges[("gen:1:0", "exo:1:0")] == {   # curated edge: TSK evidence attached
-        **curated("markdown"), "tsk": True, "votes": 10, "verse_pairs": 2}
-    assert graph.edges[("exo:1:0", "gen:1:0")] == curated("supplementary")
+        **SUPP_EDGE, "tsk": True, "votes": 10, "verse_pairs": 2}
+    assert graph.edges[("exo:1:0", "gen:1:0")] == curated("markdown")
     assert graph.edges[("mat:1:0", "gen:1:1")] == {
         "source": "tsk", "curated": False, "tsk": True, "votes": 5, "verse_pairs": 1}
     assert f"fingerprint: {edge_fingerprint(graph.fingerprint_rows())}" in out
@@ -313,6 +329,146 @@ def test_dry_run_writes_nothing_and_uses_read_sessions(monkeypatch, tmp_path, ca
     assert {kind for _, kind, _ in graph.calls} == {"read"}
     out = capsys.readouterr().out
     assert "attached_to_curated 1" in out and "[dry-run] nothing written" in out
+    assert "supplementary anchors: 1 on 1 edges, tsk_exempt 0" in out
+
+
+# ---------------------------------------------------------------- support gate (XREF-1/2)
+
+INDEX_LINES = [
+    "Gen.1.1\tExod.1.1\t3",
+    "Gen.1.1\tExod.1.1\t9",              # the same verse pair again: max votes
+    "Gen.1.1\tExod.1.2\t-1",             # negative votes
+    "Gen.1.1\tExod.1.3\t0",
+    "Gen.1.1\tGen.1.2\t7",               # one pericope: still a verse pair
+    "Rev.1.1\tPs.1.1-Ps.1.200\t2",       # same chapter: 1-61 (MAX_RANGE_VERSES past 1)
+    "Rev.1.1\tExod.2.5-Exod.3.4\t4",     # cross chapter: the two endpoints only
+    "Foo.1.1\tGen.1.1\t5",               # unknown book
+]
+
+
+def test_verse_pair_index_semantics(tmp_path):
+    index = its.build_verse_pair_index(_write_tsk(tmp_path / "tsk.txt", INDEX_LINES))
+
+    gen1_1, rev1_1 = ("gen", 1, 1), ("rev", 1, 1)
+    assert index == {(gen1_1, ("exo", 1, 1)): 9, (gen1_1, ("exo", 1, 3)): 0,
+                     (gen1_1, ("gen", 1, 2)): 7,
+                     **{(rev1_1, ("psa", 1, n)): 2 for n in range(1, 62)},
+                     (rev1_1, ("exo", 2, 5)): 4, (rev1_1, ("exo", 3, 4)): 4}
+
+
+# heb 1:5 → psa 2:7 both ways; psa 118:22 → mat 21:42 only, i.e. reverse of 'mat>psa'.
+INDEX = {(("heb", 1, 5), ("psa", 2, 7)): 12, (("psa", 2, 7), ("heb", 1, 5)): 4,
+         (("psa", 118, 22), ("mat", 21, 42)): 6}
+REVERSE_ONLY = "mat 21:42>psa 118:22"
+UNSUPPORTED = "rev 20:4>isa 65:17"
+
+
+def supp_row(anchors: list[str], exempt: list[str] = ()) -> dict:
+    """A row of the support query: one edge's anchors and its exempt anchors."""
+    return {"a": "x:1:0", "b": "y:1:0", "anchors": anchors, "exempt": list(exempt)}
+
+
+def test_supported_forward():
+    # one of the source verses has the pair: enough
+    assert its.anchor_votes("heb 1:3-5>psa 2:7", INDEX) == (12, 4)
+    assert its.unsupported_anchors([supp_row(["heb 1:3-5>psa 2:7"])], INDEX) == []
+
+
+def test_reverse_only_fails_without_exemption():
+    rows = [supp_row(["heb 1:5>psa 2:7", REVERSE_ONLY])]
+
+    assert its.anchor_votes(REVERSE_ONLY, INDEX) == (None, 6)
+    assert its.unsupported_anchors(rows, INDEX) == [
+        f"x:1:0→y:1:0 {REVERSE_ONLY!r}: forward votes none, reverse votes 6 (reverse only)"]
+
+
+def test_reverse_only_passes_with_exemption():
+    rows = [supp_row(["heb 1:5>psa 2:7", REVERSE_ONLY], exempt=[REVERSE_ONLY])]
+
+    assert its.unsupported_anchors(rows, INDEX) == []
+
+
+def test_unsupported_but_exempt_passes():
+    assert its.unsupported_anchors([supp_row([UNSUPPORTED], exempt=[UNSUPPORTED])], INDEX) == []
+    # the exemption names one anchor, not the edge
+    assert its.unsupported_anchors([supp_row([UNSUPPORTED, REVERSE_ONLY], exempt=[REVERSE_ONLY])],
+                                   INDEX) == [
+        f"x:1:0→y:1:0 {UNSUPPORTED!r}: forward votes none, reverse votes none"]
+
+
+def test_unparsable_anchor_fails_instead_of_crashing():
+    # Step 5 only writes anchors it parsed; a hand-edited graph need not hold them
+    rows = [supp_row(["heb 1:5", "heb 1:5>psa 2:7"])]
+
+    assert its.unsupported_anchors(rows, INDEX) == [
+        "x:1:0→y:1:0 'heb 1:5': expected 'source>target'"]
+
+
+def test_support_query_reads_the_lists_step5_writes():
+    anchor = Anchor("gen:1:0", "exo:1:0", SUPP_ANCHOR, "quote", "d", tsk_exempt="a reason")
+    props = aggregate_curated([], [anchor])[0]["properties"]
+
+    for key in ("supp_anchors", "supp_tsk_exempt_anchors"):
+        assert key in props and f"r.{key}" in its._SUPP_ANCHORS_CYPHER
+
+
+def _unsupported_graph() -> FakeGraph:
+    """STEP5_EDGES plus a supplementary anchor TSK has only in reverse
+    (Matt.1.1→Gen.1.1-Gen.1.3) and one it has in neither direction."""
+    return FakeGraph(edges=STEP5_EDGES + (
+        ("gen:1:1", "mat:1:0", curated("supplementary", supp_anchors=["gen 1:3>mat 1:1"])),
+        ("exo:1:0", "gen:1:1", curated("supplementary", supp_anchors=["exo 1:1>gen 1:3"])),
+    ))
+
+
+UNSUPPORTED_LINES = [
+    "exo:1:0→gen:1:1 'exo 1:1>gen 1:3': forward votes none, reverse votes none",
+    "gen:1:1→mat:1:0 'gen 1:3>mat 1:1': forward votes none, reverse votes 5 (reverse only)",
+]
+
+
+def test_unsupported_exits_1_with_no_write(monkeypatch, tmp_path, capsys):
+    graph = _unsupported_graph()
+    before = {pair: dict(p) for pair, p in graph.edges.items()}
+
+    assert _main(graph, monkeypatch, tmp_path) == 1
+
+    assert graph.merges() == 0 and graph.edges == before
+    err = capsys.readouterr().err.splitlines()
+    assert "same-direction TSK support" in err[0] and "nothing written" in err[0]
+    assert [line.strip() for line in err[1:]] == UNSUPPORTED_LINES
+    assert graph.closed
+
+
+def test_dry_run_still_runs_the_gate(monkeypatch, tmp_path, capsys):
+    graph = _unsupported_graph()
+
+    assert _main(graph, monkeypatch, tmp_path, "--dry-run") == 1
+
+    assert graph.merges() == 0
+    assert all(s.get("default_access_mode") == READ_ACCESS for s in graph.sessions)
+    assert its._SUPP_ANCHORS_CYPHER in [cypher for *_, cypher in graph.calls]
+    captured = capsys.readouterr()
+    assert [line.strip() for line in captured.err.splitlines()[1:]] == UNSUPPORTED_LINES
+    assert "[dry-run] nothing written" not in captured.out
+
+
+@needs_tsk
+def test_real_supplementary_anchors_are_forward_supported():
+    index = its.build_verse_pair_index(TSK)
+    fixture = json.loads(SUPP_FIXTURE.read_text(encoding="utf-8"))
+
+    assert len(fixture) == 162
+    rows = [{"a": a, "b": b, "anchors": [text], "exempt": []} for text, a, b in fixture]
+    assert its.unsupported_anchors(rows, index) == []
+    assert its.anchor_votes("rev 19:16>dan 2:47", index) == (8, 3)
+    # the gate catches the 3 XREF-2 anchors that 1B-C5a/C5b removed or re-anchored
+    removed = (("rev 19:1>psa 118:1", "rev:19:0", "psa:118:0"),
+               ("rev 19:11-16>dan 7:13-14", "rev:19:2", "dan:7:1"),
+               ("rev 20:4>isa 65:17", "rev:20:0", "isa:65:1"))   # in pair order
+    rows = [{"a": a, "b": b, "anchors": [text], "exempt": []} for text, a, b in removed]
+    assert its.unsupported_anchors(rows, index) == [
+        f"{a}→{b} {text!r}: forward votes none, reverse votes none" for text, a, b in removed]
 
 
 # ---------------------------------------------------------------- edge_fingerprint
