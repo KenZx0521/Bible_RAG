@@ -279,6 +279,8 @@ def test_precondition_unflagged_graph_exits_1_before_any_write(flags, monkeypatc
     err = capsys.readouterr().err
     assert "5 of 5 CROSS_REFERENCES edges have curated or tsk unset" in err
     assert "are curated" not in err      # Step 5 did load them, only without flags
+    # the precondition runs first: the support gate has not read the graph
+    assert its._SUPP_ANCHORS_CYPHER not in [c for *_, c in graph.calls]
     assert graph.closed
 
 
@@ -302,6 +304,7 @@ def test_precondition_no_curated_edge_exits_1_before_any_write(edges, flags, mon
     # rerunning Step 5 alone skips the missing file again: Step 0 has to restore it
     assert "restore output/neo4j_relationships.jsonl (Step 0" in err
     assert "rerun Step 5 first" not in err
+    assert its._SUPP_ANCHORS_CYPHER not in [c for *_, c in graph.calls]   # precondition first
     assert graph.closed
 
 
@@ -437,6 +440,9 @@ def test_supported_forward():
     # one of the source verses has the pair: enough
     assert its.anchor_votes("heb 1:3-5>psa 2:7", INDEX) == (12, 4)
     assert its.unsupported_anchors([supp_row(["heb 1:3-5>psa 2:7"])], INDEX) == []
+    # so is one of the target verses, here the last (psa 2:7)
+    assert its.anchor_votes("heb 1:5>psa 2:5-7", INDEX) == (12, 4)
+    assert its.unsupported_anchors([supp_row(["heb 1:5>psa 2:5-7"])], INDEX) == []
 
 
 def test_reverse_only_fails_without_exemption():

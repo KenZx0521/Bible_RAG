@@ -18,13 +18,13 @@ ONE_ROW = {"head_id": "person:a", "relation": "FATHER_OF", "tail_id": "person:b"
            "source": "llm", "pp_version": PP_VERSION}
 
 
-def write_relations_clean(directory: Path, rows: list[dict] | None = None,
-                          pp_version: str = PP_VERSION) -> Path:
+def write_relations_clean(directory: Path, rows: list[dict] | None = None) -> Path:
     """A relations_clean.jsonl and the report 6.05 writes beside it; the jsonl's path.
 
     Lines are serialised as 6.05 writes them, and the report's output.sha256 and
     rows match the bytes, so the file passes 6.1's input contract unless a test
-    edits one of the two afterwards. rows defaults to the single ONE_ROW.
+    edits one of the two afterwards. rows defaults to the single ONE_ROW. The
+    report's pp_version is PP_VERSION; a test that needs another edits the report.
     """
     rows = [ONE_ROW] if rows is None else rows
     data = "".join(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n"
@@ -32,7 +32,7 @@ def write_relations_clean(directory: Path, rows: list[dict] | None = None,
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / "relations_clean.jsonl"
     path.write_bytes(data)
-    report = {"format": "relations_postprocess_report/v1", "pp_version": pp_version,
+    report = {"format": "relations_postprocess_report/v1", "pp_version": PP_VERSION,
               "output": {"path": path.name, "sha256": hashlib.sha256(data).hexdigest(),
                          "rows": len(rows)}}
     (directory / "relations_clean.report.json").write_text(

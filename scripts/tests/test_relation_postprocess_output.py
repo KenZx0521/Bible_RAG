@@ -462,10 +462,17 @@ def test_stamps(real_inputs, all_run):
 
 
 def _seed_runs(tmp_path: Path, rules: str) -> list[tuple[bytes, bytes]]:
-    """relations_clean.jsonl and report bytes of 6.05 --rules RULES run under PYTHONHASHSEED 1 and 987."""
+    """relations_clean.jsonl and report bytes of 6.05 --rules RULES run under PYTHONHASHSEED 1 and 987.
+
+    Both runs write the same paths, since the report records output.path; each
+    run starts with the previous run's files removed, so bytes a run did not
+    write cannot pass for its own.
+    """
     out, report = tmp_path / "relations_clean.jsonl", tmp_path / "relations_clean.report.json"
     runs = []
     for seed in ("1", "987"):
+        out.unlink(missing_ok=True)
+        report.unlink(missing_ok=True)
         proc = subprocess.run(
             [sys.executable, "-m", "scripts.relation_extraction.relation_postprocess", "--rules", rules,
              "--out", str(out), "--report", str(report)],

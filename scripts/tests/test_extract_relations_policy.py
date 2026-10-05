@@ -2,10 +2,11 @@
 
 R2 looked for a yaml `prompt_signals` keyword within 25 characters of both
 names and, at confidence ≥ RE_RULE_CONFIDENCE_FLOOR, wrote the triple without
-asking the LLM, its direction being the pair's id order (phase 2: 771 rows;
-kinship 3/22 correct on a sample, e.g. 羅得 FATHER_OF 他拉). 6.05's anchored
-slot rules replace it, so Step 6 sends every mined candidate to R4. Nothing
-else read `prompt_signals`, and the floor only gated R2, so both are gone.
+asking the LLM, its direction being the pair's id order (phase 2: 772 rows in
+relations.jsonl, 771 on the prod graph; kinship 3/22 correct on a sample, e.g.
+羅得 FATHER_OF 他拉). 6.05's anchored slot rules replace it, so Step 6 sends
+every mined candidate to R4. Nothing else read `prompt_signals`, and the floor
+only gated R2, so both are gone.
 Legacy phase-2 rows in an old relations.jsonl still load (ExtractionPhase
 keeps RULE_MATCH) and 6.05 replaces them with anchored rows.
 """

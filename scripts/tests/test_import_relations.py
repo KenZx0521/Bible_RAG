@@ -363,12 +363,14 @@ def _layer_statements(statements: list[tuple[str, dict]], verb: str) -> list[str
     return [q for q, _ in statements if LAYER.search(q) and verb in q]
 
 
-def test_non_empty_layer_without_replace_exits_1(monkeypatch, tmp_path, caplog):
+@pytest.mark.parametrize("layer", [1, 15926], ids=["one_stray_edge", "prod_today"])
+def test_non_empty_layer_without_replace_exits_1(layer, monkeypatch, tmp_path, caplog):
     # The graph already holds 15,926 semantic edges (prod and staging today:
     # 6.1 and 10.3 have run there). Importing again would stack this file on
     # them, keeping every edge it no longer has, so the run stops before any
     # write; the standard chain runs 6.1 right after Step 5, never with --replace.
-    driver = _FakeDriver(layer=15926)
+    # One edge left over (a stray 10.3 edge) stops it as well.
+    driver = _FakeDriver(layer=layer)
 
     _import(monkeypatch, tmp_path, TWO_ROWS, driver=driver, code=1)
 
@@ -376,7 +378,7 @@ def test_non_empty_layer_without_replace_exits_1(monkeypatch, tmp_path, caplog):
     assert _merges(driver.autocommit + driver.in_tx) == []
     assert len(_layer_statements(driver.reads, "count(r)")) == 1
     assert _layer_statements(driver.autocommit + driver.reads + driver.in_tx, "DELETE") == []
-    assert "15926" in caplog.text
+    assert f"already holds {layer} semantic edge(s)" in caplog.text
     assert "Step 5 empties the graph" in caplog.text
 
 

@@ -97,3 +97,19 @@ def test_choices_are_those_of_the_row_set():
     assert [(c["head_id"], c["relation"]) for c in results[0][1]] == [("person:a", "SON_OF"),
                                                                       ("person:b", "FATHER_OF")]
     assert results[0][3] == [given[4]]
+
+
+def test_collapse_by_key_counts_evidence_per_source():
+    # evidence_count counts distinct (source, pericope, verse) items: a curated and a prior row
+    # of one key, both with pericope '' and no verse, are two items; the curated row is primary
+    curated = _ranked("person:a", "FATHER_OF", "person:b", "curated")
+    prior = _ranked("person:a", "FATHER_OF", "person:b", "prior")
+    collapsed, merged = policy.collapse_by_key([prior, curated])
+    assert collapsed == merged == [{**curated, "sources": ["curated", "prior"], "support_pericopes": [],
+                                    "evidence_count": 2}]
+    # two rows of one source and one (pericope, verse) are one item
+    llm = [{**_ranked("person:c", "SON_OF", "person:d", "llm", "gen:1:0", 3), "evidence_span": span}
+           for span in ("創 1:3", "創 1:3 上")]
+    collapsed, _ = policy.collapse_by_key(llm)
+    assert [(r["sources"], r["support_pericopes"], r["evidence_count"]) for r in collapsed] == [
+        (["llm"], ["gen:1:0"], 1)]

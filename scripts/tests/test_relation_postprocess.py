@@ -565,7 +565,8 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
     assert ran.index("provenance_gate") < ran.index("flag_id_order")
 
     # called directly: a paired relation (SON_OF, FATHER_OF) or an undirected one (NEAR) gets
-    # no field, a prior's neither; the rule copies the rows it marks, True or False, it does
+    # no field, a prior's neither, nor an id-order row that is neither llm nor prior/curated
+    # (anchored_rule, cooccurrence); the rule copies the rows it marks, True or False, it does
     # not mutate them
     inputs, cfg = pp.load_inputs(_paths())
     stamped = [pp.base_stamp(r, cfg) for r in (
@@ -574,10 +575,13 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
         _row("place:jialili", "NEAR", "place:nasalei", 4),
         _row("person:yabolahan", "SON_OF", "person:tala", 4),
         _row("person:tala", "FATHER_OF", "person:yabolahan", 3),
-        _row("person:tala", "SUCCEEDED_BY", "person:nahe", 4))]
+        _row("person:tala", "SUCCEEDED_BY", "person:nahe", 4),
+        _row("place:nasalei", "LOCATED_IN", "place:jialili", 6, source="anchored_rule"),
+        _row("person:nahe", "SUCCEEDED_BY", "person:tala", 7, source="cooccurrence"))]
     flow = pp.Flow()
     assert pp.flag_id_order(stamped, inputs, cfg, flow) == [
-        {**stamped[0], "direction_verified": True}, *stamped[2:5], {**stamped[5], "direction_verified": False}]
+        {**stamped[0], "direction_verified": True}, *stamped[2:5], {**stamped[5], "direction_verified": False},
+        *stamped[6:]]
     assert not any("direction_verified" in r for r in stamped)
     assert flow.drops == {"contradicts_prior": {"LOCATED_IN": 1}}
     assert flow.flagged == {"SUCCEEDED_BY": 1}
@@ -585,7 +589,9 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
 
 # --- resolve_kinship_direction, dedup_undirected (REL-01/02, R6) ----------------
 
-KIN_ROWS = (   # each reverses a parent/child pair the fixture's all-mode run holds
+# the first and third reverse a parent/child pair the fixture's all-mode run holds; the second
+# agrees with the prior 他拉 FATHER_OF 亞伯拉罕 and stays (a row in the winning direction)
+KIN_ROWS = (
     _row("person:yabolahan", "FATHER_OF", "person:tala", 4, source_pericope_id="gen:11:1"),
     _row("person:yabolahan", "SON_OF", "person:tala", 4, source_pericope_id="gen:11:1"),
     _row("person:moxi", "FATHER_OF", "person:anlan", 4, source_pericope_id="num:26:0"))

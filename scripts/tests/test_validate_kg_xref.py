@@ -108,10 +108,12 @@ def test_clean_fixture_h8_zero(snap):
     assert _h8(snap) == (0, 0, 0)
 
 
-@pytest.mark.parametrize("flags", [{"curated": None, "tsk": True}, {"curated": False, "tsk": None}],
-                         ids=["curated_none", "tsk_none"])
+@pytest.mark.parametrize("flags", [{"curated": None, "tsk": True}, {"curated": False, "tsk": None},
+                                   {"curated": None, "tsk": True, "curated_sources": ["markdown"]}],
+                         ids=["curated_none", "tsk_none", "curated_none_with_sources"])
 def test_h8_unflagged(snap, flags):
-    # votes, so not no_provenance; one flag missing, the other agrees with the evidence
+    # votes, so not no_provenance; one flag missing, the other agrees with the evidence. A
+    # missing flag is not compared with its evidence: unflagged only, never flag_mismatch
     append_row(snap / "cross_references.jsonl", {**NEW_TSK, **flags})
     assert _h8(snap) == (0, 1, 0)
     res = measure(snap)["H8"]
@@ -140,6 +142,14 @@ def test_h8_flag_mismatch_tsk_without_votes(snap, pair, changes):
     res = measure(snap)["H8"]
     assert res.detail["by_source"]["flag_mismatch"] == {"tsk" if pair == TSK else "markdown": 1}
     assert res.samples == [{"flag_mismatch": [f"{pair[0]}->{pair[1]}"]}]
+
+
+@pytest.mark.parametrize("tsk,expected", [(True, (0, 0, 0)), (False, (0, 0, 1))], ids=["tsk", "not_tsk"])
+def test_h8_zero_votes_are_votes(snap, tsk, expected):
+    # Step 9 writes votes 0 as votes (1,639 edges on prod): tsk is checked against
+    # votes is not None, not against the votes' truth value
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, "curated": False, "tsk": tsk, "votes": 0})
+    assert _h8(snap) == expected
 
 
 def test_shipped_h8_records_the_new_metrics(snap):
@@ -196,6 +206,18 @@ def test_r4_anchor_wrong_pericope(snap):
     assert _r4(snap) == (1, 1, 0)
     assert measure(snap)["R4"].samples == [{"misaligned": ["heb:1:1->psa:2:0 heb 1:3>psa 2:7"]},
                                            {"misaligned_any_verse": ["heb:1:1->psa:2:0 heb 1:3>psa 2:7"]}]
+
+
+@pytest.mark.parametrize("anchors,expected", [(("heb 1:3>psa 2:7", "heb 1:2>psa 2:7"), (1, 1, 0)),
+                                              (("heb 1:5", "psa 2:7"), (0, 0, 1))],
+                         ids=["misaligned", "unparsed"])
+def test_r4_counts_an_edge_once_however_many_anchors_fail(snap, anchors, expected):
+    # both anchors fail: heb 1:3 and 1:2 lie in heb:1:0 (1-4), not heb:1:1; 'heb 1:5' and
+    # 'psa 2:7' have no arrow. The edge counts once per metric, its sample names the first
+    _anchors(snap, *anchors)
+    assert _r4(snap) == expected
+    assert measure(snap)["R4"].samples == [{name: [f"heb:1:1->psa:2:0 {anchors[0]}"]}
+                                           for name, n in zip(R4_METRICS, expected) if n]
 
 
 def test_r4_fanout_anchor_aligned(snap):
