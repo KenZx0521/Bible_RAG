@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 
 _driver: Optional[AsyncDriver] = None
 
+# Whether a CROSS_REFERENCES edge is hand-curated (markdown / supplementary)
+# rather than a TSK community edge. Transitional: edges written before the
+# r.curated flag existed fall back to their source; W2/1D C14 reduces this to
+# r.curated once prod has no unflagged edge left (H8.unflagged = 0).
+_CURATED_XREF = "coalesce(r.curated, r.source IN ['markdown', 'supplementary'])"
+
 
 async def init_driver() -> AsyncDriver:
     global _driver
@@ -193,23 +199,25 @@ async def get_cross_references(pericope_id: str, limit: int = 10) -> list[dict]:
 
     Since the TSK import (~250k edges) the cross-ref graph is dense
     (~180 neighbours per pericope), so an unordered LIMIT would return an
-    arbitrary subset. Order by community votes; hand-curated markdown edges
-    carry no votes property and rank highest (999).
+    arbitrary subset. Hand-curated edges (_CURATED_XREF, in either direction)
+    rank first, then community votes; votes is 0 when no edge carries any.
     """
     driver = get_driver()
     async with driver.session() as session:
         result = await session.run(
-            """
-            MATCH (p:Pericope {id: $pericope_id})-[r:CROSS_REFERENCES]-(target:Pericope)
+            f"""
+            MATCH (p:Pericope {{id: $pericope_id}})-[r:CROSS_REFERENCES]-(target:Pericope)
             WHERE target.id <> $pericope_id
-            WITH target, max(coalesce(r.votes, 999)) AS votes
+            WITH target,
+                 max(CASE WHEN {_CURATED_XREF} THEN 1 ELSE 0 END) = 1 AS curated,
+                 max(coalesce(r.votes, 0)) AS votes
             RETURN target.id AS id,
                    apoc.coll.sort(labels(target)) AS labels,
                    target.title AS title,
                    target.book_name AS book_name,
                    target.chapter_num AS chapter_num,
-                   votes
-            ORDER BY votes DESC, apoc.util.md5([target.id])
+                   curated, votes
+            ORDER BY curated DESC, votes DESC, apoc.util.md5([target.id])
             LIMIT $limit
             """,
             pericope_id=pericope_id,
@@ -226,9 +234,10 @@ async def get_cross_references_multi_hop(
     Since the TSK import (~250k edges, ~180 neighbours per pericope) the
     1-hop pool alone far exceeds any sensible limit, so ranking — not
     reachability — is what matters: order by how many seeds cite the target
-    (seed_support), then by community votes (hand-curated markdown edges
-    carry no votes property and rank highest). Hops beyond 1 are only walked
-    as a fallback when the 1-hop pool cannot fill `limit` (sparse regions).
+    (seed_support), then hand-curated edges (_CURATED_XREF) first, then by
+    community votes. Hops beyond 1 are only walked as a fallback when the
+    1-hop pool cannot fill `limit` (sparse regions); there `curated` means
+    some shortest path back to a seed is curated on every edge.
     `hop_distance` reflects the shortest path length back to a seed.
     """
     if not pericope_ids or max_hops < 1:
@@ -239,7 +248,8 @@ async def get_cross_references_multi_hop(
         "MATCH (seed)-[r:CROSS_REFERENCES]-(target:Pericope) "
         "WHERE NOT target.id IN $ids "
         "WITH target, count(DISTINCT seed) AS seed_support, "
-        "     max(coalesce(r.votes, 999)) AS votes "
+        f"     max(CASE WHEN {_CURATED_XREF} THEN 1 ELSE 0 END) = 1 AS curated, "
+        "     max(coalesce(r.votes, 0)) AS votes "
         "RETURN target.id AS id, "
         "       apoc.coll.sort(labels(target)) AS labels, "
         "       target.title AS title, "
@@ -247,8 +257,8 @@ async def get_cross_references_multi_hop(
         "       target.chapter_num AS chapter_num, "
         "       target.verse_range AS verse_range, "
         "       1 AS hop_distance, "
-        "       seed_support, votes "
-        "ORDER BY seed_support DESC, votes DESC, apoc.util.md5([target.id]) "
+        "       seed_support, curated, votes "
+        "ORDER BY seed_support DESC, curated DESC, votes DESC, apoc.util.md5([target.id]) "
         "LIMIT $limit"
     )
     async with driver.session() as session:
@@ -265,15 +275,18 @@ async def get_cross_references_multi_hop(
         "MATCH (seed:Pericope) WHERE seed.id IN $ids "
         f"MATCH path = (seed)-[:CROSS_REFERENCES*2..{hops}]-(target:Pericope) "
         "WHERE NOT target.id IN $exclude "
-        "WITH target, min(length(path)) AS hop_distance "
+        "WITH target, length(path) AS len, "
+        f"     all(r IN relationships(path) WHERE {_CURATED_XREF}) AS all_curated "
+        "WITH target, min(len) AS hop_distance, collect([len, all_curated]) AS paths "
         "RETURN target.id AS id, "
         "       apoc.coll.sort(labels(target)) AS labels, "
         "       target.title AS title, "
         "       target.book_name AS book_name, "
         "       target.chapter_num AS chapter_num, "
         "       target.verse_range AS verse_range, "
-        "       hop_distance "
-        "ORDER BY hop_distance ASC, apoc.util.md5([target.id]) "
+        "       hop_distance, "
+        "       any(p IN paths WHERE p[0] = hop_distance AND p[1]) AS curated "
+        "ORDER BY hop_distance ASC, curated DESC, apoc.util.md5([target.id]) "
         "LIMIT $limit"
     )
     async with driver.session() as session:

@@ -253,7 +253,7 @@ uv run python quick_faithfulness_eval.py --results-dir results_graph --out resul
 |------|------|------|
 | `backend/utils/retrieval/cross_ref_retriever.py` | curated 邊 hop-decay `_HOP_WEIGHT` | {1: 0.75, 2: 0.55, 3: 0.40, 4: 0.30} |
 | 同上 | TSK 邊 hop-decay `_TSK_HOP_WEIGHT` | {1: 0.60, 2: 0.50, 3: 0.40, 4: 0.30} |
-| 同上 | curated/TSK 判別線 `_CURATED_VOTES` | votes ≥ 999 |
+| `backend/database/neo4j_db.py` | curated/TSK 判別 `_CURATED_XREF` | `r.curated` 旗標；過渡期無旗標的邊以 `r.source IN ['markdown', 'supplementary']` 推斷 |
 | `backend/utils/retrieval/router.py` | chapter-pin | `min_pins=2`、weight ≥ 0.85 門檻 |
 | 同上 | EQ pin（僅 fusion off 生效） | `score_threshold=0.5`、confidence gate 0.3、`max_pins=2` |
 | 同上 | book_anchor pin（無條件）+ graph uncertainty pin（僅 fusion off） | `max_pins=2`、gate 0.3 |

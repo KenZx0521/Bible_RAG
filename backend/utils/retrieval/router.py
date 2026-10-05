@@ -1581,7 +1581,7 @@ async def _route_r5(
                 continue
             if result:
                 if label == "cross_ref" and settings.rag_use_cross_ref_expand:
-                    # Multi-hop expansion candidates already carry votes-aware
+                    # Multi-hop expansion candidates already carry provenance-aware
                     # per-candidate weights (curated 0.75 / TSK 0.5-0.6).
                     # Blanket-raising them to the route's 0.85 was what let
                     # TSK topical neighbours outrank narrative-correct seeds
