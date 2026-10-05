@@ -17,7 +17,8 @@ them: restore them from the R0 backup (docs/staging_promotion.md R0,
 llm_artifacts.tgz) before going on. W1 only: W2 runs Step 1 again.
 
 Exit codes: 0 both match; 1 a file differs or is missing (expected and actual
-printed); 2 cannot check (manifest missing or malformed).
+printed, with the restore command for --output-dir); 2 cannot check (manifest
+missing or malformed, or a file that exists but cannot be read).
 
 Usage (from the project root):
     scripts/.venv/bin/python scripts/tools/check_merged_inputs.py
@@ -48,19 +49,24 @@ SOURCE_FILES = (
     ("entity_mentions", "entity_mentions.jsonl"),
 )
 
+# Filled with the --output-dir checked, so the restore command targets that directory.
 HAZARD = (
     "W1 skips Step 1 and rebuilds from these two files as they are. A Step 1 merge "
-    "rebuilds them from output/ner_*.jsonl, which has no person:liuer (流珥), so 6.05 "
+    "rebuilds them from {output_dir}/ner_*.jsonl, which has no person:liuer (流珥), so 6.05 "
     "would hard-fail on relations rows with an endpoint missing from entities.jsonl. "
     "Do not continue the rebuild chain. Restore both files from the R0 backup "
     "(docs/staging_promotion.md R0) and re-run this check:\n"
-    "    tar -C output -xzf bak/<D>/output/llm_artifacts.tgz entities.jsonl entity_mentions.jsonl\n"
+    "    tar -C {output_dir} -xzf bak/<D>/output/llm_artifacts.tgz entities.jsonl entity_mentions.jsonl\n"
     "and compare them with bak/<D>/output/MANIFEST.sha256."
 )
 
 
 class ManifestError(Exception):
     """The manifest is missing or cannot be read as a grounded manifest."""
+
+
+class UnreadableFile(Exception):
+    """A data file exists but cannot be read (a setup error, never drift)."""
 
 
 def load_expected(manifest_path: Path) -> dict[str, dict]:
@@ -85,11 +91,15 @@ def load_expected(manifest_path: Path) -> dict[str, dict]:
 
 
 def compare(output_dir: Path, expected: dict[str, dict]) -> list[tuple[str, str, dict, dict | None]]:
-    """(status, name, expected, actual) per file; status OK | MISMATCH | MISSING."""
+    """(status, name, expected, actual) per file; status OK | MISMATCH | MISSING.
+    UnreadableFile when a file exists but cannot be read."""
     rows = []
     for _key, name in SOURCE_FILES:
         path = output_dir / name
-        actual = file_digest(path) if path.is_file() else None
+        try:
+            actual = file_digest(path) if path.is_file() else None
+        except OSError as e:
+            raise UnreadableFile(f"{path} unreadable ({e})") from e
         if actual is None:
             status = "MISSING"
         elif actual["sha256"] != expected[name]["sha256"]:
@@ -109,24 +119,25 @@ def _describe(entry: dict | None) -> str:
 
 
 def run_check(output_dir: Path, manifest_path: Path) -> int:
-    # A broken manifest must not exit 1: that code means "the files moved".
+    # A broken manifest or an unreadable file must not exit 1: that code means "the files moved".
     try:
-        expected = load_expected(manifest_path)
-    except ManifestError as e:
+        rows = compare(output_dir, load_expected(manifest_path))
+    except (ManifestError, UnreadableFile) as e:
         print(f"CANNOT CHECK: {e}")
         return 2
 
-    rows = compare(output_dir, expected)
     for status, name, want, got in rows:
-        print(f"  {status:<9}{name}  {_describe(got)}")
-        if status != "OK":
-            print(f"             expected {_describe(want)}")
-            print(f"             actual   {_describe(got)}")
+        if status == "OK":
+            print(f"  {status:<9}{name}  {_describe(got)}")
+            continue
+        print(f"  {status:<9}{name}")  # the digests once each, on the two lines below
+        print(f"             expected {_describe(want)}")
+        print(f"             actual   {_describe(got)}")
 
     drift = [name for status, name, *_ in rows if status != "OK"]
     if drift:
         print(f"DRIFT: {', '.join(drift)} in {output_dir} differ from the source "
-              f"recorded in {manifest_path}.\n{HAZARD}")
+              f"recorded in {manifest_path}.\n{HAZARD.format(output_dir=output_dir)}")
         return 1
     print(f"OK: both Step 1 files match {manifest_path}; skip Step 1 in W1 (W2 runs it again)")
     return 0

@@ -127,6 +127,9 @@ def test_fragment_from_fake_profile(tmp_path, prod, capsys):
         + [("ee_edges", "* source=-", None)]
         + [("ee_edges", key, delta) for key, delta in sorted(NEW)])
     assert all(e["reason"].startswith("1A ") for e in entries)
+    # 6.05 drops the LLM's Event–Event rows; E–E (Entity–Entity) edges of the LLM stay
+    assert all("LLM 的 Event–Event 邊" in e["reason"] and "E–E" not in e["reason"]
+               for e in entries if e["section"] == "relationships")
     expected = json.loads((tmp_path / "relations_expected.json").read_text(encoding="utf-8"))
     assert expected["edge_set_sha256"] == edge_set_sha(report) and expected["edges"] == 4
     assert expected["pp_version"] == "pp-test" and expected["run_id"] == "6.05-test"

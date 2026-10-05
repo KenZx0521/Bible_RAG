@@ -2,7 +2,8 @@
 target is read or a file is written, and a usage error exits 2 as --help says.
 predict refuses an empty edge table and a seed file of another version;
 fingerprint checks its --expect file before streaming the target's edges;
-allow never writes its fragment over its own --expect file.
+allow never writes its fragment over its own --expect file; expect refuses a
+Step 0 output without a curated CROSS_REFERENCES row, as Step 9 does.
 Split from test_xref_probe.py, whose fixtures it borrows.
 """
 
@@ -13,8 +14,8 @@ import json
 import pytest
 
 from scripts.tools import xref_probe as xp
-from test_xref_probe import (SENTINEL_EDGES, FakeDriver, patch_target, profile_answers, run_expect,
-                             write_jsonl, write_seeds)
+from test_xref_probe import (SENTINEL_EDGES, STEP5_ROWS, FakeDriver, patch_target, profile_answers,
+                             run_expect, write_jsonl, write_seeds)
 
 
 def test_predict_refuses_no_edges_and_other_seed_versions_without_output(tmp_path, capsys):
@@ -74,3 +75,17 @@ def test_allow_refuses_to_overwrite_its_expect_file(tmp_path, monkeypatch, capsy
         xp.main(["allow", "--expect", "xref.json", "--out", "./xref.json"])    # one file, spelt two ways
     assert exc.value.code == 2 and "allow --out would overwrite the expect file" in capsys.readouterr().err
     assert resolved == [] and (tmp_path / "xref.json").read_bytes() == before
+
+
+@pytest.mark.parametrize("case", ["no-xref-row", "none-curated"])
+def test_expect_refuses_a_step0_output_without_a_curated_edge(tmp_path, capsys, case):
+    """Step 9's precondition refuses a graph with 0 curated edges: expect writes no pure-TSK table."""
+    rows = [row for row in STEP5_ROWS if row["type"] != "CROSS_REFERENCES"]
+    if case == "none-curated":
+        rows.append({"start": "mat:1:1", "end": "isa:7:1", "type": "CROSS_REFERENCES",
+                     "properties": {"source": "markdown", "curated": False, "tsk": False}})
+    assert run_expect(tmp_path, "--edges-out", str(tmp_path / "edges.jsonl"), rows=rows) == 1
+    err = capsys.readouterr().err
+    assert "no CROSS_REFERENCES row with curated true" in err and "Step 9 refuses" in err
+    assert not (tmp_path / "xref.json").exists() and not (tmp_path / "edges.jsonl").exists()
+    assert "no curated CROSS_REFERENCES row exits 1" in " ".join(xp.__doc__.split())

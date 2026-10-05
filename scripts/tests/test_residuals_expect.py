@@ -85,6 +85,7 @@ def graphs(monkeypatch):
     """Two fake targets: entity rows, the count of semantic edges carrying a source, MENTIONS rows."""
     state = SimpleNamespace(entities={"prod": PROD, "staging": STAGING}, sourced={"prod": 0, "staging": 0},
                             mentions={"prod": PROD_MENTIONS, "staging": STAGING_MENTIONS},
+                            totals={"prod": (13_589, 319_988), "staging": (13_590, 319_987)},
                             opened=[], drivers=[], queries=[])
 
     def open_neo4j(target):
@@ -98,6 +99,8 @@ def graphs(monkeypatch):
             return [dict(r) for r in state.entities[driver.name]]
         if cypher == rx.SOURCED_EDGES_CYPHER:
             return [{"n": state.sourced[driver.name]}]
+        if cypher in (rx.NODES_CYPHER, rx.RELATIONSHIPS_CYPHER):
+            return [{"n": state.totals[driver.name][cypher == rx.RELATIONSHIPS_CYPHER]}]
         assert cypher == rx.MENTIONS_CYPHER
         return [dict(r, props=dict(r["props"])) for r in state.mentions[driver.name]]
 
@@ -149,13 +152,16 @@ def test_mention_count_diff_from_fake_reads(tmp_path, graphs, capsys):
     assert doc["mention_count"] == EXPECTED
     assert graphs.opened == ["prod", "staging"] and all(d.closed for d in graphs.drivers)
     basis = doc["basis"]
-    assert basis["a"] == {"target": "prod", "neo4j_uri": URIS["prod"], "entities": 5, "sourced_semantic_edges": 0}
+    # the graph totals tell a reviewer which build b was read from (batch 0: 13,589 nodes, 319,988 relationships)
+    assert basis["a"] == {"target": "prod", "neo4j_uri": URIS["prod"], "entities": 5, "sourced_semantic_edges": 0,
+                          "nodes": 13_589, "relationships": 319_988}
     assert basis["b"] == {"target": "staging", "neo4j_uri": URIS["staging"], "entities": 5,
-                          "sourced_semantic_edges": 0}
+                          "sourced_semantic_edges": 0, "nodes": 13_590, "relationships": 319_987}
     assert basis["git_head"] == "0123456789abcdef0123456789abcdef01234567"
     assert basis["at"] and basis["premise"]
     out = capsys.readouterr().out
     assert "2 of 5 entities differ" in out and "event:shanshangbaoxun 23 -> 1 (-22)" in out
+    assert "graph: a 13,589 nodes, 319,988 relationships; b 13,590 nodes, 319,987 relationships" in out
 
 
 def test_r1_taken_from_validate_json(tmp_path, graphs):
@@ -199,14 +205,20 @@ def test_unequal_entity_sets_exit_1(tmp_path, graphs, change, capsys):
     assert ("person:liuer" if change == "only-in-b" else "event:jinniudushijian") in err
 
 
-def test_b_that_holds_1a_semantic_edges_exits_2(tmp_path, graphs, capsys):
-    """Read after W1 step 2, b is the W1 build: a residual read off it would certify itself (plan §3)."""
+@pytest.mark.parametrize("a, b", [("prod", "staging"), ("staging", "prod")])
+def test_a_side_that_holds_1a_semantic_edges_exits_2(tmp_path, graphs, capsys, a, b):
+    """Read after W1 step 2, staging is the W1 build: a residual read off it would certify itself
+    (plan §3), whichever of --a and --b names it."""
     graphs.sourced["staging"] = 5616
 
-    assert run(tmp_path) == 2
+    assert rx.main(["--a", a, "--b", b, "--validate-a", str(validate_json(tmp_path, a, 1938)),
+                    "--validate-b", str(validate_json(tmp_path, b, 2124)),
+                    "--out", str(tmp_path / "residuals_expected.json"),
+                    "--allow-out", str(tmp_path / "residuals_allow.yaml")]) == 2
 
     assert _nothing_written(tmp_path)
-    assert "batch-0" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "batch-0" in err and "(staging) holds 5,616 semantic edges" in err
 
 
 def test_differing_mention_count_that_is_not_a_number_exits_2(tmp_path, graphs, capsys):
@@ -218,6 +230,30 @@ def test_differing_mention_count_that_is_not_a_number_exits_2(tmp_path, graphs, 
 
     assert _nothing_written(tmp_path)
     assert "place:dan" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("before", ["absent", "older"])
+def test_a_failed_second_write_leaves_both_files_as_they_were(tmp_path, graphs, monkeypatch, capsys, before):
+    """Both files are written to <path>.tmp first and replace their paths only after both writes succeed."""
+    finals = [tmp_path / "residuals_expected.json", tmp_path / "residuals_allow.yaml"]
+    if before == "older":
+        for path in finals:
+            path.write_text(f"older {path.name}\n", encoding="utf-8")
+    old = {path: path.read_bytes() for path in finals if path.exists()}
+    write_text = Path.write_text
+
+    def fail_on_the_fragment(self, *args, **kwargs):
+        if self.name.startswith("residuals_allow.yaml"):
+            raise OSError(28, "No space left on device")
+        return write_text(self, *args, **kwargs)
+    va, vb = validate_json(tmp_path, "prod", 1938), validate_json(tmp_path, "staging", 2124)
+    monkeypatch.setattr(Path, "write_text", fail_on_the_fragment)
+
+    assert run(tmp_path, va, vb) == 2
+
+    assert {path: path.read_bytes() for path in finals if path.exists()} == old
+    assert not list(tmp_path.glob("*.tmp")) and "No space left" in capsys.readouterr().err
+    assert "nothing on 2 unless" not in " ".join(rx.__doc__.split())
 
 
 def test_unreadable_target_exits_2_and_writes_nothing(tmp_path, graphs, monkeypatch, capsys):

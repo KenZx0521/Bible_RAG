@@ -10,7 +10,9 @@ created_from, ...), and R1 (MENTIONS in the book-name region) reads higher. W1 c
 neither MENTIONS nor entities, so the W1 staging must show exactly the residuals the
 batch-0 staging (b) shows now. This reads them before W1 step 2 rebuilds b, and writes:
   --out        the expected file: {version, basis: {a, b: {target, neo4j_uri, entities,
-               sourced_semantic_edges}, at (when b was read), git_head, premise,
+               sourced_semantic_edges, nodes, relationships (the graph totals: which build
+               was read, batch 0 has 13,589 and 319,988; recorded, not checked)}, at (when
+               b was read), git_head, premise,
                validate_kg: {a, b: {origin, sha256}}}, mention_count: {entity_id: {a, b,
                delta}}, mentions_props: {edges: {a, b}, only_a, only_b, differing:
                {property: edges}}, validate_kg: {R1: {a, b}}}. At R2, validate_kg's R1
@@ -35,13 +37,14 @@ until the W1 promotion).
 
 Exit codes: 0 both files written; 1 the two sides do not hold the same entity ids
 (the premise fails: find out why first); 2 cannot generate: usage, a validate_kg report
-that is not that target's live R1 (checked before either target is read), b holding a
-semantic edge with a source (6.05's edges: b is no longer the batch-0 build, and a
-residual read off the W1 build would certify it, plan §3), a differing mention_count
-that is not an integer on both sides (diff_kg gives it no delta, so no exact entry
-could allow it), an entity_id read twice or holding glob characters, an unreadable
-target or output path, a MENTIONS edge read twice on one side. Nothing is written on 1,
-and nothing on 2 unless a write itself failed.
+that is not that target's live R1 (checked before either target is read), either side
+holding a semantic edge with a source (6.05's edges: that side is no longer the
+batch-0 build, and a residual read off the W1 build would certify it, plan §3), a
+differing mention_count that is not an integer on both sides (diff_kg gives it no
+delta, so no exact entry could allow it), an entity_id read twice or holding glob
+characters, an unreadable target or output path, a MENTIONS edge read twice on one
+side. Nothing is written on 1 or 2: both files go to <path>.tmp first and replace
+their paths only after both writes succeeded.
 
 --check FILE (R2, after W1 step 2) re-reads only the MENTIONS of both targets and writes
 nothing: 0 when mentions_props equals FILE's, 1 when a count differs (each one printed),
@@ -72,6 +75,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -92,6 +96,10 @@ SOURCED_EDGES_CYPHER = """
 MATCH (:Entity)-[r]->(:Entity)
 WHERE NOT type(r) IN ['MENTIONS', 'CROSS_REFERENCES'] AND r.source IS NOT NULL
 RETURN count(r) AS n"""
+# the graph totals, recorded so a reviewer can tell which build a side was read from (batch 0:
+# 13,589 nodes and 319,988 relationships, the R3 counts of plan §1 W0 驗收); never a gate here
+NODES_CYPHER = "MATCH (n) RETURN count(n) AS n"
+RELATIONSHIPS_CYPHER = "MATCH ()-[r]->() RETURN count(r) AS n"
 # the source label as diff_kg's "mentions" section names it; the id as the reviewers' probe read it
 MENTIONS_CYPHER = """
 MATCH (s)-[m:MENTIONS]->(e:Entity)
@@ -191,11 +199,13 @@ def mention_edges(rows: list[dict], where: str) -> dict[tuple, dict]:
 
 
 def read_side(target) -> dict:
-    """{entities: {entity_id: row}, sourced: semantic edges with a source, mentions: {edge: properties}}
-    of one target, READ only."""
-    rows, sourced, mentions = _read(target, ENTITIES_CYPHER, SOURCED_EDGES_CYPHER, MENTIONS_CYPHER)
+    """{entities: {entity_id: row}, sourced: semantic edges with a source, mentions: {edge: properties},
+    nodes, relationships: the graph totals} of one target, READ only."""
+    rows, sourced, mentions, nodes, rels = _read(target, ENTITIES_CYPHER, SOURCED_EDGES_CYPHER, MENTIONS_CYPHER,
+                                                 NODES_CYPHER, RELATIONSHIPS_CYPHER)
     return {"entities": _unique(rows, lambda r: r["entity_id"], target.name, "entity_id"),
-            "sourced": sourced[0]["n"], "mentions": mention_edges(mentions, target.name)}
+            "sourced": sourced[0]["n"], "mentions": mention_edges(mentions, target.name),
+            "nodes": nodes[0]["n"], "relationships": rels[0]["n"]}
 
 
 def read_mentions(target) -> dict[tuple, dict]:
@@ -237,13 +247,15 @@ def mentions_props(a: dict[tuple, dict], b: dict[tuple, dict]) -> dict:
 
 def build(targets: dict, sides: dict, r1: dict, at: str) -> tuple[dict, str]:
     """(the expected file document, the fragment's YAML)."""
-    if sides["b"]["sourced"]:
-        raise CannotGenerate(f"b ({targets['b'].name}) holds {sides['b']['sourced']:,} semantic edges with a "
-                             "source: it is no longer the batch-0 build; the residuals must be read before "
-                             "W1 step 2 (plan §3)")
+    for side in ("a", "b"):  # both: --a staging --b prod is a valid spelling, and must not skip staging
+        if sides[side]["sourced"]:
+            raise CannotGenerate(f"{side} ({targets[side].name}) holds {sides[side]['sourced']:,} semantic edges "
+                                 "with a source: it is no longer the batch-0 build; the residuals must be read "
+                                 "before W1 step 2 (plan §3)")
     mention_count = residuals(sides["a"]["entities"], sides["b"]["entities"])
     basis = {side: {"target": targets[side].name, "neo4j_uri": targets[side].neo4j_uri,
-                    "entities": len(sides[side]["entities"]), "sourced_semantic_edges": sides[side]["sourced"]}
+                    "entities": len(sides[side]["entities"]), "sourced_semantic_edges": sides[side]["sourced"],
+                    "nodes": sides[side]["nodes"], "relationships": sides[side]["relationships"]}
              for side in ("a", "b")}
     doc = {"version": VERSION,
            "basis": {**basis, "at": at, "git_head": git_head(), "premise": PREMISE,
@@ -349,6 +361,8 @@ def summary(doc: dict, entries: int) -> list[str]:
         f"residuals_expect: a {a['target']} ({a['neo4j_uri']}), b {b['target']} ({b['neo4j_uri']})",
         f"  entities: {a['entities']:,} each; b semantic edges with a source: {b['sourced_semantic_edges']} "
         "(batch-0 build)",
+        f"  graph: a {a['nodes']:,} nodes, {a['relationships']:,} relationships; "
+        f"b {b['nodes']:,} nodes, {b['relationships']:,} relationships",
         f"  mention_count: {len(doc['mention_count'])} of {a['entities']:,} entities differ",
         *(f"    {eid} {d['a']} -> {d['b']} ({d['delta']:+d})" for eid, d in doc["mention_count"].items()),
         *props_summary(doc["mentions_props"]),
@@ -357,10 +371,21 @@ def summary(doc: dict, entries: int) -> list[str]:
     ]
 
 
-def _write(path: Path, text: str) -> str:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-    return f"{hashlib.sha256(text.encode('utf-8')).hexdigest()}  {path}"
+def _write_all(files: list[tuple[Path, str]]) -> list[str]:
+    """Write each (path, text) to <path>.tmp, then os.replace them all only once every temp file is
+    written, so a failed write leaves each path as it was; the sha256sum line of each file."""
+    staged = []
+    try:
+        for path, text in files:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            staged.append(path.with_name(path.name + ".tmp"))
+            staged[-1].write_text(text, encoding="utf-8")
+        for (path, _text), tmp in zip(files, staged):
+            os.replace(tmp, path)
+    finally:
+        for tmp in staged:
+            tmp.unlink(missing_ok=True)
+    return [f"{hashlib.sha256(text.encode('utf-8')).hexdigest()}  {path}" for path, text in files]
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -424,8 +449,8 @@ def _run_check(args) -> int:
 def _run_generate(args) -> int:
     try:
         doc, fragment = generate(args)
-        written = [_write(args.out, json.dumps(doc, ensure_ascii=False, sort_keys=True, indent=2) + "\n"),
-                   _write(args.allow_out, fragment)]
+        written = _write_all([(args.out, json.dumps(doc, ensure_ascii=False, sort_keys=True, indent=2) + "\n"),
+                              (args.allow_out, fragment)])
     except Mismatch as e:
         print(f"MISMATCH: {e}", file=sys.stderr)
         return 1

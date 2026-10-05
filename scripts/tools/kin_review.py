@@ -24,11 +24,19 @@ sha256, the sha256 of every input, and the rubric of the two fields.
 --mode score reads the sample, two --labels files (one annotator each,
 'ai:<session>'; a row per item {item_id, text_correct, id_correct,
 annotator, note}), an optional --adjudication (rows for exactly the items the
-two disagree on) and an optional --spotcheck (Kay's rows for any items). The
-report has, per field, k, n and the Wilson lower bound (z = 1.96) of the
-final labels, the raw agreement and Cohen's κ of the two labellings, the
-disagreements, the spot-check against the final labels, every input's
-sha256, the gate, and the annotation ANNOTATION.
+two disagree on, by a third 'ai:' session: neither A's nor B's annotator) and
+an optional --spotcheck (Kay's rows for any items; an 'ai:' annotator is
+refused, since the report says 「Kay 抽查」). The report has, per field, k, n
+and the Wilson lower bound (z = 1.96) of the final labels, the raw agreement
+and Cohen's κ of the two labellings, the disagreements, the spot-check
+against the final labels, every input's sha256, the gate, and the
+annotation ANNOTATION.
+
+Adjudication is per item, not per field (staging_promotion.md K9:
+「只裁決兩者不一致的項目」): the adjudication row replaces both fields of the
+item, including a field A and B agreed on. Under the rubric an item they
+disagree on only in id_correct has text_correct true in both, so the
+override can only lower text_correct, never lift the gate.
 
 Decision Q1 (Kay 2026-10-05): the gate field is text_correct (n = 60
 anchored, lower bound ≥ 0.85); id_correct is labelled with the same rubric
@@ -36,7 +44,11 @@ and reported as the deferred-A baseline, never gating.
 
 Exit codes: sample 0 written, 2 bad input or usage. score 0 the gate's
 lower bound ≥ --min-lb (or --report-only), 1 below (the report is still
-written), 2 bad input or usage (nothing written).
+written), 2 bad input or usage (nothing written). Both modes remove an
+existing --out before reading any input, so a failed rerun leaves no earlier
+report at that path (a usage error stops before --out is touched), and write
+it through <out>.tmp and os.replace. An --out (or its .tmp) that is one of
+the inputs is a usage error.
 
 Usage (from the project root):
     scripts/.venv/bin/python scripts/tools/kin_review.py --mode sample \\
@@ -51,6 +63,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import random
 import re
 import sys
@@ -126,9 +139,18 @@ def _jsonl(path: Path) -> Iterable[dict]:
         raise BadInput(f"{path} is not readable JSON lines: {e}") from e
 
 
+def _temp(path: Path) -> Path:
+    return Path(path).with_name(Path(path).name + ".tmp")
+
+
 def _write(path: Path, doc: dict) -> None:
-    Path(path).write_text(json.dumps(doc, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
-                          encoding="utf-8")
+    """Through <path>.tmp and os.replace: a failed write leaves no partial file at `path`."""
+    tmp = _temp(path)
+    try:
+        tmp.write_text(json.dumps(doc, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+        os.replace(tmp, path)
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 # --- sample: pool and draw -------------------------------------------------------
@@ -364,6 +386,9 @@ def _spotcheck(path: Path | None, ids: list[str], final: dict) -> tuple[dict, st
     if path is None:
         return {"n": 0, "agree": 0, "disagree": [], "annotator": None}, None
     rows, annotator = read_labels(path, ids, complete=False, ai=False)
+    if annotator and annotator.startswith(AI_PREFIX):
+        raise BadInput(f"{path}: annotator {annotator!r} is an AI session; the spot-check is Kay's "
+                       "(the report says Kay 抽查)")
     disagree = sorted(iid for iid, row in rows.items() if _pick(row) != final[iid])
     return {"n": len(rows), "agree": len(rows) - len(disagree), "disagree": disagree,
             "annotator": annotator}, annotator
@@ -395,6 +420,9 @@ def run_score(args: argparse.Namespace) -> dict:
     adjudicated = who_c = None
     if args.adjudication is not None:
         adjudicated, who_c = read_labels(args.adjudication, ids, complete=False, ai=True)
+        if who_c in (who_a, who_b):
+            raise BadInput(f"--adjudication is by {who_c}, who labelled A or B; the adjudication must be "
+                           "a third session")
     final, disagreements = final_labels(ids, a, b, adjudicated)
     spotcheck, who_k = _spotcheck(args.spotcheck, ids, final)
     fields, agreement = field_stats(ids, final, a, b)
@@ -469,20 +497,35 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         for name, default in _DEFAULTS.items():
             setattr(args, name, getattr(args, name) or _PROJECT_ROOT / default)
         args.all = bool(args.all)
-        return args
-    if args.sample is None or len(args.labels or ()) != 2:
-        parser.error("--mode score needs --sample and --labels twice")
-    if args.min_lb is not None and not 0 < args.min_lb <= 1:
-        parser.error("--min-lb must be in (0, 1]")
-    args.gate_field = args.gate_field or DEFAULT_GATE_FIELD
-    args.min_lb = DEFAULT_MIN_LB if args.min_lb is None else args.min_lb
-    args.report_only = bool(args.report_only)
+    else:
+        if args.sample is None or len(args.labels or ()) != 2:
+            parser.error("--mode score needs --sample and --labels twice")
+        if args.min_lb is not None and not 0 < args.min_lb <= 1:
+            parser.error("--min-lb must be in (0, 1]")
+        args.gate_field = args.gate_field or DEFAULT_GATE_FIELD
+        args.min_lb = DEFAULT_MIN_LB if args.min_lb is None else args.min_lb
+        args.report_only = bool(args.report_only)
+    clash = _out_clash(args)
+    if clash:
+        parser.error(f"--out {args.out}: it or its .tmp is an input ({clash}); main removes and replaces --out")
     return args
+
+
+def _out_clash(args: argparse.Namespace) -> Path | None:
+    """The first input path that --out or its temp file resolves to, if any."""
+    written = {Path(args.out).resolve(), _temp(args.out).resolve()}
+    for name in _MODE_FLAGS[args.mode]:
+        value = getattr(args, name)
+        for path in value if isinstance(value, list) else [value]:
+            if isinstance(path, Path) and path.resolve() in written:
+                return path
+    return None
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
+        Path(args.out).unlink(missing_ok=True)  # a failed run must not leave an earlier report behind
         doc = run_sample(args) if args.mode == "sample" else run_score(args)
         _write(args.out, doc)
     except Exception as e:  # noqa: BLE001  (a traceback would exit 1, which in score means "below")

@@ -85,9 +85,9 @@ HEADER = (
     "bound for the old keys without one (H11 source_null = 0 is hard: staging holds none of them).",
     "No mention_count (residuals_allow.yaml) or CROSS_REFERENCES (1B's fragment) entries.")
 REASONS = {
-    "relationships": "1A Step 6.05 後的語意邊各型數量（規則邊、反向邊、10.3 共現邊退場；LLM 的 E–E 邊、"
-                     "domain/range 與 provenance 閘門丟棄；錨定規則加入）：報告 expected_after_10_2"
-                     "（edge set {tag}）減 {a}",
+    "relationships": "1A Step 6.05 後的語意邊各型數量（規則邊、反向邊、10.3 共現邊退場；"
+                     "LLM 的 Event–Event 邊（PRECEDED_BY、CAUSED）、domain/range 與 provenance 閘門丟棄；"
+                     "錨定規則加入）：報告 expected_after_10_2（edge set {tag}）減 {a}",
     "old": "1A 之後每條語意邊都帶 source，{a} 上沒有 source 的舊鍵整組消失（H11 source_null = 0 是硬門檻，"
            "staging 不會有這些鍵，故不設上限）",
     "new": "1A Step 6.05 各 TYPE phase source 的語意邊數：報告 expected_after_10_2（edge set {tag}）減 {a}",

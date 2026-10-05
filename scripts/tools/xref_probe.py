@@ -43,6 +43,8 @@ flags are flat, so --help lists all of them.
            counts, xref_provenance, xrefs_by_source, fingerprint}; --edges-out
            also writes the edges as predict --edges input. Run it before the
            staging build: an expectation is never back-filled (plan §3).
+           A Step 0 output with no curated CROSS_REFERENCES row exits 1 and
+           writes nothing, as Step 9 refuses a graph with 0 curated edges.
   fingerprint
            curated_xrefs.edge_fingerprint and the xref_provenance counts of
            --target prod|staging (READ sessions). With --expect, exit 1 unless
@@ -377,6 +379,9 @@ def build_expect(output_dir: Path, tsk: Path) -> tuple[dict, dict]:
     import import_tsk_crossrefs as step9
     rels, queue = Path(output_dir) / "neo4j_relationships.jsonl", Path(output_dir) / "embedding_queue.jsonl"
     curated = xref_projection.step5_edges(r for r in _read_jsonl(rels) if r.get("type") == "CROSS_REFERENCES")
+    if not any(edge["curated"] is True for edge in curated.values()):  # Step 9's precondition, not a pure-TSK table
+        raise ValueError(f"{rels}: no CROSS_REFERENCES row with curated true; Step 9 refuses a graph with "
+                         "0 curated edges")
     pairs, _stats = step9.aggregate_tsk(Path(tsk), step9.build_verse_map(queue))
     edges = xref_projection.step9_edges(curated, pairs)
     inputs = {"relationships_sha256": _sha256(rels), "embedding_queue_sha256": _sha256(queue),

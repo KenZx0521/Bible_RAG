@@ -55,7 +55,11 @@ for _path in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "scripts")):
 # The shell as the tool started. Importing relation_postprocess imports the
 # entity_extraction package, whose config module runs load_dotenv(): it copies
 # .env, prod's NEO4J_URI included, into os.environ. resolve_target judges the
-# shell (check_identity docstring), so it is given this copy.
+# shell (check_identity docstring), so it is given this copy. The copy is taken
+# when this module is first imported: a module that imports check_edge_set must
+# do so before anything that loads .env (entity_extraction, relation_postprocess),
+# as relations_expect does; test_relations_expect's
+# test_target_is_resolved_from_the_shell_not_from_dotenv pins that order.
 _SHELL_ENV = dict(os.environ)
 
 from check_identity import open_neo4j, read_query, resolve_target  # noqa: E402

@@ -65,11 +65,15 @@ def test_changed_file_exit_1(merged, capsys):
 
     report = capsys.readouterr().out
     assert expected in report and actual in report
+    assert report.count(actual) == 1                     # on the actual line only, not the status line too
     assert [line.split()[1] for line in report.splitlines()
             if line.lstrip().startswith("MISMATCH")] == ["entities.jsonl"]
     # The hazard and the way back, not just the hashes.
     assert "person:liuer" in report and "6.05" in report
     assert "llm_artifacts.tgz" in report
+    # ... for the directory checked, not a hardcoded output/.
+    assert f"tar -C {merged} -xzf" in report and f"{merged}/ner_*.jsonl" in report
+    assert "tar -C output " not in report
 
 
 def test_missing_file_exit_1(merged, capsys):
@@ -87,6 +91,23 @@ def test_missing_manifest_exit_2(merged, tmp_path, capsys):
     assert "CANNOT CHECK" in capsys.readouterr().out
     # --manifest points at a manifest outside <output-dir>/frozen/.
     assert _run(merged, "--manifest", str(moved)) == 0
+
+
+def test_unreadable_file_exit_2(merged, monkeypatch, capsys):
+    """An unreadable file is a setup error (2), not drift (1); chmod is no test under root."""
+    real = cmi.file_digest
+
+    def digest(path):
+        if path.name == "entity_mentions.jsonl":
+            raise PermissionError(13, "Permission denied", str(path))
+        return real(path)
+    monkeypatch.setattr(cmi, "file_digest", digest)
+
+    assert _run(merged) == 2
+
+    report = capsys.readouterr().out
+    assert "CANNOT CHECK" in report and "entity_mentions.jsonl unreadable" in report
+    assert "Permission denied" in report and "DRIFT" not in report
 
 
 @pytest.mark.parametrize("text", [

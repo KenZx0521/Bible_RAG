@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import random
+from pathlib import Path
 
 import pytest
 
@@ -362,3 +363,91 @@ def test_unwritable_out_exits_2(tmp_path):
             "--labels", str(tmp_path / "a.jsonl"), "--labels", str(tmp_path / "b.jsonl"),
             "--out", str(tmp_path / "missing" / "report.json")]
     assert run(argv) == 2                                      # not a traceback's 1 ("below the gate")
+
+
+def _disagreeing(item3=(False, False)):
+    """A's and B's labels of 60 items (text 57, id 51) that differ only on item003."""
+    labels = counted(60, 57, 51)
+    other = list(labels)
+    other[3] = item3
+    return labels, other
+
+
+@pytest.mark.parametrize("case", ["adjudicator_is_a", "adjudicator_is_b", "ai_spotcheck"])
+def test_adjudication_by_a_third_session_and_spotcheck_by_kay(tmp_path, capsys, case):
+    """C9b: a third session adjudicates, and the spot-check the report calls 「Kay 抽查」 is Kay's."""
+    labels, other = _disagreeing()
+    who = {"adjudicator_is_a": "ai:session-a", "adjudicator_is_b": "ai:session-b"}.get(case, "ai:session-c")
+    flags = ["--adjudication", write_labels(tmp_path, "c.jsonl", {3: (True, True)}, who)]
+    if case == "ai_spotcheck":
+        flags += ["--spotcheck", write_labels(tmp_path, "k.jsonl", {0: (True, True)}, "ai:session-c")]
+
+    assert score(tmp_path, labels, other, *flags, code=2) is None           # nothing written
+
+    err = capsys.readouterr().err
+    assert ("is Kay's" if case == "ai_spotcheck" else "must be a third session") in err, err
+    assert score(tmp_path, labels, other, flags[0], write_labels(tmp_path, "c.jsonl", {3: (True, True)},
+                                                                 "ai:session-c"))["exit"] == 0
+
+
+def test_adjudication_replaces_both_fields_of_an_item(tmp_path):
+    """Per item, not per field: A and B agree on text_correct and differ on id_correct, and the
+    adjudication row still sets both; under the rubric it can only lower text_correct."""
+    labels, other = _disagreeing(item3=(True, False))                       # A (T, T), B (T, F)
+    adjudication = write_labels(tmp_path, "c.jsonl", {3: (False, False)}, "ai:session-c")
+
+    report = score(tmp_path, labels, other, "--adjudication", adjudication, code=1)
+
+    assert report["disagreements"] == [{
+        "item_id": "item003", "fields": ["id_correct"],
+        "labels": [{"text_correct": True, "id_correct": True}, {"text_correct": True, "id_correct": False}],
+        "final": {"text_correct": False, "id_correct": False}}]
+    assert report["fields"]["text_correct"]["k"] == 56                      # 57 agreed true, one overridden
+    assert "replaces both fields of the item" in " ".join(kr.__doc__.split())
+
+
+def _score_argv(tmp_path, out, *flags) -> list[str]:
+    labels, other = _disagreeing()
+    return ["--mode", "score", "--sample", write_sample(tmp_path, 60),
+            "--labels", write_labels(tmp_path, "a.jsonl", labels, "ai:session-a"),
+            "--labels", write_labels(tmp_path, "b.jsonl", other, "ai:session-b"), *flags, "--out", str(out)]
+
+
+def test_failed_rerun_leaves_no_earlier_report(tmp_path, capsys):
+    """A report at --out is from this run or not there: K9 evidence is hashed from that path."""
+    out = tmp_path / "report.json"
+    adjudication = write_labels(tmp_path, "c.jsonl", {3: (True, True)}, "ai:session-c")
+    assert run(_score_argv(tmp_path, out, "--adjudication", adjudication)) == 0 and out.exists()
+
+    assert run(_score_argv(tmp_path, out)) == 2                             # the adjudication left out
+
+    assert not out.exists() and not list(tmp_path.glob("*.tmp"))
+    assert "--adjudication has no row" in capsys.readouterr().err
+
+
+def test_failed_write_leaves_no_partial_report(tmp_path, monkeypatch):
+    out = tmp_path / "report.json"
+    adjudication = write_labels(tmp_path, "c.jsonl", {3: (True, True)}, "ai:session-c")
+
+    def refuse(src, dst):
+        raise OSError(28, "No space left on device")
+    monkeypatch.setattr(kr.os, "replace", refuse)
+
+    assert run(_score_argv(tmp_path, out, "--adjudication", adjudication)) == 2
+
+    assert not out.exists() and not list(tmp_path.glob("*.tmp"))
+
+
+@pytest.mark.parametrize("which", ["sample", "labels", "adjudication", "temp"])
+def test_out_over_an_input_is_a_usage_error(tmp_path, capsys, which):
+    """--out is removed before a run and replaced through <out>.tmp: neither may be an input."""
+    adjudication = Path(write_labels(tmp_path, "c.tmp", {3: (True, True)}, "ai:session-c"))
+    out = {"sample": tmp_path / "sample.json", "labels": tmp_path / "a.jsonl",
+           "adjudication": adjudication, "temp": tmp_path / "c"}[which]       # c's temp file is c.tmp
+    argv = _score_argv(tmp_path, out, "--adjudication", str(adjudication))
+    before = {path: path.read_bytes() for path in tmp_path.iterdir()}
+
+    assert run(argv) == 2
+
+    assert {path: path.read_bytes() for path in tmp_path.iterdir()} == before
+    assert "is an input" in capsys.readouterr().err
