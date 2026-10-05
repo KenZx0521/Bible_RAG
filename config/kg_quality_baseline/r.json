@@ -84,18 +84,30 @@
       "title": "supplementary cross-reference anchors misplaced",
       "severity": "record",
       "hard_from": "1B",
-      "plan_reference": "59",
-      "query": "supplementary CROSS_REFERENCES whose first source verse is outside the source pericope's verse_range, or first target verse outside the target's",
+      "plan_reference": "misaligned 59; misaligned_any_verse 62; unparsed 0",
+      "query": "supplementary CROSS_REFERENCES (source or curated_sources), each supp_anchors entry 'book ch:vs>book ch:vs' judged against the edge's two pericopes (book, chapter and verse_range): misaligned = an end's first verse outside, misaligned_any_verse = any verse outside, unparsed = an anchor or a verse_range that cannot be read; an edge without anchors (built before 1B) is judged by source_verses/target_verses instead. md_anchors are not judged (XREF-5, 2D)",
       "metrics": {
         "misaligned": {
           "value": 59,
           "direction": "down",
           "tolerance": 0,
           "target": 0
+        },
+        "misaligned_any_verse": {
+          "value": 62,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "unparsed": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
         }
       },
       "measured": {
-        "at": "2026-10-04",
+        "at": "2026-10-05",
         "origin": "live:prod (bolt://localhost:7687)"
       }
     },

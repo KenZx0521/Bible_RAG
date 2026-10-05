@@ -311,7 +311,10 @@ def test_live_and_snapshot_of_one_graph_pass_one_baseline(snap, tmp_path, capsys
     assert vk.main(live) == 0  # and live still passes once the snapshot reading is filled
 
 
-@pytest.mark.parametrize("field,value", [("source_id", "heb:1:0"), ("target_verses", "13")])
+# heb 1:5 is outside heb:1:0 (1-4); psa 2:13 is outside psa:2:0 (1-12). The
+# other anchor cases and the legacy scalars are in test_validate_kg_xref.py.
+@pytest.mark.parametrize("field,value", [("source_id", "heb:1:0"), ("supp_anchors", ["heb 1:5>psa 2:13"])],
+                         ids=["source_id", "supp_anchors"])
 def test_r4_misaligned_supplementary_anchor(snap, field, value):
     edit_rows(snap / "cross_references.jsonl", lambda r: r["source"] == "supplementary", **{field: value})
     assert metric(measure(snap), "R4", "misaligned") == 1
