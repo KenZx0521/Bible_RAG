@@ -268,6 +268,29 @@ def drop_llm_event_event(rows: list[dict], inputs: Inputs, cfg: Config, flow: Fl
     return kept
 
 
+def domain_range(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """G-2: drop every row the schema does not accept for its endpoints' final types.
+
+    The types are those the graph holds once 10.2 has relabelled it: the
+    entities.jsonl type through the curated overrides (耶和華 is extracted as a
+    Group and kept as a Person, so a Person LEADER_OF it goes). Every source is
+    checked, prior and curated included. accepts_pair reads an undirected
+    relation both ways. A relation the schema does not know goes under its own
+    key, unknown_relation; the two keys are H9's two metrics.
+    """
+    final_types = _final_types(inputs, cfg)
+    kept = []
+    for row in rows:
+        entry = cfg.schema.get(row["relation"])
+        if entry is None:
+            flow.drop("unknown_relation", row)
+        elif not entry.accepts_pair(final_types[row["head_id"]], final_types[row["tail_id"]]):
+            flow.drop("domain_range", row)
+        else:
+            kept.append(row)
+    return kept
+
+
 def provenance_gate(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
     """REL-05, M3: drop every row whose two endpoints are not both mentioned in its pericope.
 
@@ -323,6 +346,7 @@ RULES: tuple[tuple[str, Rule], ...] = (
     ("drop_inverse", drop_inverse),
     ("rules_to_anchored", rules_to_anchored),
     ("drop_llm_event_event", drop_llm_event_event),
+    ("domain_range", domain_range),
     ("provenance_gate", provenance_gate),
 )
 

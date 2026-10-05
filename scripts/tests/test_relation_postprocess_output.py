@@ -214,6 +214,37 @@ def test_event_event_drops(real_inputs, all_run, rows_before_anchored):
     assert sum(r["head_id"] in generic or r["tail_id"] in generic for r in dropped) == 12
 
 
+def test_domain_range_drops(real_inputs, all_run, rows_before_anchored):
+    rows, report = all_run
+    # G-2: 13 llm rows on 耶和華, a Group in entities.jsonl and a Person once the curated
+    # override (D9) applies: a Person LEADER_OF or MEMBER_OF it, or it SETTLED_IN or
+    # ORIGINATED_FROM a place
+    assert report["flow"]["drops"]["domain_range"] == {
+        "LEADER_OF": 7, "MEMBER_OF": 1, "ORIGINATED_FROM": 1, "SETTLED_IN": 4}
+    assert "unknown_relation" not in report["flow"]["drops"]
+    ran = report["rules"]["ran"]
+    assert ran.index("drop_llm_event_event") < ran.index("domain_range") < ran.index("provenance_gate")
+
+    inputs, cfg = real_inputs
+    final = {eid: entity_overrides.final_type(eid, e["type"], cfg.overrides) for eid, e in inputs.entities.items()}
+    extracted = {eid: e["type"] for eid, e in inputs.entities.items()}
+
+    def illegal(row, types) -> bool:
+        return not cfg.schema.get(row["relation"]).accepts_pair(types[row["head_id"]], types[row["tail_id"]])
+
+    # H9 on the final types is 0
+    assert [_key(r) for r in rows if illegal(r, final)] == []
+    # relations.jsonl (less the inverses) holds 14 such rows, live H9: the 13 and the id-order
+    # rule row 耶利米 MEMBER_OF 耶和華, which rules_to_anchored drops first. Every one is on
+    # 耶和華 and legal on the extracted types: the override alone makes them violations
+    violations = [r for r in rows_before_anchored if illegal(r, final)]
+    assert Counter((r["source"], r["relation"]) for r in violations) == {
+        ("llm", "LEADER_OF"): 7, ("llm", "MEMBER_OF"): 1, ("llm", "ORIGINATED_FROM"): 1,
+        ("llm", "SETTLED_IN"): 4, ("rule", "MEMBER_OF"): 1}
+    assert all("group:yehehua" in (r["head_id"], r["tail_id"]) for r in violations)
+    assert not any(illegal(r, extracted) for r in rows_before_anchored)
+
+
 def _support_after_10_2(inputs) -> set[tuple[str, str]]:
     """{(pericope, entity_id)} of the MENTIONS edges 10.2 leaves, computed apart from 6.05."""
     keep = geo_rules.compute_dan_keep_sources(pp.default_paths()["mentions"])

@@ -480,6 +480,48 @@ def test_chunk_mentions_roll_up_to_parent():
     assert flow.dan_filter_drops == {"NEAR": 1}
 
 
+# --- domain_range (G-2) ---------------------------------------------------------
+
+def test_domain_range_uses_override_labels(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    # 耶和華 is a Group in entities.jsonl and a Person in config/curated/entity_overrides.yaml (D9)
+    _append_jsonl(tmp_path / "in" / "entity_mentions.jsonl", [{
+        "mention_id": "m:num:26:0:v:59:group:yehehua", "entity_id": "group:yehehua",
+        "source_id": "num:26:0:v:59", "source_type": "verse", "text_span": "耶和華", "context": AMRAM}])
+    _append_jsonl(tmp_path / "in" / "relations.jsonl", [
+        _row("person:moxi", "LEADER_OF", "group:yehehua", 4, source_pericope_id="num:26:0"),
+        _row("group:yehehua", "SETTLED_IN", "place:wuer", 4, source_pericope_id="gen:11:1"),
+        _row("group:yehehua", "TEACHER_OF", "person:moxi", 4, source_pericope_id="num:26:0"),
+        _row("person:tala", "DIED_IN", "person:nahe", 3, source_pericope_id=""),
+        _row("person:moxi", "KNEW", "person:yalun", 4, source_pericope_id="num:26:0")])
+    rows, report = _run("all", _paths(tmp_path / "in"))
+    keys = {(r["head_id"], r["relation"], r["tail_id"], r["source"]) for r in rows}
+
+    # the endpoint types are the final ones: a Person is no Group to lead or to settle, but
+    # can teach; a prior is checked too (DIED_IN takes a Place), and a relation the schema
+    # does not know goes under its own key, as H9 counts unknown_relation_types apart
+    assert ("person:moxi", "LEADER_OF", "group:yehehua", "llm") not in keys
+    assert ("group:yehehua", "TEACHER_OF", "person:moxi", "llm") in keys
+    assert not {("person:tala", "DIED_IN", "person:nahe", "prior"),
+                ("person:moxi", "KNEW", "person:yalun", "llm")} & keys
+    drops = report["flow"]["drops"]
+    assert drops["domain_range"] == {"DIED_IN": 1, "LEADER_OF": 1, "SETTLED_IN": 1}
+    assert drops["unknown_relation"] == {"KNEW": 1}
+    # it runs before the gate: 耶和華 SETTLED_IN 吾珥 has no support in gen:11:1 either, but
+    # is domain_range's drop
+    assert "SETTLED_IN" not in drops.get("provenance_gate", {})
+    ran = report["rules"]["ran"]
+    assert ran.index("drop_llm_event_event") < ran.index("domain_range") < ran.index("provenance_gate")
+
+    # without the override 耶和華 is the extracted Group again: led yes, teaching no
+    inputs, cfg = pp.load_inputs(_paths())
+    stamped = [pp.base_stamp(r, cfg) for r in (_row("person:moxi", "LEADER_OF", "group:yehehua", 4),
+                                                _row("group:yehehua", "TEACHER_OF", "person:moxi", 4))]
+    flow = pp.Flow()
+    assert pp.domain_range(stamped, inputs, dataclasses.replace(cfg, overrides={}), flow) == stamped[:1]
+    assert flow.drops == {"domain_range": {"TEACHER_OF": 1}}
+
+
 # --- relation_policy ------------------------------------------------------------
 
 def test_source_rank_orders_curated_prior_llm_anchored():
