@@ -27,7 +27,9 @@ write: "Step 5 empties the graph". --replace, refused outside a staging shell
 (kg_target.require_staging) before connecting, instead deletes the whole layer
 -- 10.3's edges too -- as the first statement of the transaction that writes
 the file, so the layer becomes exactly the file and a failure rolls the delete
-back with the writes. The standard chain never passes --replace.
+back with the writes. An empty file (a 6.05 report of 0 rows) exits 0 before
+connecting: nothing is imported and, even with --replace, nothing is deleted.
+The standard chain never passes --replace.
 
 Nothing is skipped silently: one read first lists the endpoints the file
 references that the graph lacks, and any missing id stops the run (exit 1)
@@ -91,9 +93,18 @@ def _load_report(path: Path) -> tuple[str, str, int]:
         raise InputRefused(f"no 6.05 report at {path}")
     try:
         report = json.loads(path.read_text(encoding="utf-8"))
-        return report["pp_version"], report["output"]["sha256"], report["output"]["rows"]
+        pp_version, sha256, rows = (report["pp_version"], report["output"]["sha256"],
+                                    report["output"]["rows"])
     except (ValueError, KeyError, TypeError) as exc:
         raise InputRefused(f"{path} is not a 6.05 report: {exc!r}") from exc
+    # A sha256 of the wrong type never equals the file's hash, but a null
+    # pp_version would accept every row that carries none, and rows true
+    # (== 1) a file of one row.
+    if not (isinstance(pp_version, str) and pp_version):
+        raise InputRefused(f"{path} is not a 6.05 report: pp_version {pp_version!r}")
+    if type(rows) is not int:
+        raise InputRefused(f"{path} is not a 6.05 report: output.rows {rows!r}")
+    return pp_version, sha256, rows
 
 
 def _parse_rows(data: bytes, path: Path) -> list[dict]:
@@ -195,8 +206,8 @@ def _edge_rows(records: list[dict]) -> list[dict]:
 
 
 def _endpoint_ids(rows: list[dict]) -> list[str]:
-    return sorted({row[key] for row in rows for key in ("head_id", "tail_id")
-                   if row[key] is not None})
+    """Every head and tail id; read_checked has made each a non-empty string."""
+    return sorted({row[key] for row in rows for key in ("head_id", "tail_id")})
 
 
 def _missing_endpoints(tx, ids: list[str]) -> list[str]:
@@ -316,7 +327,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--replace", action="store_true",
                         help="staging only (needs a shell that sourced scripts/tools/staging.env): "
                              "delete the whole semantic layer, 10.3's edges too, in the "
-                             "transaction that writes the file; the standard chain never passes it")
+                             "transaction that writes the file; an empty file exits 0 before "
+                             "connecting and deletes nothing; the standard chain never passes it")
     parser.add_argument("--verbose", action="store_true")
     return parser
 
@@ -329,9 +341,8 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s %(levelname)s %(name)s | %(message)s",
     )
     kg_target.assert_target("neo4j")
-    if args.replace:
-        logger.warning("--replace: the semantic layer of %s will be deleted and rewritten",
-                       kg_target.require_staging("neo4j")["neo4j"])
+    # Outside a staging shell, --replace stops here, before the file is read.
+    staging_uri = kg_target.require_staging("neo4j")["neo4j"] if args.replace else None
 
     in_path = args.path
     if not in_path.exists():
@@ -348,6 +359,9 @@ def main(argv: list[str] | None = None) -> int:
     if not records:
         logger.warning("Empty relations file — nothing to import")
         return 0
+    if args.replace:  # only now: a refused or empty file deletes nothing
+        logger.warning("--replace: the semantic layer of %s will be deleted and rewritten",
+                       staging_uri)
 
     logger.info("Loaded %d triples spanning %d relation types",
                 len(records), len({rec["relation"] for rec in records}))

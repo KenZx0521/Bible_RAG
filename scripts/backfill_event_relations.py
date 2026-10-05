@@ -19,8 +19,9 @@ With the flag, edges are written with source='cooccurrence',
 extraction_phase=7 (ExtractionPhase.COOCCURRENCE; it was 5, shared with R5's
 inverse edges, REL-09), confidence=0.35, notes='cooccurrence-backfill' and
 backfilled=true. MERGE ... ON CREATE never touches existing
-classifier-produced edges. Event–Event pairs (277) are skipped: temporal
-direction (PRECEDED_BY/CAUSED) cannot be inferred from cooccurrence.
+classifier-produced edges. Event–Event rows (277; 257 distinct pairs) are
+skipped: temporal direction (PRECEDED_BY/CAUSED) cannot be inferred from
+cooccurrence.
 
 Usage:
     uv run python backfill_event_relations.py --legacy-cooccurrence [--dry-run]
@@ -110,7 +111,9 @@ def get_driver():
 
 
 def load_pairs(path: Path) -> tuple[list[dict], list[dict], int]:
-    """Aggregate Event-Person / Event-Place pairs; count cooccurrence evidence."""
+    """Aggregate Event-Person / Event-Place pairs; count cooccurrence evidence.
+
+    The third value counts the Event–Event rows skipped (rows, not pairs)."""
     ep: dict[tuple[str, str], dict] = defaultdict(lambda: {"evidence_count": 0})
     epl: dict[tuple[str, str], dict] = defaultdict(lambda: {"evidence_count": 0})
     ee_skipped = 0
@@ -215,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Event–Person pairs: {len(participated):,} unique "
           f"→ PARTICIPATED_IN candidates")
     print(f"Event–Place pairs:  {len(occurred):,} unique → OCCURRED_IN candidates")
-    print(f"Event–Event pairs skipped (no temporal direction inferable): {ee_skipped:,}")
+    print(f"Event–Event rows skipped (no temporal direction inferable): {ee_skipped:,}")
 
     driver = get_driver()
     try:

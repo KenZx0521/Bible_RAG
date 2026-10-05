@@ -286,6 +286,11 @@ NOT_AS_REPORTED = {
     "row of another 6.05 run": ([TWO_ROWS[0], {**TWO_ROWS[1], "pp_version": OTHER_PP}],
                                 lambda p: None, OTHER_PP),
     "no report": (TWO_ROWS, lambda p: _report_path(p).unlink(), "no 6.05 report"),
+    # A null pp_version would let through every row that carries none.
+    "report pp_version null": ([{k: v for k, v in row.items() if k != "pp_version"} for row in TWO_ROWS],
+                               lambda p: _edit_report(p, pp_version=None), "not a 6.05 report"),
+    # true == 1, so only the type tells a boolean from the row count.
+    "report rows true": ([TWO_ROWS[0]], lambda p: _edit_report(p, rows=True), "not a 6.05 report"),
 }
 
 
@@ -411,3 +416,25 @@ def test_replace_deletes_then_writes_in_one_transaction(staging_target, monkeypa
 
     assert (failing.transactions, failing.committed, failing.rolled_back) == (1, 0, 1)
     assert _layer_statements(failing.in_tx, "DELETE r") == [failing.in_tx[0][0]]
+
+
+def test_replace_on_an_empty_or_refused_file_connects_nowhere_and_announces_no_delete(
+        staging_target, monkeypatch, tmp_path, caplog):
+    # An empty 6.05 output exits 0 and a refused one 2, both before connecting:
+    # even with --replace the old layer stays, so neither run may log that it
+    # will be deleted (the W1 runbook's --replace logs go into the record).
+    driver = _FakeDriver(layer=7)
+    _import(monkeypatch, tmp_path / "empty", [], "--replace", driver=driver)
+    refused = write_relations_clean(tmp_path / "refused", TWO_ROWS)
+    _report_path(refused).unlink()
+    _main(monkeypatch, [str(refused), "--replace"], driver=driver, code=2)
+
+    assert driver.connections == 0
+    assert "Empty relations file" in caplog.text and "no 6.05 report" in caplog.text
+    assert "will be deleted" not in caplog.text
+
+    # A file that is imported still announces the delete before connecting.
+    _import(monkeypatch, tmp_path / "rows", TWO_ROWS, "--replace", driver=driver)
+
+    assert driver.connections == 1
+    assert "will be deleted and rewritten" in caplog.text

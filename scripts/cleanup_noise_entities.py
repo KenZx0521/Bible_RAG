@@ -332,11 +332,12 @@ YEHEHUA_ID = "group:yehehua"
 def yehehua_label(path: Path) -> str | None:
     """group:yehehua's label in the overrides file (D9); None when it has none.
 
-    Read before any store is touched: a malformed file stops the run here.
+    Read before any store is touched: a malformed, missing or unreadable file
+    stops the run here.
     """
     try:
         override = load_overrides(path).get(YEHEHUA_ID)
-    except ValueError as e:
+    except (ValueError, OSError) as e:
         raise SystemExit(f"  ✗ {e}") from e
     return override["label"] if override else None
 

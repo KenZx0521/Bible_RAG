@@ -131,6 +131,19 @@ def test_cleanup_yehehua_rejects_an_invalid_label_before_any_write(recorder, tmp
     assert (recorder.cypher, recorder.sql, recorder.payloads) == ([], [], [])
 
 
+def test_cleanup_yehehua_stops_on_a_missing_overrides_file_before_any_write(recorder, tmp_path,
+                                                                           monkeypatch):
+    # The script's usual '  ✗ ...' exit, not a FileNotFoundError traceback.
+    absent = tmp_path / "absent.yaml"
+    monkeypatch.setattr(cleanup_noise_entities, "OVERRIDES_PATH", absent)
+
+    with pytest.raises(SystemExit) as exc:
+        cleanup_noise_entities.main()
+
+    assert str(exc.value.code).startswith("  ✗") and str(absent) in str(exc.value.code)
+    assert (recorder.cypher, recorder.sql, recorder.payloads) == ([], [], [])
+
+
 def test_cleanup_yehehua_without_an_override_writes_nothing(recorder, tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(cleanup_noise_entities, "OVERRIDES_PATH",
                         _write(tmp_path, "version: 1\noverrides: {}\n"))

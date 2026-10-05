@@ -165,6 +165,22 @@ def test_legacy_flag_writes_cooccurrence_source_and_phase_7(monkeypatch, tmp_pat
                              props["backfilled"]) == props["source"] == "cooccurrence"
 
 
+def test_event_event_skips_are_counted_and_reported_as_rows(monkeypatch, tmp_path, capsys):
+    # Two rows of one Event–Event pair are two skips: the count is of rows, not pairs.
+    monkeypatch.delenv("KG_TARGET", raising=False)
+    monkeypatch.setattr(backfill_event_relations, "get_driver", _FakeDriver)
+    path = _unclassified(tmp_path)
+    path.write_text(path.read_text(encoding="utf-8")
+                    + json.dumps(_pair("event:a", "event:b", "Event", "gen_2")) + "\n",
+                    encoding="utf-8")
+
+    assert _main(monkeypatch, "--legacy-cooccurrence", "--input", str(path)) == 0
+
+    out = capsys.readouterr().out
+    assert "Event–Event rows skipped (no temporal direction inferable): 2" in out
+    assert "Event–Event pairs skipped" not in out
+
+
 @pytest.mark.skipif(not UNCLASSIFIED.exists(),
                     reason="output/relations_unclassified.jsonl is a gitignored build product")
 def test_load_pairs_on_real_output():
@@ -173,3 +189,9 @@ def test_load_pairs_on_real_output():
     assert (len(participated), len(occurred), ee_skipped) == (5946, 3616, 277)
     assert sum(r["evidence_count"] for r in participated) == 6419
     assert sum(r["evidence_count"] for r in occurred) == 3951
+    # The 277 skipped are rows: 257 distinct (head_id, tail_id) pairs (module docstring).
+    with UNCLASSIFIED.open(encoding="utf-8") as f:
+        rows = [json.loads(line) for line in f if line.strip()]
+    ee_pairs = {(r["head_id"], r["tail_id"]) for r in rows
+                if r.get("head_type") == r.get("tail_type") == "Event"}
+    assert len(ee_pairs) == 257
