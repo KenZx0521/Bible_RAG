@@ -28,13 +28,13 @@ import re
 import shutil
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 
 import pytest
 import yaml
 
 from relation_extraction import anchored_rules
-from relation_extraction import relation_policy as policy
 from relation_extraction import relation_postprocess as pp
 from relation_extraction.relation_policy import parent_child
 
@@ -282,7 +282,8 @@ def _anchored_row(head: str, relation: str, tail: str, pattern: str, pid: str, v
     return {"head_id": head, "relation": relation, "tail_id": tail, "source": "anchored_rule",
             "extraction_phase": 6, "notes": pattern, "source_pericope_id": pid, "verse": verse,
             "evidence_span": text, "head_canonical": names[head], "tail_canonical": names[tail],
-            "support_pericopes": support, "evidence_count": evidence_count, "sources": ["anchored_rule"]}
+            "support_pericopes": support, "evidence_count": evidence_count, "sources": ["anchored_rule"],
+            "confidence_raw": None}
 
 
 def _key_set_sha256(rows) -> str:
@@ -303,7 +304,7 @@ def test_rule_rows_are_replaced_by_anchored_rows():
     # gen:46:0 v11 comes first in the file, and every hit's pericope stays as support
     levi = ("1ch:6:0", 1, LEVI_SONS, ["1ch:6:0", "gen:46:0"], 2)
     anchored = [r for r in rows if r["source"] == "anchored_rule"]
-    assert [{k: v for k, v in r.items() if k not in STAMP - {"source"}} for r in anchored] == [
+    assert [{k: v for k, v in r.items() if k not in STAMP - {"source"} | {"run_id"}} for r in anchored] == [
         _anchored_row("person:anlan", "FATHER_OF", "person:moxi", P3, "num:26:0", 59, AMRAM, ["num:26:0"]),
         _anchored_row("person:anlan", "FATHER_OF", "person:yalun", P3, "num:26:0", 59, AMRAM, ["num:26:0"]),
         _anchored_row("person:anlan", "SPOUSE_OF", "person:yuejibie", P4, "num:26:0", 59, AMRAM, ["num:26:0"]),
@@ -311,7 +312,8 @@ def test_rule_rows_are_replaced_by_anchored_rows():
         _anchored_row("person:gexia", "SON_OF", "person:liwei", P1, *levi),
         _anchored_row("person:milali", "SON_OF", "person:liwei", P1, *levi),
     ]
-    assert {(r["schema_version"], r["pp_version"]) for r in anchored} == {(SCHEMA_VERSION, pp.pp_version())}
+    assert {(r["schema_version"], r["pp_version"], r["run_id"]) for r in anchored} == {
+        (SCHEMA_VERSION, pp.pp_version(), report["run_id"])}
     by_pattern = {P1: 6, P2: 0, P3: 2, P4: 1}
     assert report["flow"]["anchored"] == {
         "enabled": True, "pattern_hits": 9, "by_pattern": by_pattern,
@@ -589,11 +591,6 @@ def _keys(rows) -> set[tuple[str, str, str, str]]:
     return {(r["head_id"], r["relation"], r["tail_id"], r["source"]) for r in rows}
 
 
-def _ranked(head: str, relation: str, tail: str, source: str, pid: str = "", verse: int | None = None) -> dict:
-    return {"head_id": head, "relation": relation, "tail_id": tail, "source": source,
-            "source_pericope_id": pid, **({} if verse is None else {"verse": verse})}
-
-
 def _brief(head: str, relation: str, tail: str, source: str, pid: str, verse: int | None) -> dict:
     return {"head_id": head, "relation": relation, "tail_id": tail, "source": source,
             "source_pericope_id": pid, "verse": verse}
@@ -626,23 +623,7 @@ def test_father_of_contradictions_resolve_by_source_rank(tmp_path):
     assert not {(t, h) for h, t in fathers} & {parent_child(r) for r in rows if parent_child(r)}   # R6
     ran = report["rules"]["ran"]
     assert ran.index("flag_id_order") < ran.index("resolve_kinship_direction")
-
-    # called directly: equal ranks fall to the smallest (source_pericope_id, verse, head_id);
-    # the kept rows stay in input order, a non-parent row (SPOUSE_OF) passes untouched
-    given = [_ranked("person:a", "FATHER_OF", "person:b", "llm", "gen:2:0"),
-             _ranked("person:b", "FATHER_OF", "person:a", "llm", "gen:1:0"),
-             _ranked("person:c", "SON_OF", "person:d", "anchored_rule", "1ch:1:0", 5),
-             _ranked("person:d", "SON_OF", "person:c", "anchored_rule", "1ch:1:0", 3),
-             _ranked("person:f", "MOTHER_OF", "person:e", "llm", "gen:3:0"),
-             _ranked("person:e", "MOTHER_OF", "person:f", "llm", "gen:3:0"),
-             _ranked("person:g", "DAUGHTER_OF", "person:h", "prior"),
-             _ranked("person:g", "FATHER_OF", "person:h", "curated"),
-             _ranked("person:g", "SPOUSE_OF", "person:h", "llm", "gen:3:0")]
-    kept, conflicts = policy.resolve_kinship_direction(given)
-    assert kept == [given[1], given[3], given[5], given[7], given[8]]
-    assert [(c["head_id"], c["relation"], c["tail_id"], c["kept"]["head_id"]) for c in conflicts] == [
-        ("person:a", "FATHER_OF", "person:b", "person:b"), ("person:c", "SON_OF", "person:d", "person:d"),
-        ("person:f", "MOTHER_OF", "person:e", "person:e"), ("person:g", "DAUGHTER_OF", "person:h", "person:g")]
+    # the policy called directly, on hand-made rows: test_relation_policy.py
 
 
 def test_undirected_pair_keeps_best_ranked_orientation(tmp_path):
@@ -667,16 +648,6 @@ def test_undirected_pair_keeps_best_ranked_orientation(tmp_path):
     ran = report["rules"]["ran"]
     assert ran.index("resolve_kinship_direction") < ran.index("dedup_undirected")
 
-    # called directly: a key the llm and the anchored rule both give (密迦 SPOUSE_OF 拿鶴) keeps
-    # one row too; directed rows are not this rule's, a pair in both orientations included
-    _, cfg = pp.load_inputs(_paths())
-    given = [_ranked("person:mijia", "SPOUSE_OF", "person:nahe", "anchored_rule", "gen:11:2", 29),
-             _ranked("person:mijia", "SPOUSE_OF", "person:nahe", "llm", "gen:11:2"),
-             _ranked("person:a", "FATHER_OF", "person:b", "llm", "gen:1:0"),
-             _ranked("person:b", "FATHER_OF", "person:a", "llm", "gen:1:0")]
-    kept, dropped = policy.dedup_undirected(given, cfg.schema)
-    assert (kept, dropped) == (given[1:], given[:1])
-
 
 def test_conflict_log_is_deterministic(tmp_path):
     # the winner of a pair is the smallest by an explicit key, never the first row read: the
@@ -690,29 +661,11 @@ def test_conflict_log_is_deterministic(tmp_path):
         path.write_text("".join(line + "\n" for line in lines[::order]), encoding="utf-8")
         runs.append(_run("all", _paths(tmp_path / name)))
     (rows, report), (rows_reversed, report_reversed) = runs
-    assert rows == rows_reversed
+    # but for run_id: it hashes the input bytes, which the order changes (stamp_provenance)
+    assert [_canon(r, {"run_id"}) for r in rows] == [_canon(r, {"run_id"}) for r in rows_reversed]
     assert report["flow"] == report_reversed["flow"]
     assert report["conflicts"] == report_reversed["conflicts"]
     assert [c["reason"] for c in report["conflicts"]] == ["kin_direction_conflict"] * 2
-
-    # called directly, each function's choice and conflict list are those of the row set
-    given = [_ranked("person:a", "FATHER_OF", "person:b", "llm", "gen:1:0"),
-             _ranked("person:a", "SON_OF", "person:b", "llm", "gen:1:0"),
-             _ranked("person:b", "FATHER_OF", "person:a", "llm", "gen:1:0"),
-             _ranked("person:c", "SPOUSE_OF", "person:d", "llm", "gen:1:0"),
-             _ranked("person:d", "SPOUSE_OF", "person:c", "llm", "gen:1:0")]
-    _, cfg = pp.load_inputs(_paths())
-    results = []
-    for shift in range(len(given)):
-        rotated = given[shift:] + given[:shift]
-        kept, conflicts = policy.resolve_kinship_direction(rotated)
-        deduped, dropped = policy.dedup_undirected(rotated, cfg.schema)
-        results.append((sorted(map(_canon, kept)), conflicts, sorted(map(_canon, deduped)), dropped))
-    assert all(result == results[0] for result in results)
-    # head_id, then relation, decides a full tie: 甲 FATHER_OF 乙 stands, so 甲 SON_OF 乙 goes
-    assert [(c["head_id"], c["relation"]) for c in results[0][1]] == [("person:a", "SON_OF"),
-                                                                      ("person:b", "FATHER_OF")]
-    assert results[0][3] == [given[4]]
 
 
 # --- collapse_by_key (REL-10, SON_OF onCreate-only part 1) ----------------------
@@ -790,3 +743,33 @@ def test_batch0_son_of_rows_have_fixed_primary():
         (["llm"], ["gen:35:1"], 1), (["llm"], ["gen:35:1"], 1), (["anchored_rule"], ["1ch:29:2", "luk:3:2"], 2),
         (["llm"], ["gen:28:1"], 1), (["prior"], [], 1)]
     assert collapsed == {"anchored_rule+llm": 1, "anchored_rule+prior": 1}
+
+
+# --- stamp_provenance (REL-04, REL-09; K5/D4, D12) ------------------------------
+
+def test_rows_carry_provenance_and_no_confidence(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    _append_jsonl(tmp_path / "in" / "relations.jsonl", [
+        _row("person:moxi", "SUCCEEDED_BY", "person:yalun", None, source="curated", source_pericope_id=""),
+        _row("person:nahe", "DIED_IN", "place:wuer", 4, source_pericope_id="gen:11:1", confidence=0.7,
+             run_id="re-test", model="test-model")])
+    rows, report = _run("all", _paths(tmp_path / "in"))
+    assert report["rules"]["ran"][-1] == "stamp_provenance"
+
+    # K5: no row keeps `confidence`, Step 6's lookup constant; the value a row came with is its
+    # confidence_raw, null on an anchored row (the rule has none) until 2A calibrates (D4)
+    assert not any("confidence" in r for r in rows)
+    assert all({"source", "pp_version", "schema_version", "run_id", "confidence_raw"} <= set(r) for r in rows)
+    # the phase is the source's; Step 6's 2026-05 rows (prior, llm) carry its legacy run and the
+    # llm ones model 'unknown' (D12), a row whose run recorded itself keeps that; every other row
+    # (anchored, curated) is this 6.05 run's, the report's run_id
+    legacy, this_run = "legacy-re-2026-05", report["run_id"]
+    assert Counter((r["source"], r["extraction_phase"], r["run_id"], r.get("model"), r["confidence_raw"])
+                   for r in rows) == {
+        ("prior", 3, legacy, None, 0.99): 1, ("llm", 4, legacy, "unknown", 0.65): 5,
+        ("llm", 4, "re-test", "test-model", 0.7): 1, ("anchored_rule", 6, this_run, None, None): 6,
+        ("curated", None, this_run, None, None): 1}
+
+    # none mode stamps nothing more: the K8 control keeps confidence and gains no run_id
+    none_rows, _ = _run("none")
+    assert all("confidence" in r and "run_id" not in r for r in none_rows)

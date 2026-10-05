@@ -19,7 +19,9 @@ stamp and nothing else changed, the input of the K8 staging-P1 control. The
 base stamp (both modes) is source (the row's own, else derived from its
 phase), schema_version (the relation schema's version) and pp_version ('pp-'
 and 12 hex of the sha256 of the code and repo config in PP_FILES; run_id
-adds the sha256 of the inputs actually read).
+adds the sha256 of the inputs actually read). All mode's last rule,
+stamp_provenance, adds run_id, model and confidence_raw, and removes
+`confidence`.
 
 Determinism: the output is a function of the input bytes and PP_FILES only.
 Rows are sorted by (head_id, relation, tail_id), one
@@ -82,6 +84,10 @@ GUARD_SOURCES = ("curated", "prior", "llm")
 GATE_EXEMPT = ("curated", "prior")
 # The rows of an id-order relation whose direction flag_id_order takes as verified.
 DIRECTION_VERIFIED = ("curated", "prior")
+# The rows Step 6's 2026-05 run wrote, and the run and model stamp_provenance gives them (D12).
+LEGACY_SOURCES = ("prior", "llm")
+LEGACY_RUN_ID = "legacy-re-2026-05"
+LEGACY_MODEL = "unknown"
 # The input files, in the order their sha256s enter run_id.
 INPUTS = ("relations", "entities", "mentions", "chunks", "pericopes", "overrides", "anchored_config", "schema")
 _DEFAULT_PATHS = {
@@ -420,6 +426,33 @@ def collapse_by_key(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -
     return collapsed
 
 
+def stamp_provenance(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-04, REL-09: every row says which run wrote it; K5: `confidence` gives way to confidence_raw.
+
+    extraction_phase becomes its source's (PHASE_OF_SOURCE; a curated row
+    has none). The prior and llm rows are Step 6's 2026-05 run, which
+    recorded neither run nor model: run_id LEGACY_RUN_ID and, on an llm row,
+    model 'unknown' (D12). Every other row, an anchored one (or curated), is
+    this run's, the report's run_id. A row that records its own run_id or
+    model keeps it. confidence_raw is the confidence the row came with (the
+    lookup constant of Step 6's phase), null on an anchored row; the
+    `confidence` key goes, until 2A writes a calibrated one (D4). The rows are
+    copies.
+    """
+    this_run = run_id(cfg.pp_version, inputs.files)
+    return [_provenance(row, this_run) for row in rows]
+
+
+def _provenance(row: Mapping, this_run: str) -> dict:
+    source = row["source"]
+    stamped = {key: value for key, value in row.items() if key != "confidence"}
+    stamped.update(extraction_phase=PHASE_OF_SOURCE.get(source), confidence_raw=row.get("confidence"),
+                   run_id=row.get("run_id") or (LEGACY_RUN_ID if source in LEGACY_SOURCES else this_run))
+    if source == "llm":
+        stamped["model"] = row.get("model") or LEGACY_MODEL
+    return stamped
+
+
 def _final_types(inputs: Inputs, cfg: Config) -> dict[str, str]:
     """entity_id -> final type: the entities.jsonl type through the curated overrides."""
     return {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
@@ -436,6 +469,7 @@ RULES: tuple[tuple[str, Rule], ...] = (
     ("resolve_kinship_direction", resolve_kinship_direction),
     ("dedup_undirected", dedup_undirected),
     ("collapse_by_key", collapse_by_key),
+    ("stamp_provenance", stamp_provenance),
 )
 
 

@@ -31,6 +31,7 @@ from kg_validate.model import KG
 from kg_validate.registry import Context
 from relation_extraction import relation_postprocess as pp
 from relation_extraction.anchored_rules import GuardConfig
+from relation_extraction.models import PHASE_OF_SOURCE
 
 ROOT = Path(__file__).resolve().parents[2]
 W1_PINS = {
@@ -436,15 +437,59 @@ def test_final_edge_set(none_run, all_run):
     assert _parents(kept, female) == (383, 8, 1)
 
 
-@pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")
-def test_none_mode_is_byte_identical_across_hash_seeds(tmp_path):
+def test_stamps(real_inputs, all_run):
+    rows, report = all_run
+    # REL-04/09: every row says where it came from; K5: none keeps the lookup-table confidence
+    assert not any("confidence" in r for r in rows)
+    assert all(r.get(k) for r in rows for k in ("source", "pp_version", "schema_version", "run_id"))
+    assert [_key(r) for r in rows if r["extraction_phase"] != PHASE_OF_SOURCE[r["source"]]] == []
+    legacy = "legacy-re-2026-05"
+    assert Counter((r["source"], r["run_id"], r.get("model")) for r in rows) == {
+        ("prior", legacy, None): 64, ("llm", legacy, "unknown"): 5313, ("anchored_rule", report["run_id"], None): 319}
+
+    # confidence_raw is the confidence the primary row came with, null on exactly the 319 anchored
+    # rows; the 7 keys the anchored rule shares keep their prior's or llm row's
+    inputs, cfg = real_inputs
+    given = {(*_key(r), r["source"]): r["confidence"] for r in (pp.base_stamp(r, cfg) for r in inputs.relations)}
+    assert [_key(r) for r in rows if r["source"] != "anchored_rule"
+            and r["confidence_raw"] != given[(*_key(r), r["source"])]] == []
+    assert Counter(r["source"] for r in rows if r["confidence_raw"] is None) == {"anchored_rule": 319}
+    shared = [r for r in rows if len(r["sources"]) > 1]
+    assert Counter((r["source"], r["confidence_raw"]) for r in shared) == {("llm", 0.78): 5, ("prior", 0.99): 2}
+
+    # the diff_kg ee_edges keys after 10.2: prior 22 (64 edges), llm 35 (5,233), anchored 4 (319)
+    keys: dict[str, dict[str, int]] = {}
+    for key, n in report["expected_after_10_2"]["by_ee_key"].items():
+        keys.setdefault(key.rsplit("source=", 1)[1], {})[key.split(" ", 1)[0]] = n
+    assert {source: (len(by), sum(by.values())) for source, by in keys.items()} == {
+        "prior": (22, 64), "llm": (35, 5233), "anchored_rule": (4, 319)}
+    assert keys["anchored_rule"] == {"SON_OF": 298, "DAUGHTER_OF": 10, "FATHER_OF": 5, "SPOUSE_OF": 6}
+
+
+def _seed_runs(tmp_path: Path, rules: str) -> list[tuple[bytes, bytes]]:
+    """relations_clean.jsonl and report bytes of 6.05 --rules RULES run under PYTHONHASHSEED 1 and 987."""
     out, report = tmp_path / "relations_clean.jsonl", tmp_path / "relations_clean.report.json"
     runs = []
     for seed in ("1", "987"):
         proc = subprocess.run(
-            [sys.executable, "-m", "scripts.relation_extraction.relation_postprocess", "--rules", "none",
+            [sys.executable, "-m", "scripts.relation_extraction.relation_postprocess", "--rules", rules,
              "--out", str(out), "--report", str(report)],
             cwd=ROOT, capture_output=True, text=True, timeout=600, env={**os.environ, "PYTHONHASHSEED": seed})
         assert proc.returncode == 0, proc.stderr
         runs.append((out.read_bytes(), report.read_bytes()))
+    return runs
+
+
+@pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")
+def test_none_mode_is_byte_identical_across_hash_seeds(tmp_path):
+    runs = _seed_runs(tmp_path, "none")
     assert runs[0] == runs[1]
+
+
+@pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")
+def test_all_mode_is_byte_identical_across_hash_seeds(tmp_path):
+    # every rule, the anchored rule's set and dict walks included, and the stamps: the bytes 6.1
+    # imports and the report do not depend on the hash seed
+    runs = _seed_runs(tmp_path, "all")
+    assert runs[0] == runs[1]
+    assert b'"run_id": "legacy-re-2026-05"' in runs[0][0] and b'"confidence"' not in runs[0][0]
