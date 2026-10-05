@@ -15,7 +15,9 @@ import json
 import re
 
 import validate_kg as vk
-from _validate_kg_helpers import SHIPPED_BASELINE, SHIPPED_PROBES
+from _validate_kg_helpers import SHIPPED_BASELINE, SHIPPED_PROBES, measure
+# snap is a pytest fixture: importing it is what makes it available here.
+from _validate_kg_helpers import snap  # noqa: F401
 
 MAX_LINES = 800
 # The single config/kg_quality_baseline.json at 7fa9d00, in order: the merged
@@ -70,6 +72,14 @@ def test_shipped_baseline_covers_every_check_with_batch_severities():
         assert check.get("query"), check["id"]
         for name, m in check["metrics"].items():
             assert {"value", "direction", "tolerance"} <= set(m), (check["id"], name)
+
+
+def test_shipped_baseline_gates_every_metric_a_check_emits(snap):
+    # gate.evaluate scores only the metrics a baseline entry names: a metric a
+    # check emits without one (R6's two all-encoding counts, say) goes ungated
+    res = measure(snap)
+    for check in vk.load_baseline(SHIPPED_BASELINE)["checks"]:
+        assert set(res[check["id"]].metrics) == set(check["metrics"]), check["id"]
 
 
 def test_shipped_r6_keeps_its_functionality_metrics_record():

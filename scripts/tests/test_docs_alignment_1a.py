@@ -79,8 +79,12 @@ def test_k9_is_preregistered_and_gates_on_text_correct_only():
     words = " ".join(help_text("kin_review").split())
     assert "default text_correct" in words and "default 0.85" in words
     for needle in ("20261005", "text_correct", "id_correct", "0.85", "57/60", "非人工", "空目錄", "Kay 抽查",
-                   "enabled: false", "sim2_no_anchored.json", "不重抽"):
+                   "enabled: false", "sim2_no_anchored.json", "不重抽", "第 0 批圖上失敗的探針清單"):
         assert needle in w1a, needle
+    # the fallback's probe edits name the tests that pin the probe lists: they must exist under those names
+    pp_tests = read(ROOT / "scripts" / "tests" / "test_relation_postprocess_output.py")
+    for test in ("test_final_edge_set", "test_batch0_graph_r6_and_failing_probes"):
+        assert f"{test} 的" in w1a and f"def {test}(" in pp_tests, test
 
 
 def test_1a_expected_files_follow_k9_and_come_from_the_tools():

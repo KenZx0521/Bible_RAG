@@ -197,6 +197,18 @@ LOCATED = ("place:moliya", "LOCATED_IN", "place:aiji")
     pytest.param([_edge(*LOCATED, source="curated", extraction_phase=None)], {}, id="curated-located-in"),
     pytest.param([_edge("person:bide", "ALLY_OF", "person:make"), _edge("person:make", "ALLY_OF", "person:bide")],
                  {"undirected_pair_duplicates": 1}, id="undirected-reverse-pair"),
+    # the source alone, and the legacy rows that score by phase (prod's rule 771 / llm E–E 26 / unflagged 81)
+    pytest.param([_edge(*JOINED, source="cooccurrence", extraction_phase=7)], {"cooccurrence_edges": 1},
+                 id="cooccurrence-without-backfilled-flag"),
+    pytest.param([_edge("event:bidehuojiu", "PRECEDED_BY", "event:xianyisa", source="prior", extraction_phase=3,
+                        source_pericope_id="", direction_verified=True)], {}, id="prior-event-event"),
+    pytest.param([_edge("person:tala", "FATHER_OF", "person:nahe", source=None, extraction_phase=2,
+                        notes="signal=...的兒子")], {"source_null": 1, "rule_edges": 1}, id="legacy-rule-by-phase"),
+    pytest.param([_edge("event:bidehuojiu", "PRECEDED_BY", "event:xianyisa", source=None, direction_verified=False)],
+                 {"source_null": 1, "llm_event_event_edges": 1}, id="legacy-llm-event-event-by-phase"),
+    pytest.param([_edge(*LOCATED, source=None, extraction_phase=3, source_pericope_id="")], {"source_null": 1},
+                 id="legacy-prior-located-in-by-phase"),
+    pytest.param([_edge(*JOINED, source="")], {"source_null": 1}, id="empty-source-is-null"),
 ])
 def test_h11_metrics(snap, rows, counts):
     # Every metric is a hard 0 from 1A on: the injected rows move exactly the
@@ -231,6 +243,13 @@ LEGACY = {"source": None}  # an edge written before the source property existed 
     pytest.param({**LEGACY, "extraction_phase": 4}, 1, id="legacy-phase-4-gated"),
     pytest.param({**LEGACY, "extraction_phase": 5, "backfilled": True, "notes": "cooccurrence-backfill"},
                  1, id="legacy-cooccurrence-gated"),
+    # the inverse exemption needs all three: source inverse, no pericope, derived_from notes
+    pytest.param({"source": "llm", "extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"},
+                 1, id="llm-with-derived-notes-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "notes": "derived_from=FATHER_OF"},
+                 1, id="legacy-inverse-with-pericope-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "backfilled": True, "source_pericope_id": "",
+                  "notes": "derived_from=FATHER_OF"}, 1, id="legacy-backfilled-phase-5-is-cooccurrence"),
 ])
 def test_h3_uses_source_then_falls_back_to_phase(snap, over, unsupported):
     # The row's source decides; a row without one gets the source its phase
@@ -393,8 +412,10 @@ def test_load_live_reads_direction_verified_and_sources(snap, monkeypatch):
     stored = {
         "entities": [{"entity_id": "place:moliya", "labels": ["Entity", "Place"], "canonical_name": "摩利亞"},
                      {"entity_id": "place:jianan", "labels": ["Entity", "Place"], "canonical_name": "迦南"}],
+        # every property _relation_row reads, none at its default: a column the Cypher drops reads None
         "relations": [{"head_id": "place:moliya", "relation": "LOCATED_IN", "tail_id": "place:jianan",
-                       "source_pericope_id": "gen:22:0", "extraction_phase": 4, "source": "llm", **PROVENANCE},
+                       "source_pericope_id": "gen:22:0", "extraction_phase": 4, "notes": "x", "curated": True,
+                       "backfilled": False, "source": "llm", **PROVENANCE},
                       {"head_id": "place:jianan", "relation": "NEAR", "tail_id": "place:moliya",
                        "source_pericope_id": "gen:22:0", "extraction_phase": 4}],  # legacy: neither property
     }
@@ -413,6 +434,9 @@ def test_load_live_reads_direction_verified_and_sources(snap, monkeypatch):
     flagged, legacy = kg.relations
     assert {k: flagged[k] for k in PROVENANCE} == PROVENANCE
     assert (legacy["direction_verified"], legacy["sources"]) == (None, None)
+    expected = model._relation_row(stored["relations"][0])
+    assert None not in expected.values()  # a column _relation_row gains must be set above too
+    assert flagged == expected  # so every column it reads is one the relations Cypher selects
     assert set(flagged) == set(vk.load_snapshot(snap).relations[0])  # live and snapshot rows: same keys
 
 
@@ -477,11 +501,12 @@ def test_r6_all_parent_encodings(snap):
         _edge("person:maliya", "MOTHER_OF", "person:luode"),  # ... and maliya: 3 parents
         _edge("person:make", "DAUGHTER_OF", "person:bide"),   # make: bide
         _edge("person:maliya", "MOTHER_OF", "person:make"),   # ... and maliya, a female_persons id
+        _edge("person:nahe", "DAUGHTER_OF", "person:tala"),   # nahe: tala, only via DAUGHTER_OF
     ])
     res = measure(snap)
     assert metric(res, "R6", "children_with_2plus_nonfemale_parents") == 1  # luode; make's 2nd is female
     assert metric(res, "R6", "children_with_gt2_parents") == 1  # luode
-    assert res["R6"].detail["children_with_parents"] == 5  # yabolahan, halan, luode, yisa, make
+    assert res["R6"].detail["children_with_parents"] == 6  # yabolahan, halan, luode, yisa, make, nahe
     assert metric(res, "R6", "functional_violation_rate") == 0.0  # no child has two FATHER_OF heads
 
 

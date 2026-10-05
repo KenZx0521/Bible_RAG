@@ -2,9 +2,11 @@
 
 Exit codes and ratchet direction run through main() against a baseline built
 from the shipped config/kg_quality_baseline/ with its values cleared, so the
-shipped severities/directions are what is being tested. The split baseline
-directory itself is read merged and written back part by part (its own
-section below). The live projection test is read-only and skips without Neo4j.
+shipped severities/directions are what is being tested, except where a
+record-mechanics test relabels H3 and R6 as record (H3_R6_AS_RECORD);
+test_shipped_h3_h9_and_r6_are_hard holds their shipped severities. The split
+baseline directory itself is read merged and written back part by part (its
+own section below). The live projection test is read-only and skips without Neo4j.
 
 Split from test_validate_kg.py, together with test_validate_kg_checks.py and
 test_validate_kg_shipped.py; shared pieces are in _validate_kg_helpers.py.
@@ -107,6 +109,7 @@ def test_record_metric_inside_a_hard_check_regresses_without_failing(snap, tmp_p
     # 雅各 VISITED 馬可: a Person where the schema's range is Place; a prior, so H3 exempts it
     ("H9", {**_prior_father("person:yage", "person:make"), "relation": "VISITED"}, "domain_range_violations"),
     ("R6", _prior_father("person:maliya", "person:make"), "female_head"),
+    ("R6", _prior_father("person:yisa", "person:yabolahan"), "contradictions"),  # the fixture's reverse edge
 ])
 def test_shipped_h3_h9_and_r6_are_hard(snap, tmp_path, capsys, check_id, row, name):
     # batch-1 plan §2.1: one defect a record check would only call a regression

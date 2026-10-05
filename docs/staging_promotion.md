@@ -269,7 +269,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    - 判準（同一份 rubric，寫在 sample 檔裡）：text_correct 是經文明說這兩個名字之間有這種關係，方向也對；id_correct 是 text_correct 成立，而且兩端節點的主要指涉（description、最常出現的段落標題、提及的書卷）就是經文裡的那個人。
    - 標註：兩個互不知情的 AI session，各在一個只放了 sample 檔的空目錄裡標（看不到 repo、程式、句型與試標）；第三個 session 只裁決兩者不一致的項目；最後 Kay 抽查全部裁決項目，另加至少 10 項。報告標明「非人工」（kin_review 自動寫入）。
    - 閘門（決定 Q1）：anchored 的 text_correct，Wilson 下界 ≥ 0.85，也就是 60 項至少 57 項正確（57/60 的下界是 0.863，56/60 是 0.841）。id_correct 一律只報告，是延後-A 的基準（anchored 60、llm 30、prior 30）；llm、prior 兩個樣本整個只報告。
-   - 沒過時的唯一退路：`config/relations/anchored_rules.yaml` 改 `enabled: false`，重跑 6.05（圖上 5,297 條，sha256 `bbc5c830…`）。探針照 C8g 的做法調整：kin-david-son-of-jesse 改寫成 prior 邊 `person:yexi FATHER_OF person:dawei`，撤掉 kin-esau-father-of-jalam，同一個 commit 改 test_validate_kg_shipped 的 PROBES_1A、W1_EDGES 與 test_final_edge_set 的 16。第 2 項的期望檔改用 `sim2_no_anchored.json` 的 sha。不重抽，也不換 seed、欄位或門檻。
+   - 沒過時的唯一退路：`config/relations/anchored_rules.yaml` 改 `enabled: false`，重跑 6.05（圖上 5,297 條，sha256 `bbc5c830…`）。探針照 C8g 的做法調整：kin-david-son-of-jesse 改寫成 prior 邊 `person:yexi FATHER_OF person:dawei`，撤掉 kin-esau-father-of-jalam，同一個 commit 改 test_validate_kg_shipped 的 PROBES_1A、W1_EDGES，以及 test_final_edge_set 的 16 與 test_batch0_graph_r6_and_failing_probes 的第 0 批圖上失敗的探針清單（拿掉 kin-esau-father-of-jalam）。第 2 項的期望檔改用 `sim2_no_anchored.json` 的 sha。不重抽，也不換 seed、欄位或門檻。
    ```bash
    K=bak/$D/k9
    mkdir -p $K

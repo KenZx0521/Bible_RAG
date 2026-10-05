@@ -461,10 +461,10 @@ def test_w1_step1_ships_the_backend_first_and_gates_on_the_exact_compare():
             "smoke20_ids.txt", "deploy-guard --container bible_rag_backend", "probes.xref_measure",
             "predict", "compare")
     _in_order(_commands(step1), keys)
-    for needle in ("087ab0d", "9bc112a6", "1,279", "57/262", "5,820"):
+    for needle in ("在主 checkout", "087ab0d", "9bc112a6", "1,279", "57/262", "5,820"):
         assert needle in step1, needle
     record = next(line for line in step1.splitlines() if line.startswith("- W1 紀錄"))
-    for needle in ("backend_w1.id", "backend_kg-pre-batch1-w1.id", "sha256"):
+    for needle in ("backend_w1.id", "兩者必須相同", "backend_kg-pre-batch1-w1.id", "sha256"):
         assert needle in record, needle
 
 
@@ -488,14 +488,17 @@ def test_w1_step1_pins_and_saves_the_rollback_image_before_switching():
         f"gunzip -c {ROLLBACK_TAR}.part | tar -tf - >/dev/null", f"mv {ROLLBACK_TAR}.part {ROLLBACK_TAR}",
         "(cd bak/$D && sha256sum ./images/backend_kg-pre-batch1-w1.tar.gz >> SHA256SUMS)"))
     r0 = section(staging_text(), "R0")
-    assert "docker save" in r0 and "W1 升版第 1 步" in r0
+    assert "docker save" in r0 and "W1 升版第 1 步" in r0 and "停著的容器" in r0
 
 
 def test_w1_step1_deploys_the_r2_tested_image_and_waits_for_health():
     r2 = _commands(section(staging_text(), "R2"))
     record = f"docker image inspect -f '{{{{.Id}}}}' bible_rag-backend:w1 > {W1_ID_FILE}"
-    up = _in_order(r2, ("w1_image.yml build backend", record, "w1_image.yml up -d --no-deps backend-staging"))[2]
+    up = _in_order(r2, ("w1_image.yml build backend", "mkdir -p bak/$D/images", record,
+                        "w1_image.yml up -d --no-deps backend-staging", "echo 'staging runs :w1'"))[3]
     assert W1_ID_FILE in r2[up + 1] and "bible_rag_backend_staging)" in r2[up + 1], r2[up + 1]
+    # && not ;: a failed test must not print it (_assert_fail_closed once R2 item 3 is a subshell, M307)
+    assert r2[up + 1].endswith(" && echo 'staging runs :w1'"), r2[up + 1]
     step1 = section(staging_text(), "W1 升版第 1 步")
     deploy = _blocks(step1)[1]
     # the saved rollback and an unchanged :w1 gate the retag; prod must then run the R2 id
@@ -507,19 +510,22 @@ def test_w1_step1_deploys_the_r2_tested_image_and_waits_for_health():
         "docker tag bible_rag-backend:w1 bible_rag-backend:latest", "docker compose up",
         "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend)\" = \"$W1\""))[6]
     assert {"--no-deps", "--no-build", "--wait"} <= set(deploy[up].split()), deploy[up]
+    assert re.search(r"--wait-timeout 300(?!\d)", deploy[up]), deploy[up]  # the bullet's 300 s
     assert not [c for c in _commands(step1) if re.search(r"(?<![\w-])--build\b", c) or c.startswith("curl")]
 
 
 def test_w1_step1_smoke_cannot_pass_on_a_stale_result_and_checks_pred_trans():
     commands = _commands(section(staging_text(), "W1 升版第 1 步"))
-    parts = [part.strip() for part in commands[_first(commands, "smoke20_ids.txt")].split("&&")]
-    assert parts[1] == f"rm -f {SMOKE_JSON}", parts
-    assert parts[2].startswith("uv run python quick_retrieval_eval.py") and SMOKE_JSON in parts[3], parts
+    readme = read(ROOT / "evaluation" / "experiments" / "2026-10-05_kg_w1" / "README.md")
+    # rm, run and check joined by &&: the doc from the repo root in (cd evaluation && ...), the README in evaluation/
+    for chain, start in ((commands, 1), (_commands(readme), 0)):
+        parts = [part.strip() for part in chain[_first(chain, "smoke20_ids.txt")].split("&&")][start:]
+        assert parts[0] == f"rm -f {SMOKE_JSON}", parts
+        assert parts[1].startswith("uv run python quick_retrieval_eval.py") and SMOKE_JSON in parts[2], parts
     compare = ("xref_probe.py compare --pred bak/$D/xref_probe/pred_prod_step1.json "
                "--measured bak/20261005_w1_1b_evidence/pred_trans.json")
     _in_order(commands, ("xref_probe.py predict", compare))
-    readme = read(ROOT / "evaluation" / "experiments" / "2026-10-05_kg_w1" / "README.md")
-    assert f"rm -f {SMOKE_JSON}" in readme and "up -d --build backend" not in readme
+    assert "up -d --build backend" not in readme
 
 
 def test_xref_ab_window_restarts_staging_on_w1_and_reports_ci_by_stratum():
@@ -626,7 +632,7 @@ def test_r5_rolls_back_to_the_recorded_image_id_and_reloads_it_when_pruned():
 def test_staging_compose_sends_new_backend_code_to_a_separate_tag():
     words = " ".join(line.lstrip("# ").strip() for line in read(ROOT / "docker-compose.staging.yml").splitlines())
     assert "`docker compose build backend` first" not in words
-    for needle in ("bible_rag-backend:w1", "docs/staging_promotion.md R2"):
+    for needle in ("do not `docker compose build backend`", "bible_rag-backend:w1", "docs/staging_promotion.md R2"):
         assert needle in words, needle
 
 

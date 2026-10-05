@@ -381,7 +381,13 @@ def _kg(rows) -> KG:
                                           for r in rows])
 
 
-def test_final_edge_set(none_run, all_run):
+def _shipped_probes() -> tuple[Context, set[str]]:
+    """validate_kg's context with the shipped probes, and the ids of its relation probes."""
+    probes = yaml.safe_load((ROOT / "config" / "kg_probes.yaml").read_text(encoding="utf-8"))
+    return Context(baseline={}, probes=probes), {fact["id"] for fact in probes["facts"] if fact["kind"] == "relation"}
+
+
+def test_final_edge_set(all_run):
     rows, report = all_run
     # one row per key: of the 7 keys the anchored rule shares with the llm (5) or a prior (2), the
     # better-ranked row is primary, so the anchored rows that 6.1 imports drop from 326 to 319
@@ -411,9 +417,8 @@ def test_final_edge_set(none_run, all_run):
 
     # R6 and the 16 shipped relation probes (8 of them 1A-C8g's), scored by validate_kg on the edges left after 10.2
     kept = _after_10_2(rows, report)
-    probes = yaml.safe_load((ROOT / "config" / "kg_probes.yaml").read_text(encoding="utf-8"))
+    ctx, relation_probes = _shipped_probes()
     kg = _kg(kept)
-    ctx = Context(baseline={}, probes=probes)
     r6 = check_r6(kg, ctx)
     # every parent encoding: children with 2+ non-female parents 8 of 383, with >2 parents 1
     assert r6.metrics == {"probe_failures": 0, "failing_probes": [], "contradictions": 0, "female_head": 0,
@@ -421,15 +426,25 @@ def test_final_edge_set(none_run, all_run):
                           "children_with_gt2_parents": 1}
     assert (sum(r["relation"] == "FATHER_OF" for r in kept), r6.detail["children"],
             r6.detail["children_with_2plus_fathers"], r6.detail["children_with_parents"]) == (50, 47, 3, 383)
-    relation_probes = {fact["id"] for fact in probes["facts"] if fact["kind"] == "relation"}
     assert len(relation_probes) == 16
     assert [p["id"] for p in evaluate_probes(kg, ctx) if p["id"] in relation_probes and not p["passed"]] == []
 
+
+def test_batch0_graph_r6_and_failing_probes(none_run):
     # before 1A (none mode after 10.2 is the batch-0 staging graph; live gives the same figures):
     # 135 of 262 children with 2+ non-female parents, 87 with >2 parents
-    before = check_r6(_kg(_after_10_2(*none_run)), ctx)
+    ctx, relation_probes = _shipped_probes()
+    before_kg = _kg(_after_10_2(*none_run))
+    before = check_r6(before_kg, ctx)
     assert (before.metrics["children_with_2plus_nonfemale_parents"], before.detail["children_with_parents"],
             before.metrics["children_with_gt2_parents"]) == (135, 262, 87)
+    # ... and the probes that fail there: an absent probe whose ids no longer match an edge would
+    # pass on both graphs unseen (the K9 fallback, which withdraws kin-esau-father-of-jalam, edits this)
+    assert before.metrics["failing_probes"] == ["kin-esau-father-of-jalam", "kin-leah-not-father-of-isaac",
+                                                "kin-leah-not-father-of-reuben", "kin-lot-not-father-of-terah"]
+    failing = sorted(p["id"] for p in evaluate_probes(before_kg, ctx) if not p["passed"])
+    assert [pid for pid in failing if pid in relation_probes] == [
+        "edge-no-dan-near-jordan", "edge-no-galilee-in-nazareth", *before.metrics["failing_probes"]]
 
 
 def test_stamps(real_inputs, all_run):

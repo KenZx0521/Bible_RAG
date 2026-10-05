@@ -54,12 +54,26 @@ def test_matching_files_exit_0(merged, capsys):
     assert re.search(r"OK\s+entity_mentions\.jsonl", report)
 
 
-def test_changed_file_exit_1(merged, capsys):
-    """Step 1 re-run in W1: entities.jsonl rebuilt without one NER entity."""
-    expected = _sha(merged / "entities.jsonl")
-    lines = (merged / "entities.jsonl").read_bytes().splitlines(keepends=True)
-    (merged / "entities.jsonl").write_bytes(b"".join(lines[1:]))
-    actual = _sha(merged / "entities.jsonl")
+def _drop_first_line(data: bytes) -> bytes:
+    """Step 1 re-run in W1: the file rebuilt without one NER row."""
+    return b"".join(data.splitlines(keepends=True)[1:])
+
+
+def _flip_one_byte(data: bytes) -> bytes:
+    """One byte of line 2 changed: same size and line count, so only the sha256 tells."""
+    lines = data.splitlines(keepends=True)
+    lines[1] = lines[1].replace(b'"', b"'", 1)
+    edited = b"".join(lines)
+    assert len(edited) == len(data) and edited != data
+    return edited
+
+
+@pytest.mark.parametrize("edit", [_drop_first_line, _flip_one_byte], ids=["line-dropped", "same-length"])
+@pytest.mark.parametrize("name", FILES)
+def test_changed_file_exit_1(merged, capsys, name, edit):
+    expected = _sha(merged / name)
+    (merged / name).write_bytes(edit((merged / name).read_bytes()))
+    actual = _sha(merged / name)
 
     assert _run(merged) == 1
 
@@ -67,7 +81,7 @@ def test_changed_file_exit_1(merged, capsys):
     assert expected in report and actual in report
     assert report.count(actual) == 1                     # on the actual line only, not the status line too
     assert [line.split()[1] for line in report.splitlines()
-            if line.lstrip().startswith("MISMATCH")] == ["entities.jsonl"]
+            if line.lstrip().startswith("MISMATCH")] == [name]
     # The hazard and the way back, not just the hashes.
     assert "person:liuer" in report and "6.05" in report
     assert "llm_artifacts.tgz" in report
