@@ -10,6 +10,7 @@ import json
 import os
 import sys
 import argparse
+from collections import Counter
 from pathlib import Path
 from typing import Generator
 
@@ -178,6 +179,33 @@ def import_relationships(driver, filepath: Path, batch_size: int = 1000) -> int:
         total += len(batch)
     
     return total
+
+
+def check_unique_xref_pairs(rels_file: Path) -> None:
+    """Exit 1 if two CROSS_REFERENCES rows share (start, end); no file: no-op.
+
+    _insert_relationship_batch MERGEs one edge per (start, type, end) and
+    `SET r += $props`, so a second row for a pair silently overwrites the
+    first one's properties (XREF-1(b)). Step 0 writes one aggregated row per
+    pair; this runs before connecting, so a regression stops the rebuild
+    before the graph is cleared. A missing file is skipped, like the import.
+    """
+    if not rels_file.exists():
+        return
+    counts = Counter(
+        (r.get("start"), r.get("end"))
+        for r in read_jsonl(rels_file)
+        if r.get("type") == "CROSS_REFERENCES"
+    )
+    duplicates = sorted(pair for pair, n in counts.items() if n > 1)
+    if not duplicates:
+        print(f"✓ {sum(counts.values()):,} CROSS_REFERENCES rows, no duplicate pair")
+        return
+    print(f"✗ {rels_file}: {len(duplicates)} CROSS_REFERENCES pairs have more than "
+          "one row; MERGE would keep only the last row's properties:", file=sys.stderr)
+    for start, end in duplicates:
+        print(f"    {start}→{end} ({counts[(start, end)]} rows)", file=sys.stderr)
+    sys.exit(1)
 
 
 def _insert_relationship_batch(driver, batch: list):
@@ -404,6 +432,7 @@ def main():
     
     # This script clears the whole graph: a staging run must never reach prod.
     kg_target.assert_target("neo4j")
+    check_unique_xref_pairs(output_dir / "neo4j_relationships.jsonl")
 
     # Connect to Neo4j
     print("\nConnecting to Neo4j...")
