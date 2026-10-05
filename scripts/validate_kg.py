@@ -27,13 +27,16 @@ write each check back to its own file):
   warn    report only (W: label/relationship counts drifting > ±tolerance_pct)
 A metric's own "severity" (hard|record) overrides its check's for that metric,
 e.g. a record ratchet inside a hard check: it regresses (exit 2), never fails.
-Batch 0 hard checks are H1, H2, H7 and D1; `hard_from` records the batch at
-which each record check is planned to become hard. A check that raised
-(error), or a metric that came back None without a declared reason
-(unmeasured), exits 1 whatever its severity: a check that did not run never
-passes. Declared n/a (D1 and H5 on a snapshot; R3 all-forms and R9 without
-occurrence rows, R9 also when no row carries a text_id) is reported with its
-reason, not failed.
+Hard checks per batch (`hard_from` holds the batch; on a record check, the
+batch at which it is planned to become hard):
+  0    H1, H2, H7, D1
+  1A   H11 (relation provenance: every prod edge predates the source property,
+       so prod fails it until the W1 promotion; gate staging before that)
+A check that raised (error), or a metric that came back None without a
+declared reason (unmeasured), exits 1 whatever its severity: a check that did
+not run never passes. Declared n/a (D1 and H5 on a snapshot; R3 all-forms and
+R9 without occurrence rows, R9 also when no row carries a text_id) is reported
+with its reason, not failed.
 
 --ratchet moves stored baselines only toward improvement (and fills null
 ones); a regressed metric keeps its old baseline and the run exits 2. Metrics

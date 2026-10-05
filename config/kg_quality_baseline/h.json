@@ -320,6 +320,62 @@
         "at": "2026-10-04",
         "origin": "live:prod (bolt://localhost:7687)"
       }
+    },
+    {
+      "id": "H11",
+      "title": "relation provenance complete: every edge has a source; no inverse, rule, co-occurrence or LLM Event–Event edge; LLM id-order edges flagged; one row per undirected pair",
+      "severity": "hard",
+      "hard_from": "1A",
+      "plan_reference": "co-occurrence 9,060 / inverse 756 / rule 771 / LLM Event–Event 26 -> 0 (batch-1 plan §0.1); source_null 15,926 (W1 gate table)",
+      "query": "Entity-Entity edges; source is r.source, else derived from extraction_phase/notes/backfilled for legacy rows (models.derive_source). source_null: no r.source; inverse_edges: source inverse; cooccurrence_edges: source cooccurrence or backfilled true; rule_edges: source rule; llm_event_event_edges: source llm with both ends labelled Event; unflagged_id_order_edges: type in the schema's id_order_relations() (directed, one type at both ends, in no direction_pairs entry), source not prior or curated, direction_verified not false; undirected_pair_duplicates: rows beyond the first per (undirected relation, {head, tail}), summed",
+      "metrics": {
+        "source_null": {
+          "value": 15926,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "inverse_edges": {
+          "value": 756,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "cooccurrence_edges": {
+          "value": 9060,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "rule_edges": {
+          "value": 771,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "llm_event_event_edges": {
+          "value": 26,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "unflagged_id_order_edges": {
+          "value": 81,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "undirected_pair_duplicates": {
+          "value": 6,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-05",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
     }
   ]
 }

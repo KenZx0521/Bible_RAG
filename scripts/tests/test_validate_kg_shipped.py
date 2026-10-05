@@ -20,20 +20,25 @@ from _validate_kg_helpers import SHIPPED_BASELINE, SHIPPED_PROBES
 MAX_LINES = 800
 # The single config/kg_quality_baseline.json at 7fa9d00, in order: the merged
 # parts must hold exactly these checks (a check added later extends the list).
-PRE_SPLIT_IDS = [*(f"H{i}" for i in range(1, 11)), *(f"R{i}" for i in range(1, 12)), "PROBES", "W", "D1"]
+PRE_SPLIT_IDS = [*(f"H{i}" for i in range(1, 12)), *(f"R{i}" for i in range(1, 12)), "PROBES", "W", "D1"]
 FAMILY = {"h.json": r"H\d+", "r.json": r"R\d+", "misc.json": r"(?!H\d|R\d).+"}
+# The hard checks, keyed by the batch that made them hard (their hard_from);
+# a batch that hardens a check adds its own key.
+HARD_BY_BATCH = {"0": {"H1", "H2", "H7", "D1"}, "1A": {"H11"}}
 
 
 # ---------------------------------------------------------------------------
 # shipped config files
 # ---------------------------------------------------------------------------
 
-def test_shipped_baseline_covers_every_check_with_batch0_severities():
+def test_shipped_baseline_covers_every_check_with_batch_severities():
     doc = vk.load_baseline(SHIPPED_BASELINE)
     ids = {c["id"] for c in doc["checks"]}
     assert ids == set(vk.CHECKS)
     severity = {c["id"]: c["severity"] for c in doc["checks"]}
-    assert {i for i, s in severity.items() if s == "hard"} == {"H1", "H2", "H7", "D1"}
+    assert {i for i, s in severity.items() if s == "hard"} == set().union(*HARD_BY_BATCH.values())
+    hard_from = {c["id"]: c["hard_from"] for c in doc["checks"]}
+    assert all(hard_from[i] == batch for batch, hard in HARD_BY_BATCH.items() for i in hard)
     assert severity["W"] == "warn"
     for check in doc["checks"]:
         assert check.get("query"), check["id"]

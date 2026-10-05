@@ -1,4 +1,5 @@
-"""H checks (plan §3.6): batch-0 hard gates H1, H2, H7 and the H3–H10 records.
+"""H checks (plan §3.6): batch-0 hard gates H1, H2, H7, the H3–H10 records
+and batch 1A's hard gate H11 (relation provenance).
 
 D1 (export_event_registry --check) is registered by scripts/validate_kg.py,
 which owns the subprocess it runs.
@@ -9,6 +10,7 @@ from __future__ import annotations
 import hashlib
 from collections import Counter
 from pathlib import Path
+from typing import Callable
 
 from check_identity import DIFF_KINDS, TYPE_LABELS, run as run_identity, type_of
 from relation_extraction.models import derive_source
@@ -175,3 +177,55 @@ def check_h10(kg: KG, ctx: Context) -> CheckResult:
                   for m in kg.mentions if kg.label(m["entity_id"]) == "Event")
     fingerprint = hashlib.sha256("\n".join(keys).encode("utf-8")).hexdigest()
     return CheckResult({"event_mentions": len(keys), "fingerprint": fingerprint})
+
+
+# ---------------------------------------------------------------------------
+# Hard check (batch 1A): H11
+# ---------------------------------------------------------------------------
+
+def _h11_row_tests(kg: KG, id_order: frozenset[str]) -> dict[str, Callable[[dict], bool]]:
+    """H11's per-edge metrics, in report order: name -> does this edge count.
+
+    6.05 stamps a source on every row and retires the R5 inverses, the R2
+    rule edges (anchored_rule replaces them), 10.3's co-occurrence edges and
+    the LLM's Event–Event edges; an LLM row of an id-order relation (only its
+    head/tail order gives a direction) must carry direction_verified false.
+    """
+    return {
+        "source_null": lambda r: not r["source"],
+        "inverse_edges": lambda r: effective_source(r) == "inverse",
+        "cooccurrence_edges": lambda r: effective_source(r) == "cooccurrence" or r["backfilled"] is True,
+        "rule_edges": lambda r: effective_source(r) == "rule",
+        "llm_event_event_edges": lambda r: (effective_source(r) == "llm"
+                                            and kg.label(r["head"]) == kg.label(r["tail"]) == "Event"),
+        "unflagged_id_order_edges": lambda r: (r["type"] in id_order
+                                               and effective_source(r) not in UNANCHORED_SOURCES
+                                               and r["direction_verified"] is not False),
+    }
+
+
+def _undirected_duplicates(relations: list[dict], schema) -> dict[tuple[str, frozenset], int]:
+    """(relation, {head, tail}) -> rows beyond the first, for each pair of an
+    undirected relation stated more than once (either way round)."""
+    undirected = {e.name for e in schema.iter_entries() if e.direction == "undirected"}
+    pairs = Counter((r["type"], frozenset((r["head"], r["tail"]))) for r in relations if r["type"] in undirected)
+    return {key: n - 1 for key, n in pairs.items() if n > 1}
+
+
+@check("H11", needs=("relations.jsonl",))
+def check_h11(kg: KG, ctx: Context) -> CheckResult:
+    tests = _h11_row_tests(kg, ctx.schema.id_order_relations())
+    hits = {name: [r for r in kg.relations if counts(r)] for name, counts in tests.items()}
+    dups = _undirected_duplicates(kg.relations, ctx.schema)
+    metrics = {name: len(rows) for name, rows in hits.items()}
+    metrics["undirected_pair_duplicates"] = sum(dups.values())
+    by_type = {name: dict(Counter(r["type"] for r in rows).most_common()) for name, rows in hits.items() if rows}
+    dup_types: Counter = Counter()
+    for (relation, _), extra in dups.items():
+        dup_types[relation] += extra
+    if dup_types:
+        by_type["undirected_pair_duplicates"] = dict(dup_types.most_common())
+    samples = [f"{name}: {r['head']} -{r['type']}-> {r['tail']}" for name, rows in hits.items() for r in rows[:2]]
+    samples += [f"undirected_pair_duplicates: {' ~ '.join(sorted(pair))} {relation}"
+                for relation, pair in list(dups)[:2]]
+    return CheckResult(metrics, {"by_type": by_type}, samples)

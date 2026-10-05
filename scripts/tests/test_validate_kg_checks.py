@@ -44,12 +44,15 @@ from _validate_kg_helpers import snap  # noqa: F401
 # the clean fixture
 # ---------------------------------------------------------------------------
 
+H11_METRICS = ("source_null", "inverse_edges", "cooccurrence_edges", "rule_edges",
+               "llm_event_event_edges", "unflagged_id_order_edges", "undirected_pair_duplicates")
 VIOLATION_METRICS = [
     ("H1", "duplicate_ids"), ("H1", "missing_constraint"),
     ("H2", "bad_type_labels"),
     ("H3", "unsupported"), ("H4", "whitespace_names"), ("H6", "missing_region_or_pos"),
     ("H7", "prefix_mismatch"), ("H8", "no_provenance"),
     ("H9", "domain_range_violations"), ("H9", "unknown_relation_types"),
+    *(("H11", name) for name in H11_METRICS),
     ("R1", "book_region_mentions"), ("R2", "contaminated"), ("R3", "foreign_surface_entities"),
     ("R3", "all_forms_entities"),
     ("R4", "misaligned"), ("R5", "cross_type_names"),
@@ -157,6 +160,49 @@ def test_d1_runs_export_event_registry_check_against_the_target(monkeypatch):
     assert res["D1"].metrics["drift"] == 1
     assert seen["uri"] == "bolt://localhost:7688"
     assert "--check" in seen["cmd"]
+
+
+def _edge(head: str, relation: str, tail: str, **over) -> dict:
+    """An llm row from gen:22:0; `over` changes its provenance (source None = a legacy row)."""
+    return {"head_id": head, "relation": relation, "tail_id": tail, "source_pericope_id": "gen:22:0",
+            "extraction_phase": 4, "notes": "", "source": "llm", **over}
+
+
+INVERSE = {"extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"}
+COOCCURRENCE = {"extraction_phase": 5, "backfilled": True, "notes": "cooccurrence-backfill"}
+SON_OF = ("person:yisa", "SON_OF", "person:yabolahan")
+JOINED = ("person:yisa", "PARTICIPATED_IN", "event:xianyisa")
+LOCATED = ("place:moliya", "LOCATED_IN", "place:aiji")
+
+
+@pytest.mark.parametrize("rows,counts", [
+    pytest.param([_edge(*JOINED, source=None)], {"source_null": 1}, id="legacy-row-without-source"),
+    pytest.param([_edge(*SON_OF, source="inverse", **INVERSE)], {"inverse_edges": 1}, id="inverse"),
+    pytest.param([_edge(*SON_OF, source=None, **INVERSE)], {"source_null": 1, "inverse_edges": 1},
+                 id="legacy-inverse-by-phase"),
+    pytest.param([_edge(*JOINED, source="cooccurrence", **{**COOCCURRENCE, "extraction_phase": 7})],
+                 {"cooccurrence_edges": 1}, id="cooccurrence"),
+    pytest.param([_edge(*JOINED, source=None, **COOCCURRENCE)], {"source_null": 1, "cooccurrence_edges": 1},
+                 id="legacy-cooccurrence-by-phase"),
+    pytest.param([_edge(*JOINED, backfilled=True)], {"cooccurrence_edges": 1}, id="backfilled-flag"),
+    pytest.param([_edge("person:tala", "FATHER_OF", "person:nahe", source="rule", extraction_phase=2,
+                        notes="signal=...的兒子")], {"rule_edges": 1}, id="rule"),
+    pytest.param([_edge("event:bidehuojiu", "PRECEDED_BY", "event:xianyisa", direction_verified=False)],
+                 {"llm_event_event_edges": 1}, id="llm-event-event"),
+    pytest.param([_edge(*LOCATED)], {"unflagged_id_order_edges": 1}, id="unflagged-llm-located-in"),
+    pytest.param([_edge(*LOCATED, direction_verified=False)], {}, id="flagged-llm-located-in"),
+    pytest.param([_edge(*LOCATED, source="prior", extraction_phase=3, source_pericope_id="")], {},
+                 id="prior-located-in"),
+    pytest.param([_edge(*LOCATED, source="curated", extraction_phase=None)], {}, id="curated-located-in"),
+    pytest.param([_edge("person:bide", "ALLY_OF", "person:make"), _edge("person:make", "ALLY_OF", "person:bide")],
+                 {"undirected_pair_duplicates": 1}, id="undirected-reverse-pair"),
+])
+def test_h11_metrics(snap, rows, counts):
+    # Every metric is a hard 0 from 1A on: the injected rows move exactly the
+    # metrics named, and each of the others stays 0.
+    write_rows(snap / "relations.jsonl", read_rows(snap / "relations.jsonl") + rows)
+    res = measure(snap)
+    assert {name: metric(res, "H11", name) for name in H11_METRICS} == {**dict.fromkeys(H11_METRICS, 0), **counts}
 
 
 # ---------------------------------------------------------------------------
