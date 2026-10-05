@@ -28,11 +28,12 @@ PERICOPES = [
     {"id": "rut:4:1", "parent_id": "rut:4", "title": "大衛的家譜",
      "content": "**21** 撒門生波阿斯；波阿斯生俄備得；\n\n**22** 俄備得生耶西；耶西生大衛。"},
     {"id": GENEALOGY, "parent_id": "1ch:1", "title": "家譜",
-     "content": "".join(f"**{i + 1}** 父{i}的兒子是子{i}。\n\n" for i in range(12))},
+     "content": "".join(f"**{i + 1}** 父{i}的兒子是子{i}。\n\n" for i in range(12)) + "**13** 子0生孫0。\n\n"},
 ]
 NAMES = {"person:yabolahan": "亞伯拉罕", "person:yisa": "以撒", "person:sala": "撒拉",
          "person:bo": "波阿斯", "person:ebeide": "俄備得", "person:yexi": "耶西",
-         **{f: f"父{i}" for i, f in enumerate(FATHERS)}, **{s: f"子{i}" for i, s in enumerate(SONS)}}
+         **{f: f"父{i}" for i, f in enumerate(FATHERS)}, **{s: f"子{i}" for i, s in enumerate(SONS)},
+         "person:sun0": "孫0"}
 # The fields and values that would tell a labeller where a row came from.
 SOURCE_TELLS = ("source", "sources", "notes", "pattern", "extraction_phase", "run_id", "model",
                 "confidence_raw", "pp_version", "evidence_span")
@@ -53,6 +54,10 @@ def _anchored(i) -> dict:
 
 ROWS = [
     *(_anchored(i) for i in range(12)),
+    # zi0's second row: by (head, relation, tail) it sorts before zi0 SON_OF fu0, by (head, tail,
+    # relation) after it, so the pool order the seed draws from depends on the documented key
+    _row("person:zi0", "FATHER_OF", "person:sun0", "anchored_rule", notes="P3_begot",
+         source_pericope_id=GENEALOGY, verse=13, confidence_raw=None),
     _row("person:yisa", "SON_OF", "person:yabolahan", "anchored_rule", notes="P2_is_child_of",
          source_pericope_id="gen:21:0", verse=3),
     _row("person:bo", "FATHER_OF", "person:ebeide", "llm", source_pericope_id="rut:4:1",
@@ -135,7 +140,7 @@ def test_sample_is_deterministic_for_a_seed(tmp_path):
     drawn = random.Random(20261005).sample(pool, 5)
     keys = ["\t".join((r["head_id"], r["relation"], r["tail_id"])) for r in drawn]
     assert [i["item_id"] for i in first["items"]] == [hashlib.sha1(k.encode()).hexdigest()[:12] for k in keys]
-    assert first["meta"]["pool_size"] == 13 and first["meta"]["seed"] == 20261005
+    assert first["meta"]["pool_size"] == 14 and first["meta"]["seed"] == 20261005
     assert first["meta"]["pool_sha256"] == hashlib.sha256("".join(
         "\t".join((r["head_id"], r["relation"], r["tail_id"])) + "\n" for r in pool).encode()).hexdigest()
     clean = (tmp_path / "relations_clean.jsonl").read_bytes()
@@ -155,7 +160,7 @@ def test_sample_is_blind(tmp_path):
     assert set(doc) == {"format", "meta", "items"}
     assert set(doc["meta"]) == {"seed", "pool_size", "pool_sha256", "clean_sha256", "inputs_sha256", "rubric"}
     assert set(doc["meta"]["rubric"]) == {"text_correct", "id_correct"}
-    assert len(doc["items"]) == 13
+    assert len(doc["items"]) == 14
     for item in doc["items"]:
         assert set(item) == {"item_id", "relation", "head", "tail", "evidence"}
         assert set(item["head"]) == set(item["tail"]) == {
@@ -163,7 +168,7 @@ def test_sample_is_blind(tmp_path):
         assert set(item["evidence"]) == {"pericope_id", "title", "verse", "verse_text"}
     assert not set(_keys(doc)) & set(SOURCE_TELLS)
     text = json.dumps(doc, ensure_ascii=False)
-    for tell in ("anchored_rule", "P1_child_of", "P2_is_child_of", "run-anchored_rule", "pp-test"):
+    for tell in ("anchored_rule", "P1_child_of", "P2_is_child_of", "P3_begot", "run-anchored_rule", "pp-test"):
         assert tell not in text
 
 
@@ -171,7 +176,7 @@ def test_pool_is_the_kinship_rows_of_the_primary_source(tmp_path):
     pools = {source: sample(tmp_path, "--source", source, "--all", "--seed", "1")["meta"]["pool_size"]
              for source in ("anchored_rule", "llm", "prior")}
     # llm's VISITED row is not kinship; the prior row whose sources include anchored_rule counts as prior.
-    assert pools == {"anchored_rule": 13, "llm": 2, "prior": 2}
+    assert pools == {"anchored_rule": 14, "llm": 2, "prior": 2}
     assert sample(tmp_path, "--source", "llm", "--n", "3", "--seed", "1", code=2) is None
 
 
@@ -311,10 +316,15 @@ def test_gate_field_and_exit_codes(tmp_path):
 
 def test_spotcheck_section(tmp_path):
     labels = counted(60, 57, 51)
-    # item052 differs from the final label on id_correct only, item058 on both fields.
+    # item055: A (T, T) and B (F, F) disagree, the adjudication's (T, F) is final, and Kay's (T, F)
+    # agrees with it alone; item052 differs from the final label on id_correct only, item058 on both.
+    a, b = list(labels), list(labels)
+    a[55], b[55] = (True, True), (False, False)
+    adjudication = write_labels(tmp_path, "c.jsonl", {55: (True, False)}, "ai:session-c")
     spot = write_labels(tmp_path, "k.jsonl", {0: (True, True), 52: (True, True), 55: (True, False),
                                               58: (True, True)}, "kay")
-    report = score(tmp_path, labels, labels, "--spotcheck", spot)
+    report = score(tmp_path, a, b, "--adjudication", adjudication, "--spotcheck", spot)
+    assert report["disagreements"][0]["final"] == {"text_correct": True, "id_correct": False}
     assert report["spotcheck"] == {"n": 4, "agree": 2, "disagree": ["item052", "item058"], "annotator": "kay"}
     assert report["inputs"]["spotcheck"]["path"] == spot
     none = {"n": 0, "agree": 0, "disagree": [], "annotator": None}

@@ -176,13 +176,14 @@ def test_r1_taken_from_validate_json(tmp_path, graphs):
         for side, name, path in (("a", "prod", va), ("b", "staging", vb))}
 
 
-@pytest.mark.parametrize("broken", ["other-target", "snapshot", "no-r1", "r1-not-measured"])
+@pytest.mark.parametrize("broken", ["other-target", "snapshot", "no-r1", "r1-not-measured", "r1-bool"])
 def test_validate_json_not_this_targets_live_r1_exits_2(tmp_path, graphs, broken, capsys):
     """R1 comes from validate_kg itself, on the very target this tool reads; decided before any read."""
     vb = {"other-target": lambda: validate_json(tmp_path, "staging", 2124, origin=f"live:prod ({URIS['prod']})"),
           "snapshot": lambda: validate_json(tmp_path, "staging", 2124, origin="snapshot:output/kg"),
           "no-r1": lambda: validate_json(tmp_path, "staging", 2124, checks={}),
-          "r1-not-measured": lambda: validate_json(tmp_path, "staging", None)}[broken]()
+          "r1-not-measured": lambda: validate_json(tmp_path, "staging", None),
+          "r1-bool": lambda: validate_json(tmp_path, "staging", True)}[broken]()   # json true, an int to Python
 
     assert run(tmp_path, vb=vb) == 2
 
@@ -230,6 +231,36 @@ def test_differing_mention_count_that_is_not_a_number_exits_2(tmp_path, graphs, 
 
     assert _nothing_written(tmp_path)
     assert "place:dan" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("change", ["entity-read-twice", "glob-in-entity-id"])
+def test_entity_ids_an_allow_key_cannot_name_exit_2(tmp_path, graphs, change, capsys):
+    """An entity_id read twice (a dict would keep one row silently), or a differing one holding glob
+    characters (its exact allow key would match other entities)."""
+    if change == "entity-read-twice":
+        graphs.entities["staging"] = STAGING + [_entity("person:yeteluo", 31)]
+        needle = "more than once"
+    else:
+        graphs.entities["prod"] = PROD + [_entity("person:mo*[1]", 2)]
+        graphs.entities["staging"] = STAGING + [_entity("person:mo*[1]", 3)]
+        needle = "glob characters"
+
+    assert run(tmp_path) == 2
+
+    assert _nothing_written(tmp_path)
+    err = capsys.readouterr().err
+    assert needle in err and ("person:yeteluo" if change == "entity-read-twice" else "person:mo*[1]") in err
+
+
+def test_out_and_allow_out_on_one_path_is_a_usage_error(tmp_path, graphs):
+    same = tmp_path / "residuals_expected.json"
+    va, vb = validate_json(tmp_path, "prod", 1938), validate_json(tmp_path, "staging", 2124)
+
+    with pytest.raises(SystemExit) as exc:
+        rx.main(["--a", "prod", "--b", "staging", "--validate-a", str(va), "--validate-b", str(vb),
+                 "--out", str(same), "--allow-out", str(same)])
+
+    assert exc.value.code == 2 and graphs.opened == [] and not same.exists()
 
 
 @pytest.mark.parametrize("before", ["absent", "older"])

@@ -60,6 +60,9 @@ PROD = {
 REL = [("FATHER_OF", -2), ("SON_OF", -1), ("PARTICIPATED_IN", -4), ("CAUSED", -1)]
 NEW = [("FATHER_OF phase=3 source=prior", 1), ("SON_OF phase=6 source=anchored_rule", 1),
        ("PARTICIPATED_IN phase=4 source=llm", 1)]
+# What staging holds after the W1 chain: ROWS minus the edge 10.2 takes along, counted by hand.
+W1_BY_TYPE = {"FATHER_OF": 1, "PARTICIPATED_IN": 1, "SON_OF": 1, "VISITED": 1}
+W1_BY_EE_KEY = {**dict(NEW), "VISITED phase=4 source=llm": 1}
 
 
 def write_reference(tmp_path, rows=ROWS) -> Path:
@@ -134,7 +137,7 @@ def test_fragment_from_fake_profile(tmp_path, prod, capsys):
     assert expected["edge_set_sha256"] == edge_set_sha(report) and expected["edges"] == 4
     assert expected["pp_version"] == "pp-test" and expected["run_id"] == "6.05-test"
     assert expected["report_sha256"] == hashlib.sha256(report.read_bytes()).hexdigest()
-    assert expected["by_type"] == {"FATHER_OF": 1, "PARTICIPATED_IN": 1, "SON_OF": 1, "VISITED": 1}
+    assert expected["by_type"] == W1_BY_TYPE and expected["by_ee_key"] == W1_BY_EE_KEY
     assert expected["a"]["target"] == "prod" and expected["a"]["edges"] == 12
     assert expected["deltas"]["relationships"] == dict(sorted(REL))
     assert expected["deltas"]["ee_edges"]["FATHER_OF phase=4 source=-"] == -2
@@ -145,9 +148,11 @@ def test_fragment_from_fake_profile(tmp_path, prod, capsys):
 
 
 def test_output_bytes_do_not_depend_on_the_run(tmp_path, prod):
+    """Nor on the order Neo4j returns the a side's rows in (the expected file is pre-registered by sha)."""
     report = write_reference(tmp_path)
     assert run(tmp_path, report, edge_set_sha(report)) == 0
     first = [(tmp_path / name).read_bytes() for name in ("relations_expected.json", "relations_allow.yaml")]
+    prod.rows = {section: list(reversed(rows)) for section, rows in PROD.items()}
     assert run(tmp_path, report, edge_set_sha(report)) == 0
     assert [(tmp_path / name).read_bytes() for name in ("relations_expected.json", "relations_allow.yaml")] == first
 
@@ -162,12 +167,12 @@ def test_sha_mismatch_exits_1(tmp_path, prod, capsys):
     assert "0" * 12 in capsys.readouterr().err
 
 
-def _staging_profile(expected: dict, extra_edge: bool) -> dict:
-    """What diff_kg reads on a staging that holds exactly the expected semantic layer."""
-    rel = {r["key"]: r["n"] for r in PROD["relationships"]}
-    for key, delta in expected["deltas"]["relationships"].items():
-        rel[key] = rel.get(key, 0) + delta
-    ee = dict(expected["by_ee_key"])
+def _staging_profile(extra_edge: bool) -> dict:
+    """What diff_kg reads on a staging that holds exactly the W1 semantic layer: prod's MENTIONS and
+    CROSS_REFERENCES, and the hand-counted W1 edges (no CAUSED), never the tool's own deltas."""
+    rel = {r["key"]: r["n"] for r in PROD["relationships"] if r["key"] in ("MENTIONS", "CROSS_REFERENCES")}
+    rel.update(W1_BY_TYPE)
+    ee = dict(W1_BY_EE_KEY)
     if extra_edge:
         ee["VISITED phase=4 source=llm"] += 1
         rel["VISITED"] += 1
@@ -181,9 +186,8 @@ def test_fragment_parses_with_diff_kg_load_allowlist(tmp_path, prod, extra_edge)
     report = write_reference(tmp_path)
     assert run(tmp_path, report, edge_set_sha(report)) == 0
     allow = dk.load_allowlist(tmp_path / "relations_allow.yaml")
-    expected = json.loads((tmp_path / "relations_expected.json").read_text(encoding="utf-8"))
     a = dk.read_profile(prod.driver)
-    b = _staging_profile(expected, extra_edge)
+    b = _staging_profile(extra_edge)
 
     diffs = [d for section in ("relationships", "ee_edges") for d in dk.diff_counts(section, a[section], b[section])]
     classified, unused = dk.classify(diffs, allow)
@@ -213,6 +217,42 @@ def test_report_that_does_not_describe_its_file_exits_2(tmp_path, prod, capsys):
 
     assert prod.resolved == [] and not (tmp_path / "relations_expected.json").exists()
     assert "output.sha256" in capsys.readouterr().err
+
+
+def test_report_whose_by_type_does_not_sum_its_by_ee_key_exits_2(tmp_path, prod, capsys):
+    """by_type is not in the clean file or the claim check_edge_set checks, so the tool sums it itself."""
+    report = write_reference(tmp_path)
+    doc = json.loads(report.read_text(encoding="utf-8"))
+    doc["expected_after_10_2"]["by_type"]["VISITED"] += 1
+    report.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+
+    assert run(tmp_path, report, edge_set_sha(report)) == 2
+
+    assert prod.resolved == [] and not (tmp_path / "relations_expected.json").exists()
+    assert not (tmp_path / "relations_allow.yaml").exists()
+    assert "does not sum its by_ee_key" in capsys.readouterr().err
+
+
+def test_out_and_allow_out_on_one_path_is_a_usage_error(tmp_path, prod):
+    report = write_reference(tmp_path)
+    same = tmp_path / "relations_expected.json"
+
+    with pytest.raises(SystemExit) as e:
+        rx.main(["--report", str(report), "--expect-edge-set-sha", edge_set_sha(report),
+                 "--out", str(same), "--allow-out", str(same)])
+
+    assert e.value.code == 2 and prod.resolved == [] and not same.exists()
+
+
+@pytest.mark.parametrize("section, key", [("relationships", "A[1]"), ("ee_edges", "SON_OF phase=* source=llm"),
+                                          ("ee_edges", "SON_OF phase=? source=llm")])
+def test_exact_entry_with_a_glob_character_cannot_be_made(section, key):
+    """An exact delta keyed by a glob would allow every key it matches."""
+    delta = {"relationships": {}, "ee_edges": {}}
+    delta[section][key] = 1
+
+    with pytest.raises(rx.CannotCheck, match="is a glob"):
+        rx.allow_entries(delta, "tag", "prod")
 
 
 def test_unreadable_target_exits_2_and_writes_nothing(tmp_path, prod, monkeypatch, capsys):

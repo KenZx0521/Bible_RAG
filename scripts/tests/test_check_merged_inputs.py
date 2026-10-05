@@ -16,15 +16,13 @@ import pytest
 
 from entity_extraction import stages
 from scripts.tools import check_merged_inputs as cmi
+from test_relation_postprocess_output import W1_PINS
 
 FILES = ("entities.jsonl", "entity_mentions.jsonl")
 FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures" / "stages"
 REAL_OUTPUT = Path(__file__).resolve().parents[2] / "output"
-# The W1 snapshot (same pins as test_relation_postprocess_output.W1_PINS).
-W1_SHA256 = {
-    "entities.jsonl": "9f2d1f39251d9a3ce5834f52d129bda8e13cd2e1afdfa30d04962d23c7034142",
-    "entity_mentions.jsonl": "ba7ed1884355e3f8d60952b4e89bff6c6dfb094818caee168dd5c387cd9e896c",
-}
+# The W1 snapshot: test_relation_postprocess_output's pins, by file name.
+W1_SHA256 = {"entities.jsonl": W1_PINS["entities"], "entity_mentions.jsonl": W1_PINS["mentions"]}
 
 
 def _sha(path: Path) -> str:
@@ -139,13 +137,35 @@ def test_malformed_manifest_exit_2(merged, capsys, text):
     assert "CANNOT CHECK" in capsys.readouterr().out
 
 
-def test_real_output_matches(capsys):
-    paths = [REAL_OUTPUT / name for name in FILES]
-    manifest_path = REAL_OUTPUT / "frozen" / "grounded_manifest.json"
-    if not all(path.is_file() for path in (*paths, manifest_path)):
+def _require_w1_snapshot(out: Path) -> None:
+    """Skip unless `out` holds the Step 1 files, their manifest and the W1 snapshot of both."""
+    paths = [out / name for name in FILES]
+    if not all(path.is_file() for path in (*paths, out / "frozen" / "grounded_manifest.json")):
         pytest.skip("output/ Step 1 files or grounded_manifest.json are not present")
-    if any(_sha(path) != W1_SHA256[path.name] for path in paths):
-        pytest.skip("output/ is not the W1 snapshot (W2 runs Step 1 again)")
+    drift = [f"{path.name} is {sha[:12]}… not {W1_SHA256[path.name][:12]}…"
+             for path in paths if (sha := _sha(path)) != W1_SHA256[path.name]]
+    if drift:
+        pytest.skip(f"output/ is not the W1 snapshot: {'; '.join(drift)} "
+                    "(W2 runs Step 1 again; in W1 this is the Step 1 hazard, see check_merged_inputs)")
+
+
+def test_skip_off_the_w1_snapshot_names_each_drifted_file(merged, monkeypatch):
+    """In W1 a drift is the Step 1 re-run hazard: `-rs` must say which file and sha, not only "W2"."""
+    monkeypatch.setitem(W1_SHA256, "entities.jsonl", _sha(merged / "entities.jsonl"))  # only mentions drift
+    actual, pin = _sha(merged / "entity_mentions.jsonl"), W1_SHA256["entity_mentions.jsonl"]
+
+    with pytest.raises(pytest.skip.Exception) as skipped:
+        _require_w1_snapshot(merged)
+
+    reason = str(skipped.value)
+    assert f"entity_mentions.jsonl is {actual[:12]}" in reason and f"not {pin[:12]}" in reason
+    assert "entities.jsonl" not in reason
+    assert "W2 runs Step 1 again" in reason and "in W1 this is the Step 1 hazard" in reason
+
+
+def test_real_output_matches(capsys):
+    _require_w1_snapshot(REAL_OUTPUT)
+    manifest_path = REAL_OUTPUT / "frozen" / "grounded_manifest.json"
 
     assert cmi.main([]) == 0
 

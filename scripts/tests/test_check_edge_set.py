@@ -19,6 +19,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import import_relations_neo4j
 from entity_extraction.stoplists import GENERIC_EVENT_STOPLIST
 from relation_extraction import relation_postprocess as pp
 from scripts.tools import check_edge_set as ces
@@ -105,6 +106,19 @@ def run(report: Path, *extra: str) -> int:
     return ces.main(["--target", "staging", "--report", str(report), *extra])
 
 
+def test_live_query_reads_the_layer_6_1_writes():
+    """The gate certifies import_relations_neo4j's _LAYER (what 6.1 writes and --replace deletes),
+    not a restatement of it that could drift; the records carry the fields live_record gives."""
+    norm = lambda text: " ".join(text.split())  # noqa: E731
+    query = norm(ces.LIVE_EDGES_CYPHER).replace("(a:Entity)", "(:Entity)").replace("(b:Entity)", "(:Entity)")
+    layer = norm(import_relations_neo4j._LAYER)
+
+    assert query.startswith(layer + " RETURN "), (query, layer)
+    returned = query[len(layer + " RETURN "):].split(", ")
+    assert sorted(part.rsplit(" AS ", 1)[1] for part in returned) == sorted(
+        ["head_id", "relation", "tail_id", "source", "extraction_phase"])
+
+
 def test_equal_set_exits_0(tmp_path, live, capsys):
     report = write_reference(tmp_path)
     sha = json.loads(report.read_text(encoding="utf-8"))["expected_after_10_2"]["edge_set_sha256"]
@@ -176,6 +190,14 @@ def _clean_edited(tmp_path):
     return report
 
 
+def _clean_nonedge_edited(tmp_path):
+    """A field outside the edge set edited: the edge lines and the claim still match, only the hash tells."""
+    report = write_reference(tmp_path)
+    clean = tmp_path / "relations_clean.jsonl"
+    clean.write_bytes(clean.read_bytes().replace(b"pp-test", b"pp-tesx"))
+    return report
+
+
 def _row_without_relation(tmp_path):
     """A report whose output.sha256 matches a file with a row that is no relation row."""
     report = write_reference(tmp_path)
@@ -189,20 +211,22 @@ def _row_without_relation(tmp_path):
     return report
 
 
-@pytest.mark.parametrize("make", [
-    _not_json,
-    lambda tmp_path: write_reference(tmp_path, format="something/v0"),
-    lambda tmp_path: write_reference(tmp_path, expected_after_10_2=None),
-    _clean_edited,  # the file no longer hashes to output.sha256
-    lambda tmp_path: write_reference(  # the report's claim does not follow from its file
-        tmp_path, expected_after_10_2=pp.expected_after_10_2(ROWS[1:], ENTITIES)),
-    _row_without_relation,
-], ids=["not-json", "format", "no-expected-section", "clean-edited", "claim-mismatch",
+@pytest.mark.parametrize("make, why", [
+    (_not_json, "is not readable JSON"),
+    (lambda tmp_path: write_reference(tmp_path, format="something/v0"), "'something/v0' report"),
+    (lambda tmp_path: write_reference(tmp_path, expected_after_10_2=None), "is not a 6.05 report"),
+    (_clean_edited, "output.sha256"),  # the file no longer hashes to output.sha256
+    (_clean_nonedge_edited, "output.sha256"),
+    (lambda tmp_path: write_reference(  # the report's claim does not follow from its file
+        tmp_path, expected_after_10_2=pp.expected_after_10_2(ROWS[1:], ENTITIES)), "does not follow from"),
+    (_row_without_relation, "has a line without"),
+], ids=["not-json", "format", "no-expected-section", "clean-edited", "clean-nonedge-edited", "claim-mismatch",
         "row-without-relation"])
-def test_bad_report_exits_2(tmp_path, live, capsys, make):
+def test_bad_report_exits_2(tmp_path, live, capsys, make, why):
     assert run(make(tmp_path)) == 2
     assert live.resolved == []  # inputs are checked before the target is touched
-    assert "CANNOT CHECK" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "CANNOT CHECK" in err and why in err, err
 
 
 @pytest.mark.parametrize("doc", ['{"edges": 4}', '{"edge_set_sha256": "abc"}', "[]"])
