@@ -30,6 +30,27 @@ HARD_BY_BATCH = {"0": {"H1", "H2", "H7", "D1"}, "1A": {"H3", "H9", "H11", "R6"},
 # its functionality readings stay record ratchets (≤5% is deferred-A).
 R6_RECORD_METRICS = {"functional_violation_rate", "children_with_2plus_nonfemale_parents",
                      "children_with_gt2_parents"}
+# 1A's relation probes (kg_probes.yaml): id -> (check, edge, expect).
+PROBES_1A = {
+    "kin-david-son-of-jesse": ("R6", ("person:dawei", "SON_OF", "person:yexi"), "present"),
+    "kin-esau-father-of-jalam": ("R6", ("person:yisao", "FATHER_OF", "person:yalan"), "present"),
+    "kin-amram-father-of-moses": ("R6", ("person:anlan", "FATHER_OF", "person:moxi"), "present"),
+    "edge-no-dan-near-jordan": ("H3", ("place:dan", "NEAR", "place:yuedan"), "absent"),
+    "edge-no-galilee-in-nazareth": ("H11", ("place:jialili", "LOCATED_IN", "place:nasalei"), "absent"),
+    "kin-peter-not-son-of-john": ("R6", ("person:bide", "SON_OF", "person:yuehan（shitu）"), "absent"),
+    "kin-jethro-not-son-of-esau": ("R6", ("person:yeteluo", "SON_OF", "person:yisao"), "absent"),
+    "kin-nahath-not-son-of-jethro": ("R6", ("person:naha", "SON_OF", "person:yeteluo"), "absent"),
+}
+FAIL_TODAY_1A = {"kin-esau-father-of-jalam", "edge-no-dan-near-jordan", "edge-no-galilee-in-nazareth"}
+LIUER_GUARDS = {"kin-jethro-not-son-of-esau", "kin-nahath-not-son-of-jethro"}
+# Of the probes' edges: those on prod 2026-10-05 (David's as a phase-5 inverse,
+# Amram's a prior) and those in the W1 6.05 output after 10.2 (sha 1c0cf064…).
+PROD_EDGES = (("person:dawei", "SON_OF", "person:yexi"), ("person:anlan", "FATHER_OF", "person:moxi"),
+              ("place:dan", "NEAR", "place:yuedan"), ("place:jialili", "LOCATED_IN", "place:nasalei"))
+W1_EDGES = (("person:dawei", "SON_OF", "person:yexi"), ("person:yisao", "FATHER_OF", "person:yalan"),
+            ("person:anlan", "FATHER_OF", "person:moxi"))
+# What gen 36 gives once 流珥 (person:liuer) resolves to 葉忒羅 (batch-1 plan C4)
+LIUER_AS_JETHRO = (("person:yeteluo", "SON_OF", "person:yisao"), ("person:naha", "SON_OF", "person:yeteluo"))
 
 
 # ---------------------------------------------------------------------------
@@ -83,6 +104,23 @@ def test_shipped_probes_cover_the_required_kinds():
     kinds = {f["kind"] for f in facts}
     assert {"mention", "relation", "xref", "event_anchor"} <= kinds
     assert any(f["kind"] == "relation" and f.get("check") == "R6" for f in facts)
+
+
+def _results_1a(edges: tuple) -> dict[str, bool]:
+    kg = vk.KG(mode="snapshot", relations=[{"head": h, "type": r, "tail": t} for h, r, t in edges])
+    ctx = vk.Context(baseline={"checks": []}, probes=vk.load_probes(SHIPPED_PROBES))
+    return {p["id"]: p["passed"] for p in vk.evaluate_probes(kg, ctx) if p["id"] in PROBES_1A}
+
+
+def test_shipped_probes_cover_the_1a_facts():
+    facts = {f["id"]: f for f in vk.load_probes(SHIPPED_PROBES)["facts"] if f["id"] in PROBES_1A}
+    assert {pid: (f["kind"], f["check"], (f["head"], f["rel"], f["tail"]), f["expect"])
+            for pid, f in facts.items()} == {pid: ("relation", *spec) for pid, spec in PROBES_1A.items()}
+    # prod fails three (jalam missing, the 但 and 加利利 edges present); the W1
+    # edges pass all eight; 流珥 resolved to 葉忒羅 fails the two guards alone
+    assert _results_1a(PROD_EDGES) == {pid: pid not in FAIL_TODAY_1A for pid in PROBES_1A}
+    assert _results_1a(W1_EDGES) == dict.fromkeys(PROBES_1A, True)
+    assert _results_1a((*W1_EDGES, *LIUER_AS_JETHRO)) == {pid: pid not in LIUER_GUARDS for pid in PROBES_1A}
 
 
 # ---------------------------------------------------------------------------

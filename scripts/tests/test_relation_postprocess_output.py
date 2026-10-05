@@ -409,7 +409,7 @@ def test_final_edge_set(none_run, all_run):
         assert (row["source"], row["extraction_phase"], row["source_pericope_id"], row.get("verse")) == primary
         assert row["sources"] == [primary[0]]
 
-    # R6 and the 8 shipped relation probes, scored by validate_kg on the edges left after 10.2
+    # R6 and the 16 shipped relation probes (8 of them 1A-C8g's), scored by validate_kg on the edges left after 10.2
     kept = _after_10_2(rows, report)
     probes = yaml.safe_load((ROOT / "config" / "kg_probes.yaml").read_text(encoding="utf-8"))
     kg = _kg(kept)
@@ -422,7 +422,7 @@ def test_final_edge_set(none_run, all_run):
     assert (sum(r["relation"] == "FATHER_OF" for r in kept), r6.detail["children"],
             r6.detail["children_with_2plus_fathers"], r6.detail["children_with_parents"]) == (50, 47, 3, 383)
     relation_probes = {fact["id"] for fact in probes["facts"] if fact["kind"] == "relation"}
-    assert len(relation_probes) == 8
+    assert len(relation_probes) == 16
     assert [p["id"] for p in evaluate_probes(kg, ctx) if p["id"] in relation_probes and not p["passed"]] == []
 
     # before 1A (none mode after 10.2 is the batch-0 staging graph; live gives the same figures):

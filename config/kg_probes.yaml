@@ -92,6 +92,13 @@ facts:
     rel: OCCURRED_IN
     tail: place:dan
     expect: absent
+  - id: edge-no-dan-near-jordan
+    check: H3
+    kind: relation
+    head: place:dan          # llm 1ki:7:5 「撒拉但」 (Zarethan); 6.05's provenance gate drops it (fails today)
+    rel: NEAR
+    tail: place:yuedan
+    expect: absent
 
   # --- kinship (REL-01/02) -------------------------------------------------
   - id: kin-terah-father-of-abraham
@@ -142,6 +149,64 @@ facts:
     head: person:liya        # (fails today)
     rel: FATHER_OF
     tail: person:yisa
+    expect: absent
+  # 1A (W1): checked against the prod and staging graphs and the W1 6.05 output
+  # (sha 1c0cf064…) on 2026-10-05. If K9 falls back (anchored rule disabled),
+  # the fallback commit re-expresses kin-david-son-of-jesse as person:yexi
+  # FATHER_OF person:dawei (a prior) and withdraws kin-esau-father-of-jalam.
+  - id: kin-david-son-of-jesse
+    check: R6
+    kind: relation
+    head: person:dawei       # anchored 1ch 29:26 耶西的兒子大衛; prod has it only as a phase-5 inverse
+    rel: SON_OF
+    tail: person:yexi
+    expect: present
+  - id: kin-esau-father-of-jalam
+    check: R6
+    kind: relation
+    head: person:yisao       # anchored gen 36:14 她給以掃生了耶烏施、雅蘭; absent on prod and staging (fails today)
+    rel: FATHER_OF
+    tail: person:yalan
+    expect: present
+  - id: kin-amram-father-of-moses
+    check: R6
+    kind: relation
+    head: person:anlan       # prior 出 6:20, the anchored num 26:59 row folds into it
+    rel: FATHER_OF
+    tail: person:moxi
+    expect: present
+  - id: kin-peter-not-son-of-john
+    check: R6
+    kind: relation
+    head: person:bide        # jhn 1:42, 21:15 約翰的兒子西門 is not the apostle; anchored abstains (homonym_ids)
+    rel: SON_OF
+    tail: person:yuehan（shitu）
+    expect: absent
+  # 流珥 guards for 1C (pass today and on W1): gen 36:17 流珥 SON_OF 以掃 and
+  # 1ch 1:37 拿哈 SON_OF 流珥 land on 葉忒羅 instead of person:liuer if 1C's NER
+  # resolves 流珥 to him through the 流珥→葉忒羅 alias (batch-1 plan C4).
+  - id: kin-jethro-not-son-of-esau
+    check: R6
+    kind: relation
+    head: person:yeteluo
+    rel: SON_OF
+    tail: person:yisao
+    expect: absent
+  - id: kin-nahath-not-son-of-jethro
+    check: R6
+    kind: relation
+    head: person:naha
+    rel: SON_OF
+    tail: person:yeteluo
+    expect: absent
+
+  # --- relation provenance (H11) --------------------------------------------
+  - id: edge-no-galilee-in-nazareth
+    check: H11
+    kind: relation
+    head: place:jialili      # llm mat:21:0 「加利利拿撒勒」 reverses the prior 拿撒勒 LOCATED_IN 加利利 (路 1:26);
+    rel: LOCATED_IN          # 6.05 drops it as contradicts_prior (fails today)
+    tail: place:nasalei
     expect: absent
 
   # --- cross references (XREF-1/2/4) --------------------------------------
