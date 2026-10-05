@@ -58,7 +58,15 @@ is_child_re: '是'
 #                 would make 彼得 the apostle's son)
 #   other_parent  true: C already has a parent other than P in the curated,
 #                 prior or llm rows; a mother counts (reason other_parent)
+# Pass 2 (Q4) runs over the hits pass 1 kept:
+#   disagreement  true: when C's anchored hits name 2 or more different parents
+#                 (a mother counts; one parent in several verses is one), C is
+#                 a merged homonym node (亞撒利雅 has 11 anchored fathers) and
+#                 every parent hit of C abstains (reason anchored_disagreement).
+#                 以掃 FATHER_OF 耶烏施 (gen 36:14) goes too: 1ch 7:10 gives
+#                 耶烏施 the father 比勒罕.
 # P4 SPOUSE_OF hits are never guarded.
 guard:
   other_parent: true
   homonym_ids: ['person:bide', 'person:yuehan（shitu）']
+  disagreement: true

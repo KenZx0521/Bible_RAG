@@ -10,7 +10,9 @@ declared name (K2), the tokenizer knows Person/Place/Group names only (review
 2b), and a list item followed by 的 ends the list (review 2a, Q3 'cont').
 The same-name guard (K2 「同名時 abstain」, §6 #12) abstains a parent hit whose
 child already has another curated, prior or llm parent, or whose endpoint is a
-known homonym node (Q2), and logs it as a conflict.
+known homonym node (Q2), and logs it as a conflict. Its second pass (Q4)
+abstains every parent hit of a child whose surviving anchored hits name two or
+more parents: a merged homonym node such as 亞撒利雅, who has 11 anchored fathers.
 
 The regression fixture holds 46 real verses from the W1 simulation
 (docs/records/2026-10-04_kg_fix/batch1/w1_1A/gen_fixture.py) with the parents
@@ -42,15 +44,23 @@ FIXTURE_SHA256 = "17ce5b9babb2e9564ef0c2fd839468935ee5c3fc6e197ffca47166b2018e4d
 SIMULATOR = ROOT / "docs/records/2026-10-04_kg_fix/batch1/w1_1A/anchored_w1.py"
 
 CFG = load_config()
-NO_GUARD = dataclasses.replace(CFG, guard=GuardConfig(other_parent=False, homonym_ids=frozenset()))
+NO_GUARD = dataclasses.replace(CFG, guard=GuardConfig(other_parent=False, homonym_ids=frozenset(),
+                                                      disagreement=False))
+NO_DISAGREEMENT = dataclasses.replace(CFG, guard=dataclasses.replace(CFG.guard, disagreement=False))
 PID = "tst:1:0"
 P1, P2, P3, P4 = "P1_child_of", "P2_is_child_of", "P3_begot", "P4_wife"
 
 
 def _run(text, names, cfg=CFG, parent_map=None):
     """run() over one verse; names maps a span to one Person id."""
+    return _run_verses([text], names, cfg, parent_map)
+
+
+def _run_verses(texts, names, cfg=CFG, parent_map=None):
+    """run() over one pericope whose verses 1, 2... are texts."""
     span_map = {PID: {span: {eid} for span, eid in names.items()}}
-    return run([{"id": PID, "content": f"**1** {text}"}], span_map,
+    content = "\n\n".join(f"**{n}** {text}" for n, text in enumerate(texts, 1))
+    return run([{"id": PID, "content": content}], span_map,
                compile_tokenizer(list(names)), cfg, parent_map or {})
 
 
@@ -118,7 +128,8 @@ def test_shipped_config_holds_the_w1_decisions():
     assert CFG.deny_ids == {"group:yehehua"}
     assert CFG.min_name_len == 2
     assert CFG.guard == GuardConfig(other_parent=True,
-                                    homonym_ids=frozenset({"person:bide", "person:yuehan（shitu）"}))
+                                    homonym_ids=frozenset({"person:bide", "person:yuehan（shitu）"}),
+                                    disagreement=True)
 
 
 def test_config_copies_the_simulator_constants():
@@ -142,8 +153,10 @@ def test_config_copies_the_simulator_constants():
     ({"child_re": "的兒子"}, "child_re"),
     ({"wife_re": "的妻("}, "wife_re"),
     ({"guard": {"other_parent": True}}, "homonym_ids"),
-    ({"guard": {"other_parent": "yes", "homonym_ids": []}}, "other_parent"),
-    ({"guard": {"other_parent": True, "homonym_ids": "person:bide"}}, "homonym_ids"),
+    ({"guard": {"other_parent": True, "homonym_ids": []}}, "disagreement"),
+    ({"guard": {"other_parent": "yes", "homonym_ids": [], "disagreement": True}}, "other_parent"),
+    ({"guard": {"other_parent": True, "homonym_ids": "person:bide", "disagreement": True}}, "homonym_ids"),
+    ({"guard": {"other_parent": True, "homonym_ids": [], "disagreement": "any"}}, "disagreement"),
     ({"guard": {"other_parent": True, "homonym_ids": [], "disagree": True}}, "disagree"),
     ({"guard": True}, "guard"),
 ])
@@ -470,6 +483,111 @@ def test_guard_parts_can_be_disabled_by_config():
     assert _hits("利未是麥基的兒子；", LEVI, no_homonym, parents) == []
 
 
+# --- same-name guard (pass 2: anchored disagreement) ------------------------
+
+AZARIAH = {"約哈難": "person:yuehanan", "耶戶": "person:yehu", "亞撒利雅": "person:yasaliya"}
+AZARIAH_VERSES = ["約哈難的兒子亞撒利雅。", "亞撒利雅是耶戶的兒子；"]
+
+
+def _conflict_rows(conflicts):
+    return [(c["head_id"], c["relation"], c["tail_id"], c["verse"], c["pattern"], c["reason"],
+             c["other_parents"]) for c in conflicts]
+
+
+def test_disagreeing_anchored_parents_abstain_every_parent_hit():
+    hits, stats, conflicts = _run_verses(AZARIAH_VERSES, AZARIAH)
+    assert hits == []
+    # sorted by (reason, head, relation, tail, pericope, verse): 耶戶's verse 2 first
+    assert _conflict_rows(conflicts) == [
+        ("person:yasaliya", "SON_OF", "person:yehu", 2, P2, "anchored_disagreement", ["person:yuehanan"]),
+        ("person:yasaliya", "SON_OF", "person:yuehanan", 1, P1, "anchored_disagreement", ["person:yehu"]),
+    ]
+    assert {key: stats[key] for key in ("pattern_hits", "guard_other_parent", "guard_homonym",
+                                        "anchored_disagreement_children", "anchored_disagreement_abstain",
+                                        "emitted_hits")} == {
+        "pattern_hits": 2, "guard_other_parent": 0, "guard_homonym": 0,
+        "anchored_disagreement_children": 1, "anchored_disagreement_abstain": 2, "emitted_hits": 0}
+    assert stats["emitted_by_pattern"] == {P1: 0, P2: 0, P3: 0, P4: 0}
+
+
+def test_same_parent_in_two_verses_is_not_a_disagreement():
+    names = {"耶西": "person:yexi", "大衛": "person:dawei"}
+    hits, stats, conflicts = _run_verses(["耶西的兒子大衛。", "大衛是耶西的兒子；"], names)
+    assert [(h["head_id"], h["relation"], h["tail_id"], h["verse"]) for h in hits] == [
+        ("person:dawei", "SON_OF", "person:yexi", 1), ("person:dawei", "SON_OF", "person:yexi", 2)]
+    assert conflicts == []
+    assert (stats["anchored_disagreement_children"], stats["anchored_disagreement_abstain"]) == (0, 0)
+
+
+def test_father_and_mother_hits_count_as_two_parents():
+    # 'any': a mother is a parent too, so 約瑟 abstains; 便雅憫 has 拉結 alone
+    names = {"拉結": "person:lajie", "雅各": "person:yage", "約瑟": "person:yuese",
+             "便雅憫": "person:bianyamin"}
+    hits, stats, conflicts = _run_verses(["拉結的兒子約瑟、便雅憫。", "給雅各生了約瑟。"], names)
+    assert _triples(hits) == [("person:bianyamin", "SON_OF", "person:lajie")]
+    assert _conflict_rows(conflicts) == [
+        ("person:yage", "FATHER_OF", "person:yuese", 2, P3, "anchored_disagreement", ["person:lajie"]),
+        ("person:yuese", "SON_OF", "person:lajie", 1, P1, "anchored_disagreement", ["person:yage"]),
+    ]
+    assert stats["anchored_disagreement_children"] == 1
+
+
+def test_spouse_hits_are_untouched():
+    names = {"以掃": "person:yisao", "阿何利巴瑪": "person:ahelibama", "亞拿": "person:yana",
+             "祭便": "person:jibian"}
+    hits, _, conflicts = _run_verses(["以掃的妻子阿何利巴瑪。", "亞拿的女兒阿何利巴瑪。",
+                                      "祭便的女兒阿何利巴瑪。"], names)
+    assert _triples(hits) == [("person:ahelibama", "SPOUSE_OF", "person:yisao")]
+    assert [(c["tail_id"], c["reason"]) for c in conflicts] == [
+        ("person:jibian", "anchored_disagreement"), ("person:yana", "anchored_disagreement")]
+
+
+def test_pass_two_counts_only_the_hits_pass_one_kept():
+    # pass 1 drops 耶戶 (亞撒利雅 already has the llm parent 約哈難); one parent is left
+    hits, stats, conflicts = _run_verses(AZARIAH_VERSES, AZARIAH,
+                                         parent_map={"person:yasaliya": {"person:yuehanan"}})
+    assert _triples(hits) == [("person:yasaliya", "SON_OF", "person:yuehanan")]
+    assert [c["reason"] for c in conflicts] == ["other_parent"]
+    assert (stats["guard_other_parent"], stats["anchored_disagreement_abstain"]) == (1, 0)
+
+
+JEUSH_10 = ("tst:1ch:7:1", 10, "耶疊的兒子是比勒罕；比勒罕的兒子是耶烏施、便雅憫、以忽、基拿拿、細坦、他施、亞希沙哈。",
+            {"耶疊": "person:yedie", "比勒罕": "person:bileihan", "耶烏施": "person:yewushi"})
+
+
+def test_jeush_abstains_and_jalam_is_kept():
+    """gen 36:14 gives 以掃 the son 耶烏施, 1ch 7:10 gives 耶烏施 the father 比勒罕: one merged node."""
+    row = _fixture_row("named:gen:36:0:14")
+    pid, verse, text, names = JEUSH_10
+    span_map = {row["pericope_id"]: {span: set(ids) for span, ids in row["spans"].items()},
+                pid: {span: {eid} for span, eid in names.items()}}
+    pericopes = [{"id": row["pericope_id"], "content": f"**{row['verse']}** {row['text']}"},
+                 {"id": pid, "content": f"**{verse}** {text}"}]
+    tokenizer = compile_tokenizer([*row["lexicon"], *names])
+    hits, stats, conflicts = run(pericopes, span_map, tokenizer, CFG, _fixture_parents(row))
+    assert _triples(hits) == [
+        ("person:ahelibama", "SPOUSE_OF", "person:yisao"),
+        ("person:yisao", "FATHER_OF", "person:yalan"),
+        ("person:yisao", "FATHER_OF", "person:kela"),
+        ("person:bileihan", "SON_OF", "person:yedie"),
+    ]
+    assert [(c["head_id"], c["relation"], c["tail_id"], c["source_pericope_id"], c["other_parents"])
+            for c in conflicts] == [
+        ("person:yewushi", "SON_OF", "person:bileihan", pid, ["person:yisao"]),
+        ("person:yisao", "FATHER_OF", "person:yewushi", "gen:36:0", ["person:bileihan"]),
+    ]
+    assert stats["by_pattern"][P3] == 3 and stats["emitted_by_pattern"][P3] == 2
+
+
+def test_disagreement_can_be_disabled_by_config():
+    hits, stats, conflicts = _run_verses(AZARIAH_VERSES, AZARIAH, NO_DISAGREEMENT)
+    assert _triples(hits) == [("person:yasaliya", "SON_OF", "person:yuehanan"),
+                              ("person:yasaliya", "SON_OF", "person:yehu")]
+    assert conflicts == []
+    assert (stats["anchored_disagreement_children"], stats["anchored_disagreement_abstain"],
+            stats["emitted_hits"]) == (0, 0, 2)
+
+
 # --- determinism and regression ---------------------------------------------
 
 def test_two_runs_identical():
@@ -518,7 +636,8 @@ def test_regression_fixture_with_guard():
                for c in conflicts]
         assert got == row["abstained"], row["case"]
         assert stats["emitted_hits"] == len(hits)
-        assert stats["guard_other_parent"] + stats["guard_homonym"] == len(conflicts)
+        assert stats["guard_other_parent"] + stats["guard_homonym"] + \
+            stats["anchored_disagreement_abstain"] == len(conflicts)
         expected += len(hits)
         abstained += len(conflicts)
     assert (expected, abstained) == (65, 13)
@@ -528,6 +647,10 @@ def test_stats_count_hits_by_pattern():
     _, stats, conflicts = _fixture_run(_fixture_row("named:gen:36:0:14"))
     by_pattern = {P1: 0, P2: 0, P3: 3, P4: 1}
     assert stats == {"pattern_hits": 4, "by_pattern": by_pattern, "guard_other_parent": 0,
-                     "guard_homonym": 0, "emitted_hits": 4, "emitted_by_pattern": by_pattern,
-                     "ambiguous_name": 0}
+                     "guard_homonym": 0, "anchored_disagreement_children": 0,
+                     "anchored_disagreement_abstain": 0, "emitted_hits": 4,
+                     "emitted_by_pattern": by_pattern, "ambiguous_name": 0}
+    assert list(stats) == ["pattern_hits", "by_pattern", "guard_other_parent", "guard_homonym",
+                           "anchored_disagreement_children", "anchored_disagreement_abstain",
+                           "emitted_hits", "emitted_by_pattern", "ambiguous_name"]
     assert conflicts == []

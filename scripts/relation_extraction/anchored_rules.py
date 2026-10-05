@@ -22,7 +22,10 @@ config/relations/anchored_rules.yaml.
 Same-name guard, pass 1 (K2 「同名時 abstain」): a parent hit abstains, and is
 logged as a conflict, when its child already has another curated, prior or llm
 parent (parent_map, built by 6.05 from those rows), or when either endpoint is a
-known homonym node (guard.homonym_ids).
+known homonym node (guard.homonym_ids). Pass 2 (guard.disagreement) applies the
+same rule within the anchored hits that pass 1 kept: a child they give two or
+more parents is a merged homonym node (亞撒利雅 has 11 anchored fathers), and
+every parent hit of it abstains.
 
 Port of docs/records/2026-10-04_kg_fix/batch1/planner_1A/anchored_sim.py with
 the W1 changes of batch1/w1_1A/anchored_w1.py. PyYAML and the standard library
@@ -54,8 +57,9 @@ CONFIG_KEYS = (
     "min_name_len", "delim", "list_sep", "prev_ok", "trail_ok", "sentence_end",
     "child_re", "begot_re", "wife_re", "is_child_re", "guard",
 )
-GUARD_KEYS = ("other_parent", "homonym_ids")
-HOMONYM, OTHER_PARENT = "homonym", "other_parent"   # conflict reasons
+GUARD_KEYS = ("other_parent", "homonym_ids", "disagreement")
+HOMONYM, OTHER_PARENT = "homonym", "other_parent"   # conflict reasons, pass 1
+DISAGREEMENT = "anchored_disagreement"              # conflict reason, pass 2
 CONFLICT_KEYS = ("head_id", "relation", "tail_id", "source_pericope_id", "verse", "pattern")
 
 P1, P2, P3, P4 = "P1_child_of", "P2_is_child_of", "P3_begot", "P4_wife"
@@ -73,6 +77,7 @@ Resolve = Callable[[str, int], "str | None"]   # (span, start) -> Person id
 class GuardConfig:
     other_parent: bool             # abstain when the child already has another parent
     homonym_ids: frozenset[str]    # abstain when either endpoint is one of these
+    disagreement: bool             # pass 2: abstain a child whose anchored hits name >= 2 parents
 
 
 @dataclass(frozen=True)
@@ -153,10 +158,12 @@ def _guard(path: Path, doc: Mapping) -> GuardConfig:
     if not isinstance(guard, Mapping) or set(guard) != set(GUARD_KEYS):
         raise ValueError(f"{path}: guard must be a mapping with exactly {list(GUARD_KEYS)}, "
                          f"got {guard!r}")
-    if not isinstance(guard["other_parent"], bool):
-        raise ValueError(f"{path}: guard.other_parent must be true or false")
+    for key in ("other_parent", "disagreement"):
+        if not isinstance(guard[key], bool):
+            raise ValueError(f"{path}: guard.{key} must be true or false")
     return GuardConfig(other_parent=guard["other_parent"],
-                       homonym_ids=_ids(path, guard["homonym_ids"], "guard.homonym_ids"))
+                       homonym_ids=_ids(path, guard["homonym_ids"], "guard.homonym_ids"),
+                       disagreement=guard["disagreement"])
 
 
 def load_config(path: Path = CONFIG_PATH) -> AnchoredConfig:
@@ -402,6 +409,40 @@ def abstain_same_name(hits: Iterable[dict], parent_map: Mapping[str, Iterable[st
     return kept, conflicts
 
 
+def _conflict_order(conflict: Mapping) -> tuple:
+    return (conflict["reason"], conflict["head_id"], conflict["relation"], conflict["tail_id"],
+            conflict["source_pericope_id"], conflict["verse"])
+
+
+def abstain_disagreements(hits: Iterable[dict]) -> tuple[list[dict], list[dict]]:
+    """(kept, conflicts): pass 2 of the same-name guard, hit order kept.
+
+    A child whose parent hits (parent_child: the patterns emit SON_OF,
+    DAUGHTER_OF and FATHER_OF) name two or more different parents, a mother
+    counting as one, loses every parent hit; the
+    same parent in several verses is one parent. Each goes to conflicts with
+    reason anchored_disagreement and other_parents, the child's other parents
+    sorted. SPOUSE_OF hits are never touched. Conflicts are sorted by (reason,
+    head, relation, tail, pericope, verse).
+    """
+    hits = list(hits)
+    parents = parent_map_of((hit["head_id"], hit["relation"], hit["tail_id"]) for hit in hits)
+    kept: list[dict] = []
+    conflicts: list[dict] = []
+    for hit in hits:
+        pair = parent_child(hit["head_id"], hit["relation"], hit["tail_id"])
+        if pair is None or len(parents[pair[1]]) < 2:
+            kept.append(hit)
+            continue
+        parent, child = pair
+        conflicts.append(_conflict(hit, DISAGREEMENT, parents[child] - {parent}))
+    return kept, sorted(conflicts, key=_conflict_order)
+
+
+def _children(conflicts: Iterable[Mapping]) -> set[str]:
+    return {parent_child(c["head_id"], c["relation"], c["tail_id"])[1] for c in conflicts}
+
+
 # --- corpus -----------------------------------------------------------------
 
 def _resolver(spans: Mapping[str, set[str]], ambiguous: set, where: tuple[str, int]) -> Resolve:
@@ -449,17 +490,25 @@ def run(pericopes: Iterable[Mapping], span_map: Mapping[str, Mapping[str, set[st
     evidence_span (the verse, first 200 characters)}. parent_map is
     {child: {parent}} of the curated, prior and llm rows (parent_map_of),
     required so that a caller cannot run the guard against no parents by
-    mistake; the same-name guard moves the hits it abstains to conflicts. stats:
-    pattern_hits and by_pattern before the guard, guard_other_parent and
-    guard_homonym, emitted_hits and emitted_by_pattern of the hits returned,
-    and ambiguous_name, the distinct (pericope, verse, start, span) whose
-    MENTIONS give more than one Person id (report-only).
+    mistake; the same-name guard moves the hits it abstains to conflicts, those
+    of pass 1 in hit order, then those of pass 2 (guard.disagreement, over the
+    hits pass 1 kept) sorted. stats: pattern_hits and by_pattern before the
+    guard, guard_other_parent and guard_homonym of pass 1,
+    anchored_disagreement_children and anchored_disagreement_abstain of pass 2,
+    emitted_hits and emitted_by_pattern of the hits returned, and
+    ambiguous_name, the distinct (pericope, verse, start, span) whose MENTIONS
+    give more than one Person id (report-only).
     """
     hits, ambiguous = _extract(pericopes, span_map, tokenizer, cfg)
     kept, conflicts = abstain_same_name(hits, parent_map, cfg.guard)
+    disagreements: list[dict] = []
+    if cfg.guard.disagreement:
+        kept, disagreements = abstain_disagreements(kept)
     reasons = Counter(conflict["reason"] for conflict in conflicts)
     stats = {"pattern_hits": len(hits), "by_pattern": _by_pattern(hits),
              "guard_other_parent": reasons[OTHER_PARENT], "guard_homonym": reasons[HOMONYM],
+             "anchored_disagreement_children": len(_children(disagreements)),
+             "anchored_disagreement_abstain": len(disagreements),
              "emitted_hits": len(kept), "emitted_by_pattern": _by_pattern(kept),
              "ambiguous_name": len(ambiguous)}
-    return kept, stats, conflicts
+    return kept, stats, conflicts + disagreements
