@@ -11,13 +11,21 @@ from collections import Counter
 from pathlib import Path
 
 from check_identity import DIFF_KINDS, TYPE_LABELS, run as run_identity, type_of
+from relation_extraction.models import derive_source
 
 from .model import KG, PPG
 from .registry import CheckResult, Context, check
 
 ID_PREFIX_LABEL = {label.lower(): label for label in TYPE_LABELS}
-PRIOR_PHASE = 3      # ExtractionPhase.DOMAIN_PRIOR: source_pericope_id is empty or a verse ref
-INVERSE_PHASE = 5    # ExtractionPhase.INVERSE_DERIVED (also reused by 10.3 co-occurrence)
+# Sources whose rows carry no pericope of their own: a prior's source_pericope_id
+# is empty or a verse ref, a curated overlay has none.
+UNANCHORED_SOURCES = ("prior", "curated")
+
+
+def effective_source(r: dict) -> str | None:
+    """The relation row's source; a row written before the property existed
+    (every prod edge until W1) gets the one its phase implies."""
+    return r["source"] or derive_source(r["extraction_phase"], r["notes"], r["backfilled"])
 
 
 # ---------------------------------------------------------------------------
@@ -69,18 +77,24 @@ def check_h7(kg: KG, ctx: Context) -> CheckResult:
 # Record checks: H3–H10
 # ---------------------------------------------------------------------------
 
+def _h3_exempt(r: dict) -> bool:
+    source = effective_source(r)
+    if source in UNANCHORED_SOURCES or r["curated"]:
+        return True
+    # inverse of a prior: priors carry no pericope, so neither does this
+    return source == "inverse" and not r["source_pericope_id"] and r["notes"].startswith("derived_from=")
+
+
 @check("H3", needs=("relations.jsonl", "mentions.jsonl", "chunks.jsonl"))
 def check_h3(kg: KG, ctx: Context) -> CheckResult:
     support = {(kg.pericope_of(m), m["entity_id"]) for m in kg.mentions}
     by_type: Counter = Counter()
     no_provenance, samples = 0, []
     for r in kg.relations:
-        if r["extraction_phase"] == PRIOR_PHASE or r["curated"]:
+        if _h3_exempt(r):
             continue
         pid = r["source_pericope_id"]
         if not pid:
-            if r["extraction_phase"] == INVERSE_PHASE and r["notes"].startswith("derived_from="):
-                continue  # inverse of a prior: priors carry no pericope, so neither does this
             no_provenance += 1
         elif (pid, r["head"]) in support and (pid, r["tail"]) in support:
             continue

@@ -62,10 +62,10 @@ def test_exit_codes_pass_hard_fail_and_regression(snap, tmp_path, capsys):
 
 
 def _prior_father(head: str, tail: str) -> dict:
-    """A phase-3 FATHER_OF with no source pericope: H3 exempts it, so of the
+    """A prior (phase 3) FATHER_OF with no source pericope: H3 exempts it, so of the
     scored checks only R6 (and W's histogram, a warning) sees it."""
     return {"head_id": head, "relation": "FATHER_OF", "tail_id": tail, "source_pericope_id": "",
-            "extraction_phase": 3, "notes": ""}
+            "extraction_phase": 3, "notes": "", "source": "prior"}
 
 
 def test_record_metric_inside_a_hard_check_regresses_without_failing(snap, tmp_path, capsys):
@@ -166,7 +166,7 @@ def test_probe_swap_with_unchanged_count_is_a_regression(snap, tmp_path, capsys)
     the per-id baseline still flags it (edges lost in a rebuild, review E-1)."""
     baseline = fresh_baseline(tmp_path, snap)
     lot = {"head_id": "person:luode", "relation": "FATHER_OF", "tail_id": "person:tala",
-           "source_pericope_id": "gen:11:2", "extraction_phase": 2}
+           "source_pericope_id": "gen:11:2", "extraction_phase": 2, "source": "rule"}
     append_row(snap / "relations.jsonl", lot)
     cli(snap, baseline, capsys, "--ratchet")
     assert _stored(baseline, "PROBES", "failing") == ["kin-lot-not-father-of-terah"]

@@ -59,7 +59,7 @@
       "severity": "record",
       "hard_from": "1A",
       "plan_reference": "374",
-      "query": "Entity-Entity edges except phase 3 (prior), curated, and phase-5 inverses of priors (empty source): both ends MENTIONed by source_pericope_id or by one of its chunks; an empty source_pericope_id counts as unsupported",
+      "query": "Entity-Entity edges except source prior or curated, the curated flag, and inverses of priors (source inverse, notes derived_from=, empty source_pericope_id); source is r.source, else derived from extraction_phase/notes/backfilled for legacy rows (models.derive_source: phase 3 = prior): both ends MENTIONed by source_pericope_id or by one of its chunks; an empty source_pericope_id counts as unsupported",
       "metrics": {
         "unsupported": {
           "value": 374,

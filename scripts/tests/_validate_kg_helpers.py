@@ -109,12 +109,12 @@ def cli(snap: Path, baseline: Path, capsys, *extra: str) -> tuple[int, dict]:
 
 
 def unsupported_edge(**over) -> dict:
-    """馬可 VISITED 摩利亞, sourced from gen:22:0 where 馬可 is never mentioned.
+    """馬可 VISITED 摩利亞, an llm row sourced from gen:22:0 where 馬可 is never mentioned.
 
     Deliberately not a kinship edge, so it moves H3 and nothing else (R6's
     functionality rate would change with a FATHER_OF)."""
     row = {"head_id": "person:make", "relation": "VISITED", "tail_id": "place:moliya",
-           "source_pericope_id": "gen:22:0", "extraction_phase": 4, "notes": ""}
+           "source_pericope_id": "gen:22:0", "extraction_phase": 4, "notes": "", "source": "llm"}
     row.update(over)
     return row
 

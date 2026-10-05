@@ -168,14 +168,28 @@ def test_h3_unsupported_derived_edge(snap):
     assert metric(measure(snap), "H3", "unsupported") == 1
 
 
-@pytest.mark.parametrize("over", [
-    {"extraction_phase": 3},                                   # prior
-    {"curated": True},                                         # curated
-    {"extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"},  # inverse of a prior
+LEGACY = {"source": None}  # an edge written before the source property existed (all of prod today)
+
+
+@pytest.mark.parametrize("over,unsupported", [
+    pytest.param({"source": "prior", "extraction_phase": 3}, 0, id="prior-exempt"),
+    pytest.param({"source": "curated", "extraction_phase": None}, 0, id="curated-exempt"),
+    pytest.param({"curated": True}, 0, id="curated-flag-exempt"),
+    pytest.param({}, 1, id="llm-unsupported"),
+    pytest.param({"source": "llm", "extraction_phase": 3}, 1, id="source-wins-over-phase"),
+    pytest.param({"source": "anchored_rule", "extraction_phase": 6}, 1, id="anchored-rule-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 3}, 0, id="legacy-phase-3-exempt"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"},
+                 0, id="legacy-inverse-of-prior-exempt"),
+    pytest.param({**LEGACY, "extraction_phase": 4}, 1, id="legacy-phase-4-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "backfilled": True, "notes": "cooccurrence-backfill"},
+                 1, id="legacy-cooccurrence-gated"),
 ])
-def test_h3_exemptions(snap, over):
+def test_h3_uses_source_then_falls_back_to_phase(snap, over, unsupported):
+    # The row's source decides; a row without one gets the source its phase
+    # implies (models.derive_source), so prod's legacy rows score as before.
     append_row(snap / "relations.jsonl", unsupported_edge(**over))
-    assert metric(measure(snap), "H3", "unsupported") == 0
+    assert metric(measure(snap), "H3", "unsupported") == unsupported
 
 
 def test_h3_edge_without_provenance_counts(snap):
@@ -204,10 +218,10 @@ def test_h8_xref_without_provenance_flag(snap):
 def test_h9_domain_range_and_unknown_type(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:yage", "relation": "FATHER_OF",
                                           "tail_id": "place:aiji", "source_pericope_id": "exo:1:0",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     append_row(snap / "relations.jsonl", {"head_id": "person:yage", "relation": "LOVES",
                                           "tail_id": "place:aiji", "source_pericope_id": "exo:1:0",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     res = measure(snap)
     assert metric(res, "H9", "domain_range_violations") == 1
     assert metric(res, "H9", "unknown_relation_types") == 1
@@ -380,24 +394,25 @@ def test_r5_cross_type_same_name(snap):
 def test_r6_contradiction(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:yisa", "relation": "FATHER_OF",
                                           "tail_id": "person:yabolahan", "source_pericope_id": "gen:22:0",
-                                          "extraction_phase": 2})
+                                          "extraction_phase": 2, "source": "rule"})
     assert metric(measure(snap), "R6", "contradictions") == 2  # both directions are contradicted
 
 
 def test_r6_son_of_contradicts_father_of(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:yabolahan", "relation": "SON_OF",
                                           "tail_id": "person:yisa", "source_pericope_id": "gen:22:0",
-                                          "extraction_phase": 5, "notes": "derived_from=FATHER_OF"})
+                                          "extraction_phase": 5, "notes": "derived_from=FATHER_OF",
+                                          "source": "inverse"})
     assert metric(measure(snap), "R6", "contradictions") == 1
 
 
 def test_r6_female_head_and_functionality(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:maliya", "relation": "FATHER_OF",
                                           "tail_id": "person:make", "source_pericope_id": "act:12:1",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     append_row(snap / "relations.jsonl", {"head_id": "person:nahe", "relation": "FATHER_OF",
                                           "tail_id": "person:luode", "source_pericope_id": "gen:11:2",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     res = measure(snap)
     assert metric(res, "R6", "female_head") == 1
     # children: yabolahan, halan, luode(2 fathers), yisa, make -> 1/5
@@ -407,7 +422,7 @@ def test_r6_female_head_and_functionality(snap):
 def test_r6_counts_failing_kinship_probes(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:luode", "relation": "FATHER_OF",
                                           "tail_id": "person:tala", "source_pericope_id": "gen:11:2",
-                                          "extraction_phase": 2})
+                                          "extraction_phase": 2, "source": "rule"})
     res = measure(snap)
     assert metric(res, "R6", "probe_failures") == 1
     assert "kin-lot-not-father-of-terah" in res["R6"].detail["failing_probes"]
