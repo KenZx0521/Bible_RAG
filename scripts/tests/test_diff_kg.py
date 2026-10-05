@@ -74,6 +74,8 @@ def profile(**over) -> dict:
         "mentions": [{"source_label": "Pericope", "source": None, "n": 45},
                      {"source_label": "Chunk", "source": "manual_patch", "n": 5}],
         "xrefs": [{"source": "tsk", "n": 100}, {"source": "markdown", "n": 4}],
+        "xref_provenance": [{"source": "tsk", "curated": None, "tsk": None, "n": 100},
+                            {"source": "markdown", "curated": None, "tsk": None, "n": 4}],
         "entities": [{"entity_id": "person:yabolahan", "description": "信心之父", "aliases": ["亞伯蘭"]},
                      {"entity_id": "person:yisa", "description": None, "aliases": None},
                      {"entity_id": "event:xianyisa", "description": "獻以撒", "aliases": ["甲", "乙"]}],
@@ -110,6 +112,32 @@ def test_count_sections_report_each_changed_key_with_its_delta():
     assert by_key[("xrefs", "source=tsk")]["delta"] == -1
     assert by_key[("labels", "Event")]["delta"] == -1
     assert keys(diffs, "relationships") == []
+
+
+def flagged_xrefs() -> list[dict]:
+    """Staging-style provenance: every edge carries curated and tsk (Steps 5 and 9, 1B)."""
+    return [{"source": "markdown", "curated": True, "tsk": True, "n": 3},
+            {"source": "markdown", "curated": True, "tsk": False, "n": 1},
+            {"source": "tsk", "curated": False, "tsk": True, "n": 100}]
+
+
+def test_xref_provenance_keys_and_delta():
+    # prod-style rows (curated and tsk unset) against staging-style rows: same edges per source
+    diffs, _ = dk.compare(FakeDriver(profile()), FakeDriver(profile(xref_provenance=flagged_xrefs())),
+                          with_registry=False)
+    assert {d["key"]: d["delta"] for d in diffs if d["section"] == "xref_provenance"} == {
+        "source=markdown curated=- tsk=-": -4, "source=tsk curated=- tsk=-": -100,
+        "source=markdown curated=True tsk=True": 3, "source=markdown curated=True tsk=False": 1,
+        "source=tsk curated=False tsk=True": 100}
+    assert keys(diffs, "xrefs") == []  # the per-source totals did not move
+
+
+def test_xref_provenance_matches_the_xref_probe_expect_keys():
+    # xref_probe fingerprint --expect compares these keys, so both must read and spell them alike
+    from scripts.tools import xref_projection as xproj
+    assert dk.PROFILE_QUERIES["xref_provenance"].split() == xproj.PROVENANCE_CYPHER.split()
+    for row in flagged_xrefs() + profile()["xref_provenance"]:
+        assert dk._COUNT_KEYS["xref_provenance"](row) == xproj.provenance_key(row["source"], row["curated"], row["tsk"])
 
 
 def test_descriptions_compare_verbatim_and_aliases_as_sets():
@@ -204,6 +232,25 @@ def test_allow_entries_match_by_section_glob_and_delta(tmp_path):
                        "FATHER_OF phase=4 source=-": None, "Pericope source=-": None,
                        "place:x": "rewritten on purpose"}
     assert [e["key"] for e in unused] == ["Pericope *", "source=tsk"]
+
+
+def test_xref_provenance_allow_entry_matches(tmp_path):
+    diffs, _ = dk.compare(FakeDriver(profile()), FakeDriver(profile(xref_provenance=flagged_xrefs())),
+                          with_registry=False)
+    allow = dk.load_allowlist(write_allow(tmp_path, [
+        {"section": "xref_provenance", "key": "source=* curated=- tsk=-", "reason": "Steps 5 and 9 flag every edge"},
+        {"section": "xref_provenance", "key": "source=markdown curated=True tsk=True", "delta": 3, "reason": "TSK"},
+        {"section": "xref_provenance", "key": "source=markdown curated=True tsk=False", "delta": 2, "reason": "no"},
+        {"section": "xref_provenance", "key": "source=tsk curated=False tsk=True", "max_abs_delta": 100,
+         "reason": "pure TSK"}]))
+    classified, unused = dk.classify(diffs, allow)
+    allowed = {d["key"]: d["allowed_by"] for d in classified if d["section"] == "xref_provenance"}
+    assert allowed == {"source=markdown curated=- tsk=-": "Steps 5 and 9 flag every edge",
+                       "source=tsk curated=- tsk=-": "Steps 5 and 9 flag every edge",
+                       "source=markdown curated=True tsk=True": "TSK",
+                       "source=markdown curated=True tsk=False": None,  # delta 1, not 2
+                       "source=tsk curated=False tsk=True": "pure TSK"}
+    assert [e["reason"] for e in unused] == ["no"]
 
 
 @pytest.mark.parametrize("entry", [

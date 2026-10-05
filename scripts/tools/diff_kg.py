@@ -7,17 +7,20 @@ difference listed and explained. validate_kg scores one graph against its
 baseline and check_identity compares the three stores of one target; neither
 compares two graphs. This does, on Neo4j (the store retrieval reads):
 
-  labels         node count per label
-  relationships  edge count per relationship type
-  ee_edges       Entity–Entity edges per "TYPE phase=P source=S"
-  mentions       MENTIONS edges per "SourceLabel source=S"
-  xrefs          CROSS_REFERENCES per "source=S"
-  entity_ids     entity_id present on one side only
-  descriptions   Entity.description, verbatim (missing == empty)
-  aliases        Entity.aliases as sets (missing == []); a non-list (JSON string) only equals itself
-  registry       export_event_registry.build_registry() run against each side's
-                 read-only driver: one key per event that differs, plus "dropped:<id>"
-                 for the dropped list
+  labels           node count per label
+  relationships    edge count per relationship type
+  ee_edges         Entity–Entity edges per "TYPE phase=P source=S"
+  mentions         MENTIONS edges per "SourceLabel source=S"
+  xrefs            CROSS_REFERENCES per "source=S"
+  xref_provenance  CROSS_REFERENCES per "source=S curated=C tsk=T": the flags Steps 5
+                   and 9 write, keyed as xref_probe expect files' xref_provenance
+  entity_ids       entity_id present on one side only
+  descriptions     Entity.description, verbatim (missing == empty)
+  aliases          Entity.aliases as sets (missing == []); a non-list (JSON string)
+                   only equals itself
+  registry         export_event_registry.build_registry() run against each side's
+                   read-only driver: one key per event that differs, plus "dropped:<id>"
+                   for the dropped list
 Unset properties print as "-" in keys.
 
 Allowed differences come from a YAML file (--allow). Every difference not
@@ -79,6 +82,9 @@ PROFILE_QUERIES = {
     "xrefs": """
         MATCH (:Pericope)-[x:CROSS_REFERENCES]->(:Pericope)
         RETURN x.source AS source, count(*) AS n""",
+    "xref_provenance": """
+        MATCH (:Pericope)-[x:CROSS_REFERENCES]->(:Pericope)
+        RETURN x.source AS source, x.curated AS curated, x.tsk AS tsk, count(*) AS n""",
     "entities": """
         MATCH (e:Entity)
         RETURN e.entity_id AS entity_id, e.description AS description, e.aliases AS aliases""",
@@ -95,6 +101,7 @@ _COUNT_KEYS = {
     "ee_edges": lambda r: f"{r['type']} phase={_v(r['phase'])} source={_v(r['source'])}",
     "mentions": lambda r: f"{r['source_label']} source={_v(r['source'])}",
     "xrefs": lambda r: f"source={_v(r['source'])}",
+    "xref_provenance": lambda r: f"source={_v(r['source'])} curated={_v(r['curated'])} tsk={_v(r['tsk'])}",
 }
 COUNT_SECTIONS = tuple(_COUNT_KEYS)
 SECTIONS = COUNT_SECTIONS + ("entity_ids", "descriptions", "aliases", "registry")
@@ -278,7 +285,7 @@ def print_report(report: dict, samples: int) -> None:
         if not diffs:
             continue
         bad = sum(d["allowed_by"] is None for d in diffs)
-        print(f"  {section:<14} {len(diffs)} differences ({bad} not allowed)")
+        print(f"  {section:<15} {len(diffs)} differences ({bad} not allowed)")
         # unallowed first: they are what the operator has to explain
         for d in sorted(diffs, key=lambda d: d["allowed_by"] is not None)[:samples]:
             change = f"{d['a']} -> {d['b']} ({d['delta']:+d})" if d["delta"] is not None \
