@@ -29,6 +29,16 @@ flags are flat, so --help lists all of them.
            no 999 sentinel and holds this checkout's exact files (sha256). Plan
            §2.2 risk: run it as the first command of the data load and after
            any image change, so the data never runs ahead of the code.
+  expect   the CROSS_REFERENCES table Steps 5 and 9 will build from the Step 0
+           --output-dir (neo4j_relationships.jsonl, embedding_queue.jsonl) and
+           --tsk, replayed offline (xref_projection). Writes {version, inputs,
+           counts, xref_provenance, xrefs_by_source, fingerprint}; --edges-out
+           also writes the edges as predict --edges input. Run it before the
+           staging build: an expectation is never back-filled (plan §3).
+  fingerprint
+           curated_xrefs.edge_fingerprint and the xref_provenance counts of
+           --target prod|staging (READ sessions). With --expect, exit 1 unless
+           both equal the expect file's.
 
 The measured side is backend probes/xref_measure (1B-T2): same seed file, the
 real retriever functions.
@@ -39,6 +49,8 @@ Usage (from the project root):
     $PY scripts/tools/xref_probe.py predict --seeds seeds.json --target prod --out pred.json
     $PY scripts/tools/xref_probe.py compare --pred pred.json --measured measured.json
     $PY scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend
+    $PY scripts/tools/xref_probe.py expect --out xref.json --edges-out edges.jsonl
+    $PY scripts/tools/xref_probe.py fingerprint --target staging --expect xref.json
 
 Exit code: 0 done / everything matches; 1 a difference, a failed sentinel or
 guard, or an unreadable input or target.
@@ -58,8 +70,9 @@ for _path in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "scripts")):
     if _path not in sys.path:
         sys.path.insert(0, _path)
 
+from bible_chunking.curated_xrefs import EDGE_FINGERPRINT_CYPHER  # noqa: E402
 from check_identity import open_neo4j, read_query, resolve_target  # noqa: E402
-from scripts.tools import xref_rank  # noqa: E402
+from scripts.tools import xref_projection, xref_rank  # noqa: E402
 
 DEFAULT_PERICOPES = _PROJECT_ROOT / "output" / "pericopes.jsonl"
 DEFAULT_QUESTIONS = (_PROJECT_ROOT / "docs" / "records" / "2026-10-04_kg_fix" / "batch1" / "inputs"
@@ -119,16 +132,22 @@ def _cmd_seeds(args) -> int:
 
 # ---------------------------------------------------------------- predict
 
-def read_target_edges(name: str) -> tuple[list[dict], dict]:
-    """CROSS_REFERENCES of one target, in a READ transaction (resolve_target's guards apply)."""
+def _read_target(name: str, *cyphers: str) -> tuple[list[list[dict]], dict]:
+    """Each statement's rows on one target, in READ transactions (resolve_target's guards apply)."""
     target = resolve_target(name)
     driver = open_neo4j(target)
     try:
         driver.verify_connectivity()  # fail fast instead of retrying a refused connection
-        edges = read_query(driver, EDGES_CYPHER)
+        results = [read_query(driver, cypher) for cypher in cyphers]
     finally:
         driver.close()
-    return edges, {"target": target.name, "neo4j_uri": target.neo4j_uri}
+    return results, {"target": target.name, "neo4j_uri": target.neo4j_uri}
+
+
+def read_target_edges(name: str) -> tuple[list[dict], dict]:
+    """CROSS_REFERENCES of one target, in a READ transaction."""
+    (edges,), source = _read_target(name, EDGES_CYPHER)
+    return edges, source
 
 
 def predict(index: xref_rank.XrefIndex, seeds: dict) -> dict:
@@ -277,12 +296,62 @@ def _cmd_deploy_guard(args) -> int:
     return 1 if problems else 0
 
 
+# ---------------------------------------------------------------- expect / fingerprint
+
+DEFAULT_OUTPUT_DIR = _PROJECT_ROOT / "output"
+DEFAULT_TSK = DEFAULT_OUTPUT_DIR / "cross_references_tsk.txt"
+
+
+def build_expect(output_dir: Path, tsk: Path) -> tuple[dict, dict]:
+    """(the expect document, the projected edges) of one Step 0 output and TSK file."""
+    # Imported here only: importing it load_dotenv()s .env into os.environ,
+    # which must never precede resolve_target in the READ actions.
+    import import_tsk_crossrefs as step9
+    rels, queue = Path(output_dir) / "neo4j_relationships.jsonl", Path(output_dir) / "embedding_queue.jsonl"
+    curated = xref_projection.step5_edges(r for r in _read_jsonl(rels) if r.get("type") == "CROSS_REFERENCES")
+    pairs, _stats = step9.aggregate_tsk(Path(tsk), step9.build_verse_map(queue))
+    edges = xref_projection.step9_edges(curated, pairs)
+    inputs = {"relationships_sha256": _sha256(rels), "embedding_queue_sha256": _sha256(queue),
+              "tsk_sha256": _sha256(tsk)}
+    return {"version": 1, "inputs": inputs, **xref_projection.summarize(curated, pairs, edges)}, edges
+
+
+def _cmd_expect(args) -> int:
+    doc, edges = build_expect(args.output_dir, args.tsk)
+    _write_json(args.out, doc)
+    if args.edges_out:
+        rows = xref_projection.edge_rows(edges)
+        Path(args.edges_out).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
+                                        encoding="utf-8")
+    print("expect: " + ", ".join(f"{k} {v:,}" for k, v in doc["counts"].items()) + f" ({args.out})")
+    print(f"fingerprint {doc['fingerprint']}")
+    return 0
+
+
+def _cmd_fingerprint(args) -> int:
+    (rows, provenance), source = _read_target(args.target, EDGE_FINGERPRINT_CYPHER,
+                                              xref_projection.PROVENANCE_CYPHER)
+    live = xref_projection.live_summary(rows, provenance)
+    print(f"fingerprint {live['fingerprint']} "
+          f"({source['target']} {source['neo4j_uri']}, {live['edges']:,} edges)")
+    for key, n in live["xref_provenance"].items():
+        print(f"  {key}: {n:,}")
+    if args.expect is None:
+        return 0
+    problems = xref_projection.expectation_problems(live, _read_json(args.expect))
+    for problem in problems:
+        print(f"  {problem}")
+    print(f"exit 0: {source['target']} equals {args.expect}" if not problems
+          else f"exit 1: {len(problems)} problems")
+    return 1 if problems else 0
+
+
 # ---------------------------------------------------------------- CLI
 
 ACTIONS = {"seeds": _cmd_seeds, "predict": _cmd_predict, "compare": _cmd_compare,
-           "deploy-guard": _cmd_deploy_guard}
+           "deploy-guard": _cmd_deploy_guard, "expect": _cmd_expect, "fingerprint": _cmd_fingerprint}
 REQUIRED = {"seeds": ("out",), "predict": ("seeds", "out"), "compare": ("pred", "measured"),
-            "deploy-guard": ()}
+            "deploy-guard": (), "expect": ("out",), "fingerprint": ("target",)}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -292,14 +361,21 @@ def build_parser() -> argparse.ArgumentParser:
                         help="seeds: Step 0 pericopes.jsonl (default output/pericopes.jsonl)")
     parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS,
                         help="seeds: benchmark questions_table.json (default: the batch-1 bench input)")
-    parser.add_argument("--out", type=Path, help="seeds / predict: file to write")
+    parser.add_argument("--out", type=Path, help="seeds / predict / expect: file to write")
     parser.add_argument("--seeds", type=Path, help="predict: seed file written by the seeds action")
-    parser.add_argument("--target", choices=("prod", "staging"), help="predict: read the edges from this Neo4j")
+    parser.add_argument("--target", choices=("prod", "staging"),
+                        help="predict / fingerprint: read the edges from this Neo4j")
     parser.add_argument("--edges", type=Path, help="predict: read the edges from this JSONL instead")
     parser.add_argument("--pred", type=Path, help="compare: the prediction")
     parser.add_argument("--measured", type=Path, help="compare: the measurement")
     parser.add_argument("--container", default="bible_rag_backend",
                         help="deploy-guard: the backend container (default bible_rag_backend)")
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR,
+                        help="expect: the Step 0 output directory (default output/)")
+    parser.add_argument("--tsk", type=Path, default=DEFAULT_TSK,
+                        help="expect: the TSK file Step 9 reads (default output/cross_references_tsk.txt)")
+    parser.add_argument("--edges-out", type=Path, help="expect: also write the edges, predict --edges input")
+    parser.add_argument("--expect", type=Path, help="fingerprint: the expect file to check the target against")
     return parser
 
 

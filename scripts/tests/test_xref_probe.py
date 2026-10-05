@@ -5,22 +5,31 @@ The replica must order exactly like backend/database/neo4j_db.py (C1 Cypher:
 seed_support, curated, votes, then apoc.util.md5([id])) and weigh exactly like
 cross_ref_retriever._edge_weight; compare must refuse any drift and the
 sentinel rows the plan names. The graph reads go through a fake driver that
-records the access mode: predict --target must never open a write session.
+records the access mode: predict --target and fingerprint must never open a
+write session.
 deploy-guard (1B-T4) reads the container through a fake runner: no docker call.
+expect (1B-T3) replays Steps 5 and 9 on a tiny Step 0 output and TSK file;
+fingerprint reads the same table back through the fake driver.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 from neo4j import READ_ACCESS
 
+from bible_chunking.curated_xrefs import EDGE_FINGERPRINT_CYPHER, edge_fingerprint
 from scripts.tools import xref_probe as xp
+from scripts.tools import xref_projection as xproj
 from scripts.tools import xref_rank as xr
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def edge(a, b, source="tsk", curated=None, votes=None) -> dict:
@@ -172,10 +181,10 @@ def test_predict_from_edges_file(tmp_path):
 
 
 class FakeDriver:
-    """Answers the edge query; records every session's kwargs."""
+    """Answers each known query (cypher -> rows); records every session's kwargs."""
 
-    def __init__(self, rows):
-        self.rows, self.sessions, self.closed = rows, [], False
+    def __init__(self, answers: dict[str, list[dict]]):
+        self.answers, self.sessions, self.closed = answers, [], False
 
     def session(self, **kwargs):
         self.sessions.append(kwargs)
@@ -190,15 +199,15 @@ class FakeDriver:
 
             def execute_read(self, fn):
                 def run(cypher, **params):
-                    assert cypher == xp.EDGES_CYPHER
-                    return [SimpleNamespace(data=lambda r=r: dict(r)) for r in driver.rows]
+                    assert cypher in driver.answers, cypher
+                    return [SimpleNamespace(data=lambda r=r: dict(r)) for r in driver.answers[cypher]]
                 return fn(SimpleNamespace(run=run))
 
             def run(self, *a, **k):
-                raise AssertionError("predict must read through execute_read")
+                raise AssertionError("a READ action must read through execute_read")
 
             def execute_write(self, fn):
-                raise AssertionError("predict must never write")
+                raise AssertionError("a READ action must never write")
         return Session()
 
     def verify_connectivity(self) -> None:
@@ -208,12 +217,18 @@ class FakeDriver:
         self.closed = True
 
 
-def test_predict_target_reads_in_read_sessions(tmp_path, monkeypatch):
-    driver = FakeDriver(SENTINEL_EDGES)
+def patch_target(monkeypatch, driver) -> list[str]:
+    """resolve_target / open_neo4j answer with `driver`; returns the resolved names."""
     resolved = []
     monkeypatch.setattr(xp, "resolve_target", lambda name: resolved.append(name) or
                         SimpleNamespace(name=name, neo4j_uri="bolt://localhost:7688"))
     monkeypatch.setattr(xp, "open_neo4j", lambda target: driver)
+    return resolved
+
+
+def test_predict_target_reads_in_read_sessions(tmp_path, monkeypatch):
+    driver = FakeDriver({xp.EDGES_CYPHER: SENTINEL_EDGES})
+    resolved = patch_target(monkeypatch, driver)
     write_seeds(tmp_path / "seeds.json", ["jer:29:0"], {})
     out = tmp_path / "pred.json"
     assert xp.main(["predict", "--seeds", str(tmp_path / "seeds.json"),
@@ -393,12 +408,171 @@ def test_deploy_guard_docker_failure(monkeypatch, capsys):
     assert run_guard(monkeypatch, no_docker) == 1        # docker itself absent: still never 0
 
 
-@pytest.mark.parametrize("action", ["seeds", "predict", "compare", "deploy-guard"])
+# ---------------------------------------------------------------- expect / fingerprint
+
+QUEUE_VERSES = ["gen:1:0:v:1-2", "gen:2:0:v:1", "gen:2:0:v:2", "gen:2:0:v:3", "exo:3:0:v:1",
+                "exo:3:0:v:2", "isa:7:1:v:14", "mat:1:1:v:22", "mat:1:1:v:23", "mat:2:0:v:1"]
+
+
+def curated_row(start, end, source) -> dict:
+    props = {"source": source, "curated": True, "tsk": False, "curated_sources": [source]}
+    return {"start": start, "end": end, "type": "CROSS_REFERENCES", "properties": props}
+
+
+STEP5_ROWS = [{"start": "gen:1", "end": "gen:1:0", "type": "CONTAINS", "properties": {}},
+              curated_row("mat:1:1", "isa:7:1", "markdown"),           # TSK attaches
+              curated_row("gen:2:0", "gen:1:0", "supplementary"),      # TSK attaches
+              curated_row("mat:2:0", "exo:3:0", "markdown")]           # TSK holds only the reverse pair
+TSK_LINES = ["Matt.1.23\tIsa.7.14\t50", "Matt.1.22\tIsa.7.14\t10",   # one pair: max votes, 2 verse pairs
+             "Gen.2.1\tGen.1.1-Gen.1.2\t5",                            # a range inside one pericope
+             "Gen.1.1\tExod.3.1\t7",                                    # pure TSK
+             "Exod.3.2\tMatt.2.1\t3",                                   # pure TSK, a curated edge reversed
+             "Gen.1.1\tGen.1.2\t9", "Gen.1.2\tExod.3.1\t-2"]           # self loop, negative votes: dropped
+PROJECTED = [  # (a, b, source, curated, tsk, votes, verse_pairs) after Step 5 and Step 9, by hand
+    ("exo:3:0", "mat:2:0", "tsk", False, True, 3, 1),
+    ("gen:1:0", "exo:3:0", "tsk", False, True, 7, 1),
+    ("gen:2:0", "gen:1:0", "supplementary", True, True, 5, 1),
+    ("mat:1:1", "isa:7:1", "markdown", True, True, 50, 2),
+    ("mat:2:0", "exo:3:0", "markdown", True, False, None, None),
+]
+PROVENANCE_ROWS = [{"source": "markdown", "curated": True, "tsk": True, "n": 1},
+                   {"source": "markdown", "curated": True, "tsk": False, "n": 1},
+                   {"source": "supplementary", "curated": True, "tsk": True, "n": 1},
+                   {"source": "tsk", "curated": False, "tsk": True, "n": 2}]
+
+
+def live_rows(projected=PROJECTED) -> list[dict]:
+    """The rows EDGE_FINGERPRINT_CYPHER returns for a graph holding `projected`."""
+    return [{"a": a, "b": b, "votes": v, "verse_pairs": vp, "curated": c, "tsk": t}
+            for a, b, _s, c, t, v, vp in projected]
+
+
+def write_step0(tmp_path, rows=STEP5_ROWS) -> Path:
+    out = tmp_path / "step0"
+    out.mkdir(exist_ok=True)
+    write_jsonl(out / "embedding_queue.jsonl", [{"id": "gen:1:0", "type": "pericope"}] +
+                [{"id": vid, "type": "verse", "text": "經文"} for vid in QUEUE_VERSES])
+    write_jsonl(out / "neo4j_relationships.jsonl", rows)
+    (tmp_path / "tsk.txt").write_text("From Verse\tTo Verse\tVotes\t#\n" + "\n".join(TSK_LINES) + "\n",
+                                      encoding="utf-8")
+    return out
+
+
+def run_expect(tmp_path, *extra, rows=STEP5_ROWS) -> int:
+    out = write_step0(tmp_path, rows)
+    return xp.main(["expect", "--output-dir", str(out), "--tsk", str(tmp_path / "tsk.txt"),
+                    "--out", str(tmp_path / "xref.json"), *extra])
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_expect_applies_set_semantics(tmp_path):
+    edges = tmp_path / "edges.jsonl"
+    assert run_expect(tmp_path, "--edges-out", str(edges)) == 0
+    step0 = tmp_path / "step0"
+    assert json.loads((tmp_path / "xref.json").read_text(encoding="utf-8")) == {
+        "version": 1,
+        "inputs": {"relationships_sha256": sha256(step0 / "neo4j_relationships.jsonl"),
+                   "embedding_queue_sha256": sha256(step0 / "embedding_queue.jsonl"),
+                   "tsk_sha256": sha256(tmp_path / "tsk.txt")},
+        "counts": {"curated_rows": 3, "attached": 2, "curated_without_tsk": 1, "pure_tsk": 2,
+                   "total": 5, "votes_edges": 4},
+        "xref_provenance": {"source=markdown curated=True tsk=False": 1,
+                            "source=markdown curated=True tsk=True": 1,
+                            "source=supplementary curated=True tsk=True": 1,
+                            "source=tsk curated=False tsk=True": 2},
+        "xrefs_by_source": {"markdown": 2, "supplementary": 1, "tsk": 2},
+        "fingerprint": edge_fingerprint(live_rows()),
+    }
+    assert [json.loads(line) for line in edges.read_text(encoding="utf-8").splitlines()] == [
+        {"a": a, "b": b, "source": s, "curated": c, "votes": v} for a, b, s, c, _t, v, _vp in PROJECTED]
+
+    # the edge file is predict --edges input
+    write_seeds(tmp_path / "seeds.json", ["mat:2:0"], {})
+    assert xp.main(["predict", "--seeds", str(tmp_path / "seeds.json"), "--edges", str(edges),
+                    "--out", str(tmp_path / "pred.json")]) == 0
+    rows = json.loads((tmp_path / "pred.json").read_text(encoding="utf-8"))["rows"]
+    assert rows["legacy:mat:2:0"] == [["exo:3:0", 1, True, 0.75]]      # curated wins over the TSK reverse
+
+
+def test_expect_refuses_what_the_pipeline_refuses(tmp_path, capsys):
+    duplicate = STEP5_ROWS + [curated_row("mat:1:1", "isa:7:1", "supplementary")] * 2   # 3 rows, 1 pair
+    assert run_expect(tmp_path, rows=duplicate) == 1                    # import_neo4j refuses it
+    err = capsys.readouterr().err
+    assert "1 duplicate pairs (import_neo4j refuses them): mat:1:1→isa:7:1" in err and "unset" not in err
+    pre_1b = STEP5_ROWS + [{"start": "isa:7:1", "end": "mat:1:1", "type": "CROSS_REFERENCES",
+                            "properties": {"source": "markdown", "verse_start": 14}}]
+    assert run_expect(tmp_path, rows=pre_1b) == 1                       # Step 9's precondition refuses it
+    assert "1 rows with curated or tsk unset (Step 9's precondition refuses them): isa:7:1→mat:1:1" \
+        in capsys.readouterr().err
+    assert not (tmp_path / "xref.json").exists()
+
+
+def live_driver(projected=PROJECTED, provenance=PROVENANCE_ROWS) -> FakeDriver:
+    return FakeDriver({EDGE_FINGERPRINT_CYPHER: list(reversed(live_rows(projected))),
+                       xproj.PROVENANCE_CYPHER: provenance})
+
+
+def test_fingerprint_matches_expect_on_fake_driver(tmp_path, monkeypatch, capsys):
+    assert run_expect(tmp_path) == 0
+    capsys.readouterr()
+    resolved = patch_target(monkeypatch, live_driver())
+    assert xp.main(["fingerprint", "--target", "staging", "--expect", str(tmp_path / "xref.json")]) == 0
+    out = capsys.readouterr().out
+    assert resolved == ["staging"]
+    assert f"fingerprint {edge_fingerprint(live_rows())} (staging" in out
+    assert "  source=tsk curated=False tsk=True: 2" in out and "exit 0" in out
+    assert xp.main(["fingerprint", "--target", "staging"]) == 0         # no --expect: report only
+
+
+def test_fingerprint_expect_mismatch_exits_1(tmp_path, monkeypatch, capsys):
+    assert run_expect(tmp_path) == 0
+    expect = ["fingerprint", "--target", "staging", "--expect", str(tmp_path / "xref.json")]
+    votes = [PROJECTED[0][:5] + (4, 1)] + PROJECTED[1:]                 # one TSK vote differs
+    patch_target(monkeypatch, live_driver(projected=votes))
+    assert xp.main(expect) == 1
+    out = capsys.readouterr().out
+    assert "fingerprint differs" in out and "exit 1: 1 problems" in out
+
+    pre_1b = PROVENANCE_ROWS[1:] + [{"source": "markdown", "curated": None, "tsk": None, "n": 1}]
+    patch_target(monkeypatch, live_driver(provenance=pre_1b))
+    assert xp.main(expect) == 1
+    out = capsys.readouterr().out
+    assert "source=markdown curated=- tsk=-: 1, expected 0" in out
+    assert "source=markdown curated=True tsk=True: 0, expected 1" in out
+    assert "fingerprint differs" not in out and "exit 1: 2 problems" in out
+
+
+@pytest.mark.parametrize("action", ["predict", "fingerprint"])
+def test_read_actions_open_read_sessions_only(action, tmp_path, monkeypatch):
+    # import_tsk_crossrefs load_dotenv()s .env into os.environ on import: a READ
+    # action must not import it, or the prod URI would look like a shell override
+    monkeypatch.setitem(sys.modules, "import_tsk_crossrefs", None)
+    driver = FakeDriver({xp.EDGES_CYPHER: SENTINEL_EDGES, EDGE_FINGERPRINT_CYPHER: live_rows(),
+                         xproj.PROVENANCE_CYPHER: PROVENANCE_ROWS})
+    patch_target(monkeypatch, driver)
+    write_seeds(tmp_path / "seeds.json", ["jer:29:0"], {})
+    argv = {"predict": ["predict", "--seeds", str(tmp_path / "seeds.json"), "--out", str(tmp_path / "p.json")],
+            "fingerprint": ["fingerprint"]}[action]
+    assert xp.main(argv + ["--target", "prod"]) == 0
+    assert driver.closed and driver.sessions
+    assert all(s == {"default_access_mode": READ_ACCESS} for s in driver.sessions)
+
+
+def test_importing_the_tool_does_not_import_step9():
+    code = "import sys; from scripts.tools import xref_probe; assert 'import_tsk_crossrefs' not in sys.modules"
+    done = subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+
+
+@pytest.mark.parametrize("action", ["seeds", "predict", "compare", "deploy-guard", "expect", "fingerprint"])
 def test_top_level_help_lists_every_flag(action, capsys):
     with pytest.raises(SystemExit):
         xp.main(["--help"])
     text = capsys.readouterr().out
     assert action in text
     for flag in ("--pericopes", "--questions", "--out", "--seeds", "--target", "--edges",
-                 "--pred", "--measured", "--container"):
+                 "--pred", "--measured", "--container", "--output-dir", "--tsk", "--edges-out", "--expect"):
         assert flag in text
