@@ -20,6 +20,45 @@ class ExtractionPhase(IntEnum):
     DOMAIN_PRIOR = 3   # listed in biblical_priors.yaml
     GROUNDED_LLM = 4   # LLM picked from schema candidate set
     INVERSE_DERIVED = 5  # auto-materialised from another relation's inverse
+    ANCHORED_RULE = 6  # slot pattern over a verse, both names resolved (6.05)
+    COOCCURRENCE = 7   # same-pericope co-occurrence (Step 10.3 backfill)
+
+
+# Where a relation row came from. curated rows (Step 10 overlays) have no phase.
+SOURCES = ("rule", "prior", "llm", "inverse", "anchored_rule", "cooccurrence", "curated")
+PHASE_OF_SOURCE = {
+    "rule": 2, "prior": 3, "llm": 4, "inverse": 5, "anchored_rule": 6, "cooccurrence": 7,
+}
+_SOURCE_OF_PHASE = {phase: source for source, phase in PHASE_OF_SOURCE.items()}
+
+# Optional provenance keys, written after the 10 legacy keys in this order.
+PROVENANCE_KEYS = (
+    "source", "model", "run_id", "schema_version", "pp_version", "confidence_raw",
+    "direction_verified", "sources", "support_pericopes", "evidence_count", "verse",
+)
+
+
+def derive_source(
+    phase: Optional[int], notes: str = "", backfilled: Optional[bool] = None
+) -> Optional[str]:
+    """Source of a row that predates the `source` field, from its phase.
+
+    Plain ints and strings only, so an ExtractionPhase loaded under either
+    import name (scripts.relation_extraction.models / relation_extraction.models)
+    maps the same. Before phase 7 existed, the 10.3 co-occurrence backfill
+    wrote phase 5 with notes='cooccurrence-backfill' and backfilled=true.
+    """
+    if phase == 5 and (backfilled is True or notes == "cooccurrence-backfill"):
+        return "cooccurrence"
+    return _SOURCE_OF_PHASE.get(phase)
+
+
+def _provenance_of(values: dict) -> dict:
+    """Provenance keys that are not None, in PROVENANCE_KEYS order; lists copied."""
+    return {
+        key: list(values[key]) if isinstance(values[key], list) else values[key]
+        for key in PROVENANCE_KEYS if values.get(key) is not None
+    }
 
 
 @dataclass
@@ -56,8 +95,27 @@ class ExtractedRelation:
     head_canonical: str = ""
     tail_canonical: str = ""
     notes: str = ""
+    # Provenance (REL-04/REL-09); None means "not recorded" and is not written.
+    source: Optional[str] = None
+    model: Optional[str] = None
+    run_id: Optional[str] = None
+    schema_version: Optional[str] = None
+    pp_version: Optional[str] = None
+    confidence_raw: Optional[float] = None
+    direction_verified: Optional[bool] = None
+    sources: Optional[list[str]] = None
+    support_pericopes: Optional[list[str]] = None
+    evidence_count: Optional[int] = None
+    verse: Optional[str] = None
+
+    @property
+    def effective_source(self) -> Optional[str]:
+        return self.source or derive_source(int(self.extraction_phase), self.notes)
 
     def to_dict(self) -> dict:
+        return self._legacy_dict() | _provenance_of(vars(self))
+
+    def _legacy_dict(self) -> dict:
         return {
             "head_id": self.head_id,
             "tail_id": self.tail_id,
@@ -87,6 +145,7 @@ class ExtractedRelation:
             head_canonical=data.get("head_canonical", ""),
             tail_canonical=data.get("tail_canonical", ""),
             notes=data.get("notes", ""),
+            **_provenance_of(data),
         )
 
 
