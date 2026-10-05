@@ -76,9 +76,11 @@ def profile(**over) -> dict:
         "xrefs": [{"source": "tsk", "n": 100}, {"source": "markdown", "n": 4}],
         "xref_provenance": [{"source": "tsk", "curated": None, "tsk": None, "n": 100},
                             {"source": "markdown", "curated": None, "tsk": None, "n": 4}],
-        "entities": [{"entity_id": "person:yabolahan", "description": "信心之父", "aliases": ["亞伯蘭"]},
-                     {"entity_id": "person:yisa", "description": None, "aliases": None},
-                     {"entity_id": "event:xianyisa", "description": "獻以撒", "aliases": ["甲", "乙"]}],
+        "entities": [{"entity_id": "person:yabolahan", "description": "信心之父", "aliases": ["亞伯蘭"],
+                      "mention_count": 12},
+                     {"entity_id": "person:yisa", "description": None, "aliases": None},  # no mention_count
+                     {"entity_id": "event:xianyisa", "description": "獻以撒", "aliases": ["甲", "乙"],
+                      "mention_count": 4}],
     }
     rows.update(over)
     return rows
@@ -142,14 +144,54 @@ def test_xref_provenance_matches_the_xref_probe_expect_keys():
 
 def test_descriptions_compare_verbatim_and_aliases_as_sets():
     b = profile(entities=[
-        {"entity_id": "person:yabolahan", "description": "信心之父 ", "aliases": "[\"亞伯蘭\"]"},
+        {"entity_id": "person:yabolahan", "description": "信心之父 ", "aliases": "[\"亞伯蘭\"]", "mention_count": 12},
         {"entity_id": "person:yisa", "description": "", "aliases": []},       # None == empty
-        {"entity_id": "event:xianyisa", "description": "獻以撒", "aliases": ["乙", "甲"]},  # same set
+        {"entity_id": "event:xianyisa", "description": "獻以撒", "aliases": ["乙", "甲"], "mention_count": 4},  # same set
         {"entity_id": "person:new", "description": None, "aliases": []}])
     diffs, _ = dk.compare(FakeDriver(profile()), FakeDriver(b), with_registry=False)
     assert keys(diffs, "descriptions") == ["person:yabolahan"]   # a trailing space counts
     assert keys(diffs, "aliases") == ["person:yabolahan"]        # a JSON string is not the list
     assert keys(diffs, "entity_ids") == ["person:new"]
+
+
+ABSENT = object()
+
+
+def recount(counts: dict) -> list[dict]:
+    """profile()'s entity rows with mention_count set per entity_id (ABSENT drops the key)."""
+    rows = []
+    for row in profile()["entities"]:
+        if row["entity_id"] in counts:
+            row = {k: v for k, v in row.items() if k != "mention_count"}
+            if counts[row["entity_id"]] is not ABSENT:
+                row["mention_count"] = counts[row["entity_id"]]
+        rows.append(row)
+    return rows
+
+
+def test_mention_count_section_per_entity():
+    assert "e.mention_count AS mention_count" in dk.PROFILE_QUERIES["entities"]
+    b = profile(entities=recount({"event:xianyisa": 1}) + [
+        {"entity_id": "person:new", "description": None, "aliases": [], "mention_count": 2}])
+    diffs, _ = dk.compare(FakeDriver(profile()), FakeDriver(b), with_registry=False)
+    assert [(d["key"], d["a"], d["b"], d["delta"]) for d in diffs if d["section"] == "mention_count"] == [
+        ("event:xianyisa", 4, 1, -3)]
+    assert keys(diffs, "entity_ids") == ["person:new"]  # a one-sided entity is not a mention_count difference
+
+
+def test_rows_without_mention_count_are_equal():
+    # an unset mention_count (key absent, as person:yisa in profile(), or null) equals another unset one
+    diffs, _ = dk.compare(FakeDriver(profile()), FakeDriver(profile(entities=recount({"person:yisa": None}))),
+                          with_registry=False)
+    assert diffs == []
+    diffs, _ = dk.compare(FakeDriver(profile(entities=recount({"event:xianyisa": ABSENT}))),
+                          FakeDriver(profile(entities=recount({"event:xianyisa": None}))), with_registry=False)
+    assert diffs == []
+    # ... but never a number: unset -> 0 is a difference without a delta
+    diffs, _ = dk.compare(FakeDriver(profile()), FakeDriver(profile(entities=recount({"person:yisa": 0}))),
+                          with_registry=False)
+    assert [(d["section"], d["key"], d["a"], d["b"], d["delta"]) for d in diffs] == [
+        ("mention_count", "person:yisa", None, 0, None)]
 
 
 def test_profile_reads_use_read_sessions_only():
@@ -251,6 +293,21 @@ def test_xref_provenance_allow_entry_matches(tmp_path):
                        "source=markdown curated=True tsk=False": None,  # delta 1, not 2
                        "source=tsk curated=False tsk=True": "pure TSK"}
     assert [e["reason"] for e in unused] == ["no"]
+
+
+def test_mention_count_allow_entry_with_delta(tmp_path):
+    b = profile(entities=recount({"event:xianyisa": 1, "person:yabolahan": 30, "person:yisa": 5}))
+    diffs, _ = dk.compare(FakeDriver(profile()), FakeDriver(b), with_registry=False)
+    allow = dk.load_allowlist(write_allow(tmp_path, [
+        {"section": "mention_count", "key": "event:*", "delta": -3, "reason": "K10 residual"},
+        {"section": "mention_count", "key": "person:yabolahan", "max_abs_delta": 10, "reason": "too small"},
+        {"section": "mention_count", "key": "person:yisa", "max_abs_delta": 10, "reason": "unset -> 5"}]))
+    classified, unused = dk.classify(diffs, allow)
+    assert {d["key"]: d["allowed_by"] for d in classified} == {
+        "event:xianyisa": "K10 residual",
+        "person:yabolahan": None,  # +18 is over 10
+        "person:yisa": None}       # null -> 5 has no delta, so no bound matches it
+    assert [e["reason"] for e in unused] == ["too small", "unset -> 5"]
 
 
 @pytest.mark.parametrize("entry", [

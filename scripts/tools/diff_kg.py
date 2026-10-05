@@ -18,7 +18,9 @@ compares two graphs. This does, on Neo4j (the store retrieval reads):
   descriptions     Entity.description, verbatim (missing == empty)
   aliases          Entity.aliases as sets (missing == []); a non-list (JSON string)
                    only equals itself
-  registry         export_event_registry.build_registry() run against each side's
+  mention_count    Entity.mention_count per entity_id on both sides (missing == null,
+                   which never equals a number); a delta only between two numbers
+  registry        export_event_registry.build_registry() run against each side's
                    read-only driver: one key per event that differs, plus "dropped:<id>"
                    for the dropped list
 Unset properties print as "-" in keys.
@@ -27,8 +29,8 @@ Allowed differences come from a YAML file (--allow). Every difference not
 matched by an entry exits 1; entries that matched nothing are listed so a
 stale allowance gets noticed. Entry fields: section, key (fnmatch glob over
 the keys above), reason (both non-empty strings, required), and for the count
-sections at most one bound: delta (exact b - a, an integer) or max_abs_delta
-(a non-negative integer). Validation is strict: an unknown field (a misspelt
+sections and mention_count at most one bound: delta (exact b - a, an integer)
+or max_abs_delta (a non-negative integer). Validation is strict: an unknown field (a misspelt
 bound such as max_delta) or a mistyped value is an error, never ignored,
 because an ignored bound would make the entry allow any delta. The file
 holds version: 1 and allow, nothing else:
@@ -87,7 +89,8 @@ PROFILE_QUERIES = {
         RETURN x.source AS source, x.curated AS curated, x.tsk AS tsk, count(*) AS n""",
     "entities": """
         MATCH (e:Entity)
-        RETURN e.entity_id AS entity_id, e.description AS description, e.aliases AS aliases""",
+        RETURN e.entity_id AS entity_id, e.description AS description, e.aliases AS aliases,
+               e.mention_count AS mention_count""",
 }
 
 
@@ -104,7 +107,8 @@ _COUNT_KEYS = {
     "xref_provenance": lambda r: f"source={_v(r['source'])} curated={_v(r['curated'])} tsk={_v(r['tsk'])}",
 }
 COUNT_SECTIONS = tuple(_COUNT_KEYS)
-SECTIONS = COUNT_SECTIONS + ("entity_ids", "descriptions", "aliases", "registry")
+NUMERIC_SECTIONS = COUNT_SECTIONS + ("mention_count",)  # allow entries may bound their delta
+SECTIONS = COUNT_SECTIONS + ("entity_ids", "descriptions", "aliases", "mention_count", "registry")
 
 
 def read_profile(driver) -> dict:
@@ -143,6 +147,8 @@ def diff_entities(a: dict[str, dict], b: dict[str, dict]) -> list[dict]:
             out.append(_diff("descriptions", eid, x["description"], y["description"]))
         if _alias_key(x["aliases"]) != _alias_key(y["aliases"]):
             out.append(_diff("aliases", eid, x["aliases"], y["aliases"]))
+        if x.get("mention_count") != y.get("mention_count"):
+            out.append(_diff("mention_count", eid, x.get("mention_count"), y.get("mention_count")))
     return out
 
 
@@ -226,8 +232,8 @@ def _entry_problem(entry) -> str | None:
         if not isinstance(entry.get(name), str) or not entry[name].strip():
             return f"needs {name} as a non-empty string"
     bounds = [name for name in ("delta", "max_abs_delta") if name in entry]
-    if bounds and entry["section"] not in COUNT_SECTIONS:
-        return f"delta/max_abs_delta only apply to {', '.join(COUNT_SECTIONS)}"
+    if bounds and entry["section"] not in NUMERIC_SECTIONS:
+        return f"delta/max_abs_delta only apply to {', '.join(NUMERIC_SECTIONS)}"
     if len(bounds) > 1:
         return "takes delta or max_abs_delta, not both"
     if "delta" in entry and not _is_int(entry["delta"]):
