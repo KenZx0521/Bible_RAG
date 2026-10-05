@@ -10,8 +10,12 @@ evaluation/
 ├── quick_retrieval_eval.py      # 快速檢索評估迴圈(retrieval-only,無生成/RAGAS)
 ├── ab_compare.py                # 兩個 quick eval 結果的配對 A/B / --require-identical 一致性檢查
 ├── d3_gate.py                   # D3 非劣閘門(兩個 backend 跑 500 題 → 一致性 + 路由殘差判定)
+├── xref_ab_slice.py             # opt-in xref A/B 的 touched 題數與 kg_xref 切片(W1,只報告;見 docs/staging_promotion.md)
 ├── quick_faithfulness_eval.py   # 快速 faithfulness 重判迴圈(只跑兩個 faithfulness judge)
 ├── apply_coverage.py            # 答案要點覆蓋率離線補算
+├── experiments/                 # 各實驗的事前登記、題號檔與腳本
+│   ├── 2026-10-03_event_registry/   # event_registry 附加槽的檢索 A/B、AA 校準與答案端探針
+│   └── 2026-10-05_kg_w1/        # W1 升版第 1 步的 20 題煙霧測試題號檔
 ├── src/
 │   ├── config.py                # 讀取 ../.env(共用)+ ./.env(eval 專屬,優先)
 │   ├── models.py                # Pydantic 資料模型
@@ -225,7 +229,7 @@ uv run python quick_faithfulness_eval.py --results-dir results_graph --out resul
 |----------|------|----------|
 | `RAG_USE_GRAPH` | true | 全域 graph 總開關（per-request `use_graph` 的 fallback 預設） |
 | `RAG_RANK_FUSION_ENABLED` | true | 排序融合層；關閉退回 legacy 純 reranker 路徑（注意：EQ pin 與 graph uncertainty pin 會隨之復活，不是純減法） |
-| `RAG_USE_CROSS_REF_EXPAND` | true | CROSS_REFERENCES N-hop 擴展（916 curated + TSK 邊） |
+| `RAG_USE_CROSS_REF_EXPAND` | true | CROSS_REFERENCES N-hop 擴展（curated（`r.curated`）+ TSK 邊） |
 | `RAG_USE_ENTITY_PATH` | true | Entity-Entity 邊多跳（FATHER_OF、RULED…） |
 | `RAG_USE_ENTITY_QUERY` | true | EQ 補充（BGE-M3 → bible_entities → Neo4j MENTIONS） |
 | `HYBRID_SEARCH_ENABLED` | false | dense+BM25 RRF hybrid 取代純 dense semantic |
@@ -253,7 +257,7 @@ uv run python quick_faithfulness_eval.py --results-dir results_graph --out resul
 |------|------|------|
 | `backend/utils/retrieval/cross_ref_retriever.py` | curated 邊 hop-decay `_HOP_WEIGHT` | {1: 0.75, 2: 0.55, 3: 0.40, 4: 0.30} |
 | 同上 | TSK 邊 hop-decay `_TSK_HOP_WEIGHT` | {1: 0.60, 2: 0.50, 3: 0.40, 4: 0.30} |
-| 同上 | curated/TSK 判別線 `_CURATED_VOTES` | votes ≥ 999 |
+| `backend/database/neo4j_db.py` | curated/TSK 判別 `_CURATED_XREF` | `r.curated` 旗標；過渡期無旗標的邊以 `r.source IN ['markdown', 'supplementary']` 推斷 |
 | `backend/utils/retrieval/router.py` | chapter-pin | `min_pins=2`、weight ≥ 0.85 門檻 |
 | 同上 | EQ pin（僅 fusion off 生效） | `score_threshold=0.5`、confidence gate 0.3、`max_pins=2` |
 | 同上 | book_anchor pin（無條件）+ graph uncertainty pin（僅 fusion off） | `max_pins=2`、gate 0.3 |
@@ -266,7 +270,7 @@ uv run python quick_faithfulness_eval.py --results-dir results_graph --out resul
 ### 第四級：資料與模型層（重建索引或圖譜）
 
 - **TSK 邊**（~25 萬條）：整批 on/off，或按 `votes` 閾值分層過濾消融
-- **916 條 curated cross-book 邊**：on/off
+- **curated cross-book 邊**（`r.curated = true`；W1 升版前以 source 推斷，916 條）：on/off
 - **Data repairs**（18 條 curated Event、aliases 修復等）：論文 α ablation 已聲明全開，拆開可做 discrete-repairs 細粒度歸因
 - **生成端 LLM**（`LLM_PROVIDER`）：已有 `results_graph_claude_answer` / `results_graph_gemma_answer` 等現成對照組
 - **`EMBEDDING_MODEL`**（BGE-M3）/ **`RERANKER_MODEL`**（bge-reranker-v2-m3）：替換需重建 Qdrant 索引，成本最高

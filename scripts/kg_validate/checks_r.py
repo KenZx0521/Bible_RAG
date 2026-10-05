@@ -8,7 +8,7 @@ import re
 from collections import Counter, defaultdict
 
 from .checks_probes import evaluate_probes
-from .model import KG, PPG
+from .model import KG, PPG, XRef
 from .registry import CheckResult, Context, check
 
 # FATHER_OF/MOTHER_OF point parent -> child; SON_OF/DAUGHTER_OF point child -> parent.
@@ -119,24 +119,78 @@ def _verses(spec: str | None) -> list[int] | None:
     return out or None
 
 
+# One end of a supplementary anchor, 'heb 1:5-6' (book chapter:verses). Read
+# here, not through bible_chunking.curated_xrefs: the gate re-reads what the
+# graph holds instead of trusting the code that wrote it.
+_ANCHOR_END = re.compile(r"(\w+) (\d+):([\d,-]+)")
+# (pericope id, (book, chapter) the anchor names or None, verses or None)
+End = tuple[str, tuple[str, int] | None, list[int] | None]
+
+
+def _anchor_ends(x: XRef, anchor: str) -> list[End] | None:
+    """'heb 1:5>psa 2:7' on x -> its source and target ends; None when unparseable."""
+    texts = anchor.split(">")
+    matches = [_ANCHOR_END.fullmatch(t) for t in texts]
+    if len(texts) != 2 or not all(matches):
+        return None
+    return [(pid, (m[1], int(m[2])), _verses(m[3])) for pid, m in zip((x.src, x.tgt), matches)]
+
+
+def _judge(kg: KG, ends: list[End] | None) -> tuple[bool, bool] | None:
+    """(first verse inside, every verse inside) both ends' pericopes, in the
+    pericope's book and chapter when the end names them; None when an end or
+    its pericope's verse_range cannot be read."""
+    if ends is None:
+        return None
+    first = every = True
+    for pid, place, verses in ends:
+        peri = kg.pericopes.get(pid) or {}
+        have = _verses(peri.get("verse_range"))
+        if verses is None or have is None:
+            return None
+        here = place is None or place == (peri.get("book_id"), int(pid.split(":")[1]))
+        first = first and here and verses[0] in have
+        every = every and here and set(verses) <= set(have)
+    return first, every
+
+
+def _r4_readings(kg: KG, x: XRef) -> list[tuple[str, tuple[bool, bool] | None]]:
+    """(anchor text, judgement) per supplementary anchor. A graph built before
+    1B (prod until W1) has no anchors: one reading of its legacy scalars, which
+    name no book or chapter."""
+    if x.supp_anchors:
+        return [(a, _judge(kg, _anchor_ends(x, a))) for a in x.supp_anchors]
+    ends = [(x.src, None, _verses(x.source_verses)), (x.tgt, None, _verses(x.target_verses))]
+    return [(f"{x.source_verses}>{x.target_verses}", _judge(kg, ends))]
+
+
+R4_RULES = {
+    # the first verse of either end lies outside its pericope (plan: 59 live)
+    "misaligned": lambda j: j is not None and not j[0],
+    # any verse does: also catches a fan-out target the first verse hides (62 live)
+    "misaligned_any_verse": lambda j: j is not None and not j[1],
+    "unparsed": lambda j: j is None,
+}
+
+
 @check("R4", needs=("cross_references.jsonl", "pericopes.jsonl"))
 def check_r4(kg: KG, ctx: Context) -> CheckResult:
-    misaligned, unparsed, samples = 0, 0, []
-    supplementary = [x for x in kg.xrefs if x.source == "supplementary"]
+    # Markdown anchors are pericope-level ('mrk 1:?>psa 2:7') and not judged
+    # here (XREF-5, 2D). A pair both sources define keeps source 'markdown',
+    # so curated_sources decides which edges carry supplementary anchors.
+    supplementary = [x for x in kg.xrefs
+                     if x.source == "supplementary" or "supplementary" in (x.curated_sources or ())]
+    hits: dict[str, list[str]] = {name: [] for name in R4_RULES}
     for x in supplementary:
-        ends = []
-        for pid, spec in ((x.src, x.source_verses), (x.tgt, x.target_verses)):
-            wanted = _verses(spec)
-            have = _verses((kg.pericopes.get(pid) or {}).get("verse_range"))
-            ends.append(None if wanted is None or have is None else wanted[0] in have)
-        if None in ends:
-            unparsed += 1
-        elif not all(ends):
-            misaligned += 1
-            if len(samples) < 10:
-                samples.append(f"{x.src}[{x.source_verses}] -> {x.tgt}[{x.target_verses}]")
-    return CheckResult({"misaligned": misaligned},
-                       {"supplementary": len(supplementary), "unparsed": unparsed}, samples)
+        readings = _r4_readings(kg, x)
+        for name, rule in R4_RULES.items():
+            failed = [text for text, judged in readings if rule(judged)]
+            if failed:  # an edge counts once per metric, however many anchors fail
+                hits[name].append(f"{x.src}->{x.tgt} {failed[0]}")
+    return CheckResult({name: len(edges) for name, edges in hits.items()},
+                       {"supplementary": len(supplementary),
+                        "legacy_fields": sum(1 for x in supplementary if not x.supp_anchors)},
+                       [{name: edges[:10]} for name, edges in hits.items() if edges])
 
 
 @check("R5")
@@ -257,4 +311,8 @@ def check_r10(kg: KG, ctx: Context) -> CheckResult:
 
 @check("R11", needs=("cross_references.jsonl",))
 def check_r11(kg: KG, ctx: Context) -> CheckResult:
-    return CheckResult({"tsk_votes_edges": sum(1 for x in kg.xrefs if x.votes is not None)})
+    # Step 9 writes tsk and votes together (1B-C6a): a tsk flag without votes is a broken write.
+    unbacked = [f"{x.src}->{x.tgt}" for x in kg.xrefs if x.tsk is True and x.votes is None]
+    return CheckResult({"tsk_votes_edges": sum(1 for x in kg.xrefs if x.votes is not None),
+                        "tsk_flag_without_votes": len(unbacked)}, {},
+                       [{"tsk_flag_without_votes": unbacked[:10]}] if unbacked else [])

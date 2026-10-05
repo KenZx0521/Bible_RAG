@@ -1,0 +1,393 @@
+"""validate_kg on the 1B cross-reference provenance (W1 stream 1B).
+
+After 1B a curated CROSS_REFERENCES edge is one row per pericope pair that
+carries lists: curated_sources, the supplementary anchors (supp_anchors,
+'heb 1:5>psa 2:7') and the markdown anchors (md_anchors, 'mrk 1:?>psa 2:7').
+The gate reads them from a snapshot and from live Neo4j alike. The scalar
+source_verses/target_verses of a graph built before 1B (prod until W1) stay
+readable, so the same model scores both.
+
+H8 then asks every edge for both flags (unflagged) and for flags that agree
+with the evidence they summarise (flag_mismatch): curated with
+curated_sources, tsk with votes.
+
+R4 judges each supplementary anchor against the edge's two pericopes, both
+by its first verse (misaligned) and by every verse (misaligned_any_verse),
+and counts the anchors it cannot read (unparsed). A graph built before 1B has
+no anchors, so R4 falls back to its legacy scalars.
+
+R11 counts the edges carrying TSK votes and, since Step 9 writes tsk and
+votes together, the edges flagged tsk without votes (tsk_flag_without_votes).
+
+All three are hard (target 0, R11's count equal to W1's 250,358 TSK edges):
+one bad edge fails the gate (exit 1). The gate tests score the fixture against
+its own TSK edge count (pin_data_count_targets).
+
+config/kg_probes.yaml pins single pairs: nine 1B probes fail on prod today and
+pass once W1 is loaded, and one passes on both but fails if the XREF-2
+deletion (1B-C5a) were undone.
+
+Shared pieces are in _validate_kg_helpers.py.
+"""
+
+from __future__ import annotations
+
+import re
+
+import pytest
+
+import validate_kg as vk
+from _validate_kg_helpers import (
+    SHIPPED_BASELINE,
+    SHIPPED_PROBES,
+    append_row,
+    cli,
+    edit_rows,
+    fresh_baseline,
+    measure,
+    read_rows,
+    write_rows,
+)
+# snap is a pytest fixture: importing it is what makes it available here.
+from _validate_kg_helpers import snap  # noqa: F401
+from kg_validate.model import _LIVE_QUERIES, _xref
+
+PROVENANCE_LISTS = ("curated_sources", "supp_anchors", "md_anchors")
+LEGACY_SCALARS = ("source_verses", "target_verses")
+SUPP, MD, TSK = ("heb:1:1", "psa:2:0"), ("mrk:1:0", "psa:2:0"), ("gen:22:0", "heb:1:1")
+H8_METRICS = ("no_provenance", "unflagged", "flag_mismatch")
+R4_METRICS = ("misaligned", "misaligned_any_verse", "unparsed")
+R11_METRICS = ("tsk_votes_edges", "tsk_flag_without_votes")
+NEW_TSK = {"source_id": "exo:1:0", "target_id": "gen:22:0", "source": "tsk", "votes": 3}
+
+
+def _lists(x: vk.XRef) -> tuple:
+    return tuple(getattr(x, name) for name in PROVENANCE_LISTS)
+
+
+def _h8(snap) -> tuple:
+    return tuple(measure(snap)["H8"].metrics[name] for name in H8_METRICS)
+
+
+def _row(pair: tuple[str, str]):
+    return lambda r: (r["source_id"], r["target_id"]) == pair
+
+
+def test_snapshot_reads_provenance_lists(snap):
+    xrefs = {(x.src, x.tgt): x for x in vk.load_snapshot(snap).xrefs}
+    assert _lists(xrefs[SUPP]) == (["supplementary"], ["heb 1:5>psa 2:7"], None)
+    assert _lists(xrefs[MD]) == (["markdown"], None, ["mrk 1:?>psa 2:7"])
+    assert _lists(xrefs[TSK]) == (None, None, None)  # a pure TSK edge has no curated provenance
+    # a 1B row has no legacy scalars: R4 reads its anchors (prod before W1: test_r4_legacy_fields_fallback)
+    assert (xrefs[SUPP].source_verses, xrefs[SUPP].target_verses) == (None, None)
+
+
+def test_write_snapshot_round_trips_new_fields(snap, tmp_path):
+    kg = vk.load_snapshot(snap)
+    vk.write_snapshot(kg, tmp_path / "dumped")
+    rows = {(r["source_id"], r["target_id"]): r
+            for r in read_rows(tmp_path / "dumped" / "cross_references.jsonl")}
+    assert all(set(PROVENANCE_LISTS + LEGACY_SCALARS) <= set(row) for row in rows.values())
+    assert rows[SUPP]["supp_anchors"] == ["heb 1:5>psa 2:7"]
+    assert rows[MD]["md_anchors"] == ["mrk 1:?>psa 2:7"]
+    assert vk.load_snapshot(tmp_path / "dumped").xrefs == kg.xrefs
+
+
+def test_live_query_selects_new_fields():
+    cypher = _LIVE_QUERIES["xrefs"]
+    for name in PROVENANCE_LISTS + LEGACY_SCALARS:
+        assert re.search(rf"\br\.{name} AS {name}\b", cypher), name
+
+
+# ---------------------------------------------------------------------------
+# H8: both flags on every edge, each agreeing with its evidence
+# ---------------------------------------------------------------------------
+
+def test_clean_fixture_h8_zero(snap):
+    # the curated rows carry curated_sources (1B-C8a), the TSK row its votes
+    assert _h8(snap) == (0, 0, 0)
+
+
+@pytest.mark.parametrize("flags", [{"curated": None, "tsk": True}, {"curated": False, "tsk": None}],
+                         ids=["curated_none", "tsk_none"])
+def test_h8_unflagged(snap, flags):
+    # votes, so not no_provenance; one flag missing, the other agrees with the evidence
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, **flags})
+    assert _h8(snap) == (0, 1, 0)
+    res = measure(snap)["H8"]
+    assert res.detail["by_source"]["unflagged"] == {"tsk": 1}
+    assert res.samples == [{"unflagged": ["exo:1:0->gen:22:0"]}]
+
+
+@pytest.mark.parametrize("pair,changes", [
+    (SUPP, {"curated_sources": None}),             # curated=true, nothing says where from
+    (SUPP, {"curated_sources": []}),
+    (TSK, {"curated_sources": ["markdown"]}),      # curated=false over a curated source
+], ids=["sources_none", "sources_empty", "sources_on_uncurated"])
+def test_h8_flag_mismatch_curated_without_sources(snap, pair, changes):
+    edit_rows(snap / "cross_references.jsonl", _row(pair), **changes)
+    assert _h8(snap) == (0, 0, 1)
+
+
+@pytest.mark.parametrize("pair,changes", [
+    (TSK, {"votes": None}),                        # tsk=true, no votes
+    (MD, {"votes": 21}),                           # tsk=false over TSK votes
+    (TSK, {"votes": None, "curated_sources": ["markdown"]}),  # both flags wrong: one edge
+], ids=["votes_none", "votes_on_non_tsk", "both_flags"])
+def test_h8_flag_mismatch_tsk_without_votes(snap, pair, changes):
+    edit_rows(snap / "cross_references.jsonl", _row(pair), **changes)
+    assert _h8(snap) == (0, 0, 1)
+    res = measure(snap)["H8"]
+    assert res.detail["by_source"]["flag_mismatch"] == {"tsk" if pair == TSK else "markdown": 1}
+    assert res.samples == [{"flag_mismatch": [f"{pair[0]}->{pair[1]}"]}]
+
+
+def test_shipped_h8_records_the_new_metrics(snap):
+    # the gate scores only the metrics the baseline names: a metric missing
+    # from h.json would be measured and never compared. Values are
+    # measurements (--ratchet moves them), so only the design is pinned.
+    report = vk.evaluate(measure(snap), vk.load_baseline(SHIPPED_BASELINE))
+    assert list(report["checks"]["H8"]["metrics"]) == list(H8_METRICS)
+    spec = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "H8")
+    for name, m in spec["metrics"].items():
+        assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0), name
+
+
+@pytest.mark.parametrize("pair,changes,name", [(TSK, {"tsk": None}, "unflagged"),
+                                               (MD, {"curated_sources": None}, "flag_mismatch")],
+                         ids=["unflagged", "flag_mismatch"])
+def test_h8_hard_failure_exit_1(snap, tmp_path, capsys, pair, changes, name):
+    # hard since 1B: a single edge missing a flag, or whose flag its evidence
+    # contradicts, fails the gate; as a record check it could only regress
+    baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys)[0] == 0
+    edit_rows(snap / "cross_references.jsonl", _row(pair), **changes)
+    code, report = cli(snap, baseline, capsys)
+    assert code == 1 and report["hard_failures"] == ["H8"]
+    assert report["checks"]["H8"]["metrics"][name]["status"] == "fail"
+
+
+# ---------------------------------------------------------------------------
+# R4: each supplementary anchor judged against the edge's pericopes
+# ---------------------------------------------------------------------------
+
+def _r4(snap) -> tuple:
+    return tuple(measure(snap)["R4"].metrics[name] for name in R4_METRICS)
+
+
+def _anchors(snap, *anchors: str) -> None:
+    edit_rows(snap / "cross_references.jsonl", _row(SUPP), supp_anchors=list(anchors))
+
+
+def _legacy_supp_row(source_verses, target_verses) -> dict:
+    # a supplementary edge as prod holds it before W1: no flags, no lists
+    return {"source_id": SUPP[0], "target_id": SUPP[1], "source": "supplementary", "votes": None,
+            "source_verses": source_verses, "target_verses": target_verses}
+
+
+def test_clean_fixture_r4_zero(snap):
+    # the fixture's supplementary row has its anchor and no legacy scalars
+    assert _r4(snap) == (0, 0, 0)
+    assert measure(snap)["R4"].detail == {"supplementary": 1, "legacy_fields": 0}
+
+
+def test_r4_anchor_wrong_pericope(snap):
+    _anchors(snap, "heb 1:3>psa 2:7")  # heb 1:3 is in heb:1:0 (1-4), the edge starts at heb:1:1 (5-14)
+    assert _r4(snap) == (1, 1, 0)
+    assert measure(snap)["R4"].samples == [{"misaligned": ["heb:1:1->psa:2:0 heb 1:3>psa 2:7"]},
+                                           {"misaligned_any_verse": ["heb:1:1->psa:2:0 heb 1:3>psa 2:7"]}]
+
+
+def test_r4_fanout_anchor_aligned(snap):
+    # one definition, rev 18:2-8 > jer 51:6-9,45, resolves to two pericope
+    # pairs (1B-C3b); each edge keeps the part of the anchor that lands on it
+    for pid, verses in (("rev:18:0", "1-24"), ("jer:51:0", "1-14"), ("jer:51:5", "41-49")):
+        append_row(snap / "pericopes.jsonl", {"id": pid, "book_id": pid.split(":")[0], "verse_range": verses})
+    for tgt, anchor in (("jer:51:0", "rev 18:2-8>jer 51:6-9"), ("jer:51:5", "rev 18:2-8>jer 51:45")):
+        append_row(snap / "cross_references.jsonl",
+                   {"source_id": "rev:18:0", "target_id": tgt, "source": "supplementary", "curated": True,
+                    "tsk": False, "votes": None, "curated_sources": ["supplementary"], "supp_anchors": [anchor]})
+    assert _r4(snap) == (0, 0, 0)
+    assert measure(snap)["R4"].detail["supplementary"] == 3
+
+
+@pytest.mark.parametrize("anchor", ["heb 2:5>psa 2:7", "heb 1:5>psa 3:7", "rom 1:5>psa 2:7"],
+                         ids=["source_chapter", "target_chapter", "source_book"])
+def test_r4_wrong_chapter_anchor(snap, anchor):
+    # the verse numbers fit the pericopes' ranges; the chapter or book does not
+    _anchors(snap, anchor)
+    assert _r4(snap) == (1, 1, 0)
+
+
+@pytest.mark.parametrize("anchors", [["heb 1:5>psa 2:7-13"], ["heb 1:5-15>psa 2:7"],
+                                     ["heb 1:5>psa 2:7", "heb 1:5>psa 2:7,13"]],
+                         ids=["target_range", "source_range", "second_anchor"])
+def test_r4_any_verse_only(snap, anchors):
+    # the first verse is inside (psa:2:0 is 1-12, heb:1:1 5-14), a later one is not
+    _anchors(snap, *anchors)
+    assert _r4(snap) == (0, 1, 0)
+
+
+@pytest.mark.parametrize("source_verses,target_verses,expected", [
+    ("5", "7", (0, 0, 0)),
+    ("5", "7, 13", (0, 1, 0)),     # first target verse inside, the last outside
+    ("5", "13", (1, 1, 0)),
+    (None, "7", (0, 0, 1)),        # nothing to judge
+], ids=["aligned", "any_verse", "first_verse", "missing"])
+def test_r4_legacy_fields_fallback(snap, source_verses, target_verses, expected):
+    rows = [r for r in read_rows(snap / "cross_references.jsonl") if (r["source_id"], r["target_id"]) != SUPP]
+    write_rows(snap / "cross_references.jsonl", rows + [_legacy_supp_row(source_verses, target_verses)])
+    assert _r4(snap) == expected
+    assert measure(snap)["R4"].detail == {"supplementary": 1, "legacy_fields": 1}
+
+
+@pytest.mark.parametrize("anchors", [["heb 1:5 psa 2:7"], ["heb 1:5>psa 2:?"], ["heb 1:5>psa 2:7>psa 2:8"],
+                                     ["heb1:5>psa 2:7"], ["heb 1:5>psa 2:7", "heb 1:5"], []],
+                         ids=["no_arrow", "unknown_verse", "three_ends", "no_space", "second_anchor", "empty"])
+def test_r4_unparsed_anchor(snap, anchors):
+    # an empty list falls back to the legacy scalars, which a 1B row lacks
+    _anchors(snap, *anchors)
+    assert _r4(snap) == (0, 0, 1)
+
+
+def test_r4_unparsed_when_an_end_pericope_is_unknown(snap):
+    edit_rows(snap / "cross_references.jsonl", _row(SUPP), target_id="psa:3:0")  # not in pericopes.jsonl
+    assert _r4(snap) == (0, 0, 1)
+
+
+def test_r4_judges_supplementary_anchors_of_a_markdown_edge(snap):
+    # a pair both sources define keeps source 'markdown'; its supplementary
+    # anchors are judged, its markdown anchors are not (XREF-5, 2D)
+    edit_rows(snap / "cross_references.jsonl", _row(MD), curated_sources=["markdown", "supplementary"],
+              supp_anchors=["mrk 1:9>psa 2:7"])  # mrk:1:0 is 1-8
+    assert _r4(snap) == (1, 1, 0)
+    assert measure(snap)["R4"].detail["supplementary"] == 2
+
+
+def test_shipped_r4_records_the_new_metrics(snap):
+    report = vk.evaluate(measure(snap), vk.load_baseline(SHIPPED_BASELINE))
+    assert list(report["checks"]["R4"]["metrics"]) == list(R4_METRICS)
+    spec = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "R4")
+    for name, m in spec["metrics"].items():
+        assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0), name
+
+
+def test_r4_hard_failure_exit_1(snap, tmp_path, capsys):
+    baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys)[0] == 0
+    _anchors(snap, "heb 1:3>psa 2:7")  # outside heb:1:1, as in test_r4_anchor_wrong_pericope
+    code, report = cli(snap, baseline, capsys)
+    assert code == 1 and report["hard_failures"] == ["R4"]
+    assert report["checks"]["R4"]["metrics"]["misaligned"]["status"] == "fail"
+
+
+# ---------------------------------------------------------------------------
+# R11: TSK votes, and no tsk flag without them
+# ---------------------------------------------------------------------------
+
+def _r11(snap) -> tuple:
+    return tuple(measure(snap)["R11"].metrics[name] for name in R11_METRICS)
+
+
+def test_clean_fixture_r11_zero(snap):
+    # the fixture's one TSK row carries its votes
+    assert _r11(snap) == (1, 0)
+    assert measure(snap)["R11"].samples == []
+
+
+def test_r11_tsk_flag_without_votes(snap):
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, "curated": False, "tsk": True, "votes": None})
+    assert _r11(snap) == (1, 1)
+    assert measure(snap)["R11"].samples == [{"tsk_flag_without_votes": ["exo:1:0->gen:22:0"]}]
+
+
+@pytest.mark.parametrize("flags", [{"tsk": None, "votes": None}, {"tsk": False, "votes": None},
+                                   {"tsk": True, "votes": 0}],
+                         ids=["unflagged", "not_tsk", "zero_votes"])
+def test_r11_counts_only_a_tsk_flag_without_votes(snap, flags):
+    # a missing flag is H8's unflagged; votes 0 are votes (is not None)
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, "curated": False, **flags})
+    assert _r11(snap)[1] == 0
+
+
+def test_shipped_r11_records_the_new_metric(snap):
+    report = vk.evaluate(measure(snap), vk.load_baseline(SHIPPED_BASELINE))
+    assert list(report["checks"]["R11"]["metrics"]) == list(R11_METRICS)
+    spec = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "R11")
+    m = spec["metrics"]["tsk_flag_without_votes"]
+    assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0)
+    # W1's TSK edge count on the current TSK file and pericopes (2D re-accepts
+    # it); equal, since under 'up' 250,400 edges would pass
+    votes = spec["metrics"]["tsk_votes_edges"]
+    assert (votes["direction"], votes["tolerance"], votes["target"]) == ("equal", 0, 250358)
+
+
+def test_r11_equal_rejects_extra_tsk_edges(snap, tmp_path, capsys):
+    # fresh_baseline pins the target to the fixture's own count, 1
+    baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys)[0] == 0
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, "curated": False, "tsk": True})  # flagged: H8 stays 0
+    code, report = cli(snap, baseline, capsys)
+    assert code == 1 and report["hard_failures"] == ["R11"]
+    m = report["checks"]["R11"]["metrics"]["tsk_votes_edges"]
+    assert (m["value"], m["target"], m["status"]) == (2, 1, "fail")
+
+
+# ---------------------------------------------------------------------------
+# kg_probes.yaml: the 1B pairs
+# ---------------------------------------------------------------------------
+
+FAIL_TODAY_PROBES = (
+    "xref-heb1-1-curated-psa2", "xref-mat2-1-curated-hos11", "xref-mat1-1-curated-isa7-1",
+    "xref-rev18-0-curated-jer51-5", "xref-rev19-2-curated-dan2-3", "xref-mat2-2-not-curated-hos11",
+    "xref-rev19-1-not-curated-psa118", "xref-rev19-2-not-curated-dan7", "xref-mat10-0-tsk-mrk3-2",
+)
+DELETION_GUARD = "xref-rev19-0-not-curated-psa118"
+NEW_PROBES = (*FAIL_TODAY_PROBES, DELETION_GUARD)
+# The pairs as prod holds them (2026-10-05: no flags, a TSK edge is its votes)
+# and as the W1 projection writes them (xref_new_w1.json, Step 0 lists).
+LIVE_PAIRS = [
+    ("heb:1:1", "psa:2:0", {"source": "tsk", "votes": 61}),
+    ("mat:2:1", "hos:11:0", {"source": "tsk", "votes": 69}),
+    ("mat:1:1", "isa:7:1", {"source": "tsk", "votes": 144}),
+    ("rev:18:0", "jer:51:5", {"source": "tsk", "votes": 21}),
+    ("rev:19:2", "dan:2:3", {"source": "tsk", "votes": 8}),
+    ("mat:2:2", "hos:11:0", {"source": "supplementary"}),
+    ("rev:19:1", "psa:118:0", {"source": "supplementary"}),
+    ("rev:19:2", "dan:7:1", {"source": "supplementary"}),
+    ("mat:10:0", "mrk:3:2", {"source": "markdown"}),
+]
+
+
+def _curated(source: str, anchor: str, votes: int | None) -> dict:
+    lists = "supp_anchors" if source == "supplementary" else "md_anchors"
+    return {"source": source, "curated": True, "tsk": votes is not None, "votes": votes,
+            "curated_sources": [source], lists: [anchor]}
+
+
+W1_PAIRS = [
+    ("heb:1:1", "psa:2:0", _curated("supplementary", "heb 1:5>psa 2:7", 61)),
+    ("mat:2:1", "hos:11:0", _curated("supplementary", "mat 2:15>hos 11:1", 69)),
+    ("mat:1:1", "isa:7:1", _curated("supplementary", "mat 1:22-23>isa 7:14", 144)),
+    ("rev:18:0", "jer:51:5", _curated("supplementary", "rev 18:2-8>jer 51:45", 21)),
+    ("rev:19:2", "dan:2:3", _curated("supplementary", "rev 19:16>dan 2:47", 8)),
+    ("rev:19:2", "dan:7:1", {"source": "tsk", "curated": False, "tsk": True, "votes": 8}),
+    ("mat:10:0", "mrk:3:2", _curated("markdown", "mat 10:?>mrk 3:13-19", 21)),
+]
+# rev 19:1>psa 118:1 resolved verse by verse, had 1B-C5a not deleted it
+UNDELETED = ("rev:19:0", "psa:118:0", _curated("supplementary", "rev 19:1>psa 118:1", None))
+
+
+def _new_probe_results(pairs: list) -> dict[str, bool]:
+    kg = vk.KG(mode="snapshot", xrefs=[_xref({"source_id": a, "target_id": b, **props}) for a, b, props in pairs])
+    ctx = vk.Context(baseline={"checks": []}, probes=vk.load_probes(SHIPPED_PROBES))
+    return {p["id"]: p["passed"] for p in vk.evaluate_probes(kg, ctx) if p["id"] in NEW_PROBES}
+
+
+def test_new_xref_probes_discriminate():
+    # prod fails the nine and passes the guard; W1 passes all ten; W1 with
+    # the XREF-2 definition back fails the guard alone (the rev:19:1 probe
+    # passes there: it checks the verse-level re-anchoring, not the deletion)
+    assert _new_probe_results(LIVE_PAIRS) == {pid: pid == DELETION_GUARD for pid in NEW_PROBES}
+    assert _new_probe_results(W1_PAIRS) == dict.fromkeys(NEW_PROBES, True)
+    assert _new_probe_results([*W1_PAIRS, UNDELETED]) == {pid: pid != DELETION_GUARD for pid in NEW_PROBES}

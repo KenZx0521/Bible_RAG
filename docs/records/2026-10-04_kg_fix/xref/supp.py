@@ -3,7 +3,8 @@ BIBLE_RAG_ROOT = os.environ.get("BIBLE_RAG_ROOT", "/home/kenzx0521/Bible_RAG")
 KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evidence/scratchpad")
 import json, sys, collections, re
 sys.path.insert(0,BIBLE_RAG_ROOT)
-from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS as S
+from types import SimpleNamespace; from pathlib import Path  # archived evidence script: frozen a32fbea definitions, see docs/records/2026-10-04_kg_fix/README.md
+S = [SimpleNamespace(**d) for d in json.load(open(Path(BIBLE_RAG_ROOT)/'docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json', encoding='utf-8'))]
 R=BIBLE_RAG_ROOT + '/output/'
 peri={}
 vmap={}

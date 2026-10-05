@@ -289,7 +289,7 @@ P0 階段(2026-07-06)將串珠從 916 條手工邊擴充至 **250,418 條**:
 - 資料源:openbible.info CC-BY(scrollmapper/bible_databases),public domain;
 - 344,799 行原始資料 → 過濾負 votes(1,166)與自環(9,811)→ **250,358 條 unique pericope 對**(僅 7 條 unmapped);
 - verse→pericope 映射用 `embedding_queue.jsonl` 反查表,31,102 節 100% 覆蓋;
-- 每條邊帶 `votes`(TSK 社群投票數)與 `source: 'tsk'`,與手工 markdown 邊(視為最高可信 votes=999)區分 — 這個分權設計是後來 TSK 抑噪修復的基礎。
+- 每條 TSK 邊帶 `votes`(TSK 社群投票數)與 `source: 'tsk'`;手工 curated 邊與 TSK 邊的區分,第 1B 批起由建置時寫入的 `curated`/`tsk` 旗標表示(同一段落對可以兩者皆是,這時也帶 votes),backend 讀 `r.curated` — 這個分權設計是後來 TSK 抑噪修復的基礎。
 
 ---
 
@@ -511,7 +511,7 @@ flowchart TD
 | `verse_direct` | PostgreSQL | VerseRef 直查 verse range / 單節 / 整章 |
 | `sql_chapter` / `sql_supplement` | PostgreSQL | 章直查 / 從候選命中章補抓同章段落 |
 | `graph_person/event/place` | Neo4j | `find_entity_by_name`(canonical/alias CONTAINS,mention_count 降序)→ `MENTIONS` → Pericope;多人物另查**共同出現段落**(w=0.9);Event 錨點按書卷章節升序(先出敘事起點)並標 `keyword_exact`/`anchor_rank` 供 pin;Cypher 級 chunk→父 pericope remap(防同內容佔兩席) |
-| `cross_ref_expand` | Neo4j | N-hop(≤2)`CROSS_REFERENCES` 展開;**seed_support(多 seed 交集)→ votes 降序**;2+ hop 只在 1-hop 補不滿時 fallback;hop 權重分權:手工邊(votes=999)0.75/0.55、TSK 邊 0.60/0.50(刻意壓在 semantic 0.7 之下);cap 10;seed 選擇 round-robin 跨策略防壟斷 |
+| `cross_ref_expand` | Neo4j | N-hop(≤2)`CROSS_REFERENCES` 展開;**seed_support(多 seed 交集)→ curated 優先 → votes 降序 → md5 平手**;2+ hop 只在 1-hop 補不滿時 fallback;hop 權重分權:手工 curated 邊(`r.curated`)0.75/0.55、TSK 邊 0.60/0.50(刻意壓在 semantic 0.7 之下);cap 10;seed 選擇 round-robin 跨策略防壟斷 |
 | `entity_path` | Neo4j | 實體↔實體事實邊(37 型,排除結構邊)多跳推理(≤2 hop)→ MENTIONS → Pericope |
 | `entity_query`(EQ) | Qdrant `bible_entities` + Neo4j | query 向量 → 實體比對(top-8,threshold 0.4)→ MENTIONS;**hub-aware 限流**(mention_count>50 的 hub 實體每實體只取 3 段、一般 5 段,防 topic 污染);supplement cap 5;橋接「現代提問詞 → 古譯本經文」 |
 | `book_anchor` | Qdrant | 問題點名書卷時,book_filter 語意檢索保證該書卷有 seed |

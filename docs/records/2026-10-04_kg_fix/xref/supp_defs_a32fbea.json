@@ -1,0 +1,1290 @@
+[
+{
+"source_pericope_id": "mat:1:2",
+"target_pericope_id": "isa:7:0",
+"source_verses": "22-23",
+"target_verses": "14",
+"ref_type": "quotation",
+"description": "童女懷孕生子"
+},
+{
+"source_pericope_id": "mat:2:0",
+"target_pericope_id": "mic:5:0",
+"source_verses": "6",
+"target_verses": "2",
+"ref_type": "quotation",
+"description": "伯利恆出君王"
+},
+{
+"source_pericope_id": "mat:2:2",
+"target_pericope_id": "hos:11:0",
+"source_verses": "15",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "從埃及召出我的兒子"
+},
+{
+"source_pericope_id": "mat:2:3",
+"target_pericope_id": "jer:31:2",
+"source_verses": "18",
+"target_verses": "15",
+"ref_type": "quotation",
+"description": "拉結為兒女哀哭"
+},
+{
+"source_pericope_id": "mat:3:0",
+"target_pericope_id": "isa:40:0",
+"source_verses": "3",
+"target_verses": "3",
+"ref_type": "quotation",
+"description": "在曠野有人聲喊著說"
+},
+{
+"source_pericope_id": "mat:4:0",
+"target_pericope_id": "deu:8:0",
+"source_verses": "4",
+"target_verses": "3",
+"ref_type": "quotation",
+"description": "人活著不是單靠食物"
+},
+{
+"source_pericope_id": "mat:4:0",
+"target_pericope_id": "deu:6:0",
+"source_verses": "7",
+"target_verses": "16",
+"ref_type": "quotation",
+"description": "不可試探主你的神"
+},
+{
+"source_pericope_id": "mat:4:0",
+"target_pericope_id": "deu:6:0",
+"source_verses": "10",
+"target_verses": "13",
+"ref_type": "quotation",
+"description": "當拜主你的神單要事奉他"
+},
+{
+"source_pericope_id": "mat:4:1",
+"target_pericope_id": "isa:9:0",
+"source_verses": "15-16",
+"target_verses": "1-2",
+"ref_type": "quotation",
+"description": "在黑暗中的百姓看見了大光"
+},
+{
+"source_pericope_id": "mat:8:1",
+"target_pericope_id": "isa:53:0",
+"source_verses": "17",
+"target_verses": "4",
+"ref_type": "quotation",
+"description": "他代替我們的軟弱"
+},
+{
+"source_pericope_id": "mat:11:0",
+"target_pericope_id": "mal:3:0",
+"source_verses": "10",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "我差遣我的使者在你前面"
+},
+{
+"source_pericope_id": "mat:12:2",
+"target_pericope_id": "isa:42:0",
+"source_verses": "18-21",
+"target_verses": "1-4",
+"ref_type": "quotation",
+"description": "看哪我的僕人"
+},
+{
+"source_pericope_id": "mat:13:2",
+"target_pericope_id": "psa:78:0",
+"source_verses": "35",
+"target_verses": "2",
+"ref_type": "quotation",
+"description": "我要開口用比喻"
+},
+{
+"source_pericope_id": "mat:21:0",
+"target_pericope_id": "zec:9:0",
+"source_verses": "5",
+"target_verses": "9",
+"ref_type": "quotation",
+"description": "你的王騎著驢來"
+},
+{
+"source_pericope_id": "mat:21:0",
+"target_pericope_id": "isa:62:0",
+"source_verses": "5",
+"target_verses": "11",
+"ref_type": "allusion",
+"description": "你的拯救者來了"
+},
+{
+"source_pericope_id": "mat:21:3",
+"target_pericope_id": "psa:118:0",
+"source_verses": "42",
+"target_verses": "22-23",
+"ref_type": "quotation",
+"description": "匠人所棄的石頭已作了房角石"
+},
+{
+"source_pericope_id": "mat:22:3",
+"target_pericope_id": "deu:6:0",
+"source_verses": "37",
+"target_verses": "5",
+"ref_type": "quotation",
+"description": "你要盡心盡性盡意愛主你的神"
+},
+{
+"source_pericope_id": "mat:22:3",
+"target_pericope_id": "lev:19:0",
+"source_verses": "39",
+"target_verses": "18",
+"ref_type": "quotation",
+"description": "愛人如己"
+},
+{
+"source_pericope_id": "mat:26:3",
+"target_pericope_id": "zec:13:0",
+"source_verses": "31",
+"target_verses": "7",
+"ref_type": "quotation",
+"description": "擊打牧人羊就分散"
+},
+{
+"source_pericope_id": "mat:27:1",
+"target_pericope_id": "zec:11:0",
+"source_verses": "9",
+"target_verses": "12-13",
+"ref_type": "quotation",
+"description": "三十塊錢"
+},
+{
+"source_pericope_id": "mat:27:4",
+"target_pericope_id": "psa:22:0",
+"source_verses": "46",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "我的神為什麼離棄我"
+},
+{
+"source_pericope_id": "mrk:1:0",
+"target_pericope_id": "isa:40:0",
+"source_verses": "3",
+"target_verses": "3",
+"ref_type": "quotation",
+"description": "在曠野有人聲喊著說"
+},
+{
+"source_pericope_id": "mrk:1:0",
+"target_pericope_id": "mal:3:0",
+"source_verses": "2",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "差遣使者在你前面"
+},
+{
+"source_pericope_id": "mrk:12:1",
+"target_pericope_id": "psa:118:0",
+"source_verses": "10-11",
+"target_verses": "22-23",
+"ref_type": "quotation",
+"description": "匠人所棄的石頭"
+},
+{
+"source_pericope_id": "mrk:12:3",
+"target_pericope_id": "deu:6:0",
+"source_verses": "29-30",
+"target_verses": "4-5",
+"ref_type": "quotation",
+"description": "你要盡心愛主你的神"
+},
+{
+"source_pericope_id": "mrk:15:3",
+"target_pericope_id": "psa:22:0",
+"source_verses": "34",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "我的神為什麼離棄我"
+},
+{
+"source_pericope_id": "luk:1:5",
+"target_pericope_id": "mal:4:0",
+"source_verses": "17",
+"target_verses": "5-6",
+"ref_type": "allusion",
+"description": "以利亞的心志能力"
+},
+{
+"source_pericope_id": "luk:3:0",
+"target_pericope_id": "isa:40:0",
+"source_verses": "4-6",
+"target_verses": "3-5",
+"ref_type": "quotation",
+"description": "在曠野有人聲喊著說"
+},
+{
+"source_pericope_id": "luk:4:2",
+"target_pericope_id": "isa:61:0",
+"source_verses": "18-19",
+"target_verses": "1-2",
+"ref_type": "quotation",
+"description": "主的靈在我身上因為他膏了我"
+},
+{
+"source_pericope_id": "luk:20:2",
+"target_pericope_id": "psa:118:0",
+"source_verses": "17",
+"target_verses": "22",
+"ref_type": "quotation",
+"description": "匠人所棄的石頭"
+},
+{
+"source_pericope_id": "luk:22:5",
+"target_pericope_id": "isa:53:0",
+"source_verses": "37",
+"target_verses": "12",
+"ref_type": "quotation",
+"description": "他被列在罪犯之中"
+},
+{
+"source_pericope_id": "jhn:1:0",
+"target_pericope_id": "gen:1:0",
+"source_verses": "1-3",
+"target_verses": "1",
+"ref_type": "allusion",
+"description": "太初有道（起初神創造）"
+},
+{
+"source_pericope_id": "jhn:2:2",
+"target_pericope_id": "psa:69:0",
+"source_verses": "17",
+"target_verses": "9",
+"ref_type": "quotation",
+"description": "我為你的殿心裏焦急"
+},
+{
+"source_pericope_id": "jhn:6:3",
+"target_pericope_id": "psa:78:0",
+"source_verses": "31",
+"target_verses": "24",
+"ref_type": "quotation",
+"description": "他從天上賜下糧食給他們吃"
+},
+{
+"source_pericope_id": "jhn:10:2",
+"target_pericope_id": "psa:82:0",
+"source_verses": "34",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "我曾說你們是神"
+},
+{
+"source_pericope_id": "jhn:12:2",
+"target_pericope_id": "isa:53:0",
+"source_verses": "38",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "主啊誰信我們所傳的"
+},
+{
+"source_pericope_id": "jhn:12:2",
+"target_pericope_id": "isa:6:0",
+"source_verses": "40",
+"target_verses": "10",
+"ref_type": "quotation",
+"description": "使他們瞎了眼硬了心"
+},
+{
+"source_pericope_id": "jhn:12:3",
+"target_pericope_id": "zec:9:0",
+"source_verses": "15",
+"target_verses": "9",
+"ref_type": "quotation",
+"description": "你的王騎著驢駒來"
+},
+{
+"source_pericope_id": "jhn:19:3",
+"target_pericope_id": "psa:22:0",
+"source_verses": "24",
+"target_verses": "18",
+"ref_type": "quotation",
+"description": "他們分了我的外衣"
+},
+{
+"source_pericope_id": "jhn:19:3",
+"target_pericope_id": "zec:12:0",
+"source_verses": "37",
+"target_verses": "10",
+"ref_type": "quotation",
+"description": "他們要仰望自己所扎的人"
+},
+{
+"source_pericope_id": "act:2:1",
+"target_pericope_id": "jol:2:0",
+"source_verses": "17-21",
+"target_verses": "28-32",
+"ref_type": "quotation",
+"description": "以後我要將我的靈澆灌"
+},
+{
+"source_pericope_id": "act:2:1",
+"target_pericope_id": "psa:16:0",
+"source_verses": "25-28",
+"target_verses": "8-11",
+"ref_type": "quotation",
+"description": "你必不將我的靈魂撇在陰間"
+},
+{
+"source_pericope_id": "act:2:2",
+"target_pericope_id": "psa:110:0",
+"source_verses": "34-35",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "主對我主說你坐在我的右邊"
+},
+{
+"source_pericope_id": "act:4:0",
+"target_pericope_id": "psa:118:0",
+"source_verses": "11",
+"target_verses": "22",
+"ref_type": "quotation",
+"description": "匠人所棄的石頭已作了房角石"
+},
+{
+"source_pericope_id": "act:8:3",
+"target_pericope_id": "isa:53:0",
+"source_verses": "32-33",
+"target_verses": "7-8",
+"ref_type": "quotation",
+"description": "他像羊被牽到宰殺之地"
+},
+{
+"source_pericope_id": "act:13:2",
+"target_pericope_id": "psa:2:0",
+"source_verses": "33",
+"target_verses": "7",
+"ref_type": "quotation",
+"description": "你是我的兒子我今日生你"
+},
+{
+"source_pericope_id": "act:13:2",
+"target_pericope_id": "isa:55:0",
+"source_verses": "34",
+"target_verses": "3",
+"ref_type": "quotation",
+"description": "我必將所應許大衛那聖潔可靠的恩典賜給你們"
+},
+{
+"source_pericope_id": "act:13:2",
+"target_pericope_id": "psa:16:0",
+"source_verses": "35",
+"target_verses": "10",
+"ref_type": "quotation",
+"description": "你必不叫你的聖者見朽壞"
+},
+{
+"source_pericope_id": "act:15:1",
+"target_pericope_id": "amo:9:0",
+"source_verses": "16-17",
+"target_verses": "11-12",
+"ref_type": "quotation",
+"description": "重新修造大衛倒塌的帳幕"
+},
+{
+"source_pericope_id": "rom:1:1",
+"target_pericope_id": "hab:2:0",
+"source_verses": "17",
+"target_verses": "4",
+"ref_type": "quotation",
+"description": "義人必因信得生"
+},
+{
+"source_pericope_id": "rom:3:2",
+"target_pericope_id": "psa:14:0",
+"source_verses": "10-12",
+"target_verses": "1-3",
+"ref_type": "quotation",
+"description": "沒有義人連一個也沒有"
+},
+{
+"source_pericope_id": "rom:3:2",
+"target_pericope_id": "psa:5:0",
+"source_verses": "13",
+"target_verses": "9",
+"ref_type": "quotation",
+"description": "他們的喉嚨是敞開的墳墓"
+},
+{
+"source_pericope_id": "rom:3:2",
+"target_pericope_id": "psa:140:0",
+"source_verses": "13",
+"target_verses": "3",
+"ref_type": "quotation",
+"description": "嘴唇裏有虺蛇的毒氣"
+},
+{
+"source_pericope_id": "rom:3:2",
+"target_pericope_id": "psa:10:0",
+"source_verses": "14",
+"target_verses": "7",
+"ref_type": "quotation",
+"description": "他們滿口是咒罵苦毒"
+},
+{
+"source_pericope_id": "rom:3:2",
+"target_pericope_id": "isa:59:0",
+"source_verses": "15-17",
+"target_verses": "7-8",
+"ref_type": "quotation",
+"description": "殺人流血他們的腳飛跑"
+},
+{
+"source_pericope_id": "rom:3:2",
+"target_pericope_id": "psa:36:0",
+"source_verses": "18",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "他眼中不怕神"
+},
+{
+"source_pericope_id": "rom:4:0",
+"target_pericope_id": "gen:15:0",
+"source_verses": "3",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "亞伯拉罕信神就算為他的義"
+},
+{
+"source_pericope_id": "rom:4:0",
+"target_pericope_id": "psa:32:0",
+"source_verses": "7-8",
+"target_verses": "1-2",
+"ref_type": "quotation",
+"description": "得赦免其過的人是有福的"
+},
+{
+"source_pericope_id": "rom:8:3",
+"target_pericope_id": "psa:44:0",
+"source_verses": "36",
+"target_verses": "22",
+"ref_type": "quotation",
+"description": "為你的緣故我們終日被殺"
+},
+{
+"source_pericope_id": "rom:9:1",
+"target_pericope_id": "gen:21:0",
+"source_verses": "7",
+"target_verses": "12",
+"ref_type": "allusion",
+"description": "從以撒生的才要稱為你的後裔"
+},
+{
+"source_pericope_id": "rom:9:2",
+"target_pericope_id": "exo:33:0",
+"source_verses": "15",
+"target_verses": "19",
+"ref_type": "quotation",
+"description": "我要憐憫誰就憐憫誰"
+},
+{
+"source_pericope_id": "rom:9:2",
+"target_pericope_id": "exo:9:0",
+"source_verses": "17",
+"target_verses": "16",
+"ref_type": "quotation",
+"description": "我將你興起來特要在你身上彰顯我的權能"
+},
+{
+"source_pericope_id": "rom:9:3",
+"target_pericope_id": "isa:28:0",
+"source_verses": "33",
+"target_verses": "16",
+"ref_type": "quotation",
+"description": "在錫安放一塊絆腳石"
+},
+{
+"source_pericope_id": "rom:9:3",
+"target_pericope_id": "isa:8:0",
+"source_verses": "33",
+"target_verses": "14",
+"ref_type": "quotation",
+"description": "作了絆腳的石頭跌人的磐石"
+},
+{
+"source_pericope_id": "rom:10:0",
+"target_pericope_id": "deu:30:0",
+"source_verses": "6-8",
+"target_verses": "12-14",
+"ref_type": "quotation",
+"description": "這道離你不遠"
+},
+{
+"source_pericope_id": "rom:10:0",
+"target_pericope_id": "isa:28:0",
+"source_verses": "11",
+"target_verses": "16",
+"ref_type": "quotation",
+"description": "信靠他的人必不至於羞愧"
+},
+{
+"source_pericope_id": "rom:10:0",
+"target_pericope_id": "jol:2:0",
+"source_verses": "13",
+"target_verses": "32",
+"ref_type": "quotation",
+"description": "凡求告主名的就必得救"
+},
+{
+"source_pericope_id": "rom:10:1",
+"target_pericope_id": "isa:52:0",
+"source_verses": "15",
+"target_verses": "7",
+"ref_type": "quotation",
+"description": "報福音傳喜信的人的腳蹤何等佳美"
+},
+{
+"source_pericope_id": "rom:10:1",
+"target_pericope_id": "isa:53:0",
+"source_verses": "16",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "主啊誰信我們所傳的呢"
+},
+{
+"source_pericope_id": "rom:11:0",
+"target_pericope_id": "1ki:19:0",
+"source_verses": "3-4",
+"target_verses": "10,18",
+"ref_type": "quotation",
+"description": "我為自己留下七千人"
+},
+{
+"source_pericope_id": "rom:11:1",
+"target_pericope_id": "isa:29:0",
+"source_verses": "8",
+"target_verses": "10",
+"ref_type": "quotation",
+"description": "神給他們昏迷的心"
+},
+{
+"source_pericope_id": "rom:11:1",
+"target_pericope_id": "psa:69:0",
+"source_verses": "9-10",
+"target_verses": "22-23",
+"ref_type": "quotation",
+"description": "願他們的筵席變為網羅"
+},
+{
+"source_pericope_id": "rom:11:2",
+"target_pericope_id": "isa:59:0",
+"source_verses": "26-27",
+"target_verses": "20-21",
+"ref_type": "quotation",
+"description": "必有一位救主從錫安出來"
+},
+{
+"source_pericope_id": "rom:15:1",
+"target_pericope_id": "psa:69:0",
+"source_verses": "3",
+"target_verses": "9",
+"ref_type": "quotation",
+"description": "辱罵你人的辱罵都落在我身上"
+},
+{
+"source_pericope_id": "rom:15:1",
+"target_pericope_id": "isa:11:0",
+"source_verses": "12",
+"target_verses": "10",
+"ref_type": "quotation",
+"description": "耶西的根要興起來"
+},
+{
+"source_pericope_id": "1co:1:1",
+"target_pericope_id": "isa:29:0",
+"source_verses": "19",
+"target_verses": "14",
+"ref_type": "quotation",
+"description": "我要滅絕智慧人的智慧"
+},
+{
+"source_pericope_id": "1co:3:1",
+"target_pericope_id": "job:5:0",
+"source_verses": "19",
+"target_verses": "13",
+"ref_type": "quotation",
+"description": "他叫有智慧的中了自己的詭計"
+},
+{
+"source_pericope_id": "1co:3:1",
+"target_pericope_id": "psa:94:0",
+"source_verses": "20",
+"target_verses": "11",
+"ref_type": "quotation",
+"description": "主知道智慧人的意念是虛妄的"
+},
+{
+"source_pericope_id": "1co:10:0",
+"target_pericope_id": "exo:32:0",
+"source_verses": "7",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "百姓坐下吃喝起來玩耍"
+},
+{
+"source_pericope_id": "1co:15:3",
+"target_pericope_id": "isa:25:0",
+"source_verses": "54",
+"target_verses": "8",
+"ref_type": "quotation",
+"description": "死被得勝吞滅了"
+},
+{
+"source_pericope_id": "1co:15:3",
+"target_pericope_id": "hos:13:0",
+"source_verses": "55",
+"target_verses": "14",
+"ref_type": "quotation",
+"description": "死啊你得勝的權勢在哪裏"
+},
+{
+"source_pericope_id": "2co:4:0",
+"target_pericope_id": "gen:1:0",
+"source_verses": "6",
+"target_verses": "3",
+"ref_type": "allusion",
+"description": "那吩咐光從黑暗裏照出來的神"
+},
+{
+"source_pericope_id": "2co:6:1",
+"target_pericope_id": "isa:49:0",
+"source_verses": "2",
+"target_verses": "8",
+"ref_type": "quotation",
+"description": "在悅納的時候我應允了你"
+},
+{
+"source_pericope_id": "2co:6:2",
+"target_pericope_id": "lev:26:0",
+"source_verses": "16",
+"target_verses": "12",
+"ref_type": "quotation",
+"description": "我要在他們中間居住"
+},
+{
+"source_pericope_id": "gal:3:1",
+"target_pericope_id": "gen:15:0",
+"source_verses": "6",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "亞伯拉罕信神就算為他的義"
+},
+{
+"source_pericope_id": "gal:3:1",
+"target_pericope_id": "gen:12:0",
+"source_verses": "8",
+"target_verses": "3",
+"ref_type": "quotation",
+"description": "萬國都必因你得福"
+},
+{
+"source_pericope_id": "gal:3:1",
+"target_pericope_id": "deu:27:0",
+"source_verses": "10",
+"target_verses": "26",
+"ref_type": "quotation",
+"description": "凡不常照律法書上所記一切之事去行的就被咒詛"
+},
+{
+"source_pericope_id": "gal:3:1",
+"target_pericope_id": "hab:2:0",
+"source_verses": "11",
+"target_verses": "4",
+"ref_type": "quotation",
+"description": "義人必因信得生"
+},
+{
+"source_pericope_id": "gal:3:1",
+"target_pericope_id": "deu:21:0",
+"source_verses": "13",
+"target_verses": "23",
+"ref_type": "quotation",
+"description": "凡掛在木頭上都是被咒詛的"
+},
+{
+"source_pericope_id": "gal:4:2",
+"target_pericope_id": "gen:21:0",
+"source_verses": "30",
+"target_verses": "10",
+"ref_type": "quotation",
+"description": "把使女和她兒子趕出去"
+},
+{
+"source_pericope_id": "eph:4:0",
+"target_pericope_id": "psa:68:0",
+"source_verses": "8",
+"target_verses": "18",
+"ref_type": "quotation",
+"description": "他升上高天擄掠了仇敵"
+},
+{
+"source_pericope_id": "eph:5:3",
+"target_pericope_id": "gen:2:0",
+"source_verses": "31",
+"target_verses": "24",
+"ref_type": "quotation",
+"description": "人要離開父母與妻子連合二人成為一體"
+},
+{
+"source_pericope_id": "eph:6:0",
+"target_pericope_id": "exo:20:0",
+"source_verses": "2-3",
+"target_verses": "12",
+"ref_type": "quotation",
+"description": "要孝敬父母使你得福在世長壽"
+},
+{
+"source_pericope_id": "php:2:0",
+"target_pericope_id": "isa:45:0",
+"source_verses": "10-11",
+"target_verses": "23",
+"ref_type": "quotation",
+"description": "萬膝都要跪拜萬口都要宣認"
+},
+{
+"source_pericope_id": "heb:1:0",
+"target_pericope_id": "psa:2:0",
+"source_verses": "5",
+"target_verses": "7",
+"ref_type": "quotation",
+"description": "你是我的兒子我今日生你"
+},
+{
+"source_pericope_id": "heb:1:0",
+"target_pericope_id": "2sa:7:0",
+"source_verses": "5",
+"target_verses": "14",
+"ref_type": "quotation",
+"description": "我要作他的父他要作我的子"
+},
+{
+"source_pericope_id": "heb:1:0",
+"target_pericope_id": "psa:104:0",
+"source_verses": "7",
+"target_verses": "4",
+"ref_type": "quotation",
+"description": "以風為使者以火焰為僕役"
+},
+{
+"source_pericope_id": "heb:1:0",
+"target_pericope_id": "psa:45:0",
+"source_verses": "8-9",
+"target_verses": "6-7",
+"ref_type": "quotation",
+"description": "你的寶座是永永遠遠的"
+},
+{
+"source_pericope_id": "heb:1:0",
+"target_pericope_id": "psa:102:0",
+"source_verses": "10-12",
+"target_verses": "25-27",
+"ref_type": "quotation",
+"description": "你起初立了地的根基"
+},
+{
+"source_pericope_id": "heb:1:0",
+"target_pericope_id": "psa:110:0",
+"source_verses": "13",
+"target_verses": "1",
+"ref_type": "quotation",
+"description": "你坐在我的右邊"
+},
+{
+"source_pericope_id": "heb:2:0",
+"target_pericope_id": "psa:8:0",
+"source_verses": "6-8",
+"target_verses": "4-6",
+"ref_type": "quotation",
+"description": "人算什麼你竟顧念他"
+},
+{
+"source_pericope_id": "heb:2:0",
+"target_pericope_id": "psa:22:0",
+"source_verses": "12",
+"target_verses": "22",
+"ref_type": "quotation",
+"description": "我要將你的名傳與我的弟兄"
+},
+{
+"source_pericope_id": "heb:2:0",
+"target_pericope_id": "isa:8:0",
+"source_verses": "13",
+"target_verses": "17-18",
+"ref_type": "quotation",
+"description": "看哪我與神所給我的兒女"
+},
+{
+"source_pericope_id": "heb:3:0",
+"target_pericope_id": "psa:95:0",
+"source_verses": "7-11",
+"target_verses": "7-11",
+"ref_type": "quotation",
+"description": "你們今日若聽他的話就不可硬著心"
+},
+{
+"source_pericope_id": "heb:3:1",
+"target_pericope_id": "psa:95:0",
+"source_verses": "15",
+"target_verses": "7-8",
+"ref_type": "quotation",
+"description": "不可硬著心"
+},
+{
+"source_pericope_id": "heb:4:0",
+"target_pericope_id": "gen:2:0",
+"source_verses": "4",
+"target_verses": "2",
+"ref_type": "quotation",
+"description": "到第七日神歇了一切的工"
+},
+{
+"source_pericope_id": "heb:4:0",
+"target_pericope_id": "psa:95:0",
+"source_verses": "3,5,7",
+"target_verses": "11",
+"ref_type": "quotation",
+"description": "他們斷不可進入我的安息"
+},
+{
+"source_pericope_id": "heb:5:0",
+"target_pericope_id": "psa:2:0",
+"source_verses": "5",
+"target_verses": "7",
+"ref_type": "quotation",
+"description": "你是我的兒子我今日生你"
+},
+{
+"source_pericope_id": "heb:5:0",
+"target_pericope_id": "psa:110:0",
+"source_verses": "6",
+"target_verses": "4",
+"ref_type": "quotation",
+"description": "你是照著麥基洗德的等次永遠為祭司"
+},
+{
+"source_pericope_id": "heb:7:0",
+"target_pericope_id": "gen:14:0",
+"source_verses": "1-2",
+"target_verses": "18-20",
+"ref_type": "quotation",
+"description": "麥基洗德迎接亞伯拉罕"
+},
+{
+"source_pericope_id": "heb:7:1",
+"target_pericope_id": "psa:110:0",
+"source_verses": "17,21",
+"target_verses": "4",
+"ref_type": "quotation",
+"description": "照著麥基洗德的等次永遠為祭司"
+},
+{
+"source_pericope_id": "heb:8:0",
+"target_pericope_id": "jer:31:0",
+"source_verses": "8-12",
+"target_verses": "31-34",
+"ref_type": "quotation",
+"description": "我要與以色列家另立新約"
+},
+{
+"source_pericope_id": "heb:10:0",
+"target_pericope_id": "psa:40:0",
+"source_verses": "5-7",
+"target_verses": "6-8",
+"ref_type": "quotation",
+"description": "祭物和禮物是你不願意的"
+},
+{
+"source_pericope_id": "heb:10:1",
+"target_pericope_id": "jer:31:0",
+"source_verses": "16-17",
+"target_verses": "33-34",
+"ref_type": "quotation",
+"description": "我要將我的律法放在他們心上"
+},
+{
+"source_pericope_id": "heb:10:2",
+"target_pericope_id": "hab:2:0",
+"source_verses": "37-38",
+"target_verses": "3-4",
+"ref_type": "quotation",
+"description": "義人必因信得生"
+},
+{
+"source_pericope_id": "heb:11:0",
+"target_pericope_id": "gen:1:0",
+"source_verses": "3",
+"target_verses": "1",
+"ref_type": "allusion",
+"description": "因著信我們知道諸世界是藉神話造成的"
+},
+{
+"source_pericope_id": "heb:11:0",
+"target_pericope_id": "gen:4:0",
+"source_verses": "4",
+"target_verses": "3-5",
+"ref_type": "allusion",
+"description": "亞伯因著信獻祭與神"
+},
+{
+"source_pericope_id": "heb:11:0",
+"target_pericope_id": "gen:5:0",
+"source_verses": "5",
+"target_verses": "24",
+"ref_type": "allusion",
+"description": "以諾因著信被接去"
+},
+{
+"source_pericope_id": "heb:11:0",
+"target_pericope_id": "gen:6:0",
+"source_verses": "7",
+"target_verses": "13-22",
+"ref_type": "allusion",
+"description": "挪亞因著信預備了方舟"
+},
+{
+"source_pericope_id": "heb:11:0",
+"target_pericope_id": "gen:12:0",
+"source_verses": "8-10",
+"target_verses": "1-4",
+"ref_type": "allusion",
+"description": "亞伯拉罕因著信蒙召出去"
+},
+{
+"source_pericope_id": "heb:11:1",
+"target_pericope_id": "gen:22:0",
+"source_verses": "17-19",
+"target_verses": "1-14",
+"ref_type": "allusion",
+"description": "亞伯拉罕因著信獻以撒"
+},
+{
+"source_pericope_id": "heb:12:0",
+"target_pericope_id": "pro:3:0",
+"source_verses": "5-6",
+"target_verses": "11-12",
+"ref_type": "quotation",
+"description": "我兒不可輕看主的管教"
+},
+{
+"source_pericope_id": "heb:12:1",
+"target_pericope_id": "hag:2:0",
+"source_verses": "26",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "再一次我不單要震動地還要震動天"
+},
+{
+"source_pericope_id": "heb:13:0",
+"target_pericope_id": "deu:31:0",
+"source_verses": "5",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "我總不撇下你也不丟棄你"
+},
+{
+"source_pericope_id": "heb:13:0",
+"target_pericope_id": "psa:118:0",
+"source_verses": "6",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "主是幫助我的我必不懼怕"
+},
+{
+"source_pericope_id": "jas:2:2",
+"target_pericope_id": "gen:15:0",
+"source_verses": "23",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "亞伯拉罕信神就算為他的義"
+},
+{
+"source_pericope_id": "jas:2:2",
+"target_pericope_id": "lev:19:0",
+"source_verses": "8",
+"target_verses": "18",
+"ref_type": "quotation",
+"description": "要愛人如己"
+},
+{
+"source_pericope_id": "1pe:1:1",
+"target_pericope_id": "lev:19:0",
+"source_verses": "16",
+"target_verses": "2",
+"ref_type": "quotation",
+"description": "你們要聖潔因為我是聖潔的"
+},
+{
+"source_pericope_id": "1pe:1:2",
+"target_pericope_id": "isa:40:0",
+"source_verses": "24-25",
+"target_verses": "6-8",
+"ref_type": "quotation",
+"description": "凡有血氣的盡都如草惟有主的道是永存的"
+},
+{
+"source_pericope_id": "1pe:2:0",
+"target_pericope_id": "isa:28:0",
+"source_verses": "6",
+"target_verses": "16",
+"ref_type": "quotation",
+"description": "在錫安放一塊石頭作為根基是寶貴的房角石"
+},
+{
+"source_pericope_id": "1pe:2:0",
+"target_pericope_id": "psa:118:0",
+"source_verses": "7",
+"target_verses": "22",
+"ref_type": "quotation",
+"description": "匠人所棄的石頭已作了房角的頭塊石頭"
+},
+{
+"source_pericope_id": "1pe:2:0",
+"target_pericope_id": "isa:8:0",
+"source_verses": "8",
+"target_verses": "14",
+"ref_type": "quotation",
+"description": "作了絆腳的石頭跌人的磐石"
+},
+{
+"source_pericope_id": "1pe:2:0",
+"target_pericope_id": "exo:19:0",
+"source_verses": "9",
+"target_verses": "5-6",
+"ref_type": "quotation",
+"description": "你們是被揀選的族類是有君尊的祭司"
+},
+{
+"source_pericope_id": "1pe:2:0",
+"target_pericope_id": "hos:2:0",
+"source_verses": "10",
+"target_verses": "23",
+"ref_type": "quotation",
+"description": "從前不是子民現在卻是神的子民"
+},
+{
+"source_pericope_id": "1pe:2:2",
+"target_pericope_id": "isa:53:0",
+"source_verses": "22",
+"target_verses": "9",
+"ref_type": "quotation",
+"description": "他並沒有犯罪口裏也沒有詭詐"
+},
+{
+"source_pericope_id": "1pe:2:2",
+"target_pericope_id": "isa:53:0",
+"source_verses": "24",
+"target_verses": "5-6",
+"ref_type": "quotation",
+"description": "因他受的鞭傷你們得了醫治"
+},
+{
+"source_pericope_id": "1pe:2:2",
+"target_pericope_id": "isa:53:0",
+"source_verses": "25",
+"target_verses": "6",
+"ref_type": "quotation",
+"description": "你們從前好像迷路的羊"
+},
+{
+"source_pericope_id": "1pe:3:1",
+"target_pericope_id": "psa:34:0",
+"source_verses": "10-12",
+"target_verses": "12-16",
+"ref_type": "quotation",
+"description": "主的眼看顧義人主的耳聽他們的呼求"
+},
+{
+"source_pericope_id": "1pe:3:1",
+"target_pericope_id": "isa:8:0",
+"source_verses": "14-15",
+"target_verses": "12-13",
+"ref_type": "quotation",
+"description": "不要怕人的威嚇也不要驚慌"
+},
+{
+"source_pericope_id": "1pe:5:0",
+"target_pericope_id": "pro:3:0",
+"source_verses": "5",
+"target_verses": "34",
+"ref_type": "quotation",
+"description": "神阻擋驕傲的人賜恩給謙卑的人"
+},
+{
+"source_pericope_id": "2pe:2:0",
+"target_pericope_id": "pro:26:0",
+"source_verses": "22",
+"target_verses": "11",
+"ref_type": "quotation",
+"description": "狗所吐的他轉過來又吃"
+},
+{
+"source_pericope_id": "jud:1:0",
+"target_pericope_id": "zec:3:0",
+"source_verses": "9",
+"target_verses": "2",
+"ref_type": "allusion",
+"description": "主責備你吧"
+},
+{
+"source_pericope_id": "rev:1:0",
+"target_pericope_id": "dan:7:0",
+"source_verses": "7",
+"target_verses": "13",
+"ref_type": "allusion",
+"description": "看哪他駕雲降臨"
+},
+{
+"source_pericope_id": "rev:1:0",
+"target_pericope_id": "zec:12:0",
+"source_verses": "7",
+"target_verses": "10",
+"ref_type": "allusion",
+"description": "連刺他的人也要看見他"
+},
+{
+"source_pericope_id": "rev:1:0",
+"target_pericope_id": "dan:10:0",
+"source_verses": "13-16",
+"target_verses": "5-6",
+"ref_type": "allusion",
+"description": "人子的形像"
+},
+{
+"source_pericope_id": "rev:2:0",
+"target_pericope_id": "gen:2:0",
+"source_verses": "7",
+"target_verses": "9",
+"ref_type": "allusion",
+"description": "生命樹"
+},
+{
+"source_pericope_id": "rev:4:0",
+"target_pericope_id": "isa:6:0",
+"source_verses": "8",
+"target_verses": "3",
+"ref_type": "allusion",
+"description": "聖哉聖哉聖哉"
+},
+{
+"source_pericope_id": "rev:4:0",
+"target_pericope_id": "ezk:1:0",
+"source_verses": "6-7",
+"target_verses": "5-10",
+"ref_type": "allusion",
+"description": "四活物的形像"
+},
+{
+"source_pericope_id": "rev:5:0",
+"target_pericope_id": "dan:7:0",
+"source_verses": "5-6",
+"target_verses": "13-14",
+"ref_type": "allusion",
+"description": "被殺的羔羊配得權柄"
+},
+{
+"source_pericope_id": "rev:7:0",
+"target_pericope_id": "isa:49:0",
+"source_verses": "16-17",
+"target_verses": "10",
+"ref_type": "allusion",
+"description": "不再飢不再渴"
+},
+{
+"source_pericope_id": "rev:11:1",
+"target_pericope_id": "dan:7:0",
+"source_verses": "15",
+"target_verses": "14,27",
+"ref_type": "allusion",
+"description": "世上的國成了我主基督的國"
+},
+{
+"source_pericope_id": "rev:15:0",
+"target_pericope_id": "exo:15:0",
+"source_verses": "3-4",
+"target_verses": "1-18",
+"ref_type": "allusion",
+"description": "摩西的歌"
+},
+{
+"source_pericope_id": "rev:18:0",
+"target_pericope_id": "isa:13:0",
+"source_verses": "2",
+"target_verses": "19-22",
+"ref_type": "allusion",
+"description": "巴比倫傾倒了"
+},
+{
+"source_pericope_id": "rev:18:0",
+"target_pericope_id": "jer:51:0",
+"source_verses": "2-8",
+"target_verses": "6-9,45",
+"ref_type": "allusion",
+"description": "巴比倫大城傾倒了"
+},
+{
+"source_pericope_id": "rev:19:1",
+"target_pericope_id": "psa:118:0",
+"source_verses": "1",
+"target_verses": "1",
+"ref_type": "allusion",
+"description": "哈利路亞"
+},
+{
+"source_pericope_id": "rev:19:2",
+"target_pericope_id": "dan:7:0",
+"source_verses": "11-16",
+"target_verses": "13-14",
+"ref_type": "allusion",
+"description": "萬王之王萬主之主"
+},
+{
+"source_pericope_id": "rev:20:0",
+"target_pericope_id": "isa:65:0",
+"source_verses": "4",
+"target_verses": "17",
+"ref_type": "allusion",
+"description": "新天新地"
+},
+{
+"source_pericope_id": "rev:21:0",
+"target_pericope_id": "isa:65:0",
+"source_verses": "1",
+"target_verses": "17",
+"ref_type": "quotation",
+"description": "我造新天新地"
+},
+{
+"source_pericope_id": "rev:21:0",
+"target_pericope_id": "isa:25:0",
+"source_verses": "4",
+"target_verses": "8",
+"ref_type": "quotation",
+"description": "神要擦去他們一切的眼淚"
+},
+{
+"source_pericope_id": "rev:22:0",
+"target_pericope_id": "gen:2:0",
+"source_verses": "1-2",
+"target_verses": "9-10",
+"ref_type": "allusion",
+"description": "生命樹和生命河"
+},
+{
+"source_pericope_id": "rev:22:0",
+"target_pericope_id": "ezk:47:0",
+"source_verses": "1",
+"target_verses": "1-12",
+"ref_type": "allusion",
+"description": "生命水的河"
+}
+]

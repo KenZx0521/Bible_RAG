@@ -30,6 +30,7 @@ from _validate_kg_helpers import (
     edit_rows,
     fresh_baseline,
     measure,
+    pin_data_count_targets,
     read_rows,
     unsupported_edge,
     write_rows,
@@ -139,8 +140,20 @@ def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
     assert code == 2 and _stored(baseline, "H3", "unsupported") == 1  # regressed: never moves up
 
 
+def _r11_as_record_up(path: Path) -> None:
+    """Relabel R11 in the baseline file (or part) at `path` record/up, as it was
+    before 1B-C8f. R11 was the only shipped 'up' metric; hard and equal now, it
+    never ratchets, so the up-ratchet is exercised on this copy instead."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    r11 = next(c for c in doc["checks"] if c["id"] == "R11")
+    r11["severity"] = "record"
+    r11["metrics"]["tsk_votes_edges"]["direction"] = "up"
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def test_ratchet_raises_up_direction_metric(snap, tmp_path, capsys):
     baseline = fresh_baseline(tmp_path, snap)
+    _r11_as_record_up(baseline)
     cli(snap, baseline, capsys, "--ratchet")
     append_row(snap / "cross_references.jsonl", {"source_id": "exo:1:0", "target_id": "gen:22:0",
                                                  "source": "tsk", "votes": 3, "curated": False, "tsk": True})
@@ -327,16 +340,19 @@ def test_unusable_live_target_exits_1_with_a_message(monkeypatch, capsys, uri, m
 # ---------------------------------------------------------------------------
 
 def split_baseline(tmp_path: Path, snap: Path, severities: dict[str, str] | None = None) -> Path:
-    """fresh_baseline's cleared values and severity overrides, kept in the
-    shipped split layout."""
+    """fresh_baseline's cleared values, severity overrides and pinned targets,
+    kept in the shipped split layout."""
     dest = tmp_path / "baseline"
     shutil.copytree(SHIPPED_BASELINE, dest)
     for part in dest.glob("*.json"):
         doc = json.loads(part.read_text(encoding="utf-8"))
-        for check in doc.get("checks", []):
+        if "checks" not in doc:
+            continue  # index.json
+        for check in doc["checks"]:
             check["severity"] = (severities or {}).get(check["id"], check["severity"])
             for metric in check["metrics"].values():
                 metric["value"] = None
+        doc["checks"] = pin_data_count_targets(doc["checks"], snap)
         part.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     write_step0_sha(tmp_path / "step0_sha.json", _sha(snap / "embedding_queue.jsonl"))
     return dest
@@ -363,6 +379,7 @@ def test_ratchet_and_accept_write_each_check_back_to_its_part(snap, tmp_path, ca
 
     write_rows(snap / "relations.jsonl", read_rows(snap / "relations.jsonl")[:-1])  # H3 heals
     assert _rewritten_by(baseline, run("--ratchet")) == {"h.json"}
+    _r11_as_record_up(baseline / "r.json")  # an up metric to ratchet, as in test_ratchet_raises_up_direction_metric
     append_row(snap / "cross_references.jsonl", {"source_id": "exo:1:0", "target_id": "gen:22:0",
                                                  "source": "tsk", "votes": 3, "curated": False, "tsk": True})
     assert _rewritten_by(baseline, run("--ratchet")) == {"r.json"}  # R11 rises

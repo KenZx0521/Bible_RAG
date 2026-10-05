@@ -24,7 +24,8 @@ PRE_SPLIT_IDS = [*(f"H{i}" for i in range(1, 12)), *(f"R{i}" for i in range(1, 1
 FAMILY = {"h.json": r"H\d+", "r.json": r"R\d+", "misc.json": r"(?!H\d|R\d).+"}
 # The hard checks, keyed by the batch that made them hard (their hard_from);
 # a batch that hardens a check adds its own key.
-HARD_BY_BATCH = {"0": {"H1", "H2", "H7", "D1"}, "1A": {"H3", "H9", "H11", "R6"}}
+HARD_BY_BATCH = {"0": {"H1", "H2", "H7", "D1"}, "1A": {"H3", "H9", "H11", "R6"},
+                 "1B": {"H8", "R4", "R11"}}
 # K3 (batch-1 plan §2.1): R6 gates contradictions, female heads and its probes;
 # its functionality readings stay record ratchets (≤5% is deferred-A).
 R6_RECORD_METRICS = {"functional_violation_rate", "children_with_2plus_nonfemale_parents",

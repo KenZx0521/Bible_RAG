@@ -4,8 +4,9 @@ Cross-Reference Retriever — follow CROSS_REFERENCES relationships in Neo4j.
 Two entry points:
 * retrieve_cross_references() — 1-hop, used by R5 seed expansion (legacy).
 * retrieve_via_cross_references() — N-hop (default 2), surfaces neighbouring
-  pericopes along the 916 hand-curated cross-book edges. Used by R3/R4/R5/R6
-  pre-rerank expansion when settings.rag_use_cross_ref_expand is True.
+  pericopes along hand-curated (r.curated) and TSK cross-reference edges. Used
+  by R3/R4/R5/R6 pre-rerank expansion when settings.rag_use_cross_ref_expand
+  is True.
 """
 
 import logging
@@ -32,7 +33,7 @@ async def retrieve_cross_references(pericope_ids: list[str], top_k: int = 10) ->
                 seen_ids.add(target_id)
                 content_data = await postgres.get_content_by_id(target_id)
                 if content_data:
-                    votes = ref.get("votes")
+                    curated = bool(ref.get("curated"))
                     candidates.append({
                         "id": target_id,
                         "content": content_data.get("content", ""),
@@ -41,8 +42,9 @@ async def retrieve_cross_references(pericope_ids: list[str], top_k: int = 10) ->
                         "chapter_num": content_data.get("chapter_num", ref.get("chapter_num")),
                         "verse_range": content_data.get("metadata", {}).get("verse_range", ""),
                         "source_strategy": "cross_reference",
-                        "votes": votes,
-                        "weight": _edge_weight(1, votes),
+                        "curated": curated,
+                        "votes": ref.get("votes"),
+                        "weight": _edge_weight(1, curated),
                     })
 
     logger.info(f"Cross-ref retriever: {len(candidates)} candidates from {len(pericope_ids)} pericopes")
@@ -51,23 +53,22 @@ async def retrieve_cross_references(pericope_ids: list[str], top_k: int = 10) ->
 
 # Hop-distance → weight curves, split by edge provenance.
 #
-# Hand-curated markdown edges (votes >= _CURATED_VOTES; they carry no votes
-# property and neo4j_db coalesces them to 999) are explicit cross-book
-# citations — high prior, kept above semantic (0.7).
+# Hand-curated edges (r.curated, read by neo4j_db._CURATED_XREF; markdown and
+# supplementary) are explicit cross-book citations — high prior, kept above
+# semantic (0.7).
 #
-# TSK community edges (votes < 999) are *topical* associations: high votes
+# TSK community edges (not curated) are *topical* associations: high votes
 # mean strong thematic affinity, NOT same-narrative membership. The 2026-07-06
 # P0 eval showed they displace narrative-correct pericopes on EVENT questions
 # (保羅歸主 → act:13 宣教串珠, 復活當天 → 登山變像預言串珠), so their prior
 # must sit below semantic (0.7) — they only win top-k when the rank-fusion
 # layer sees both a decent rerank score and this supplementary prior.
-_CURATED_VOTES = 999
 _HOP_WEIGHT = {1: 0.75, 2: 0.55, 3: 0.40, 4: 0.30}
 _TSK_HOP_WEIGHT = {1: 0.60, 2: 0.50, 3: 0.40, 4: 0.30}
 
 
-def _edge_weight(hop: int, votes: int | None) -> float:
-    curve = _HOP_WEIGHT if (votes is not None and votes >= _CURATED_VOTES) else _TSK_HOP_WEIGHT
+def _edge_weight(hop: int, curated: bool) -> float:
+    curve = _HOP_WEIGHT if curated else _TSK_HOP_WEIGHT
     return curve.get(hop, curve[max(curve)])
 
 
@@ -106,8 +107,8 @@ async def retrieve_via_cross_references(
         if not content_data:
             continue
         hop = int(ref.get("hop_distance", 1) or 1)
-        votes = ref.get("votes")
-        weight = _edge_weight(hop, votes)
+        curated = bool(ref.get("curated"))
+        weight = _edge_weight(hop, curated)
         candidates.append({
             "id": target_id,
             "content": content_data.get("content", ""),
@@ -119,7 +120,8 @@ async def retrieve_via_cross_references(
             ),
             "source_strategy": "cross_ref_expand",
             "hop_distance": hop,
-            "votes": votes,
+            "curated": curated,
+            "votes": ref.get("votes"),
             "seed_support": ref.get("seed_support"),
             "weight": weight,
         })

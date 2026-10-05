@@ -173,6 +173,78 @@ facts:
     target: jhn:3:0          # TSK, 34 votes
     provenance: tsk
     expect: present
+  # 1B (W1): checked against live prod and the W1 projection on 2026-10-05.
+  # Anchors are verse coordinates resolved to the pericope holding the verse.
+  - id: xref-heb1-1-curated-psa2
+    check: R4
+    kind: xref
+    source: heb:1:1          # heb 1:5>psa 2:7 lands in heb:1:1 (vv.5-14); prod has TSK only (fails today)
+    target: psa:2:0
+    provenance: curated
+    expect: present
+  - id: xref-mat2-1-curated-hos11
+    check: R4
+    kind: xref
+    source: mat:2:1          # mat 2:15>hos 11:1 從埃及召出我的兒子; mat:2:1 is vv.13-15 (fails today)
+    target: hos:11:0
+    provenance: curated
+    expect: present
+  - id: xref-mat1-1-curated-isa7-1
+    check: R4
+    kind: xref
+    source: mat:1:1          # mat 1:22-23>isa 7:14: a definition prod dropped (no mat:1:2) (fails today)
+    target: isa:7:1
+    provenance: curated
+    expect: present
+  - id: xref-rev18-0-curated-jer51-5
+    check: R4
+    kind: xref
+    source: rev:18:0         # rev 18:2-8>jer 51:6-9,45 fans out; jer 51:45 is in jer:51:5 (fails today)
+    target: jer:51:5
+    provenance: curated
+    expect: present
+  - id: xref-rev19-2-curated-dan2-3
+    check: R4
+    kind: xref
+    source: rev:19:2         # X2: 萬王之王萬主之主 re-anchored as rev 19:16>dan 2:47 (fails today)
+    target: dan:2:3
+    provenance: curated
+    expect: present
+  - id: xref-mat2-2-not-curated-hos11
+    check: R4
+    kind: xref
+    source: mat:2:2          # prod puts the mat 2:15 quote in mat:2:2 (vv.16-18) (fails today)
+    target: hos:11:0
+    provenance: curated
+    expect: absent
+  - id: xref-rev19-1-not-curated-psa118
+    check: R4
+    kind: xref
+    source: rev:19:1         # RE-ANCHORING check: rev 19:1 is in rev:19:0, so verse-level resolution
+    target: psa:118:0        # (1B-C3c) clears this pair with or without the 1B-C5a deletion (fails today)
+    provenance: curated
+    expect: absent
+  - id: xref-rev19-0-not-curated-psa118
+    check: R4
+    kind: xref
+    source: rev:19:0         # XREF-2 DELETION REGRESSION GUARD: rev 19:1>psa 118:1 resolves here if the
+    target: psa:118:0        # 1B-C5a deletion is undone (passes today and on W1)
+    provenance: curated
+    expect: absent
+  - id: xref-rev19-2-not-curated-dan7
+    check: R4
+    kind: xref
+    source: rev:19:2         # X2 replaced rev 19:11-16>dan 7:13-14; the pair stays TSK, 8 votes (fails today)
+    target: dan:7:1
+    provenance: curated
+    expect: absent
+  - id: xref-mat10-0-tsk-mrk3-2
+    check: R11
+    kind: xref
+    source: mat:10:0         # XREF-4: the markdown 十二使徒 edge keeps its TSK votes (21) (fails today)
+    target: mrk:3:2
+    provenance: tsk
+    expect: present
 
   # --- event registry anchors and aliases (EV-06, D1) ---------------------
   - id: registry-kingdom-split-anchor

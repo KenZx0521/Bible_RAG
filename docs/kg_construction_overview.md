@@ -51,7 +51,7 @@ flowchart LR
 | Theme | 救贖、恩典、信心 | 987 |
 | Group | 以色列人、法利賽人 | 505 |
 
-三資料庫分工:**PostgreSQL**(6 表,權威結構庫)、**Qdrant**(`bible_embeddings` dense、`bible_embeddings_hybrid` dense+sparse、`bible_entities` 實體向量)、**Neo4j**(圖譜本體)。圖譜服務下游 6 路由檢索(R3 graph_person、R4 graph_event、R5 cross-ref、R6 graph_place 直接吃圖)。所有邊 provenance-first:事實邊帶 confidence / evidence_span / source_pericope_id / extraction_phase,串珠邊帶 votes / source,回填邊有 flag — 全部 idempotent MERGE,可決定性重建與回滾。
+三資料庫分工:**PostgreSQL**(6 表,權威結構庫)、**Qdrant**(`bible_embeddings` dense、`bible_embeddings_hybrid` dense+sparse、`bible_entities` 實體向量)、**Neo4j**(圖譜本體)。圖譜服務下游 6 路由檢索(R3 graph_person、R4 graph_event、R5 cross-ref、R6 graph_place 直接吃圖)。所有邊 provenance-first:事實邊帶 confidence / evidence_span / source_pericope_id / extraction_phase,串珠邊帶 votes / source 與 curated / tsk 旗標(第 1B 批起),回填邊有 flag — 全部 idempotent MERGE,可決定性重建與回滾。
 
 ---
 
@@ -185,7 +185,7 @@ flowchart TB
 
 - 串珠網三來源(編輯成本遞減):① 774 條印刷平行經文(markdown 解析);② 142 條手工 NT→OT 名引用(typed quotation/allusion);③ **TSK**(Treasury of Scripture Knowledge,19 世紀公版串珠,帶社群投票數)。
 - TSK 處理:344,799 原始行 → 濾負票 1,166、自環 9,811 → 以 embedding queue 反查表做 verse→pericope 映射(31,102 節全覆蓋,印刷節區間展開)→ 僅 7 行 unmapped → **250,358** unique pericope 對;merge 後 live 250,418。
-- 每條 TSK 邊存 `votes`;手工邊哨兵值 999(最高信任)。這個 vote-provenance 讓後來的去噪可以「**按來源重加權而非刪資料**」(§4.4)。
+- 每條有 TSK 證據的邊存 `votes` 與 `tsk: true`,手工邊帶 `curated: true`(第 1B 批起由建置寫入;之前是查詢時把沒有 votes 的邊當成手工邊)。這個 vote-provenance 讓後來的去噪可以「**按來源重加權而非刪資料**」(§4.4)。
 
 **引用**:TSK via scrollmapper/bible_databases(public domain / openbible.info CC-BY);「重加權不刪除」哲學 — Less is More / DEG-RAG(arXiv:2510.14271)。
 
@@ -340,7 +340,7 @@ anchor coverage +14.4pt、串珠 ×273 之後,**所有決定性檢索指標持�
 
 三修復 + 三連鎖修復:
 
-- **修復 1 · TSK 按 provenance 分權抑噪**:擴張上限 30→10;TSK 邊(votes<999)降權至 0.60/0.50 — 刻意低於 semantic 先驗 0.7;手工邊維持 0.75/0.55。資料留著,優先權降級。
+- **修復 1 · TSK 按 provenance 分權抑噪**:擴張上限 30→10;TSK 邊(非 curated;第 1B 批起以 `r.curated` 旗標判別)降權至 0.60/0.50 — 刻意低於 semantic 先驗 0.7;手工邊維持 0.75/0.55。資料留著,優先權降級。
 - **修復 2 · 頭部 Event 補灌 + EQ 重啟**:稽核發現 54 個字典事件關鍵詞中 31 個 zero-match(圖譜叫「逾越節的筵席」,使用者問「最後的晚餐」)→ 11 個既有 Event 灌問法別名、新增 18 個 curated Event 節點/56 條逐一 live 驗證的 MENTIONS 邊,三庫同步;然後重啟 entity-query。這是 P1 alias/ER 計畫的手工頭部版(天級,非週級)。
 - **修復 3 · 線性排序融合**:最終排序改為 `fused = (1−α)·rerank_score + α·strategy_weight`,α=0.3(消融定案),per-request 可覆寫。
 - **連鎖修復**(全量重評後逐題回歸追出):(a) 圖/EQ 檢索器在 Cypher 內做 chunk→pericope remap — 修掉 `exo:29:0` 與其 chunk 佔雙席的 bug,副作用是 164 個 chunk-only 實體恢復檢索可見;(b) 汰換舊 EQ pin 與 graph-uncertainty pin(融合模式下只會把 s≈0.002 的噪音推上第 1 名);(c) 新增 keyword-exact event pin — 徒 9 通篇只叫「掃羅」,問「保羅歸主」時一切表面訊號全滅(rerank 0.074、第 7 名),只有字典→實體橋能釘住錨點。

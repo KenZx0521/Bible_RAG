@@ -48,8 +48,11 @@ class XRef(NamedTuple):
     votes: int | None
     curated: bool | None
     tsk: bool | None
-    source_verses: str | None
+    source_verses: str | None    # legacy scalars: graphs built before 1B (prod until W1)
     target_verses: str | None
+    curated_sources: list[str] | None  # 1B: one row per pair, provenance as lists
+    supp_anchors: list[str] | None     # 'heb 1:5>psa 2:7'
+    md_anchors: list[str] | None       # 'mrk 1:?>psa 2:7' (markdown refs are pericope-level)
 
 
 def is_curated_xref(x: XRef) -> bool:
@@ -185,7 +188,8 @@ def _relation_row(r: dict) -> dict:
 
 def _xref(r: dict) -> XRef:
     return XRef(r["source_id"], r["target_id"], r.get("source"), r.get("votes"), r.get("curated"),
-                r.get("tsk"), r.get("source_verses"), r.get("target_verses"))
+                r.get("tsk"), r.get("source_verses"), r.get("target_verses"),
+                r.get("curated_sources"), r.get("supp_anchors"), r.get("md_anchors"))
 
 
 def _pericope_row(r: dict) -> dict:
@@ -256,7 +260,8 @@ _LIVE_QUERIES = {
         MATCH (a:Pericope)-[r:CROSS_REFERENCES]->(b:Pericope)
         RETURN a.id AS source_id, b.id AS target_id, r.source AS source, r.votes AS votes,
                r.curated AS curated, r.tsk AS tsk, r.source_verses AS source_verses,
-               r.target_verses AS target_verses""",
+               r.target_verses AS target_verses, r.curated_sources AS curated_sources,
+               r.supp_anchors AS supp_anchors, r.md_anchors AS md_anchors""",
     "pericopes": "MATCH (p:Pericope) RETURN p.id AS id, p.book_id AS book_id, p.verse_range AS verse_range",
     "chunks": "MATCH (c:Chunk) RETURN c.id AS id, c.pericope_id AS pericope_id",
     "books": "MATCH (b:Book) RETURN b.id AS id, b.name AS name",

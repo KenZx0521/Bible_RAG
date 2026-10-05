@@ -109,17 +109,28 @@ uv run --project scripts python scripts/process_bible.py --input-dir bible_md --
 
 # sha 閘門：結束碼 0 才可往下走
 uv run --project scripts python scripts/tools/check_step0.py
+
+# 交叉引用閘門（第 1B 批起必跑）：結束碼 0 才可往下走
+uv run --project scripts python scripts/validate_output.py output
 ```
 
 ### sha 閘門（`scripts/tools/check_step0.py`）
 - 計算 output/ 中 5 個檔案（books、chapters、pericopes、chunks、embedding_queue）的 sha256，與 git 追蹤的 `config/step0_sha.json` 比對。這 5 個檔案是重灌時**不重建**的幾層的輸入：PG 的四張結構表（Step 3）、段落向量（Step 2 → 4 / 4.1）、BM25 詞表（Step 2.1）。neo4j_*.jsonl 不在閘門內，因為它們只餵 Step 5，而 Step 5 每次都清庫重建；第 1B 批也會刻意改動其中的交叉引用。
 - 結束碼：0 表示 5 個檔案全部相符；1 表示有檔案改變或缺檔，逐檔列出 expected 與 actual 的 sha、行數、位元組數；2 表示無法檢查（沒有基準檔，或 `--record` 時 output/ 缺檔）。
 - 基準於 2026-10-04 由現行 output/ 記錄：embedding_queue.jsonl 34,072 行，sha256 `5d2ac0e5460c…`，與計畫 §1.2 的 run-of-record 相同。
-- 不一致時先停下來查原因（bible_md/、bible_chunking/、process_bible.py 是否有改）。若是刻意的變更（例如第 1B、2D 批會改 pericopes.jsonl 的 cross_references 欄位）：
+- 不一致時先停下來查原因（bible_md/、bible_chunking/、process_bible.py 是否有改）。若是刻意的變更（例如第 2D 批會改 pericopes.jsonl 的 cross_references 欄位；第 1B 批只改 neo4j_relationships.jsonl，閘門照樣結束碼 0）：
   1. 若 embedding_queue.jsonl 也變了，要重跑 Step 2 / 2.1 / 4 / 4.1（段落向量與 BM25 會變，這次就不再是「重灌」），Step 1 也要先重跑 `--stage ner`（merge 會拒絕抽自舊 queue 的 NER 半邊）；
   2. 先 `check_step0.py --record --dry-run` 預覽，再 `--record` 寫入新基準；
   3. 新基準與造成變更的程式碼放在同一個 commit。
 - 重錄時若 5 個檔案逐位元未變，基準檔不會被改寫，不會產生只改了 recorded_at 的 diff。
+
+### 交叉引用（第 1B 批起）
+- **supplementary 定義用經文座標**：`bible_chunking/nt_cross_references.py` 的 159 筆定義兩端都寫成 `book ch:verses`（例：`rev 19:16` → `dan 2:47`）。process_bible 用 `bible_chunking/curated_xrefs.py` 逐節查出所在段落，每個觸及的（來源段, 目標段）產生一個錨點字串（`rev 18:2-8>jer 51:45`，只帶落在該段落對上的節）；一筆定義最多扇出到 3 個段落對。舊碼來源端直接用段落 id、目標端只看第一節，59 筆錯位、16 筆被靜默丟掉（XREF-1）。
+- **fail-fast**：任一筆定義解析失敗（缺節、跨章、扇出超過 3、格式錯），就逐條列出並結束碼 1，在寫任何 JSONL 之前停下。
+- **每個段落對一列**：markdown 與 supplementary 依 (start, end) 聚合成一列，屬性見 Step 5。markdown 引用只到段落層級，錨點的來源節記 `?`；解析器沒讀到的部分也記 `?`，不寫成看似合法的值：跨章範圍的終點（`deu 2:26-?`，14 個）與逗號後的範圍（`2ki 25:18-21,?`，8 個），留給第 2D 批（XREF-5）。
+- **只改 neo4j_relationships.jsonl 的 CROSS_REFERENCES 列**：上面 5 個閘門檔不變，check_step0 照樣結束碼 0。
+- **validate_output 的交叉引用閘門**（錯誤即結束碼 1）：重複的段落對；端點不是 Pericope；curated 列的旗標與出處清單不齊（`curated`、`tsk`、`curated_sources`、`source`、各來源清單的長度）；任何 None 值；supplementary 錨點的書卷、章、節不在端點段落內；定義覆蓋（由定義解析出的錨點與列上的錨點，以多重集合相等）。markdown 與 supplementary 重疊、`-?`、`,?` 只發警告。
+- W1 的 Step 0（neo4j_relationships.jsonl sha256 `d2389c73…`，2026-10-05 重跑）：CROSS_REFERENCES 932 列（markdown 774、supplementary 158）、重複段落對 0、非 Pericope 端點 0、supplementary 錨點 162、定義覆蓋 159/159；警告為 `-?` 14 個、`,?` 8 個，另有既有的 embedding queue 計數警告。1B 之前的 output/ 會被擋下：重複段落對 2 個、919 列沒有 curated 旗標、定義覆蓋 0/159。
 
 ---
 
@@ -293,7 +304,7 @@ HYBRID_SEARCH_ENABLED=true
 
 ### 匯入資料
 - `output/neo4j_nodes.jsonl`（4,465 筆）
-- `output/neo4j_relationships.jsonl`（8,209 筆）
+- `output/neo4j_relationships.jsonl`（8,371 筆，W1 的 Step 0，其中 CROSS_REFERENCES 932 列；1B 之前是 8,358 筆）
 - 實體節點與關係（from Step 1）
 
 ### 節點類型
@@ -311,6 +322,15 @@ uv run --project scripts python scripts/import_neo4j.py
 ```
 
 > ⚠ 預設先清空 `NEO4J_URI` 指向的整個資料庫（`--no-clear` 可關閉）。重建一律對 staging（`bolt://localhost:7688`）執行，跑之前先做 [staging_promotion.md](staging_promotion.md)「執行前檢查」中的環境變數檢查。
+
+### 交叉引用（第 1B 批起）
+- Step 0 每個段落對只寫一列，這裡以 `MERGE (a)-[r:CROSS_REFERENCES]->(b) SET r += props` 寫入。屬性：
+  - `curated: true`、`tsk: false`。Step 9 會把有 TSK 證據的段落對改成 `tsk: true`，並寫上 votes。
+  - `curated_sources`：排序過的來源清單（markdown、supplementary）。`source` 是單一值，兩者都有時取 markdown。
+  - markdown：`md_ref_texts`（原文，例如 `撒上31‧1－13`）與 `md_anchors`（同一列是 `1ch 10:?>1sa 31:1-13`），兩個清單逐項對齊。
+  - supplementary：`supp_anchors`、`supp_ref_types`（quotation／allusion）、`supp_descriptions`，三個清單逐項對齊。`supp_tsk_exempt_anchors` 只在定義帶 tsk_exempt 時才寫，因為 Neo4j 的 list 不能含 null。
+  - 不再寫 ref_text、verse_start、verse_end、ref_type、description、source_verses、target_verses。validate_kg 的 R4 只在讀 1B 之前建的圖時用到舊欄位。
+- **重複段落對防護**：連線之前（也就是清庫之前）檢查 neo4j_relationships.jsonl。CROSS_REFERENCES 有兩列以上同一個 (start, end) 時，逐對列出並結束碼 1，因為 MERGE 加 `SET r += props` 只會留下最後一列的屬性（XREF-1(b) 就這樣吞掉錨點）。通過時印出 `✓ 932 CROSS_REFERENCES rows, no duplicate pair`；檔案不存在時跳過，與匯入本身一致。
 
 ### 結果
 - Total nodes: 19,310
@@ -463,27 +483,37 @@ uv run --project scripts python scripts/embed_entities.py --recreate
 ## Step 9: TSK 串珠交叉引用匯入
 
 ### 說明
-將 Treasury of Scripture Knowledge（19 世紀公版串珠註解）的 verse 級交叉引用映射到 Pericope 層，匯入 Neo4j `CROSS_REFERENCES` 邊，串珠規模 916 → 250,418 條（tsk 249,502、markdown 774、supplementary 142）。TSK 建立的邊帶 `votes`（社群投票數）與 `source: 'tsk'`。
+將 Treasury of Scripture Knowledge（19 世紀公版串珠註解）的 verse 級交叉引用映射到 Pericope 層，匯入 Neo4j `CROSS_REFERENCES` 邊。2026-07 的 P0 把串珠從 916 條擴充到 250,418 條（tsk 249,502、markdown 774、supplementary 142）；第 1B 批之後是 250,366 條。
 
-手工 curated 邊（markdown 與 supplementary 共 916 條）在資料中**沒有** `votes` 屬性；999 不是存在資料裡的哨兵值，而是 backend 查詢時以 `coalesce(r.votes, 999)` 補出來的（backend/database/neo4j_db.py:202、239）。檢索端的 TSK 分權（手工 0.75/0.55 vs TSK 0.60/0.50）就靠這個補值判斷是否為 curated，因此 3 條 votes≥999 的 TSK 邊會被誤判成 curated。第 1B 批改成建置時寫入 `r.curated` 旗標，backend 改讀旗標（部署順序：先 backend，後資料）。
+- **寫入語意（第 1B 批起）**：每個 TSK 段落對都無條件 SET `votes`（該段落對的最大社群投票數）、`verse_pairs`、`tsk: true`，包括 Step 5 已寫成 curated 的段落對（保留它的 `source` 與 `curated`）。新建的邊是 `source: 'tsk'`、`curated: false`。所以同一個段落對可以同時是 curated 與 TSK。舊碼只在 ON CREATE 時寫 votes，與 curated 重疊的段落對拿不到 TSK 證據，匯入卻照樣顯示成功（XREF-4）。
+- **backend 怎麼分權**：讀 `r.curated`（`neo4j_db._CURATED_XREF`）。過渡期沒有旗標的邊以 `source IN ['markdown', 'supplementary']` 推斷；W2 在 prod 的 H8.unflagged 為 0 之後縮成只讀 `r.curated`。curated 邊的權重是 0.75/0.55，TSK 邊是 0.60/0.50。舊 backend 以 `coalesce(r.votes, 999)` 判斷：votes ≥ 999 的 3 條 TSK 邊因此被當成 curated（XREF-3）；新資料裡 924 條 curated 邊帶了 votes，舊 backend 會把它們當成 TSK。**所以先上 backend、後上資料**，載入資料前先用 deploy-guard 確認，見 [staging_promotion.md](staging_promotion.md) R3。
 
 ### 前提
-- Step 5 完成（Pericope 節點已在 Neo4j）
+- Step 5 完成，而且是用第 1 批之後的 Step 0 輸出建的：每條 curated 邊都要有旗標
 - `output/embedding_queue.jsonl` 存在（verse→pericope 反查表，31,102 節全覆蓋）
 - 原始資料 `output/cross_references_tsk.txt`：**不進 git**（`output/` 被 ignore），fresh clone 需自 [scrollmapper/bible_databases](https://github.com/scrollmapper/bible_databases) 下載 openbible.info 的 cross_references.txt（CC-BY）
 
 ### 指令
 ```bash
-# 先 dry-run 檢查映射率
+# 先 dry-run：映射率、旗標前置條件、supplementary 支撐閘門都會跑，不寫入
 uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt --dry-run
 
 uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt
 ```
 
+### 閘門（第 1B 批起；任一不過就結束碼 1）
+- **寫入之前**（`--dry-run` 也跑；只用 READ session，一個 MERGE 都不送）：
+  - 旗標前置條件：CROSS_REFERENCES 中 `curated` 或 `tsk` 未設的邊必須是 0。第 1 批之前建的圖（例如第 0 批的 staging）一律拒絕，不會寫一半。
+  - curated 邊至少一條。Step 5 找不到 `neo4j_relationships.jsonl` 時不會失敗，只是一條交叉引用都不建；這時照跑 Step 9 只會建出 250,358 條純 TSK 邊，attached_to_curated 是 0，寫入後的計數閘門照樣全過。所以 `Before:` 一行是 `(0 curated)` 時一律拒絕，要先重跑 Step 5。
+  - supplementary 節級支撐，只認同向：圖上每個 supplementary 錨點都要有一筆 TSK，從錨點的某個來源節指向某個目標節（定義的方向）。只有反向支撐或完全沒有支撐的錨點，除非列在 `supp_tsk_exempt_anchors`，否則逐筆印出兩個方向的最大 votes。用節級而不用段落級，是因為段落級連 XREF-2 刪掉的錯誤定義都「有支撐」。W1 印出 `supplementary anchors: 162 on 158 edges, tsk_exempt 0`，162 個錨點全部有同向支撐。
+- **寫入之後**：matched 等於 TSK 段落對數、count(tsk) 等於段落對數、count(tsk 且 curated) 等於 attached_to_curated、旗標未設的邊為 0。
+
 ### 結果
 - 344,799 行 → 過濾負 votes（1,166）與自環（9,811）→ 250,358 條 unique pericope 對（僅 7 條 unmapped）
-- 其中 856 對與既有 curated 邊是同一對段落。匯入只在 ON CREATE 時寫屬性，這 856 對的 votes 沒有寫上，所以 live 的 tsk 邊是 249,502 條（250,358 − 856）。第 1B 批改為無條件 SET，並加計數閘門
-- 回滾：`MATCH ()-[r:CROSS_REFERENCES {source: 'tsk'}]->() DELETE r`
+- 第 1B 批之後（W1 預期，由 `xref_probe.py expect` 從 Step 0 輸出離線重放）：印出 `After: created 249,434, attached_to_curated 924, matched 250,358`。CROSS_REFERENCES 共 250,366 條：curated 932 條（924 條同時是 TSK，8 條 markdown 沒有 TSK 證據），純 TSK 249,434 條。
+- 第 1B 批之前：有 856 對與 curated 邊重疊而沒有寫上 votes，live 的 tsk 邊是 249,502 條（250,358 − 856），而且沒有任何邊帶旗標。
+- **指紋與連跑兩次**：最後一行印 `fingerprint: <sha256>`，以每條邊的 (a, b, votes, verse_pairs, curated, tsk) 依 (a, b) 排序後計算，與寫入順序無關；W1 是 `e522411e…`。Step 9 沒有 refresh 模式，重灌時緊接著再跑一次：第二次必須印出 `created 0` 與同一個指紋。接著跑 `xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json`，結束碼必須是 0（期望檔在 W1 第 2 步之前登記，重建時只重算比對，見 [staging_promotion.md](staging_promotion.md) R2「W1 的交叉引用檢查」第 1 項）。curated 邊的清單屬性（`curated_sources`、`md_ref_texts`、`md_anchors`、`supp_anchors`、`supp_ref_types`、`supp_descriptions`、`supp_tsk_exempt_anchors`）不在指紋內。這些清單的內容只由 Step 0 的 validate_output 在 JSONL 上驗證，Step 5 以 `SET r += props` 原樣寫入；圖上的 R4 只看 supp_anchors 是否對齊，H8 只看 curated_sources 是否非空。
+- **回滾**：從 Step 5 重建（Step 5 清庫，再依「執行順序」跑完後面各步）；production 則照 [staging_promotion.md](staging_promotion.md) R5 載回 dump。不要用 `source: 'tsk'` 或 `tsk` 旗標刪邊：curated 邊也帶 `tsk: true` 與 votes，照謂詞刪會刪錯邊，或只刪掉一半的證據。
 
 ---
 
@@ -551,6 +581,11 @@ uv run --project scripts python scripts/check_identity.py --target staging --fai
 - **第 0 批的判準**。等價重建刻意保留 live 的狀態，所以不會全綠；預期差異要逐項列進該批的紀錄，不可直接 ratchet：
   - validate_kg：hard（H1、H2、H7）全過；結束碼 2 只能來自事先列出的退步。已知 R1 從基準 1,938 升到約 2,124（以 output/ JSONL 投影實測；verse remap 後 start_pos=0 從 1,785 變 1,947）。「但」的 370 條孤兒邊仍會被 10.3 重新產生（H3 到第 1A 批才是硬門檻）；mention_count 也會變。
   - check_identity：`--fail-on id` 結束碼 0，即三庫 id 集合差為 0。其餘欄位的差異在第 1D 批前屬正常：PG 的 P/P/G description 全空（Step 3 早於 Step 7；live 為 3,045 筆）、PG aliases（部分 10.x 補的 aliases 只進了 Neo4j；live 為 14 筆）。staging 的 Qdrant 預期 0 差異（8b 從 Neo4j 重讀，aliases 是原生 list），但 live 的 Qdrant aliases 是 JSON 字串（9,093 筆），所以 staging 對 live 的比對在這裡會不同，同樣屬正常。
+- **第 1B 批起的硬門檻：H8、R4、R11**（交叉引用）。
+  - H8：`no_provenance`（curated 與 votes 都沒有）、`unflagged`（curated 或 tsk 任一未設）、`flag_mismatch`（curated 與 curated_sources 是否非空不符，或 tsk 與 votes 是否存在不符），target 都是 0。
+  - R4：source 或 curated_sources 含 supplementary 的邊，逐個錨點判定。`misaligned` 是任一錨點某一端的第一節不在端點段落的 verse_range；`misaligned_any_verse` 是任一節不在；`unparsed` 是錨點或段落讀不了。target 都是 0。沒有錨點的邊（1B 之前建的圖）退回讀舊欄位 source_verses/target_verses。
+  - R11：`tsk_votes_edges`（votes 不是 null 的邊）是 equal、target 250,358；`tsk_flag_without_votes`（tsk 為 true 而 votes 是 null；Step 9 會同時寫 tsk 與 votes）的 target 是 0。250,358 綁定目前的 TSK 檔與段落切分，第 2D 批要重新 `--accept R11`。
+  - W1 預期（由 Step 0 輸出與 TSK 離線投影）：H8 0/0/0；R4 0/0/0，158 條邊、162 個錨點都讀錨點；R11 250,358/0；kg_probes 的 14 個 xref 探針全過。升版前的 prod 是 H8 916/250,418/0、R4 59/62/0、R11 249,502/0，對 prod 跑完整閘門必然結束碼 1，所以升版前只驗 staging（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §2.1）。基準的 value 在實作期間不 ratchet，R4 之後才與允許清單放在同一個 commit 裡 ratchet 或 `--accept`，見 [staging_promotion.md](staging_promotion.md) R4。
 - staging 對 live 的等價比對（E–E 各 phase 的邊數、描述逐字比對等）用 `scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_<批次>.yaml`（唯讀），與上面兩項相反，**必須在沒有 source staging.env 的乾淨 shell 跑**，見 [staging_promotion.md](staging_promotion.md) R2。
 
 ### export_event_registry（registry 匯出）

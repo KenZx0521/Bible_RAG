@@ -252,20 +252,32 @@
     {
       "id": "H8",
       "title": "CROSS_REFERENCES carry an explicit provenance flag",
-      "severity": "record",
+      "severity": "hard",
       "hard_from": "1B",
-      "plan_reference": "916",
-      "query": "CROSS_REFERENCES with curated IS NULL and votes IS NULL (curated-ness is only inferable from missing votes)",
+      "plan_reference": "no_provenance 916; unflagged 250,418; flag_mismatch 0",
+      "query": "CROSS_REFERENCES: no_provenance = curated IS NULL AND votes IS NULL (before 1B curated-ness is only inferable from missing votes); unflagged = curated IS NULL OR tsk IS NULL; flag_mismatch = curated set and != (curated_sources non-empty), or tsk set and != (votes IS NOT NULL)",
       "metrics": {
         "no_provenance": {
           "value": 916,
           "direction": "down",
           "tolerance": 0,
           "target": 0
+        },
+        "unflagged": {
+          "value": 250418,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "flag_mismatch": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
         }
       },
       "measured": {
-        "at": "2026-10-04",
+        "at": "2026-10-05",
         "origin": "live:prod (bolt://localhost:7687)"
       }
     },
