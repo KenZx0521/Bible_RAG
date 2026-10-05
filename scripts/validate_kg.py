@@ -60,7 +60,9 @@ a missing file reported n/a, and refuses --ratchet/--accept:
                           import's MERGE does. R3's all-forms reading and R9 read every row.
   relations.jsonl         head_id, relation | type, tail_id, source_pericope_id, extraction_phase,
                           notes, curated?, backfilled?
-  cross_references.jsonl  source_id, target_id, source, votes, curated?, tsk?, source_verses?, target_verses?
+  cross_references.jsonl  source_id, target_id, source, votes, curated?, tsk?, curated_sources?,
+                          supp_anchors? ['heb 1:5>psa 2:7'], md_anchors? ['mrk 1:?>psa 2:7'] (1B lists,
+                          one row per pair), source_verses?, target_verses? (legacy scalars, pre-1B)
   pericopes.jsonl         id, book_id, verse_range        chunks.jsonl  id, pericope_id
   books.jsonl             id, name
 Text checks (R2, R9) read --embedding-queue (output/embedding_queue.jsonl), the K0
