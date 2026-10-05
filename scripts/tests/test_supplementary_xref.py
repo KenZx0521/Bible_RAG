@@ -16,7 +16,8 @@ cross-chapter ref ('-?') and the ranges after a comma (',?').
 
 fixtures/xref/supp_expected_anchors.json is the golden [anchor, start, end]
 table, sorted: golden_s3.json of docs/records/2026-10-04_kg_fix/batch1/w1_1B/
-(equal after json.load), one row per line.
+(equal after json.load) less the two XREF-2 deletions (1B-C5a), one row per
+line.
 """
 
 import json
@@ -73,7 +74,8 @@ def test_process_bible_stops_before_writing_on_a_bad_definition(tmp_path, monkey
 
     assert stopped.value.code == 1
     assert sorted(path.name for path in tmp_path.glob("*.jsonl")) == []
-    assert "definition 161: 'mat 99:1': verses 1 are in no pericope" in caplog.text
+    assert (f"definition {len(SUPPLEMENTARY_CROSS_REFS)}: 'mat 99:1': verses 1 are in no pericope"
+            in caplog.text)
 
 
 def test_process_bible_stops_before_writing_on_a_non_string_value(tmp_path, monkeypatch,
@@ -137,6 +139,20 @@ def step0(tmp_path_factory):
     with (out / "neo4j_relationships.jsonl").open(encoding="utf-8") as f:
         rows = [row for row in map(json.loads, f) if row["type"] == "CROSS_REFERENCES"]
     return rows, md_refs
+
+
+# XREF-2 (1B-C5a): two definitions with no verse-level TSK support in either
+# direction, deleted (evidence in test_supp_defs_frozen.DELETED); their anchors
+# must not come back through another definition either.
+XREF2_DELETED = {("rev 20:4", "isa 65:17"): ("rev:20:0", "isa:65:1"),
+                 ("rev 19:1", "psa 118:1"): ("rev:19:0", "psa:118:0")}
+
+
+def test_xref2_deleted_definitions_absent(step0):
+    assert {(ref.src, ref.tgt) for ref in SUPPLEMENTARY_CROSS_REFS}.isdisjoint(XREF2_DELETED)
+    rows, _ = step0
+    supp_pairs = {(r["start"], r["end"]) for r in rows if r["properties"].get("supp_anchors")}
+    assert supp_pairs.isdisjoint(XREF2_DELETED.values())
 
 
 def test_step0_writes_one_curated_row_per_pair(step0):

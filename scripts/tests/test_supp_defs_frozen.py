@@ -54,7 +54,14 @@ def test_archived_scripts_do_not_import_live_definitions():
 
 # Changes to the a32fbea definitions, keyed by the converted (src, tgt); each
 # lands in the commit that makes it, with its evidence in that commit.
-DELETED: set[tuple[str, str]] = set()
+DELETED: set[tuple[str, str]] = {
+    # XREF-2 (1B-C5a): no verse-level TSK support in either direction (60-verse
+    # cap, w1_1B/sup_s3.py). TSK Rev.20.4 points nowhere in Isaiah (新天新地 is
+    # rev 21:1 → isa 65:17, its own definition); Ps 118:1 has no 哈利路亞 and
+    # TSK Rev.19.1 points to eight other psalms, never Ps 118.
+    ("rev 20:4", "isa 65:17"),
+    ("rev 19:1", "psa 118:1"),
+}
 RETARGETED: dict[tuple[str, str], tuple[str, str]] = {}
 
 
