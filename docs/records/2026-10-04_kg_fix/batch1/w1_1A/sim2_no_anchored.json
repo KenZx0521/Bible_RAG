@@ -1,0 +1,3562 @@
+{
+ "begot_mode": "gei",
+ "surface_mode": "declared",
+ "log": {
+  "input": 6958,
+  "input_kin": 1571,
+  "anchored_disagreement_children": 49,
+  "anchored_disagreement_abstain_raw": 176,
+  "anchored_raw": 0,
+  "anchored_unique": 0,
+  "gate_drops_due_to_dan_filter": {
+   "NEAR": 1
+  },
+  "direction_unverified": {
+   "LOCATED_IN": 47,
+   "SUCCEEDED_BY": 1
+  },
+  "multi_source_keys": 0,
+  "output": 5377
+ },
+ "anchored_stats": {
+  "foreign_surface_skipped": 2366,
+  "P1_child_of": 518,
+  "P4_wife": 13,
+  "same_name_guard_abstain": 60,
+  "ambiguous_name": 156,
+  "P3_begot": 9,
+  "P2_is_child_of": 101
+ },
+ "drops": {
+  "1_rule_phase2": {
+   "SON_OF": 401,
+   "MEMBER_OF": 25,
+   "BUILT": 9,
+   "FATHER_OF": 140,
+   "ANCESTOR_OF": 7,
+   "SUCCEEDED_BY": 2,
+   "RULED": 65,
+   "SIBLING_OF": 16,
+   "SPOUSE_OF": 22,
+   "DAUGHTER_OF": 23,
+   "DESCENDANT_OF": 9,
+   "MOTHER_OF": 29,
+   "RETURNED_FROM": 13,
+   "LOCATED_IN": 4,
+   "BORN_IN": 1,
+   "EXILED_TO": 6
+  },
+  "2_inverse_phase5": {
+   "SON_OF": 221,
+   "TEACHER_OF": 13,
+   "DISCIPLE_OF": 7,
+   "FATHER_OF": 462,
+   "DESCENDANT_OF": 22,
+   "ANCESTOR_OF": 27
+  },
+  "3_llm_event_event": {
+   "PRECEDED_BY": 24,
+   "CAUSED": 14
+  },
+  "4_domain_range": {
+   "LEADER_OF": 7,
+   "MEMBER_OF": 1,
+   "SETTLED_IN": 4,
+   "ORIGINATED_FROM": 1
+  },
+  "5_provenance_gate": {
+   "NEAR": 1
+  },
+  "6_contradicts_prior_direction": {
+   "LOCATED_IN": 1
+  },
+  "7b_undirected_duplicate": {
+   "ENEMY_OF": 1,
+   "ALLY_OF": 1,
+   "SPOUSE_OF": 2
+  }
+ },
+ "drops_total": {
+  "1_rule_phase2": 772,
+  "2_inverse_phase5": 752,
+  "3_llm_event_event": 38,
+  "4_domain_range": 13,
+  "5_provenance_gate": 1,
+  "6_contradicts_prior_direction": 1,
+  "7b_undirected_duplicate": 4
+ },
+ "kin_drops": {
+  "1_rule_phase2": 647,
+  "2_inverse_phase5": 732,
+  "7b_undirected_duplicate": 2
+ },
+ "final_by_source": {
+  "prior": 64,
+  "llm": 5313
+ },
+ "final_kin_total": 190,
+ "final_kin_by_rel": {
+  "FATHER_OF": 45,
+  "MOTHER_OF": 15,
+  "DESCENDANT_OF": 18,
+  "SON_OF": 37,
+  "DAUGHTER_OF": 4,
+  "ANCESTOR_OF": 15,
+  "SPOUSE_OF": 24,
+  "SIBLING_OF": 32
+ },
+ "final_kin_by_source": {
+  "prior": 30,
+  "llm": 160
+ },
+ "final_by_rel": {
+  "ALLY_OF": 63,
+  "ANCESTOR_OF": 15,
+  "BORN_IN": 10,
+  "BUILT": 7,
+  "DAUGHTER_OF": 4,
+  "DESCENDANT_OF": 18,
+  "DESTROYED": 38,
+  "DIED_IN": 20,
+  "DISCIPLE_OF": 14,
+  "ENEMY_OF": 32,
+  "EXILED_TO": 14,
+  "FATHER_OF": 45,
+  "FOUNDED": 1,
+  "GAVE": 76,
+  "INITIATED": 403,
+  "LEADER_OF": 63,
+  "LOCATED_IN": 50,
+  "MEMBER_OF": 331,
+  "MOTHER_OF": 15,
+  "NEAR": 28,
+  "OCCURRED_IN": 919,
+  "ORIGINATED_FROM": 50,
+  "PARTICIPATED_IN": 1521,
+  "POSSESSED": 551,
+  "RECEIVED": 171,
+  "RETURNED_FROM": 28,
+  "RULED": 79,
+  "SETTLED_IN": 219,
+  "SIBLING_OF": 32,
+  "SON_OF": 37,
+  "SPOUSE_OF": 24,
+  "SUCCEEDED_BY": 5,
+  "TEACHER_OF": 8,
+  "VICTIM_OF": 233,
+  "VISITED": 253
+ },
+ "r6_relations_jsonl_before": {
+  "FATHER_OF": 647,
+  "contradictions": 25,
+  "female_head": 42,
+  "children": 252,
+  "children_2plus_fathers": 135,
+  "functional_violation_rate": 0.5357
+ },
+ "r6_live_before": {
+  "FATHER_OF": 647,
+  "contradictions": 25,
+  "female_head": 42,
+  "children": 252,
+  "children_2plus_fathers": 135,
+  "functional_violation_rate": 0.5357
+ },
+ "r6_after": {
+  "FATHER_OF": 45,
+  "contradictions": 0,
+  "female_head": 0,
+  "children": 42,
+  "children_2plus_fathers": 3,
+  "functional_violation_rate": 0.0714,
+  "contra_samples": [],
+  "female_samples": []
+ },
+ "kin_conflicts": [],
+ "kin_conflicts_n": 0,
+ "probes": {
+  "edge-no-dan-orphan-nehemiah-wall": true,
+  "kin-terah-father-of-abraham": true,
+  "kin-abraham-father-of-isaac": true,
+  "kin-jacob-father-of-joseph": true,
+  "kin-lot-not-father-of-terah": true,
+  "kin-isaac-not-father-of-abraham": true,
+  "kin-leah-not-father-of-reuben": true,
+  "kin-leah-not-father-of-isaac": true
+ },
+ "same_type_directed_head_lt_tail": {
+  "FATHER_OF": [
+   45,
+   0.933
+  ],
+  "MOTHER_OF": [
+   15,
+   0.933
+  ],
+  "SUCCEEDED_BY": [
+   5,
+   0.8
+  ],
+  "DISCIPLE_OF": [
+   14,
+   0.929
+  ],
+  "TEACHER_OF": [
+   8,
+   1.0
+  ],
+  "LOCATED_IN": [
+   50,
+   0.98
+  ],
+  "DESCENDANT_OF": [
+   18,
+   1.0
+  ],
+  "SON_OF": [
+   37,
+   1.0
+  ],
+  "DAUGHTER_OF": [
+   4,
+   1.0
+  ],
+  "ANCESTOR_OF": [
+   15,
+   1.0
+  ]
+ },
+ "guard_conflicts_n": 60,
+ "disagree_conflicts": [
+  {
+   "head_id": "person:tashi",
+   "relation": "SON_OF",
+   "tail_id": "person:yawan",
+   "source_pericope_id": "gen:10:0",
+   "verse": 4,
+   "pattern": "P1_child_of",
+   "evidence_span": "雅完的兒子是以利沙、他施、基提、多單。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bileihan"
+   ]
+  },
+  {
+   "head_id": "person:shiba",
+   "relation": "SON_OF",
+   "tail_id": "person:lama",
+   "source_pericope_id": "gen:10:0",
+   "verse": 7,
+   "pattern": "P1_child_of",
+   "evidence_span": "古實的兒子是西巴、哈腓拉、撒弗他、拉瑪、撒弗提迦。拉瑪的兒子是示巴、底但。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yueshan"
+   ]
+  },
+  {
+   "head_id": "person:xiela",
+   "relation": "SON_OF",
+   "tail_id": "person:liuer",
+   "source_pericope_id": "gen:36:0",
+   "verse": 13,
+   "pattern": "P1_child_of",
+   "evidence_span": "流珥的兒子是拿哈、謝拉、沙瑪、米撒。這是以掃妻子巴實抹的子孫。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ximian",
+    "person:yiduo"
+   ]
+  },
+  {
+   "head_id": "person:yisao",
+   "relation": "FATHER_OF",
+   "tail_id": "person:yewushi",
+   "source_pericope_id": "gen:36:0",
+   "verse": 14,
+   "pattern": "P3_begot",
+   "evidence_span": "以掃的妻子阿何利巴瑪是祭便的孫女，亞拿的女兒；她給以掃生了耶烏施、雅蘭、可拉。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bileihan"
+   ]
+  },
+  {
+   "head_id": "person:yisao",
+   "relation": "FATHER_OF",
+   "tail_id": "person:kela",
+   "source_pericope_id": "gen:36:0",
+   "verse": 14,
+   "pattern": "P3_begot",
+   "evidence_span": "以掃的妻子阿何利巴瑪是祭便的孫女，亞拿的女兒；她給以掃生了耶烏施、雅蘭、可拉。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaminada",
+    "person:yisiha"
+   ]
+  },
+  {
+   "head_id": "person:ximan",
+   "relation": "SON_OF",
+   "tail_id": "person:luotan",
+   "source_pericope_id": "gen:36:1",
+   "verse": 22,
+   "pattern": "P1_child_of",
+   "evidence_span": "羅坍的兒子是何利、希幔；羅坍的妹子是亭納。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mahe",
+    "person:xiela",
+    "person:yueer"
+   ]
+  },
+  {
+   "head_id": "person:yagan",
+   "relation": "SON_OF",
+   "tail_id": "person:yicha",
+   "source_pericope_id": "gen:36:1",
+   "verse": 27,
+   "pattern": "P1_child_of",
+   "evidence_span": "以察的兒子是辟罕、撒番、亞干。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:jiami"
+   ]
+  },
+  {
+   "head_id": "person:yishiwei",
+   "relation": "SON_OF",
+   "tail_id": "person:yashe",
+   "source_pericope_id": "gen:46:0",
+   "verse": 17,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞設的兒子是音拿、亦施瓦、亦施韋、比利亞，還有他們的妹子西拉。比利亞的兒子是希別、瑪結。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:bila",
+   "relation": "SON_OF",
+   "tail_id": "person:bianyamin",
+   "source_pericope_id": "gen:46:0",
+   "verse": 21,
+   "pattern": "P1_child_of",
+   "evidence_span": "便雅憫的兒子是比拉、比結、亞實別、基拉、乃幔、以希、羅實",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yasa"
+   ]
+  },
+  {
+   "head_id": "person:wuxue",
+   "relation": "SON_OF",
+   "tail_id": "person:gexia",
+   "source_pericope_id": "exo:6:2",
+   "verse": 18,
+   "pattern": "P1_child_of",
+   "evidence_span": "哥轄的兒子是暗蘭、以斯哈、希伯倫、烏薛。哥轄一生的歲數是一百三十三歲。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ximan"
+   ]
+  },
+  {
+   "head_id": "person:kela",
+   "relation": "SON_OF",
+   "tail_id": "person:yisiha",
+   "source_pericope_id": "exo:6:2",
+   "verse": 21,
+   "pattern": "P1_child_of",
+   "evidence_span": "以斯哈的兒子是可拉、尼斐、細基利。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaminada",
+    "person:yisao"
+   ]
+  },
+  {
+   "head_id": "person:xijili",
+   "relation": "SON_OF",
+   "tail_id": "person:yisiha",
+   "source_pericope_id": "exo:6:2",
+   "verse": 21,
+   "pattern": "P1_child_of",
+   "evidence_span": "以斯哈的兒子是可拉、尼斐、細基利。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yuelan"
+   ]
+  },
+  {
+   "head_id": "person:yaxi",
+   "relation": "SON_OF",
+   "tail_id": "person:kela",
+   "source_pericope_id": "exo:6:2",
+   "verse": 24,
+   "pattern": "P1_child_of",
+   "evidence_span": "可拉的兒子是亞惜、以利加拿、亞比亞撒；這是可拉的各家。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yibiyasa"
+   ]
+  },
+  {
+   "head_id": "person:nada",
+   "relation": "SON_OF",
+   "tail_id": "person:yalun",
+   "source_pericope_id": "lev:10:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞倫的兒子拿答、亞比戶各拿自己的香爐，盛上火，加上香，在耶和華面前獻上凡火，是耶和華沒有吩咐他們的，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:shamai"
+   ]
+  },
+  {
+   "head_id": "person:kela",
+   "relation": "SON_OF",
+   "tail_id": "person:yisiha",
+   "source_pericope_id": "num:16:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "利未的曾孫、哥轄的孫子、以斯哈的兒子可拉，和呂便子孫中以利押的兒子大坍、亞比蘭，與比勒的兒子安，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaminada",
+    "person:yisao"
+   ]
+  },
+  {
+   "head_id": "person:balan",
+   "relation": "SON_OF",
+   "tail_id": "person:bier",
+   "source_pericope_id": "num:24:0",
+   "verse": 3,
+   "pattern": "P1_child_of",
+   "evidence_span": "他便題起詩歌說：比珥的兒子巴蘭說，眼目閉住的人說，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:piduorenbier"
+   ]
+  },
+  {
+   "head_id": "person:balan",
+   "relation": "SON_OF",
+   "tail_id": "person:bier",
+   "source_pericope_id": "num:24:1",
+   "verse": 15,
+   "pattern": "P1_child_of",
+   "evidence_span": "他就題起詩歌說：比珥的兒子巴蘭說：眼目閉住的人說，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:piduorenbier"
+   ]
+  },
+  {
+   "head_id": "person:balan",
+   "relation": "SON_OF",
+   "tail_id": "person:bier",
+   "source_pericope_id": "num:31:0",
+   "verse": 8,
+   "pattern": "P1_child_of",
+   "evidence_span": "在所殺的人中，殺了米甸的五王，就是以未、利金、蘇珥、戶珥、利巴，又用刀殺了比珥的兒子巴蘭。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:piduorenbier"
+   ]
+  },
+  {
+   "head_id": "person:balan",
+   "relation": "SON_OF",
+   "tail_id": "person:piduorenbier",
+   "source_pericope_id": "deu:23:0",
+   "verse": 4,
+   "pattern": "P1_child_of",
+   "evidence_span": "因為你們出埃及的時候，他們沒有拿食物和水在路上迎接你們，又因他們雇了美索不達米亞的毗奪人比珥的兒子巴蘭來咒詛你們。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bier"
+   ]
+  },
+  {
+   "head_id": "person:balan",
+   "relation": "SON_OF",
+   "tail_id": "person:bier",
+   "source_pericope_id": "jos:24:0",
+   "verse": 9,
+   "pattern": "P1_child_of",
+   "evidence_span": "那時，摩押王西撥的兒子巴勒起來攻擊以色列人，打發人召了比珥的兒子巴蘭來咒詛你們。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:piduorenbier"
+   ]
+  },
+  {
+   "head_id": "person:yishiwei",
+   "relation": "SON_OF",
+   "tail_id": "person:saoluo",
+   "source_pericope_id": "1sa:14:3",
+   "verse": 49,
+   "pattern": "P1_child_of",
+   "evidence_span": "掃羅的兒子是約拿單、亦施韋、麥基舒亞。他的兩個女兒：長女名米拉，次女名米甲。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yashe"
+   ]
+  },
+  {
+   "head_id": "person:sadu",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxitu",
+   "source_pericope_id": "2sa:8:0",
+   "verse": 17,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞希突的兒子撒督和亞比亞他的兒子亞希米勒作祭司長；西萊雅作書記；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:milayue",
+    "person:yinmai"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:sadu",
+   "source_pericope_id": "1ki:4:0",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "他的臣子記在下面：撒督的兒子亞撒利雅作祭司，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:nadan",
+   "source_pericope_id": "1ki:4:0",
+   "verse": 5,
+   "pattern": "P1_child_of",
+   "evidence_span": "拿單的兒子亞撒利雅作眾吏長，王的朋友拿單的兒子撒布得作領袖，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:ximan",
+   "relation": "SON_OF",
+   "tail_id": "person:mahe",
+   "source_pericope_id": "1ki:4:2",
+   "verse": 31,
+   "pattern": "P1_child_of",
+   "evidence_span": "他的智慧勝過萬人，勝過以斯拉人以探，並瑪曷的兒子希幔、甲各、達大的智慧。他的名聲傳揚在四圍的列國。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:luotan",
+    "person:xiela",
+    "person:yueer"
+   ]
+  },
+  {
+   "head_id": "person:jiage",
+   "relation": "SON_OF",
+   "tail_id": "person:mahe",
+   "source_pericope_id": "1ki:4:2",
+   "verse": 31,
+   "pattern": "P1_child_of",
+   "evidence_span": "他的智慧勝過萬人，勝過以斯拉人以探，並瑪曷的兒子希幔、甲各、達大的智慧。他的名聲傳揚在四圍的列國。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:xiela"
+   ]
+  },
+  {
+   "head_id": "person:yeluoboan",
+   "relation": "SON_OF",
+   "tail_id": "person:niba",
+   "source_pericope_id": "1ki:11:2",
+   "verse": 26,
+   "pattern": "P1_child_of",
+   "evidence_span": "所羅門的臣僕、尼八的兒子耶羅波安也舉手攻擊王。他是以法蓮支派的洗利達人，他母親是寡婦，名叫洗魯阿。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liniba",
+    "person:yueashi"
+   ]
+  },
+  {
+   "head_id": "person:yeluoboan",
+   "relation": "SON_OF",
+   "tail_id": "person:niba",
+   "source_pericope_id": "1ki:12:0",
+   "verse": 15,
+   "pattern": "P1_child_of",
+   "evidence_span": "王不肯依從百姓，這事乃出於耶和華，為要應驗他藉示羅人亞希雅對尼八的兒子耶羅波安所說的話。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liniba",
+    "person:yueashi"
+   ]
+  },
+  {
+   "head_id": "person:yeluoboan",
+   "relation": "SON_OF",
+   "tail_id": "person:niba",
+   "source_pericope_id": "1ki:16:3",
+   "verse": 26,
+   "pattern": "P1_child_of",
+   "evidence_span": "因他行了尼八的兒子耶羅波安所行的，犯他使以色列人陷在罪裏的那罪，以虛無的神惹耶和華－以色列上帝的怒氣。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liniba",
+    "person:yueashi"
+   ]
+  },
+  {
+   "head_id": "person:yaha",
+   "relation": "SON_OF",
+   "tail_id": "person:anli",
+   "source_pericope_id": "1ki:16:4",
+   "verse": 29,
+   "pattern": "P1_child_of",
+   "evidence_span": "猶大王亞撒三十八年，暗利的兒子亞哈登基作了以色列王。暗利的兒子亞哈在撒馬利亞作以色列王二十二年。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:gelaiya"
+   ]
+  },
+  {
+   "head_id": "person:yeluoboan",
+   "relation": "SON_OF",
+   "tail_id": "person:niba",
+   "source_pericope_id": "1ki:16:4",
+   "verse": 31,
+   "pattern": "P1_child_of",
+   "evidence_span": "犯了尼八的兒子耶羅波安所犯的罪；他還以為輕，又娶了西頓王謁巴力的女兒耶洗別為妻，去事奉敬拜巴力，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liniba",
+    "person:yueashi"
+   ]
+  },
+  {
+   "head_id": "person:yuelan",
+   "relation": "SON_OF",
+   "tail_id": "person:yaha",
+   "source_pericope_id": "2ki:3:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "猶大王約沙法十八年，亞哈的兒子約蘭在撒馬利亞登基作了以色列王十二年。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yeshaiya",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yuelan",
+   "relation": "SON_OF",
+   "tail_id": "person:yaha",
+   "source_pericope_id": "2ki:8:3",
+   "verse": 28,
+   "pattern": "P1_child_of",
+   "evidence_span": "他與亞哈的兒子約蘭同往基列的拉末去，與亞蘭王哈薛爭戰。亞蘭人打傷了約蘭，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yeshaiya",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yehu",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "2ki:9:0",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "到了那裏，要尋找寧示的孫子、約沙法的兒子耶戶，使他從同僚中起來，帶他進嚴密的屋子，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yueshibi"
+   ]
+  },
+  {
+   "head_id": "person:sajialiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yeluoboan",
+   "source_pericope_id": "2ki:15:1",
+   "verse": 8,
+   "pattern": "P1_child_of",
+   "evidence_span": "猶大王亞撒利雅三十八年，耶羅波安的兒子撒迦利雅在撒馬利亞作以色列王六個月。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mishilimiya",
+    "person:yamaliya",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yeluoboan",
+   "relation": "SON_OF",
+   "tail_id": "person:liniba",
+   "source_pericope_id": "2ki:17:0",
+   "verse": 21,
+   "pattern": "P1_child_of",
+   "evidence_span": "將以色列國從大衛家奪回；他們就立尼八的兒子耶羅波安作王。耶羅波安引誘以色列人不隨從耶和華，陷在大罪裏。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:niba",
+    "person:yueashi"
+   ]
+  },
+  {
+   "head_id": "person:yeluoboan",
+   "relation": "SON_OF",
+   "tail_id": "person:niba",
+   "source_pericope_id": "2ki:23:0",
+   "verse": 15,
+   "pattern": "P1_child_of",
+   "evidence_span": "他將伯特利的壇，就是叫以色列人陷在罪裏、尼八的兒子耶羅波安所築的那壇，都拆毀焚燒，打碎成灰，並焚燒了亞舍拉。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liniba",
+    "person:yueashi"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxigan",
+   "source_pericope_id": "2ki:25:3",
+   "verse": 22,
+   "pattern": "P1_child_of",
+   "evidence_span": "至於猶大國剩下的民，就是巴比倫王尼布甲尼撒所剩下的，巴比倫王立了沙番的孫子、亞希甘的兒子基大利作他們的省長。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:tashi",
+   "relation": "SON_OF",
+   "tail_id": "person:yawan",
+   "source_pericope_id": "1ch:1:0",
+   "verse": 7,
+   "pattern": "P1_child_of",
+   "evidence_span": "雅完的兒子是以利沙、他施、基提、多單。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bileihan"
+   ]
+  },
+  {
+   "head_id": "person:shiba",
+   "relation": "SON_OF",
+   "tail_id": "person:lama",
+   "source_pericope_id": "1ch:1:0",
+   "verse": 9,
+   "pattern": "P1_child_of",
+   "evidence_span": "古實的兒子是西巴、哈腓拉、撒弗他、拉瑪、撒弗提迦。拉瑪的兒子是示巴、底但。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yueshan"
+   ]
+  },
+  {
+   "head_id": "person:shiba",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshan",
+   "source_pericope_id": "1ch:1:1",
+   "verse": 32,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞伯拉罕的妾基土拉所生的兒子，就是心蘭、約珊、米但、米甸、伊施巴、書亞。約珊的兒子是示巴、底但。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:lama"
+   ]
+  },
+  {
+   "head_id": "person:xiela",
+   "relation": "SON_OF",
+   "tail_id": "person:liuer",
+   "source_pericope_id": "1ch:1:2",
+   "verse": 37,
+   "pattern": "P1_child_of",
+   "evidence_span": "流珥的兒子是拿哈、謝拉、沙瑪、米撒。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ximian",
+    "person:yiduo"
+   ]
+  },
+  {
+   "head_id": "person:shifei",
+   "relation": "SON_OF",
+   "tail_id": "person:shuoba",
+   "source_pericope_id": "1ch:1:3",
+   "verse": 40,
+   "pattern": "P1_child_of",
+   "evidence_span": "朔巴的兒子是亞勒文、瑪拿轄、以巴錄、示非、阿南。祭便的兒子是亞雅、亞拿。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yalong"
+   ]
+  },
+  {
+   "head_id": "person:yagan",
+   "relation": "SON_OF",
+   "tail_id": "person:yicha",
+   "source_pericope_id": "1ch:1:3",
+   "verse": 42,
+   "pattern": "P1_child_of",
+   "evidence_span": "以察的兒子是辟罕、撒番、亞干。底珊的兒子是烏斯、亞蘭。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:jiami"
+   ]
+  },
+  {
+   "head_id": "person:yitan",
+   "relation": "SON_OF",
+   "tail_id": "person:xiela",
+   "source_pericope_id": "1ch:2:0",
+   "verse": 6,
+   "pattern": "P1_child_of",
+   "evidence_span": "謝拉的兒子是心利、以探、希幔、甲各、大拉，共五人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:xinma"
+   ]
+  },
+  {
+   "head_id": "person:ximan",
+   "relation": "SON_OF",
+   "tail_id": "person:xiela",
+   "source_pericope_id": "1ch:2:0",
+   "verse": 6,
+   "pattern": "P1_child_of",
+   "evidence_span": "謝拉的兒子是心利、以探、希幔、甲各、大拉，共五人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:luotan",
+    "person:mahe",
+    "person:yueer"
+   ]
+  },
+  {
+   "head_id": "person:jiage",
+   "relation": "SON_OF",
+   "tail_id": "person:xiela",
+   "source_pericope_id": "1ch:2:0",
+   "verse": 6,
+   "pattern": "P1_child_of",
+   "evidence_span": "謝拉的兒子是心利、以探、希幔、甲各、大拉，共五人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mahe"
+   ]
+  },
+  {
+   "head_id": "person:yagan",
+   "relation": "SON_OF",
+   "tail_id": "person:jiami",
+   "source_pericope_id": "1ch:2:0",
+   "verse": 7,
+   "pattern": "P1_child_of",
+   "evidence_span": "迦米的兒子是亞干，這亞干在當滅的物上犯了罪，連累了以色列人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yicha"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:yitan",
+   "source_pericope_id": "1ch:2:0",
+   "verse": 8,
+   "pattern": "P1_child_of",
+   "evidence_span": "以探的兒子是亞撒利雅。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:nada",
+   "relation": "SON_OF",
+   "tail_id": "person:shamai",
+   "source_pericope_id": "1ch:2:3",
+   "verse": 28,
+   "pattern": "P1_child_of",
+   "evidence_span": "阿南的兒子是沙買、雅大。沙買的兒子是拿答、亞比述。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yalun"
+   ]
+  },
+  {
+   "head_id": "person:yuelan",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 11,
+   "pattern": "P1_child_of",
+   "evidence_span": "約沙法的兒子是約蘭；約蘭的兒子是亞哈謝；亞哈謝的兒子是約阿施；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaha",
+    "person:yeshaiya"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:yamaxie",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 12,
+   "pattern": "P1_child_of",
+   "evidence_span": "約阿施的兒子是亞瑪謝；亞瑪謝的兒子是亞撒利雅；亞撒利雅的兒子是約坦；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:shimei",
+   "relation": "SON_OF",
+   "tail_id": "person:pidaya",
+   "source_pericope_id": "1ch:3:2",
+   "verse": 19,
+   "pattern": "P1_child_of",
+   "evidence_span": "毗大雅的兒子是所羅巴伯、示每。所羅巴伯的兒子是米書蘭、哈拿尼雅，他們的妹子名叫示羅密。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:gege",
+    "person:geshun",
+    "person:lini",
+    "person:sake"
+   ]
+  },
+  {
+   "head_id": "person:bilijia",
+   "relation": "SON_OF",
+   "tail_id": "person:mishulan",
+   "source_pericope_id": "1ch:3:2",
+   "verse": 20,
+   "pattern": "P1_child_of",
+   "evidence_span": "米書蘭的兒子是哈舒巴、阿黑、比利家、哈撒底、于沙‧希悉，五人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mishilimo"
+   ]
+  },
+  {
+   "head_id": "person:shimaya",
+   "relation": "SON_OF",
+   "tail_id": "person:shijiani",
+   "source_pericope_id": "1ch:3:2",
+   "verse": 22,
+   "pattern": "P1_child_of",
+   "evidence_span": "示迦尼的兒子是示瑪雅；示瑪雅的兒子是哈突、以甲、巴利亞、尼利雅、沙法，共六人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:hashu",
+    "person:matani",
+    "person:yueer"
+   ]
+  },
+  {
+   "head_id": "person:xilaiya",
+   "relation": "SON_OF",
+   "tail_id": "person:jinasi",
+   "source_pericope_id": "1ch:4:1",
+   "verse": 13,
+   "pattern": "P1_child_of",
+   "evidence_span": "基納斯的兒子是俄陀聶、西萊雅。俄陀聶的兒子是哈塔。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:xileijia",
+    "person:yasaliya",
+    "person:yasilie"
+   ]
+  },
+  {
+   "head_id": "person:xiela",
+   "relation": "SON_OF",
+   "tail_id": "person:ximian",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 24,
+   "pattern": "P1_child_of",
+   "evidence_span": "西緬的兒子是尼母利、雅憫、雅立、謝拉、掃羅。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liuer",
+    "person:yiduo"
+   ]
+  },
+  {
+   "head_id": "person:sake",
+   "relation": "SON_OF",
+   "tail_id": "person:hamuli",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 26,
+   "pattern": "P1_child_of",
+   "evidence_span": "米施瑪的兒子是哈母利；哈母利的兒子是撒刻；撒刻的兒子是示每。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:matani"
+   ]
+  },
+  {
+   "head_id": "person:shimei",
+   "relation": "SON_OF",
+   "tail_id": "person:sake",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 26,
+   "pattern": "P1_child_of",
+   "evidence_span": "米施瑪的兒子是哈母利；哈母利的兒子是撒刻；撒刻的兒子是示每。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:gege",
+    "person:geshun",
+    "person:lini",
+    "person:pidaya"
+   ]
+  },
+  {
+   "head_id": "person:yehu",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshibi",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 35,
+   "pattern": "P1_child_of",
+   "evidence_span": "約珥、約示比的兒子耶戶；約示比是西萊雅的兒子；西萊雅是亞薛的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:shifei",
+   "relation": "SON_OF",
+   "tail_id": "person:yalong",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 37,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "示非的兒子細撒。示非是亞龍的兒子；亞龍是耶大雅的兒子；耶大雅是申利的兒子；申利是示瑪雅的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:shuoba"
+   ]
+  },
+  {
+   "head_id": "person:yedaya",
+   "relation": "SON_OF",
+   "tail_id": "person:shenli",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 37,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "示非的兒子細撒。示非是亞龍的兒子；亞龍是耶大雅的兒子；耶大雅是申利的兒子；申利是示瑪雅的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:halumo"
+   ]
+  },
+  {
+   "head_id": "person:pilati",
+   "relation": "SON_OF",
+   "tail_id": "person:yishi",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 42,
+   "pattern": "P1_child_of",
+   "evidence_span": "這西緬人中，有五百人上西珥山，率領他們的是以示的兒子毗拉提、尼利雅、利法雅，和烏薛，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:binaya"
+   ]
+  },
+  {
+   "head_id": "person:shimaya",
+   "relation": "SON_OF",
+   "tail_id": "person:yueer",
+   "source_pericope_id": "1ch:5:0",
+   "verse": 4,
+   "pattern": "P1_child_of",
+   "evidence_span": "約珥的兒子是示瑪雅；示瑪雅的兒子是歌革；歌革的兒子是示每；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:hashu",
+    "person:matani",
+    "person:shijiani"
+   ]
+  },
+  {
+   "head_id": "person:shimei",
+   "relation": "SON_OF",
+   "tail_id": "person:gege",
+   "source_pericope_id": "1ch:5:0",
+   "verse": 4,
+   "pattern": "P1_child_of",
+   "evidence_span": "約珥的兒子是示瑪雅；示瑪雅的兒子是歌革；歌革的兒子是示每；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:geshun",
+    "person:lini",
+    "person:pidaya",
+    "person:sake"
+   ]
+  },
+  {
+   "head_id": "person:bila",
+   "relation": "SON_OF",
+   "tail_id": "person:yasa",
+   "source_pericope_id": "1ch:5:0",
+   "verse": 8,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "比拉是亞撒的兒子；亞撒是示瑪的兒子；示瑪是約珥的兒子；約珥所住的地方是從亞羅珥直到尼波和巴力‧免，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bianyamin"
+   ]
+  },
+  {
+   "head_id": "person:mijialei",
+   "relation": "SON_OF",
+   "tail_id": "person:yeshishai",
+   "source_pericope_id": "1ch:5:1",
+   "verse": 14,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "這都是亞比孩的兒子。亞比孩是戶利的兒子；戶利是耶羅亞的兒子；耶羅亞是基列的兒子；基列是米迦勒的兒子；米迦勒是耶示篩的兒子；耶示篩是耶哈多的兒子；耶哈多是布斯的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yisilaxi",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:wuxue",
+   "relation": "SON_OF",
+   "tail_id": "person:gexia",
+   "source_pericope_id": "1ch:6:0",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "哥轄的兒子是暗蘭、以斯哈、希伯倫、烏薛。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ximan"
+   ]
+  },
+  {
+   "head_id": "person:nada",
+   "relation": "SON_OF",
+   "tail_id": "person:yalun",
+   "source_pericope_id": "1ch:6:0",
+   "verse": 3,
+   "pattern": "P1_child_of",
+   "evidence_span": "暗蘭的兒子是亞倫、摩西，還有女兒米利暗。亞倫的兒子是拿答、亞比戶、以利亞撒、以他瑪。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:shamai"
+   ]
+  },
+  {
+   "head_id": "person:lini",
+   "relation": "SON_OF",
+   "tail_id": "person:geshun",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 17,
+   "pattern": "P1_child_of",
+   "evidence_span": "革順的兒子名叫立尼、示每。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:moli"
+   ]
+  },
+  {
+   "head_id": "person:shimei",
+   "relation": "SON_OF",
+   "tail_id": "person:geshun",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 17,
+   "pattern": "P1_child_of",
+   "evidence_span": "革順的兒子名叫立尼、示每。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:gege",
+    "person:lini",
+    "person:pidaya",
+    "person:sake"
+   ]
+  },
+  {
+   "head_id": "person:wuxue",
+   "relation": "SON_OF",
+   "tail_id": "person:gexia",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 18,
+   "pattern": "P1_child_of",
+   "evidence_span": "哥轄的兒子是暗蘭、以斯哈、希伯倫、烏薛。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ximan"
+   ]
+  },
+  {
+   "head_id": "person:lini",
+   "relation": "SON_OF",
+   "tail_id": "person:geshun",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 20,
+   "pattern": "P1_child_of",
+   "evidence_span": "革順的兒子是立尼；立尼的兒子是雅哈；雅哈的兒子是薪瑪；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:moli"
+   ]
+  },
+  {
+   "head_id": "person:xiela",
+   "relation": "SON_OF",
+   "tail_id": "person:yiduo",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 21,
+   "pattern": "P1_child_of",
+   "evidence_span": "薪瑪的兒子是約亞；約亞的兒子是易多；易多的兒子是謝拉；謝拉的兒子是耶特賴。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liuer",
+    "person:ximian"
+   ]
+  },
+  {
+   "head_id": "person:kela",
+   "relation": "SON_OF",
+   "tail_id": "person:yaminada",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 22,
+   "pattern": "P1_child_of",
+   "evidence_span": "哥轄的兒子是亞米拿達；亞米拿達的兒子是可拉；可拉的兒子是亞惜；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yisao",
+    "person:yisiha"
+   ]
+  },
+  {
+   "head_id": "person:lini",
+   "relation": "SON_OF",
+   "tail_id": "person:moli",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 29,
+   "pattern": "P1_child_of",
+   "evidence_span": "米拉利的兒子是抹利；抹利的兒子是立尼；立尼的兒子是示每；示每的兒子是烏撒；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:geshun"
+   ]
+  },
+  {
+   "head_id": "person:shimei",
+   "relation": "SON_OF",
+   "tail_id": "person:lini",
+   "source_pericope_id": "1ch:6:1",
+   "verse": 29,
+   "pattern": "P1_child_of",
+   "evidence_span": "米拉利的兒子是抹利；抹利的兒子是立尼；立尼的兒子是示每；示每的兒子是烏撒；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:gege",
+    "person:geshun",
+    "person:pidaya",
+    "person:sake"
+   ]
+  },
+  {
+   "head_id": "person:ximan",
+   "relation": "SON_OF",
+   "tail_id": "person:yueer",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 33,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "供職的人和他們的子孫記在下面：哥轄的子孫中有歌唱的希幔。希幔是約珥的兒子；約珥是撒母耳的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:luotan",
+    "person:mahe",
+    "person:xiela"
+   ]
+  },
+  {
+   "head_id": "person:yueer",
+   "relation": "SON_OF",
+   "tail_id": "person:samuer",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 33,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "供職的人和他們的子孫記在下面：哥轄的子孫中有歌唱的希幔。希幔是約珥的兒子；約珥是撒母耳的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pidaya",
+    "person:pituer",
+    "person:xijili",
+    "person:yasaliya",
+    "person:yisilaxi"
+   ]
+  },
+  {
+   "head_id": "person:yeluohan",
+   "relation": "SON_OF",
+   "tail_id": "person:yilie",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 34,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "撒母耳是以利加拿的兒子；以利加拿是耶羅罕的兒子；耶羅罕是以列的兒子；以列是陀亞的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pilali"
+   ]
+  },
+  {
+   "head_id": "person:yueer",
+   "relation": "SON_OF",
+   "tail_id": "person:yasaliya",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 36,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "亞瑪賽是以利加拿的兒子；以利加拿是約珥的兒子；約珥是亞撒利雅的兒子；亞撒利雅是西番雅的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pidaya",
+    "person:pituer",
+    "person:samuer",
+    "person:xijili",
+    "person:yisilaxi"
+   ]
+  },
+  {
+   "head_id": "person:yaxi",
+   "relation": "SON_OF",
+   "tail_id": "person:yibiyasa",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 37,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "西番雅是他哈的兒子；他哈是亞惜的兒子；亞惜是以比雅撒的兒子；以比雅撒是可拉的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:kela"
+   ]
+  },
+  {
+   "head_id": "person:kela",
+   "relation": "SON_OF",
+   "tail_id": "person:yisiha",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 38,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "可拉是以斯哈的兒子；以斯哈是哥轄的兒子；哥轄是利未的兒子；利未是以色列的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaminada",
+    "person:yisao"
+   ]
+  },
+  {
+   "head_id": "person:majiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yiteni",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 41,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "瑪基雅是伊特尼的兒子；伊特尼是謝拉的兒子；謝拉是亞大雅的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:halin",
+    "person:hamilei"
+   ]
+  },
+  {
+   "head_id": "person:yitan",
+   "relation": "SON_OF",
+   "tail_id": "person:xinma",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 42,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "亞大雅是以探的兒子；以探是薪瑪的兒子；薪瑪是示每的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:xiela"
+   ]
+  },
+  {
+   "head_id": "person:hashabiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yamaxie",
+   "source_pericope_id": "1ch:6:2",
+   "verse": 45,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "瑪鹿是哈沙比雅的兒子；哈沙比雅是亞瑪謝的兒子；亞瑪謝是希勒家的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:buni",
+    "person:jimuli",
+    "person:matani",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:wuxi",
+   "relation": "SON_OF",
+   "tail_id": "person:buji",
+   "source_pericope_id": "1ch:6:3",
+   "verse": 51,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞比書的兒子是布基；布基的兒子是烏西；烏西的兒子是西拉希雅；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bani",
+    "person:tuola"
+   ]
+  },
+  {
+   "head_id": "person:yamaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:milayue",
+   "source_pericope_id": "1ch:6:3",
+   "verse": 52,
+   "pattern": "P1_child_of",
+   "evidence_span": "西拉希雅的兒子是米拉約；米拉約的兒子是亞瑪利雅；亞瑪利雅的兒子是亞希突；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:shifatiya",
+    "person:yasaliya"
+   ]
+  },
+  {
+   "head_id": "person:sadu",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxitu",
+   "source_pericope_id": "1ch:6:3",
+   "verse": 53,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞希突的兒子是撒督；撒督的兒子是亞希瑪斯。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:milayue",
+    "person:yinmai"
+   ]
+  },
+  {
+   "head_id": "person:wuxi",
+   "relation": "SON_OF",
+   "tail_id": "person:tuola",
+   "source_pericope_id": "1ch:7:0",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "陀拉的兒子是烏西、利法雅、耶勒、雅買、易伯散、示母利，都是陀拉的族長，是大能的勇士。到大衛年間，他們的人數共有二萬二千六百名。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bani",
+    "person:buji"
+   ]
+  },
+  {
+   "head_id": "person:mijialei",
+   "relation": "SON_OF",
+   "tail_id": "person:yisilaxi",
+   "source_pericope_id": "1ch:7:0",
+   "verse": 3,
+   "pattern": "P1_child_of",
+   "evidence_span": "烏西的兒子是伊斯拉希；伊斯拉希的兒子是米迦勒、俄巴底亞、約珥、伊示雅，共五人，都是族長。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yeshishai",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yueer",
+   "relation": "SON_OF",
+   "tail_id": "person:yisilaxi",
+   "source_pericope_id": "1ch:7:0",
+   "verse": 3,
+   "pattern": "P1_child_of",
+   "evidence_span": "烏西的兒子是伊斯拉希；伊斯拉希的兒子是米迦勒、俄巴底亞、約珥、伊示雅，共五人，都是族長。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pidaya",
+    "person:pituer",
+    "person:samuer",
+    "person:xijili",
+    "person:yasaliya"
+   ]
+  },
+  {
+   "head_id": "person:yiliyixie",
+   "relation": "SON_OF",
+   "tail_id": "person:bijie",
+   "source_pericope_id": "1ch:7:1",
+   "verse": 8,
+   "pattern": "P1_child_of",
+   "evidence_span": "比結的兒子是細米拉、約阿施、以利以謝、以利約乃、暗利、耶這都是比結的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:duodawa",
+    "person:moxi",
+    "person:xijili",
+    "person:yueling"
+   ]
+  },
+  {
+   "head_id": "person:yewushi",
+   "relation": "SON_OF",
+   "tail_id": "person:bileihan",
+   "source_pericope_id": "1ch:7:1",
+   "verse": 10,
+   "pattern": "P1_child_of",
+   "evidence_span": "耶疊的兒子是比勒罕；比勒罕的兒子是耶烏施、便雅憫、以忽、基拿拿、細坦、他施、亞希沙哈。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yisao"
+   ]
+  },
+  {
+   "head_id": "person:tashi",
+   "relation": "SON_OF",
+   "tail_id": "person:bileihan",
+   "source_pericope_id": "1ch:7:1",
+   "verse": 10,
+   "pattern": "P1_child_of",
+   "evidence_span": "耶疊的兒子是比勒罕；比勒罕的兒子是耶烏施、便雅憫、以忽、基拿拿、細坦、他施、亞希沙哈。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yawan"
+   ]
+  },
+  {
+   "head_id": "person:yishiwei",
+   "relation": "SON_OF",
+   "tail_id": "person:yashe",
+   "source_pericope_id": "1ch:7:5",
+   "verse": 30,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞設的兒子是音拿、亦施瓦、亦施韋、比利亞，還有他們的妹子西拉。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:sadu",
+   "relation": "SON_OF",
+   "tail_id": "person:milayue",
+   "source_pericope_id": "1ch:9:1",
+   "verse": 11,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "還有管理上帝殿希勒家的兒子亞薩利雅。希勒家是米書蘭的兒子；米書蘭是撒督的兒子；撒督是米拉約的兒子；米拉約是亞希突的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaxitu",
+    "person:yinmai"
+   ]
+  },
+  {
+   "head_id": "person:yadaya",
+   "relation": "SON_OF",
+   "tail_id": "person:yeluohan",
+   "source_pericope_id": "1ch:9:1",
+   "verse": 12,
+   "pattern": "P1_child_of",
+   "evidence_span": "有瑪基雅的曾孫、巴施戶珥的孫子、耶羅罕的兒子亞大雅，又有亞第業的兒子瑪賽；亞第業是雅希細拉的兒子；雅希細拉是米書蘭的兒子；米書蘭是米實利密的兒子；米實利密是音麥的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yueyali"
+   ]
+  },
+  {
+   "head_id": "person:shimaya",
+   "relation": "SON_OF",
+   "tail_id": "person:hashu",
+   "source_pericope_id": "1ch:9:2",
+   "verse": 14,
+   "pattern": "P1_child_of",
+   "evidence_span": "利未人米拉利的子孫中，有哈沙比雅的曾孫、押利甘的孫子、哈述的兒子示瑪雅。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:matani",
+    "person:shijiani",
+    "person:yueer"
+   ]
+  },
+  {
+   "head_id": "person:sajialiya",
+   "relation": "SON_OF",
+   "tail_id": "person:mishilimiya",
+   "source_pericope_id": "1ch:9:3",
+   "verse": 21,
+   "pattern": "P1_child_of",
+   "evidence_span": "米施利米雅的兒子撒迦利雅是看守會幕之門的。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yamaliya",
+    "person:yeluoboan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:hanan",
+   "relation": "SON_OF",
+   "tail_id": "person:majia",
+   "source_pericope_id": "1ch:11:1",
+   "verse": 43,
+   "pattern": "P1_child_of",
+   "evidence_span": "瑪迦的兒子哈難，彌特尼人約沙法，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:sake"
+   ]
+  },
+  {
+   "head_id": "person:sadu",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxitu",
+   "source_pericope_id": "1ch:18:0",
+   "verse": 16,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞希突的兒子撒督和亞比亞他的兒子亞希米勒作祭司長；沙威沙作書記；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:milayue",
+    "person:yinmai"
+   ]
+  },
+  {
+   "head_id": "person:yiliyixie",
+   "relation": "SON_OF",
+   "tail_id": "person:moxi",
+   "source_pericope_id": "1ch:23:1",
+   "verse": 15,
+   "pattern": "P1_child_of",
+   "evidence_span": "摩西的兒子是革舜和以利以謝。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bijie",
+    "person:duodawa",
+    "person:xijili",
+    "person:yueling"
+   ]
+  },
+  {
+   "head_id": "person:yelimo",
+   "relation": "SON_OF",
+   "tail_id": "person:mushi",
+   "source_pericope_id": "1ch:23:1",
+   "verse": 23,
+   "pattern": "P1_child_of",
+   "evidence_span": "母示的兒子是末力、以得、耶利摩共三人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ximan",
+    "person:yasilie"
+   ]
+  },
+  {
+   "head_id": "person:nada",
+   "relation": "SON_OF",
+   "tail_id": "person:yalun",
+   "source_pericope_id": "1ch:24:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞倫子孫的班次記在下面：亞倫的兒子是拿答、亞比戶、以利亞撒、以他瑪。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:shamai"
+   ]
+  },
+  {
+   "head_id": "person:yelimo",
+   "relation": "SON_OF",
+   "tail_id": "person:mushi",
+   "source_pericope_id": "1ch:24:1",
+   "verse": 30,
+   "pattern": "P1_child_of",
+   "evidence_span": "母示的兒子是末力、以得、耶利摩。按着宗族這都是利未的子孫。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ximan",
+    "person:yasilie"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yedudun",
+   "source_pericope_id": "1ch:25:0",
+   "verse": 3,
+   "pattern": "P1_child_of",
+   "evidence_span": "耶杜頓的兒子基大利、西利、耶篩亞、哈沙比雅、瑪他提雅、示六人，都歸他們父親耶杜頓指教，彈琴，唱歌，稱謝，頌讚耶和華。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yaxigan"
+   ]
+  },
+  {
+   "head_id": "person:yeshaiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yedudun",
+   "source_pericope_id": "1ch:25:0",
+   "verse": 3,
+   "pattern": "P1_child_of",
+   "evidence_span": "耶杜頓的兒子基大利、西利、耶篩亞、哈沙比雅、瑪他提雅、示六人，都歸他們父親耶杜頓指教，彈琴，唱歌，稱謝，頌讚耶和華。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:lihabiya"
+   ]
+  },
+  {
+   "head_id": "person:hashabiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yedudun",
+   "source_pericope_id": "1ch:25:0",
+   "verse": 3,
+   "pattern": "P1_child_of",
+   "evidence_span": "耶杜頓的兒子基大利、西利、耶篩亞、哈沙比雅、瑪他提雅、示六人，都歸他們父親耶杜頓指教，彈琴，唱歌，稱謝，頌讚耶和華。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:buni",
+    "person:jimuli",
+    "person:matani",
+    "person:yamaxie"
+   ]
+  },
+  {
+   "head_id": "person:wuxue",
+   "relation": "SON_OF",
+   "tail_id": "person:ximan",
+   "source_pericope_id": "1ch:25:0",
+   "verse": 4,
+   "pattern": "P1_child_of",
+   "evidence_span": "希幔的兒子布基雅、瑪探雅、烏薛、細布業、耶利摩、哈拿尼雅",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:gexia"
+   ]
+  },
+  {
+   "head_id": "person:yelimo",
+   "relation": "SON_OF",
+   "tail_id": "person:ximan",
+   "source_pericope_id": "1ch:25:0",
+   "verse": 4,
+   "pattern": "P1_child_of",
+   "evidence_span": "希幔的兒子布基雅、瑪探雅、烏薛、細布業、耶利摩、哈拿尼雅",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mushi",
+    "person:yasilie"
+   ]
+  },
+  {
+   "head_id": "person:ebeide",
+   "relation": "SON_OF",
+   "tail_id": "person:shimaya",
+   "source_pericope_id": "1ch:26:0",
+   "verse": 7,
+   "pattern": "P1_child_of",
+   "evidence_span": "示瑪雅的兒子是俄得尼、利法益、俄備得、以利薩巴。以利薩巴弟兄是壯士，還有以利戶和西瑪迦。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:boasi"
+   ]
+  },
+  {
+   "head_id": "person:yeshaiya",
+   "relation": "SON_OF",
+   "tail_id": "person:lihabiya",
+   "source_pericope_id": "1ch:26:1",
+   "verse": 25,
+   "pattern": "P1_child_of",
+   "evidence_span": "還有他的弟兄以利以謝。以利以謝的兒子是利哈比雅；利哈比雅的兒子是耶篩亞；耶篩亞的兒子是約蘭；約蘭的兒子是細基利；細基利的兒子是示羅密。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:yuelan",
+   "relation": "SON_OF",
+   "tail_id": "person:yeshaiya",
+   "source_pericope_id": "1ch:26:1",
+   "verse": 25,
+   "pattern": "P1_child_of",
+   "evidence_span": "還有他的弟兄以利以謝。以利以謝的兒子是利哈比雅；利哈比雅的兒子是耶篩亞；耶篩亞的兒子是約蘭；約蘭的兒子是細基利；細基利的兒子是示羅密。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaha",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:xijili",
+   "relation": "SON_OF",
+   "tail_id": "person:yuelan",
+   "source_pericope_id": "1ch:26:1",
+   "verse": 25,
+   "pattern": "P1_child_of",
+   "evidence_span": "還有他的弟兄以利以謝。以利以謝的兒子是利哈比雅；利哈比雅的兒子是耶篩亞；耶篩亞的兒子是約蘭；約蘭的兒子是細基利；細基利的兒子是示羅密。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yisiha"
+   ]
+  },
+  {
+   "head_id": "person:yiliyixie",
+   "relation": "SON_OF",
+   "tail_id": "person:xijili",
+   "source_pericope_id": "1ch:27:1",
+   "verse": 16,
+   "pattern": "P1_child_of",
+   "evidence_span": "管理以色列眾支派的記在下面：管呂便人的是細基利的兒子以利以謝；管西緬人的是瑪迦的兒子示法提雅；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bijie",
+    "person:duodawa",
+    "person:moxi",
+    "person:yueling"
+   ]
+  },
+  {
+   "head_id": "person:shifatiya",
+   "relation": "SON_OF",
+   "tail_id": "person:majia",
+   "source_pericope_id": "1ch:27:1",
+   "verse": 16,
+   "pattern": "P1_child_of",
+   "evidence_span": "管理以色列眾支派的記在下面：管呂便人的是細基利的兒子以利以謝；管西緬人的是瑪迦的兒子示法提雅；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:maleilie",
+    "person:matan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:hashabiya",
+   "relation": "SON_OF",
+   "tail_id": "person:jimuli",
+   "source_pericope_id": "1ch:27:1",
+   "verse": 17,
+   "pattern": "P1_child_of",
+   "evidence_span": "管利未人的是基母利的兒子哈沙比雅；管亞倫子孫的是撒督；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:buni",
+    "person:matani",
+    "person:yamaxie",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:yelimo",
+   "relation": "SON_OF",
+   "tail_id": "person:yasilie",
+   "source_pericope_id": "1ch:27:1",
+   "verse": 19,
+   "pattern": "P1_child_of",
+   "evidence_span": "管西布倫人的是俄巴第雅的兒子伊施瑪雅；管拿弗他利人的是亞斯列的兒子耶利摩；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mushi",
+    "person:ximan"
+   ]
+  },
+  {
+   "head_id": "person:yueer",
+   "relation": "SON_OF",
+   "tail_id": "person:pidaya",
+   "source_pericope_id": "1ch:27:1",
+   "verse": 20,
+   "pattern": "P1_child_of",
+   "evidence_span": "管以法蓮人的是阿撒細雅的兒子何細亞；管瑪拿西半支派的是毗大雅的兒子約珥；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pituer",
+    "person:samuer",
+    "person:xijili",
+    "person:yasaliya",
+    "person:yisilaxi"
+   ]
+  },
+  {
+   "head_id": "person:yexie",
+   "relation": "SON_OF",
+   "tail_id": "person:hamoni",
+   "source_pericope_id": "1ch:27:3",
+   "verse": 32,
+   "pattern": "P1_child_of",
+   "evidence_span": "大衛的叔叔約拿單作謀士；這人有智慧，又作書記。哈摩尼的兒子耶歇作王眾子的師傅。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yiliyixie",
+   "relation": "SON_OF",
+   "tail_id": "person:duodawa",
+   "source_pericope_id": "2ch:20:1",
+   "verse": 37,
+   "pattern": "P1_child_of",
+   "evidence_span": "那時瑪利沙人、多大瓦的兒子以利以謝向約沙法預言說：「因你與亞哈謝交好，耶和華必破壞你所造的。」後來那船果然破壞，不能往他施去了。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bijie",
+    "person:moxi",
+    "person:xijili",
+    "person:yueling"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "2ch:21:1",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "約蘭有幾個兄弟，就是約沙法的兒子亞撒利雅、耶歇、撒迦利雅、亞撒利雅、米迦勒、示法提雅。這都是猶大王約沙法的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan"
+   ]
+  },
+  {
+   "head_id": "person:yexie",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "2ch:21:1",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "約蘭有幾個兄弟，就是約沙法的兒子亞撒利雅、耶歇、撒迦利雅、亞撒利雅、米迦勒、示法提雅。這都是猶大王約沙法的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:hamoni"
+   ]
+  },
+  {
+   "head_id": "person:sajialiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "2ch:21:1",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "約蘭有幾個兄弟，就是約沙法的兒子亞撒利雅、耶歇、撒迦利雅、亞撒利雅、米迦勒、示法提雅。這都是猶大王約沙法的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mishilimiya",
+    "person:yamaliya",
+    "person:yeluoboan"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "2ch:21:1",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "約蘭有幾個兄弟，就是約沙法的兒子亞撒利雅、耶歇、撒迦利雅、亞撒利雅、米迦勒、示法提雅。這都是猶大王約沙法的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan"
+   ]
+  },
+  {
+   "head_id": "person:mijialei",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "2ch:21:1",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "約蘭有幾個兄弟，就是約沙法的兒子亞撒利雅、耶歇、撒迦利雅、亞撒利雅、米迦勒、示法提雅。這都是猶大王約沙法的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yeshishai",
+    "person:yisilaxi"
+   ]
+  },
+  {
+   "head_id": "person:shifatiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yueshafa",
+   "source_pericope_id": "2ch:21:1",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "約蘭有幾個兄弟，就是約沙法的兒子亞撒利雅、耶歇、撒迦利雅、亞撒利雅、米迦勒、示法提雅。這都是猶大王約沙法的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:majia",
+    "person:maleilie",
+    "person:matan"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:ebeide",
+   "source_pericope_id": "2ch:23:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "第七年，耶何耶大奮勇自強，將百夫長耶羅罕的兒子亞撒利雅，約哈難的兒子以實瑪利，俄備得的兒子亞撒利雅，亞大雅的兒子瑪西雅，細基利的兒子以利沙法召來，與他們立約。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehanan",
+   "source_pericope_id": "2ch:28:2",
+   "verse": 12,
+   "pattern": "P1_child_of",
+   "evidence_span": "於是，以法蓮人的幾個族長－就是約哈難的兒子亞撒利雅、米實利末的兒子比利家、沙龍的兒子耶希西家、哈得萊的兒子亞瑪撒－起來攔擋出兵回來的人，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:bilijia",
+   "relation": "SON_OF",
+   "tail_id": "person:mishilimo",
+   "source_pericope_id": "2ch:28:2",
+   "verse": 12,
+   "pattern": "P1_child_of",
+   "evidence_span": "於是，以法蓮人的幾個族長－就是約哈難的兒子亞撒利雅、米實利末的兒子比利家、沙龍的兒子耶希西家、哈得萊的兒子亞瑪撒－起來攔擋出兵回來的人，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mishulan"
+   ]
+  },
+  {
+   "head_id": "person:yueer",
+   "relation": "SON_OF",
+   "tail_id": "person:yasaliya",
+   "source_pericope_id": "2ch:29:1",
+   "verse": 12,
+   "pattern": "P1_child_of",
+   "evidence_span": "於是，利未人哥轄的子孫、亞瑪賽的兒子瑪哈，亞撒利雅的兒子約珥；米拉利的子孫、亞伯底的兒子基士，耶哈利勒的兒子亞撒利雅；革順的子孫、薪瑪的兒子約亞，約亞的兒子伊甸；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pidaya",
+    "person:pituer",
+    "person:samuer",
+    "person:xijili",
+    "person:yisilaxi"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:yehalilei",
+   "source_pericope_id": "2ch:29:1",
+   "verse": 12,
+   "pattern": "P1_child_of",
+   "evidence_span": "於是，利未人哥轄的子孫、亞瑪賽的兒子瑪哈，亞撒利雅的兒子約珥；米拉利的子孫、亞伯底的兒子基士，耶哈利勒的兒子亞撒利雅；革順的子孫、薪瑪的兒子約亞，約亞的兒子伊甸；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:xilaiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yasaliya",
+   "source_pericope_id": "ezr:7:0",
+   "verse": 1,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "這事以後，波斯王亞達薛西年間，有個以斯拉，他是西萊雅的兒子，西萊雅是亞撒利雅的兒子，亞撒利雅是希勒家的兒子，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:jinasi",
+    "person:xileijia",
+    "person:yasilie"
+   ]
+  },
+  {
+   "head_id": "person:sadu",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxitu",
+   "source_pericope_id": "ezr:7:0",
+   "verse": 2,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "希勒家是沙龍的兒子，沙龍是撒督的兒子，撒督是亞希突的兒子，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:milayue",
+    "person:yinmai"
+   ]
+  },
+  {
+   "head_id": "person:yamaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:yasaliya",
+   "source_pericope_id": "ezr:7:0",
+   "verse": 3,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "亞希突是亞瑪利雅的兒子，亞瑪利雅是亞撒利雅的兒子，亞撒利雅是米拉約的兒子，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:milayue",
+    "person:shifatiya"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:milayue",
+   "source_pericope_id": "ezr:7:0",
+   "verse": 3,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "亞希突是亞瑪利雅的兒子，亞瑪利雅是亞撒利雅的兒子，亞撒利雅是米拉約的兒子，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:maxiya",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:wuxi",
+   "relation": "SON_OF",
+   "tail_id": "person:buji",
+   "source_pericope_id": "ezr:7:0",
+   "verse": 4,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "米拉約是西拉希雅的兒子，西拉希雅是烏西的兒子，烏西是布基的兒子，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bani",
+    "person:tuola"
+   ]
+  },
+  {
+   "head_id": "person:yedaya",
+   "relation": "SON_OF",
+   "tail_id": "person:halumo",
+   "source_pericope_id": "neh:3:0",
+   "verse": 10,
+   "pattern": "P1_child_of",
+   "evidence_span": "其次是哈路抹的兒子耶大雅對着自己的房屋修造。其次是哈沙尼的兒子哈突修造。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:shenli"
+   ]
+  },
+  {
+   "head_id": "person:majiya",
+   "relation": "SON_OF",
+   "tail_id": "person:halin",
+   "source_pericope_id": "neh:3:0",
+   "verse": 11,
+   "pattern": "P1_child_of",
+   "evidence_span": "哈琳的兒子瑪基雅和巴哈‧摩押的兒子哈述修造一段，並修造爐樓。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:hamilei",
+    "person:yiteni"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:maxiya",
+   "source_pericope_id": "neh:3:2",
+   "verse": 23,
+   "pattern": "P1_child_of",
+   "evidence_span": "其次是便雅憫與哈述對着自己的房屋修造。其次是亞難尼的孫子、瑪西雅的兒子亞撒利雅在靠近自己的房屋修造。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:heshaya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:sadu",
+   "relation": "SON_OF",
+   "tail_id": "person:yinmai",
+   "source_pericope_id": "neh:3:3",
+   "verse": 29,
+   "pattern": "P1_child_of",
+   "evidence_span": "其次是音麥的兒子撒督對着自己的房屋修造。其次是守東門、示迦尼的兒子示瑪雅修造。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:milayue",
+    "person:yaxitu"
+   ]
+  },
+  {
+   "head_id": "person:yeshuya",
+   "relation": "SON_OF",
+   "tail_id": "person:yasanni",
+   "source_pericope_id": "neh:10:0",
+   "verse": 9,
+   "pattern": "P1_child_of",
+   "evidence_span": "又有利未人，就是亞散尼的兒子耶書亞、希拿達的子孫賓內、甲篾；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:jiamie"
+   ]
+  },
+  {
+   "head_id": "person:sajialiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yamaliya",
+   "source_pericope_id": "neh:11:0",
+   "verse": 4,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "其中有些猶大人和便雅憫人。猶大人中有法勒斯的子孫、烏西雅的兒子亞他雅。烏西雅是撒迦利雅的兒子；撒迦利雅是亞瑪利雅的兒子；亞瑪利雅是示法提雅的兒子；示法提雅是瑪勒列的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:mishilimiya",
+    "person:yeluoboan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yamaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:shifatiya",
+   "source_pericope_id": "neh:11:0",
+   "verse": 4,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "其中有些猶大人和便雅憫人。猶大人中有法勒斯的子孫、烏西雅的兒子亞他雅。烏西雅是撒迦利雅的兒子；撒迦利雅是亞瑪利雅的兒子；亞瑪利雅是示法提雅的兒子；示法提雅是瑪勒列的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:milayue",
+    "person:yasaliya"
+   ]
+  },
+  {
+   "head_id": "person:shifatiya",
+   "relation": "SON_OF",
+   "tail_id": "person:maleilie",
+   "source_pericope_id": "neh:11:0",
+   "verse": 4,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "其中有些猶大人和便雅憫人。猶大人中有法勒斯的子孫、烏西雅的兒子亞他雅。烏西雅是撒迦利雅的兒子；撒迦利雅是亞瑪利雅的兒子；亞瑪利雅是示法提雅的兒子；示法提雅是瑪勒列的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:majia",
+    "person:matan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:yadaya",
+   "relation": "SON_OF",
+   "tail_id": "person:yueyali",
+   "source_pericope_id": "neh:11:0",
+   "verse": 5,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "又有巴錄的兒子瑪西雅。巴錄是谷何西的兒子；谷何西是哈賽雅的兒子；哈賽雅是亞大雅的兒子；亞大雅是約雅立的兒子；約雅立是撒迦利雅的兒子；撒迦利雅是示羅尼的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yeluohan"
+   ]
+  },
+  {
+   "head_id": "person:yueer",
+   "relation": "SON_OF",
+   "tail_id": "person:xijili",
+   "source_pericope_id": "neh:11:0",
+   "verse": 9,
+   "pattern": "P1_child_of",
+   "evidence_span": "細基利的兒子約珥是他們的長官。哈西努亞的兒子猶大是耶路撒冷的副官。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pidaya",
+    "person:pituer",
+    "person:samuer",
+    "person:yasaliya",
+    "person:yisilaxi"
+   ]
+  },
+  {
+   "head_id": "person:xilaiya",
+   "relation": "SON_OF",
+   "tail_id": "person:xileijia",
+   "source_pericope_id": "neh:11:0",
+   "verse": 11,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "還有管理上帝殿的西萊雅。西萊雅是希勒家的兒子；希勒家是米書蘭的兒子；米書蘭是撒督的兒子；撒督是米拉約的兒子；米拉約是亞希突的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:jinasi",
+    "person:yasaliya",
+    "person:yasilie"
+   ]
+  },
+  {
+   "head_id": "person:sadu",
+   "relation": "SON_OF",
+   "tail_id": "person:milayue",
+   "source_pericope_id": "neh:11:0",
+   "verse": 11,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "還有管理上帝殿的西萊雅。西萊雅是希勒家的兒子；希勒家是米書蘭的兒子；米書蘭是撒督的兒子；撒督是米拉約的兒子；米拉約是亞希突的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaxitu",
+    "person:yinmai"
+   ]
+  },
+  {
+   "head_id": "person:yeluohan",
+   "relation": "SON_OF",
+   "tail_id": "person:pilali",
+   "source_pericope_id": "neh:11:0",
+   "verse": 12,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "還有他們的弟兄在殿裏供職的，共八百二十二名；又有耶羅罕的兒子亞大雅。耶羅罕是毗拉利的兒子；毗拉利是暗洗的兒子；暗洗是撒迦利亞的兒子；撒迦利亞是巴施戶珥的兒子；巴施戶珥是瑪基雅的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yilie"
+   ]
+  },
+  {
+   "head_id": "person:hashabiya",
+   "relation": "SON_OF",
+   "tail_id": "person:buni",
+   "source_pericope_id": "neh:11:0",
+   "verse": 15,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "利未人中有哈述的兒子示瑪雅。哈述是押利甘的兒子；押利甘是哈沙比雅的兒子；哈沙比雅是布尼的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:jimuli",
+    "person:matani",
+    "person:yamaxie",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:wuxi",
+   "relation": "SON_OF",
+   "tail_id": "person:bani",
+   "source_pericope_id": "neh:11:0",
+   "verse": 22,
+   "pattern": "P1_child_of",
+   "evidence_span": "在耶路撒冷、利未人的長官，管理上帝殿事務的是歌唱者亞薩的子孫、巴尼的兒子烏西。巴尼是哈沙比雅的兒子；哈沙比雅是瑪他尼的兒子；瑪他尼是米迦的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:buji",
+    "person:tuola"
+   ]
+  },
+  {
+   "head_id": "person:hashabiya",
+   "relation": "SON_OF",
+   "tail_id": "person:matani",
+   "source_pericope_id": "neh:11:0",
+   "verse": 22,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "在耶路撒冷、利未人的長官，管理上帝殿事務的是歌唱者亞薩的子孫、巴尼的兒子烏西。巴尼是哈沙比雅的兒子；哈沙比雅是瑪他尼的兒子；瑪他尼是米迦的兒子。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:buni",
+    "person:jimuli",
+    "person:yamaxie",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:yeshuya",
+   "relation": "SON_OF",
+   "tail_id": "person:jiamie",
+   "source_pericope_id": "neh:12:4",
+   "verse": 24,
+   "pattern": "P1_child_of",
+   "evidence_span": "利未人的族長是哈沙比雅、示利比、甲篾的兒子耶書亞，與他們弟兄的班次相對，照着神人大衛的命令一班一班地讚美稱謝。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yasanni"
+   ]
+  },
+  {
+   "head_id": "person:shimaya",
+   "relation": "SON_OF",
+   "tail_id": "person:matani",
+   "source_pericope_id": "neh:12:5",
+   "verse": 35,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "還有些吹號之祭司的子孫，約拿單的兒子撒迦利亞。約拿單是示瑪雅的兒子；示瑪雅是瑪他尼的兒子；瑪他尼是米該亞的兒子；米該亞是撒刻的兒子；撒刻是亞薩的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:hashu",
+    "person:shijiani",
+    "person:yueer"
+   ]
+  },
+  {
+   "head_id": "person:hanan",
+   "relation": "SON_OF",
+   "tail_id": "person:sake",
+   "source_pericope_id": "neh:13:1",
+   "verse": 13,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "我派祭司示利米雅、文士撒督，和利未人毗大雅作庫官管理庫房；副官是哈難。哈難是撒刻的兒子；撒刻是瑪他尼的兒子。這些人都是忠信的，他們的職分是將所供給的分給他們的弟兄。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:majia"
+   ]
+  },
+  {
+   "head_id": "person:sake",
+   "relation": "SON_OF",
+   "tail_id": "person:matani",
+   "source_pericope_id": "neh:13:1",
+   "verse": 13,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "我派祭司示利米雅、文士撒督，和利未人毗大雅作庫官管理庫房；副官是哈難。哈難是撒刻的兒子；撒刻是瑪他尼的兒子。這些人都是忠信的，他們的職分是將所供給的分給他們的弟兄。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:hamuli"
+   ]
+  },
+  {
+   "head_id": "person:yaha",
+   "relation": "SON_OF",
+   "tail_id": "person:gelaiya",
+   "source_pericope_id": "jer:29:0",
+   "verse": 21,
+   "pattern": "P1_child_of",
+   "evidence_span": "萬軍之耶和華－以色列的上帝論到哥賴雅的兒子亞哈，並瑪西雅的兒子西底家，如此說：「他們是託我名向你們說假預言的，我必將他們交在巴比倫王尼布甲尼撒的手中；他要在你們眼前殺害他們。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:anli"
+   ]
+  },
+  {
+   "head_id": "person:xilaiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yasilie",
+   "source_pericope_id": "jer:36:2",
+   "verse": 26,
+   "pattern": "P1_child_of",
+   "evidence_span": "王就吩咐哈米勒的兒子耶拉篾和亞斯列的兒子西萊雅，並亞伯疊的兒子示利米雅，去捉拿文士巴錄和先知耶利米。耶和華卻將他們隱藏。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:jinasi",
+    "person:xileijia",
+    "person:yasaliya"
+   ]
+  },
+  {
+   "head_id": "person:shifatiya",
+   "relation": "SON_OF",
+   "tail_id": "person:matan",
+   "source_pericope_id": "jer:38:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "瑪坦的兒子示法提雅、巴施戶珥的兒子基大利、示利米雅的兒子猶甲、瑪基雅的兒子巴施戶珥聽見耶利米對眾人所說的話，說：",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:majia",
+    "person:maleilie",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:bashihuer",
+   "source_pericope_id": "jer:38:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "瑪坦的兒子示法提雅、巴施戶珥的兒子基大利、示利米雅的兒子猶甲、瑪基雅的兒子巴施戶珥聽見耶利米對眾人所說的話，說：",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yaxigan",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:majiya",
+   "relation": "SON_OF",
+   "tail_id": "person:hamilei",
+   "source_pericope_id": "jer:38:0",
+   "verse": 6,
+   "pattern": "P1_child_of",
+   "evidence_span": "他們就拿住耶利米，下在哈米勒的兒子瑪基雅的牢獄裏；那牢獄在護衛兵的院中。他們用繩子將耶利米繫下去。牢獄裏沒有水，只有淤泥，耶利米就陷在淤泥中。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:halin",
+    "person:yiteni"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxigan",
+   "source_pericope_id": "jer:40:1",
+   "verse": 7,
+   "pattern": "P1_child_of",
+   "evidence_span": "在田野的一切軍長和屬他們的人聽見巴比倫王立了亞希甘的兒子基大利作境內的省長，並將沒有擄到巴比倫的男人、婦女、孩童，和境內極窮的人全交給他。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxigan",
+   "source_pericope_id": "jer:40:2",
+   "verse": 14,
+   "pattern": "P1_child_of",
+   "evidence_span": "對他說：「亞捫人的王巴利斯打發尼探雅的兒子以實瑪利來要你的命，你知道嗎？」亞希甘的兒子基大利卻不信他們的話。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxigan",
+   "source_pericope_id": "jer:40:2",
+   "verse": 16,
+   "pattern": "P1_child_of",
+   "evidence_span": "亞希甘的兒子基大利對加利亞的兒子約哈難說：「你不可行這事，你所論以實瑪利的話是假的。」",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxigan",
+   "source_pericope_id": "jer:41:0",
+   "verse": 10,
+   "pattern": "P1_child_of",
+   "evidence_span": "以實瑪利將米斯巴剩下的人，就是眾公主和仍住在米斯巴所有的百姓，原是護衛長尼布撒拉旦交給亞希甘的兒子基大利的，都擄去了。尼探雅的兒子以實瑪利擄了他們，要往亞捫人那裏去。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxigan",
+   "source_pericope_id": "jer:41:0",
+   "verse": 16,
+   "pattern": "P1_child_of",
+   "evidence_span": "尼探雅的兒子以實瑪利殺了亞希甘的兒子基大利，從米斯巴將剩下的一切百姓、兵丁、婦女、孩童、太監擄到基遍之後，加利亞的兒子約哈難和同着他的眾軍長將他們都奪回來，",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:jidali",
+   "relation": "SON_OF",
+   "tail_id": "person:yaxigan",
+   "source_pericope_id": "jer:41:0",
+   "verse": 18,
+   "pattern": "P1_child_of",
+   "evidence_span": "因為尼探雅的兒子以實瑪利殺了巴比倫王所立為省長的亞希甘的兒子基大利，約哈難懼怕迦勒底人。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bashihuer",
+    "person:yedudun"
+   ]
+  },
+  {
+   "head_id": "person:yasaliya",
+   "relation": "SON_OF",
+   "tail_id": "person:heshaya",
+   "source_pericope_id": "jer:43:0",
+   "verse": 2,
+   "pattern": "P1_child_of",
+   "evidence_span": "何沙雅的兒子亞撒利雅和加利亞的兒子約哈難，並一切狂傲的人，就對耶利米說：「你說謊言！耶和華－我們的上帝並沒有差遣你來說：『你們不可進入埃及，在那裏寄居。』",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:ebeide",
+    "person:maxiya",
+    "person:milayue",
+    "person:nadan",
+    "person:sadu",
+    "person:yamaxie",
+    "person:yehalilei",
+    "person:yitan",
+    "person:yuehanan",
+    "person:yueshafa"
+   ]
+  },
+  {
+   "head_id": "person:pilati",
+   "relation": "SON_OF",
+   "tail_id": "person:binaya",
+   "source_pericope_id": "ezk:11:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "靈將我舉起，帶到耶和華殿向東的東門。誰知，在門口有二十五個人，我見其中有民間的首領押朔的兒子雅撒尼亞和比拿雅的兒子毗拉提。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yishi"
+   ]
+  },
+  {
+   "head_id": "person:pilati",
+   "relation": "SON_OF",
+   "tail_id": "person:binaya",
+   "source_pericope_id": "ezk:11:0",
+   "verse": 13,
+   "pattern": "P1_child_of",
+   "evidence_span": "我正說預言的時候，比拿雅的兒子毗拉提死了。於是我俯伏在地，大聲呼叫說：「哎！主耶和華啊，你要將以色列剩下的人滅絕淨盡嗎？」",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:yishi"
+   ]
+  },
+  {
+   "head_id": "person:yeluoboan",
+   "relation": "SON_OF",
+   "tail_id": "person:yueashi",
+   "source_pericope_id": "hos:1:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "當烏西雅、約坦、亞哈斯、希西家作猶大王，約阿施的兒子耶羅波安作以色列王的時候，耶和華的話臨到備利的兒子何西阿。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:liniba",
+    "person:niba"
+   ]
+  },
+  {
+   "head_id": "person:yueer",
+   "relation": "SON_OF",
+   "tail_id": "person:pituer",
+   "source_pericope_id": "jol:1:0",
+   "verse": 1,
+   "pattern": "P1_child_of",
+   "evidence_span": "耶和華的話臨到毗土珥的兒子約珥。",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:pidaya",
+    "person:samuer",
+    "person:xijili",
+    "person:yasaliya",
+    "person:yisilaxi"
+   ]
+  },
+  {
+   "head_id": "person:yiliyixie",
+   "relation": "SON_OF",
+   "tail_id": "person:yueling",
+   "source_pericope_id": "luk:3:2",
+   "verse": 29,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "約細是以利以謝的兒子；以利以謝是約令的兒子；約令是瑪塔的兒子；瑪塔是利未的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:bijie",
+    "person:duodawa",
+    "person:moxi",
+    "person:xijili"
+   ]
+  },
+  {
+   "head_id": "person:ebeide",
+   "relation": "SON_OF",
+   "tail_id": "person:boasi",
+   "source_pericope_id": "luk:3:2",
+   "verse": 32,
+   "pattern": "P2_is_child_of",
+   "evidence_span": "大衛是耶西的兒子；耶西是俄備得的兒子；俄備得是波阿斯的兒子；波阿斯是撒門的兒子；撒門是拿順的兒子；",
+   "reason": "anchored_disagreement",
+   "other_parents": [
+    "person:shimaya"
+   ]
+  }
+ ],
+ "anchored_key_sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "guard_conflicts": [
+  {
+   "head_id": "person:yabolahan",
+   "relation": "FATHER_OF",
+   "tail_id": "person:yishimali",
+   "source_pericope_id": "gen:16:0",
+   "verse": 16,
+   "other_parents": [
+    "person:xiajia"
+   ]
+  },
+  {
+   "head_id": "person:yisa",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "gen:25:3",
+   "verse": 19,
+   "other_parents": [
+    "person:sala"
+   ]
+  },
+  {
+   "head_id": "person:wusi",
+   "relation": "SON_OF",
+   "tail_id": "person:dishan",
+   "source_pericope_id": "gen:36:1",
+   "verse": 28,
+   "other_parents": [
+    "person: nahe"
+   ]
+  },
+  {
+   "head_id": "person:xisilun",
+   "relation": "SON_OF",
+   "tail_id": "person:lvbian",
+   "source_pericope_id": "gen:46:0",
+   "verse": 9,
+   "other_parents": [
+    "person:faleisi"
+   ]
+  },
+  {
+   "head_id": "person:yabimilei",
+   "relation": "SON_OF",
+   "tail_id": "person:yelu‧bali",
+   "source_pericope_id": "jdg:9:0",
+   "verse": 1,
+   "other_parents": [
+    "person:jidian"
+   ]
+  },
+  {
+   "head_id": "person:yuenadan",
+   "relation": "SON_OF",
+   "tail_id": "person:yabiyata",
+   "source_pericope_id": "2sa:15:1",
+   "verse": 27,
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:yuenadan",
+   "relation": "SON_OF",
+   "tail_id": "person:yabiyata",
+   "source_pericope_id": "2sa:15:1",
+   "verse": 36,
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:yahaxie",
+   "relation": "SON_OF",
+   "tail_id": "person:yaha",
+   "source_pericope_id": "1ki:22:2",
+   "verse": 49,
+   "other_parents": [
+    "person:yuelanwang"
+   ]
+  },
+  {
+   "head_id": "person:yahaxie",
+   "relation": "SON_OF",
+   "tail_id": "person:yaha",
+   "source_pericope_id": "1ki:22:3",
+   "verse": 51,
+   "other_parents": [
+    "person:yuelanwang"
+   ]
+  },
+  {
+   "head_id": "person:yueashi",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehasi",
+   "source_pericope_id": "2ki:13:1",
+   "verse": 10,
+   "other_parents": [
+    "person:yahaxie"
+   ]
+  },
+  {
+   "head_id": "person:yueashi",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehasi",
+   "source_pericope_id": "2ki:13:3",
+   "verse": 25,
+   "other_parents": [
+    "person:yahaxie"
+   ]
+  },
+  {
+   "head_id": "person:yisa",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "1ch:1:1",
+   "verse": 28,
+   "other_parents": [
+    "person:sala"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "1ch:1:1",
+   "verse": 28,
+   "other_parents": [
+    "person:xiajia"
+   ]
+  },
+  {
+   "head_id": "person:yisao",
+   "relation": "SON_OF",
+   "tail_id": "person:yisa",
+   "source_pericope_id": "1ch:1:2",
+   "verse": 34,
+   "other_parents": [
+    "person:libaijia"
+   ]
+  },
+  {
+   "head_id": "person:wusi",
+   "relation": "SON_OF",
+   "tail_id": "person:dishan",
+   "source_pericope_id": "1ch:1:3",
+   "verse": 42,
+   "other_parents": [
+    "person: nahe"
+   ]
+  },
+  {
+   "head_id": "person:yifa",
+   "relation": "SON_OF",
+   "tail_id": "person:yadai",
+   "source_pericope_id": "1ch:2:4",
+   "verse": 47,
+   "other_parents": [
+    "person:jitula"
+   ]
+  },
+  {
+   "head_id": "person:yueshafa",
+   "relation": "SON_OF",
+   "tail_id": "person:yasa",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 10,
+   "other_parents": [
+    "person:asuba"
+   ]
+  },
+  {
+   "head_id": "person:yahaxie",
+   "relation": "SON_OF",
+   "tail_id": "person:yuelan",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 11,
+   "other_parents": [
+    "person:yuelanwang"
+   ]
+  },
+  {
+   "head_id": "person:xixijia",
+   "relation": "SON_OF",
+   "tail_id": "person:yahasi",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 13,
+   "other_parents": [
+    "person:yabiya"
+   ]
+  },
+  {
+   "head_id": "person:manaxi",
+   "relation": "SON_OF",
+   "tail_id": "person:xixijia",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 13,
+   "other_parents": [
+    "person:yuese"
+   ]
+  },
+  {
+   "head_id": "person:yuexiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yamen",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 14,
+   "other_parents": [
+    "person:manaxi"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:suoluobabo",
+   "source_pericope_id": "1ch:3:2",
+   "verse": 19,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:saoluo",
+   "relation": "SON_OF",
+   "tail_id": "person:ximian",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 24,
+   "other_parents": [
+    "person:jishi"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:saoluo",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 25,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:yueashi",
+   "relation": "SON_OF",
+   "tail_id": "person:bijie",
+   "source_pericope_id": "1ch:7:1",
+   "verse": 8,
+   "other_parents": [
+    "person:yahaxie"
+   ]
+  },
+  {
+   "head_id": "person:bianyamin",
+   "relation": "SON_OF",
+   "tail_id": "person:bileihan",
+   "source_pericope_id": "1ch:7:1",
+   "verse": 10,
+   "other_parents": [
+    "person:lajie",
+    "person:yage"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:nafutali",
+   "source_pericope_id": "1ch:7:2",
+   "verse": 13,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:anli",
+   "relation": "SON_OF",
+   "tail_id": "person:yinli",
+   "source_pericope_id": "1ch:9:0",
+   "verse": 4,
+   "other_parents": [
+    "person:bijie"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:shifatiya",
+   "source_pericope_id": "1ch:9:0",
+   "verse": 8,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:sadu",
+   "source_pericope_id": "1ch:9:1",
+   "verse": 11,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:mishilimi",
+   "source_pericope_id": "1ch:9:1",
+   "verse": 12,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:keli",
+   "source_pericope_id": "1ch:9:3",
+   "verse": 19,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:matatiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yedudun",
+   "source_pericope_id": "1ch:25:0",
+   "verse": 3,
+   "other_parents": [
+    "person:shalong"
+   ]
+  },
+  {
+   "head_id": "person:anli",
+   "relation": "SON_OF",
+   "tail_id": "person:mijialei",
+   "source_pericope_id": "1ch:27:1",
+   "verse": 18,
+   "other_parents": [
+    "person:bijie"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehanan",
+   "source_pericope_id": "2ch:23:0",
+   "verse": 1,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:sadu",
+   "source_pericope_id": "ezr:7:0",
+   "verse": 2,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:haluohei",
+   "source_pericope_id": "neh:3:0",
+   "verse": 12,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:yueye",
+   "source_pericope_id": "neh:11:0",
+   "verse": 7,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:sadu",
+   "source_pericope_id": "neh:11:0",
+   "verse": 11,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:yuenadan",
+   "relation": "SON_OF",
+   "tail_id": "person:shimaya",
+   "source_pericope_id": "neh:12:5",
+   "verse": 35,
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 2,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 7,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 9,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 15,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:xibitai",
+   "source_pericope_id": "mat:4:2",
+   "verse": 21,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:xibitai",
+   "source_pericope_id": "mat:10:0",
+   "verse": 2,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yaleifei",
+   "source_pericope_id": "mat:10:0",
+   "verse": 3,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yaleifei",
+   "source_pericope_id": "mrk:3:2",
+   "verse": 18,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:maliya",
+   "source_pericope_id": "mrk:6:0",
+   "verse": 3,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:xibitai",
+   "source_pericope_id": "mrk:10:4",
+   "verse": 35,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:liwei",
+   "relation": "SON_OF",
+   "tail_id": "person:maiji",
+   "source_pericope_id": "luk:3:2",
+   "verse": 24,
+   "other_parents": [
+    "person:liya"
+   ]
+  },
+  {
+   "head_id": "person:liwei",
+   "relation": "SON_OF",
+   "tail_id": "person:ximian",
+   "source_pericope_id": "luk:3:2",
+   "verse": 30,
+   "other_parents": [
+    "person:liya"
+   ]
+  },
+  {
+   "head_id": "person:yuese",
+   "relation": "SON_OF",
+   "tail_id": "person:yuenan",
+   "source_pericope_id": "luk:3:2",
+   "verse": 30,
+   "other_parents": [
+    "person:lajie",
+    "person:yage",
+    "person:yuexi"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yisa",
+   "source_pericope_id": "luk:3:2",
+   "verse": 34,
+   "other_parents": [
+    "person:libaijia"
+   ]
+  },
+  {
+   "head_id": "person:yisa",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "luk:3:2",
+   "verse": 34,
+   "other_parents": [
+    "person:sala"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yaleifei",
+   "source_pericope_id": "luk:6:2",
+   "verse": 15,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:1:3",
+   "verse": 42,
+   "other_parents": [
+    "homonym"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:21:1",
+   "verse": 15,
+   "other_parents": [
+    "homonym"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:21:1",
+   "verse": 16,
+   "other_parents": [
+    "homonym"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:21:1",
+   "verse": 17,
+   "other_parents": [
+    "homonym"
+   ]
+  }
+ ],
+ "anchored_final_by_rel": {},
+ "anchored_keys_unique": 0,
+ "generic_event_ids": 16,
+ "edges_on_generic_events": 80,
+ "after_10_2": 5297,
+ "after_10_2_sha256": "bbc5c83065dca3d92f6e2f6e03bf57e96e987b70a00e374489600233b0e173ff",
+ "after_10_2_by_source": {
+  "prior": 64,
+  "llm": 5233
+ },
+ "after_10_2_kin": 190,
+ "after_10_2_kin_by_rel": {
+  "ANCESTOR_OF": 15,
+  "DAUGHTER_OF": 4,
+  "DESCENDANT_OF": 18,
+  "FATHER_OF": 45,
+  "MOTHER_OF": 15,
+  "SIBLING_OF": 32,
+  "SON_OF": 37,
+  "SPOUSE_OF": 24
+ },
+ "allparent_live": {
+  "children": 262,
+  "children_2plus_nonfemale_parents": 135,
+  "children_gt2_parents": 87
+ },
+ "allparent_after": {
+  "children": 80,
+  "children_2plus_nonfemale_parents": 8,
+  "children_gt2_parents": 1
+ },
+ "r6_after_10_2": {
+  "FATHER_OF": 45,
+  "contradictions": 0,
+  "female_head": 0,
+  "children": 42,
+  "children_2plus_fathers": 3,
+  "functional_violation_rate": 0.0714
+ },
+ "relationships_diff": {
+  "ALLY_OF": -1,
+  "ANCESTOR_OF": -34,
+  "BORN_IN": -1,
+  "BUILT": -9,
+  "CAUSED": -10,
+  "DAUGHTER_OF": -23,
+  "DESCENDANT_OF": -31,
+  "DISCIPLE_OF": -7,
+  "ENEMY_OF": -1,
+  "EXILED_TO": -6,
+  "FATHER_OF": -602,
+  "LEADER_OF": -7,
+  "LOCATED_IN": -5,
+  "MEMBER_OF": -26,
+  "MOTHER_OF": -29,
+  "NEAR": -1,
+  "OCCURRED_IN": -3419,
+  "ORIGINATED_FROM": -1,
+  "PARTICIPATED_IN": -5641,
+  "PRECEDED_BY": -16,
+  "RETURNED_FROM": -13,
+  "RULED": -65,
+  "SETTLED_IN": -4,
+  "SIBLING_OF": -16,
+  "SON_OF": -622,
+  "SPOUSE_OF": -24,
+  "SUCCEEDED_BY": -2,
+  "TEACHER_OF": -13
+ },
+ "ee_new_keys": {
+  "ALLY_OF phase=3 source=prior": 2,
+  "ALLY_OF phase=4 source=llm": 61,
+  "ANCESTOR_OF phase=4 source=llm": 15,
+  "BORN_IN phase=3 source=prior": 1,
+  "BORN_IN phase=4 source=llm": 9,
+  "BUILT phase=3 source=prior": 1,
+  "BUILT phase=4 source=llm": 6,
+  "DAUGHTER_OF phase=4 source=llm": 4,
+  "DESCENDANT_OF phase=4 source=llm": 18,
+  "DESTROYED phase=3 source=prior": 1,
+  "DESTROYED phase=4 source=llm": 37,
+  "DIED_IN phase=3 source=prior": 1,
+  "DIED_IN phase=4 source=llm": 19,
+  "DISCIPLE_OF phase=3 source=prior": 4,
+  "DISCIPLE_OF phase=4 source=llm": 10,
+  "ENEMY_OF phase=3 source=prior": 1,
+  "ENEMY_OF phase=4 source=llm": 31,
+  "EXILED_TO phase=3 source=prior": 1,
+  "EXILED_TO phase=4 source=llm": 13,
+  "FATHER_OF phase=3 source=prior": 12,
+  "FATHER_OF phase=4 source=llm": 33,
+  "FOUNDED phase=4 source=llm": 1,
+  "GAVE phase=4 source=llm": 76,
+  "INITIATED phase=4 source=llm": 384,
+  "LEADER_OF phase=3 source=prior": 1,
+  "LEADER_OF phase=4 source=llm": 62,
+  "LOCATED_IN phase=3 source=prior": 3,
+  "LOCATED_IN phase=4 source=llm": 47,
+  "MEMBER_OF phase=3 source=prior": 1,
+  "MEMBER_OF phase=4 source=llm": 330,
+  "MOTHER_OF phase=3 source=prior": 7,
+  "MOTHER_OF phase=4 source=llm": 8,
+  "NEAR phase=3 source=prior": 1,
+  "NEAR phase=4 source=llm": 27,
+  "OCCURRED_IN phase=4 source=llm": 894,
+  "ORIGINATED_FROM phase=4 source=llm": 50,
+  "PARTICIPATED_IN phase=4 source=llm": 1489,
+  "POSSESSED phase=4 source=llm": 551,
+  "RECEIVED phase=3 source=prior": 1,
+  "RECEIVED phase=4 source=llm": 170,
+  "RETURNED_FROM phase=3 source=prior": 2,
+  "RETURNED_FROM phase=4 source=llm": 26,
+  "RULED phase=3 source=prior": 3,
+  "RULED phase=4 source=llm": 76,
+  "SETTLED_IN phase=4 source=llm": 219,
+  "SIBLING_OF phase=3 source=prior": 4,
+  "SIBLING_OF phase=4 source=llm": 28,
+  "SON_OF phase=4 source=llm": 37,
+  "SPOUSE_OF phase=3 source=prior": 7,
+  "SPOUSE_OF phase=4 source=llm": 17,
+  "SUCCEEDED_BY phase=3 source=prior": 4,
+  "SUCCEEDED_BY phase=4 source=llm": 1,
+  "TEACHER_OF phase=3 source=prior": 2,
+  "TEACHER_OF phase=4 source=llm": 6,
+  "VICTIM_OF phase=4 source=llm": 229,
+  "VISITED phase=3 source=prior": 4,
+  "VISITED phase=4 source=llm": 249
+ },
+ "ee_new_by_source": {
+  "prior": 64,
+  "llm": 5233,
+  "anchored_rule": 0
+ },
+ "ee_new_key_counts": {
+  "prior": 22,
+  "llm": 35,
+  "anchored_rule": 0
+ },
+ "new_probes": {
+  "kin-david-son-of-jesse": false,
+  "kin-esau-father-of-jeush": false,
+  "kin-amram-father-of-moses": true,
+  "edge-no-dan-near-jordan": true,
+  "edge-no-galilee-in-nazareth": true,
+  "kin-peter-not-son-of-john": true,
+  "kin-jethro-not-son-of-esau": true,
+  "kin-nahath-not-son-of-jethro": true,
+  "kin-reuel-son-of-esau(liuer)": false
+ },
+ "liuer_edges": []
+}
