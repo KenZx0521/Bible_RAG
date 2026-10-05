@@ -459,3 +459,24 @@ relations:
     examples:
       - {head: "以色列人", tail: "迦南地", sentence: "以色列人住在迦南地"}
     confidence_priors: {rule_match: 0.80, prior: 0.92, llm_class: 0.70}
+
+# =============================
+# Direction pairs (6)
+# =============================
+# Each [A, B] is two directed relations that read one tie from either end:
+# A(x, y) from x's side, B(y, x) from y's side (FATHER_OF(x, y) / SON_OF(y, x)).
+# Picking A or B is how a classifier states the direction, so rows of these
+# relations do not need head/tail order to read correctly. The directed
+# relations with one type at both ends that are in no pair are the id-order
+# relations (RelationSchema.id_order_relations()): CAUSED, LOCATED_IN,
+# PRECEDED_BY and SUCCEEDED_BY. Their llm rows arrive in id order, and 6.05
+# flags them direction_verified: false; validate_kg H11 counts the unflagged.
+# This table is separate from `inverse`, which only R5 reads: nulling an
+# inverse does not change which relations are id-order.
+direction_pairs:
+  - [FATHER_OF, SON_OF]
+  - [FATHER_OF, DAUGHTER_OF]
+  - [MOTHER_OF, SON_OF]
+  - [MOTHER_OF, DAUGHTER_OF]
+  - [ANCESTOR_OF, DESCENDANT_OF]
+  - [TEACHER_OF, DISCIPLE_OF]
