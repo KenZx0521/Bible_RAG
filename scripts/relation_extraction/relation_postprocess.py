@@ -191,8 +191,7 @@ def rules_to_anchored(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow)
 
 def _anchored_hits(rows: list[dict], inputs: Inputs, cfg: Config) -> tuple[list[dict], dict, list[dict]]:
     """anchored_rules.run over the pericopes: (hits, stats plus foreign_surface_skipped, conflicts)."""
-    final_types = {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
-                   for eid, entity in inputs.entities.items()}
+    final_types = _final_types(inputs, cfg)
     lexicon = anchored_rules.build_lexicon(inputs.entities, final_types, inputs.mentions, cfg.anchored)
     span_map, skipped = anchored_rules.build_span_map(inputs.entities, final_types, inputs.mentions,
                                                       inputs.chunk_parent, cfg.anchored)
@@ -246,9 +245,35 @@ def _anchored_flow(stats: Mapping, rows: list[dict]) -> dict:
     }
 
 
+def drop_llm_event_event(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-08, EV-10: drop every llm row whose two endpoints both have final type Event.
+
+    The LLM's Event–Event edges (PRECEDED_BY, CAUSED) come from pairs mined
+    within one pericope and are mostly noise; the off-by-default entity_path
+    walks them generically. Every Event–Event row Step 6 writes is the LLM's,
+    so 6.05 emits none; a timeline, if one is ever wanted, is a curated file.
+    A prior or curated row between two events is not the LLM's and stays.
+    """
+    final_types = _final_types(inputs, cfg)
+    kept = []
+    for row in rows:
+        if row["source"] == "llm" and final_types[row["head_id"]] == final_types[row["tail_id"]] == "Event":
+            flow.drop("llm_event_event", row)
+        else:
+            kept.append(row)
+    return kept
+
+
+def _final_types(inputs: Inputs, cfg: Config) -> dict[str, str]:
+    """entity_id -> final type: the entities.jsonl type through the curated overrides."""
+    return {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
+            for eid, entity in inputs.entities.items()}
+
+
 RULES: tuple[tuple[str, Rule], ...] = (
     ("drop_inverse", drop_inverse),
     ("rules_to_anchored", rules_to_anchored),
+    ("drop_llm_event_event", drop_llm_event_event),
 )
 
 

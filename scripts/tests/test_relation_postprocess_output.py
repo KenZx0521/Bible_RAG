@@ -23,6 +23,7 @@ from pathlib import Path
 
 import pytest
 
+from entity_extraction import entity_overrides
 from relation_extraction import relation_postprocess as pp
 from relation_extraction.anchored_rules import GuardConfig
 
@@ -190,6 +191,27 @@ def test_rule_drops_and_anchored_counts(real_inputs, all_run, rows_before_anchor
     david = by_key[("person:dawei", "SON_OF", "person:yexi")]
     assert (david["source_pericope_id"], david["verse"], david["notes"]) == ("1ch:29:2", 26, P1)
     assert (david["support_pericopes"], david["evidence_count"]) == (["1ch:29:2", "luk:3:2"], 2)
+
+
+def test_event_event_drops(real_inputs, all_run, rows_before_anchored):
+    rows, report = all_run
+    assert report["flow"]["drops"]["llm_event_event"] == {"PRECEDED_BY": 24, "CAUSED": 14}
+    assert report["rules"]["ran"][2] == "drop_llm_event_event"
+
+    inputs, cfg = real_inputs
+    types = {eid: entity_overrides.final_type(eid, e["type"], cfg.overrides) for eid, e in inputs.entities.items()}
+
+    def llm_event_event(row) -> bool:
+        return row["source"] == "llm" and types[row["head_id"]] == types[row["tail_id"]] == "Event"
+
+    assert not any(llm_event_event(r) for r in rows)
+    # every Event–Event row in relations.jsonl is an llm one (38); prod holds 26 of them,
+    # because 10.2 DETACH DELETEd the generic events the other 12 hang on
+    dropped = [r for r in rows_before_anchored if llm_event_event(r)]
+    assert len(dropped) == sum(types[r["head_id"]] == types[r["tail_id"]] == "Event"
+                               for r in inputs.relations) == 38
+    generic = set(report["expected_after_10_2"]["generic_event_ids"])
+    assert sum(r["head_id"] in generic or r["tail_id"] in generic for r in dropped) == 12
 
 
 @pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")

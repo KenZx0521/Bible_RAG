@@ -20,6 +20,7 @@ contract they plug into:
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import os
@@ -353,6 +354,39 @@ def test_anchored_disabled_drops_rule_rows_and_adds_none(tmp_path):
     assert report["flow"]["anchored"] == {"enabled": False}
     assert report["conflicts"] == []
     assert rows == [r for r in enabled_rows if r["source"] != "anchored_rule"]
+
+
+# --- drop_llm_event_event (REL-08, EV-10) ---------------------------------------
+
+def test_llm_event_event_rows_are_dropped(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    with (tmp_path / "in" / "relations.jsonl").open("a", encoding="utf-8") as f:
+        for row in (_row("event:hongshui", "PRECEDED_BY", "event:dahui", 4, source_pericope_id="gen:11:1"),
+                    _row("event:dahui", "CAUSED", "event:hongshui", 4, source_pericope_id="gen:11:1"),
+                    _row("event:rizi", "PRECEDED_BY", "event:hongshui", 3)):
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    rows, report = _run("all", _paths(tmp_path / "in"))
+
+    # the LLM's Event–Event edges go; a prior between two events is not the LLM's and stays,
+    # as does an llm edge with one Event endpoint (洪水 OCCURRED_IN 吾珥)
+    keys = {(r["head_id"], r["relation"], r["tail_id"], r["source"]) for r in rows}
+    assert not {("event:hongshui", "PRECEDED_BY", "event:dahui", "llm"),
+                ("event:dahui", "CAUSED", "event:hongshui", "llm")} & keys
+    assert {("event:rizi", "PRECEDED_BY", "event:hongshui", "prior"),
+            ("event:hongshui", "OCCURRED_IN", "place:wuer", "llm")} <= keys
+    assert report["flow"]["drops"]["llm_event_event"] == {"CAUSED": 1, "PRECEDED_BY": 1}
+    assert report["rules"]["ran"][:3] == ["drop_inverse", "rules_to_anchored", "drop_llm_event_event"]
+
+    # the endpoint types are the final ones: an Event relabelled away keeps its edge, a
+    # Theme relabelled to Event loses it
+    inputs, cfg = pp.load_inputs(_paths())
+    relabel = {**cfg.overrides, "event:dahui": {"label": "Theme"}, "theme:rizi": {"label": "Event"}}
+    stamped = [pp.base_stamp(r, cfg) for r in (_row("event:hongshui", "PRECEDED_BY", "event:dahui", 4),
+                                                _row("event:hongshui", "CAUSED", "theme:rizi", 4))]
+    flow = pp.Flow()
+    assert pp.drop_llm_event_event(stamped, inputs, dataclasses.replace(cfg, overrides=relabel),
+                                   flow) == stamped[:1]
+    assert flow.drops == {"llm_event_event": {"CAUSED": 1}}
 
 
 # --- relation_policy ------------------------------------------------------------
