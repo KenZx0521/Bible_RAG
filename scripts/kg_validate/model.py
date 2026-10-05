@@ -179,6 +179,7 @@ def _relation_row(r: dict) -> dict:
         "source_pericope_id": r.get("source_pericope_id") or "",
         "extraction_phase": r.get("extraction_phase"), "notes": r.get("notes") or "",
         "curated": r.get("curated"), "backfilled": r.get("backfilled"), "source": r.get("source"),
+        "direction_verified": r.get("direction_verified"), "sources": r.get("sources"),
     }
 
 
@@ -249,7 +250,8 @@ _LIVE_QUERIES = {
         MATCH (a:Entity)-[r]->(b:Entity) WHERE NOT type(r) IN ['MENTIONS', 'CROSS_REFERENCES']
         RETURN a.entity_id AS head_id, type(r) AS relation, b.entity_id AS tail_id,
                r.source_pericope_id AS source_pericope_id, r.extraction_phase AS extraction_phase,
-               r.notes AS notes, r.curated AS curated, r.backfilled AS backfilled, r.source AS source""",
+               r.notes AS notes, r.curated AS curated, r.backfilled AS backfilled, r.source AS source,
+               r.direction_verified AS direction_verified, r.sources AS sources""",
     "xrefs": """
         MATCH (a:Pericope)-[r:CROSS_REFERENCES]->(b:Pericope)
         RETURN a.id AS source_id, b.id AS target_id, r.source AS source, r.votes AS votes,

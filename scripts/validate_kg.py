@@ -61,7 +61,9 @@ a missing file reported n/a, and refuses --ratchet/--accept:
                           to one MENTIONS edge per (label, source, entity); the first row wins, as the
                           import's MERGE does. R3's all-forms reading and R9 read every row.
   relations.jsonl         head_id, relation | type, tail_id, source_pericope_id, extraction_phase,
-                          notes, curated?, backfilled?
+                          notes, curated?, backfilled?, source?, direction_verified? (false = an
+                          id-order edge whose direction no prior confirmed), sources? (every source
+                          supporting the edge); live reads the same edge properties, absent = null
   cross_references.jsonl  source_id, target_id, source, votes, curated?, tsk?, source_verses?, target_verses?
   pericopes.jsonl         id, book_id, verse_range        chunks.jsonl  id, pericope_id
   books.jsonl             id, name

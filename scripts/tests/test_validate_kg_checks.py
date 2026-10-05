@@ -12,12 +12,14 @@ files); shared pieces are in _validate_kg_helpers.py.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 
 import pytest
 
 import validate_kg as vk
+from kg_validate import model
 from _validate_kg_helpers import (
     SHIPPED_BASELINE,
     SHIPPED_PROBES,
@@ -309,6 +311,58 @@ def test_live_and_snapshot_of_one_graph_pass_one_baseline(snap, tmp_path, capsys
     assert cli(snap, baseline, capsys, "--only", "R3,R9", "--ratchet")[0] == 0  # full snapshot: no false regression
     assert _stored(baseline, "R3", "all_forms_entities") == 1 and _stored(baseline, "R3", "foreign_surface_entities") == 0
     assert vk.main(live) == 0  # and live still passes once the snapshot reading is filled
+
+
+# What 6.05 stamps on an id-order llm edge. H11 counts it as unflagged unless
+# direction_verified reads False, so a mode that drops the field fails H11.
+PROVENANCE = {"direction_verified": False, "sources": ["llm"]}
+
+
+def _neo4j_columns(cypher: str, row: dict) -> dict:
+    """The record Neo4j returns for `row`: only the columns the Cypher selects,
+    an absent property as null. SHOW ... YIELD (no AS) returns the row as is."""
+    columns = re.findall(r"\bAS (\w+)", cypher)
+    return {c: row.get(c) for c in columns} if columns else row
+
+
+def test_load_live_reads_direction_verified_and_sources(snap, monkeypatch):
+    """load_live through the real _LIVE_QUERIES: live_shaped() reuses the
+    snapshot's rows and never runs them, so a relations Cypher missing a column
+    would only surface on staging (the flagged edges read as None, H11 fails)."""
+    stored = {
+        "entities": [{"entity_id": "place:moliya", "labels": ["Entity", "Place"], "canonical_name": "摩利亞"},
+                     {"entity_id": "place:jianan", "labels": ["Entity", "Place"], "canonical_name": "迦南"}],
+        "relations": [{"head_id": "place:moliya", "relation": "LOCATED_IN", "tail_id": "place:jianan",
+                       "source_pericope_id": "gen:22:0", "extraction_phase": 4, "source": "llm", **PROVENANCE},
+                      {"head_id": "place:jianan", "relation": "NEAR", "tail_id": "place:moliya",
+                       "source_pericope_id": "gen:22:0", "extraction_phase": 4}],  # legacy: neither property
+    }
+    names = {cypher: name for name, cypher in model._LIVE_QUERIES.items()}
+    ran: dict[str, str] = {}
+
+    def read_query(driver, cypher, **params):
+        ran[names[cypher]] = cypher
+        return [_neo4j_columns(cypher, row) for row in stored.get(names[cypher], [])]
+
+    monkeypatch.setattr(model, "read_query", read_query)
+    kg = vk.load_live(driver=None)
+    assert set(ran) == set(model._LIVE_QUERIES)
+    assert "r.direction_verified AS direction_verified" in ran["relations"]
+    assert "r.sources AS sources" in ran["relations"]
+    flagged, legacy = kg.relations
+    assert {k: flagged[k] for k in PROVENANCE} == PROVENANCE
+    assert (legacy["direction_verified"], legacy["sources"]) == (None, None)
+    assert set(flagged) == set(vk.load_snapshot(snap).relations[0])  # live and snapshot rows: same keys
+
+
+def test_snapshot_relation_rows_carry_direction_verified_and_sources(snap, tmp_path):
+    edit_rows(snap / "relations.jsonl", lambda r: r["relation"] == "OCCURRED_IN", **PROVENANCE)
+    kg = vk.load_snapshot(snap)
+    flagged = next(r for r in kg.relations if r["type"] == "OCCURRED_IN")
+    assert {k: flagged[k] for k in PROVENANCE} == PROVENANCE
+    assert {(r["direction_verified"], r["sources"]) for r in kg.relations if r is not flagged} == {(None, None)}
+    vk.write_snapshot(kg, tmp_path / "dump")  # and a dump keeps them
+    assert vk.load_snapshot(tmp_path / "dump").relations == kg.relations
 
 
 @pytest.mark.parametrize("field,value", [("source_id", "heb:1:0"), ("target_verses", "13")])
