@@ -304,7 +304,7 @@ HYBRID_SEARCH_ENABLED=true
 
 ### 匯入資料
 - `output/neo4j_nodes.jsonl`（4,465 筆）
-- `output/neo4j_relationships.jsonl`（8,209 筆）
+- `output/neo4j_relationships.jsonl`（8,371 筆，W1 的 Step 0，其中 CROSS_REFERENCES 932 列；1B 之前是 8,358 筆）
 - 實體節點與關係（from Step 1）
 
 ### 節點類型
@@ -327,7 +327,7 @@ uv run --project scripts python scripts/import_neo4j.py
 - Step 0 每個段落對只寫一列，這裡以 `MERGE (a)-[r:CROSS_REFERENCES]->(b) SET r += props` 寫入。屬性：
   - `curated: true`、`tsk: false`。Step 9 會把有 TSK 證據的段落對改成 `tsk: true`，並寫上 votes。
   - `curated_sources`：排序過的來源清單（markdown、supplementary）。`source` 是單一值，兩者都有時取 markdown。
-  - markdown：`md_ref_texts`（原文）與 `md_anchors`（`mrk 1:?>psa 2:7`），兩個清單逐項對齊。
+  - markdown：`md_ref_texts`（原文，例如 `撒上31‧1－13`）與 `md_anchors`（同一列是 `1ch 10:?>1sa 31:1-13`），兩個清單逐項對齊。
   - supplementary：`supp_anchors`、`supp_ref_types`（quotation／allusion）、`supp_descriptions`，三個清單逐項對齊。`supp_tsk_exempt_anchors` 只在定義帶 tsk_exempt 時才寫，因為 Neo4j 的 list 不能含 null。
   - 不再寫 ref_text、verse_start、verse_end、ref_type、description、source_verses、target_verses。validate_kg 的 R4 只在讀 1B 之前建的圖時用到舊欄位。
 - **重複段落對防護**：連線之前（也就是清庫之前）檢查 neo4j_relationships.jsonl。CROSS_REFERENCES 有兩列以上同一個 (start, end) 時，逐對列出並結束碼 1，因為 MERGE 加 `SET r += props` 只會留下最後一列的屬性（XREF-1(b) 就這樣吞掉錨點）。通過時印出 `✓ 932 CROSS_REFERENCES rows, no duplicate pair`；檔案不存在時跳過，與匯入本身一致。
@@ -512,7 +512,7 @@ uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_ref
 - 344,799 行 → 過濾負 votes（1,166）與自環（9,811）→ 250,358 條 unique pericope 對（僅 7 條 unmapped）
 - 第 1B 批之後（W1 預期，由 `xref_probe.py expect` 從 Step 0 輸出離線重放）：印出 `After: created 249,434, attached_to_curated 924, matched 250,358`。CROSS_REFERENCES 共 250,366 條：curated 932 條（924 條同時是 TSK，8 條 markdown 沒有 TSK 證據），純 TSK 249,434 條。
 - 第 1B 批之前：有 856 對與 curated 邊重疊而沒有寫上 votes，live 的 tsk 邊是 249,502 條（250,358 − 856），而且沒有任何邊帶旗標。
-- **指紋與連跑兩次**：最後一行印 `fingerprint: <sha256>`，以每條邊的 (a, b, votes, verse_pairs, curated, tsk) 依 (a, b) 排序後計算，與寫入順序無關；W1 是 `e522411e…`。Step 9 沒有 refresh 模式，重灌時緊接著再跑一次：第二次必須印出 `created 0` 與同一個指紋。接著跑 `xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json`，結束碼必須是 0（期望檔在建置前產生，見 [staging_promotion.md](staging_promotion.md) R2）。
+- **指紋與連跑兩次**：最後一行印 `fingerprint: <sha256>`，以每條邊的 (a, b, votes, verse_pairs, curated, tsk) 依 (a, b) 排序後計算，與寫入順序無關；W1 是 `e522411e…`。Step 9 沒有 refresh 模式，重灌時緊接著再跑一次：第二次必須印出 `created 0` 與同一個指紋。接著跑 `xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json`，結束碼必須是 0（期望檔在 W1 第 2 步之前登記，重建時只重算比對，見 [staging_promotion.md](staging_promotion.md) R2「W1 的交叉引用檢查」第 1 項）。curated 邊的清單屬性（`curated_sources`、`md_ref_texts`、`md_anchors`、`supp_anchors`、`supp_ref_types`、`supp_descriptions`、`supp_tsk_exempt_anchors`）不在指紋內。這些清單的內容只由 Step 0 的 validate_output 在 JSONL 上驗證，Step 5 以 `SET r += props` 原樣寫入；圖上的 R4 只看 supp_anchors 是否對齊，H8 只看 curated_sources 是否非空。
 - **回滾**：從 Step 5 重建（Step 5 清庫，再依「執行順序」跑完後面各步）；production 則照 [staging_promotion.md](staging_promotion.md) R5 載回 dump。不要用 `source: 'tsk'` 或 `tsk` 旗標刪邊：curated 邊也帶 `tsk: true` 與 votes，照謂詞刪會刪錯邊，或只刪掉一半的證據。
 
 ---

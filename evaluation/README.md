@@ -10,8 +10,12 @@ evaluation/
 ├── quick_retrieval_eval.py      # 快速檢索評估迴圈(retrieval-only,無生成/RAGAS)
 ├── ab_compare.py                # 兩個 quick eval 結果的配對 A/B / --require-identical 一致性檢查
 ├── d3_gate.py                   # D3 非劣閘門(兩個 backend 跑 500 題 → 一致性 + 路由殘差判定)
+├── xref_ab_slice.py             # opt-in xref A/B 的 touched 題數與 kg_xref 切片(W1,只報告;見 docs/staging_promotion.md)
 ├── quick_faithfulness_eval.py   # 快速 faithfulness 重判迴圈(只跑兩個 faithfulness judge)
 ├── apply_coverage.py            # 答案要點覆蓋率離線補算
+├── experiments/                 # 各實驗的事前登記、題號檔與腳本
+│   ├── 2026-10-03_event_registry/   # event_registry 附加槽的檢索 A/B、AA 校準與答案端探針
+│   └── 2026-10-05_kg_w1/        # W1 升版第 1 步的 20 題煙霧測試題號檔
 ├── src/
 │   ├── config.py                # 讀取 ../.env(共用)+ ./.env(eval 專屬,優先)
 │   ├── models.py                # Pydantic 資料模型

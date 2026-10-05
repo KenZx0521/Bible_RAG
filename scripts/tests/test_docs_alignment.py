@@ -7,10 +7,12 @@ with flags in either doc is checked against that script's real --help (and
 in the middle of a rebuild. Also pins the batch-0 rebuild order (replay after
 the curated overlay) in both the doc and the fix plan, whose batch-1+ details
 live in a companion file, and checks that the cross links survive the split.
-Batch 1B (W1) pins the cross-reference runbook: backend before data (the
+Batch 1B (W1) pins the cross-reference runbook: the expectation registered
+before the rebuild and only re-checked during it, backend before data (the
 R2-tested image itself, its id checked; the rollback image's id recorded and
-saved to bak/ once, in fail-closed blocks), the deploy-guard as the first
-command of the data load, one ratchet for the wave, the image never rolled
+saved to bak/ once, in fail-closed blocks), the opt-in A/B window on that
+image, the deploy-guard as the first command of the data load, one ratchet
+for the wave, the U3 count grep, the image never rolled
 back ahead of the data and rolled back by the recorded id (compose with
 --no-deps from a clean main-checkout shell), and no votes=999 sentinel left
 in the mechanism docs.
@@ -320,12 +322,15 @@ def test_step0_documents_the_xref_gate_and_that_1b_leaves_pericopes_alone():
 
 def test_step5_and_step9_document_the_1b_properties_gates_and_rollback():
     s5 = section(doc_text(), "Step 5:")
-    for needle in ("curated_sources", "supp_anchors", "md_anchors", "no duplicate pair"):
+    # 8,371 rows and the md_anchors example come from the W1 Step 0 output (sha256 d2389c73…)
+    for needle in ("curated_sources", "supp_anchors", "md_anchors", "no duplicate pair", "8,371",
+                   "`1ch 10:?>1sa 31:1-13`"):
         assert needle in s5, needle
+    assert "8,209" not in s5 and "mrk 1:?>psa 2:7" not in s5
     s9 = section(doc_text(), "Step 9:")
     for needle in ("--dry-run", "同向", "250,358", "249,434", "924", "250,366", "created 0",
                    "xref_probe.py fingerprint --target staging --expect", "從 Step 5",
-                   "curated 邊至少一條"):
+                   "curated 邊至少一條", "不在指紋內", "validate_output"):
         assert needle in s9, needle
     assert "DELETE r" not in s9
 
@@ -342,8 +347,29 @@ def test_r2_runs_the_xref_checks_and_the_merged_allowlist_gate():
                    "不能再當閘門重跑", "xref_probe.py expect", "created 0",
                    "xref_probe.py fingerprint --target staging --expect",
                    "xref_probe.py deploy-guard --container bible_rag_backend_staging", "--edges",
-                   "HEAD 已提交的檔案（`git show HEAD:`，不看工作目錄）"):
+                   "HEAD 已提交的檔案（`git show HEAD:`，不看工作目錄）", "expected_edges.jsonl 約 20 MB"):
         assert needle in r2, needle
+    assert "每個檔約 2 MB" not in r2
+
+
+def test_r2_preregisters_the_xref_expectation_before_the_rebuild_and_only_rechecks_it():
+    # decision O5, plan §3: the expect file and 1B's fragment exist before W1 step 2; the
+    # rebuild recomputes the expectation into bak/ and compares it, never rewriting the registered file
+    r2 = section(staging_text(), "R2")
+    commands = _commands(r2)
+    recheck = "--out bak/$D/xref_probe/xref_rebuild.json"
+    expects = [c for c in commands if "xref_probe.py expect" in c]
+    assert len(expects) == 2, expects
+    assert "--out config/kg_expect/batch1_w1/xref.json" in expects[0] and recheck in expects[1], expects
+    _in_order(commands, ("xref_probe.py expect", "xref_probe.py allow", recheck,
+                         "cmp bak/$D/xref_probe/xref_rebuild.json config/kg_expect/batch1_w1/xref.json"))
+    for needle in ("事前登記", "第 2 步（staging 重建）之前", "不可覆寫登記的期望檔", "第 4 步經 Kay 核可"):
+        assert needle in r2, needle
+    assert "第 4 步經 Kay 核可才 commit" not in r2 and "**建置之前**" not in r2
+    r1 = section(staging_text(), "R1")
+    assert "事前登記" in r1 and "R2「W1 的交叉引用檢查」第 1 項" in r1
+    s9 = section(doc_text(), "Step 9:")
+    assert "期望檔在建置前產生" not in s9 and "第 2 步之前登記" in s9
 
 
 def test_r2_generates_the_1b_allowlist_fragment_and_leaves_mention_count_to_1a():
@@ -479,6 +505,30 @@ def test_w1_step1_smoke_cannot_pass_on_a_stale_result_and_checks_pred_trans():
     assert f"rm -f {SMOKE_JSON}" in readme and "up -d --build backend" not in readme
 
 
+def test_xref_ab_window_restarts_staging_on_w1_and_reports_ci_by_stratum():
+    # R2 item 3 stops backend-staging; plan §5.2 wants Δvrec CI and win/loss, in-sample apart from held-out
+    ab = section(staging_text(), "W1 升版第 1、2 步之間")
+    restart, *rest = _blocks(ab)
+    _assert_fail_closed(restart, "both arms run :w1")
+    _in_order(restart, (
+        f"W1=$(cat {W1_ID_FILE})",
+        "test \"$(docker inspect -f '{{.State.Health.Status}}' bible_rag_neo4j_staging)\" = healthy",
+        "> /tmp/w1_image.yml",
+        "-f /tmp/w1_image.yml up -d --no-deps --no-build --wait --wait-timeout 300 backend-staging",
+        "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend_staging)\" = \"$W1\"",
+        "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend)\" = \"$W1\""))
+    evals = [command for block in rest for command in block]
+    # a bare `cd evaluation` would leave the operator in evaluation/ for step 2's repo-root paths
+    assert evals and all(c.startswith("(cd evaluation && ") and c.endswith(")") for c in evals), evals
+    _in_order(evals, ("rm -f results_quick/xref_old_w1.json results_quick/xref_new_w1.json", "--label xref_old_w1",
+                      "BACKEND_URL=http://localhost:8001", "xref_ab_slice.py",
+                      "ab_compare.py results_quick/xref_old_w1.json results_quick/xref_new_w1.json"))
+    for needle in ("95% CI", "W/L", "`[legacy]`", "`[expanded]`", "held-out",
+                   "](records/2026-10-05_kg_batch1_w0_results.md)「補記"):
+        assert needle in ab, needle
+    assert "§9" not in ab
+
+
 def test_w1_data_load_starts_with_the_deploy_guard():
     step2 = section(staging_text(), "W1 升版第 2 步")
     first = _commands(step2)[0]
@@ -511,6 +561,29 @@ def test_r4_ratchets_the_whole_wave_once_with_the_merged_allowlist():
     assert "`--accept R11`" not in r4
 
 
+U3_GREP = "grep -n '250,418\\|319,988\\|142 條\\|916 條' README.md evaluation/README.md docs/*.md"
+
+
+def test_r4_u3_names_every_doc_the_count_grep_hits():
+    # line lists drift; the grep recipe finds the docs that state the counts W1 changes
+    r4 = section(staging_text(), "R4")
+    u3 = r4[r4.index("**R4 之後的文件更新（U3）**"):]
+    assert U3_GREP in _commands(u3), _commands(u3)
+    pattern = re.compile(U3_GREP.split("'")[1].replace("\\|", "|"))
+    targets = [ROOT / "README.md", ROOT / "evaluation" / "README.md", *sorted((ROOT / "docs").glob("*.md"))]
+    hits = [p.relative_to(ROOT).as_posix() for p in targets if pattern.search(read(p))]
+    prose = mask_code(u3)
+    missing = [rel for rel in hits if not re.search(rf"(?<![\w/]){re.escape(rel)}", prose)]
+    assert {"README.md", "docs/ARCHITECTURE.md", "docs/kg_construction_overview.md"} <= set(hits), hits
+    assert not missing, missing
+
+
+def test_staging_doc_headings_are_unique():
+    # a repeated heading gets the same markdown anchor as the first one
+    names = headings(staging_text())
+    assert len(names) == len(set(names)), sorted({n for n in names if names.count(n) > 1})
+
+
 def test_r3_and_r5_compose_runs_without_deps_from_a_clean_main_checkout_shell():
     # a shell that sourced staging.env would make compose recreate prod postgres (POSTGRES_DB)
     for name in ("R3", "R5"):
@@ -538,6 +611,12 @@ def test_staging_compose_sends_new_backend_code_to_a_separate_tag():
     assert "`docker compose build backend` first" not in words
     for needle in ("bible_rag-backend:w1", "docs/staging_promotion.md R2"):
         assert needle in words, needle
+
+
+def test_evaluation_readme_tree_lists_the_w1_xref_ab_tool_and_experiment_dir():
+    tree = read(ROOT / "evaluation" / "README.md").split("```", 2)[1]
+    for needle in ("xref_ab_slice.py", "experiments/", "2026-10-05_kg_w1/"):
+        assert needle in tree, needle
 
 
 @pytest.mark.parametrize("path", MECHANISM_DOCS, ids=_name)
