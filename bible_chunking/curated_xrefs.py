@@ -18,12 +18,17 @@ markdown ref is pericope-level, so its anchor marks unknown verses with '?',
 including what CrossRefParser left unread: 'num 21:?>deu 2:26-?' for
 申2‧26－3‧11, 'jer 52:?>2ki 25:18-21,?' for 王下25‧18－21，27－30.
 
+edge_fingerprint hashes the CROSS_REFERENCES table after Step 9, read live with
+EDGE_FINGERPRINT_CYPHER or projected offline, so the two can be compared.
+
 Pure: no I/O. Shared by Step 0 (process_bible), validate_output, Step 9 and
 xref_probe.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from typing import Iterable, Mapping, NamedTuple
 
@@ -292,3 +297,23 @@ def aggregate_curated(md_rows: Iterable[Mapping],
                            "curated_sources": sorted(sources), **lists},
         })
     return relationships
+
+
+# One row per CROSS_REFERENCES edge, in the columns edge_fingerprint hashes.
+EDGE_FINGERPRINT_CYPHER = """
+MATCH (a:Pericope)-[r:CROSS_REFERENCES]->(b:Pericope)
+RETURN a.id AS a, b.id AS b, r.votes AS votes, r.verse_pairs AS verse_pairs,
+       r.curated AS curated, r.tsk AS tsk
+"""
+_FINGERPRINT_FIELDS = ("a", "b", "votes", "verse_pairs", "curated", "tsk")
+
+
+def edge_fingerprint(rows: Iterable[Mapping]) -> str:
+    """sha256 of one json.dumps([a, b, votes, verse_pairs, curated, tsk]) line per
+    edge, sorted by (a, b) and joined by newlines (sim_w1_1b.py's projection).
+    Input order does not matter. Every row carries all six keys: the query
+    returns null for a property the edge lacks (a curated edge has no votes
+    until Step 9 attaches TSK to it)."""
+    lines = sorted((row["a"], row["b"], json.dumps([row[k] for k in _FINGERPRINT_FIELDS]))
+                   for row in rows)
+    return hashlib.sha256("\n".join(line for _, _, line in lines).encode()).hexdigest()
