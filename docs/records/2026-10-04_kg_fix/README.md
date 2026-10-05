@@ -13,6 +13,8 @@
 
 改寫是機械式的：只拆開「以根路徑開頭的字串常值」，docstring 不動。把參數代回原路徑後，110 個檔與改寫前逐字相同。
 
+自 1B 起，量測舊 supplementary 定義的四支腳本（`xref/supp.py`、`verifier_xref/mdpairs.py`、`batch1/1B/sim_supp.py`、`batch1/1B-reviewer/r1_supp.py`）不再 import `bible_chunking.nt_cross_references`（1B 把它改寫成經文座標），改讀凍結檔 `xref/supp_defs_a32fbea.json`：a32fbea 的 161 筆定義依原順序、每筆 6 個欄位，載入成 `SimpleNamespace` 後屬性與原 dataclass 相同。這四支只把那一行 import 換成讀凍結檔（上段「逐字未動」的唯一例外，變數名照舊），所以在任何 HEAD 都能重放；已驗證（2026-10-05）拿掉 `nt_cross_references.py` 後四支重跑，`supp_sim.json`、`supp_edges.json`、`supp_rows.json`、`r1_supp.json` 與 stdout 都和改前逐位元相同。`scripts/tests/test_supp_defs_frozen.py` 守住筆數、欄位與「不再 import live 模組」。
+
 `batch1/inputs/` 是原本只在 scratchpad 的兩份輸入：`bench/questions_table.json`（500 題逐題表）與 `kg_xref/`（2026-10-03 審查的 kg_xref 68 題）。
 
 ## 重放

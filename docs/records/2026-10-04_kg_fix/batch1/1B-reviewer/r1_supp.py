@@ -6,7 +6,8 @@ KGFIX_SP = os.environ.get("KGFIX_SP", BIBLE_RAG_ROOT + "/bak/20261004_kgfix_evid
 import json, sys, collections, pickle
 ROOT=BIBLE_RAG_ROOT
 sys.path.insert(0, ROOT)
-from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS as DEFS
+from types import SimpleNamespace; from pathlib import Path  # archived evidence script: frozen a32fbea definitions, see docs/records/2026-10-04_kg_fix/README.md
+DEFS = [SimpleNamespace(**d) for d in json.load(open(Path(BIBLE_RAG_ROOT)/'docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json', encoding='utf-8'))]
 OUT=KGFIX_SP + '/batch1plan/1B-reviewer/'
 
 vmap={}
