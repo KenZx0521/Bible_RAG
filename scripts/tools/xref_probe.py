@@ -23,6 +23,12 @@ flags are flat, so --help lists all of them.
            ways, single:<x> and legacy:<x> must hold the partner with curated
            false and weight 0.60. Those are the three TSK edges with votes
            >= 999 that the pre-C1 coalesce(r.votes, 999) rule ranked as curated.
+  deploy-guard
+           `docker exec <--container> cat` (read only) of the backend's xref
+           code, GUARD_FILES. Exit 1 unless the container reads r.curated, has
+           no 999 sentinel and holds this checkout's exact files (sha256). Plan
+           §2.2 risk: run it as the first command of the data load and after
+           any image change, so the data never runs ahead of the code.
 
 The measured side is backend probes/xref_measure (1B-T2): same seed file, the
 real retriever functions.
@@ -32,9 +38,10 @@ Usage (from the project root):
     $PY scripts/tools/xref_probe.py seeds --out seeds.json
     $PY scripts/tools/xref_probe.py predict --seeds seeds.json --target prod --out pred.json
     $PY scripts/tools/xref_probe.py compare --pred pred.json --measured measured.json
+    $PY scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend
 
-Exit code: 0 done / everything matches; 1 a difference, a failed sentinel, or
-an unreadable input or target.
+Exit code: 0 done / everything matches; 1 a difference, a failed sentinel or
+guard, or an unreadable input or target.
 """
 
 from __future__ import annotations
@@ -42,6 +49,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -214,10 +222,67 @@ def _cmd_compare(args) -> int:
     return 1 if problems else 0
 
 
+# ---------------------------------------------------------------- deploy-guard
+
+BACKEND_DIR = _PROJECT_ROOT / "backend"
+CONTAINER_BACKEND = "/app/backend"  # Dockerfile: COPY backend/ ./backend/ under /app
+GUARD_FILES = ("database/neo4j_db.py", "utils/retrieval/cross_ref_retriever.py", "probes/xref_measure.py")
+# (file, text, must be present): no pre-C1 999 sentinel, the curated flag read
+# ('r.curated' stays true after W2 C14 reduces _CURATED_XREF to r.curated)
+GUARD_MARKERS = (("database/neo4j_db.py", "coalesce(r.votes, 999)", False),
+                 ("utils/retrieval/cross_ref_retriever.py", "_CURATED_VOTES", False),
+                 ("database/neo4j_db.py", "r.curated", True))
+run_command = subprocess.run  # deploy-guard's runner; the tests swap it and never call docker
+
+
+def _container_file(container: str, rel: str, runner) -> tuple[bytes | None, str | None]:
+    """(bytes, None) of one backend file in the container, or (None, the reason it is unreadable)."""
+    done = runner(["docker", "exec", container, "cat", f"{CONTAINER_BACKEND}/{rel}"],
+                  check=False, capture_output=True)
+    if done.returncode == 0:
+        return done.stdout, None
+    err = done.stderr.decode("utf-8", "replace").strip()
+    kind = "missing" if "No such file or directory" in err else "docker exec failed for"
+    return None, f"{kind} {rel} in {container} (exit {done.returncode}: {err})"
+
+
+def deploy_guard(container: str, runner, backend: Path = BACKEND_DIR) -> tuple[dict[str, str], list[str]]:
+    """({file: sha256 in the container}, problems): problems is empty only when every
+    GUARD_FILES file is readable, equals backend/<file> byte for byte and passes GUARD_MARKERS."""
+    shas, texts, problems = {}, {}, []
+    for rel in GUARD_FILES:
+        data, problem = _container_file(container, rel, runner)
+        if problem:
+            problems.append(problem)
+            continue
+        texts[rel], shas[rel] = data, hashlib.sha256(data).hexdigest()
+        local = _sha256(backend / rel)
+        if shas[rel] != local:
+            problems.append(f"{rel}: sha256 {shas[rel][:12]} in {container}, {local[:12]} in {backend} "
+                            "(image not built from this checkout: rebuild before promoting)")
+    for rel, text, wanted in GUARD_MARKERS:
+        if rel in texts and (text.encode() in texts[rel]) != wanted:
+            problems.append(f"{rel} lacks {text}" if wanted else f"{text} present in {rel}")
+    return shas, problems
+
+
+def _cmd_deploy_guard(args) -> int:
+    shas, problems = deploy_guard(args.container, run_command)
+    for rel, sha in shas.items():
+        print(f"{sha}  {args.container}:{CONTAINER_BACKEND}/{rel}")
+    for problem in problems:
+        print(f"  {problem}")
+    print("deployed backend reads r.curated" if not problems
+          else f"exit 1: {len(problems)} problems; do not load the data")
+    return 1 if problems else 0
+
+
 # ---------------------------------------------------------------- CLI
 
-ACTIONS = {"seeds": _cmd_seeds, "predict": _cmd_predict, "compare": _cmd_compare}
-REQUIRED = {"seeds": ("out",), "predict": ("seeds", "out"), "compare": ("pred", "measured")}
+ACTIONS = {"seeds": _cmd_seeds, "predict": _cmd_predict, "compare": _cmd_compare,
+           "deploy-guard": _cmd_deploy_guard}
+REQUIRED = {"seeds": ("out",), "predict": ("seeds", "out"), "compare": ("pred", "measured"),
+            "deploy-guard": ()}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -233,6 +298,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--edges", type=Path, help="predict: read the edges from this JSONL instead")
     parser.add_argument("--pred", type=Path, help="compare: the prediction")
     parser.add_argument("--measured", type=Path, help="compare: the measurement")
+    parser.add_argument("--container", default="bible_rag_backend",
+                        help="deploy-guard: the backend container (default bible_rag_backend)")
     return parser
 
 

@@ -6,12 +6,14 @@ seed_support, curated, votes, then apoc.util.md5([id])) and weigh exactly like
 cross_ref_retriever._edge_weight; compare must refuse any drift and the
 sentinel rows the plan names. The graph reads go through a fake driver that
 records the access mode: predict --target must never open a write session.
+deploy-guard (1B-T4) reads the container through a fake runner: no docker call.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -290,12 +292,113 @@ def test_compare_params_and_key_sets(tmp_path):
     assert run_compare(tmp_path, full(rows), fewer) == 1
 
 
-@pytest.mark.parametrize("action", ["seeds", "predict", "compare"])
+# ---------------------------------------------------------------- deploy-guard
+
+REPO_BACKEND = Path(xp.__file__).resolve().parents[2] / "backend"
+NEO4J_DB, RETRIEVER, PROBE = "database/neo4j_db.py", "utils/retrieval/cross_ref_retriever.py", "probes/xref_measure.py"
+PRE_1B = {  # the 087ab0d lines plan §2.2 says must be gone from the container before the data load
+    NEO4J_DB: b'        "     max(coalesce(r.votes, 999)) AS votes "\n',
+    RETRIEVER: b"_CURATED_VOTES = 999\n",
+}
+
+
+class FakeDocker:
+    """subprocess.run stand-in for `docker exec <container> cat <path>`; records every command."""
+
+    def __init__(self, files: dict[str, bytes], fail: bytes | None = None):
+        self.files, self.fail, self.calls = files, fail, []
+
+    def __call__(self, cmd, check, capture_output):
+        self.calls.append(cmd)
+        assert cmd[:2] == ["docker", "exec"] and cmd[3] == "cat" and check is False and capture_output
+        if self.fail is not None:
+            return SimpleNamespace(returncode=1, stdout=b"", stderr=self.fail)
+        rel = cmd[4].removeprefix("/app/backend/")
+        if rel not in self.files:
+            return SimpleNamespace(returncode=1, stdout=b"",
+                                   stderr=f"cat: {cmd[4]}: No such file or directory\n".encode())
+        return SimpleNamespace(returncode=0, stdout=self.files[rel], stderr=b"")
+
+
+def checkout_files() -> dict[str, bytes]:
+    return {rel: (REPO_BACKEND / rel).read_bytes() for rel in (NEO4J_DB, RETRIEVER, PROBE)}
+
+
+def run_guard(monkeypatch, docker, *argv) -> int:
+    monkeypatch.setattr(xp, "run_command", docker)
+    return xp.main(["deploy-guard", *argv])
+
+
+def test_deploy_guard_accepts_current_checkout(monkeypatch, capsys):
+    files = checkout_files()
+    docker = FakeDocker(files)
+    assert run_guard(monkeypatch, docker) == 0
+    assert docker.calls == [["docker", "exec", "bible_rag_backend", "cat", f"/app/backend/{rel}"]
+                            for rel in (NEO4J_DB, RETRIEVER, PROBE)]
+    out = capsys.readouterr().out
+    assert "deployed backend reads r.curated" in out
+    for data in files.values():
+        assert hashlib.sha256(data).hexdigest() in out
+
+    docker = FakeDocker(files)
+    assert run_guard(monkeypatch, docker, "--container", "bible_rag_backend_staging") == 0
+    assert {cmd[2] for cmd in docker.calls} == {"bible_rag_backend_staging"}
+
+
+def test_deploy_guard_rejects_sentinel_code(monkeypatch, capsys, tmp_path):
+    files = {**checkout_files(), NEO4J_DB: PRE_1B[NEO4J_DB]}
+    assert run_guard(monkeypatch, FakeDocker(files)) == 1
+    out = capsys.readouterr().out
+    assert "coalesce(r.votes, 999) present" in out and "lacks r.curated" in out
+    assert "deployed backend reads r.curated" not in out
+
+    # the code checks stand on their own: a checkout holding the same pre-1B files still fails
+    files = {**checkout_files(), **PRE_1B}
+    for rel, data in files.items():
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_bytes(data)
+    shas, problems = xp.deploy_guard("bible_rag_backend", FakeDocker(files), backend=tmp_path)
+    assert shas == {rel: hashlib.sha256(data).hexdigest() for rel, data in files.items()}
+    assert problems == [f"coalesce(r.votes, 999) present in {NEO4J_DB}",
+                        f"_CURATED_VOTES present in {RETRIEVER}",
+                        f"{NEO4J_DB} lacks r.curated"]
+
+
+@pytest.mark.parametrize("rel", [NEO4J_DB, RETRIEVER, PROBE])
+def test_deploy_guard_rejects_image_from_other_checkout(rel, monkeypatch, capsys):
+    files = checkout_files()
+    files[rel] += b"\n"                                  # the new text plus one byte
+    assert run_guard(monkeypatch, FakeDocker(files)) == 1
+    out = capsys.readouterr().out
+    assert f"{rel}: sha256" in out and "image not built from this checkout" in out
+    assert "exit 1: 1 problems" in out
+
+
+def test_deploy_guard_rejects_missing_probe_module(monkeypatch, capsys):
+    files = {rel: data for rel, data in checkout_files().items() if rel != PROBE}
+    assert run_guard(monkeypatch, FakeDocker(files)) == 1
+    out = capsys.readouterr().out
+    assert "missing probes/xref_measure.py" in out and "exit 1: 1 problems" in out
+
+
+def test_deploy_guard_docker_failure(monkeypatch, capsys):
+    docker = FakeDocker({}, fail=b"Error response from daemon: No such container: nope\n")
+    assert run_guard(monkeypatch, docker, "--container", "nope") == 1
+    out = capsys.readouterr().out
+    assert out.count("docker exec failed") == 3 and "No such container" in out
+    assert "missing" not in out and "deployed backend reads r.curated" not in out
+
+    def no_docker(cmd, check, capture_output):
+        raise FileNotFoundError(2, "No such file or directory", "docker")
+    assert run_guard(monkeypatch, no_docker) == 1        # docker itself absent: still never 0
+
+
+@pytest.mark.parametrize("action", ["seeds", "predict", "compare", "deploy-guard"])
 def test_top_level_help_lists_every_flag(action, capsys):
     with pytest.raises(SystemExit):
         xp.main(["--help"])
     text = capsys.readouterr().out
     assert action in text
     for flag in ("--pericopes", "--questions", "--out", "--seeds", "--target", "--edges",
-                 "--pred", "--measured"):
+                 "--pred", "--measured", "--container"):
         assert flag in text
