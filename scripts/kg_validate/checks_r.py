@@ -298,4 +298,8 @@ def check_r10(kg: KG, ctx: Context) -> CheckResult:
 
 @check("R11", needs=("cross_references.jsonl",))
 def check_r11(kg: KG, ctx: Context) -> CheckResult:
-    return CheckResult({"tsk_votes_edges": sum(1 for x in kg.xrefs if x.votes is not None)})
+    # Step 9 writes tsk and votes together (1B-C6a): a tsk flag without votes is a broken write.
+    unbacked = [f"{x.src}->{x.tgt}" for x in kg.xrefs if x.tsk is True and x.votes is None]
+    return CheckResult({"tsk_votes_edges": sum(1 for x in kg.xrefs if x.votes is not None),
+                        "tsk_flag_without_votes": len(unbacked)}, {},
+                       [{"tsk_flag_without_votes": unbacked[:10]}] if unbacked else [])

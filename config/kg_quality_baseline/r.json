@@ -289,18 +289,24 @@
       "title": "CROSS_REFERENCES carrying TSK votes",
       "severity": "record",
       "hard_from": "1B",
-      "plan_reference": "249,502 (target 250,358)",
-      "query": "CROSS_REFERENCES with votes IS NOT NULL",
+      "plan_reference": "tsk_votes_edges 249,502 (target 250,358); tsk_flag_without_votes 0",
+      "query": "CROSS_REFERENCES: tsk_votes_edges = votes IS NOT NULL; tsk_flag_without_votes = tsk = true AND votes IS NULL (Step 9 writes tsk and votes together)",
       "metrics": {
         "tsk_votes_edges": {
           "value": 249502,
           "direction": "up",
           "tolerance": 0,
           "target": 250358
+        },
+        "tsk_flag_without_votes": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
         }
       },
       "measured": {
-        "at": "2026-10-04",
+        "at": "2026-10-05",
         "origin": "live:prod (bolt://localhost:7687)"
       }
     }

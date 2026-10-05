@@ -16,6 +16,9 @@ by its first verse (misaligned) and by every verse (misaligned_any_verse),
 and counts the anchors it cannot read (unparsed). A graph built before 1B has
 no anchors, so R4 falls back to its legacy scalars.
 
+R11 counts the edges carrying TSK votes and, since Step 9 writes tsk and
+votes together, the edges flagged tsk without votes (tsk_flag_without_votes).
+
 Shared pieces are in _validate_kg_helpers.py.
 """
 
@@ -36,6 +39,7 @@ LEGACY_SCALARS = ("source_verses", "target_verses")
 SUPP, MD, TSK = ("heb:1:1", "psa:2:0"), ("mrk:1:0", "psa:2:0"), ("gen:22:0", "heb:1:1")
 H8_METRICS = ("no_provenance", "unflagged", "flag_mismatch")
 R4_METRICS = ("misaligned", "misaligned_any_verse", "unparsed")
+R11_METRICS = ("tsk_votes_edges", "tsk_flag_without_votes")
 NEW_TSK = {"source_id": "exo:1:0", "target_id": "gen:22:0", "source": "tsk", "votes": 3}
 
 
@@ -234,3 +238,40 @@ def test_shipped_r4_records_the_new_metrics(snap):
     spec = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "R4")
     for name, m in spec["metrics"].items():
         assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0), name
+
+
+# ---------------------------------------------------------------------------
+# R11: TSK votes, and no tsk flag without them
+# ---------------------------------------------------------------------------
+
+def _r11(snap) -> tuple:
+    return tuple(measure(snap)["R11"].metrics[name] for name in R11_METRICS)
+
+
+def test_clean_fixture_r11_zero(snap):
+    # the fixture's one TSK row carries its votes
+    assert _r11(snap) == (1, 0)
+    assert measure(snap)["R11"].samples == []
+
+
+def test_r11_tsk_flag_without_votes(snap):
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, "curated": False, "tsk": True, "votes": None})
+    assert _r11(snap) == (1, 1)
+    assert measure(snap)["R11"].samples == [{"tsk_flag_without_votes": ["exo:1:0->gen:22:0"]}]
+
+
+@pytest.mark.parametrize("flags", [{"tsk": None, "votes": None}, {"tsk": False, "votes": None},
+                                   {"tsk": True, "votes": 0}],
+                         ids=["unflagged", "not_tsk", "zero_votes"])
+def test_r11_counts_only_a_tsk_flag_without_votes(snap, flags):
+    # a missing flag is H8's unflagged; votes 0 are votes (is not None)
+    append_row(snap / "cross_references.jsonl", {**NEW_TSK, "curated": False, **flags})
+    assert _r11(snap)[1] == 0
+
+
+def test_shipped_r11_records_the_new_metric(snap):
+    report = vk.evaluate(measure(snap), vk.load_baseline(SHIPPED_BASELINE))
+    assert list(report["checks"]["R11"]["metrics"]) == list(R11_METRICS)
+    spec = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "R11")
+    m = spec["metrics"]["tsk_flag_without_votes"]
+    assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0)
