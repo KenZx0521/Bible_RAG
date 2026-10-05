@@ -19,6 +19,10 @@ no anchors, so R4 falls back to its legacy scalars.
 R11 counts the edges carrying TSK votes and, since Step 9 writes tsk and
 votes together, the edges flagged tsk without votes (tsk_flag_without_votes).
 
+config/kg_probes.yaml pins single pairs: nine 1B probes fail on prod today and
+pass once W1 is loaded, and one passes on both but fails if the XREF-2
+deletion (1B-C5a) were undone.
+
 Shared pieces are in _validate_kg_helpers.py.
 """
 
@@ -29,10 +33,18 @@ import re
 import pytest
 
 import validate_kg as vk
-from _validate_kg_helpers import SHIPPED_BASELINE, append_row, edit_rows, measure, read_rows, write_rows
+from _validate_kg_helpers import (
+    SHIPPED_BASELINE,
+    SHIPPED_PROBES,
+    append_row,
+    edit_rows,
+    measure,
+    read_rows,
+    write_rows,
+)
 # snap is a pytest fixture: importing it is what makes it available here.
 from _validate_kg_helpers import snap  # noqa: F401
-from kg_validate.model import _LIVE_QUERIES
+from kg_validate.model import _LIVE_QUERIES, _xref
 
 PROVENANCE_LISTS = ("curated_sources", "supp_anchors", "md_anchors")
 LEGACY_SCALARS = ("source_verses", "target_verses")
@@ -275,3 +287,63 @@ def test_shipped_r11_records_the_new_metric(snap):
     spec = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "R11")
     m = spec["metrics"]["tsk_flag_without_votes"]
     assert m["value"] is not None and (m["direction"], m["tolerance"], m["target"]) == ("down", 0, 0)
+
+
+# ---------------------------------------------------------------------------
+# kg_probes.yaml: the 1B pairs
+# ---------------------------------------------------------------------------
+
+FAIL_TODAY_PROBES = (
+    "xref-heb1-1-curated-psa2", "xref-mat2-1-curated-hos11", "xref-mat1-1-curated-isa7-1",
+    "xref-rev18-0-curated-jer51-5", "xref-rev19-2-curated-dan2-3", "xref-mat2-2-not-curated-hos11",
+    "xref-rev19-1-not-curated-psa118", "xref-rev19-2-not-curated-dan7", "xref-mat10-0-tsk-mrk3-2",
+)
+DELETION_GUARD = "xref-rev19-0-not-curated-psa118"
+NEW_PROBES = (*FAIL_TODAY_PROBES, DELETION_GUARD)
+# The pairs as prod holds them (2026-10-05: no flags, a TSK edge is its votes)
+# and as the W1 projection writes them (xref_new_w1.json, Step 0 lists).
+LIVE_PAIRS = [
+    ("heb:1:1", "psa:2:0", {"source": "tsk", "votes": 61}),
+    ("mat:2:1", "hos:11:0", {"source": "tsk", "votes": 69}),
+    ("mat:1:1", "isa:7:1", {"source": "tsk", "votes": 144}),
+    ("rev:18:0", "jer:51:5", {"source": "tsk", "votes": 21}),
+    ("rev:19:2", "dan:2:3", {"source": "tsk", "votes": 8}),
+    ("mat:2:2", "hos:11:0", {"source": "supplementary"}),
+    ("rev:19:1", "psa:118:0", {"source": "supplementary"}),
+    ("rev:19:2", "dan:7:1", {"source": "supplementary"}),
+    ("mat:10:0", "mrk:3:2", {"source": "markdown"}),
+]
+
+
+def _curated(source: str, anchor: str, votes: int | None) -> dict:
+    lists = "supp_anchors" if source == "supplementary" else "md_anchors"
+    return {"source": source, "curated": True, "tsk": votes is not None, "votes": votes,
+            "curated_sources": [source], lists: [anchor]}
+
+
+W1_PAIRS = [
+    ("heb:1:1", "psa:2:0", _curated("supplementary", "heb 1:5>psa 2:7", 61)),
+    ("mat:2:1", "hos:11:0", _curated("supplementary", "mat 2:15>hos 11:1", 69)),
+    ("mat:1:1", "isa:7:1", _curated("supplementary", "mat 1:22-23>isa 7:14", 144)),
+    ("rev:18:0", "jer:51:5", _curated("supplementary", "rev 18:2-8>jer 51:45", 21)),
+    ("rev:19:2", "dan:2:3", _curated("supplementary", "rev 19:16>dan 2:47", 8)),
+    ("rev:19:2", "dan:7:1", {"source": "tsk", "curated": False, "tsk": True, "votes": 8}),
+    ("mat:10:0", "mrk:3:2", _curated("markdown", "mat 10:?>mrk 3:13-19", 21)),
+]
+# rev 19:1>psa 118:1 resolved verse by verse, had 1B-C5a not deleted it
+UNDELETED = ("rev:19:0", "psa:118:0", _curated("supplementary", "rev 19:1>psa 118:1", None))
+
+
+def _new_probe_results(pairs: list) -> dict[str, bool]:
+    kg = vk.KG(mode="snapshot", xrefs=[_xref({"source_id": a, "target_id": b, **props}) for a, b, props in pairs])
+    ctx = vk.Context(baseline={"checks": []}, probes=vk.load_probes(SHIPPED_PROBES))
+    return {p["id"]: p["passed"] for p in vk.evaluate_probes(kg, ctx) if p["id"] in NEW_PROBES}
+
+
+def test_new_xref_probes_discriminate():
+    # prod fails the nine and passes the guard; W1 passes all ten; W1 with
+    # the XREF-2 definition back fails the guard alone (the rev:19:1 probe
+    # passes there: it checks the verse-level re-anchoring, not the deletion)
+    assert _new_probe_results(LIVE_PAIRS) == {pid: pid == DELETION_GUARD for pid in NEW_PROBES}
+    assert _new_probe_results(W1_PAIRS) == dict.fromkeys(NEW_PROBES, True)
+    assert _new_probe_results([*W1_PAIRS, UNDELETED]) == {pid: pid != DELETION_GUARD for pid in NEW_PROBES}
