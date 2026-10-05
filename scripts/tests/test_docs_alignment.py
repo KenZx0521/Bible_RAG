@@ -385,7 +385,7 @@ def test_r2_preregisters_the_xref_expectation_before_the_rebuild_and_only_rechec
     r1 = section(staging_text(), "R1")
     assert "事前登記" in r1 and "R2「W1 的交叉引用檢查」第 1 項" in r1
     s9 = section(doc_text(), "Step 9:")
-    assert "期望檔在建置前產生" not in s9 and "第 2 步之前登記" in s9
+    assert "期望檔在建置前產生" not in s9 and "第 2 步之前登記" in s9 and "「W1 步驟」" in s9
 
 
 def test_r2_generates_the_1b_allowlist_fragment_and_leaves_mention_count_to_1a():

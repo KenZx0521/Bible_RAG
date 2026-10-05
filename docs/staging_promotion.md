@@ -170,7 +170,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 
 ## R2 驗證
 1. 10.6 依該批的判準通過（見 [build_database.md](build_database.md) Step 10.6），而且 `export_event_registry.py --check` 結束碼 0。
-2. 通過該批的驗證門檻（計畫 §4；第 1 批起見 [records/2026-10-04_kg_data_layer_fix_plan_batches.md](records/2026-10-04_kg_data_layer_fix_plan_batches.md)）。與 live 的 diff 要逐項列出並解釋（預期中的差異見 [build_database.md](build_database.md) Step 10.6）。staging 對 live 的比對用 diff_kg，在**沒有 source staging.env 的乾淨 shell**（新開的終端機）跑；10.6 的兩項則要在 staging 的 shell 跑：
+2. 通過該批的驗證門檻（計畫 §4；第 1 批起見 [records/2026-10-04_kg_data_layer_fix_plan_batches.md](records/2026-10-04_kg_data_layer_fix_plan_batches.md)）。與 live 的 diff 要逐項列出並解釋（預期中的差異見 [build_database.md](build_database.md) Step 10.6）。staging 對 live 的比對用 diff_kg，在**沒有 source staging.env 的乾淨 shell**（新開的終端機）跑；10.6 的三項（validate_kg、check_identity、第 1A 批起的 check_edge_set）則要在 staging 的 shell 跑：
    ```bash
    # 第 0 批（歷史紀錄，見下方「歷史允許清單」）
    uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch0.yaml --json

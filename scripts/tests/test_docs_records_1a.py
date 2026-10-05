@@ -4,12 +4,15 @@ docs/ARCHITECTURE.md and docs/kg_construction_overview.md describe the 1A
 relation pipeline: Step 6 without R2 (R5 opt-in) feeds the offline Step 6.05,
 whose relations_clean.jsonl is all that 6.1 imports; edges carry source,
 run_id, pp_version and confidence_raw instead of confidence; 10.3 is legacy
-only. The batch-0 record and its allowlist name the real SON_OF cause (stale
-properties of an older onCreate-only import, REL-10) and call the 流珥 alias
-an ID-2 error. The batch-1 plan's 1A cells carry the W1 recomputation, every
-number read from w1_1A/sim2_final.json, §2.1 adds created_from to batch 0's
-MENTIONS property residual in a dated note, and §9 records the 2026-10-05
-decisions. The kg_fix README names the archived scripts that need a32fbea.
+only. Their 6.05 drop lists include the LLM row that contradicts a prior, and
+the overview's 從零 line keeps build_database's Step 0 gates and closing
+registry check and says what 8a, 8b and 10.6 are. The batch-0 record and its
+allowlist name the real SON_OF cause (stale properties of an older
+onCreate-only import, REL-10) and call the 流珥 alias an ID-2 error. The
+batch-1 plan's 1A cells carry the W1 recomputation, every number read from
+w1_1A/sim2_final.json, §2.1 adds created_from to batch 0's MENTIONS property
+residual in a dated note, and §9 records the 2026-10-05 decisions. The kg_fix
+README names the archived scripts that need a32fbea.
 """
 from __future__ import annotations
 
@@ -89,6 +92,24 @@ def test_overview_runs_6_05_and_keeps_10_3_legacy_only():
     for needle in ("--legacy-cooccurrence", "退出預設鏈", "6 → 6.05 → 6.1"):
         assert needle in step10, needle
     assert "10.2 先於 10.3" not in step10
+
+
+def test_6_05_summaries_list_the_drop_that_contradicts_a_prior():
+    # without it the listed drops do not reconcile with the 5,696 rows of relations_clean.jsonl
+    ((relation, n),) = SIM2["drops"]["6_contradicts_prior_direction"].items()
+    for doc, needle in ((ARCH, f"與 prior 方向相反的 {relation}({n})"), (OVERVIEW, f"與 prior 方向相反的 {relation} {n}")):
+        assert needle in _line(read(doc), "- **Step 6.05 關係後處理**"), (doc.name, needle)
+
+
+def test_overview_fresh_chain_keeps_the_step0_gates_and_the_registry_check():
+    # build_database.md「執行順序」is the authority; a copied summary must not skip its mandatory checks
+    fresh = _line(read(OVERVIEW), "> - 從零")
+    steps = ("`process_bible.py`", "`check_step0.py`", "`validate_output.py`(必跑)", "→ 1 →", "6 → 6.05 → 6.1 → 8a",
+             "→ 8b → 10.6 →", "`export_event_registry.py --check`", "最後才起 backend")
+    at = [fresh.index(step) for step in steps]
+    assert at == sorted(at), fresh
+    for needle in ("8a 在", "8b 在", "10.6 是", "](build_database.md)「執行順序」"):
+        assert needle in fresh, needle
 
 
 # ---------------------------------------------------------------- batch-0 record

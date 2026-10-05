@@ -4,7 +4,10 @@
 # and always started by naming the service:
 #
 #   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d neo4j-staging
-#   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d backend-staging   # R2
+#   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --no-deps backend-staging   # R2
+#
+# --no-deps on backend-staging: without it compose also converges neo4j-staging
+# (see depends_on below); docs/staging_promotion.md R2 item 3 and R5.
 #
 # Of the three stores only Neo4j gets a second instance: Neo4j community serves
 # a single user database, so staging needs its own container and volume. PostgreSQL and

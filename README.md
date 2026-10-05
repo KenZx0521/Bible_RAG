@@ -468,6 +468,8 @@ uv run python run_eval.py --visualize-only
 ```bash
 # 1. 處理聖經 Markdown → JSON
 python scripts/process_bible.py
+python scripts/tools/check_step0.py         # sha 閘門，結束碼 0 才往下
+python scripts/validate_output.py output    # 交叉引用閘門（第 1B 批起必跑），結束碼 0 才往下
 
 # 2. 抽取實體 (人物/地名/事件)
 python scripts/extract_entities.py

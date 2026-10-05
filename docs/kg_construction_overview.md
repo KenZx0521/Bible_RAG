@@ -171,7 +171,7 @@ flowchart TB
 
 產出:`relations.jsonl` 6,958 條原始 triples(2026-05 那次 run:rule 772 / prior 64 / LLM 5,370 / inverse 752)+ 77,953 條 unclassified 留檔含 provenance — 這堆「被拒件」後來成為 P0 事件層搶救的現成素材。第 1A 批之前 6.1 原樣匯入這 6,958 條。
 
-- **Step 6.05 關係後處理**(`relation_postprocess.py`,第 1A 批起):離線、決定性,夾在 Step 6 與 6.1 之間。丟掉反向列 752、字母序規則列 772(換成錨定句型:同一節內「P 的兒子 C」「給 F 生 C」等,方向由句型決定、兩段同名防護)、LLM 的 Event–Event 列 38、domain/range 違規 13、出處閘門 1;id 序關係的 LLM 列標 `direction_verified: false`;每個 (head, relation, tail) 一列。產出 `relations_clean.jsonl` 5,696 列(llm 5,313 / anchored_rule 319 / prior 64),6.1 只收它;10.2 刪泛名詞 Event 帶走 80 條,圖上 5,616 條。每條邊帶 source / run_id / pp_version / confidence_raw / evidence_span / source_pericope_id / extraction_phase,6.1 整組 SET 邊屬性,不再寫 confidence。
+- **Step 6.05 關係後處理**(`relation_postprocess.py`,第 1A 批起):離線、決定性,夾在 Step 6 與 6.1 之間。丟掉反向列 752、字母序規則列 772(換成錨定句型:同一節內「P 的兒子 C」「給 F 生 C」等,方向由句型決定、兩段同名防護)、LLM 的 Event–Event 列 38、domain/range 違規 13、出處閘門 1、與 prior 方向相反的 LOCATED_IN 1;id 序關係的 LLM 列標 `direction_verified: false`;每個 (head, relation, tail) 一列。產出 `relations_clean.jsonl` 5,696 列(llm 5,313 / anchored_rule 319 / prior 64),6.1 只收它;10.2 刪泛名詞 Event 帶走 80 條,圖上 5,616 條。每條邊帶 source / run_id / pp_version / confidence_raw / evidence_span / source_pericope_id / extraction_phase,6.1 整組 SET 邊屬性,不再寫 confidence。
 
 **引用**:evidence 錨定動機 — TCR-QF(arXiv:2501.15378,triple 脫離上下文的資訊損失);Gemma 4(DeepMind 2026)。
 
@@ -200,7 +200,7 @@ flowchart TB
 
 > **重建注意(組態即建庫結果的一部分)**
 >
-> - 從零:`process_bible.py` → 1 → 2/2.1 → 3 → 4/4.1 → 5 → 6 → 6.05 → 6.1 → 8a → 9 → 10.1、10.2、10.4、10.5 → 7 → 8b → 10.6 → 最後才起 backend(bind-mount 陷阱)。完整順序與第 1 批 W1 的重灌鏈見 [`docs/build_database.md`](build_database.md)「執行順序」。
+> - 從零:`process_bible.py` → `check_step0.py` → `validate_output.py`(必跑)→ 1 → 2/2.1 → 3 → 4/4.1 → 5 → 6 → 6.05 → 6.1 → 8a → 9 → 10.1、10.2、10.4、10.5 → 7 → 8b → 10.6 → `export_event_registry.py --check` → 最後才起 backend(bind-mount 陷阱)。8a、8b 是 Step 8 跑兩次:8a 在 10.x 重放之前,只為了讓 10.x 有 collection 可寫;8b 在 Step 7 之後,用最終的描述重嵌。10.6 是 KG 品質閘門(validate_kg、check_identity,第 1A 批起加上 check_edge_set)。完整順序與第 1 批 W1 的重灌鏈見 [`docs/build_database.md`](build_database.md)「執行順序」。
 > - 決定性 `.env` key:`ENTITY_EXTRACT_OLLAMA_MODEL=gemma4:31b`(漏設 fallback 到 gemma3:4b,小一個量級)、`DESC_OLLAMA_MODEL`、`HYBRID_SEARCH_ENABLED=true`。
 > - 一致性:結構層/字典層/TSK/curated 層重建後逐字元一致;LLM 步驟(Step 1 Phase 4、Step 6 R4、Step 7,temp 0.1)必有漂移,集中在長尾實體與語意邊。
 

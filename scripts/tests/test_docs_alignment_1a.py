@@ -14,6 +14,15 @@ check_w1_registration: in the W1 chain right after 6.05 and before Step 3 (Step 
 empties the batch-0 staging residuals_expect reads), the gate of R1 item 5, and
 the files, merge order and merged-sha256 file it checks equal to the ones the
 runbook registers (diff_kg --merge-out --sha-out).
+
+W1 review minors on the build side, docs/build_database.md and the README
+pipeline: the chain rows carry what their W1 step needs (check_merged_inputs
+quotes the plan's sha pins and restores before comparing, 6.05 points to the
+registered output, 6.1 to the --replace re-imports, 10.6 runs the exact Step
+10.6 commands plus v3 == detB); the 從零 line swaps Step 1 only when the
+artifacts were restored; Step 6.05 dates its R2/R5 rows; a new R11 target is
+edited, since --accept moves only the value; every backend-staging up skips
+deps; and the README runs the Step 0 gates first.
 """
 from __future__ import annotations
 
@@ -21,6 +30,8 @@ import json
 import re
 
 import import_relations_neo4j as imp
+import validate_kg as vk
+from scripts.tools import check_merged_inputs as cmi
 from scripts.tools import check_w1_registration as cwr
 from test_docs_alignment import (D_GUARD, ROOT, _blocks, _commands, _first, _in_order, _positions, _rebuild_chain,
                                  doc_text, headings, help_text, read, section, staging_text)
@@ -278,3 +289,104 @@ def test_the_registration_check_reads_what_the_runbook_registers():
     assert f"`sha256sum -c {cwr.MERGED_SHA}`" in r2
     assert cwr.DEFAULT_REPORT.as_posix() == "output/relations_clean.report.json"
     assert "合併檔要到 R4 之後才 commit" in r2   # plan §3: what is registered before the rebuild is its sha256
+
+
+# ---------------------------------------------------------------- build side: the W1 chain rows and texts
+
+PLAN1 = ROOT / "docs" / "records" / "2026-10-04_kg_batch1_plan.md"
+# plan §1 W1 chain: sha256 of entities.jsonl and entity_mentions.jsonl, 「不符就停」
+PINS = ("9f2d1f39", "ba7ed188")
+W1A_ITEM = "「W1 的關係層檢查」第 {} 項"
+
+
+def _chain_rows() -> dict[str, list[str]]:
+    return {row[0]: row for row in _rebuild_chain(doc_text())[1]}
+
+
+def test_check_merged_inputs_row_quotes_the_plan_pins_and_restores_before_comparing():
+    # the tool trusts the manifest, which freeze-grounded --force rewrites; its HAZARD extracts, then compares
+    row = " ".join(_chain_rows()["check_merged_inputs"])
+    w1 = next(line for line in read(PLAN1).splitlines() if line.startswith("0 → check_step0 → validate_output"))
+    for pin in PINS:
+        assert f"`{pin}…`" in row and f"={pin}…" in w1, pin
+    assert "`extract_entities.py --stage freeze-grounded --force`" in row, row
+    assert "還原兩檔後以 `bak/$D/output/MANIFEST.sha256` 核對，再重跑本檢查" in row, row
+    assert "先以 `MANIFEST.sha256` 核對" not in row
+    assert cmi.HAZARD.index("tar -C") < cmi.HAZARD.index("MANIFEST.sha256")
+
+
+def test_w1_chain_rows_point_to_the_registered_output_the_replace_reimports_and_v3_detb():
+    rows = _chain_rows()
+    for needle in (REG, "output_sha256", "relations_expected.json", W1A_ITEM.format(3)):
+        assert needle in rows["6.05"][2], needle
+    assert rows["6.1"][1] == "`scripts/import_relations_neo4j.py`", rows["6.1"]
+    for needle in ("8a 之前", "`--replace` 重匯兩次", "`props_0/1/2`", W1A_ITEM.format(3)):
+        assert needle in rows["6.1"][2], needle
+    for needle in ("`v3 == detB`", W1A_ITEM.format(4), "待 Kay 確認"):
+        assert needle in rows["10.6"][2], needle
+    xref = rows["xref_probe expect"][2]
+    assert "「W1 步驟」第 2 步" in xref and "不是升版第 2 步" in xref, xref
+
+
+def test_w1_chain_10_6_row_runs_the_exact_step_10_6_commands():
+    # check_edge_set without --expect lets a regenerated report certify itself (plan §3)
+    cell = _chain_rows()["10.6"][1]
+    spans = re.findall(r"`([^`]+)`", cell)
+    s106 = _commands(section(doc_text(), "10.6"))
+    assert len(spans) == 3 and all(f"uv run --project scripts python {span}" in s106 for span in spans), spans
+    for needle in (f"--expect {EXPECT}relations_expected.json", "--json > bak/$D/validate_staging_w1.json"):
+        assert needle in cell, needle
+
+
+def test_step10_6_entity_collection_points_to_the_runbook_command():
+    bullet = next(line for line in section(doc_text(), "10.6").splitlines()
+                  if line.strip().startswith("- entity collection"))
+    assert f"R2{W1A_ITEM.format(4)}" in bullet and "w0_results" not in bullet, bullet
+
+
+def test_step10_6_edits_a_new_r11_target_since_accept_moves_only_the_value():
+    baseline = vk.load_baseline(ROOT / "config" / "kg_quality_baseline")
+    spec = next(c for c in baseline["checks"] if c["id"] == "R11")
+    before = spec["metrics"]["tsk_votes_edges"]
+    assert spec["severity"] == "hard" and before["target"] == 250358, spec
+    measured = vk.CheckResult({"tsk_votes_edges": 1, "tsk_flag_without_votes": 0})
+    moved = vk.apply_ratchet(baseline, {"R11": measured}, False, {"R11"}, {"at": "test"})
+    after = next(c for c in moved["checks"] if c["id"] == "R11")["metrics"]["tsk_votes_edges"]
+    assert after == {**before, "value": 1}   # --accept adopts the value; the hard target stays
+    bullet = next(line for line in section(doc_text(), "10.6").splitlines() if line.strip().startswith("- R11："))
+    assert "`R11.tsk_votes_edges.target`" in bullet and "第 2D 批要重新 `--accept R11`" not in bullet, bullet
+
+
+def test_step6_05_dates_the_r2_and_r5_rows_to_the_2026_05_run():
+    s605 = section(doc_text(), "Step 6.05:")
+    assert "\nStep 6 寫出各 phase" not in s605
+    for needle in ("2026-05 那次的 Step 6（第 1A 批之前）", "第 1A 批起 Step 6 不再產生 R2 列", "R5 只在 `--inverse` 時才有"):
+        assert needle in s605, needle
+
+
+def test_fresh_chain_swaps_step1_for_check_merged_inputs_only_when_restored():
+    # without restored artifacts there is no grounded manifest: check_merged_inputs exits 2
+    fresh = next(line for line in section(doc_text(), "執行順序").splitlines() if line.startswith("- **從零**"))
+    assert "還原了這些產物時，第 1 批期間 Step 1 照重灌鏈換成 `check_merged_inputs.py`" in fresh, fresh
+    assert "沒有還原就照常跑完整的 Step 1" in fresh, fresh
+
+
+def test_every_backend_staging_up_skips_deps():
+    # compose would otherwise converge neo4j-staging, and from a staging shell interpolate prod services
+    paths = [*sorted((ROOT / "docs").glob("*.md")), ROOT / "README.md", ROOT / "docker-compose.staging.yml"]
+    ups = [(p.name, line) for p in paths for line in read(p).splitlines()
+           if re.search(r"\bup -d\b.*\bbackend-staging\b", line)]
+    assert {"build_database.md", "docker-compose.staging.yml"} <= {name for name, _ in ups}, ups
+    assert all("--no-deps" in line.split() for _, line in ups), ups
+
+
+def test_r2_names_all_three_10_6_checks_for_the_staging_shell():
+    r2 = section(staging_text(), "R2")
+    assert "10.6 的兩項" not in r2
+    assert "10.6 的三項（validate_kg、check_identity、第 1A 批起的 check_edge_set）則要在 staging 的 shell 跑" in r2
+
+
+def test_readme_pipeline_runs_the_step0_gates_before_entity_extraction():
+    commands = _commands(section(read(ROOT / "README.md"), "Data Pipeline"))
+    _in_order(commands, ("process_bible.py", "check_step0.py", "validate_output.py output", "extract_entities.py",
+                         "import_neo4j.py"))
