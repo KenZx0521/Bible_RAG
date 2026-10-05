@@ -147,16 +147,23 @@ def check_r5(kg: KG, ctx: Context) -> CheckResult:
     return CheckResult({"cross_type_names": len(shared)}, {}, shared[:10])
 
 
-@check("R6", needs=("relations.jsonl",))
-def check_r6(kg: KG, ctx: Context) -> CheckResult:
-    parent_of = set()
+def _parents_of(kg: KG) -> dict[str, set[str]]:
+    """{child: its parents} over every parent encoding (PARENT_HEAD and PARENT_TAIL)."""
+    parents: dict[str, set[str]] = defaultdict(set)
     for r in kg.relations:
         if r["type"] in PARENT_HEAD:
-            parent_of.add((r["head"], r["tail"]))
+            parents[r["tail"]].add(r["head"])
         elif r["type"] in PARENT_TAIL:
-            parent_of.add((r["tail"], r["head"]))
+            parents[r["head"]].add(r["tail"])
+    return parents
+
+
+@check("R6", needs=("relations.jsonl",))
+def check_r6(kg: KG, ctx: Context) -> CheckResult:
+    parents = _parents_of(kg)
     fathers = [(r["head"], r["tail"]) for r in kg.relations if r["type"] == "FATHER_OF"]
-    contradictions = [f"{h}->{t}" for h, t in fathers if (t, h) in parent_of]
+    contradictions = [f"{h}->{t}" for h, t in fathers if t in parents.get(h, ())]
+    # female_persons is kg_probes.yaml's fixed list: a woman not on it counts as non-female.
     female = set(ctx.probes.get("female_persons") or [])
     female_head = [f"{h}->{t}" for h, t in fathers if h in female]
     children: dict[str, set[str]] = defaultdict(set)
@@ -167,8 +174,12 @@ def check_r6(kg: KG, ctx: Context) -> CheckResult:
     return CheckResult(
         {"probe_failures": len(failing), "failing_probes": failing, "contradictions": len(contradictions),
          "female_head": len(female_head),
-         "functional_violation_rate": round(multi / len(children), 4) if children else 0.0},
-        {"failing_probes": failing, "children": len(children), "children_with_2plus_fathers": multi},
+         "functional_violation_rate": round(multi / len(children), 4) if children else 0.0,
+         # every parent encoding, so kinship moved from FATHER_OF to SON_OF stays visible
+         "children_with_2plus_nonfemale_parents": sum(1 for ps in parents.values() if len(ps - female) >= 2),
+         "children_with_gt2_parents": sum(1 for ps in parents.values() if len(ps) > 2)},
+        {"failing_probes": failing, "children": len(children), "children_with_2plus_fathers": multi,
+         "children_with_parents": len(parents)},
         (contradictions + female_head)[:10])
 
 

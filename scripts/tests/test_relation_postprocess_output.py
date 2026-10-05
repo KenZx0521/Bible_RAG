@@ -375,16 +375,10 @@ def _after_10_2(rows, report) -> list[dict]:
     return [r for r in rows if r["head_id"] not in gone and r["tail_id"] not in gone]
 
 
-def _parents(rows, female: set[str]) -> tuple[int, int, int]:
-    """(children, those with 2+ parents not on the female list, those with >2 parents) over all four encodings."""
-    parents: dict[str, set[str]] = {}
-    for r in rows:
-        if r["relation"] in ("FATHER_OF", "MOTHER_OF"):
-            parents.setdefault(r["tail_id"], set()).add(r["head_id"])
-        elif r["relation"] in ("SON_OF", "DAUGHTER_OF"):
-            parents.setdefault(r["head_id"], set()).add(r["tail_id"])
-    return (len(parents), sum(len(p - female) >= 2 for p in parents.values()),
-            sum(len(p) > 2 for p in parents.values()))
+def _kg(rows) -> KG:
+    """The relation rows as the snapshot graph validate_kg scores."""
+    return KG(mode="snapshot", relations=[{"head": r["head_id"], "type": r["relation"], "tail": r["tail_id"]}
+                                          for r in rows])
 
 
 def test_final_edge_set(none_run, all_run):
@@ -418,23 +412,24 @@ def test_final_edge_set(none_run, all_run):
     # R6 and the 8 shipped relation probes, scored by validate_kg on the edges left after 10.2
     kept = _after_10_2(rows, report)
     probes = yaml.safe_load((ROOT / "config" / "kg_probes.yaml").read_text(encoding="utf-8"))
-    kg = KG(mode="snapshot", relations=[{"head": r["head_id"], "type": r["relation"], "tail": r["tail_id"]}
-                                        for r in kept])
+    kg = _kg(kept)
     ctx = Context(baseline={}, probes=probes)
     r6 = check_r6(kg, ctx)
+    # every parent encoding: children with 2+ non-female parents 8 of 383, with >2 parents 1
     assert r6.metrics == {"probe_failures": 0, "failing_probes": [], "contradictions": 0, "female_head": 0,
-                          "functional_violation_rate": 0.0638}
+                          "functional_violation_rate": 0.0638, "children_with_2plus_nonfemale_parents": 8,
+                          "children_with_gt2_parents": 1}
     assert (sum(r["relation"] == "FATHER_OF" for r in kept), r6.detail["children"],
-            r6.detail["children_with_2plus_fathers"]) == (50, 47, 3)
+            r6.detail["children_with_2plus_fathers"], r6.detail["children_with_parents"]) == (50, 47, 3, 383)
     relation_probes = {fact["id"] for fact in probes["facts"] if fact["kind"] == "relation"}
     assert len(relation_probes) == 8
     assert [p["id"] for p in evaluate_probes(kg, ctx) if p["id"] in relation_probes and not p["passed"]] == []
 
-    # every parent encoding: children with 2+ non-female parents 135 of 262 -> 8 of 383, with >2
-    # parents 87 -> 1 (none mode after 10.2 is the batch-0 staging graph; live gives the same figures)
-    female = set(probes["female_persons"])
-    assert _parents(_after_10_2(*none_run), female) == (262, 135, 87)
-    assert _parents(kept, female) == (383, 8, 1)
+    # before 1A (none mode after 10.2 is the batch-0 staging graph; live gives the same figures):
+    # 135 of 262 children with 2+ non-female parents, 87 with >2 parents
+    before = check_r6(_kg(_after_10_2(*none_run)), ctx)
+    assert (before.metrics["children_with_2plus_nonfemale_parents"], before.detail["children_with_parents"],
+            before.metrics["children_with_gt2_parents"]) == (135, 262, 87)
 
 
 def test_stamps(real_inputs, all_run):

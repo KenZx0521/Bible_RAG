@@ -57,7 +57,8 @@ VIOLATION_METRICS = [
     ("R3", "all_forms_entities"),
     ("R4", "misaligned"), ("R5", "cross_type_names"),
     ("R6", "probe_failures"), ("R6", "contradictions"), ("R6", "female_head"),
-    ("R6", "functional_violation_rate"),
+    ("R6", "functional_violation_rate"), ("R6", "children_with_2plus_nonfemale_parents"),
+    ("R6", "children_with_gt2_parents"),
     ("R8", "junk_event"), ("R8", "junk_theme"), ("R8", "junk_object"),
     ("R9", "duplicate_positions"), ("R9", "span_mismatch"),
     ("R10", "conflicting_aliases"), ("PROBES", "failures"),
@@ -463,6 +464,22 @@ def test_r6_female_head_and_functionality(snap):
     assert metric(res, "R6", "female_head") == 1
     # children: yabolahan, halan, luode(2 fathers), yisa, make -> 1/5
     assert metric(res, "R6", "functional_violation_rate") == pytest.approx(0.2)
+
+
+def test_r6_all_parent_encodings(snap):
+    # A parent is the head of FATHER_OF/MOTHER_OF or the tail of SON_OF/DAUGHTER_OF:
+    # after 1A most kinship is anchored SON_OF, which the FATHER_OF-only rate misses.
+    write_rows(snap / "relations.jsonl", read_rows(snap / "relations.jsonl") + [
+        _edge("person:luode", "SON_OF", "person:nahe"),       # luode: halan (FATHER_OF), nahe
+        _edge("person:maliya", "MOTHER_OF", "person:luode"),  # ... and maliya: 3 parents
+        _edge("person:make", "DAUGHTER_OF", "person:bide"),   # make: bide
+        _edge("person:maliya", "MOTHER_OF", "person:make"),   # ... and maliya, a female_persons id
+    ])
+    res = measure(snap)
+    assert metric(res, "R6", "children_with_2plus_nonfemale_parents") == 1  # luode; make's 2nd is female
+    assert metric(res, "R6", "children_with_gt2_parents") == 1  # luode
+    assert res["R6"].detail["children_with_parents"] == 5  # yabolahan, halan, luode, yisa, make
+    assert metric(res, "R6", "functional_violation_rate") == 0.0  # no child has two FATHER_OF heads
 
 
 def test_r6_counts_failing_kinship_probes(snap):

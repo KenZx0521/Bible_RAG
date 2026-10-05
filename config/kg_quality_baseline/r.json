@@ -121,11 +121,11 @@
     },
     {
       "id": "R6",
-      "title": "kinship sanity: probes, FATHER_OF contradictions, female heads, functionality",
+      "title": "kinship sanity: probes, FATHER_OF contradictions, female heads, functionality (FATHER_OF and every parent encoding)",
       "severity": "record",
       "hard_from": "1A",
-      "plan_reference": "contradictions 25 / female head >=40 / 53.6%",
-      "query": "failing R6 probes (failing_probes: ids, subset; probe_failures: their count); FATHER_OF a->b where b is asserted parent of a (FATHER_OF/MOTHER_OF b->a, SON_OF/DAUGHTER_OF a->b); FATHER_OF headed by kg_probes.yaml female_persons; share of FATHER_OF children with >=2 fathers",
+      "plan_reference": "contradictions 25 / female head >=40 / 53.6%; every parent encoding: 2+ non-female parents 135/262, >2 parents 87 (batch-1 plan §6 #4)",
+      "query": "failing R6 probes (failing_probes: ids, subset; probe_failures: their count); FATHER_OF a->b where b is asserted parent of a (FATHER_OF/MOTHER_OF b->a, SON_OF/DAUGHTER_OF a->b); FATHER_OF headed by kg_probes.yaml female_persons; share of FATHER_OF children with >=2 fathers; over every parent encoding (parent = FATHER_OF/MOTHER_OF head or SON_OF/DAUGHTER_OF tail): children with >=2 distinct parents not in female_persons, and children with >2 distinct parents (detail children_with_parents: children with any parent). female_persons is the fixed 31-person list, so a woman missing from it counts as non-female",
       "metrics": {
         "probe_failures": {
           "value": 3,
@@ -161,10 +161,22 @@
           "direction": "down",
           "tolerance": 0,
           "target": 0.05
+        },
+        "children_with_2plus_nonfemale_parents": {
+          "value": 135,
+          "direction": "down",
+          "tolerance": 0,
+          "target": null
+        },
+        "children_with_gt2_parents": {
+          "value": 87,
+          "direction": "down",
+          "tolerance": 0,
+          "target": null
         }
       },
       "measured": {
-        "at": "2026-10-04",
+        "at": "2026-10-05",
         "origin": "live:prod (bolt://localhost:7687)"
       },
       "ids_note": "failing ids = the probes kg_probes.yaml marks 'fails today'; their count equals the 2026-10-04 live failures, a live run reports any id that disagrees as new/fixed"
