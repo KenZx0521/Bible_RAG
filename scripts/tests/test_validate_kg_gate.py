@@ -61,6 +61,40 @@ def test_exit_codes_pass_hard_fail_and_regression(snap, tmp_path, capsys):
     assert report["checks"]["H2"]["status"] == "fail"
 
 
+def _prior_father(head: str, tail: str) -> dict:
+    """A phase-3 FATHER_OF with no source pericope: H3 exempts it, so of the
+    scored checks only R6 (and W's histogram, a warning) sees it."""
+    return {"head_id": head, "relation": "FATHER_OF", "tail_id": tail, "source_pericope_id": "",
+            "extraction_phase": 3, "notes": ""}
+
+
+def test_record_metric_inside_a_hard_check_regresses_without_failing(snap, tmp_path, capsys):
+    # K3: R6 turns hard in 1A while its functionality rate stays a record ratchet
+    baseline = fresh_baseline(tmp_path, snap)
+    doc = json.loads(baseline.read_text(encoding="utf-8"))
+    r6 = next(c for c in doc["checks"] if c["id"] == "R6")
+    r6["severity"] = "hard"
+    r6["metrics"]["functional_violation_rate"]["severity"] = "record"
+    baseline.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    assert cli(snap, baseline, capsys, "--ratchet")[0] == 0
+    assert _stored(baseline, "R6", "functional_violation_rate") == 0.0
+
+    append_row(snap / "relations.jsonl", _prior_father("person:nahe", "person:yisa"))
+    code, report = cli(snap, baseline, capsys)  # 以撒 has 2 fathers: rate 0.25, over the 0.05 target
+    rate = report["checks"]["R6"]["metrics"]["functional_violation_rate"]
+    assert (code, report["regressions"], report["failures"]) == (2, ["R6"], [])
+    assert rate["status"] == "regressed" and rate["severity"] == "record"
+    vk.print_report(report)
+    assert "functional_violation_rate=0.25 (vs 0) [regressed]" in capsys.readouterr().out  # its baseline, not 0.05
+
+    append_row(snap / "relations.jsonl", _prior_father("person:maliya", "person:make"))
+    code, report = cli(snap, baseline, capsys)  # a female head: a hard metric of the same check
+    r6 = report["checks"]["R6"]
+    assert (code, report["hard_failures"], r6["status"]) == (1, ["R6"], "fail")
+    assert r6["metrics"]["female_head"]["status"] == "fail"
+    assert r6["metrics"]["functional_violation_rate"]["status"] == "regressed"
+
+
 def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
     baseline = fresh_baseline(tmp_path, snap)
     append_row(snap / "relations.jsonl", unsupported_edge())
@@ -157,6 +191,20 @@ def test_baseline_count_must_equal_its_id_set(tmp_path):
     (tmp_path / "baseline.json").write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
     with pytest.raises(ValueError, match="PROBES.failures"):
         vk.load_baseline(tmp_path / "baseline.json")
+
+
+@pytest.mark.parametrize("severity,loads", [("hard", True), ("record", True), ("warn", False),
+                                            ("soft", False), (None, False)])
+def test_metric_severity_must_be_hard_or_record(tmp_path, severity, loads):
+    doc = vk.load_baseline(SHIPPED_BASELINE)
+    next(c for c in doc["checks"] if c["id"] == "R6")["metrics"]["female_head"]["severity"] = severity
+    path = tmp_path / "baseline.json"
+    path.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    if loads:
+        assert vk.load_baseline(path) == doc
+    else:
+        with pytest.raises(ValueError, match="R6.female_head"):
+            vk.load_baseline(path)
 
 
 def test_record_check_error_fails_the_gate(snap, tmp_path, capsys, monkeypatch):

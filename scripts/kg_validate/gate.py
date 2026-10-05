@@ -6,6 +6,9 @@ Metric statuses:
   regressed   record metric worse than its baseline (subset: a new failing id)
   unmeasured  value None with no declared reason: the check did not really run
   n/a         value None for a reason the check declared (e.g. D1 on a snapshot)
+A metric is hard or record by its own "severity" when the baseline gives one,
+else by its check's; the check takes its worst metric status (_PRECEDENCE), so
+a record metric inside a hard check regresses (exit 2) and never fails.
 Exit code: 1 when any non-warn check is fail, unmeasured or error; else 2 when
 any regressed; else 0.
 """
@@ -89,11 +92,14 @@ def _score(spec: dict, name: str, m: dict, res: CheckResult, targets: dict) -> d
     value = res.metrics.get(name)
     target = targets.get((spec["id"], name)) if "target_from" in m else m.get("target")
     out = {"value": value, "baseline": m["value"], "target": target, "direction": m["direction"]}
+    severity = m.get("severity", spec["severity"])
+    if "severity" in m:
+        out["severity"] = severity  # the report says which bound an overridden metric is held to
     if value is None:
         reason = res.na_reason(name)
         out.update({"status": "n/a", "reason": reason} if reason else {"status": "unmeasured"})
         return out
-    if spec["severity"] == "hard":
+    if severity == "hard":
         bound = target
         if target is None and "target_from" in m:
             out.update(status="fail", reason=f"target {m['target_from']} unavailable")
@@ -196,7 +202,7 @@ def _fmt(value) -> str:
 
 
 def _metric_text(name: str, m: dict, severity: str) -> str:
-    bound = m["target"] if severity == "hard" else m["baseline"]
+    bound = m["target"] if m.get("severity", severity) == "hard" else m["baseline"]
     text = f"{name}={_fmt(m['value'])} (vs {_fmt(bound)})"
     if m["status"] == "n/a":
         return text + f" [n/a: {m['reason']}]"

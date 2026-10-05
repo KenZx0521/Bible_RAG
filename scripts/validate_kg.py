@@ -25,6 +25,8 @@ write each check back to its own file):
   hard    each metric must meet its target            -> exit 1
   record  each metric must not regress past baseline  -> exit 2
   warn    report only (W: label/relationship counts drifting > ±tolerance_pct)
+A metric's own "severity" (hard|record) overrides its check's for that metric,
+e.g. a record ratchet inside a hard check: it regresses (exit 2), never fails.
 Batch 0 hard checks are H1, H2, H7 and D1; `hard_from` records the batch at
 which each record check is planned to become hard. A check that raised
 (error), or a metric that came back None without a declared reason

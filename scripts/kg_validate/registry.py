@@ -23,6 +23,8 @@ BASELINE_FORMAT = "kg_quality_baseline/v1"
 BASELINE_INDEX = "index.json"
 # subset: the value is a list of ids (failing probes) that may only shrink.
 DIRECTIONS = {"down", "up", "equal", "none", "subset"}
+# A metric's own "severity" overrides its check's: e.g. a record ratchet inside a hard check.
+METRIC_SEVERITIES = ("hard", "record")
 # target_from "<source>:<key>": a hard target kept in another tracked file.
 TARGET_SOURCES = {"step0_sha"}
 PROBE_KINDS = {"relation", "mention", "event_anchor", "alias", "xref", "book_region"}
@@ -103,6 +105,9 @@ def _read_doc(path: Path) -> dict:
             source = (m.get("target_from") or "").partition(":")[0]
             if m.get("direction") not in DIRECTIONS or (source and source not in TARGET_SOURCES):
                 raise ValueError(f"{path}: {check['id']}.{name} has an unknown direction or target_from")
+            if "severity" in m and m["severity"] not in METRIC_SEVERITIES:
+                raise ValueError(f"{path}: {check['id']}.{name} has severity {m['severity']!r}; "
+                                 f"a metric may only be {' or '.join(METRIC_SEVERITIES)}")
             if "count_of" in m:
                 _check_count(path, check, name, m)
     return doc
