@@ -6,14 +6,22 @@ written (the four prod SON_OF edges stuck at phase 5, REL-10). Every edge's
 properties are now replaced wholesale by its row, and all rows go in one write
 transaction, so a failure leaves no partial layer.
 
+Nothing is skipped silently either: MATCH dropped a row whose endpoint was not
+in the graph and the run still exited 0 (H16). A missing endpoint now stops
+the run before any write, and a statement that writes a different number of
+edges than it was sent rows rolls the whole transaction back.
+
 The fake driver records auto-commit statements (session.run) separately from
-statements run inside session.execute_write, modelled on
-test_import_constraints.py.
+statements run inside session.execute_read and session.execute_write, modelled
+on test_import_constraints.py. It holds a set of entity_ids for the endpoint
+read, and a write transaction commits only if its work returns.
 """
 
 import json
 import re
 import sys
+
+import pytest
 
 import import_relations_neo4j
 
@@ -23,7 +31,7 @@ MERGE_WITHOUT_MAPS = re.compile(
 
 
 class _Result:
-    """Both shapes the importer reads: single() for a write, iteration for the summary."""
+    """Both shapes the importer reads: single() for a write, iteration for the reads."""
 
     def __init__(self, records: list[dict]):
         self._records = records
@@ -35,17 +43,15 @@ class _Result:
         return iter(self._records)
 
 
-def _written(params: dict) -> _Result:
-    return _Result([{"written": len(params.get("rows", []))}])
-
-
 class _Tx:
-    def __init__(self, driver: "_FakeDriver"):
-        self._driver = driver
+    def __init__(self, driver: "_FakeDriver", log: list):
+        self._driver, self._log = driver, log
 
     def run(self, query: str, **params):
-        self._driver.in_tx.append((query, params))
-        return _written(params)
+        self._log.append((query, params))
+        if "ids" in params:
+            return _Result([{"id": i} for i in params["ids"] if not self._driver.has(i)])
+        return _Result([{"written": self._driver.written(params["rows"])}])
 
 
 class _Session:
@@ -60,18 +66,37 @@ class _Session:
 
     def run(self, query: str, **params):
         self._driver.autocommit.append((query, params))
-        return _written(params) if "rows" in params else _Result([])
+        if "rows" in params:
+            return _Result([{"written": self._driver.written(params["rows"])}])
+        return _Result([])
+
+    def execute_read(self, work, *args, **kwargs):
+        return work(_Tx(self._driver, self._driver.reads), *args, **kwargs)
 
     def execute_write(self, work, *args, **kwargs):
         self._driver.transactions += 1
-        return work(_Tx(self._driver), *args, **kwargs)
+        try:
+            result = work(_Tx(self._driver, self._driver.in_tx), *args, **kwargs)
+        except Exception:
+            self._driver.rolled_back += 1
+            raise
+        self._driver.committed += 1
+        return result
 
 
 class _FakeDriver:
-    def __init__(self):
+    """entities: the entity_ids in the graph (None: every id is there).
+    written: rows of one write statement -> the edge count it reports."""
+
+    def __init__(self, entities: set[str] | None = None, written=len):
+        self.entities, self.written = entities, written
         self.autocommit: list[tuple[str, dict]] = []
+        self.reads: list[tuple[str, dict]] = []
         self.in_tx: list[tuple[str, dict]] = []
-        self.transactions = 0
+        self.transactions = self.committed = self.rolled_back = 0
+
+    def has(self, entity_id: str) -> bool:
+        return self.entities is None or entity_id in self.entities
 
     def session(self, **kwargs):
         return _Session(self)
@@ -84,17 +109,18 @@ def _row(head, relation, tail, **extra) -> dict:
     return {"head_id": head, "relation": relation, "tail_id": tail, **extra}
 
 
-def _import(monkeypatch, tmp_path, rows: list[dict], *flags: str) -> _FakeDriver:
+def _import(monkeypatch, tmp_path, rows: list[dict], *flags: str,
+            driver: _FakeDriver | None = None, code: int = 0) -> _FakeDriver:
     path = tmp_path / "relations.jsonl"
     path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
                     encoding="utf-8")
-    driver = _FakeDriver()
+    driver = driver or _FakeDriver()
     monkeypatch.delenv("KG_TARGET", raising=False)
     monkeypatch.setattr(import_relations_neo4j.GraphDatabase, "driver",
                         lambda *args, **kwargs: driver)
     monkeypatch.setattr(sys, "argv", ["import_relations_neo4j.py", str(path), *flags])
 
-    assert import_relations_neo4j.main() == 0
+    assert import_relations_neo4j.main() == code
     return driver
 
 
@@ -142,3 +168,42 @@ def test_all_rows_are_written_in_one_transaction(monkeypatch, tmp_path):
     assert len(_merges(driver.in_tx)) == 3
     sent = [r for _, params in _merges(driver.in_tx) for r in params["rows"]]
     assert [tuple(r[k] for k in KEY) for r in sent] == [tuple(r[k] for k in KEY) for r in rows]
+
+
+def test_missing_endpoint_exits_1_before_any_write(monkeypatch, tmp_path, caplog):
+    # person:liuer is not in the graph: one read lists every endpoint the file
+    # references, the run stops there, and no write transaction is opened.
+    rows = [_row("person:a", "FATHER_OF", "person:liuer", source="llm"),
+            _row("person:liuer", "SON_OF", "person:a", source="anchored_rule"),
+            _row("person:b", "SPOUSE_OF", "person:a", source="llm")]
+    driver = _FakeDriver(entities={"person:a", "person:b"})
+
+    _import(monkeypatch, tmp_path, rows, driver=driver, code=1)
+
+    assert driver.transactions == 0
+    assert _merges(driver.autocommit + driver.in_tx) == []
+    assert [params for _, params in driver.reads] == [
+        {"ids": ["person:a", "person:b", "person:liuer"]}]
+    assert "person:liuer" in caplog.text
+    assert "2 row(s)" in caplog.text
+
+
+@pytest.mark.parametrize("delta", [-1, 1])
+def test_written_count_mismatch_rolls_back_and_exits_1(monkeypatch, tmp_path, caplog, delta):
+    # Every endpoint is there, but the second statement reports one edge fewer
+    # (an endpoint deleted meanwhile) or one more (a duplicate entity_id): the
+    # check runs inside the transaction, so it rolls back and nothing commits.
+    rows = [_row(f"person:h{i}", "FATHER_OF", f"person:t{i}", source="llm") for i in range(4)]
+    statements = []
+
+    def written(sent):
+        statements.append(sent)
+        return len(sent) + (delta if len(statements) == 2 else 0)
+
+    driver = _FakeDriver(written=written)
+
+    _import(monkeypatch, tmp_path, rows, "--batch-size", "2", driver=driver, code=1)
+
+    assert (driver.transactions, driver.committed, driver.rolled_back) == (1, 0, 1)
+    assert len(statements) == 2
+    assert f"wrote {2 + delta} edge(s) for 2 row(s)" in caplog.text

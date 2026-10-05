@@ -8,6 +8,11 @@ wholesale by its file row (the row minus head_id/relation/tail_id, nulls
 dropped), whether the edge is new or not, and every row is written in one
 write transaction, so a failure leaves no partial layer.
 
+Nothing is skipped silently: one read first lists the endpoints the file
+references that the graph lacks, and any missing id stops the run (exit 1)
+before a write. Inside the transaction each statement must write exactly as
+many edges as it was sent rows, or the whole import rolls back (exit 1).
+
 Usage:
     python scripts/import_relations_neo4j.py [path/to/relations.jsonl]
 """
@@ -66,6 +71,24 @@ RETURN count(rel) AS written
 """
 
 
+# The referenced ids no :Entity carries. An id on two nodes is not missing
+# here; the written check catches it (MATCH then yields two node pairs).
+_MISSING_ENDPOINTS_CYPHER = """
+UNWIND $ids AS id
+OPTIONAL MATCH (e:Entity {entity_id: id})
+WITH id, count(e) AS found
+WHERE found = 0
+RETURN id
+"""
+
+
+class WrittenMismatch(RuntimeError):
+    """A statement wrote a different number of edges than it was sent rows.
+
+    Raised inside the transaction function, so the driver rolls back (it only
+    retries its own transient errors)."""
+
+
 def _edge_rows(records: list[dict]) -> list[dict]:
     """One query row per edge: its key, and the rest of the file row as props."""
     return [{
@@ -74,13 +97,52 @@ def _edge_rows(records: list[dict]) -> list[dict]:
     } for rec in records]
 
 
+def _endpoint_ids(rows: list[dict]) -> list[str]:
+    return sorted({row[key] for row in rows for key in ("head_id", "tail_id")
+                   if row[key] is not None})
+
+
+def _missing_endpoints(tx, ids: list[str]) -> list[str]:
+    """Read transaction function: the ids no :Entity carries."""
+    return sorted(record["id"] for record in tx.run(_MISSING_ENDPOINTS_CYPHER, ids=ids))
+
+
+def _report_missing(missing: list[str], rows: list[dict], path: Path) -> None:
+    absent = set(missing)
+    hit = sum(1 for row in rows if row["head_id"] in absent or row["tail_id"] in absent)
+    logger.error("%d endpoint(s) used by %d row(s) of %s are not in the graph; "
+                 "nothing written: %s", len(missing), hit, path, ", ".join(missing))
+
+
 def _write_all(tx, rows: list[dict], batch_size: int) -> int:
-    """Transaction function: every batch in the same transaction."""
+    """Transaction function: every batch in the same transaction, each checked."""
     written = 0
     for start in range(0, len(rows), batch_size):
-        record = tx.run(_MERGE_RELATION_CYPHER, rows=rows[start:start + batch_size]).single()
-        written += int(record["written"]) if record else 0
+        batch = rows[start:start + batch_size]
+        record = tx.run(_MERGE_RELATION_CYPHER, rows=batch).single()
+        n = int(record["written"]) if record else 0
+        if n != len(batch):
+            raise WrittenMismatch(f"rows {start}-{start + len(batch) - 1}: "
+                                  f"wrote {n} edge(s) for {len(batch)} row(s)")
+        written += n
     return written
+
+
+def _import_rows(driver, rows: list[dict], batch_size: int, path: Path) -> int:
+    """Endpoint pre-check, then one write transaction. Returns the exit code."""
+    with driver.session() as session:
+        missing = session.execute_read(_missing_endpoints, _endpoint_ids(rows))
+        if missing:
+            _report_missing(missing, rows, path)
+            return 1
+        try:
+            written = session.execute_write(_write_all, rows, batch_size)
+        except WrittenMismatch as exc:
+            logger.error("Rolled back, nothing written: %s", exc)
+            return 1
+    _summary_stats(driver)
+    logger.info("Done. Total relations merged: %d (= rows)", written)
+    return 0
 
 
 def _summary_stats(driver) -> None:
@@ -145,14 +207,9 @@ def main() -> int:
         ),
     )
     try:
-        with driver.session() as session:
-            total_written = session.execute_write(_write_all, rows, args.batch_size)
-        _summary_stats(driver)
+        return _import_rows(driver, rows, args.batch_size, in_path)
     finally:
         driver.close()
-
-    logger.info("Done. Total relations merged: %d", total_written)
-    return 0
 
 
 if __name__ == "__main__":
