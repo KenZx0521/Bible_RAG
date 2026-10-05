@@ -41,11 +41,11 @@
 
 ```bash
 rm -f results_quick/w1_step1_smoke.json \
-  && uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke \
-  && python3 -c "import json; d = json.load(open('results_quick/w1_step1_smoke.json')); print(d['n'], d['n_invalid'], sorted(q for q, e in d['per_question'].items() if e['strategy_errors']), d['config']['graph_strategies_applied'])"
+  && BACKEND_URL=http://localhost:8000 uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke \
+  && python3 -c "import json; d = json.load(open('results_quick/w1_step1_smoke.json')); r = (d['n'], d['n_invalid'], sorted(q for q, e in d['per_question'].items() if e['strategy_errors']), d['config']['graph_strategies_applied']); print(*r); raise SystemExit(0 if r == (20, 0, [], {'event_registry': 20}) else 1)"
 ```
 
-通過條件是印出 `20 0 [] {'event_registry': 20}`，也就是 n=20、n_invalid=0、沒有任何一題帶 strategy_errors，而且 backend 回報 20 題都只套用 event_registry（quick_retrieval_eval 記在 `config.graph_strategies_applied` 的計數）：新 image 的預設路徑仍只跑 event_registry。先刪上一次的結果檔，三段用 `&&` 串起來：收集中途失敗時，不會讀到舊檔而假性通過。
+通過條件是印出 `20 0 [] {'event_registry': 20}`，也就是 n=20、n_invalid=0、沒有任何一題帶 strategy_errors，而且 backend 回報 20 題都只套用 event_registry（quick_retrieval_eval 記在 `config.graph_strategies_applied` 的計數）：新 image 的預設路徑仍只跑 event_registry。印出的不是這一行時，檢查的結束碼是 1。先刪上一次的結果檔，三段用 `&&` 串起來：收集中途失敗時，不會讀到舊檔而假性通過。`BACKEND_URL=http://localhost:8000` 寫在指令前面：shell 若還 export 著 staging 的 8001，煙霧測試就會量錯 backend。
 
 2026-10-05 曾對升版前的 prod backend（:8000）試跑同一條指令：n=20、n_invalid=0、strategy_errors 0 題；20 題都套用了 event_registry，實際路由為 R1 3、R2 3、R3 4、R4 4、R5 3、R6 3。
 

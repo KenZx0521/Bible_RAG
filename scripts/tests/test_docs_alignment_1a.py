@@ -99,7 +99,7 @@ def test_k9_is_preregistered_and_gates_on_text_correct_only():
     # the fallback's probe edits name the tests that pin the probe lists: they must exist under those names
     pp_tests = read(ROOT / "scripts" / "tests" / "test_relation_postprocess_output.py")
     for test in ("test_final_edge_set", "test_batch0_graph_r6_and_failing_probes"):
-        assert f"{test} 的" in w1a and f"def {test}(" in pp_tests, test
+        assert test in w1a and f"def {test}(" in pp_tests, test
 
 
 def test_1a_expected_files_follow_k9_and_come_from_the_tools():
@@ -127,8 +127,10 @@ def test_rebuild_checks_the_registered_6_05_output_and_replaces_twice():
     reads = [_first(commands, f"props_sha > bak/$D/props_{n}.txt") for n in range(3)]
     replaces = [i for i, c in enumerate(commands) if "import_relations_neo4j.py --replace" in c]
     assert _first(commands, registered) < reads[0] < replaces[0] < reads[1] < replaces[1] < reads[2], commands
-    cmp = "cmp bak/$D/props_0.txt bak/$D/props_1.txt && cmp bak/$D/props_1.txt bak/$D/props_2.txt"
-    assert _first(commands, cmp) > reads[2]
+    # one cmp per line: set -e ignores a failing cmp that is not the last of an && list (M389)
+    assert reads[2] < _first(commands, "cmp bak/$D/props_0.txt bak/$D/props_1.txt") < _first(
+        commands, "cmp bak/$D/props_1.txt bak/$D/props_2.txt")
+    assert not [c for c in commands if c.startswith("cmp ") and "&&" in c], commands
     layer = "NOT type(r) IN ['MENTIONS', 'CROSS_REFERENCES']"
     assert layer in imp._LAYER and layer in w1a   # the importer's semantic layer, nothing else
     for needle in ("apoc.map.sortedProperties(properties(r))", "ORDER BY h, ty, t, p", "5,696", "10.2 之前"):

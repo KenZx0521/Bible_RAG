@@ -517,7 +517,7 @@ def test_w1_step1_smoke_cannot_pass_on_a_stale_result_and_checks_pred_trans():
     for chain, start in ((commands, 1), (_commands(readme), 0)):
         parts = [part.strip() for part in chain[_first(chain, "smoke20_ids.txt")].split("&&")][start:]
         assert parts[0] == f"rm -f {SMOKE_JSON}", parts
-        assert parts[1].startswith("uv run python quick_retrieval_eval.py") and SMOKE_JSON in parts[2], parts
+        assert "uv run python quick_retrieval_eval.py" in parts[1] and SMOKE_JSON in parts[2], parts
     compare = ("xref_probe.py compare --pred bak/$D/xref_probe/pred_prod_step1.json "
                "--measured bak/20261005_w1_1b_evidence/pred_trans.json")
     _in_order(commands, ("xref_probe.py predict", compare))

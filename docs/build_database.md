@@ -89,14 +89,14 @@ uv sync --project scripts   # BGE-M3 / CKIP 權重於首次執行時自動從 Hu
   | 5 | `scripts/import_neo4j.py` | 先清空目標 Neo4j 再重建 |
   | 6.1 | `scripts/import_relations_neo4j.py` | 讀 6.05 的 relations_clean.jsonl 與報告，不帶 `--replace`。必須緊接在 Step 5 之後：圖裡已有語意邊就拒絕（見 Step 6.1）。W1 接著在 8a 之前以 `--replace` 重匯兩次，三次的語意層摘要 `props_0/1/2` 必須相同（[staging_promotion.md](staging_promotion.md) R2「W1 的關係層檢查」第 3 項）；10.2 之後端點檢查會拒絕，漏了就要從 Step 5 重來 |
   | 8a | `scripts/embed_entities.py --recreate` | 只為了讓 10.x 有 collection 可寫：沒有它，10.2（staging 下）刪點、10.4 upsert 都會失敗，10.5 找不到 extracted 點會 SystemExit。這時 P/P/G 描述還是空的，8b 會整個取代。W1 寫 `bible_entities_v3`（建議，待 Kay 確認，見 Step 8） |
-  | 9 | `scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt` 連跑兩次，再 `scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json` | 第二次 `created 0`、兩次同一個指紋，fingerprint 結束碼 0（見 Step 9） |
+  | 9 | `scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt` 連跑兩次，再 `scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json` | 第二次 `created 0`、兩次同一個指紋，fingerprint 結束碼 0。W1 兩次的輸出都 tee 到 `bak/$D/step9_run1.log`、`bak/$D/step9_run2.log`，R2 再核對一次（指令見 Step 9） |
   | 10.1 | `scripts/backfill_aliases.py` | 見 Step 10 |
   | 10.2 | `scripts/cleanup_noise_entities.py` | 第 1C 批之前，「但」的誤命中仍在這裡真的刪 MENTIONS |
   | 10.4 | `scripts/backfill_head_events.py` | |
   | 10.5 | `scripts/backfill_manual_patches.py --apply` | 10.3（共現搶救）已退出預設鏈，不在這裡跑（見 Step 10） |
   | 7 | `-m scripts.relation_extraction.desc_generator --replay --fail-on-stale` | 從正式快取 `output/frozen/descriptions.jsonl` 重放，不呼叫 LLM。必須在 10.5 之後：種子的 titles_sha 是用 live（10.x 之後）的 MENTIONS 算的。W1 不改 MENTIONS，stale 與 missing 都必須是 0（見 Step 7） |
   | 8b | `scripts/embed_entities.py --recreate` | 用最終的描述、aliases、MENTIONS 重嵌。10.2/10.4/10.5 寫進 Qdrant 的都是它們在 Neo4j 寫下的狀態的投影，8b 從 Neo4j 重讀，全部涵蓋 |
-  | 10.6 | `scripts/validate_kg.py --live --target staging --json > bak/$D/validate_staging_w1.json`、`scripts/check_identity.py --target staging --fail-on id`、`scripts/tools/check_edge_set.py --target staging --expect config/kg_expect/batch1_w1/relations_expected.json` | W1 照 Step 10.6 的指令逐條跑（validate_kg 的 JSON 接兩個 `jq -e` 閘門；check_edge_set 少了 `--expect`，重產的報告就能替自己背書），判準見 Step 10.6。entity collection 另要 `bible_entities_v3` 與 `bible_entities_detB` 逐點相同，印出 `v3 == detB`（建議，待 Kay 確認；指令在 [staging_promotion.md](staging_promotion.md) R2「W1 的關係層檢查」第 4 項） |
+  | 10.6 | `scripts/validate_kg.py --live --target staging --json > bak/$D/validate_staging_w1.json`、`scripts/check_identity.py --target staging --fail-on id --json > bak/$D/check_identity_staging_w1.json`、`scripts/tools/check_edge_set.py --target staging --expect config/kg_expect/batch1_w1/relations_expected.json` | W1 照 Step 10.6 的指令逐條跑（validate_kg 的 JSON 接兩個 `jq -e` 閘門；check_edge_set 少了 `--expect`，重產的報告就能替自己背書），判準見 Step 10.6。entity collection 另要 `bible_entities_v3` 與 `bible_entities_detB` 逐點相同，印出 `v3 == detB`（建議，待 Kay 確認；指令在 [staging_promotion.md](staging_promotion.md) R2「W1 的關係層檢查」第 4 項） |
   | export | `scripts/export_event_registry.py --check` | 結束碼 0 才算建完。只有刻意改 registry 的批次才不帶 `--check` 重寫，並人工審 diff |
 
   **W1 為什麼跳過 Step 1**：`output/ner_*.jsonl` 是第 0 批在 7526e12 之前產生的 NER 半邊，字典已把流珥併進葉忒羅。merge 不會拒絕它，只發 WARNING，接著寫出少了 person:liuer 的 entities.jsonl（9,119 行）；6.05 再因 6 列的端點 person:liuer 不存在而硬失敗。所以 W1 不重寫兩個實體檔，只確認它們仍是第 0 批的 build（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §6 #10）。check_merged_inputs 只用於 W1。
@@ -435,14 +435,21 @@ uv run --project scripts python -m scripts.relation_extraction.extract_relations
 ```bash
 # 全部規則 → output/relations_clean.jsonl 與 output/relations_clean.report.json
 uv run --project scripts python -m scripts.relation_extraction.relation_postprocess
-
-# 決定性：連跑兩次逐位元相同。輸出路徑要相同，因為報告記了 output.path；D 是 R0 的日期
+```
+```bash
+# 決定性：連跑兩次逐位元相同。輸出路徑要相同，因為報告記了 output.path；D 是 R0 的日期，沒印出最後一行就停
+(
+set -eu -o pipefail
+: "${D:?set D to the W1 R0 date}"
 mkdir -p bak/$D/pp_run1
 cp output/relations_clean.jsonl output/relations_clean.report.json bak/$D/pp_run1/
 uv run --project scripts python -m scripts.relation_extraction.relation_postprocess
 cmp output/relations_clean.jsonl bak/$D/pp_run1/relations_clean.jsonl
 cmp output/relations_clean.report.json bak/$D/pp_run1/relations_clean.report.json
-
+echo '6.05 twice: byte-identical'
+)
+```
+```bash
 # K8 的 staging-P1 對照組：不跑任何規則，6,958 列只蓋上 source、schema_version、pp_version。
 # run_id 不含 mode，與 W1 的相同；紀錄要連同 rules.mode 與 output 的 sha256 引用
 # 寫到另一組檔，不覆寫 relations_clean；6.1 以 output/relations_p1.jsonl 匯入（報告取同名的 .report.json）
@@ -577,6 +584,21 @@ uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_ref
 
 uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt
 ```
+W1 重灌鏈（staging 的 shell）的 Step 9 改貼下面這一段：連跑兩次，兩次的輸出都 tee 到 `bak/$D/`，接著核對第二次是 `created 0`、兩次同一個指紋，再對登記的期望檔比對；R2 用同樣的檢查再讀一次這兩個檔（[staging_promotion.md](staging_promotion.md) R2「W1 的交叉引用檢查」第 2 項）。沒有印出最後一行就停：
+```bash
+(
+set -eu -o pipefail
+: "${D:?set D to the W1 R0 date}"
+for n in 1 2; do
+  uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt | tee bak/$D/step9_run$n.log
+done
+grep -q '^After: created 0,' bak/$D/step9_run2.log
+F=$(grep '^fingerprint: ' bak/$D/step9_run1.log)
+grep -qxF "$F" bak/$D/step9_run2.log
+uv run --project scripts python scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json
+echo 'step 9 twice: created 0, same fingerprint'
+)
+```
 
 ### 閘門（第 1B 批起；任一不過就結束碼 1）
 - **寫入之前**（`--dry-run` 也跑；只用 READ session，一個 MERGE 都不送）：
@@ -669,8 +691,9 @@ uv run --project scripts python scripts/check_identity.py --target staging --fai
     jq -e --slurpfile e config/kg_expect/batch1_w1/residuals_expected.json \
       '.checks.R1.metrics.book_region_mentions.value == $e[0].validate_kg.R1.b' bak/$D/validate_staging_w1.json
     uv run --project scripts python scripts/tools/check_edge_set.py --target staging --expect config/kg_expect/batch1_w1/relations_expected.json
+    uv run --project scripts python scripts/check_identity.py --target staging --fail-on id --json > bak/$D/check_identity_staging_w1.json
     ```
-    兩個 jq 都要結束碼 0：沒有失敗、退步只有 R1，而且 R1 等於事前登記的殘差（`residuals_expected.json`，2,124）。mention_count 的 4 筆殘差由 R2 的 diff_kg 比對，合併允許清單的 mention_count 只取自 `residuals_allow.yaml`；MENTIONS 屬性的殘差（diff_kg 不比屬性）由 R2 的 `residuals_expect.py --check` 對 `residuals_expected.json` 的 `mentions_props` 比對（[staging_promotion.md](staging_promotion.md) R2「W1 的關係層檢查」第 4 項）。
+    check_identity 的 JSON 留在 `bak/$D/`（計畫 §5.4 要保留輸出與 sha，R2 補進 SHA256SUMS）。兩個 jq 都要結束碼 0：沒有失敗、退步只有 R1，而且 R1 等於事前登記的殘差（`residuals_expected.json`，2,124）。mention_count 的 4 筆殘差由 R2 的 diff_kg 比對，合併允許清單的 mention_count 只取自 `residuals_allow.yaml`；MENTIONS 屬性的殘差（diff_kg 不比屬性）由 R2 的 `residuals_expect.py --check` 對 `residuals_expected.json` 的 `mentions_props` 比對（[staging_promotion.md](staging_promotion.md) R2「W1 的關係層檢查」第 4 項）。
   - check_edge_set 結束碼 0：staging 的語意層等於 6.05 報告扣掉 10.2（5,616 條，sha256 `661cfc62…`；ee 鍵 prior 22、llm 35、anchored_rule 4），也等於事前登記的 `relations_expected.json`。第 0 批的 staging 是 15,926 條，結束碼 1。
   - 6.05 連跑兩次逐位元相同（Step 6.05 的 cmp）。
   - entity collection（建議，待 Kay 確認）：W1 不改實體、MENTIONS 與描述，所以 8b 寫出的 `bible_entities_v3` 必須與 W1-0 用同一份 embed 程式建的 `bible_entities_detB` 逐點相同（point id、向量、payload）。指令在 [staging_promotion.md](staging_promotion.md) R2「W1 的關係層檢查」第 4 項：兩個 collection 各 scroll 一次、依 id 排序後比 sha256，印出 `v3 == detB` 才算通過。通過後 detB 可以刪。
@@ -728,7 +751,7 @@ docker compose down
 staging（見 [staging_promotion.md](staging_promotion.md)）一律指名服務：
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d neo4j-staging
-docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --no-deps backend-staging   # R2 才需要；--no-deps 的理由見 staging_promotion.md R2 第 3 項、R5 開頭
+docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --no-deps --no-build --wait --wait-timeout 300 backend-staging   # R2 才需要；理由見 staging_promotion.md R2 第 3 項、R5 開頭
 ```
 
 ### 服務端點
