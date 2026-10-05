@@ -15,6 +15,9 @@ residual in a dated note, and §9 records the 2026-10-05 decisions. The kg_fix
 README names the archived scripts that need a32fbea. The archive READMEs say
 what archiving changed, which root and hash seed a replay depends on, and what
 the frozen-definition scripts still read (W1 review minors, docs_records 1).
+The plan's §2.1 pilot gives the 57/60 id gate as history (Q1 moved the gate to
+text_correct), and §9.1 records O5: expected files, fragments and the merged
+allowlist's sha256 are registered before W1 step 2 (docs_records 2).
 """
 from __future__ import annotations
 
@@ -334,3 +337,28 @@ def test_plan_9_h11_note_lists_every_h11_metric():
     names = [*_h11_row_tests(None, frozenset()), "undirected_pair_duplicates"]
     note = _line(section(read(PLAN1), "9. W0 之後的決定"), "- **H11 改號")
     assert len(names) == 7 and not [name for name in names if name not in note], note
+
+
+# ---------------------------------------------------------------- review minors (docs_records 2)
+
+def test_plan_2_1_pilot_states_the_id_gate_as_history():
+    # M376: Q1 made text_correct the gate; the pilot's 57/60 id gate must not read as a live requirement
+    precision = _line(section(read(PLAN1), "2.1 第 1A 批"), "| 錨定精確率")
+    assert "id 閘門至少要" not in precision, precision
+    for needle in ("當時以 id_correct 為閘門，需 57/60", "2026-10-05 Q1 改為 text_correct，見 §9.1"):
+        assert needle in precision, needle
+
+
+def test_plan_9_1_records_o5_and_supersedes_the_section_3_commit_timing():
+    # M380: §9.1 recorded Q1–Q4, H11, the image note, O1 and O7 but not O5 (pre-registration before step 2)
+    plan = read(PLAN1)
+    s91 = section(plan, "9.1 W1 實作期間")
+    o5 = _line(s91[s91.index("**執行面的更正"):], "- **O5 ")
+    sha_file = "config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256"
+    for needle in ("relations_allow.yaml", "residuals_allow.yaml", "xref_allow.yaml", "第 2 步", "之前 commit",
+                   "W1 紀錄", "`--merge-out`", sha_file, "R2", "第 4 步經 Kay 核可", "R4", "ratchet",
+                   "看過 staging 的 diff 之後", "§3", "「Kay 核可後 commit」"):
+        assert needle in o5, needle
+    # the quoted §3 text is still there (history is not rewritten), and the runbook registers the same sha file
+    assert "Kay 核可後 commit" in _line(section(plan, "3. 跨批共用機制"), "| 期望檔")
+    assert f"--sha-out {sha_file}" in section(read(ROOT / "docs" / "staging_promotion.md"), "R2")
