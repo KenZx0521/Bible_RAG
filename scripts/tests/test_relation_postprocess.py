@@ -392,6 +392,13 @@ def test_llm_event_event_rows_are_dropped(tmp_path):
                                    flow) == stamped[:1]
     assert flow.drops == {"llm_event_event": {"CAUSED": 1}}
 
+    # only the llm's row goes: a curated, anchored_rule or cooccurrence one between two events stays
+    stamped = [pp.base_stamp(_row("event:hongshui", "PRECEDED_BY", "event:dahui", 4, source=source), cfg)
+               for source in ("llm", "curated", "anchored_rule", "cooccurrence")]
+    flow = pp.Flow()
+    assert pp.drop_llm_event_event(stamped, inputs, cfg, flow) == stamped[1:]
+    assert flow.drops == {"llm_event_event": {"PRECEDED_BY": 1}}
+
 
 # --- provenance_gate (REL-05, M3) -----------------------------------------------
 
@@ -558,20 +565,22 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
     assert ran.index("provenance_gate") < ran.index("flag_id_order")
 
     # called directly: a paired relation (SON_OF, FATHER_OF) or an undirected one (NEAR) gets
-    # no field, a prior's neither; the rule copies the rows it marks, it does not mutate them
+    # no field, a prior's neither; the rule copies the rows it marks, True or False, it does
+    # not mutate them
     inputs, cfg = pp.load_inputs(_paths())
     stamped = [pp.base_stamp(r, cfg) for r in (
         _row("place:nasalei", "LOCATED_IN", "place:jialili", 3),
         _row("place:jialili", "LOCATED_IN", "place:nasalei", 4),
         _row("place:jialili", "NEAR", "place:nasalei", 4),
         _row("person:yabolahan", "SON_OF", "person:tala", 4),
-        _row("person:tala", "FATHER_OF", "person:yabolahan", 3))]
+        _row("person:tala", "FATHER_OF", "person:yabolahan", 3),
+        _row("person:tala", "SUCCEEDED_BY", "person:nahe", 4))]
     flow = pp.Flow()
     assert pp.flag_id_order(stamped, inputs, cfg, flow) == [
-        {**stamped[0], "direction_verified": True}, *stamped[2:]]
+        {**stamped[0], "direction_verified": True}, *stamped[2:5], {**stamped[5], "direction_verified": False}]
     assert not any("direction_verified" in r for r in stamped)
     assert flow.drops == {"contradicts_prior": {"LOCATED_IN": 1}}
-    assert flow.flagged == {}
+    assert flow.flagged == {"SUCCEEDED_BY": 1}
 
 
 # --- resolve_kinship_direction, dedup_undirected (REL-01/02, R6) ----------------

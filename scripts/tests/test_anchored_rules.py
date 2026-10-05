@@ -159,7 +159,8 @@ def test_config_copies_the_simulator_constants():
     ({"guard": {"other_parent": "yes", "homonym_ids": [], "disagreement": True}}, "other_parent"),
     ({"guard": {"other_parent": True, "homonym_ids": "person:bide", "disagreement": True}}, "homonym_ids"),
     ({"guard": {"other_parent": True, "homonym_ids": [], "disagreement": "any"}}, "disagreement"),
-    ({"guard": {"other_parent": True, "homonym_ids": [], "disagree": True}}, "disagree"),
+    # all three keys plus an unknown one: 'extra' occurs only in the echoed guard
+    ({"guard": {"other_parent": True, "homonym_ids": [], "disagreement": True, "extra": True}}, "extra"),
     ({"guard": True}, "guard"),
 ])
 def test_loader_rejects_a_malformed_config(tmp_path, change, message):

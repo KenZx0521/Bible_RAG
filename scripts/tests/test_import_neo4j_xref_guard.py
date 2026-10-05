@@ -28,9 +28,9 @@ def _connect():
     raise _Connected
 
 
-def _xref(start: str, end: str) -> dict:
+def _xref(start: str, end: str, source: str = "supplementary") -> dict:
     return {"start": start, "end": end, "type": "CROSS_REFERENCES",
-            "properties": {"source": "supplementary"}}
+            "properties": {"source": source}}
 
 
 def _run_main(monkeypatch, output_dir):
@@ -46,10 +46,12 @@ def _write_rels(output_dir, rows):
 
 
 def test_duplicate_pair_exits_before_connecting(monkeypatch, tmp_path, capsys):
+    # A pair is one edge whatever the rows' sources: markdown + supplementary
+    # (what 1B-C4a aggregates) and markdown + markdown are both duplicates.
     _write_rels(tmp_path, [
-        _xref("mat:4:0", "deu:6:1"), _xref("1pe:2:2", "isa:53:0"),
-        _xref("1pe:2:2", "isa:53:0"), _xref("mat:4:0", "deu:6:1"),
-        _xref("1pe:2:2", "isa:53:0"), _xref("rev:19:2", "dan:7:1"),
+        _xref("mat:4:0", "deu:6:1", "markdown"), _xref("1pe:2:2", "isa:53:0", "markdown"),
+        _xref("1pe:2:2", "isa:53:0", "markdown"), _xref("mat:4:0", "deu:6:1"),
+        _xref("1pe:2:2", "isa:53:0", "markdown"), _xref("rev:19:2", "dan:7:1"),
         # Other types are not checked: only CROSS_REFERENCES carry row data.
         {"start": "gen", "end": "gen:1", "type": "CONTAINS", "properties": {}},
         {"start": "gen", "end": "gen:1", "type": "CONTAINS", "properties": {}},

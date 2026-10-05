@@ -64,6 +64,8 @@ def test_parse_coord_valid(text, expected):
     ("", "expected 'book chapter:verses'"),
     ("rev 19", "expected 'book chapter:verses'"),
     ("rev x:1", "expected 'book chapter:verses'"),
+    ("REV 19:1", "expected 'book chapter:verses'"),   # book ids are lower case
+    ("啟 19:1", "expected 'book chapter:verses'"),
     ("rev 19:", "no verses"),
     ("rev 19:16-11", "descending range '16-11'"),
     ("rev 19:a", "'a' is not n or a-b"),
@@ -105,6 +107,8 @@ def test_resolve_fanout_splits_verses():
     target = resolve_span(parse_coord("jer 51:6-9,45"), VMAP)
     assert target == {"jer:51:0": (6, 7, 8, 9), "jer:51:5": (45,)}
     assert list(target) == ["jer:51:0", "jer:51:5"]  # first-seen order
+    # that order is also the sorted one; with 45 listed before 6 the two differ
+    assert list(resolve_span(Coord("jer", 51, (45, 6)), VMAP)) == ["jer:51:5", "jer:51:0"]
     anchors = build_anchors("rev 18:2-8", "jer 51:6-9,45", VMAP, ref_type="allusion",
                             description="巴比倫大城傾倒了", tsk_exempt="reason")
     assert [(a.start, a.end, a.text) for a in anchors] == [

@@ -135,11 +135,13 @@ def _add_markdown_lists(rows):
                                               md_anchors=["mat 1:?>isa 7:14"])
 
 
-def _extra_anchor(rows):
-    props = _props(rows, "mat:1:0", "isa:7:0")
-    props["supp_anchors"].append("mat 1:22>isa 7:14")
-    props["supp_ref_types"].append("quotation")
-    props["supp_descriptions"].append("應驗先知的話")
+def _extra_anchor(anchor, description):
+    def mutate(rows):
+        props = _props(rows, "mat:1:0", "isa:7:0")
+        props["supp_anchors"].append(anchor)
+        props["supp_ref_types"].append("quotation")
+        props["supp_descriptions"].append(description)
+    return mutate
 
 
 ERROR_CASES = {
@@ -167,6 +169,12 @@ ERROR_CASES = {
     "exempt anchor of another pair": (
         _set("mat:1:0", "isa:7:0", "supp_tsk_exempt_anchors", ["mat 4:15-16>isa 9:1"]),
         "supp_tsk_exempt_anchors ['mat 4:15-16>isa 9:1'] not among supp_anchors"),
+    "exempt anchors not a list": (
+        _set("mat:1:0", "isa:7:0", "supp_tsk_exempt_anchors", "mat 1:23>isa 7:14"),
+        "mat:1:0→isa:7:0: supp_tsk_exempt_anchors is not a non-empty list: 'mat 1:23>isa 7:14'"),
+    "exempt anchors empty": (
+        _set("mat:1:0", "isa:7:0", "supp_tsk_exempt_anchors", []),
+        "mat:1:0→isa:7:0: supp_tsk_exempt_anchors is not a non-empty list: []"),
     "anchor verse outside the pericope": (
         _set("mat:1:0", "isa:7:0", "supp_anchors", ["mat 1:23>isa 7:17"]),
         "'mat 1:23>isa 7:17': verses 17 are not in isa:7:0"),
@@ -179,8 +187,11 @@ ERROR_CASES = {
         _drop("mat:1:0", "isa:7:0"), "definition 0 (mat 1:23>isa 7:14) has no anchor in the rows"),
     "anchor missing": (_drop("mat:4:0", "isa:9:1"),
                        "anchor missing from the rows: mat:4:0→isa:9:1 'mat 4:15-16>isa 9:2'"),
-    "extra anchor": (_extra_anchor,
+    "extra anchor": (_extra_anchor("mat 1:22>isa 7:14", "應驗先知的話"),
                      "anchor from no definition: mat:1:0→isa:7:0 'mat 1:22>isa 7:14'"),
+    # the anchors are a multiset: a second copy of a defined anchor is extra too
+    "repeated anchor": (_extra_anchor("mat 1:23>isa 7:14", "童女懷孕"),
+                        "anchor from no definition: mat:1:0→isa:7:0 'mat 1:23>isa 7:14'"),
     # Step 9's support gate skips every listed anchor: a stray entry fails open
     "exempt anchor without an exempt definition": (
         _set("mat:1:0", "isa:7:0", "supp_tsk_exempt_anchors", ["mat 1:23>isa 7:14"]),

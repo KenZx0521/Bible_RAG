@@ -152,6 +152,8 @@ def test_xref2_deleted_definitions_absent(step0):
     assert {(ref.src, ref.tgt) for ref in SUPPLEMENTARY_CROSS_REFS}.isdisjoint(XREF2_DELETED)
     rows, _ = step0
     supp_pairs = {(r["start"], r["end"]) for r in rows if r["properties"].get("supp_anchors")}
+    # not vacuous: with supp_anchors renamed or unwritten the set is empty (X2's pair is known)
+    assert ("rev:19:2", "dan:2:3") in supp_pairs
     assert supp_pairs.isdisjoint(XREF2_DELETED.values())
 
 

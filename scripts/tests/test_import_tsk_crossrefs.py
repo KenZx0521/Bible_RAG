@@ -18,7 +18,8 @@ and tsk are SET on every matched pair; ON CREATE only marks a pure TSK edge
   == attached_to_curated, no unflagged edge. Then the edge fingerprint.
 
 FakeGraph answers the script's queries with the semantics their Cypher spells
-out; the MERGE text itself is pinned by test_merge_cypher_sets_votes_unconditionally.
+out; the MERGE text itself is pinned by test_merge_cypher_sets_votes_unconditionally,
+the gates' read queries by test_read_queries_spell_the_gates.
 """
 
 from __future__ import annotations
@@ -215,6 +216,22 @@ def test_merge_cypher_sets_votes_unconditionally():
     assert "ON MATCH" not in text
 
 
+def test_read_queries_spell_the_gates():
+    # FakeGraph answers these by identity and counts in Python, so only their text says
+    # what the graph is asked; unflagged is crit#5's precondition and a post-write gate
+    counts = " ".join(its._COUNTS_CYPHER.split())
+    assert counts.startswith("MATCH ()-[r:CROSS_REFERENCES]->() RETURN "), counts
+    assert {alias: expr for expr, alias in re.findall(r"count\((.+?)\) AS (\w+)", counts)} == {
+        "total": "r",
+        "curated": "CASE WHEN r.curated = true THEN 1 END",
+        "unflagged": "CASE WHEN r.curated IS NULL OR r.tsk IS NULL THEN 1 END",
+        "tsk": "CASE WHEN r.tsk = true THEN 1 END",
+        "tsk_curated": "CASE WHEN r.tsk = true AND r.curated = true THEN 1 END"}
+    assert " ".join(its._CURATED_PAIRS_CYPHER.split()) == (
+        "MATCH (a:Pericope)-[r:CROSS_REFERENCES]->(b:Pericope) WHERE r.curated = true "
+        "RETURN a.id AS a, b.id AS b")
+
+
 # ---------------------------------------------------------------- aggregate_tsk
 
 def test_aggregate_tsk_semantics(tmp_path):
@@ -339,6 +356,29 @@ def test_count_gate_mismatch_exits_1(pericopes, extra, failed, monkeypatch, tmp_
 
     captured = capsys.readouterr()
     assert [line.strip() for line in captured.err.splitlines()[1:]] == failed
+    assert "fingerprint" not in captured.out
+
+
+class _MissedOnCreateGraph(FakeGraph):
+    """A MERGE whose ON CREATE did not run: the edges it creates have no curated flag."""
+
+    def _merge(self, rows: list[dict]) -> _Result:
+        before = set(self.edges)
+        result = super()._merge(rows)
+        for pair in set(self.edges) - before:
+            del self.edges[pair]["curated"]
+        return result
+
+
+def test_post_write_gate_fails_on_an_edge_left_unflagged(monkeypatch, tmp_path, capsys):
+    # every other count holds (matched 4, tsk 4, tsk and curated 1): only this gate sees it
+    graph = _MissedOnCreateGraph()
+
+    assert _main(graph, monkeypatch, tmp_path) == 1
+
+    captured = capsys.readouterr()
+    assert [line.strip() for line in captured.err.splitlines()[1:]] == [
+        "edges with curated or tsk unset: 3, expected 0"]
     assert "fingerprint" not in captured.out
 
 
