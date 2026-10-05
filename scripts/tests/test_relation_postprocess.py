@@ -34,6 +34,7 @@ import pytest
 import yaml
 
 from relation_extraction import anchored_rules
+from relation_extraction import relation_policy as policy
 from relation_extraction import relation_postprocess as pp
 from relation_extraction.relation_policy import SOURCE_RANK, parent_child, rank, source_of
 
@@ -568,6 +569,149 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
     assert not any("direction_verified" in r for r in stamped)
     assert flow.drops == {"contradicts_prior": {"LOCATED_IN": 1}}
     assert flow.flagged == {}
+
+
+# --- resolve_kinship_direction, dedup_undirected (REL-01/02, R6) ----------------
+
+KIN_ROWS = (   # each reverses a parent/child pair the fixture's all-mode run holds
+    _row("person:yabolahan", "FATHER_OF", "person:tala", 4, source_pericope_id="gen:11:1"),
+    _row("person:yabolahan", "SON_OF", "person:tala", 4, source_pericope_id="gen:11:1"),
+    _row("person:moxi", "FATHER_OF", "person:anlan", 4, source_pericope_id="num:26:0"))
+UNDIRECTED_ROWS = (   # each restates an undirected pair, the fixture's own or another of these
+    _row("person:yabolahan", "SIBLING_OF", "person:nahe", 3, source_pericope_id="", evidence_span="創 11:26"),
+    _row("person:yuejibie", "SPOUSE_OF", "person:anlan", 4, source_pericope_id="num:26:0"),
+    _row("place:nasalei", "NEAR", "place:jialili", 4, source_pericope_id="mat:2:3"),
+    _row("place:jialili", "NEAR", "place:nasalei", 4, source_pericope_id="mat:2:3"))
+
+
+def _keys(rows) -> set[tuple[str, str, str, str]]:
+    return {(r["head_id"], r["relation"], r["tail_id"], r["source"]) for r in rows}
+
+
+def _ranked(head: str, relation: str, tail: str, source: str, pid: str = "", verse: int | None = None) -> dict:
+    return {"head_id": head, "relation": relation, "tail_id": tail, "source": source,
+            "source_pericope_id": pid, **({} if verse is None else {"verse": verse})}
+
+
+def _brief(head: str, relation: str, tail: str, source: str, pid: str, verse: int | None) -> dict:
+    return {"head_id": head, "relation": relation, "tail_id": tail, "source": source,
+            "source_pericope_id": pid, "verse": verse}
+
+
+def test_father_of_contradictions_resolve_by_source_rank(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    _append_jsonl(tmp_path / "in" / "relations.jsonl", KIN_ROWS)
+    rows, report = _run("all", _paths(tmp_path / "in"))
+    keys = _keys(rows)
+
+    # one direction per parent/child pair, the best-ranked row's (curated > prior > llm >
+    # anchored_rule): the prior 他拉 FATHER_OF 亞伯拉罕 (創 11:26) outranks the llm row that
+    # reverses it, the llm 摩西 FATHER_OF 暗蘭 the anchored row it reverses; a row in the
+    # winning direction stays whatever its rank
+    assert {("person:tala", "FATHER_OF", "person:yabolahan", "prior"),
+            ("person:yabolahan", "SON_OF", "person:tala", "llm"),
+            ("person:moxi", "FATHER_OF", "person:anlan", "llm")} <= keys
+    assert not {("person:yabolahan", "FATHER_OF", "person:tala", "llm"),
+                ("person:anlan", "FATHER_OF", "person:moxi", "anchored_rule")} & keys
+    assert report["flow"]["drops"]["kin_direction_conflict"] == {"FATHER_OF": 2}
+    assert [c for c in report["conflicts"] if c["reason"] == "kin_direction_conflict"] == [
+        {**_brief("person:anlan", "FATHER_OF", "person:moxi", "anchored_rule", "num:26:0", 59),
+         "reason": "kin_direction_conflict",
+         "kept": _brief("person:moxi", "FATHER_OF", "person:anlan", "llm", "num:26:0", None)},
+        {**_brief("person:yabolahan", "FATHER_OF", "person:tala", "llm", "gen:11:1", None),
+         "reason": "kin_direction_conflict",
+         "kept": _brief("person:tala", "FATHER_OF", "person:yabolahan", "prior", "", None)}]
+    fathers = {(r["head_id"], r["tail_id"]) for r in rows if r["relation"] == "FATHER_OF"}
+    assert not {(t, h) for h, t in fathers} & {parent_child(r) for r in rows if parent_child(r)}   # R6
+    ran = report["rules"]["ran"]
+    assert ran.index("flag_id_order") < ran.index("resolve_kinship_direction")
+
+    # called directly: equal ranks fall to the smallest (source_pericope_id, verse, head_id);
+    # the kept rows stay in input order, a non-parent row (SPOUSE_OF) passes untouched
+    given = [_ranked("person:a", "FATHER_OF", "person:b", "llm", "gen:2:0"),
+             _ranked("person:b", "FATHER_OF", "person:a", "llm", "gen:1:0"),
+             _ranked("person:c", "SON_OF", "person:d", "anchored_rule", "1ch:1:0", 5),
+             _ranked("person:d", "SON_OF", "person:c", "anchored_rule", "1ch:1:0", 3),
+             _ranked("person:f", "MOTHER_OF", "person:e", "llm", "gen:3:0"),
+             _ranked("person:e", "MOTHER_OF", "person:f", "llm", "gen:3:0"),
+             _ranked("person:g", "DAUGHTER_OF", "person:h", "prior"),
+             _ranked("person:g", "FATHER_OF", "person:h", "curated"),
+             _ranked("person:g", "SPOUSE_OF", "person:h", "llm", "gen:3:0")]
+    kept, conflicts = policy.resolve_kinship_direction(given)
+    assert kept == [given[1], given[3], given[5], given[7], given[8]]
+    assert [(c["head_id"], c["relation"], c["tail_id"], c["kept"]["head_id"]) for c in conflicts] == [
+        ("person:a", "FATHER_OF", "person:b", "person:b"), ("person:c", "SON_OF", "person:d", "person:d"),
+        ("person:f", "MOTHER_OF", "person:e", "person:e"), ("person:g", "DAUGHTER_OF", "person:h", "person:g")]
+
+
+def test_undirected_pair_keeps_best_ranked_orientation(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    _append_jsonl(tmp_path / "in" / "relations.jsonl", UNDIRECTED_ROWS)
+    rows, report = _run("all", _paths(tmp_path / "in"))
+    keys = _keys(rows)
+
+    # one row per unordered pair and undirected relation, the best-ranked one in its own
+    # orientation: the prior 亞伯拉罕 SIBLING_OF 拿鶴 over the fixture's llm 拿鶴 SIBLING_OF
+    # 亞伯拉罕, the llm 約基別 SPOUSE_OF 暗蘭 over the anchored 暗蘭 SPOUSE_OF 約基別 (P4); of
+    # two llm rows in one pericope the smaller head_id (加利利 NEAR 拿撒勒)
+    assert {("person:yabolahan", "SIBLING_OF", "person:nahe", "prior"),
+            ("person:yuejibie", "SPOUSE_OF", "person:anlan", "llm"),
+            ("place:jialili", "NEAR", "place:nasalei", "llm")} <= keys
+    assert not {("person:nahe", "SIBLING_OF", "person:yabolahan", "llm"),
+                ("person:anlan", "SPOUSE_OF", "person:yuejibie", "anchored_rule"),
+                ("place:nasalei", "NEAR", "place:jialili", "llm")} & keys
+    assert report["flow"]["drops"]["undirected_duplicate"] == {"NEAR": 1, "SIBLING_OF": 1, "SPOUSE_OF": 1}
+    undirected = [r for r in rows if r["relation"] in ("NEAR", "SIBLING_OF", "SPOUSE_OF")]
+    assert len(undirected) == len({(frozenset((r["head_id"], r["tail_id"])), r["relation"]) for r in undirected})
+    ran = report["rules"]["ran"]
+    assert ran.index("resolve_kinship_direction") < ran.index("dedup_undirected")
+
+    # called directly: a key the llm and the anchored rule both give (密迦 SPOUSE_OF 拿鶴) keeps
+    # one row too; directed rows are not this rule's, a pair in both orientations included
+    _, cfg = pp.load_inputs(_paths())
+    given = [_ranked("person:mijia", "SPOUSE_OF", "person:nahe", "anchored_rule", "gen:11:2", 29),
+             _ranked("person:mijia", "SPOUSE_OF", "person:nahe", "llm", "gen:11:2"),
+             _ranked("person:a", "FATHER_OF", "person:b", "llm", "gen:1:0"),
+             _ranked("person:b", "FATHER_OF", "person:a", "llm", "gen:1:0")]
+    kept, dropped = policy.dedup_undirected(given, cfg.schema)
+    assert (kept, dropped) == (given[1:], given[:1])
+
+
+def test_conflict_log_is_deterministic(tmp_path):
+    # the winner of a pair is the smallest by an explicit key, never the first row read: the
+    # input lines in reverse give the same rows, drops and conflicts
+    runs = []
+    for name, order in (("forward", 1), ("reversed", -1)):
+        shutil.copytree(FIXTURE, tmp_path / name)
+        path = tmp_path / name / "relations.jsonl"
+        lines = [*path.read_text(encoding="utf-8").splitlines(),
+                 *(json.dumps(r, ensure_ascii=False) for r in KIN_ROWS + UNDIRECTED_ROWS)]
+        path.write_text("".join(line + "\n" for line in lines[::order]), encoding="utf-8")
+        runs.append(_run("all", _paths(tmp_path / name)))
+    (rows, report), (rows_reversed, report_reversed) = runs
+    assert rows == rows_reversed
+    assert report["flow"] == report_reversed["flow"]
+    assert report["conflicts"] == report_reversed["conflicts"]
+    assert [c["reason"] for c in report["conflicts"]] == ["kin_direction_conflict"] * 2
+
+    # called directly, each function's choice and conflict list are those of the row set
+    given = [_ranked("person:a", "FATHER_OF", "person:b", "llm", "gen:1:0"),
+             _ranked("person:a", "SON_OF", "person:b", "llm", "gen:1:0"),
+             _ranked("person:b", "FATHER_OF", "person:a", "llm", "gen:1:0"),
+             _ranked("person:c", "SPOUSE_OF", "person:d", "llm", "gen:1:0"),
+             _ranked("person:d", "SPOUSE_OF", "person:c", "llm", "gen:1:0")]
+    _, cfg = pp.load_inputs(_paths())
+    results = []
+    for shift in range(len(given)):
+        rotated = given[shift:] + given[:shift]
+        kept, conflicts = policy.resolve_kinship_direction(rotated)
+        deduped, dropped = policy.dedup_undirected(rotated, cfg.schema)
+        results.append((sorted(map(_canon, kept)), conflicts, sorted(map(_canon, deduped)), dropped))
+    assert all(result == results[0] for result in results)
+    # head_id, then relation, decides a full tie: 甲 FATHER_OF 乙 stands, so 甲 SON_OF 乙 goes
+    assert [(c["head_id"], c["relation"]) for c in results[0][1]] == [("person:a", "SON_OF"),
+                                                                      ("person:b", "FATHER_OF")]
+    assert results[0][3] == [given[4]]
 
 
 # --- relation_policy ------------------------------------------------------------

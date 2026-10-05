@@ -22,6 +22,7 @@ from collections import Counter
 from pathlib import Path
 
 import pytest
+import yaml
 
 from entity_extraction import entity_overrides, geo_rules
 from relation_extraction import relation_postprocess as pp
@@ -307,6 +308,53 @@ def test_direction_flags(real_inputs, all_run, rows_before_anchored):
     assert Counter(r["relation"] for r in verified) == {"SUCCEEDED_BY": 4, "LOCATED_IN": 3}
     assert all(r["relation"] in id_order for r in flagged + verified)
     assert [_key(r) for r in rows if (r["relation"] in id_order) != ("direction_verified" in r)] == []
+
+
+def _r6(rows, female: set[str]) -> tuple[int, int]:
+    """(contradictions, female_head) as validate_kg R6 counts them over the FATHER_OF rows."""
+    parent_of = {(r["head_id"], r["tail_id"]) for r in rows if r["relation"] in ("FATHER_OF", "MOTHER_OF")}
+    parent_of |= {(r["tail_id"], r["head_id"]) for r in rows if r["relation"] in ("SON_OF", "DAUGHTER_OF")}
+    fathers = [(r["head_id"], r["tail_id"]) for r in rows if r["relation"] == "FATHER_OF"]
+    return sum((t, h) in parent_of for h, t in fathers), sum(h in female for h, _ in fathers)
+
+
+def test_conflict_drops(real_inputs, all_run):
+    rows, report = all_run
+    drops, keys = report["flow"]["drops"], {_key(r): r["source"] for r in rows}
+    # no parent/child pair reaches the rule in both directions: the draft's one case, the
+    # anchored 比利家 SON_OF 米書蘭 against the llm 比利家 FATHER_OF 米書蘭 (neh:6:1), is
+    # abstained earlier by the anchored disagreement guard (1A-C3c)
+    assert "kin_direction_conflict" not in drops
+    assert [c for c in report["conflicts"] if c["reason"] == "kin_direction_conflict"] == []
+    assert ("person:bilijia", "SON_OF", "person:mishulan") not in keys
+    assert keys[("person:bilijia", "FATHER_OF", "person:mishulan")] == "llm"
+    ran = report["rules"]["ran"]
+    assert ran.index("flag_id_order") < ran.index("resolve_kinship_direction") < ran.index("dedup_undirected")
+
+    # an undirected pair keeps one row, the best-ranked in its own orientation: the prior
+    # over the llm row that restates it reversed (3), the llm over the anchored P4 row of
+    # the same key (密迦 SPOUSE_OF 拿鶴, gen:11:2 v29), and 亞伯拉罕 SPOUSE_OF 撒拉 (prior)
+    # over both rows of the other orientation (llm and anchored)
+    assert drops["undirected_duplicate"] == {"ALLY_OF": 1, "ENEMY_OF": 1, "SPOUSE_OF": 4}
+    for key, source in ((("person:yuenadan", "ALLY_OF", "person:dawei"), "prior"),
+                        (("person:saoluo", "ENEMY_OF", "person:dawei"), "prior"),
+                        (("person:yage", "SPOUSE_OF", "person:liya"), "prior"),
+                        (("person:mijia", "SPOUSE_OF", "person:nahe"), "llm"),
+                        (("person:yabolahan", "SPOUSE_OF", "person:sala"), "prior")):
+        assert keys[key] == source
+    for key in (("person:dawei", "ALLY_OF", "person:yuenadan"), ("person:dawei", "ENEMY_OF", "person:saoluo"),
+                ("person:liya", "SPOUSE_OF", "person:yage"), ("person:sala", "SPOUSE_OF", "person:yabolahan")):
+        assert key not in keys
+    _, cfg = real_inputs
+    undirected = [r for r in rows if cfg.schema.get(r["relation"]).direction == "undirected"]
+    assert len(undirected) == len({(frozenset((r["head_id"], r["tail_id"])), r["relation"]) for r in undirected})
+
+    # R6: relations.jsonl holds 25 FATHER_OF rows reversed by a parent row and 42 with a
+    # female head (rule and inverse rows); 6.05's output holds none of either
+    inputs, _ = real_inputs
+    female = set(yaml.safe_load((ROOT / "config" / "kg_probes.yaml").read_text(encoding="utf-8"))["female_persons"])
+    assert _r6(inputs.relations, female) == (25, 42)
+    assert _r6(rows, female) == (0, 0)
 
 
 @pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")

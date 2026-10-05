@@ -58,7 +58,7 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import anchored_rules
+from . import anchored_rules, relation_policy
 from .anchored_rules import AnchoredConfig
 from .models import PHASE_OF_SOURCE, SOURCES
 from .relation_policy import source_of
@@ -367,6 +367,38 @@ def flag_id_order(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> 
     return kept
 
 
+def resolve_kinship_direction(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-01/02, R6: keep one direction per parent/child pair, the best-ranked row's.
+
+    FATHER_OF, MOTHER_OF, SON_OF and DAUGHTER_OF each say who is whose parent;
+    two rows that say it both ways cannot both hold (R6's contradictions).
+    relation_policy.resolve_kinship_direction picks the direction by source
+    rank, curated > prior > llm > anchored_rule, then the smallest
+    (source_pericope_id, verse, head_id), never by file order. Each row of the
+    other direction goes under kin_direction_conflict and is logged in the
+    report's conflicts with the row that won.
+    """
+    kept, conflicts = relation_policy.resolve_kinship_direction(rows)
+    for conflict in conflicts:
+        flow.drop(relation_policy.KIN_DIRECTION_CONFLICT, conflict)
+    flow.conflicts.extend(conflicts)
+    return kept
+
+
+def dedup_undirected(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-01/02: keep one row per pair of an undirected relation (SPOUSE_OF, SIBLING_OF, NEAR…).
+
+    A pair stated both ways, or twice one way by two sources, is one fact;
+    relation_policy.dedup_undirected keeps the best-ranked row in its own
+    orientation (the same order as resolve_kinship_direction) and the rest
+    go under undirected_duplicate.
+    """
+    kept, dropped = relation_policy.dedup_undirected(rows, cfg.schema)
+    for row in dropped:
+        flow.drop("undirected_duplicate", row)
+    return kept
+
+
 def _final_types(inputs: Inputs, cfg: Config) -> dict[str, str]:
     """entity_id -> final type: the entities.jsonl type through the curated overrides."""
     return {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
@@ -380,6 +412,8 @@ RULES: tuple[tuple[str, Rule], ...] = (
     ("domain_range", domain_range),
     ("provenance_gate", provenance_gate),
     ("flag_id_order", flag_id_order),
+    ("resolve_kinship_direction", resolve_kinship_direction),
+    ("dedup_undirected", dedup_undirected),
 )
 
 
