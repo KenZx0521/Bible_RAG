@@ -498,6 +498,7 @@ P0（2026-07-06）與排序層修復產生的 curated 資料**不在 Step 1–9 
 - Step 1–6.1、8a、9 完成（Step 7 與 8b 排在 10.5 之後）；`QDRANT_ENTITY_COLLECTION` 指向的 entity collection 已由 8a 建好：10.2（staging 下）刪點、10.4 upsert 對不存在的 collection 都會失敗，10.5 找不到 extracted 點會 SystemExit
 - `output/relations_unclassified.jsonl` 存在（Step 6 產物，10.3 的輸入）
 - `config/curated/manual_graph_patches.jsonl`（git-tracked，106 邊/6 節點快照，10.5 的輸入）
+- `config/curated/entity_overrides.yaml`（git-tracked，10.2 yehehua 改成的型別取自此檔；碰任何庫之前先驗證，格式不對就中止）
 
 ### 指令（依序執行；每個腳本支援 `--dry-run` 預檢）
 ```bash
@@ -505,7 +506,7 @@ P0（2026-07-06）與排序層修復產生的 curated 資料**不在 Step 1–9 
 #      只寫 Neo4j
 uv run --project scripts python scripts/backfill_aliases.py
 
-# 10.2 噪音清理（「但」子字串誤命中 gate、16 泛名詞 Event 刪除、耶和華 Group→Person）
+# 10.2 噪音清理（「但」子字串誤命中 gate、16 泛名詞 Event 刪除、耶和華 Group→Person，型別讀 entity_overrides.yaml）
 #      同步範圍不是三庫：「但」只刪 Neo4j 的 MENTIONS（PG entity_mentions 仍有 place:dan 1,882 列，
 #      Qdrant 不動）；generic-events 與 yehehua 才同步 PG 與 Qdrant。KG_TARGET=staging 下：碰 Neo4j 之前先確認 PG 兩張表與
 #      entity collection 都在，同步失敗就中止，修好後以同一組 --actions 重跑會補完同步；production 照舊只印警告並跳過

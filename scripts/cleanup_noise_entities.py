@@ -15,7 +15,10 @@ Actions (all back up affected data to output/backups/ before writing):
                   corresponding Qdrant points and Postgres rows.
 
   yehehua         Fix group:yehehua (耶和華, degree ~2.5k) mis-typed as Group:
-                  relabel to Person in Neo4j, sync type in Postgres + Qdrant.
+                  relabel it in Neo4j to the label its override in
+                  config/curated/entity_overrides.yaml gives (Person, D9),
+                  sync type in Postgres + Qdrant. The file is read and
+                  validated before any store is touched.
 
 Usage:
     uv run python cleanup_noise_entities.py [--dry-run] [--actions dan,generic-events,yehehua]
@@ -45,12 +48,15 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
 import kg_target
+from check_identity import TYPE_LABELS
 # Shared with the offline Step 6.05, which must see the graph as 10.2 leaves it.
 # Also re-exported: test_registry_rebuild_sim.py and the archived docs/records
 # simulators import these names from this module.
 from entity_extraction.geo_rules import compute_dan_keep_sources
 from entity_extraction.geo_rules import is_geo_context as _is_geo_context  # noqa: F401
 from entity_extraction.stoplists import GENERIC_EVENT_STOPLIST
+# group:yehehua's type (D9); 6.05 types entities.jsonl through the same file.
+from entity_extraction.entity_overrides import OVERRIDES_PATH, load_overrides
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
@@ -320,17 +326,39 @@ def _sync_generic_event_deletes(ids: list[str], strict: bool) -> None:
 
 # --------------------------------------------------------------- yehehua ----
 
-def action_yehehua(driver, dry_run: bool, strict: bool = False) -> None:
-    print("\n[yehehua] Relabeling group:yehehua Group → Person")
+YEHEHUA_ID = "group:yehehua"
+
+
+def yehehua_label(path: Path) -> str | None:
+    """group:yehehua's label in the overrides file (D9); None when it has none.
+
+    Read before any store is touched: a malformed file stops the run here.
+    """
+    try:
+        override = load_overrides(path).get(YEHEHUA_ID)
+    except ValueError as e:
+        raise SystemExit(f"  ✗ {e}") from e
+    return override["label"] if override else None
+
+
+def action_yehehua(driver, dry_run: bool, label: str | None, strict: bool = False) -> None:
+    """Give group:yehehua the type ``label`` in Neo4j, then sync PG and Qdrant."""
+    if label is None:
+        print(f"\n[yehehua] {YEHEHUA_ID} has no override in {OVERRIDES_PATH.name} — skip")
+        return
+    if label not in TYPE_LABELS:  # interpolated into the Cypher and SQL below
+        raise ValueError(f"{YEHEHUA_ID}: label {label!r} is not one of {list(TYPE_LABELS)}")
+    print(f"\n[yehehua] Relabeling {YEHEHUA_ID} → {label} ({OVERRIDES_PATH.name})")
     with driver.session() as session:
         row = session.run(
-            "MATCH (e:Entity {entity_id: 'group:yehehua'}) RETURN labels(e) AS labels"
+            f"MATCH (e:Entity {{entity_id: '{YEHEHUA_ID}'}}) RETURN labels(e) AS labels"
         ).single()
     if not row:
-        print("  group:yehehua not found — skip")
+        print(f"  {YEHEHUA_ID} not found — skip")
         return
     print(f"  Current labels: {row['labels']}")
-    relabeled = "Person" in row["labels"] and "Group" not in row["labels"]
+    stale = [t for t in row["labels"] if t in TYPE_LABELS and t != label]
+    relabeled = label in row["labels"] and not stale
     if relabeled and not strict:
         print("  Already relabeled — skip")
         return
@@ -342,20 +370,23 @@ def action_yehehua(driver, dry_run: bool, strict: bool = False) -> None:
         return
 
     if not relabeled:
+        remove = f" REMOVE e:{':'.join(stale)}" if stale else ""
         with driver.session() as session:
-            session.run(
-                "MATCH (e:Entity {entity_id: 'group:yehehua'}) REMOVE e:Group SET e:Person"
-            )
-        print("  ✓ Neo4j: labels now [Person, Entity] (entity_id unchanged)")
+            session.run(f"MATCH (e:Entity {{entity_id: '{YEHEHUA_ID}'}}){remove} SET e:{label}")
+        print(f"  ✓ Neo4j: labels now [{label}, Entity] (entity_id unchanged)")
+    _sync_yehehua_type(label, strict)
 
+
+def _sync_yehehua_type(label: str, strict: bool) -> None:
+    """Set group:yehehua's type to ``label`` in PostgreSQL and Qdrant."""
     pg = get_postgres(strict)
     if pg:
         try:
             with pg.cursor() as cur:
-                cur.execute("UPDATE entities SET type = 'Person' WHERE entity_id = 'group:yehehua'")
+                cur.execute(f"UPDATE entities SET type = '{label}' WHERE entity_id = '{YEHEHUA_ID}'")
                 updated = cur.rowcount
             pg.commit()
-            print(f"  ✓ Postgres: {updated} row updated (type=Person)")
+            print(f"  ✓ Postgres: {updated} row updated (type={label})")
         except Exception as e:  # noqa: BLE001
             pg.rollback()
             _sync_failed("Postgres", e, strict)
@@ -366,16 +397,16 @@ def action_yehehua(driver, dry_run: bool, strict: bool = False) -> None:
     qdrant = get_qdrant(strict)
     if qdrant:
         collection = _entity_collection()
-        points = [entity_uuid("group:yehehua")]
+        points = [entity_uuid(YEHEHUA_ID)]
         if strict:
             # An id list fails on a point the collection lacks (404); a filter
             # selector makes that a no-op, as the target-id sync needs.
             from qdrant_client import models
             points = models.Filter(must=[models.HasIdCondition(has_id=points)])
         try:
-            qdrant.set_payload(collection_name=collection, payload={"type": "Person"},
+            qdrant.set_payload(collection_name=collection, payload={"type": label},
                                points=points, wait=True)
-            print(f"  ✓ Qdrant: payload.type=Person in {collection}")
+            print(f"  ✓ Qdrant: payload.type={label} in {collection}")
         except Exception as e:  # noqa: BLE001
             _sync_failed("Qdrant", e, strict)
             print(f"  ⚠ Qdrant payload update failed: {e}")
@@ -390,6 +421,7 @@ def main() -> int:
     args = parser.parse_args()
     actions = {a.strip() for a in args.actions.split(",") if a.strip()}
     syncing = bool(actions & SYNCING_ACTIONS)
+    yehehua = yehehua_label(OVERRIDES_PATH) if "yehehua" in actions else None
 
     stores = ("neo4j", "postgres", "qdrant") if syncing else ("neo4j",)
     strict = kg_target.assert_target(*stores) == "staging"
@@ -403,7 +435,7 @@ def main() -> int:
         if "generic-events" in actions:
             action_generic_events(driver, args.dry_run, strict)
         if "yehehua" in actions:
-            action_yehehua(driver, args.dry_run, strict)
+            action_yehehua(driver, args.dry_run, yehehua, strict)
     finally:
         driver.close()
     print("\nDone" + (" (dry-run, nothing written)" if args.dry_run else ""))
