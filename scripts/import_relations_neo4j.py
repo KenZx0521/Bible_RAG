@@ -3,7 +3,10 @@
 
 Reads JSONL output of `scripts.relation_extraction.extract_relations` and
 materialises Entity-Entity edges via APOC's `apoc.merge.relationship`
-(dynamic relation type, idempotent).
+(dynamic relation type, idempotent). Each edge's properties are replaced
+wholesale by its file row (the row minus head_id/relation/tail_id, nulls
+dropped), whether the edge is new or not, and every row is written in one
+write transaction, so a failure leaves no partial layer.
 
 Usage:
     python scripts/import_relations_neo4j.py [path/to/relations.jsonl]
@@ -48,45 +51,36 @@ def _bucket_by_relation(records: list[dict]) -> dict[str, list[dict]]:
     return out
 
 
+# The edge key; every other field of a row is an edge property.
+EDGE_KEY = ("head_id", "relation", "tail_id")
+
+# No onCreate/onMatch maps: SET rel = props replaces every property, so an
+# edge an earlier import left behind cannot keep stale values (REL-10).
 _MERGE_RELATION_CYPHER = """
 UNWIND $rows AS row
-MATCH (head:Entity {entity_id: row.head_id})
-MATCH (tail:Entity {entity_id: row.tail_id})
-CALL apoc.merge.relationship(
-    head,
-    $relation,
-    {},
-    {
-      confidence: row.confidence,
-      evidence_span: row.evidence_span,
-      source_pericope_id: row.source_pericope_id,
-      extraction_phase: row.extraction_phase,
-      head_canonical: row.head_canonical,
-      tail_canonical: row.tail_canonical,
-      notes: row.notes
-    },
-    tail
-) YIELD rel
+MATCH (h:Entity {entity_id: row.head_id})
+MATCH (t:Entity {entity_id: row.tail_id})
+CALL apoc.merge.relationship(h, row.relation, {}, {}, t, {}) YIELD rel
+SET rel = row.props
 RETURN count(rel) AS written
 """
 
 
-def _import_batch(driver, relation: str, batch: list[dict]) -> int:
-    rows = [{
-        "head_id": r["head_id"],
-        "tail_id": r["tail_id"],
-        "confidence": float(r.get("confidence", 0.5)),
-        "evidence_span": (r.get("evidence_span") or "")[:512],
-        "source_pericope_id": r.get("source_pericope_id", "") or "",
-        "extraction_phase": int(r.get("extraction_phase", 1)),
-        "head_canonical": r.get("head_canonical", "") or "",
-        "tail_canonical": r.get("tail_canonical", "") or "",
-        "notes": r.get("notes", "") or "",
-    } for r in batch]
-    with driver.session() as session:
-        result = session.run(_MERGE_RELATION_CYPHER, rows=rows, relation=relation)
-        record = result.single()
-        return int(record["written"]) if record else 0
+def _edge_rows(records: list[dict]) -> list[dict]:
+    """One query row per edge: its key, and the rest of the file row as props."""
+    return [{
+        **{key: rec.get(key) for key in EDGE_KEY},
+        "props": {k: v for k, v in rec.items() if k not in EDGE_KEY and v is not None},
+    } for rec in records]
+
+
+def _write_all(tx, rows: list[dict], batch_size: int) -> int:
+    """Transaction function: every batch in the same transaction."""
+    written = 0
+    for start in range(0, len(rows), batch_size):
+        record = tx.run(_MERGE_RELATION_CYPHER, rows=rows[start:start + batch_size]).single()
+        written += int(record["written"]) if record else 0
+    return written
 
 
 def _summary_stats(driver) -> None:
@@ -117,7 +111,8 @@ def main() -> int:
         default=str(Path(__file__).resolve().parents[1] / "output" / "relations.jsonl"),
         help="Path to relations.jsonl",
     )
-    parser.add_argument("--batch-size", type=int, default=500)
+    parser.add_argument("--batch-size", type=int, default=500,
+                        help="rows per statement; every statement is in one transaction")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -140,6 +135,7 @@ def main() -> int:
 
     by_relation = _bucket_by_relation(records)
     logger.info("Loaded %d triples spanning %d relation types", len(records), len(by_relation))
+    rows = _edge_rows([rec for rec in records if rec.get("relation")])
 
     driver = GraphDatabase.driver(
         os.getenv("NEO4J_URI", "bolt://localhost:7687"),
@@ -148,15 +144,9 @@ def main() -> int:
             os.getenv("NEO4J_PASSWORD", "neo4j_password"),
         ),
     )
-    total_written = 0
     try:
-        for relation, items in by_relation.items():
-            batch_count = 0
-            for start in range(0, len(items), args.batch_size):
-                chunk = items[start:start + args.batch_size]
-                batch_count += _import_batch(driver, relation, chunk)
-            logger.info("  %s: %d edges merged", relation, batch_count)
-            total_written += batch_count
+        with driver.session() as session:
+            total_written = session.execute_write(_write_all, rows, args.batch_size)
         _summary_stats(driver)
     finally:
         driver.close()
