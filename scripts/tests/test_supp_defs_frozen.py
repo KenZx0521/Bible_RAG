@@ -28,8 +28,9 @@ ARCHIVED = [
     RECORDS / "batch1/w1_1B/sim_states.py",
     RECORDS / "batch1/w1_1B/golden.py",
 ]
-# The module name, not "_supplement_cross_references" (process_bible's method,
-# which two docstrings and comments cite and which contains it as a suffix).
+# The module name, not "_supplement_cross_references" (process_bible's method
+# until 1B-C4a, which two docstrings and comments cite and which contains it as
+# a suffix).
 LIVE_MODULE = re.compile(r"(?<![A-Za-z0-9_])nt_cross_references")
 
 

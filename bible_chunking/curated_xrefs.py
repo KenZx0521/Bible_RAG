@@ -10,6 +10,14 @@ definition: 'rev 18:2-8>jer 51:6-9' (jer:51:0) and 'rev 18:2-8>jer 51:45'
 (jer:51:5). Anything that does not resolve cleanly is an error; nothing falls
 back to a chapter or skips silently.
 
+aggregate_curated folds those anchors and the markdown refs into one
+CROSS_REFERENCES row per (start, end) pair (Step 5 MERGEs on the pair, so a
+second row used to overwrite the first): curated true, tsk false (Step 9 sets
+it), curated_sources, and per-source lists aligned element by element. A
+markdown ref is pericope-level, so its anchor marks unknown verses with '?',
+including what CrossRefParser left unread: 'num 21:?>deu 2:26-?' for
+申2‧26－3‧11, 'jer 52:?>2ki 25:18-21,?' for 王下25‧18－21，27－30.
+
 Pure: no I/O. Shared by Step 0 (process_bible), validate_output, Step 9 and
 xref_probe.
 """
@@ -18,6 +26,8 @@ from __future__ import annotations
 
 import re
 from typing import Iterable, Mapping, NamedTuple
+
+from .markdown_parser import CrossRefParser
 
 MAX_FANOUT = 3  # anchors one definition may produce (X4)
 
@@ -188,3 +198,97 @@ def verse_map_from_pericopes(records: Iterable[Mapping]) -> dict[tuple[str, int,
             for n in range(int(lo), int(hi or lo) + 1):
                 verse_map[(meta["book_id"], meta["chapter_num"], n)] = record["id"]
     return verse_map
+
+
+# What CrossRefParser's first match leaves unread in a markdown ref (XREF-5,
+# 2D rewrites the parser): '‧15' of 代下11‧5－12‧15 makes the '12' it kept as
+# verse_end the end chapter; '，27－30' of 王下25‧18－21，27－30 are more verses.
+_END_CHAPTER_TAIL = re.compile(r"[‧·.]\d+")
+_MORE_VERSES_TAIL = re.compile(r"[，,]")
+
+
+def _unread_tail(ref_text: str) -> str:
+    match = CrossRefParser.SINGLE_REF_PATTERN.search(ref_text)
+    return ref_text[match.end():] if match else ""
+
+
+def _markdown_target_verses(ref) -> str:
+    vs, ve, tail = ref.verse_start, ref.verse_end, _unread_tail(ref.reference_text)
+    if vs is None:
+        return "?"
+    end_chapter = bool(_END_CHAPTER_TAIL.fullmatch(tail))
+    if end_chapter or (ve is not None and ve < vs):
+        verses = f"{vs}-?"
+    elif ve is None or ve == vs:
+        verses = str(vs)
+    else:
+        verses = f"{vs}-{ve}"
+    if not tail or end_chapter:
+        return verses
+    if _MORE_VERSES_TAIL.match(tail):
+        return f"{verses},?"
+    raise XrefDefinitionError(f"{ref.reference_text!r}: no anchor marks the unread {tail!r}")
+
+
+def markdown_anchor(src_book: str, src_ch: int, ref) -> str:
+    """'gen 5:?>1ch 1:1-4' for a parsed markdown ref (.book_id, .chapter,
+    .verse_start, .verse_end, .reference_text, as CrossRefParser builds it).
+
+    The source verse is never known. The target marks with '?' what the parser
+    left unread: the end verse of a cross-chapter ref, whose end chapter it kept
+    as verse_end ('2ch 15:16-?' for 代下15‧16－16‧6, never '2ch 15:16'; also any
+    descending range), and the ranges after a comma ('2ki 25:18-21,?'). Any
+    other unread text raises XrefDefinitionError."""
+    return f"{src_book} {src_ch}:?>{ref.book_id} {ref.chapter}:{_markdown_target_verses(ref)}"
+
+
+# (source, the list a pair of that source carries) in priority order: a pair's
+# scalar `source` is the first one present, so markdown wins over supplementary.
+_SOURCE_MARKERS = (("markdown", "md_anchors"), ("supplementary", "supp_anchors"))
+
+
+def _source_lists(md_rows: Iterable[Mapping], supp_anchors: Iterable[Anchor]) -> dict:
+    """(start, end) → {list name: values}, in input order."""
+    pairs: dict[tuple[str, str], dict[str, list]] = {}
+
+    def add(start: str, end: str, values: dict) -> None:
+        lists = pairs.setdefault((start, end), {})
+        for key, value in values.items():
+            lists.setdefault(key, []).append(value)
+
+    for row in md_rows:
+        add(row["start"], row["end"], {"md_ref_texts": row["ref_text"],
+                                       "md_anchors": row["md_anchor"]})
+    for anchor in supp_anchors:
+        add(anchor.start, anchor.end, {"supp_anchors": anchor.text,
+                                       "supp_ref_types": anchor.ref_type,
+                                       "supp_descriptions": anchor.description})
+        if anchor.tsk_exempt is not None:  # never a null list element (Neo4j refuses it)
+            add(anchor.start, anchor.end, {"supp_tsk_exempt_anchors": anchor.text})
+    return pairs
+
+
+def _check_strings(pair: tuple[str, str], lists: dict[str, list]) -> None:
+    for key, values in lists.items():
+        if not all(isinstance(value, str) for value in values):
+            raise XrefDefinitionError(
+                f"{pair[0]}->{pair[1]}: {key} holds a non-string {values!r}")
+
+
+def aggregate_curated(md_rows: Iterable[Mapping],
+                      supp_anchors: Iterable[Anchor]) -> list[dict]:
+    """One curated CROSS_REFERENCES relationship per (start, end), sorted by pair.
+
+    md_rows are {start, end, ref_text, md_anchor}. Every value is a bool, a str
+    or a non-empty list of str (XrefDefinitionError otherwise); a source's lists
+    are present only when the pair has that source."""
+    relationships = []
+    for pair, lists in sorted(_source_lists(md_rows, supp_anchors).items()):
+        _check_strings(pair, lists)
+        sources = [source for source, marker in _SOURCE_MARKERS if marker in lists]
+        relationships.append({
+            "start": pair[0], "end": pair[1], "type": "CROSS_REFERENCES",
+            "properties": {"source": sources[0], "curated": True, "tsk": False,
+                           "curated_sources": sorted(sources), **lists},
+        })
+    return relationships
