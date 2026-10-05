@@ -10,6 +10,7 @@
 |---|---|---|
 | `BIBLE_RAG_ROOT` | `/home/kenzx0521/Bible_RAG` | repo 根目錄（讀 `output/`、`config/`、`scripts/`、`.env`） |
 | `KGFIX_SP` | `$BIBLE_RAG_ROOT/bak/20261004_kgfix_evidence/scratchpad` | 原 scratchpad 的版面：`kgfix/`、`batch1plan/`、`bench/`、`kg_xref/` |
+| `W1_1B_EVIDENCE` | `$BIBLE_RAG_ROOT/bak/20261005_w1_1b_evidence` | W1 1B 規劃證據的大檔（1B 前的 relationships 副本、投影邊表、預測與量測，唯讀）；只有 `batch1/w1_1B/` 用，見[該目錄 README](batch1/w1_1B/README.md) |
 
 改寫是機械式的：只拆開「以根路徑開頭的字串常值」，docstring 不動。把參數代回原路徑後，110 個檔與改寫前逐字相同。
 

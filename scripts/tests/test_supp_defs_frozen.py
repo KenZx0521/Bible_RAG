@@ -24,6 +24,9 @@ ARCHIVED = [
     RECORDS / "verifier_xref/mdpairs.py",
     RECORDS / "batch1/1B/sim_supp.py",
     RECORDS / "batch1/1B-reviewer/r1_supp.py",
+    RECORDS / "batch1/w1_1B/sim_w1_1b.py",
+    RECORDS / "batch1/w1_1B/sim_states.py",
+    RECORDS / "batch1/w1_1B/golden.py",
 ]
 # The module name, not "_supplement_cross_references" (process_bible's method,
 # which two docstrings and comments cite and which contains it as a suffix).
