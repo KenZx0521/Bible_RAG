@@ -6,7 +6,8 @@ twice: on the old data (control) and on the new data (treatment). Both runs
 must share graph_strategies_applied, top_k, metric_k and metric_version, and
 every passage must carry gold and found_by (exit 2 otherwise: a run from
 before found_by would read as "no question reached gold via xref").
-Questions invalid on either side are skipped; the report then gives
+Questions invalid on either side are skipped, and questions in one run only
+are listed as unpaired; the report then gives
 
   * touched: questions whose ordered sources differ (route mismatches are
     listed as well, but still counted);
@@ -14,7 +15,9 @@ Questions invalid on either side are skipped; the report then gives
     which questions reach a gold passage only via xref, i.e. some gold
     source_detail entry whose found_by is non-empty and contains nothing but
     cross_ref_expand / cross_reference, on each side, and which were gained
-    or lost.
+    or lost. An --ids file that is not a list of qids, or a slice with no
+    question valid in both runs, exits 2 without a report (an empty slice
+    would print "0 → 0", the expected no gain); a partial slice warns.
 
 More than --max-touched (34) touched questions is the plan's "stop and
 investigate" signal: exit code 3. It is not a gate.
@@ -40,11 +43,24 @@ GUARD_KEYS = ("graph_strategies_applied", "top_k", "metric_k", "metric_version")
 MAX_TOUCHED = 34
 
 
+def _load_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _is_slice_id(item: object) -> bool:
+    return isinstance(item, str) or (isinstance(item, dict) and isinstance(item.get("qid"), str))
+
+
 def load_slice_ids(path: Path) -> list[str]:
     """Sorted unique qids from a JSON list of qids or of objects with 'qid',
-    or from a one-id-per-line text file."""
+    or from a one-id-per-line text file. Any other JSON raises ValueError: a
+    JSON object (per_question.json, gold.json) is no list of qids."""
     text = Path(path).read_text(encoding="utf-8").strip()
-    items = json.loads(text) if text.startswith("[") else text.split()
+    if not text.startswith(("[", "{")):
+        return sorted(set(text.split()))
+    items = json.loads(text)
+    if not isinstance(items, list) or not all(map(_is_slice_id, items)):
+        raise ValueError("expected a JSON list of qids or of objects with a string 'qid'")
     return sorted({i["qid"] if isinstance(i, dict) else i.strip() for i in items} - {""})
 
 
@@ -113,6 +129,8 @@ def slice_report(control: dict, treatment: dict, ids: list[str]) -> dict:
     touched = [q for q in valid if pc[q]["sources"] != pt[q]["sources"]]
     return {
         "n_common": len(valid),
+        "unpaired": {"control_only": sorted(set(pc) - set(pt)),
+                     "treatment_only": sorted(set(pt) - set(pc))},
         "invalid": invalid,
         "route_mismatch": [q for q in valid if pc[q].get("route") != pt[q].get("route")],
         "touched_all": len(touched),
@@ -128,6 +146,9 @@ def _ids(qids: list[str]) -> str:
 def print_report(report: dict) -> None:
     kg, via = report["kg_xref"], report["kg_xref"]["gold_via_xref"]
     print(f"\ncommon valid n={report['n_common']}  invalid: {_ids(report['invalid'])}")
+    c_only, t_only = report["unpaired"]["control_only"], report["unpaired"]["treatment_only"]
+    print(f"unpaired: control only {len(c_only)} ({_ids(c_only)}), "
+          f"treatment only {len(t_only)} ({_ids(t_only)})")
     print(f"route mismatch ({len(report['route_mismatch'])}): {_ids(report['route_mismatch'])}")
     print(f"touched (ordered sources differ): {report['touched_all']}/{report['n_common']}"
           f"  {_ids(report['touched_ids'])}")
@@ -152,16 +173,28 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _fail(errors: list[str]) -> int:
+    for line in errors:
+        print(f"error: {line}", file=sys.stderr)
+    return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
-    load = lambda p: json.loads(p.read_text(encoding="utf-8"))  # noqa: E731
-    control, treatment = load(args.control), load(args.treatment)
-    errors = guard_errors(control, treatment)
-    if errors:
-        for line in errors:
-            print(f"error: {line}", file=sys.stderr)
-        return 2
-    report = slice_report(control, treatment, load_slice_ids(args.ids))
+    try:
+        ids = load_slice_ids(args.ids)
+    except ValueError as exc:
+        return _fail([f"--ids {args.ids}: {exc}"])
+    control, treatment = _load_json(args.control), _load_json(args.treatment)
+    if errors := guard_errors(control, treatment):
+        return _fail(errors)
+    report = slice_report(control, treatment, ids)
+    kg = report["kg_xref"]
+    if kg["n"] == 0:  # "gold only via xref: 0 → 0" would read like the expected no gain
+        return _fail([f"kg_xref slice: none of the {kg['n_ids']} --ids is a valid question in both runs"])
+    if kg["n"] < kg["n_ids"]:
+        print(f"warning: {kg['n_ids'] - kg['n']} of the {kg['n_ids']} --ids are missing or invalid "
+              "in at least one run", file=sys.stderr)
     report["inputs"] = {"control": str(args.control), "treatment": str(args.treatment),
                         "ids": str(args.ids)}
     report["config"] = {k: control.get("config", {}).get(k) for k in GUARD_KEYS}

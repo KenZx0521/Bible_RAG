@@ -12,7 +12,9 @@ re-verified READ against the registered expectations, a complete dump with
 its sha256 recorded, and only then prod stopped and loaded; the generic R3
 step 1 stays for the other batches. The step 1-2 window adds K10's
 report-only graph_event slice (the GT questions whose text holds a trigger of
-the K10 events, both arms on :w1) and plan §5.2's conditional answer side.
+the K10 events, both arms on :w1) and plan §5.2's conditional answer side,
+and names every cause of xref_ab_slice's exit 2, the empty kg_xref slice
+included.
 """
 from __future__ import annotations
 
@@ -156,6 +158,14 @@ def test_window_runs_the_graph_event_slice_on_both_w1_arms_and_records_it_with_k
     for needle in ("K10", "保羅歸主", "山上寶訓", "只報告", "K10 的 accept", "重問"):
         assert needle in window, needle
     assert window.rindex("停掉 backend-staging") > window.index("w1_graph_event")
+
+
+def test_window_names_every_xref_ab_slice_exit_2_cause():
+    # an empty kg_xref slice (a legacy-100 run, a wrong --ids) once printed "0 → 0", the expected no gain
+    bullet = next(line for line in section(staging_text(), WINDOW).splitlines()
+                  if line.startswith("- xref_ab_slice 結束碼 2"))
+    for needle in ("metric_version", "found_by", "`--ids` 檔不是 qid 清單", "kg_xref 切片在兩邊都沒有有效題", "不存報告"):
+        assert needle in bullet, needle
 
 
 def test_window_states_plan_5_2s_conditional_answer_side_run():

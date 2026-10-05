@@ -116,6 +116,20 @@ def test_route_mismatch_is_listed_but_still_touched():
     assert report["touched_ids"] == ["Q1"]
 
 
+def test_questions_in_one_run_only_are_listed_as_unpaired(capsys):
+    """A truncated arm would otherwise shrink n_common with no sign of why."""
+    a = _src("a:1:0")
+    control = _run({"Q1": _entry(a), "Q3": _entry(a), "Q2": _entry(a)})
+    treatment = _run({"Q1": _entry(a), "Q4": _entry(a)})
+
+    report = xab.slice_report(control, treatment, [])
+    xab.print_report(report)
+
+    assert report["n_common"] == 1
+    assert report["unpaired"] == {"control_only": ["Q2", "Q3"], "treatment_only": ["Q4"]}
+    assert "unpaired: control only 2 (Q2, Q3), treatment only 1 (Q4)" in capsys.readouterr().out
+
+
 # --- ids file -------------------------------------------------------------------
 
 def test_ids_file_accepts_objects_with_qid(tmp_path):
@@ -131,6 +145,25 @@ def test_ids_file_accepts_objects_with_qid(tmp_path):
     assert xab.load_slice_ids(lines) == ["Q1", "Q2"]
 
 
+NOT_A_QID_LIST = {
+    "json_object": '{"Q1": {"sources": ["a:1:0"]}, "Q2": {"sources": []}}',
+    "non_str_item": '["Q1", 2]',
+    "object_without_qid": '[{"id": "Q1"}]',
+    "non_str_qid": '[{"qid": 1}]',
+    "malformed_json": '["Q1",',
+}
+
+
+@pytest.mark.parametrize("text", NOT_A_QID_LIST.values(), ids=NOT_A_QID_LIST.keys())
+def test_ids_file_that_is_not_a_qid_list_is_rejected(tmp_path, text):
+    """A JSON object (per_question.json, gold.json) used to split into garbage ids."""
+    path = tmp_path / "ids.json"
+    path.write_text(text, encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        xab.load_slice_ids(path)
+
+
 def test_default_ids_file_is_the_68_kg_xref_questions():
     ids = xab.load_slice_ids(xab.DEFAULT_IDS)
 
@@ -140,10 +173,49 @@ def test_default_ids_file_is_the_68_kg_xref_questions():
 
 # --- CLI: version guard and the investigate signal ------------------------------
 
-def _pair_files(tmp_path, control, treatment):
-    ids = _write(tmp_path / "sel.json", ["Q1"])
+def _pair_files(tmp_path, control, treatment, ids=("Q1",)):
+    ids = _write(tmp_path / "sel.json", list(ids))
     return (_write(tmp_path / "control.json", control),
             _write(tmp_path / "treatment.json", treatment), ids)
+
+
+def test_cli_rejects_an_ids_file_that_is_not_a_qid_list(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(xab, "_OUT_DIR", tmp_path)
+    run = _run({"Q1": _entry(_src("a:1:0"))})
+    c, t, _ = _pair_files(tmp_path, run, run)
+    gold = _write(tmp_path / "gold.json", {"Q1": ["a:1:0"]})
+
+    assert xab.main([c, t, "--ids", gold, "--label", "w1"]) == 2
+
+    assert "error: --ids" in capsys.readouterr().err
+    assert not (tmp_path / "xref_ab_w1.json").exists()
+
+
+def test_cli_empty_kg_xref_slice_exits_2(tmp_path, monkeypatch, capsys):
+    """'gold only via xref: 0 → 0' on an empty slice reads exactly like the expected no gain."""
+    monkeypatch.setattr(xab, "_OUT_DIR", tmp_path)
+    run = _run({"Q1": _entry(_xref_gold()), "Q2": _entry(_xref_gold(), invalid=True)})
+    c, t, ids = _pair_files(tmp_path, run, _run({"Q1": _entry(_xref_gold()), "Q3": _entry(_xref_gold())}),
+                            ids=("Q2", "Q3"))
+
+    assert xab.main([c, t, "--ids", ids, "--label", "w1"]) == 2
+
+    out = capsys.readouterr()
+    assert "error: kg_xref slice: none of the 2 --ids is a valid question in both runs" in out.err
+    assert "gold only via xref" not in out.out
+    assert not (tmp_path / "xref_ab_w1.json").exists()
+
+
+def test_cli_partial_kg_xref_slice_warns_and_exits_0(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(xab, "_OUT_DIR", tmp_path)
+    run = _run({"Q1": _entry(_xref_gold())})
+    c, t, ids = _pair_files(tmp_path, run, run, ids=("Q1", "Q8", "Q9"))
+
+    assert xab.main([c, t, "--ids", ids, "--label", "w1"]) == 0
+
+    assert "warning: 2 of the 3 --ids are missing or invalid in at least one run" in capsys.readouterr().err
+    saved = json.loads((tmp_path / "xref_ab_w1.json").read_text(encoding="utf-8"))
+    assert (saved["kg_xref"]["n"], saved["kg_xref"]["n_ids"]) == (1, 3)
 
 
 @pytest.mark.parametrize("key, value", [

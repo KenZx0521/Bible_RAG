@@ -528,7 +528,7 @@ echo 'both arms run :w1'
 (cd evaluation && uv run python ab_compare.py results_quick/xref_old_w1.json results_quick/xref_new_w1.json --label w1_xref)
 ```
 - 先刪上一次的結果檔，兩次收集用 `&&` 串起來：中途失敗時，後面的報告讀不到舊檔。
-- xref_ab_slice 結束碼 2 是防呆（兩邊的策略、top_k、metric_k、metric_version 不同，或段落沒有 gold、found_by），不存報告。
+- xref_ab_slice 結束碼 2 是防呆（兩邊的策略、top_k、metric_k、metric_version 不同，或段落沒有 gold、found_by，或 `--ids` 檔不是 qid 清單，或 kg_xref 切片在兩邊都沒有有效題），不存報告：空切片會印出「0 → 0」，看起來就像預期的沒有增益。切片只有部分題目有效時印 `warning:`，結束碼不變。只在一邊出現的題列在 `unpaired`。
 - xref_ab_slice 結束碼 3 是 touched 題數超過 `--max-touched`（預設 34）：先停下來查，再決定要不要做第 2 步。預期 touched 約 17 題以下；kg_xref「只經 xref 到達 gold」預期沒有增益（模擬 14 → 14）。這不是閘門。
 - ab_compare 補上 §5.2 要求的其餘數字：每段印出各指標的平均 Δ、95% CI（bootstrap）與勝負題數 W/L，Δvrec 是 `verse_recall_at_k` 那一列。`[legacy]`（legacy-100，樣本內）與 `[expanded]`（擴充的 400 題，held-out）兩段分開記進 W1 紀錄，`[all]` 一併記。它的 `touched (passages appended)` 是指附加在 top-k 之後的段落，兩個 xref 策略不附加，所以是 0；touched 題數以 xref_ab_slice 為準。只報告，不設門檻。
 - touched 的題先用同樣條件重問，排除 LLM 取樣雜訊：W0 的 legacy-100 有 1 題（GENERAL_BIBLE_QUESTION_016）只因 intent LLM 取樣就換了 top-5（[W0 紀錄](records/2026-10-05_kg_batch1_w0_results.md)「補記：W1-0 opt-in 決定性」）。
