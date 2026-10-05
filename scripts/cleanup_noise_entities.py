@@ -45,6 +45,12 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
 import kg_target
+# Shared with the offline Step 6.05, which must see the graph as 10.2 leaves it.
+# Also re-exported: test_registry_rebuild_sim.py and the archived docs/records
+# simulators import these names from this module.
+from entity_extraction.geo_rules import compute_dan_keep_sources
+from entity_extraction.geo_rules import is_geo_context as _is_geo_context  # noqa: F401
+from entity_extraction.stoplists import GENERIC_EVENT_STOPLIST
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
@@ -55,21 +61,6 @@ BACKUP_DIR = ROOT / "output" / "backups"
 # PostgreSQL tables they write.
 SYNCING_ACTIONS = {"generic-events", "yehehua"}
 SYNC_TABLES = ("entities", "entity_mentions")
-
-# --- place:dan geo classification (same rules validated on live data) ---
-PUNCT = set("，。；：、「」？！ \n\t^$（）－")
-GEO_PREV = {"從", "到", "往", "至", "在"}
-NAMING_PREV = {"叫", "為"}
-LIST_OK_PREV = {"和", "與", "同"} | PUNCT
-
-# Generic-noun Event nodes: pericope-title artifacts, not biblical events.
-# Kept: 饑荒/瘟疫/洪水/地震/節期/洗禮/登基... (real event semantics).
-GENERIC_EVENT_STOPLIST = [
-    "日子", "長子", "結局", "問候", "吩咐", "工程", "大會", "建築",
-    "大事", "醜事", "使用", "艱難", "爭論", "坐席", "生日", "探子",
-    "兒子", "時候", "事情", "話", "早晨", "晚上", "夜間", "明天",
-]
-
 
 def get_neo4j():
     return GraphDatabase.driver(
@@ -174,39 +165,6 @@ def backup_path(name: str) -> Path:
 
 
 # ---------------------------------------------------------------- dan ----
-
-def _is_geo_context(ctx: str) -> bool:
-    if "別是巴" in ctx:
-        return True
-    i = ctx.find("但")
-    while i >= 0:
-        p = ctx[i - 1] if i > 0 else "^"
-        n = ctx[i + 1] if i + 1 < len(ctx) else "$"
-        if p in GEO_PREV and n != "以":
-            return True
-        if p in NAMING_PREV and (n in PUNCT or n == "$"):
-            return True
-        if p in LIST_OK_PREV and n == "、":
-            return True
-        if p == "、" and (n in PUNCT or n == "$"):
-            return True
-        i = ctx.find("但", i + 1)
-    return False
-
-
-def compute_dan_keep_sources(mentions_path: Path) -> set[str]:
-    keep: set[str] = set()
-    with mentions_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            if '"place:dan"' not in line:
-                continue
-            rec = json.loads(line)
-            if rec.get("entity_id") != "place:dan":
-                continue
-            if _is_geo_context(rec.get("context", "")):
-                keep.add(rec["source_id"].split(":v:")[0])
-    return keep
-
 
 def action_dan(driver, dry_run: bool) -> None:
     print("\n[dan] Filtering non-geographic MENTIONS on place:dan")
