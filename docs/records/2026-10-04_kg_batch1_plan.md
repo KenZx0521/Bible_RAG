@@ -191,6 +191,7 @@
 **第 0 批的殘差會跟著上線**【驗 reviewer_1A r2、r3】。diff_kg 量不到這些，必須寫進紀錄並 accept：
 - mention_count 有 4 個實體不同：event:shanshangbaoxun 23→1、兩個保羅歸主事件 4→1、person:yeteluo 3→30。
 - MENTIONS 屬性：start_pos 等欄位有 5,782 條不同，source_granularity 有 40,261 條不同。
+  - 【補記 2026-10-06】漏列的第四項殘差欄位：created_from 有 106 條不同（手動補丁的 MENTIONS：prod 沒有這個屬性，第 0 批 staging 是 `manual_patch`）。「start_pos 等欄位」指 start_pos、end_pos、backfilled、verse_mention_freq，各 5,782 條；兩邊都是 46,205 條、只在一邊的 0 條。W1 由 residuals_expect 把逐屬性條數登記進 `residuals_expected.json` 的 `mentions_props`，R2 以 `--check` 重讀比對（[staging_promotion.md](../staging_promotion.md) R2「W1 的關係層檢查」第 4 項）。
 - R1 由 1,938 變 2,124，用 `--accept R1` 處理。
 
 **閘門**

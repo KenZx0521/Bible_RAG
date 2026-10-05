@@ -71,7 +71,7 @@
 | tools/check_edge_set.py | 10.6、R2、R4 | `--target` 經 check_identity 解析（READ） | — | — | 第 1A 批新增，唯讀：語意層對 6.05 報告扣掉 10.2，`--expect` 再對登記的期望檔 |
 | tools/kin_review.py | K9（W1 第 2 步之前） | — | — | — | 第 1A 批新增，不連資料庫：讀 relations_clean 與 output/ 的實體、提及、段落、描述快取 |
 | tools/relations_expect.py | E1（W1 第 2 步之前） | `--a`（預設 prod）經 check_identity 解析（READ） | — | — | 第 1A 批新增，唯讀，寫期望檔與允許清單片段。prod 端會拒絕 staging 的 shell，在乾淨的 shell 跑 |
-| tools/residuals_expect.py | E1（W1 第 2 步之前） | `--a`、`--b` 經 check_identity 解析（READ） | — | — | 第 1A 批新增，唯讀。b 必須仍是第 0 批的 staging（有帶 source 的語意邊就拒絕）；在乾淨的 shell 跑 |
+| tools/residuals_expect.py | E1（W1 第 2 步之前）、R2（`--check`） | `--a`、`--b` 經 check_identity 解析（READ） | — | — | 第 1A 批新增，唯讀。產生期望檔時 b 必須仍是第 0 批的 staging（有帶 source 的語意邊就拒絕）；`--check` 只讀兩邊的 MENTIONS 對登記檔，不寫檔。都在乾淨的 shell 跑 |
 
 ## 執行前檢查（每次在 staging 跑寫入步驟之前）
 Step 3 會 TRUNCATE、Step 5 會清庫、8a／8b 的 `--recreate` 會刪 collection；變數沒指對，被清掉的就是 production。staging 的變數一律 source 現成的檔案，不要手打：
@@ -227,7 +227,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    `backend_w1.id` 是這個 image 的 id，記進 W1 紀錄：D3 與這裡的量測都在它上面跑，升版第 1 步上線的必須是同一個 id（不重建）。沒有印出 `staging runs :w1` 就停。deploy-guard 結束碼 0：容器裡的 `database/neo4j_db.py`、`utils/retrieval/cross_ref_retriever.py`、`probes/xref_measure.py` 與本 checkout 的 HEAD 逐位元相同，讀 `r.curated`，沒有 999 哨兵。compare 結束碼 0：5,820 個 key 0 列不同，哨兵 12/12。
 
 ### W1 的關係層檢查（第 1A 批）
-1A 的語意邊全部由 6.1 從 6.05 的 relations_clean.jsonl 匯入（[build_database.md](build_database.md) Step 6.05、6.1）。期望檔有兩份：`relations_expected.json` 是 6.05 報告扣掉 10.2 之後的邊集合，`residuals_expected.json` 是第 0 批遺留的 mention_count 與 R1 殘差（K10）。兩者與 1A 的兩個允許清單片段，都在第 1 批計畫 §1「W1 步驟」第 2 步（staging 重建）之前產生並 commit，sha256 記進 W1 紀錄，看過 staging 的 diff 之後不可再改（第 1 批計畫 §3）。K9 沒過時的退路會改變 6.05 的輸出，所以順序是 K9 → 期望檔 → 重建。`D` 沿用 R0 的日期。
+1A 的語意邊全部由 6.1 從 6.05 的 relations_clean.jsonl 匯入（[build_database.md](build_database.md) Step 6.05、6.1）。期望檔有兩份：`relations_expected.json` 是 6.05 報告扣掉 10.2 之後的邊集合，`residuals_expected.json` 是第 0 批遺留的 mention_count、MENTIONS 屬性與 R1 殘差（K10、第 1 批計畫 §2.1）。兩者與 1A 的兩個允許清單片段，都在第 1 批計畫 §1「W1 步驟」第 2 步（staging 重建）之前產生並 commit，sha256 記進 W1 紀錄，看過 staging 的 diff 之後不可再改（第 1 批計畫 §3）。K9 沒過時的退路會改變 6.05 的輸出，所以順序是 K9 → 期望檔 → 重建。`D` 沿用 R0 的日期。
 
 1. **K9 親屬邊抽樣（事前登記：以下在開始標註之前寫定，之後不改）**。先照 [build_database.md](build_database.md) Step 6.05 在 output/ 跑出 relations_clean.jsonl 與報告（連跑兩次 cmp）。三個樣本都抽自這一份檔，sample 檔的 meta 記下它的 sha256。
    - 抽樣：anchored_rule n = 60、seed 20261007；llm n = 30、同一個 seed；prior 全部 30 列（`--all`，seed 只決定順序）。2026-10-05 以現在的 6.05 輸出（`1c0cf064…`）計算，三個池子是 319、160、30 列。規劃時的試標用 seed 20261005，不是閘門樣本；試標的標註留在 bak/，不給標註者看。
@@ -263,7 +263,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
      --validate-a bak/$D/e1/validate_prod.json --validate-b bak/$D/e1/validate_staging.json \
      --out config/kg_expect/batch1_w1/residuals_expected.json --allow-out config/kg_expect/batch1_w1/residuals_allow.yaml
    ```
-   預期（2026-10-05 以同樣的參數寫到 scratch 的候選檔）：relations_expected 是 5,616 條、`661cfc62…`，output sha256 `1c0cf064…`；relations_allow 90 條（relationships 28、ee_edges 62）；residuals_allow 4 條，都在 mention_count；residuals_expected 的 R1 是 prod 1,938、staging 2,124。片段開頭的註解記下來源，要改就重跑，不手改。這四個檔與 1B 的 `xref.json`、`xref_allow.yaml` 一起在第 2 步之前 commit；三個片段以 R2 第 2 項的 `--merge-out` 合成 `config/kg_diff_allow_batch1w1.yaml`（不可 `cat`；預期 104 條：90＋4＋1B 的 10），合併檔到 R4 之後才 commit。第 4 步經 Kay 核可的就是這些已登記的檔。
+   預期（2026-10-05 以同樣的參數寫到 scratch 的候選檔）：relations_expected 是 5,616 條、`661cfc62…`，output sha256 `1c0cf064…`；relations_allow 90 條（relationships 28、ee_edges 62）；residuals_allow 4 條，都在 mention_count；residuals_expected 的 R1 是 prod 1,938、staging 2,124，`mentions_props` 的逐屬性條數見第 4 項（2026-10-06 補上，片段不變）。片段開頭的註解記下來源，要改就重跑，不手改。這四個檔與 1B 的 `xref.json`、`xref_allow.yaml` 一起在第 2 步之前 commit；三個片段以 R2 第 2 項的 `--merge-out` 合成 `config/kg_diff_allow_batch1w1.yaml`（不可 `cat`；預期 104 條：90＋4＋1B 的 10），合併檔到 R4 之後才 commit。第 4 步經 Kay 核可的就是這些已登記的檔。
 3. **重建時（第 2 步，staging 的 shell）**。6.05 照 [build_database.md](build_database.md) Step 6.05 連跑兩次並 `cmp`，而且輸出必須是登記的那一份（K9 通過時，也等於 `bak/$D/k9/anchored.json` 的 meta.clean_sha256）。6.1 照常不帶 `--replace` 匯入之後、8a 之前（也就是 10.2 之前：10.2 刪掉 16 個泛名詞 Event 之後，6.1 的端點檢查會先拒絕），再以 `--replace` 重匯兩次。三次讀到的語意層 (key, props) 摘要必須相同，都是 5,696 條：整組 SET 覆寫是冪等的，`--replace` 重建出的層也與標準鏈逐屬性相同（1A-C5d）。摘要是唯讀的 Cypher，語意層的定義與 6.1 相同：
    ```bash
    test "$(jq -r .output.sha256 output/relations_clean.report.json)" = "$(jq -r .output_sha256 config/kg_expect/batch1_w1/relations_expected.json)" && echo 'registered 6.05 output'
@@ -286,6 +286,12 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
      ```bash
      jq -e '["edge-no-dan-orphan-nehemiah-wall", "kin-leah-not-father-of-isaac", "kin-leah-not-father-of-reuben", "kin-lot-not-father-of-terah"] - .checks.PROBES.metrics.failing.fixed == [] and (.checks.PROBES.metrics.failing.value | length) == 7' bak/$D/validate_staging_w1.json
      ```
+   - MENTIONS 屬性的第 0 批殘差（第 1 批計畫 §2.1）：diff_kg 只數 MENTIONS 的條數、不比屬性。W1 不改 MENTIONS，所以 W1 staging 對 prod 的屬性差異，逐屬性的條數要等於第 2 項登記的 `mentions_props`。`--check` 只讀兩邊的 MENTIONS、不寫檔；在**乾淨的 shell** 跑（`--a prod` 讀 .env，帶著 staging 設定的 shell 會被拒絕），staging 照工具的慣例解析成預設的 bolt://localhost:7688，與登記檔 basis 記的端點不同就不讀庫、結束碼 2：
+     ```bash
+     uv run --project scripts python scripts/tools/residuals_expect.py --a prod --b staging \
+       --check config/kg_expect/batch1_w1/residuals_expected.json
+     ```
+     結束碼 0 才算通過；1 是有條數與登記不同（逐項印出 registered 與 now），2 是登記檔不對或讀不到庫。登記值（2026-10-06 趁 7688 還是第 0 批時讀的候選檔）：兩邊各 46,205 條、只在一邊的 0 條；兩邊都有的邊裡，source_granularity 40,261 條不同，start_pos、end_pos、backfilled、verse_mention_freq 各 5,782 條，created_from 106 條（手動補丁的 MENTIONS：prod 沒有這個屬性，staging 是 `manual_patch`）。印出的結果與這些條數記進 W1 紀錄，作為 accept 的依據。
    - entity collection（決定 O7，建議，待 Kay 確認）：W1 不改實體、MENTIONS 與描述，所以 8b 寫出的 `bible_entities_v3` 要與 W1-0 用同一份 embed 程式建的 `bible_entities_detB` 逐點相同（point id、向量、payload）。兩個 collection 各 scroll 一次（9,124 點一頁讀完，還有下一頁就報錯），依 id 排序後算 sha256：
      ```bash
      (
@@ -535,7 +541,7 @@ uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$
   uv run --project scripts python scripts/validate_kg.py --live --target prod --ratchet --accept W,R1,R11
   ```
   寫入 `config/kg_quality_baseline/`。1B 移動的指標：`--ratchet` 的 H8.no_provenance 916 → 0、H8.unflagged 250,418 → 0、R4.misaligned 59 → 0、R4.misaligned_any_verse 62 → 0，以及 `--accept` 的 R11（249,502 → 250,358）。同一個 commit 裡，PROBES 的 failing 名單拿掉 `xref-heb1-0-not-curated-psa2` 與 `xref-rev20-not-curated-isa65`，新的 xref 探針不可留在 failing 裡。
-  1A 移動的指標：`--accept` 的 W（Entity–Entity 語意邊 15,926 → 5,616、35 種型別，例如 PARTICIPATED_IN 7,130 → 1,489、OCCURRED_IN 4,313 → 894、FATHER_OF 647 → 50、SON_OF 659 → 335，CAUSED 與 PRECEDED_BY 歸零；labels、MENTIONS 不變，CROSS_REFERENCES 屬 1B）與 R1（1,938 → 2,124，第 0 批的殘差，等於 `residuals_expected.json` 的 b）；`--ratchet` 的 H3 374 → 0、H9 14 → 0、H11（source_null 15,926、inverse_edges 756、cooccurrence_edges 9,060、rule_edges 771、llm_event_event_edges 26、unflagged_id_order_edges 81、undirected_pair_duplicates 6，全部 → 0）、R6 的 contradictions 25 → 0、female_head 42 → 0、functional_violation_rate 0.5357 → 0.0638、children_with_2plus_nonfemale_parents 135 → 8、children_with_gt2_parents 87 → 1；第 0 批的 H1.missing_constraint 也會跟著從 1 變 0（dump 帶來的約束）。同一個 commit 裡，PROBES 的 failing 名單另拿掉 1A 修好的 `edge-no-dan-orphan-nehemiah-wall`、`kin-lot-not-father-of-terah`、`kin-leah-not-father-of-isaac`、`kin-leah-not-father-of-reuben`，兩批合計剩 7 個 id（`alias-matthew-not-levi`、`alias-paul-not-saul`、`book-region-egypt`、`book-region-mark`、`book-region-matthew`、`mention-not-elijah-in-eleazar`、`mention-not-mary-in-samaria`）；R6 的 failing_probes 從 3 個 id 變成 `[]`；1A 新增的親屬、出處探針同樣不可留在 failing 裡。
+  1A 移動的指標：`--accept` 的 W（Entity–Entity 語意邊 15,926 → 5,616、35 種型別，例如 PARTICIPATED_IN 7,130 → 1,489、OCCURRED_IN 4,313 → 894、FATHER_OF 647 → 50、SON_OF 659 → 335，CAUSED 與 PRECEDED_BY 歸零；labels 與 MENTIONS 的條數不變，MENTIONS 的屬性帶著已 accept 的第 0 批殘差：source_granularity 40,261 條，start_pos、end_pos、backfilled、verse_mention_freq 各 5,782 條，created_from 106 條，由 R2 的 `residuals_expect.py --check` 比對，W1 紀錄要列出這些條數；CROSS_REFERENCES 屬 1B）與 R1（1,938 → 2,124，第 0 批的殘差，等於 `residuals_expected.json` 的 b）；`--ratchet` 的 H3 374 → 0、H9 14 → 0、H11（source_null 15,926、inverse_edges 756、cooccurrence_edges 9,060、rule_edges 771、llm_event_event_edges 26、unflagged_id_order_edges 81、undirected_pair_duplicates 6，全部 → 0）、R6 的 contradictions 25 → 0、female_head 42 → 0、functional_violation_rate 0.5357 → 0.0638、children_with_2plus_nonfemale_parents 135 → 8、children_with_gt2_parents 87 → 1；第 0 批的 H1.missing_constraint 也會跟著從 1 變 0（dump 帶來的約束）。同一個 commit 裡，PROBES 的 failing 名單另拿掉 1A 修好的 `edge-no-dan-orphan-nehemiah-wall`、`kin-lot-not-father-of-terah`、`kin-leah-not-father-of-isaac`、`kin-leah-not-father-of-reuben`，兩批合計剩 7 個 id（`alias-matthew-not-levi`、`alias-paul-not-saul`、`book-region-egypt`、`book-region-mark`、`book-region-matthew`、`mention-not-elijah-in-eleazar`、`mention-not-mary-in-samaria`）；R6 的 failing_probes 從 3 個 id 變成 `[]`；1A 新增的親屬、出處探針同樣不可留在 failing 裡。
 - **R4 之後的文件更新（U3）**，行號以 2026-10-05 為準。現行圖譜的數字與機制改成 250,418 → 250,366、supplementary 142 → 158、curated 916 → 932、curated 由 `r.curated` 旗標判別；總關係數 319,988 也會變（1A 同時改語意邊），以 R4 時 prod 的實數為準：
   - 文件不靠行號，用 grep 找（1A 的文件改動會讓行號移動）：
     ```bash

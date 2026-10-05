@@ -668,7 +668,7 @@ uv run --project scripts python scripts/check_identity.py --target staging --fai
       '.checks.R1.metrics.book_region_mentions.value == $e[0].validate_kg.R1.b' bak/$D/validate_staging_w1.json
     uv run --project scripts python scripts/tools/check_edge_set.py --target staging --expect config/kg_expect/batch1_w1/relations_expected.json
     ```
-    兩個 jq 都要結束碼 0：沒有失敗、退步只有 R1，而且 R1 等於事前登記的殘差（`residuals_expected.json`，2,124）。mention_count 的 4 筆殘差由 R2 的 diff_kg 比對，合併允許清單的 mention_count 只取自 `residuals_allow.yaml`。
+    兩個 jq 都要結束碼 0：沒有失敗、退步只有 R1，而且 R1 等於事前登記的殘差（`residuals_expected.json`，2,124）。mention_count 的 4 筆殘差由 R2 的 diff_kg 比對，合併允許清單的 mention_count 只取自 `residuals_allow.yaml`；MENTIONS 屬性的殘差（diff_kg 不比屬性）由 R2 的 `residuals_expect.py --check` 對 `residuals_expected.json` 的 `mentions_props` 比對（[staging_promotion.md](staging_promotion.md) R2「W1 的關係層檢查」第 4 項）。
   - check_edge_set 結束碼 0：staging 的語意層等於 6.05 報告扣掉 10.2（5,616 條，sha256 `661cfc62…`；ee 鍵 prior 22、llm 35、anchored_rule 4），也等於事前登記的 `relations_expected.json`。第 0 批的 staging 是 15,926 條，結束碼 1。
   - 6.05 連跑兩次逐位元相同（Step 6.05 的 cmp）。
   - entity collection（建議，待 Kay 確認）：W1 不改實體、MENTIONS 與描述，所以 8b 寫出的 `bible_entities_v3` 必須與 W1-0 用同一份 embed 程式建的 `bible_entities_detB` 逐點相同（point id、向量、payload；比法同 [W0 紀錄](records/2026-10-05_kg_batch1_w0_results.md)「補記：W1-0 opt-in 決定性」）。通過後 detB 可以刪。

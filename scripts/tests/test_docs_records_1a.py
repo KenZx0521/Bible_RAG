@@ -7,7 +7,8 @@ run_id, pp_version and confidence_raw instead of confidence; 10.3 is legacy
 only. The batch-0 record and its allowlist name the real SON_OF cause (stale
 properties of an older onCreate-only import, REL-10) and call the 流珥 alias
 an ID-2 error. The batch-1 plan's 1A cells carry the W1 recomputation, every
-number read from w1_1A/sim2_final.json, and §9 records the 2026-10-05
+number read from w1_1A/sim2_final.json, §2.1 adds created_from to batch 0's
+MENTIONS property residual in a dated note, and §9 records the 2026-10-05
 decisions. The kg_fix README names the archived scripts that need a32fbea.
 """
 from __future__ import annotations
@@ -158,6 +159,16 @@ def test_plan_1a_marks_the_pilot_and_the_h11_number():
     note = _line(s21, "> 註（H11")
     assert "H12" in note and "1D" in note and "C10" in note, note
     assert "§9" in _line(s21, "| 錨定規則人工抽樣")
+
+
+def test_plan_2_1_keeps_its_residual_list_and_adds_created_from_in_a_dated_note():
+    s21 = section(read(PLAN1), "2.1 第 1A 批")
+    original = "- MENTIONS 屬性：start_pos 等欄位有 5,782 條不同，source_granularity 有 40,261 條不同。"
+    assert original in s21   # history is not rewritten
+    note = s21[s21.index(original) + len(original):].lstrip("\n").splitlines()[0]
+    for needle in ("2026-10-06", "created_from", "106", "manual_patch", "mentions_props", "--check",
+                   "end_pos", "backfilled", "verse_mention_freq"):
+        assert needle in note, needle
 
 
 def test_plan_section_9_records_the_w1_decisions_and_runbook_overrides():

@@ -4,7 +4,8 @@ test_docs_alignment.py holds the shared helpers and the batch-0 and 1B pins and
 is near the 800-line limit, so 1A's runbook pins live here: the 1A rows of the
 inventory; K9 pre-registered and labelled before the 1A expected files, both
 before the W1 rebuild (decisions Q1, O5); the --replace props digest and the
-1A R2 gates; the /api/v1/entity identity check as a prod before/after on one
+1A R2 gates, among them the batch-0 MENTIONS property residual re-read with
+residuals_expect --check and named again at R4 (plan §2.1); the /api/v1/entity identity check as a prod before/after on one
 image (decision O1); the K8 staging-P1 control after R4 on the same image; the
 W1 staging entity collection v3 (decision O7, pending Kay); 1A's share of the
 single R4 ratchet; and two 1B leftovers (backend-staging without deps, and
@@ -119,6 +120,22 @@ def test_r2_runs_the_1a_gates_on_the_w1_build():
         assert any(needle in c for c in commands), needle
     for needle in ("check_edge_set", "待 Kay 確認", "Step 10.6", "kg_diff_allow_batch1w1.yaml", "7 個 id"):
         assert needle in w1a, needle
+
+
+def test_r2_rechecks_the_registered_mentions_residual_and_r4_names_its_counts():
+    # plan §2.1: diff_kg counts MENTIONS but never compares their properties; W1 ships batch 0's residual
+    w1a = section(staging_text(), W1A)
+    check = f"residuals_expect.py --a prod --b staging --check {EXPECT}residuals_expected.json"
+    _in_order(_commands(w1a), ("import_relations_neo4j.py --replace", check))   # after the rebuild
+    gate = w1a[w1a.index("4. **R2 閘門**"):]
+    for needle in (check.split(" --a")[0], "乾淨的 shell", "bolt://localhost:7688", "46,205", "40,261", "5,782",
+                   "created_from 106", "W1 紀錄"):
+        assert needle in gate, needle
+    moved = next(line for line in section(staging_text(), "R4").splitlines() if "1A 移動的指標" in line)
+    assert "labels、MENTIONS 不變" not in moved
+    for needle in ("labels 與 MENTIONS 的條數不變", "40,261", "5,782", "created_from 106", "W1 紀錄"):
+        assert needle in moved, needle
+    assert "R2（`--check`）" in _row("tools/residuals_expect.py")
 
 
 def test_r2_starts_backend_staging_without_deps():

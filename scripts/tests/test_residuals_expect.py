@@ -1,5 +1,7 @@
 """W1 residual expectations (scripts/tools/residuals_expect.py, batch 1A-T5): the
-per-entity mention_count residuals and R1, read while staging still holds the batch-0 build.
+per-entity mention_count residuals, the per-property MENTIONS residual and R1, read while
+staging still holds the batch-0 build; and --check, which re-reads the MENTIONS residual
+of the W1 staging at R2 against the registered file.
 
 Both targets are fakes: read_query answers the tool's own statements from per-target
 rows, and the entity rows are diff_kg's PROFILE_QUERIES["entities"] rows, so the
@@ -35,6 +37,38 @@ EXPECTED = {"event:shanshangbaoxun": {"a": 23, "b": 1, "delta": -22},
             "person:yeteluo": {"a": 3, "b": 30, "delta": 27}}
 
 
+def _mention(label: str, sid: str, eid: str, **props) -> dict:
+    return {"source_label": label, "source_id": sid, "entity_id": eid, "props": props}
+
+
+# the batch-0 pattern: a source_granularity on every non-curated staging edge; the backfilled prod
+# edges carry backfilled/verse_mention_freq but no position; the manual patch gains created_from
+PROD_MENTIONS = [
+    _mention("Pericope", "mat_005_001", "event:shanshangbaoxun", text_span="山上", start_pos=0, end_pos=2),
+    _mention("Pericope", "exo_018_001", "person:yeteluo", text_span="葉忒羅", backfilled=True,
+             source_granularity="verse", verse_mention_freq=1),
+    _mention("Chunk", "exo_018_001", "person:yeteluo", text_span="葉忒羅", start_pos=4, end_pos=7),
+    _mention("Pericope", "act_009_001", "event:jinniudushijian", source="manual_patch", curated=True),
+    _mention("Pericope", "mrk_001_001", "person:make", text_span="馬可", start_pos=1, end_pos=3,
+             source_granularity="verse"),
+]
+STAGING_MENTIONS = [
+    _mention("Pericope", "mat_005_001", "event:shanshangbaoxun", text_span="山上", start_pos=0, end_pos=2,
+             source_granularity="pericope"),
+    _mention("Pericope", "exo_018_001", "person:yeteluo", text_span="葉忒羅", start_pos=10, end_pos=13,
+             source_granularity="verse"),
+    _mention("Chunk", "exo_018_001", "person:yeteluo", text_span="葉忒羅", start_pos=4, end_pos=7,
+             source_granularity="chunk"),
+    _mention("Pericope", "act_009_001", "event:jinniudushijian", source="manual_patch", curated=True,
+             created_from="manual_patch"),
+    _mention("Pericope", "mrk_001_001", "person:make", text_span="馬可", start_pos=1, end_pos=3,
+             source_granularity="verse"),
+]
+EXPECTED_MENTIONS = {"edges": {"a": 5, "b": 5}, "only_a": 0, "only_b": 0,
+                     "differing": {"backfilled": 1, "created_from": 1, "end_pos": 1, "source_granularity": 2,
+                                   "start_pos": 1, "verse_mention_freq": 1}}
+
+
 class FakeDriver:
     def __init__(self, name: str):
         self.name, self.closed = name, False
@@ -48,9 +82,10 @@ class FakeDriver:
 
 @pytest.fixture
 def graphs(monkeypatch):
-    """Two fake targets: entity rows and the count of semantic edges carrying a source."""
+    """Two fake targets: entity rows, the count of semantic edges carrying a source, MENTIONS rows."""
     state = SimpleNamespace(entities={"prod": PROD, "staging": STAGING}, sourced={"prod": 0, "staging": 0},
-                            opened=[], drivers=[])
+                            mentions={"prod": PROD_MENTIONS, "staging": STAGING_MENTIONS},
+                            opened=[], drivers=[], queries=[])
 
     def open_neo4j(target):
         state.opened.append(target.name)
@@ -58,10 +93,13 @@ def graphs(monkeypatch):
         return state.drivers[-1]
 
     def read_query(driver, cypher, **params):
+        state.queries.append(cypher)
         if cypher == dk.PROFILE_QUERIES["entities"]:
             return [dict(r) for r in state.entities[driver.name]]
-        assert cypher == rx.SOURCED_EDGES_CYPHER
-        return [{"n": state.sourced[driver.name]}]
+        if cypher == rx.SOURCED_EDGES_CYPHER:
+            return [{"n": state.sourced[driver.name]}]
+        assert cypher == rx.MENTIONS_CYPHER
+        return [dict(r, props=dict(r["props"])) for r in state.mentions[driver.name]]
 
     monkeypatch.setattr(rx, "resolve_target", lambda name: SimpleNamespace(name=name, neo4j_uri=URIS[name]))
     monkeypatch.setattr(rx, "open_neo4j", open_neo4j)
@@ -234,3 +272,142 @@ def test_fragment_bytes_do_not_depend_on_the_run(tmp_path, graphs, monkeypatch):
     assert (tmp_path / "residuals_allow.yaml").read_bytes() == fragment
     second = _expected(tmp_path)
     assert second["basis"].pop("at") != first["basis"].pop("at") and second == first
+
+
+# --- MENTIONS properties (plan §2.1: the batch-0 residual diff_kg cannot see) ----
+
+def test_mentions_props_counted_per_property_from_fake_reads(tmp_path, graphs, capsys):
+    assert run(tmp_path) == 0
+
+    assert _expected(tmp_path)["mentions_props"] == EXPECTED_MENTIONS
+    out = capsys.readouterr().out
+    assert "MENTIONS: 5 -> 5 edges, only a 0, only b 0" in out
+    assert "source_granularity 2" in out and "created_from 1" in out
+
+
+def test_mention_edges_on_one_side_only_are_counted_not_compared(tmp_path, graphs):
+    """An edge only in a or only in b has no property to compare; it is counted as such."""
+    graphs.mentions["staging"] = STAGING_MENTIONS[:-1] + [
+        _mention("Pericope", "mrk_001_002", "person:make", text_span="馬可", source_granularity="verse")]
+
+    assert run(tmp_path) == 0
+
+    assert _expected(tmp_path)["mentions_props"] == dict(EXPECTED_MENTIONS, only_a=1, only_b=1)
+
+
+def test_mention_key_read_twice_exits_2(tmp_path, graphs, capsys):
+    """(source label, source id, entity_id) must name one edge; a Chunk and a Pericope may share an id."""
+    graphs.mentions["staging"] = STAGING_MENTIONS + [STAGING_MENTIONS[1]]
+
+    assert run(tmp_path) == 2
+
+    assert _nothing_written(tmp_path)
+    assert "exo_018_001" in capsys.readouterr().err
+
+
+def check(registered: Path, *extra: str) -> int:
+    return rx.main(["--a", "prod", "--b", "staging", "--check", str(registered), *extra])
+
+
+def _w1_staging(graphs) -> None:
+    """After W1 step 2: b holds 1A's semantic edges; MENTIONS and entities are what batch 0 left."""
+    graphs.sourced["staging"] = 5616
+    graphs.opened.clear()
+    graphs.queries.clear()
+
+
+def test_check_passes_on_a_w1_staging_that_keeps_the_registered_residual(tmp_path, graphs, capsys):
+    assert run(tmp_path) == 0
+    registered = tmp_path / "residuals_expected.json"
+    before = registered.read_bytes()
+    _w1_staging(graphs)
+    capsys.readouterr()
+
+    assert check(registered) == 0
+
+    assert registered.read_bytes() == before and not (tmp_path / "bak").exists()
+    assert graphs.opened == ["prod", "staging"] and all(d.closed for d in graphs.drivers)
+    assert graphs.queries == [rx.MENTIONS_CYPHER, rx.MENTIONS_CYPHER]   # MENTIONS only, both sides
+    out = capsys.readouterr().out
+    assert str(registered) in out and "source_granularity 2" in out
+
+
+@pytest.mark.parametrize("change", ["property-dropped", "property-added", "edge-added", "edge-gone"])
+def test_check_exits_1_naming_each_differing_field(tmp_path, graphs, change, capsys):
+    assert run(tmp_path) == 0
+    _w1_staging(graphs)
+    staging = [dict(m, props=dict(m["props"])) for m in STAGING_MENTIONS]
+    if change == "property-dropped":       # the manual patch lost created_from: 1 -> 0
+        del staging[3]["props"]["created_from"]
+    elif change == "property-added":       # a field batch 0 did not touch now differs
+        staging[4]["props"]["text_span"] = "馬可福音"
+    elif change == "edge-added":
+        staging.append(_mention("Pericope", "mrk_001_002", "person:make", text_span="馬可"))
+    else:
+        staging = staging[:-1]
+    graphs.mentions["staging"] = staging
+    capsys.readouterr()
+
+    assert check(tmp_path / "residuals_expected.json") == 1
+
+    err = capsys.readouterr().err
+    expected = {"property-dropped": ["differing.created_from: registered 1, now 0"],
+                "property-added": ["differing.text_span: registered 0, now 1"],
+                "edge-added": ["edges.b: registered 5, now 6", "only_b: registered 0, now 1"],
+                "edge-gone": ["edges.b: registered 5, now 4", "only_a: registered 0, now 1"]}[change]
+    assert all(line in err for line in expected), err
+    assert "MISMATCH" in err and "source_granularity" not in err
+
+
+def _registered(tmp_path: Path, broken: str) -> Path:
+    path = tmp_path / "registered.json"
+    if broken == "missing":
+        return path
+    if broken == "not-json":
+        path.write_text("{", encoding="utf-8")
+        return path
+    assert run(tmp_path) == 0
+    doc = _expected(tmp_path)
+    if broken == "no-mentions-props":      # a file written before mentions_props existed
+        del doc["mentions_props"]
+    elif broken == "count-not-integer":
+        doc["mentions_props"]["differing"]["created_from"] = "106"
+    elif broken == "other-uri":            # registered against another staging than this run resolves
+        doc["basis"]["b"]["neo4j_uri"] = "bolt://localhost:7689"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    return path
+
+
+@pytest.mark.parametrize("broken", ["missing", "not-json", "no-mentions-props", "count-not-integer", "other-uri"])
+def test_check_on_a_bad_registered_file_exits_2_before_any_read(tmp_path, graphs, broken, capsys):
+    registered = _registered(tmp_path, broken)
+    graphs.opened.clear()
+
+    assert check(registered) == 2
+
+    assert graphs.opened == []
+    assert "CANNOT CHECK" in capsys.readouterr().err
+
+
+def test_check_on_an_unreadable_target_exits_2(tmp_path, graphs, monkeypatch, capsys):
+    assert run(tmp_path) == 0
+
+    def refuse(target):
+        raise OSError(f"connection to {target.neo4j_uri} refused")
+    monkeypatch.setattr(rx, "open_neo4j", refuse)
+
+    assert check(tmp_path / "residuals_expected.json") == 2
+
+    assert "refused" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("argv", [
+    ["--check", "r.json", "--out", "x.json"],              # --check writes nothing
+    ["--check", "r.json", "--validate-a", "v.json"],       # and reads no report
+    ["--validate-a", "a.json", "--validate-b", "b.json", "--out", "x.json"],   # generating needs all four
+])
+def test_check_and_generate_flags_do_not_mix(argv, graphs):
+    with pytest.raises(SystemExit) as exc:
+        rx.main(argv)
+
+    assert exc.value.code == 2 and graphs.opened == []
