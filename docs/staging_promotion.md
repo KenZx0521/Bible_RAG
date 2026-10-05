@@ -64,8 +64,8 @@
 | tools/export_live_state.py | R0 | ✓（`Neo4jConfig.from_env`；只用 read 交易） | — | — | 無（第 0 批新增）。`--promote` 不連庫 |
 | check_identity.py | 10.6、R4 | ✓ | ✓ | HOST、PORT→HTTP_PORT、`QDRANT_ENTITY_COLLECTION` | 第 0 批新增，唯讀。`--target staging` 只讀 shell 變數（預設 bolt://localhost:7688、bible_rag_staging；Qdrant 沒有預設），解析到 production 會拒絕；`--target prod` 讀 .env，shell 還帶著 staging 設定（`KG_TARGET=staging`、值與 .env 不同、7688、bible_rag_staging）時拒絕 |
 | validate_kg.py | 10.6、R4 | 經 check_identity 的 `--target` 解析 | 同左 | 同左 | 第 0 批新增，唯讀；兩個方向的守門同 check_identity |
-| tools/diff_kg.py | R2 | `--a`、`--b` 各選 prod／staging（預設 `--a prod --b staging`），經 check_identity 的 `--target` 解析 | — | — | 第 0 批新增，唯讀，只比 Neo4j；`--allow` 讀允許清單，`--fail-on-unused`（第 1B 批新增）讓沒用到的條目也算失敗。prod 端會拒絕 staging 的 shell，只能在乾淨的 shell 跑，staging 端此時用預設的 bolt://localhost:7688（改過 `NEO4J_STAGING_BOLT_PORT` 時無法指定） |
-| tools/xref_probe.py | R2、R3、R4 | `predict`、`fingerprint` 的 `--target` 經 check_identity 解析（READ session） | — | — | 第 1B 批新增，唯讀。`deploy-guard` 只對 backend 容器做 `docker exec … cat`；`seeds`、`expect`、`compare` 不連庫 |
+| tools/diff_kg.py | R2 | `--a`、`--b` 各選 prod／staging（預設 `--a prod --b staging`），經 check_identity 的 `--target` 解析 | — | — | 第 0 批新增，唯讀，只比 Neo4j；`--allow` 讀允許清單，`--fail-on-unused`（第 1B 批新增）讓沒用到的條目也算失敗。`--merge-out`（第 1B 批新增）把多個 `--allow` 片段合成一份允許清單，不連庫。prod 端會拒絕 staging 的 shell，只能在乾淨的 shell 跑，staging 端此時用預設的 bolt://localhost:7688（改過 `NEO4J_STAGING_BOLT_PORT` 時無法指定） |
+| tools/xref_probe.py | R2、R3、R4 | `predict`、`fingerprint` 的 `--target` 經 check_identity 解析（READ session）；`allow` 固定讀 prod | — | — | 第 1B 批新增，唯讀。`deploy-guard` 只對 backend 容器做 `docker exec … cat`；`seeds`、`expect`、`compare` 不連庫 |
 
 ## 執行前檢查（每次在 staging 跑寫入步驟之前）
 Step 3 會 TRUNCATE、Step 5 會清庫、8a／8b 的 `--recreate` 會刪 collection；變數沒指對，被清掉的就是 production。staging 的變數一律 source 現成的檔案，不要手打：
@@ -137,8 +137,14 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    ```
    - `--a`、`--b` 各選 prod 或 staging（預設就是 prod 對 staging），只比 Neo4j：labels、relationships、ee_edges（`TYPE phase=P source=S`）、mentions、xrefs、xref_provenance（`source=S curated=C tsk=T` 的邊數，第 1B 批新增）、entity_ids、descriptions（逐字）、aliases（集合）、mention_count（逐實體，第 1B 批新增）、registry。prod 端的守門會拒絕還帶著 staging 設定的 shell（結束碼 1，安全的失敗）。
    - **歷史允許清單不能再當閘門重跑**：`kg_diff_allow_batch0.yaml` 與更早的清單早於 xref_provenance、mention_count 兩段。現在用 batch-0 的清單重跑上面第一行，會因為 mention_count 的 4 筆 K10 殘差不在清單內而結束碼 1；這些檔案只記錄當時的判定。
-   - W1 的合併清單 `config/kg_diff_allow_batch1w1.yaml` 在 W1 整合時（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §1「W1 步驟」第 4 步）由 1A、1B 的片段合成，整份一起核可。一筆差異只會記在第一個比對到的條目上，被前面條目遮住的條目在 `--fail-on-unused` 下也算沒用到，所以片段不可重疊。1B 的條目（含 mention_count 段新看得到、第 0 批就有的 K10 殘差）：relationships `CROSS_REFERENCES` −52；xrefs `source=supplementary` +16、`source=tsk` −68（markdown 不變）；xref_provenance 每個鍵一條，`source=markdown curated=- tsk=-` −774、`source=supplementary curated=- tsk=-` −142、`source=tsk curated=- tsk=-` −249,502、`source=markdown curated=True tsk=True` +766、`source=markdown curated=True tsk=False` +8、`source=supplementary curated=True tsk=True` +158、`source=tsk curated=False tsk=True` +249,434；mention_count `event:baoluoxushuguizhudejingguo` −3、`event:baoluoxushuguizhujingguo` −3、`event:shanshangbaoxun` −22、`person:yeteluo` +27。
-   - 允許清單放 `config/kg_diff_allow_<批次>.yaml`（git 追蹤，R2 時依實際 diff 建立，與該批紀錄一起 commit）。檔案只有 `version: 1` 與 `allow` 清單；每條要有 section、key（glob）、reason，計數類最多再加一個 `delta`（b − a）或 `max_abs_delta`；未知欄位（例如拼錯的 bound）或型別不對直接報錯，同一個 section 下逐字相同的 key 出現兩次（不論 bound）也直接報錯，合併片段時的重複在載入時就擋下，不會拖到 R2 才以沒用到的條目出現（只擋逐字重複，互相涵蓋的 glob 仍要人工確認）。格式見 `diff_kg.py --help`。不在清單內的差異結束碼 1；沒用到的條目會列出，要刪。第 0 批不可放行 descriptions：stale 必須是 0。
+   - W1 的合併清單 `config/kg_diff_allow_batch1w1.yaml` 由工具產生的片段合成，不手抄：1A 的 `relations_allow.yaml`、`residuals_allow.yaml` 與 1B 的 `xref_allow.yaml`，都在 `config/kg_expect/batch1_w1/`。合併在 YAML 層做，不可用 `cat` 串接：每個片段都是完整的 YAML 文件，各有 `version: 1` 與 `allow:`，串起來後一般的 YAML 載入只留最後一個 `allow:`，其他片段無聲消失（diff_kg 現在遇到重複的鍵直接報錯）。用 `--merge-out` 合併：逐一載入片段，把各自的 `allow` 依序接在同一個 `version: 1` 底下，跨片段重複的 section 與 key 直接報錯，核對合併後的條數等於各片段之和，最後印出合併檔的 sha256。不連庫，任何 shell 都可以跑：
+     ```bash
+     uv run --project scripts python scripts/tools/diff_kg.py --merge-out config/kg_diff_allow_batch1w1.yaml \
+       --allow config/kg_expect/batch1_w1/relations_allow.yaml --allow config/kg_expect/batch1_w1/residuals_allow.yaml \
+       --allow config/kg_expect/batch1_w1/xref_allow.yaml
+     ```
+     合併檔在 [第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §1「W1 步驟」第 2 步（staging 重建）之前組好，印出的 sha256 記進 W1 紀錄；R2 用它跑，第 4 步經 Kay 核可，R4 之後與 ratchet 放同一個 commit；看過 staging 的 diff 之後不可再改（計畫 §3）。一筆差異只會記在第一個比對到的條目上，被前面條目遮住的條目在 `--fail-on-unused` 下也算沒用到，所以片段不可重疊。1B 的片段由下方「W1 的交叉引用檢查」第 1 步的 `xref_probe.py allow` 從期望檔與 prod 的 profile 算出，只含 relationships `CROSS_REFERENCES`、xrefs、xref_provenance 三段，每個不同的鍵一條 exact `delta`。mention_count 段的 4 筆 K10 殘差（第 0 批就有，加了這一段才看得到）只來自 1A 的 `residuals_allow.yaml`，1B 的片段不含。
+   - 允許清單放 `config/kg_diff_allow_<批次>.yaml`（git 追蹤）。第 0 批是在 R2 依實際 diff 建立、與該批紀錄一起 commit；第 1 批起預先登錄，不依 R2 的 diff 建立（見上一項）。檔案只有 `version: 1` 與 `allow` 清單；每條要有 section、key（glob）、reason，計數類最多再加一個 `delta`（b − a）或 `max_abs_delta`；未知欄位（例如拼錯的 bound）或型別不對直接報錯，同一個 section 下逐字相同的 key 出現兩次（不論 bound）也直接報錯，片段間的重複在 `--merge-out` 合併時就擋下，不會拖到 R2 才以沒用到的條目出現（只擋逐字重複，互相涵蓋的 glob 仍要人工確認）；同一個 mapping 裡重複的鍵（同一條寫了兩個 `delta`，或 `cat` 串起來的兩個 `allow:`）也直接報錯。格式見 `diff_kg.py --help`。不在清單內的差異結束碼 1；沒用到的條目會列出，要刪。第 0 批不可放行 descriptions：stale 必須是 0。
 
    第 0 批的門檻：
    - registry 是 33 個事件；
@@ -173,6 +179,13 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
      --measured bak/20261005_w1_1b_evidence/pred_new.json
    ```
    預期（2026-10-05 以 W1 的 Step 0 實跑）：expect 印出 `curated_rows 932, attached 924, curated_without_tsk 8, pure_tsk 249,434, total 250,366, votes_edges 250,358` 與 `fingerprint e522411e13c8e867cad36190c9002813b3da9a7d165ef5435d5cc161eff3775f`；seeds 為 5,820 keys（sha256 `674537f3…`）；pred_new 與歸檔的 oracle 比對結束碼 0。期望檔到第 1 批計畫 §1「W1 步驟」第 4 步經 Kay 核可才 commit。
+
+   接著由期望檔產生 1B 的允許清單片段（R2 第 2 項合併清單的一部分）。`allow` 唯讀 prod，跟 diff_kg 一樣要在**乾淨的 shell** 跑：
+   ```bash
+   uv run --project scripts python scripts/tools/xref_probe.py allow --expect config/kg_expect/batch1_w1/xref.json \
+     --out config/kg_expect/batch1_w1/xref_allow.yaml
+   ```
+   預期（2026-10-05 以同一份期望檔對 prod 實跑）：10 條，relationships `CROSS_REFERENCES` 1 條、xrefs 2 條、xref_provenance 7 條，沒有 mention_count。片段開頭的註解記下期望檔的 sha256 與 fingerprint（不記路徑，同一份期望檔與 prod 重跑得到相同的位元組）；要改就重跑，不手改。與 1A 片段的合併見 R2 第 2 項。
 2. **Step 9 連跑兩次**（staging 的 shell，見 [build_database.md](build_database.md) Step 9）：兩次都印出同一個 `fingerprint:`，第二次是 `created 0`。接著對 staging 比對期望檔，結束碼必須是 0（指紋與 xref_provenance 計數都要相同）：
    ```bash
    uv run --project scripts python scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json

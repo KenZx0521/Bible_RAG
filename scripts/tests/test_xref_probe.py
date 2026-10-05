@@ -9,7 +9,9 @@ records the access mode: predict --target and fingerprint must never open a
 write session.
 deploy-guard (1B-T4) reads the container through a fake runner: no docker call.
 expect (1B-T3) replays Steps 5 and 9 on a tiny Step 0 output and TSK file;
-fingerprint reads the same table back through the fake driver.
+fingerprint reads the same table back through the fake driver. allow turns
+that expect file and a fake prod profile into 1B's allowlist fragment: exact
+YAML that diff_kg loads, covering 1B's sections and never mention_count.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ import pytest
 from neo4j import READ_ACCESS
 
 from bible_chunking.curated_xrefs import EDGE_FINGERPRINT_CYPHER, edge_fingerprint
+from scripts.tools import diff_kg as dk
 from scripts.tools import xref_probe as xp
 from scripts.tools import xref_projection as xproj
 from scripts.tools import xref_rank as xr
@@ -545,17 +548,121 @@ def test_fingerprint_expect_mismatch_exits_1(tmp_path, monkeypatch, capsys):
     assert "fingerprint differs" not in out and "exit 1: 2 problems" in out
 
 
-@pytest.mark.parametrize("action", ["predict", "fingerprint"])
+# ---------------------------------------------------------------- allow
+
+# a pre-1B prod for the fixture's expect file: no curated/tsk flags, no supplementary
+# source, a TSK count past 1,000, other sections that 1B leaves alone, and a K10-like
+# mention_count residual that is 1A's (residuals_allow.yaml), never 1B's
+PROD_PROFILE = {
+    "labels": [{"key": "Pericope", "n": 7}],
+    "relationships": [{"key": "CONTAINS", "n": 3}, {"key": "CROSS_REFERENCES", "n": 249_506}],
+    "ee_edges": [{"type": "SON_OF", "phase": 2, "source": None, "n": 1}],
+    "mentions": [],
+    "xrefs": [{"source": "markdown", "n": 2}, {"source": "tsk", "n": 249_504}],
+    "xref_provenance": [{"source": "markdown", "curated": None, "tsk": None, "n": 2},
+                        {"source": "tsk", "curated": None, "tsk": None, "n": 249_504}],
+    "entities": [{"entity_id": "person:yeteluo", "description": "", "aliases": [], "mention_count": 3}],
+}
+
+
+def profile_answers() -> dict[str, list[dict]]:
+    return {dk.PROFILE_QUERIES[section]: rows for section, rows in PROD_PROFILE.items()}
+
+
+def run_allow(tmp_path, monkeypatch, *extra) -> tuple[int, list[str]]:
+    assert run_expect(tmp_path) == 0
+    resolved = patch_target(monkeypatch, FakeDriver(profile_answers()))
+    argv = ["allow", "--expect", str(tmp_path / "xref.json"), "--out", str(tmp_path / "allow.yaml"), *extra]
+    return xp.main(argv), resolved
+
+
+def test_allow_writes_the_1b_fragment_as_exact_yaml(tmp_path, monkeypatch, capsys):
+    code, resolved = run_allow(tmp_path, monkeypatch)
+    assert code == 0 and resolved == ["prod"]
+    expect, fp = tmp_path / "xref.json", edge_fingerprint(live_rows())
+
+    def entry(section, key, delta, what):
+        return (f'  - section: {section}\n    key: "{key}"\n    delta: {delta}\n'
+                f'    reason: "1B {what}：期望檔（fingerprint {fp[:12]}）減 prod"\n')
+    rel, src, prov = ("Step 5／9 重建的 CROSS_REFERENCES 總數", "各 source 的 CROSS_REFERENCES 數",
+                      "Step 5／9 寫入的 source、curated、tsk 組合")
+    assert (tmp_path / "allow.yaml").read_text(encoding="utf-8") == (
+        "# 1B fragment of the merged W1 allowlist, written by xref_probe.py allow: regenerate it, never edit it.\n"
+        "# delta = expect file - prod (diff_kg's b - a): one exact entry per differing key of\n"
+        "# relationships CROSS_REFERENCES, xrefs and xref_provenance. No mention_count entries:\n"
+        "# the merged allowlist takes those from 1A's residuals_allow.yaml only.\n"
+        f"# expect file sha256 {sha256(expect)}, fingerprint {fp}\n"
+        "# prod bolt://localhost:7688\n"
+        "version: 1\n"
+        "allow:\n"
+        + entry("relationships", "CROSS_REFERENCES", -249501, rel)
+        + entry("xrefs", "source=supplementary", 1, src)
+        + entry("xrefs", "source=tsk", -249502, src)
+        + entry("xref_provenance", "source=markdown curated=- tsk=-", -2, prov)
+        + entry("xref_provenance", "source=markdown curated=True tsk=False", 1, prov)
+        + entry("xref_provenance", "source=markdown curated=True tsk=True", 1, prov)
+        + entry("xref_provenance", "source=supplementary curated=True tsk=True", 1, prov)
+        + entry("xref_provenance", "source=tsk curated=- tsk=-", -249504, prov)
+        + entry("xref_provenance", "source=tsk curated=False tsk=True", 2, prov))
+    out = capsys.readouterr().out
+    assert "  xrefs source=tsk: -249,502" in out and "allow: 9 entries" in out
+    # the bytes depend on the expect file's content, not on how its path is spelt
+    monkeypatch.chdir(tmp_path)
+    assert xp.main(["allow", "--expect", "./xref.json", "--out", "again.yaml"]) == 0
+    assert (tmp_path / "again.yaml").read_bytes() == (tmp_path / "allow.yaml").read_bytes()
+
+
+def test_allow_fragment_loads_in_diff_kg_and_covers_exactly_the_1b_differences(tmp_path, monkeypatch):
+    assert run_allow(tmp_path, monkeypatch)[0] == 0
+    allow = dk.load_allowlist(tmp_path / "allow.yaml")
+    assert {e["section"] for e in allow} == {"relationships", "xrefs", "xref_provenance"}
+    # what R2's diff_kg sees: staging = prod with the xref layer the expect file predicts,
+    # plus the mention_count residual
+    prod = dk.read_profile(FakeDriver(profile_answers()))
+    expect = json.loads((tmp_path / "xref.json").read_text(encoding="utf-8"))
+    yeteluo = {**prod["entities"]["person:yeteluo"], "mention_count": 30}
+    staging = {**prod, "relationships": {**prod["relationships"], "CROSS_REFERENCES": expect["counts"]["total"]},
+               "xrefs": {f"source={s}": n for s, n in expect["xrefs_by_source"].items()},
+               "xref_provenance": expect["xref_provenance"], "entities": {"person:yeteluo": yeteluo}}
+    diffs = [d for section in dk.COUNT_SECTIONS for d in dk.diff_counts(section, prod[section], staging[section])]
+    diffs += dk.diff_entities(prod["entities"], staging["entities"])
+    classified, unused = dk.classify(diffs, allow)
+    assert unused == []
+    assert [(d["section"], d["key"]) for d in classified if d["allowed_by"] is None] == \
+        [("mention_count", "person:yeteluo")]                           # 1A's residuals_allow.yaml
+
+
+def test_allow_reads_prod_only_and_writes_nothing_when_it_cannot(tmp_path, monkeypatch):
+    assert run_expect(tmp_path) == 0
+    argv = ["allow", "--expect", str(tmp_path / "xref.json"), "--out", str(tmp_path / "allow.yaml")]
+    resolved = patch_target(monkeypatch, FakeDriver(profile_answers()))  # a regression must not reach .env
+    with pytest.raises(SystemExit) as exc:
+        xp.main(argv + ["--target", "staging"])                         # the a side is diff_kg's --a prod
+    assert exc.value.code == 2 and resolved == []                       # a usage error, before any target
+
+    def refuse(name):
+        raise ValueError("--target prod refused: shell NEO4J_URI differs")
+    monkeypatch.setattr(xp, "resolve_target", refuse)
+    assert xp.main(argv) == 1
+    (tmp_path / "v2.json").write_text(json.dumps({"version": 2}), encoding="utf-8")
+    patch_target(monkeypatch, FakeDriver(profile_answers()))
+    assert xp.main(["allow", "--expect", str(tmp_path / "v2.json"), "--out", str(tmp_path / "allow.yaml")]) == 1
+    assert not (tmp_path / "allow.yaml").exists()
+
+
+@pytest.mark.parametrize("action", ["predict", "fingerprint", "allow"])
 def test_read_actions_open_read_sessions_only(action, tmp_path, monkeypatch):
+    assert run_expect(tmp_path) == 0                                    # allow's input (expect is offline)
     # import_tsk_crossrefs load_dotenv()s .env into os.environ on import: a READ
     # action must not import it, or the prod URI would look like a shell override
     monkeypatch.setitem(sys.modules, "import_tsk_crossrefs", None)
     driver = FakeDriver({xp.EDGES_CYPHER: SENTINEL_EDGES, EDGE_FINGERPRINT_CYPHER: live_rows(),
-                         xproj.PROVENANCE_CYPHER: PROVENANCE_ROWS})
+                         xproj.PROVENANCE_CYPHER: PROVENANCE_ROWS, **profile_answers()})
     patch_target(monkeypatch, driver)
     write_seeds(tmp_path / "seeds.json", ["jer:29:0"], {})
     argv = {"predict": ["predict", "--seeds", str(tmp_path / "seeds.json"), "--out", str(tmp_path / "p.json")],
-            "fingerprint": ["fingerprint"]}[action]
+            "fingerprint": ["fingerprint"],
+            "allow": ["allow", "--expect", str(tmp_path / "xref.json"), "--out", str(tmp_path / "a.yaml")]}[action]
     assert xp.main(argv + ["--target", "prod"]) == 0
     assert driver.closed and driver.sessions
     assert all(s == {"default_access_mode": READ_ACCESS} for s in driver.sessions)
@@ -567,7 +674,8 @@ def test_importing_the_tool_does_not_import_step9():
     assert done.returncode == 0, done.stderr
 
 
-@pytest.mark.parametrize("action", ["seeds", "predict", "compare", "deploy-guard", "expect", "fingerprint"])
+@pytest.mark.parametrize("action", ["seeds", "predict", "compare", "deploy-guard", "expect", "fingerprint",
+                                    "allow"])
 def test_top_level_help_lists_every_flag(action, capsys):
     with pytest.raises(SystemExit):
         xp.main(["--help"])

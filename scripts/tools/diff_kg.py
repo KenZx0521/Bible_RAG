@@ -36,10 +36,10 @@ or max_abs_delta (a non-negative integer). Validation is strict: an unknown fiel
 bound such as max_delta) or a mistyped value is an error, never ignored,
 because an ignored bound would make the entry allow any delta. Two entries
 with the same section and key (the same glob string, whatever their bounds)
-are an error too: a merged allowlist is a concatenation of fragments, and an
-overlap must fail when the file is loaded, not as an unused entry at R2; give
-different deltas different exact keys. The file holds version: 1 and allow,
-nothing else:
+are an error too: an overlap must fail when the file is loaded or merged, not
+as an unused entry at R2; give different deltas different exact keys. So is a
+repeated mapping key (plain YAML keeps the last value: an entry's second delta
+would win silently). The file holds version: 1 and allow, nothing else:
 
     version: 1
     allow:
@@ -47,6 +47,16 @@ nothing else:
         key: "OCCURRED_IN phase=5 *"
         delta: -12
         reason: 10.3 co-occurrence edges are rebuilt from cleaned MENTIONS (EV-03)
+
+A wave's one merged allowlist is built from the streams' fragments with
+--merge-out, never with cat: each fragment is a whole document, so a cat
+repeats version and allow, and plain YAML would keep only the last
+fragment's list (here that is a load error). --merge-out loads each --allow
+fragment, joins their allow lists in the order given under one version: 1,
+refuses a section and key repeated across fragments, checks that the entry
+count is the fragments' sum, writes the file with each fragment's name,
+sha256 and count as comments (not its path, so the bytes do not depend on
+how a path is spelt) and prints the file's sha256. It reads no target.
 
 Targets resolve through check_identity.resolve_target, whose guards apply:
 --a prod is refused in a shell that exports staging settings, so run this
@@ -58,19 +68,25 @@ Usage (from the project root):
     scripts/.venv/bin/python scripts/tools/diff_kg.py                       # prod vs staging
     scripts/.venv/bin/python scripts/tools/diff_kg.py --allow <allow.yaml> --json
     scripts/.venv/bin/python scripts/tools/diff_kg.py --a prod --b staging --allow <allow.yaml> --fail-on-unused --json
+    scripts/.venv/bin/python scripts/tools/diff_kg.py --merge-out <merged.yaml> --allow <fragment1.yaml> --allow <fragment2.yaml>
 
 Exit code: 0 every difference is allowed (and, under --fail-on-unused, every
 allow entry matched one); 1 a difference is not allowed, an allow entry matched
 nothing under --fail-on-unused, or a target / the registry could not be read.
+--merge-out: 0 written; 1 a fragment is unreadable or invalid or two fragments
+overlap (nothing written).
 """
 
 from __future__ import annotations
 
 import argparse
 import fnmatch
+import hashlib
 import json
+import re
 import sys
 from collections import Counter
+from collections.abc import Hashable
 from pathlib import Path
 
 _SCRIPTS = Path(__file__).resolve().parents[1]
@@ -251,24 +267,99 @@ def _entry_problem(entry) -> str | None:
     return None
 
 
-def load_allowlist(path) -> list[dict]:
+def _yaml_load(text: str, where):
+    """yaml.safe_load, except that a key repeated in one mapping is an error: plain YAML keeps
+    the last value, so a cat of two whole fragments would load as the last one alone."""
     import yaml
-    doc = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+
+    class UniqueKeyLoader(yaml.SafeLoader):
+        def construct_mapping(self, node, deep=False):
+            seen = set()
+            for key_node, _ in node.value:
+                key = self.construct_object(key_node, deep=deep)
+                if not isinstance(key, Hashable):
+                    continue                                    # super() reports an unhashable key
+                if key in seen:
+                    raise yaml.constructor.ConstructorError(
+                        None, None, f"repeats the mapping key {key!r} (a cat of whole fragments repeats "
+                        "version and allow: join them with --merge-out)", key_node.start_mark)
+                seen.add(key)
+            return super().construct_mapping(node, deep=deep)
+
+    try:
+        return yaml.load(text, Loader=UniqueKeyLoader)  # noqa: S506  (a SafeLoader subclass)
+    except yaml.YAMLError as e:
+        raise ValueError(f"{where}: {e}") from e
+
+
+def parse_allowlist(text: str, where) -> list[dict]:
+    """The validated entries of allowlist YAML `text` (rules in the module docstring); `where` names it."""
+    doc = _yaml_load(text, where)
     if (not isinstance(doc, dict) or set(doc) - {"version", "allow"} or doc.get("version") != 1
             or not isinstance(doc.get("allow", []), (list, type(None)))):  # `allow:` alone is empty
-        raise ValueError(f"{path}: expected a mapping of version: 1 and an allow list, and nothing else")
+        raise ValueError(f"{where}: expected a mapping of version: 1 and an allow list, and nothing else")
     entries = doc.get("allow") or []
     first_at: dict[tuple[str, str], int] = {}
     for i, entry in enumerate(entries):
         problem = _entry_problem(entry)
         if problem:
-            raise ValueError(f"{path}: allow[{i}] {problem}")
+            raise ValueError(f"{where}: allow[{i}] {problem}")
         first = first_at.setdefault((entry["section"], entry["key"]), i)
         if first != i:
-            raise ValueError(f"{path}: allow[{i}] repeats section {entry['section']} key {entry['key']!r} "
+            raise ValueError(f"{where}: allow[{i}] repeats section {entry['section']} key {entry['key']!r} "
                              f"of allow[{first}]; a difference counts only toward the first entry it matches, "
                              "so merge fragments without overlap")
     return entries
+
+
+def load_allowlist(path) -> list[dict]:
+    return parse_allowlist(Path(path).read_text(encoding="utf-8"), path)
+
+
+# printable to JSON but not read back verbatim from a YAML double-quoted scalar
+_YAML_UNSAFE = re.compile(r"[\x7f-\x9f\u2028\u2029\ufeff]")
+
+
+def _yaml_str(text: str) -> str:
+    """`text` as a YAML double-quoted scalar: JSON's escapes are YAML's, plus \\u escapes for _YAML_UNSAFE."""
+    return _YAML_UNSAFE.sub(lambda m: f"\\u{ord(m.group()):04x}", json.dumps(text, ensure_ascii=False))
+
+
+def render_allowlist(entries: list[dict], header) -> str:
+    """Allowlist YAML for `entries` under `# header` lines: fields in the order section, key, bound,
+    reason; strings double-quoted, bounds plain integers. Raises unless it loads back as `entries`."""
+    lines = [f"# {line}" for line in header] + ["version: 1", "allow:"]  # `allow:` alone loads as empty
+    for e in entries:
+        lines += [f"  - section: {e['section']}", f"    key: {_yaml_str(e['key'])}"]
+        lines += [f"    {name}: {e[name]}" for name in ("delta", "max_abs_delta") if name in e]
+        lines.append(f"    reason: {_yaml_str(e['reason'])}")
+    text = "\n".join(lines) + "\n"
+    if parse_allowlist(text, "rendered allowlist") != entries:
+        raise ValueError("rendered allowlist does not load back as the entries it was rendered from")
+    return text
+
+
+MERGE_HEADER = ("allowlist merged by diff_kg.py --merge-out from these fragments, in order; "
+                "regenerate it, never edit it:")
+
+
+def merge_allowlists(paths) -> tuple[str, list[int]]:
+    """(allowlist YAML, entries per fragment): the fragments' allow lists joined in order under one
+    version: 1. A (section, key) repeated across fragments is an error naming both."""
+    entries, counts, header = [], [], [MERGE_HEADER]
+    first_at: dict[tuple[str, str], str] = {}
+    for path in map(Path, paths):
+        part = load_allowlist(path)
+        for i, entry in enumerate(part):
+            here, key = f"{path.name} allow[{i}]", (entry["section"], entry["key"])
+            if key in first_at:
+                raise ValueError(f"{here} repeats section {key[0]} key {key[1]!r} of {first_at[key]}; a difference "
+                                 "counts only toward the first entry it matches, so fragments must not overlap")
+            first_at[key] = here
+        entries += part
+        counts.append(len(part))
+        header.append(f"{path.name}: sha256 {hashlib.sha256(path.read_bytes()).hexdigest()}, {len(part)} entries")
+    return render_allowlist(entries, header), counts
 
 
 def _matches(entry: dict, diff: dict) -> bool:
@@ -330,20 +421,56 @@ def _exit_reason(report: dict) -> str:
     return reason + (f", {len(report['unused_allowances'])} unused allowances" if strict else "")
 
 
-def main(argv: list[str] | None = None) -> int:
+def _merge(parser, args) -> int:
+    """--merge-out: the --allow fragments as one allowlist file; reads no target, writes nothing on an error."""
+    if not args.allow:
+        parser.error("--merge-out needs the fragments as --allow, one per fragment, in order")
+    out = args.merge_out
+    if any(out.resolve() == fragment.resolve() for fragment in args.allow):
+        parser.error(f"--merge-out would overwrite the fragment {out}")
+    try:
+        text, counts = merge_allowlists(args.allow)
+        if len(parse_allowlist(text, out)) != sum(counts):
+            raise ValueError(f"{out}: merged entries differ from the fragments' sum {sum(counts)}")
+        out.write_text(text, encoding="utf-8")
+    except (OSError, ValueError) as e:
+        print(f"ERROR: --merge-out: {e}", file=sys.stderr)
+        return 1
+    for fragment, n in zip(args.allow, counts):
+        print(f"  {fragment}: {n} entries")
+    print(f"merged {sum(counts)} entries ({' + '.join(map(str, counts))}) into {out}")
+    print(f"{hashlib.sha256(text.encode('utf-8')).hexdigest()}  {out}")
+    return 0
+
+
+def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--a", choices=("prod", "staging"), default="prod", help="reference target (default prod)")
     parser.add_argument("--b", choices=("prod", "staging"), default="staging", help="compared target (default staging)")
-    parser.add_argument("--allow", type=Path, help="YAML list of allowed differences (format above)")
+    parser.add_argument("--allow", type=Path, action="append",
+                        help="YAML list of allowed differences (format above): one (merged) file for a diff, "
+                             "or one per fragment, in order, for --merge-out")
+    parser.add_argument("--merge-out", type=Path,
+                        help="write the --allow fragments merged into this allowlist and print its sha256 "
+                             "(see above); reads no target")
     parser.add_argument("--no-registry", action="store_true", help="skip the export_event_registry diff")
     parser.add_argument("--samples", type=int, default=10, help="differences printed per section")
     parser.add_argument("--json", action="store_true", help="print the full report as JSON")
     parser.add_argument("--fail-on-unused", action="store_true",
                         help="exit 1 when an allow entry matched no difference (without it they are only listed)")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _parser()
     args = parser.parse_args(argv)
+    if args.merge_out:
+        return _merge(parser, args)
     if args.a == args.b:
         parser.error("--a and --b must name different targets")
-    allow = load_allowlist(args.allow) if args.allow else []
+    if args.allow and len(args.allow) > 1:
+        parser.error("a diff takes one merged --allow file (one per wave); join fragments with --merge-out first")
+    allow = load_allowlist(args.allow[0]) if args.allow else []
 
     drivers, names = {}, {}
     try:

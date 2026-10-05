@@ -7,7 +7,9 @@ access mode of each session: the tool must never open a write session.
 
 from __future__ import annotations
 
+import hashlib
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -386,6 +388,63 @@ def test_allow_list_keeps_distinct_keys_and_the_same_key_in_another_section(tmp_
 
 
 # ---------------------------------------------------------------------------
+# YAML level: repeated mapping keys, rendering, merging fragments
+# ---------------------------------------------------------------------------
+
+FRAGMENT_1A = ("# a 1A fragment\nversion: 1\nallow:\n  - section: mention_count\n"
+               '    key: "event:shanshangbaoxun"\n    delta: -22\n    reason: "K10 residual"\n')
+FRAGMENT_1B = ('version: 1\nallow:\n  - section: xrefs\n    key: "source=tsk"\n    delta: -68\n    reason: "1B"\n'
+               '  - section: relationships\n    key: CROSS_REFERENCES\n    delta: -52\n    reason: "1B"\n')
+
+
+def sha(path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def fragments(tmp_path) -> tuple[Path, Path]:
+    a, b = tmp_path / "residuals_allow.yaml", tmp_path / "xref_allow.yaml"
+    a.write_text(FRAGMENT_1A, encoding="utf-8")
+    b.write_text(FRAGMENT_1B, encoding="utf-8")
+    return a, b
+
+
+@pytest.mark.parametrize("order", [(0, 1), (1, 0), (1, 1)])
+def test_a_cat_of_whole_fragments_is_refused_not_cut_to_the_last_allow(tmp_path, order):
+    # each fragment is a whole document: plain YAML keeps only the last `allow:` of a cat,
+    # so the other fragments would vanish without an error (and dodge the repeat check)
+    path = tmp_path / "cat.yaml"
+    path.write_text("".join((FRAGMENT_1A, FRAGMENT_1B)[i] for i in order), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"cat\.yaml: .*repeats the mapping key 'version'"):
+        dk.load_allowlist(path)
+
+
+def test_an_entry_field_written_twice_is_refused(tmp_path):
+    path = tmp_path / "allow.yaml"
+    path.write_text("version: 1\nallow:\n  - section: xrefs\n    key: source=tsk\n    delta: -68\n"
+                    "    delta: 5\n    reason: r\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="repeats the mapping key 'delta'"):
+        dk.load_allowlist(path)
+
+
+def test_render_allowlist_round_trips_every_bound_and_awkward_strings():
+    entries = [{"section": "ee_edges", "key": "SON_OF phase=2 source=-", "delta": 1, "reason": "a: b # c"},
+               {"section": "mentions", "key": "Pericope *", "max_abs_delta": 3,
+                "reason": '"q" \\ 「全形」\u2028\x85\x7f'},
+               {"section": "descriptions", "key": "person:yuehan（shitu）", "reason": "no bound"}]
+    text = dk.render_allowlist(entries, ["header"])
+    assert text.startswith("# header\nversion: 1\nallow:\n  - section: ee_edges\n"
+                           '    key: "SON_OF phase=2 source=-"\n    delta: 1\n    reason: "a: b # c"\n')
+    assert dk.parse_allowlist(text, "rendered") == entries
+    assert dk.parse_allowlist(dk.render_allowlist([], []), "empty") == []
+
+
+def test_render_allowlist_refuses_text_that_does_not_load_back(monkeypatch):
+    monkeypatch.setattr(dk, "_yaml_str", lambda s: s)                  # a plain scalar drops "# c"
+    with pytest.raises(ValueError, match="does not load back"):
+        dk.render_allowlist([{"section": "xrefs", "key": "source=tsk", "reason": "b # c"}], [])
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -472,3 +531,67 @@ def test_cli_unreadable_target_exits_1(monkeypatch, capsys):
 def test_cli_rejects_comparing_a_target_with_itself(capsys):
     with pytest.raises(SystemExit):
         dk.main(["--a", "staging", "--b", "staging"])
+
+
+@pytest.fixture
+def no_target(monkeypatch):
+    def refuse(name):
+        raise AssertionError("merging fragments must not resolve a target")
+    monkeypatch.setattr(dk, "resolve_target", refuse)
+
+
+def merge(out, *fragment_paths) -> int:
+    return dk.main(["--merge-out", str(out), *[arg for p in fragment_paths for arg in ("--allow", str(p))]])
+
+
+def test_merge_out_joins_the_fragments_allow_lists_under_one_version(tmp_path, monkeypatch, no_target, capsys):
+    a, b = fragments(tmp_path)
+    out = tmp_path / "merged.yaml"
+    assert merge(out, a, b) == 0
+    assert out.read_text(encoding="utf-8") == (
+        "# allowlist merged by diff_kg.py --merge-out from these fragments, in order; regenerate it, never edit it:\n"
+        f"# residuals_allow.yaml: sha256 {sha(a)}, 1 entries\n"
+        f"# xref_allow.yaml: sha256 {sha(b)}, 2 entries\n"
+        "version: 1\nallow:\n"
+        '  - section: mention_count\n    key: "event:shanshangbaoxun"\n    delta: -22\n    reason: "K10 residual"\n'
+        '  - section: xrefs\n    key: "source=tsk"\n    delta: -68\n    reason: "1B"\n'
+        '  - section: relationships\n    key: "CROSS_REFERENCES"\n    delta: -52\n    reason: "1B"\n')
+    assert dk.load_allowlist(out) == dk.load_allowlist(a) + dk.load_allowlist(b)
+    printed = capsys.readouterr().out
+    assert "merged 3 entries (1 + 2)" in printed and f"{sha(out)}  {out}" in printed
+    # the bytes depend on the fragments' content, not on how their paths are spelt
+    monkeypatch.chdir(tmp_path)
+    assert merge("again.yaml", "residuals_allow.yaml", "./xref_allow.yaml") == 0
+    assert (tmp_path / "again.yaml").read_bytes() == out.read_bytes()
+
+
+def test_merge_out_refuses_a_key_repeated_across_fragments_and_writes_nothing(tmp_path, no_target, capsys):
+    a, b = fragments(tmp_path)
+    copy = tmp_path / "residuals_copy.yaml"
+    copy.write_text(FRAGMENT_1A, encoding="utf-8")
+    assert merge(tmp_path / "merged.yaml", a, b, copy) == 1
+    assert ("residuals_copy.yaml allow[0] repeats section mention_count key 'event:shanshangbaoxun' "
+            "of residuals_allow.yaml allow[0]") in capsys.readouterr().err
+    assert not (tmp_path / "merged.yaml").exists()
+
+
+def test_merge_out_refuses_a_cat_fragment_and_writes_nothing(tmp_path, no_target, capsys):
+    a, _ = fragments(tmp_path)
+    cat = tmp_path / "cat.yaml"
+    cat.write_text(FRAGMENT_1A + FRAGMENT_1B, encoding="utf-8")
+    assert merge(tmp_path / "merged.yaml", a, cat) == 1
+    assert "repeats the mapping key 'version'" in capsys.readouterr().err
+    assert not (tmp_path / "merged.yaml").exists()
+
+
+@pytest.mark.parametrize("argv, message", [
+    (["--merge-out", "m.yaml"], "--merge-out needs the fragments as --allow"),
+    (["--merge-out", "x.yaml", "--allow", "./x.yaml"], "--merge-out would overwrite the fragment"),
+    (["--allow", "a.yaml", "--allow", "b.yaml"], "a diff takes one merged --allow file"),  # plan §3
+])
+def test_merge_out_and_allow_usage_errors_exit_2(argv, message, tmp_path, monkeypatch, no_target, capsys):
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(SystemExit) as exc:
+        dk.main(argv)
+    assert exc.value.code == 2 and message in capsys.readouterr().err
+    assert not (tmp_path / "m.yaml").exists() and not (tmp_path / "x.yaml").exists()

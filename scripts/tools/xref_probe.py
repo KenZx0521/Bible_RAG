@@ -39,6 +39,13 @@ flags are flat, so --help lists all of them.
            curated_xrefs.edge_fingerprint and the xref_provenance counts of
            --target prod|staging (READ sessions). With --expect, exit 1 unless
            both equal the expect file's.
+  allow    1B's fragment of the merged W1 allowlist, in diff_kg's --allow YAML,
+           from an --expect file and prod's diff_kg.read_profile (READ
+           sessions, check_identity guards: a shell without the staging
+           exports): one exact delta (expect minus prod, diff_kg's b - a) per
+           differing key of relationships CROSS_REFERENCES, xrefs and
+           xref_provenance. Never mention_count: the merged allowlist takes it
+           from 1A's residuals_allow.yaml only. Run it right after expect.
 
 The measured side is backend probes/xref_measure (1B-T2): same seed file, the
 real retriever functions.
@@ -51,6 +58,7 @@ Usage (from the project root):
     $PY scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend
     $PY scripts/tools/xref_probe.py expect --out xref.json --edges-out edges.jsonl
     $PY scripts/tools/xref_probe.py fingerprint --target staging --expect xref.json
+    $PY scripts/tools/xref_probe.py allow --expect xref.json --out xref_allow.yaml
 
 Exit code: 0 done / everything matches; 1 a difference, a failed sentinel or
 guard, or an unreadable input or target.
@@ -63,6 +71,7 @@ import hashlib
 import json
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -72,7 +81,7 @@ for _path in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "scripts")):
 
 from bible_chunking.curated_xrefs import EDGE_FINGERPRINT_CYPHER  # noqa: E402
 from check_identity import open_neo4j, read_query, resolve_target  # noqa: E402
-from scripts.tools import xref_projection, xref_rank  # noqa: E402
+from scripts.tools import diff_kg, xref_projection, xref_rank  # noqa: E402
 
 DEFAULT_PERICOPES = _PROJECT_ROOT / "output" / "pericopes.jsonl"
 DEFAULT_QUESTIONS = (_PROJECT_ROOT / "docs" / "records" / "2026-10-04_kg_fix" / "batch1" / "inputs"
@@ -132,16 +141,21 @@ def _cmd_seeds(args) -> int:
 
 # ---------------------------------------------------------------- predict
 
-def _read_target(name: str, *cyphers: str) -> tuple[list[list[dict]], dict]:
-    """Each statement's rows on one target, in READ transactions (resolve_target's guards apply)."""
+def _on_target(name: str, read: Callable) -> tuple:
+    """(read(driver), source) on one target's Neo4j (resolve_target's guards apply);
+    `read` must only open READ transactions."""
     target = resolve_target(name)
     driver = open_neo4j(target)
     try:
         driver.verify_connectivity()  # fail fast instead of retrying a refused connection
-        results = [read_query(driver, cypher) for cypher in cyphers]
+        return read(driver), {"target": target.name, "neo4j_uri": target.neo4j_uri}
     finally:
         driver.close()
-    return results, {"target": target.name, "neo4j_uri": target.neo4j_uri}
+
+
+def _read_target(name: str, *cyphers: str) -> tuple[list[list[dict]], dict]:
+    """Each statement's rows on one target, in READ transactions (resolve_target's guards apply)."""
+    return _on_target(name, lambda driver: [read_query(driver, cypher) for cypher in cyphers])
 
 
 def read_target_edges(name: str) -> tuple[list[dict], dict]:
@@ -346,12 +360,61 @@ def _cmd_fingerprint(args) -> int:
     return 1 if problems else 0
 
 
+# ---------------------------------------------------------------- allow
+
+ALLOW_REASONS = {"relationships": "Step 5／9 重建的 CROSS_REFERENCES 總數",
+                 "xrefs": "各 source 的 CROSS_REFERENCES 數",
+                 "xref_provenance": "Step 5／9 寫入的 source、curated、tsk 組合"}
+ALLOW_HEADER = (
+    "1B fragment of the merged W1 allowlist, written by xref_probe.py allow: regenerate it, never edit it.",
+    "delta = expect file - prod (diff_kg's b - a): one exact entry per differing key of",
+    "relationships CROSS_REFERENCES, xrefs and xref_provenance. No mention_count entries:",
+    "the merged allowlist takes those from 1A's residuals_allow.yaml only.")
+
+
+def expected_counts(expect: dict) -> dict[str, dict[str, int]]:
+    """The diff_kg count sections 1B changes, keyed as diff_kg keys them, as the expect file predicts."""
+    return {"relationships": {"CROSS_REFERENCES": expect["counts"]["total"]},
+            "xrefs": {f"source={source}": n for source, n in expect["xrefs_by_source"].items()},
+            "xref_provenance": dict(expect["xref_provenance"])}
+
+
+def allow_entries(expect: dict, prod: dict) -> list[dict]:
+    """One exact-delta allow entry per key where the expect file (diff_kg's b side) and
+    the prod profile (its a side) differ, in diff_kg's section and key order."""
+    tag = expect["fingerprint"][:12]
+    entries = []
+    for section, b in expected_counts(expect).items():
+        a = {key: prod[section].get(key, 0) for key in b} if section == "relationships" else prod[section]
+        entries += [{"section": section, "key": d["key"], "delta": d["delta"],
+                     "reason": f"1B {ALLOW_REASONS[section]}：期望檔（fingerprint {tag}）減 prod"}
+                    for d in diff_kg.diff_counts(section, a, b)]
+    return entries
+
+
+def _cmd_allow(args) -> int:
+    expect = _read_json(args.expect)
+    if expect.get("version") != 1:
+        raise ValueError(f"{args.expect}: not a version-1 expect file")
+    prod, source = _on_target("prod", diff_kg.read_profile)
+    entries = allow_entries(expect, prod)
+    # the expect file by content, not by path: the bytes must not depend on how the path is spelt
+    header = [*ALLOW_HEADER, f"expect file sha256 {_sha256(args.expect)}, fingerprint {expect['fingerprint']}",
+              f"prod {source['neo4j_uri']}"]
+    Path(args.out).write_text(diff_kg.render_allowlist(entries, header), encoding="utf-8")
+    for e in entries:
+        print(f"  {e['section']} {e['key']}: {e['delta']:+,}")
+    print(f"allow: {len(entries)} entries ({args.out}); mention_count comes from 1A's residuals_allow.yaml")
+    return 0
+
+
 # ---------------------------------------------------------------- CLI
 
 ACTIONS = {"seeds": _cmd_seeds, "predict": _cmd_predict, "compare": _cmd_compare,
-           "deploy-guard": _cmd_deploy_guard, "expect": _cmd_expect, "fingerprint": _cmd_fingerprint}
+           "deploy-guard": _cmd_deploy_guard, "expect": _cmd_expect, "fingerprint": _cmd_fingerprint,
+           "allow": _cmd_allow}
 REQUIRED = {"seeds": ("out",), "predict": ("seeds", "out"), "compare": ("pred", "measured"),
-            "deploy-guard": (), "expect": ("out",), "fingerprint": ("target",)}
+            "deploy-guard": (), "expect": ("out",), "fingerprint": ("target",), "allow": ("expect", "out")}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -361,10 +424,10 @@ def build_parser() -> argparse.ArgumentParser:
                         help="seeds: Step 0 pericopes.jsonl (default output/pericopes.jsonl)")
     parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS,
                         help="seeds: benchmark questions_table.json (default: the batch-1 bench input)")
-    parser.add_argument("--out", type=Path, help="seeds / predict / expect: file to write")
+    parser.add_argument("--out", type=Path, help="seeds / predict / expect / allow: file to write")
     parser.add_argument("--seeds", type=Path, help="predict: seed file written by the seeds action")
     parser.add_argument("--target", choices=("prod", "staging"),
-                        help="predict / fingerprint: read the edges from this Neo4j")
+                        help="predict / fingerprint: read the edges from this Neo4j (allow always reads prod)")
     parser.add_argument("--edges", type=Path, help="predict: read the edges from this JSONL instead")
     parser.add_argument("--pred", type=Path, help="compare: the prediction")
     parser.add_argument("--measured", type=Path, help="compare: the measurement")
@@ -375,7 +438,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tsk", type=Path, default=DEFAULT_TSK,
                         help="expect: the TSK file Step 9 reads (default output/cross_references_tsk.txt)")
     parser.add_argument("--edges-out", type=Path, help="expect: also write the edges, predict --edges input")
-    parser.add_argument("--expect", type=Path, help="fingerprint: the expect file to check the target against")
+    parser.add_argument("--expect", type=Path,
+                        help="fingerprint: the expect file to check the target against; "
+                             "allow: the expect file to derive the fragment from")
     return parser
 
 
@@ -387,6 +452,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"{args.action} needs {' '.join(missing)}")
     if args.action == "predict" and (args.target is None) == (args.edges is None):
         parser.error("predict needs exactly one of --target and --edges")
+    if args.action == "allow" and args.target == "staging":
+        parser.error("allow reads prod, diff_kg's --a side; --target staging does not apply")
     try:
         return ACTIONS[args.action](args)
     except Exception as e:  # noqa: BLE001  (an unreadable input or target is never "equal")

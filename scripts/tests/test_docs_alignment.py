@@ -302,7 +302,7 @@ def test_w1_runbook_documents_the_xref_probe_and_diff_kg_flags():
     probe = _documented_flags("xref_probe", *DOCS)
     assert {"--expect", "--target", "--container", "--seeds", "--pred", "--measured", "--edges",
             "--edges-out", "--output-dir", "--tsk", "--pericopes", "--questions", "--out"} <= probe, probe
-    assert "--fail-on-unused" in _documented_flags("diff_kg", STAGING_DOC)
+    assert {"--fail-on-unused", "--merge-out"} <= _documented_flags("diff_kg", STAGING_DOC)
 
 
 def test_step0_documents_the_xref_gate_and_that_1b_leaves_pericopes_alone():
@@ -339,8 +339,41 @@ def test_r2_runs_the_xref_checks_and_the_merged_allowlist_gate():
         assert needle in r2, needle
 
 
+def test_r2_generates_the_1b_allowlist_fragment_and_leaves_mention_count_to_1a():
+    # 1B's fragment comes from xref_probe allow, never from retyped prose; the four
+    # K10 mention_count entries come only from 1A's residuals_allow.yaml (decision O2)
+    r2 = section(staging_text(), "R2")
+    commands = _commands(r2)
+    allow = " ".join(commands[_first(commands, "xref_probe.py allow")].split())
+    assert ("xref_probe.py allow --expect config/kg_expect/batch1_w1/xref.json "
+            "--out config/kg_expect/batch1_w1/xref_allow.yaml") in allow, allow
+    assert _first(commands, "xref_probe.py expect") < _first(commands, "xref_probe.py allow")
+    assert "mention_count 段的 4 筆 K10 殘差（第 0 批就有，加了這一段才看得到）只來自 1A 的 `residuals_allow.yaml`" in r2
+    for typed in ("−249,502", "+249,434", "−774", "event:shanshangbaoxun", "event:baoluoxushuguizhudejingguo",
+                  "event:baoluoxushuguizhujingguo", "person:yeteluo"):
+        assert typed not in r2, typed
+
+
+W1_FRAGMENTS = ("relations_allow.yaml", "residuals_allow.yaml", "xref_allow.yaml")
+
+
+def test_r2_merges_the_w1_fragments_at_the_yaml_level_before_the_rebuild():
+    # a cat of whole fragments keeps only the last `allow:`; --merge-out joins the lists
+    r2 = section(staging_text(), "R2")
+    commands = _commands(r2)
+    merge = " ".join(commands[_first(commands, "diff_kg.py --merge-out")].split())
+    assert merge.endswith("diff_kg.py --merge-out config/kg_diff_allow_batch1w1.yaml " + " ".join(
+        f"--allow config/kg_expect/batch1_w1/{name}" for name in W1_FRAGMENTS)), merge
+    for needle in ("不可用 `cat` 串接", "條數等於各片段之和", "sha256 記進 W1 紀錄", "第 2 步（staging 重建）之前",
+                   "第 1 批起預先登錄，不依 R2 的 diff 建立"):
+        assert needle in r2, needle
+    assert "片段串接而成" not in r2 and "R2 時依實際 diff 建立，與該批紀錄一起 commit" not in r2
+    help_words = " ".join(help_text("diff_kg").split())
+    assert "--merge-out" in help_words and "repeated mapping key" in help_words
+
+
 def test_r2_and_diff_kg_help_say_a_repeated_allow_key_is_an_error():
-    # the merged W1 allowlist concatenates fragments: an overlap fails at load, not as unused at R2
+    # --merge-out joins the fragments' lists: an overlap fails at the merge, not as unused at R2
     assert "同一個 section 下逐字相同的 key" in section(staging_text(), "R2")
     assert "same section and key" in " ".join(help_text("diff_kg").split())
 
