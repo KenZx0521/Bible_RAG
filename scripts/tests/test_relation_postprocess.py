@@ -522,6 +522,54 @@ def test_domain_range_uses_override_labels(tmp_path):
     assert flow.drops == {"domain_range": {"TEACHER_OF": 1}}
 
 
+# --- flag_id_order (REL-03) -----------------------------------------------------
+
+def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    _append_jsonl(tmp_path / "in" / "relations.jsonl", [
+        _row("place:nasalei", "LOCATED_IN", "place:jialili", 3, source_pericope_id="", evidence_span="路 1:26"),
+        _row("place:jialili", "LOCATED_IN", "place:nasalei", 4, source_pericope_id="mat:2:3"),
+        _row("person:tala", "SUCCEEDED_BY", "person:nahe", 4, source_pericope_id="gen:11:1"),
+        _row("person:nahe", "SUCCEEDED_BY", "person:tala", 4, source_pericope_id="gen:11:1"),
+        _row("person:moxi", "SUCCEEDED_BY", "person:yalun", None, source="curated", source_pericope_id="")])
+    rows, report = _run("all", _paths(tmp_path / "in"))
+    flags = {(r["head_id"], r["relation"], r["tail_id"], r["source"]): r["direction_verified"]
+             for r in rows if "direction_verified" in r}
+
+    # an id-order relation (directed, one type at both ends, no direction pair) reads only by
+    # head/tail order, and the LLM's rows have their ends in id order: 加利利 LOCATED_IN 拿撒勒
+    # reverses the prior (路 1:26) and goes; every other llm row is kept unverified, the
+    # fixture's own 拿撒勒 LOCATED_IN 加利利 too, and an llm pair in both orders stays whole
+    assert flags == {
+        ("place:nasalei", "LOCATED_IN", "place:jialili", "prior"): True,
+        ("place:nasalei", "LOCATED_IN", "place:jialili", "llm"): False,
+        ("person:tala", "SUCCEEDED_BY", "person:nahe", "llm"): False,
+        ("person:nahe", "SUCCEEDED_BY", "person:tala", "llm"): False,
+        ("person:moxi", "SUCCEEDED_BY", "person:yalun", "curated"): True}
+    assert ("place:jialili", "LOCATED_IN", "place:nasalei") not in {(r["head_id"], r["relation"], r["tail_id"])
+                                                                    for r in rows}
+    assert report["flow"]["drops"]["contradicts_prior"] == {"LOCATED_IN": 1}
+    assert report["flow"]["flagged"] == {"LOCATED_IN": 1, "SUCCEEDED_BY": 2}
+    ran = report["rules"]["ran"]
+    assert ran.index("provenance_gate") < ran.index("flag_id_order")
+
+    # called directly: a paired relation (SON_OF, FATHER_OF) or an undirected one (NEAR) gets
+    # no field, a prior's neither; the rule copies the rows it marks, it does not mutate them
+    inputs, cfg = pp.load_inputs(_paths())
+    stamped = [pp.base_stamp(r, cfg) for r in (
+        _row("place:nasalei", "LOCATED_IN", "place:jialili", 3),
+        _row("place:jialili", "LOCATED_IN", "place:nasalei", 4),
+        _row("place:jialili", "NEAR", "place:nasalei", 4),
+        _row("person:yabolahan", "SON_OF", "person:tala", 4),
+        _row("person:tala", "FATHER_OF", "person:yabolahan", 3))]
+    flow = pp.Flow()
+    assert pp.flag_id_order(stamped, inputs, cfg, flow) == [
+        {**stamped[0], "direction_verified": True}, *stamped[2:]]
+    assert not any("direction_verified" in r for r in stamped)
+    assert flow.drops == {"contradicts_prior": {"LOCATED_IN": 1}}
+    assert flow.flagged == {}
+
+
 # --- relation_policy ------------------------------------------------------------
 
 def test_source_rank_orders_curated_prior_llm_anchored():

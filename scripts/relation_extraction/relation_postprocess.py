@@ -78,6 +78,8 @@ MODES = ("all", "none")
 GUARD_SOURCES = ("curated", "prior", "llm")
 # The rows provenance_gate passes without co-mention support (G-3).
 GATE_EXEMPT = ("curated", "prior")
+# The rows of an id-order relation whose direction flag_id_order takes as verified.
+DIRECTION_VERIFIED = ("curated", "prior")
 # The input files, in the order their sha256s enter run_id.
 INPUTS = ("relations", "entities", "mentions", "chunks", "pericopes", "overrides", "anchored_config", "schema")
 _DEFAULT_PATHS = {
@@ -336,6 +338,35 @@ def _supported(row: Mapping, support: set[tuple[str, str]]) -> bool:
     return bool(pid) and (pid, row["head_id"]) in support and (pid, row["tail_id"]) in support
 
 
+def flag_id_order(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-03: mark the llm rows of id-order relations direction-unverified; drop those a prior reverses.
+
+    An id-order relation (schema.id_order_relations(): CAUSED, LOCATED_IN,
+    PRECEDED_BY, SUCCEEDED_BY) is directed with one type at both ends and in no
+    direction pair, so only head/tail order says which way a row reads, and
+    the LLM's rows have their ends in id order (head < tail on every one). An
+    llm row whose reverse is a prior row goes, under contradicts_prior
+    (加利利 LOCATED_IN 拿撒勒 against 路 1:26); every other gets
+    direction_verified: false, counted in flow.flagged, and stays for
+    undirected walks. The prior and curated rows of these relations get
+    direction_verified: true. No other row gets the field.
+    """
+    id_order = cfg.schema.id_order_relations()
+    prior_keys = {(row["head_id"], row["relation"], row["tail_id"]) for row in rows if row["source"] == "prior"}
+    kept = []
+    for row in rows:
+        if row["relation"] in id_order and row["source"] in DIRECTION_VERIFIED:
+            kept.append({**row, "direction_verified": True})
+        elif row["relation"] not in id_order or row["source"] != "llm":
+            kept.append(row)
+        elif (row["tail_id"], row["relation"], row["head_id"]) in prior_keys:
+            flow.drop("contradicts_prior", row)
+        else:
+            flow.flagged[row["relation"]] += 1
+            kept.append({**row, "direction_verified": False})
+    return kept
+
+
 def _final_types(inputs: Inputs, cfg: Config) -> dict[str, str]:
     """entity_id -> final type: the entities.jsonl type through the curated overrides."""
     return {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
@@ -348,6 +379,7 @@ RULES: tuple[tuple[str, Rule], ...] = (
     ("drop_llm_event_event", drop_llm_event_event),
     ("domain_range", domain_range),
     ("provenance_gate", provenance_gate),
+    ("flag_id_order", flag_id_order),
 )
 
 

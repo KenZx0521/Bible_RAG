@@ -281,6 +281,34 @@ def test_gate_drops(real_inputs, all_run, rows_before_anchored):
     assert len(priors) == 64 and not any(r["source_pericope_id"] for r in priors)
 
 
+def test_direction_flags(real_inputs, all_run, rows_before_anchored):
+    rows, report = all_run
+    _, cfg = real_inputs
+    id_order = cfg.schema.id_order_relations()
+    # REL-03: the llm rows of the id-order relations all have head < tail; 47 LOCATED_IN and
+    # 1 SUCCEEDED_BY stay flagged. 加利利 LOCATED_IN 拿撒勒 (「加利利拿撒勒」, mat:21:0)
+    # reverses the prior 拿撒勒 LOCATED_IN 加利利 (路 1:26) and goes
+    assert report["flow"]["flagged"] == {"LOCATED_IN": 47, "SUCCEEDED_BY": 1}
+    assert report["flow"]["drops"]["contradicts_prior"] == {"LOCATED_IN": 1}
+    reversed_key = ("place:jialili", "LOCATED_IN", "place:nasalei")
+    [row] = [r for r in rows_before_anchored if _key(r) == reversed_key]
+    assert (row["source"], row["source_pericope_id"]) == ("llm", "mat:21:0")
+    assert reversed_key not in {_key(r) for r in rows}
+    ran = report["rules"]["ran"]
+    assert ran.index("provenance_gate") < ran.index("flag_id_order")
+
+    flagged = [r for r in rows if r.get("direction_verified") is False]
+    verified = [r for r in rows if r.get("direction_verified") is True]
+    assert len(flagged) == 48 and {r["source"] for r in flagged} == {"llm"}
+    assert all(r["head_id"] < r["tail_id"] for r in flagged)
+    # the 7 priors (4 SUCCEEDED_BY, 3 LOCATED_IN) are verified; no other row has the field,
+    # and no id-order row is left without it (H11's unflagged_id_order_edges is 0)
+    assert len(verified) == 7 and {r["source"] for r in verified} == {"prior"}
+    assert Counter(r["relation"] for r in verified) == {"SUCCEEDED_BY": 4, "LOCATED_IN": 3}
+    assert all(r["relation"] in id_order for r in flagged + verified)
+    assert [_key(r) for r in rows if (r["relation"] in id_order) != ("direction_verified" in r)] == []
+
+
 @pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")
 def test_none_mode_is_byte_identical_across_hash_seeds(tmp_path):
     out, report = tmp_path / "relations_clean.jsonl", tmp_path / "relations_clean.report.json"
