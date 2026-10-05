@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
-"""Import grounded relation triples into Neo4j.
+"""Import Step 6.05's relation triples into Neo4j (Step 6.1).
 
-Reads JSONL output of `scripts.relation_extraction.extract_relations` and
-materialises Entity-Entity edges via APOC's `apoc.merge.relationship`
-(dynamic relation type, idempotent). Each edge's properties are replaced
-wholesale by its file row (the row minus head_id/relation/tail_id, nulls
-dropped), whether the edge is new or not, and every row is written in one
-write transaction, so a failure leaves no partial layer.
+Reads output/relations_clean.jsonl, which
+`scripts.relation_extraction.relation_postprocess` (Step 6.05) writes from
+Step 6's relations.jsonl, and materialises Entity-Entity edges via APOC's
+`apoc.merge.relationship` (dynamic relation type, idempotent). Each edge's
+properties are replaced wholesale by its file row (the row minus
+head_id/relation/tail_id, nulls dropped), whether the edge is new or not, and
+every row is written in one write transaction, so a failure leaves no partial
+layer.
+
+Only a 6.05 output is imported, and only as its report (the .report.json
+beside it, or --report) describes it. Before connecting, the file must hash
+to the report's output.sha256 and hold its output.rows rows, every row must
+carry the report's pp_version and a head_id, relation, tail_id and source, and
+no (head_id, relation, tail_id) key may appear twice; otherwise the run exits
+2 and nothing is imported. So a file edited, truncated or stacked after 6.05
+never reaches the graph. An undirected pair written both ways is two keys and
+passes: the --rules none P1 control keeps such pairs.
 
 Nothing is skipped silently: one read first lists the endpoints the file
 references that the graph lacks, and any missing id stops the run (exit 1)
@@ -14,18 +25,23 @@ before a write. Inside the transaction each statement must write exactly as
 many edges as it was sent rows, or the whole import rolls back (exit 1).
 
 Usage:
-    python scripts/import_relations_neo4j.py [path/to/relations.jsonl]
+    python scripts/import_relations_neo4j.py [path/to/relations_clean.jsonl] [--report PATH]
+
+Exit codes: 0 imported (or the file is empty); 1 a missing endpoint or a
+written mismatch, nothing written; 2 no input file, or the input contract
+refused it, before connecting.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import os
 import sys
+from collections import Counter
 from pathlib import Path
-from typing import Iterator
 
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
@@ -36,28 +52,86 @@ load_dotenv()
 
 logger = logging.getLogger("import_relations_neo4j")
 
-
-def _read_jsonl(path: Path) -> Iterator[dict]:
-    with path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            yield json.loads(line)
-
-
-def _bucket_by_relation(records: list[dict]) -> dict[str, list[dict]]:
-    out: dict[str, list[dict]] = {}
-    for rec in records:
-        rel = rec.get("relation")
-        if not rel:
-            continue
-        out.setdefault(rel, []).append(rec)
-    return out
-
+DEFAULT_PATH = Path(__file__).resolve().parents[1] / "output" / "relations_clean.jsonl"
 
 # The edge key; every other field of a row is an edge property.
 EDGE_KEY = ("head_id", "relation", "tail_id")
+# What every row carries as a non-empty string: its key and 6.05's source stamp.
+REQUIRED_FIELDS = (*EDGE_KEY, "source")
+# How many offending rows or keys a refusal names.
+_SHOWN = 10
+
+
+# --- input contract: 6.05's output, exactly as its report describes it --------
+
+class InputRefused(ValueError):
+    """The file is not the 6.05 output its report describes (exit 2, before connecting)."""
+
+
+def sibling_report(path: Path) -> Path:
+    """The report 6.05 writes beside its output: relations_clean.report.json."""
+    return path.with_suffix(".report.json")
+
+
+def _load_report(path: Path) -> tuple[str, str, int]:
+    """(pp_version, output.sha256, output.rows) of a 6.05 report."""
+    if not path.exists():
+        raise InputRefused(f"no 6.05 report at {path}")
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+        return report["pp_version"], report["output"]["sha256"], report["output"]["rows"]
+    except (ValueError, KeyError, TypeError) as exc:
+        raise InputRefused(f"{path} is not a 6.05 report: {exc!r}") from exc
+
+
+def _parse_rows(data: bytes, path: Path) -> list[dict]:
+    """One object per non-blank line. Split on '\\n' only, as 6.05 writes them:
+    str.splitlines would also split a value that holds U+2028."""
+    try:
+        rows = [json.loads(line) for line in data.decode("utf-8").split("\n") if line.strip()]
+    except ValueError as exc:
+        raise InputRefused(f"{path} is not JSON lines: {exc}") from exc
+    if not all(isinstance(row, dict) for row in rows):
+        raise InputRefused(f"{path} has a line that is not a JSON object")
+    return rows
+
+
+def _listed(items: list[str]) -> str:
+    return ", ".join(items[:_SHOWN]) + (" ..." if len(items) > _SHOWN else "")
+
+
+def _check_rows(rows: list[dict], pp_version: str) -> None:
+    """Every row has the required fields and the report's pp_version; each key is one row."""
+    lacking = [f"row {n}: no {field}" for n, row in enumerate(rows, 1) for field in REQUIRED_FIELDS
+               if not (isinstance(row.get(field), str) and row[field])]
+    if lacking:
+        raise InputRefused(f"{len(lacking)} required field(s) missing: {_listed(lacking)}")
+    other = Counter(str(row.get("pp_version")) for row in rows if row.get("pp_version") != pp_version)
+    if other:
+        raise InputRefused(f"{sum(other.values())} row(s) carry a pp_version other than the "
+                           f"report's {pp_version}: {dict(sorted(other.items()))}")
+    keys = Counter(tuple(row[key] for key in EDGE_KEY) for row in rows)
+    dup = sorted(" ".join(key) for key, n in keys.items() if n > 1)
+    if dup:
+        raise InputRefused(f"{len(dup)} key(s) have two or more rows (one edge per key): {_listed(dup)}")
+
+
+def read_checked(path: Path, report_path: Path) -> list[dict]:
+    """The rows of a 6.05 output; InputRefused when the file is not what its report describes."""
+    pp_version, sha256, n_rows = _load_report(report_path)
+    data = path.read_bytes()
+    actual = hashlib.sha256(data).hexdigest()
+    if actual != sha256:
+        raise InputRefused(f"{path} hashes to {actual}, not the report's output.sha256 {sha256} "
+                           f"(edited, truncated or stacked after 6.05?)")
+    rows = _parse_rows(data, path)
+    if len(rows) != n_rows:
+        raise InputRefused(f"{path} has {len(rows)} row(s); the report says {n_rows}")
+    _check_rows(rows, pp_version)
+    return rows
+
+
+# --- import -------------------------------------------------------------------
 
 # No onCreate/onMatch maps: SET rel = props replaces every property, so an
 # edge an earlier import left behind cannot keep stale values (REL-10).
@@ -165,18 +239,25 @@ def _summary_stats(driver) -> None:
         logger.info("  %s: %d", row["rel"], row["n"])
 
 
-def main() -> int:
+def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "path",
         nargs="?",
-        default=str(Path(__file__).resolve().parents[1] / "output" / "relations.jsonl"),
-        help="Path to relations.jsonl",
+        type=Path,
+        default=DEFAULT_PATH,
+        help="Step 6.05's output (default: output/relations_clean.jsonl)",
     )
+    parser.add_argument("--report", type=Path, default=None,
+                        help="6.05's report on that file (default: the .report.json beside it)")
     parser.add_argument("--batch-size", type=int, default=500,
                         help="rows per statement; every statement is in one transaction")
     parser.add_argument("--verbose", action="store_true")
-    args = parser.parse_args()
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _parser().parse_args(argv)
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -184,20 +265,25 @@ def main() -> int:
     )
     kg_target.assert_target("neo4j")
 
-    in_path = Path(args.path)
+    in_path = args.path
     if not in_path.exists():
-        logger.error("relations file not found: %s", in_path)
+        logger.error("relations file not found: %s (Step 6.05 writes it: "
+                     "python -m scripts.relation_extraction.relation_postprocess)", in_path)
         return 2
-
-    logger.info("Reading triples from %s", in_path)
-    records = list(_read_jsonl(in_path))
+    report_path = args.report or sibling_report(in_path)
+    logger.info("Reading triples from %s, checked against %s", in_path, report_path)
+    try:
+        records = read_checked(in_path, report_path)
+    except InputRefused as exc:
+        logger.error("Refused before connecting, nothing imported: %s", exc)
+        return 2
     if not records:
         logger.warning("Empty relations file — nothing to import")
         return 0
 
-    by_relation = _bucket_by_relation(records)
-    logger.info("Loaded %d triples spanning %d relation types", len(records), len(by_relation))
-    rows = _edge_rows([rec for rec in records if rec.get("relation")])
+    logger.info("Loaded %d triples spanning %d relation types",
+                len(records), len({rec["relation"] for rec in records}))
+    rows = _edge_rows(records)
 
     driver = GraphDatabase.driver(
         os.getenv("NEO4J_URI", "bolt://localhost:7687"),

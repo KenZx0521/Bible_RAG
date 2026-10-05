@@ -11,10 +11,19 @@ in the graph and the run still exited 0 (H16). A missing endpoint now stops
 the run before any write, and a statement that writes a different number of
 edges than it was sent rows rolls the whole transaction back.
 
+The input is Step 6.05's output, never Step 6's raw relations.jsonl: 6.1 read
+whatever file it was given, so a stacked or hand-edited file (two rows of one
+key, a row with no source) went into the graph as it was (§6 #11). The file
+must now hash to its 6.05 report's output.sha256, hold the report's rows, carry
+the report's pp_version on every row, give every row head_id, relation,
+tail_id and source, and hold each key once; otherwise the run exits 2 before
+it connects.
+
 The fake driver records auto-commit statements (session.run) separately from
 statements run inside session.execute_read and session.execute_write, modelled
 on test_import_constraints.py. It holds a set of entity_ids for the endpoint
-read, and a write transaction commits only if its work returns.
+read, and a write transaction commits only if its work returns. Files are
+written by _db_env_helpers.write_relations_clean, with a matching report.
 """
 
 import json
@@ -24,8 +33,11 @@ import sys
 import pytest
 
 import import_relations_neo4j
+from _db_env_helpers import PP_VERSION, write_relations_clean
+from relation_extraction import relation_postprocess as pp
 
 KEY = ("head_id", "relation", "tail_id")
+REQUIRED = ("head_id", "relation", "tail_id", "source")
 MERGE_WITHOUT_MAPS = re.compile(
     r"apoc\.merge\.relationship\(\s*h,\s*row\.relation,\s*\{\},\s*\{\},\s*t,\s*\{\}\s*\)")
 
@@ -93,7 +105,12 @@ class _FakeDriver:
         self.autocommit: list[tuple[str, dict]] = []
         self.reads: list[tuple[str, dict]] = []
         self.in_tx: list[tuple[str, dict]] = []
-        self.transactions = self.committed = self.rolled_back = 0
+        self.connections = self.transactions = self.committed = self.rolled_back = 0
+
+    def connect(self, *args, **kwargs) -> "_FakeDriver":
+        """Stands in for GraphDatabase.driver: counts the connections main() opens."""
+        self.connections += 1
+        return self
 
     def has(self, entity_id: str) -> bool:
         return self.entities is None or entity_id in self.entities
@@ -106,22 +123,26 @@ class _FakeDriver:
 
 
 def _row(head, relation, tail, **extra) -> dict:
-    return {"head_id": head, "relation": relation, "tail_id": tail, **extra}
+    """A row as 6.05 stamps it (pp_version); tests add source and the rest."""
+    return {"head_id": head, "relation": relation, "tail_id": tail,
+            "pp_version": PP_VERSION, **extra}
+
+
+def _main(monkeypatch, argv: list[str], driver: _FakeDriver | None = None,
+          code: int = 0) -> _FakeDriver:
+    driver = driver or _FakeDriver()
+    monkeypatch.delenv("KG_TARGET", raising=False)
+    monkeypatch.setattr(import_relations_neo4j.GraphDatabase, "driver", driver.connect)
+    monkeypatch.setattr(sys, "argv", ["import_relations_neo4j.py", *argv])
+
+    assert import_relations_neo4j.main() == code
+    return driver
 
 
 def _import(monkeypatch, tmp_path, rows: list[dict], *flags: str,
             driver: _FakeDriver | None = None, code: int = 0) -> _FakeDriver:
-    path = tmp_path / "relations.jsonl"
-    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
-                    encoding="utf-8")
-    driver = driver or _FakeDriver()
-    monkeypatch.delenv("KG_TARGET", raising=False)
-    monkeypatch.setattr(import_relations_neo4j.GraphDatabase, "driver",
-                        lambda *args, **kwargs: driver)
-    monkeypatch.setattr(sys, "argv", ["import_relations_neo4j.py", str(path), *flags])
-
-    assert import_relations_neo4j.main() == code
-    return driver
+    path = write_relations_clean(tmp_path, rows)
+    return _main(monkeypatch, [str(path), *flags], driver=driver, code=code)
 
 
 def _merges(statements: list[tuple[str, dict]]) -> list[tuple[str, dict]]:
@@ -149,7 +170,7 @@ def test_cypher_overwrites_all_properties(monkeypatch, tmp_path):
          "props": {k: v for k, v in llm.items() if k not in KEY}},
         {"head_id": "person:c", "relation": "SON_OF", "tail_id": "person:a",
          "props": {"source": "anchored_rule", "verse": 12, "notes": "gei",
-                   "extraction_phase": 6}},
+                   "extraction_phase": 6, "pp_version": PP_VERSION}},
     ]
     assert len(sent[0]["props"]["evidence_span"]) == 600
 
@@ -207,3 +228,101 @@ def test_written_count_mismatch_rolls_back_and_exits_1(monkeypatch, tmp_path, ca
     assert (driver.transactions, driver.committed, driver.rolled_back) == (1, 0, 1)
     assert len(statements) == 2
     assert f"wrote {2 + delta} edge(s) for 2 row(s)" in caplog.text
+
+
+# --- the input contract: 6.05's output, exactly as its report describes it -----
+
+TWO_ROWS = [_row("person:a", "FATHER_OF", "person:b", source="llm"),
+            _row("person:b", "SPOUSE_OF", "person:c", source="anchored_rule")]
+OTHER_PP = "pp-111111111111"
+
+
+def _report_path(path):
+    return path.with_name("relations_clean.report.json")
+
+
+def _edit_report(path, **output) -> None:
+    report = json.loads(_report_path(path).read_text(encoding="utf-8"))
+    report["pp_version"] = output.pop("pp_version", report["pp_version"])
+    report["output"].update(output)
+    _report_path(path).write_text(json.dumps(report), encoding="utf-8")
+
+
+def _edit_rows(path, old: str, new: str) -> None:
+    path.write_text(path.read_text(encoding="utf-8").replace(old, new), encoding="utf-8")
+
+
+# case -> (rows written with a matching report, the edit made afterwards, logged)
+NOT_AS_REPORTED = {
+    "row edited after 6.05": (TWO_ROWS, lambda p: _edit_rows(p, "SPOUSE_OF", "SIBLING_OF"),
+                              "output.sha256"),
+    "file stacked on itself": (TWO_ROWS, lambda p: p.write_bytes(p.read_bytes() * 2),
+                               "output.sha256"),
+    "report rows": (TWO_ROWS, lambda p: _edit_report(p, rows=3), "the report says 3"),
+    "report pp_version": (TWO_ROWS, lambda p: _edit_report(p, pp_version=OTHER_PP), OTHER_PP),
+    "row of another 6.05 run": ([TWO_ROWS[0], {**TWO_ROWS[1], "pp_version": OTHER_PP}],
+                                lambda p: None, OTHER_PP),
+    "no report": (TWO_ROWS, lambda p: _report_path(p).unlink(), "no 6.05 report"),
+}
+
+
+def test_default_path_is_relations_clean():
+    # Whatever 6.05 writes by default is what 6.1 reads by default: its
+    # relations_clean.jsonl and the report beside it, never Step 6's raw
+    # relations.jsonl (inverse and id-order rule rows included).
+    args = import_relations_neo4j._parser().parse_args([])
+
+    assert args.path == pp.DEFAULT_OUT
+    assert args.report is None
+    assert import_relations_neo4j.sibling_report(args.path) == pp.DEFAULT_REPORT
+
+
+@pytest.mark.parametrize("case", sorted(NOT_AS_REPORTED))
+def test_report_sha_rows_or_pp_version_mismatch_refused_before_connecting(
+        case, monkeypatch, tmp_path, caplog):
+    rows, edit, logged = NOT_AS_REPORTED[case]
+    path = write_relations_clean(tmp_path, rows)
+    edit(path)
+
+    driver = _main(monkeypatch, [str(path)], code=2)
+
+    assert driver.connections == 0
+    assert logged in caplog.text
+
+
+def test_report_flag_reads_a_report_kept_elsewhere(monkeypatch, tmp_path):
+    path = write_relations_clean(tmp_path / "out", TWO_ROWS)
+    moved = _report_path(path).rename(tmp_path / "kept.report.json")
+
+    assert _main(monkeypatch, [str(path)], code=2).connections == 0
+    assert _main(monkeypatch, [str(path), "--report", str(moved)]).connections == 1
+
+
+def test_duplicate_key_refused_before_connecting(monkeypatch, tmp_path, caplog):
+    # An undirected pair written both ways is two keys and imports: the
+    # --rules none P1 control keeps such pairs, and H11 counts them on the
+    # all-mode chain. Two rows of one key would be two writes of one edge, the
+    # later one winning, so they are refused (6.05's collapse_by_key leaves one).
+    pair = [_row("person:a", "SPOUSE_OF", "person:b", source="llm"),
+            _row("person:b", "SPOUSE_OF", "person:a", source="llm")]
+    assert _import(monkeypatch, tmp_path / "pair", pair).connections == 1
+
+    stacked = [*pair, _row("person:a", "SPOUSE_OF", "person:b", source="prior")]
+    driver = _import(monkeypatch, tmp_path / "stacked", stacked, code=2)
+
+    assert driver.connections == 0
+    assert "person:a SPOUSE_OF person:b" in caplog.text
+
+
+@pytest.mark.parametrize("value", ["absent", None, ""])
+@pytest.mark.parametrize("field", REQUIRED)
+def test_missing_required_field_refused(field, value, monkeypatch, tmp_path, caplog):
+    row = _row("person:a", "FATHER_OF", "person:b", source="llm")
+    broken = ({k: v for k, v in row.items() if k != field} if value == "absent"
+              else {**row, field: value})
+    rows = [_row("person:c", "SON_OF", "person:a", source="llm"), broken]
+
+    driver = _import(monkeypatch, tmp_path, rows, code=2)
+
+    assert driver.connections == 0
+    assert f"row 2: no {field}" in caplog.text
