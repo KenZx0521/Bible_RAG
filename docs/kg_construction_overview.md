@@ -51,7 +51,7 @@ flowchart LR
 | Theme | 救贖、恩典、信心 | 987 |
 | Group | 以色列人、法利賽人 | 505 |
 
-三資料庫分工:**PostgreSQL**(6 表,權威結構庫)、**Qdrant**(`bible_embeddings` dense、`bible_embeddings_hybrid` dense+sparse、`bible_entities` 實體向量)、**Neo4j**(圖譜本體)。圖譜服務下游 6 路由檢索(R3 graph_person、R4 graph_event、R5 cross-ref、R6 graph_place 直接吃圖)。所有邊 provenance-first:事實邊帶 confidence / evidence_span / source_pericope_id / extraction_phase,串珠邊帶 votes / source 與 curated / tsk 旗標(第 1B 批起),回填邊有 flag — 全部 idempotent MERGE,可決定性重建與回滾。
+三資料庫分工:**PostgreSQL**(6 表,權威結構庫)、**Qdrant**(`bible_embeddings` dense、`bible_embeddings_hybrid` dense+sparse、`bible_entities` 實體向量)、**Neo4j**(圖譜本體)。圖譜服務下游 6 路由檢索(R3 graph_person、R4 graph_event、R5 cross-ref、R6 graph_place 直接吃圖)。所有邊 provenance-first:事實邊帶 source / run_id / pp_version / confidence_raw / evidence_span / source_pericope_id / extraction_phase(第 1A 批起;不再寫 confidence),串珠邊帶 votes / source 與 curated / tsk 旗標(第 1B 批起),回填邊有 flag — 全部 MERGE,可決定性重建與回滾。
 
 ---
 
@@ -88,11 +88,12 @@ flowchart TB
   subgraph S6["Step 6 關係抽取(37 型封閉本體)"]
     direction TB
     r1["R1 同段落共現配對(type-legal・80 對上限)"]
-    r2["R2 規則分類(regex 25 字內,conf 0.85+)"]
     r3["R3 族譜先驗 71 條(bypass LLM)"]
     r4["R4 Grounded LLM(Gemma4 31B)<br/>候選池選一或 NONE・證據子字串雙重驗證"]
-    r5["R5 反向邊物化(conf ×0.9)"]
-    r1 --> r2 --> r3 --> r4 --> r5
+    r5["R5 反向邊物化(--inverse 才跑,預設關閉)"]
+    pp["Step 6.05 關係後處理(離線、決定性)<br/>→ relations_clean.jsonl 5,696 列"]
+    r1 --> r3 --> r4 --> pp
+    r4 -.-> r5 -.-> pp
   end
 
   subgraph DB["三資料庫(Step 3 / 4 / 4.1 / 5 / 6.1)"]
@@ -106,7 +107,7 @@ flowchart TB
     direction TB
     desc["Step 7 描述補完:Gemma4 為 4,223 個<br/>空描述實體生成 80 字內 grounded 描述"]
     tsk["Step 9 TSK 串珠:344,799 行 → 過濾+映射<br/>→ 250,358 對(串珠 916 → 250,418)"]
-    curated["Step 10 curated 重放(10.1–10.5):aliases 直灌<br/>→ 噪音清理 → 共現關係搶救 → 頭部 Event 補灌<br/>→ 106 條手動邊 patch(三庫同步)"]
+    curated["Step 10 curated 重放(10.1、10.2、10.4、10.5):aliases 直灌<br/>→ 噪音清理 → 頭部 Event 補灌<br/>→ 106 條手動邊 patch(三庫同步)"]
   end
 
   queue --> ner
@@ -122,7 +123,7 @@ flowchart TB
   parse --> pg
   parse --> neo
   norm --> neo
-  r5 --> neo
+  pp --> neo
   desc --> neo
   tsk --> neo
   curated --> DB
@@ -164,11 +165,13 @@ flowchart TB
 
 #### Step 6–6.1 · Grounded 關係抽取 — 37 型封閉本體(`scripts/relation_extraction/` + `import_relations_neo4j.py`)
 
-- **封閉本體**(`config/relations/biblical_relations.yaml`):37 型,每型宣告 domain/range、方向、inverse、regex 觸發訊號、few-shot 與分階段 confidence priors。封閉 schema 防 LLM 發明關係名;型別檢查在任何模型呼叫前先剪枝候選空間。型別分佈:Person×Person 13(father_of、spouse_of…)、Person×Place 7、Person×Object 4、Person×Event 3、Person×Group 3、Place×Place 2、Event×Place 1、Event×Event 2、Group×Place 2。
-- **五階段**:R1 同 pericope 共現配對(type-legal 才留,80 對/段落上限)→ R2 規則分類(兩實體 25 字內的 regex 觸發,conf ≥0.85 定案)→ R3 領域先驗(71 條黃金族譜,bypass LLM,64 條以 prior 邊進圖)→ R4 grounded LLM(Gemma 4 31B,JSON grammar 約束,從該對的合法候選集**選一個或答 NONE**;`evidence_span` 過子字串雙重驗證,否則整對拒絕)→ R5 反向邊物化(father_of↔son_of 雙向,conf ×0.9)。
+- **封閉本體**(`config/relations/biblical_relations.yaml`):37 型,每型宣告 domain/range、方向、inverse(第 1A 批起只剩不分性別的兩對)、few-shot 與分階段 confidence priors。封閉 schema 防 LLM 發明關係名;型別檢查在任何模型呼叫前先剪枝候選空間。型別分佈:Person×Person 13(father_of、spouse_of…)、Person×Place 7、Person×Object 4、Person×Event 3、Person×Group 3、Place×Place 2、Event×Place 1、Event×Event 2、Group×Place 2。
+- **四階段**:R1 同 pericope 共現配對(type-legal 才留,80 對/段落上限)→ R3 領域先驗(71 條黃金族譜,bypass LLM,64 條以 prior 邊進圖)→ R4 grounded LLM(Gemma 4 31B,JSON grammar 約束,從該對的合法候選集**選一個或答 NONE**;`evidence_span` 過子字串雙重驗證,否則整對拒絕)→ R5 反向邊物化(conf ×0.9;第 1A 批起加 `--inverse` 才跑)。原本的 R2(兩實體 25 字內的字面訊號,方向取自 id 順序)已在第 1A 批移除,親屬的字面訊號改由 6.05 的錨定句型處理。
 - 全程 10–20 小時離線,checkpoint 可續跑(⚠ checkpoint 記「已嘗試」而非「已成功」)。
 
-產出:6,958 條進圖(rule 772 / prior 64 / LLM 5,370 / inverse 752)+ 77,953 條 unclassified 留檔含 provenance — 這堆「被拒件」後來成為 P0 事件層搶救的現成素材。每條邊帶 confidence / evidence_span / source_pericope_id / extraction_phase。
+產出:`relations.jsonl` 6,958 條原始 triples(2026-05 那次 run:rule 772 / prior 64 / LLM 5,370 / inverse 752)+ 77,953 條 unclassified 留檔含 provenance — 這堆「被拒件」後來成為 P0 事件層搶救的現成素材。第 1A 批之前 6.1 原樣匯入這 6,958 條。
+
+- **Step 6.05 關係後處理**(`relation_postprocess.py`,第 1A 批起):離線、決定性,夾在 Step 6 與 6.1 之間。丟掉反向列 752、字母序規則列 772(換成錨定句型:同一節內「P 的兒子 C」「給 F 生 C」等,方向由句型決定、兩段同名防護)、LLM 的 Event–Event 列 38、domain/range 違規 13、出處閘門 1;id 序關係的 LLM 列標 `direction_verified: false`;每個 (head, relation, tail) 一列。產出 `relations_clean.jsonl` 5,696 列(llm 5,313 / anchored_rule 319 / prior 64),6.1 只收它;10.2 刪泛名詞 Event 帶走 80 條,圖上 5,616 條。每條邊帶 source / run_id / pp_version / confidence_raw / evidence_span / source_pericope_id / extraction_phase,6.1 整組 SET 邊屬性,不再寫 confidence。
 
 **引用**:evidence 錨定動機 — TCR-QF(arXiv:2501.15378,triple 脫離上下文的資訊損失);Gemma 4(DeepMind 2026)。
 
@@ -191,12 +194,13 @@ flowchart TB
 
 #### Step 10 · KG 修復與 curated 重放(重建後必跑;`backfill_*` / `cleanup_noise_entities.py`)
 
-- P0 與排序層修復產生的 curated 資料不在 Step 1–9 的 JSONL 中,重建後須依序重放:**10.1** 字典 aliases 直灌(38 節點)→ **10.2** 噪音清理(「但」子字串誤命中 gate、16 泛名詞 Event 刪除、耶和華 Group→Person;三庫同步)→ **10.3** 未分類關係搶救(+5,641 PARTICIPATED_IN、+3,419 OCCURRED_IN,conf 0.35 標記共現回填)→ **10.4** 頭部 Event 補灌(11 節點灌問法別名 + 18 curated 節點/56 邊)→ **10.5** 手動圖邊 patch 重放(106 條 MENTIONS + 受難週/大使命節點,git-tracked 快照)。
-- 順序有依據:10.2 先於 10.3(將刪節點不能收搶救邊);10.4/10.5 依賴 Step 8/3;10.5 最後(快照導出自 10.4 之後狀態)。每支腳本支援 `--dry-run`,備份在 `output/backups/`。
+- P0 與排序層修復產生的 curated 資料不在 Step 1–9 的 JSONL 中,重建後須依序重放:**10.1** 字典 aliases 直灌(38 節點)→ **10.2** 噪音清理(「但」子字串誤命中 gate、16 泛名詞 Event 刪除、耶和華 Group→Person;三庫同步)→ **10.4** 頭部 Event 補灌(11 節點灌問法別名 + 18 curated 節點/56 邊)→ **10.5** 手動圖邊 patch 重放(106 條 MENTIONS + 受難週/大使命節點,git-tracked 快照)。
+- **10.3** 未分類關係搶救(+5,641 PARTICIPATED_IN、+3,419 OCCURRED_IN,conf 0.35 標記共現回填)已在第 1A 批退出預設鏈(D2):共現升格的嚴格精確率約 0.2,而且晚於 6.05、出處閘門管不到。腳本保留,要帶 `--legacy-cooccurrence` 才跑,只給 K8 的 entity_path 對照組;代價是 Event 有參與者、有地點的覆蓋率降回約 34% / 31%,由第 2A 批補回。
+- 順序有依據:6.05 事先以 10.2 之後的狀態判斷(出處閘門用 10.2「但」過濾後的 MENTIONS,並預先扣掉 10.2 刪泛名詞 Event 帶走的 80 條);10.4/10.5 依賴 Step 8/3;10.5 最後(快照導出自 10.4 之後狀態)。每支腳本支援 `--dry-run`,備份在 `output/backups/`。
 
 > **重建注意(組態即建庫結果的一部分)**
 >
-> - 從零:`process_bible.py` → 1 → 2/2.1 → 3 → 4/4.1 → 5 → 6 → 6.1 → 7 → 8 → 9 → 10.1–10.5 → 最後才起 backend(bind-mount 陷阱)。
+> - 從零:`process_bible.py` → 1 → 2/2.1 → 3 → 4/4.1 → 5 → 6 → 6.05 → 6.1 → 8a → 9 → 10.1、10.2、10.4、10.5 → 7 → 8b → 10.6 → 最後才起 backend(bind-mount 陷阱)。完整順序與第 1 批 W1 的重灌鏈見 [`docs/build_database.md`](build_database.md)「執行順序」。
 > - 決定性 `.env` key:`ENTITY_EXTRACT_OLLAMA_MODEL=gemma4:31b`(漏設 fallback 到 gemma3:4b,小一個量級)、`DESC_OLLAMA_MODEL`、`HYBRID_SEARCH_ENABLED=true`。
 > - 一致性:結構層/字典層/TSK/curated 層重建後逐字元一致;LLM 步驟(Step 1 Phase 4、Step 6 R4、Step 7,temp 0.1)必有漂移,集中在長尾實體與語意邊。
 

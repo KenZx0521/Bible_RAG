@@ -40,6 +40,21 @@ cd $D/scratchpad/batch1plan/1B && uv run --project "$OLDPWD/scripts" python sim_
 
 讀 live 資料庫的腳本（`*ro.py`、`live_*`、`dump*.py`）重跑會得到當下的狀態，不是 2026-10-04 的狀態。
 
+## a32fbea 上才能跑的兩支（第 1A 批之後）
+
+`relations/sim.py` 與 `relverify/exactsim.py` import `scripts.relation_extraction.rule_classifier.classify_by_rules`。第 1A 批的 9c1c6c3（C6b）把 R2 連同這個模組刪掉，之後的 HEAD 上兩支都停在 `ModuleNotFoundError`。它們從 `BIBLE_RAG_ROOT` 讀程式、`config/` 與 `output/`，所以把 a32fbea 的 `scripts/`、`config/` 匯出到暫存目錄、再把 `output/` 連過去就能重跑，不必動 git worktree（`D` 同上一節）：
+
+```bash
+A32=$(mktemp -d)
+git archive a32fbea scripts config | tar -x -C $A32
+ln -s "$PWD/output" $A32/output
+cd $D/scratchpad/kgfix/relations && BIBLE_RAG_ROOT=$A32 "$OLDPWD/scripts/.venv/bin/python" "$OLDPWD/docs/records/2026-10-04_kg_fix/relations/sim.py"
+```
+
+`exactsim.py` 改在 `$D/scratchpad/kgfix/relverify` 下同樣執行。已驗證（2026-10-06）：兩支在 a32fbea 的匯出上結束碼 0（`sim.py` 印出 rule_hit 1,113、llm_pairs 89,033；`exactsim.py` 印出 rule_hits_resim 898），在 HEAD 上都是 `ModuleNotFoundError`。
+
+其他歸檔腳本都不 import 這個模組。1A 的兩支模擬器（`batch1/planner_1A/sim_1a.py`、`batch1/w1_1A/sim_1a_w1.py`）在 HEAD 照常重放：同一天在 4a8e826 之上重跑，`relations_clean_sim_gei_declared.jsonl` 的 sha256 仍是 `b564a2a8…`，三份 sim2 的 `after_10_2_sha256` 與 `anchored_key_sha` 都與下一節的表相同；JSON 只多了 26bc252 新增探針的欄位（下一節末段說明過 `config/kg_probes.yaml` 只影響這些欄位）。
+
 ## W1 1A 重算（`batch1/w1_1A/`）
 
 [第 1 批計畫](../2026-10-04_kg_batch1_plan.md) 1A 各列的重算數字出自這組腳本。原檔在 W1 工作階段 scratchpad 的 `w1/1A/`；歸檔時只改了路徑參數（下述）和 `anchored_v2` → `anchored_w1` 的 import 名稱，其餘逐字未動。

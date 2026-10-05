@@ -35,7 +35,7 @@ STAGING_DOC = ROOT / "docs" / "staging_promotion.md"
 DOCS = (DOC, STAGING_DOC)
 PLAN = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan.md"
 PLAN_BATCHES = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan_batches.md"
-PLANS = (PLAN, PLAN_BATCHES)
+PLANS = (PLAN, PLAN_BATCHES, ROOT / "docs" / "records" / "2026-10-04_kg_batch1_plan.md")
 PY = str(ROOT / "scripts" / ".venv" / "bin" / "python")
 CHECK_STEP0 = ROOT / "scripts" / "tools" / "check_step0.py"
 # docs that describe the current cross-reference mechanism (not experiment-time values)
