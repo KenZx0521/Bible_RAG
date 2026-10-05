@@ -12,7 +12,7 @@ from pathlib import Path
 
 from check_identity import DIFF_KINDS, TYPE_LABELS, run as run_identity, type_of
 
-from .model import KG, PPG
+from .model import KG, PPG, XRef
 from .registry import CheckResult, Context, check
 
 ID_PREFIX_LABEL = {label.lower(): label for label in TYPE_LABELS}
@@ -130,12 +130,28 @@ def check_h6(kg: KG, ctx: Context) -> CheckResult:
                        [f"{m['source_id']}->{m['entity_id']}" for m in missing[:10]])
 
 
+def _flag_mismatch(x: XRef) -> bool:
+    # A set flag must agree with the evidence it summarises: curated with
+    # curated_sources (1B Step 5), tsk with votes (Step 9).
+    return ((x.curated is not None and bool(x.curated) != bool(x.curated_sources))
+            or (x.tsk is not None and bool(x.tsk) != (x.votes is not None)))
+
+
+H8_RULES = {
+    # Before 1B curated edges are recognised only by having no votes (backend coalesce(votes, 999)).
+    "no_provenance": lambda x: x.curated is None and x.votes is None,
+    # From 1B every edge carries both flags; prod before W1 carries neither.
+    "unflagged": lambda x: x.curated is None or x.tsk is None,
+    "flag_mismatch": _flag_mismatch,
+}
+
+
 @check("H8", needs=("cross_references.jsonl",))
 def check_h8(kg: KG, ctx: Context) -> CheckResult:
-    # Today curated edges are recognised only by having no votes (backend coalesce(votes, 999)).
-    bare = [x for x in kg.xrefs if x.curated is None and x.votes is None]
-    return CheckResult({"no_provenance": len(bare)}, {"by_source": dict(Counter(x.source for x in bare))},
-                       [f"{x.src}->{x.tgt}" for x in bare[:10]])
+    hits = {name: [x for x in kg.xrefs if rule(x)] for name, rule in H8_RULES.items()}
+    return CheckResult({name: len(xs) for name, xs in hits.items()},
+                       {"by_source": {name: dict(Counter(x.source for x in xs)) for name, xs in hits.items()}},
+                       [{name: [f"{x.src}->{x.tgt}" for x in xs[:10]]} for name, xs in hits.items() if xs])
 
 
 @check("H9", needs=("relations.jsonl",))
