@@ -34,8 +34,12 @@ the keys above), reason (both non-empty strings, required), and for the count
 sections and mention_count at most one bound: delta (exact b - a, an integer)
 or max_abs_delta (a non-negative integer). Validation is strict: an unknown field (a misspelt
 bound such as max_delta) or a mistyped value is an error, never ignored,
-because an ignored bound would make the entry allow any delta. The file
-holds version: 1 and allow, nothing else:
+because an ignored bound would make the entry allow any delta. Two entries
+with the same section and key (the same glob string, whatever their bounds)
+are an error too: a merged allowlist is a concatenation of fragments, and an
+overlap must fail when the file is loaded, not as an unused entry at R2; give
+different deltas different exact keys. The file holds version: 1 and allow,
+nothing else:
 
     version: 1
     allow:
@@ -254,10 +258,16 @@ def load_allowlist(path) -> list[dict]:
             or not isinstance(doc.get("allow", []), (list, type(None)))):  # `allow:` alone is empty
         raise ValueError(f"{path}: expected a mapping of version: 1 and an allow list, and nothing else")
     entries = doc.get("allow") or []
+    first_at: dict[tuple[str, str], int] = {}
     for i, entry in enumerate(entries):
         problem = _entry_problem(entry)
         if problem:
             raise ValueError(f"{path}: allow[{i}] {problem}")
+        first = first_at.setdefault((entry["section"], entry["key"]), i)
+        if first != i:
+            raise ValueError(f"{path}: allow[{i}] repeats section {entry['section']} key {entry['key']!r} "
+                             f"of allow[{first}]; a difference counts only toward the first entry it matches, "
+                             "so merge fragments without overlap")
     return entries
 
 

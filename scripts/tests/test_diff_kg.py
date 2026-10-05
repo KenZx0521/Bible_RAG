@@ -359,6 +359,32 @@ def test_misspelt_bound_no_longer_allows_any_delta(tmp_path):
     assert dk.classify([big], allow)[0][0]["allowed_by"] is None
 
 
+K10 = {"section": "mention_count", "key": "event:shanshangbaoxun", "delta": -22, "reason": "K10 residual"}
+
+
+@pytest.mark.parametrize("repeat", [
+    K10,                                    # verbatim: the same entry in two W1 fragments
+    {**K10, "reason": "1B fragment"},
+    {**K10, "delta": -3},                   # a different bound is still the same (section, key)
+    {"section": "mention_count", "key": "event:shanshangbaoxun", "reason": "unbounded"},
+])
+def test_allow_list_rejects_a_repeated_section_and_key(tmp_path, repeat):
+    # the merged W1 allowlist concatenates fragments and classify credits only the first
+    # match, so a repeat would surface only as "unused" at R2 (--fail-on-unused)
+    entries = [K10, {"section": "xrefs", "key": "source=tsk", "delta": -68, "reason": "r"}, repeat]
+    with pytest.raises(ValueError, match=r"allow\.yaml: allow\[2\] repeats .*allow\[0\]"):
+        dk.load_allowlist(write_allow(tmp_path, entries))
+
+
+def test_allow_list_keeps_distinct_keys_and_the_same_key_in_another_section(tmp_path):
+    entries = [K10,
+               {**K10, "key": "event:baoluoxushuguizhujingguo", "delta": -3},
+               {"section": "descriptions", "key": "event:shanshangbaoxun", "reason": "other section"},
+               # an overlapping glob is a different key: only verbatim repeats are refused
+               {"section": "mention_count", "key": "event:*", "max_abs_delta": 3, "reason": "glob"}]
+    assert dk.load_allowlist(write_allow(tmp_path, entries)) == entries
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -425,6 +451,14 @@ def test_unused_is_informational_without_the_flag(two_targets, tmp_path, capsys)
     out = capsys.readouterr().out
     assert "unused allowance: xrefs source=supplementary (stale fragment)" in out
     assert out.rstrip().endswith("exit 0: every difference is allowed")  # default wording unchanged
+
+
+def test_cli_refuses_a_repeated_allow_key_before_reading_a_target(monkeypatch, tmp_path):
+    def no_target(name):
+        raise AssertionError("a target was resolved before the allowlist was validated")
+    monkeypatch.setattr(dk, "resolve_target", no_target)
+    with pytest.raises(ValueError, match=r"allow\[1\] repeats"):
+        dk.main(["--no-registry", "--allow", write_allow(tmp_path, [K10, K10]), "--fail-on-unused"])
 
 
 def test_cli_unreadable_target_exits_1(monkeypatch, capsys):

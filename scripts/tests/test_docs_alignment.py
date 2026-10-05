@@ -339,6 +339,12 @@ def test_r2_runs_the_xref_checks_and_the_merged_allowlist_gate():
         assert needle in r2, needle
 
 
+def test_r2_and_diff_kg_help_say_a_repeated_allow_key_is_an_error():
+    # the merged W1 allowlist concatenates fragments: an overlap fails at load, not as unused at R2
+    assert "同一個 section 下逐字相同的 key" in section(staging_text(), "R2")
+    assert "same section and key" in " ".join(help_text("diff_kg").split())
+
+
 def test_w1_step1_ships_the_backend_first_and_gates_on_the_exact_compare():
     step1 = section(staging_text(), "W1 升版第 1 步")
     commands = _commands(step1)
