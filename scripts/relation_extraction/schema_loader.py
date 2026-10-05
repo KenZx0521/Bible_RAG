@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class RelationSchema:
-    def __init__(self, entries: dict[str, RelationSchemaEntry]):
+    def __init__(self, entries: dict[str, RelationSchemaEntry], version: str | None = None):
         self._entries = entries
+        self.version = version   # the yaml's top-level version; 6.05 stamps it on every row
 
     @classmethod
     def load(cls, path: Path) -> "RelationSchema":
@@ -57,7 +58,8 @@ class RelationSchema:
             )
 
         logger.info("Loaded %d relations from %s", len(entries), path)
-        return cls(entries)
+        version = data.get("version")
+        return cls(entries, version=None if version is None else str(version))
 
     def all_names(self) -> list[str]:
         return list(self._entries.keys())

@@ -1,0 +1,7 @@
+{"mention_id": "m:gen:11:1:v:27:001", "entity_id": "person:tala", "source_id": "gen:11:1:v:27", "source_type": "verse", "text_span": "他拉", "context": "...他拉..."}
+{"mention_id": "m:gen:11:1:v:27:002", "entity_id": "person:yabolahan", "source_id": "gen:11:1:v:27", "source_type": "verse", "text_span": "亞伯蘭", "context": "...亞伯蘭..."}
+{"mention_id": "m:gen:11:1:v:27:003", "entity_id": "person:nahe", "source_id": "gen:11:1:v:27", "source_type": "verse", "text_span": "拿鶴", "context": "...拿鶴..."}
+{"mention_id": "m:gen:11:1:v:27:004", "entity_id": "person:luode", "source_id": "gen:11:1:v:27", "source_type": "verse", "text_span": "羅得", "context": "...羅得..."}
+{"mention_id": "m:gen:11:1:0:005", "entity_id": "place:wuer", "source_id": "gen:11:1:0", "source_type": "chunk", "text_span": "吾珥", "context": "...吾珥..."}
+{"mention_id": "m:gen:11:1:006", "entity_id": "event:rizi", "source_id": "gen:11:1", "source_type": "pericope", "text_span": "日子", "context": "...日子..."}
+{"mention_id": "m:mat:2:3:v:23:007", "entity_id": "place:nasalei", "source_id": "mat:2:3:v:23", "source_type": "verse", "text_span": "拿撒勒", "context": "...拿撒勒..."}
