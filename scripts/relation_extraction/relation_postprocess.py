@@ -59,7 +59,7 @@ from pathlib import Path
 
 from . import anchored_rules
 from .anchored_rules import AnchoredConfig
-from .models import SOURCES
+from .models import PHASE_OF_SOURCE, SOURCES
 from .relation_policy import source_of
 from .schema_loader import RelationSchema
 
@@ -73,6 +73,8 @@ except ImportError:  # imported as relation_extraction (scripts/ on sys.path)
 ROOT = Path(__file__).resolve().parents[2]
 REPORT_FORMAT = "relations_postprocess_report/v1"
 MODES = ("all", "none")
+# The rows whose parents the anchored same-name guard reads (rules_to_anchored).
+GUARD_SOURCES = ("curated", "prior", "llm")
 # The input files, in the order their sha256s enter run_id.
 INPUTS = ("relations", "entities", "mentions", "chunks", "pericopes", "overrides", "anchored_config", "schema")
 _DEFAULT_PATHS = {
@@ -160,8 +162,93 @@ def drop_inverse(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> l
     return kept
 
 
+def rules_to_anchored(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-01: drop every phase-2 rule row and add the anchored kinship rows in their place.
+
+    The rule rows took their direction from id order (羅得 FATHER_OF 他拉); all
+    go, under drops.rule. With anchored_rules.yaml enabled, anchored_rules.run
+    then reads the verses (lexicon and span map from the mentions under final
+    types, the same-name guard's parents from the curated, prior and llm rows
+    left; a rule or inverse row is never a parent), its hits collapse to one row
+    per key (_anchored_rows), and its guard conflicts go to the report. With
+    enabled: false, the pre-registered K9 fallback, no anchored row is added.
+    """
+    kept = []
+    for row in rows:
+        if row["source"] == "rule":
+            flow.drop("rule", row)
+        else:
+            kept.append(row)
+    if not cfg.anchored.enabled:
+        flow.anchored = {"enabled": False}
+        return kept
+    hits, stats, conflicts = _anchored_hits(kept, inputs, cfg)
+    made = [base_stamp(row, cfg) for row in _anchored_rows(hits, inputs.entities)]
+    flow.anchored = _anchored_flow(stats, made)
+    flow.conflicts.extend(conflicts)
+    return kept + made
+
+
+def _anchored_hits(rows: list[dict], inputs: Inputs, cfg: Config) -> tuple[list[dict], dict, list[dict]]:
+    """anchored_rules.run over the pericopes: (hits, stats plus foreign_surface_skipped, conflicts)."""
+    final_types = {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
+                   for eid, entity in inputs.entities.items()}
+    lexicon = anchored_rules.build_lexicon(inputs.entities, final_types, inputs.mentions, cfg.anchored)
+    span_map, skipped = anchored_rules.build_span_map(inputs.entities, final_types, inputs.mentions,
+                                                      inputs.chunk_parent, cfg.anchored)
+    parent_map = anchored_rules.parent_map_of((row["head_id"], row["relation"], row["tail_id"])
+                                              for row in rows if row["source"] in GUARD_SOURCES)
+    hits, stats, conflicts = anchored_rules.run(inputs.pericopes, span_map,
+                                                anchored_rules.compile_tokenizer(lexicon), cfg.anchored,
+                                                parent_map)
+    return hits, {**stats, "foreign_surface_skipped": skipped}, conflicts
+
+
+def _anchored_rows(hits: list[dict], entities: Mapping[str, Mapping]) -> list[dict]:
+    """One anchored_rule row per (head, relation, tail), in key order.
+
+    The primary hit, the smallest (source_pericope_id, verse), gives the
+    pericope, verse, evidence_span and pattern (notes); support_pericopes keeps
+    every hit's pericope and evidence_count counts the distinct (pericope, verse).
+    """
+    by_key: dict[tuple[str, str, str], list[dict]] = {}
+    for hit in hits:
+        by_key.setdefault((hit["head_id"], hit["relation"], hit["tail_id"]), []).append(hit)
+    rows = []
+    for (head, relation, tail), group in sorted(by_key.items()):
+        primary = min(group, key=lambda hit: (hit["source_pericope_id"], hit["verse"]))
+        rows.append({
+            "head_id": head, "relation": relation, "tail_id": tail,
+            "source": "anchored_rule", "extraction_phase": PHASE_OF_SOURCE["anchored_rule"],
+            "notes": primary["pattern"], "source_pericope_id": primary["source_pericope_id"],
+            "verse": primary["verse"], "evidence_span": primary["evidence_span"],
+            "head_canonical": entities[head]["canonical_name"],
+            "tail_canonical": entities[tail]["canonical_name"],
+            "support_pericopes": sorted({hit["source_pericope_id"] for hit in group}),
+            "evidence_count": len({(hit["source_pericope_id"], hit["verse"]) for hit in group}),
+        })
+    return rows
+
+
+def _anchored_flow(stats: Mapping, rows: list[dict]) -> dict:
+    """flow.anchored: run()'s stats, unique_keys and the sha256 of the sorted 'head\\trel\\ttail' lines."""
+    lines = sorted(f"{row['head_id']}\t{row['relation']}\t{row['tail_id']}" for row in rows)
+    return {
+        "enabled": True,
+        "pattern_hits": stats["pattern_hits"], "by_pattern": dict(stats["by_pattern"]),
+        "guard_other_parent": stats["guard_other_parent"], "guard_homonym": stats["guard_homonym"],
+        "disagreement_children": stats["anchored_disagreement_children"],
+        "disagreement_abstain": stats["anchored_disagreement_abstain"],
+        "emitted_hits": stats["emitted_hits"], "emitted_by_pattern": dict(stats["emitted_by_pattern"]),
+        "unique_keys": len(rows), "foreign_surface_skipped": stats["foreign_surface_skipped"],
+        "ambiguous_name": stats["ambiguous_name"],   # report-only
+        "key_set_sha256": hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest(),
+    }
+
+
 RULES: tuple[tuple[str, Rule], ...] = (
     ("drop_inverse", drop_inverse),
+    ("rules_to_anchored", rules_to_anchored),
 )
 
 

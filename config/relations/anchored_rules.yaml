@@ -9,6 +9,9 @@
 #   P4_wife         H 的妻(子)? W                     SPOUSE_OF, sorted pair, first item only
 #
 # Decisions (docs/records/2026-10-04_kg_batch1_plan.md, W1):
+#   enabled    K9  true: 6.05 replaces the phase-2 rule rows with these hits;
+#                  false, the pre-registered fallback if the K9 review fails:
+#                  6.05 still drops the rule rows but adds no anchored row
 #   begot      K1  gei: only 「給F生C」 emits FATHER_OF (「拉結生約瑟」 is a mother);
 #                  father: every 「F生C」; off: no P3
 #   surface    K2  declared: a span resolves only as its entity's canonical name
@@ -28,6 +31,7 @@
 # trail_ok are each added to delim.
 version: 1
 
+enabled: true
 begot: gei
 surface: declared
 list_stop: cont

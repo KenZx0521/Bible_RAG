@@ -5,3 +5,15 @@
 {"mention_id": "m:gen:11:1:0:005", "entity_id": "place:wuer", "source_id": "gen:11:1:0", "source_type": "chunk", "text_span": "吾珥", "context": "...吾珥..."}
 {"mention_id": "m:gen:11:1:006", "entity_id": "event:rizi", "source_id": "gen:11:1", "source_type": "pericope", "text_span": "日子", "context": "...日子..."}
 {"mention_id": "m:mat:2:3:v:23:007", "entity_id": "place:nasalei", "source_id": "mat:2:3:v:23", "source_type": "verse", "text_span": "拿撒勒", "context": "...拿撒勒..."}
+{"mention_id": "m:gen:46:0:v:11:001", "entity_id": "person:liwei", "source_id": "gen:46:0:v:11", "source_type": "verse", "text_span": "利未", "context": "...利未..."}
+{"mention_id": "m:gen:46:0:v:11:002", "entity_id": "person:geshun", "source_id": "gen:46:0:v:11", "source_type": "verse", "text_span": "革順", "context": "...革順..."}
+{"mention_id": "m:gen:46:0:v:11:003", "entity_id": "person:gexia", "source_id": "gen:46:0:v:11", "source_type": "verse", "text_span": "哥轄", "context": "...哥轄..."}
+{"mention_id": "m:gen:46:0:v:11:004", "entity_id": "person:milali", "source_id": "gen:46:0:v:11", "source_type": "verse", "text_span": "米拉利", "context": "...米拉利..."}
+{"mention_id": "m:num:26:0:v:59:001", "entity_id": "person:anlan", "source_id": "num:26:0:v:59", "source_type": "verse", "text_span": "暗蘭", "context": "...暗蘭..."}
+{"mention_id": "m:num:26:0:v:59:002", "entity_id": "person:yuejibie", "source_id": "num:26:0:v:59", "source_type": "verse", "text_span": "約基別", "context": "...約基別..."}
+{"mention_id": "m:num:26:0:v:59:003", "entity_id": "person:yalun", "source_id": "num:26:0:v:59", "source_type": "verse", "text_span": "亞倫", "context": "...亞倫..."}
+{"mention_id": "m:num:26:0:v:59:004", "entity_id": "person:moxi", "source_id": "num:26:0:v:59", "source_type": "verse", "text_span": "摩西", "context": "...摩西..."}
+{"mention_id": "m:1ch:6:0:v:1:001", "entity_id": "person:liwei", "source_id": "1ch:6:0:v:1", "source_type": "verse", "text_span": "利未", "context": "...利未..."}
+{"mention_id": "m:1ch:6:0:v:1:002", "entity_id": "person:geshun", "source_id": "1ch:6:0:v:1", "source_type": "verse", "text_span": "革順", "context": "...革順..."}
+{"mention_id": "m:1ch:6:0:v:1:003", "entity_id": "person:gexia", "source_id": "1ch:6:0:v:1", "source_type": "verse", "text_span": "哥轄", "context": "...哥轄..."}
+{"mention_id": "m:1ch:6:0:v:1:004", "entity_id": "person:milali", "source_id": "1ch:6:0:v:1", "source_type": "verse", "text_span": "米拉利", "context": "...米拉利..."}

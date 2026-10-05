@@ -10,3 +10,11 @@
 {"entity_id": "event:hongshui", "type": "Event", "canonical_name": "洪水", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
 {"entity_id": "theme:rizi", "type": "Theme", "canonical_name": "日子", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
 {"entity_id": "group:yehehua", "type": "Group", "canonical_name": "耶和華", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:liwei", "type": "Person", "canonical_name": "利未", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:geshun", "type": "Person", "canonical_name": "革順", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:gexia", "type": "Person", "canonical_name": "哥轄", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:milali", "type": "Person", "canonical_name": "米拉利", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:anlan", "type": "Person", "canonical_name": "暗蘭", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:yuejibie", "type": "Person", "canonical_name": "約基別", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:yalun", "type": "Person", "canonical_name": "亞倫", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}
+{"entity_id": "person:moxi", "type": "Person", "canonical_name": "摩西", "aliases": [], "description": "", "extraction_method": "fixture", "mention_count": 1}

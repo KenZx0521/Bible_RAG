@@ -122,6 +122,7 @@ def _triples(hits):
 # --- config -----------------------------------------------------------------
 
 def test_shipped_config_holds_the_w1_decisions():
+    assert CFG.enabled is True   # false is the pre-registered K9 fallback (6.05 adds no anchored row)
     assert (CFG.begot, CFG.surface, CFG.list_stop) == ("gei", "declared", "cont")
     assert CFG.lexicon_types == {"Person", "Place", "Group"}
     assert CFG.slot_types == {"Person"}
@@ -146,6 +147,7 @@ def test_config_copies_the_simulator_constants():
 
 @pytest.mark.parametrize("change, message", [
     ({"version": 2}, "version"),
+    ({"enabled": "yes"}, "enabled"),
     ({"stop_de": "cont"}, "stop_de"),
     ({"begot": "mother"}, "begot"),
     ({"list_stop": "first"}, "list_stop"),

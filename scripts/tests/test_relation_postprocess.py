@@ -32,6 +32,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from relation_extraction import anchored_rules
 from relation_extraction import relation_postprocess as pp
 from relation_extraction.relation_policy import SOURCE_RANK, parent_child, rank, source_of
 
@@ -263,6 +264,95 @@ def test_drop_inverse_removes_every_inverse_row():
     assert pp.drop_inverse(stamped, inputs, cfg, flow) == stamped[2:]
     assert flow.drops == {"inverse": {"SON_OF": 1, "DESCENDANT_OF": 1}}
     assert [r["source"] for r in stamped] == ["inverse", "inverse", "cooccurrence", "prior"]
+
+
+# --- rules_to_anchored (REL-01) -------------------------------------------------
+
+P1, P2, P3, P4 = "P1_child_of", "P2_is_child_of", "P3_begot", "P4_wife"
+LEVI_SONS = "利未的兒子是革順、哥轄、米拉利。"   # gen 46:11 and 1ch 6:1
+AMRAM = "暗蘭的妻名叫約基別，是利未女子，生在埃及。她給暗蘭生了亞倫、摩西，並他們的姊姊米利暗。"   # num 26:59
+
+
+def _anchored_row(head: str, relation: str, tail: str, pattern: str, pid: str, verse: int, text: str,
+                  support: list[str], evidence_count: int = 1) -> dict:
+    names = {r["entity_id"]: r["canonical_name"] for r in _jsonl(FIXTURE / "entities.jsonl")}
+    return {"head_id": head, "relation": relation, "tail_id": tail, "source": "anchored_rule",
+            "extraction_phase": 6, "notes": pattern, "source_pericope_id": pid, "verse": verse,
+            "evidence_span": text, "head_canonical": names[head], "tail_canonical": names[tail],
+            "support_pericopes": support, "evidence_count": evidence_count}
+
+
+def _key_set_sha256(rows) -> str:
+    lines = sorted(f"{r['head_id']}\t{r['relation']}\t{r['tail_id']}" for r in rows)
+    return hashlib.sha256("\n".join(lines).encode("utf-8")).hexdigest()
+
+
+def test_rule_rows_are_replaced_by_anchored_rows():
+    rows, report = _run("all")
+
+    # the id-order rule row 羅得 FATHER_OF 他拉 (from 「哈蘭生羅得」) goes, and nothing takes its
+    # place: 「他拉生亞伯蘭」 has no 給, so under begot: gei it names no father (K1)
+    assert [r for r in rows if r["source"] == "rule"] == []
+    assert report["flow"]["drops"]["rule"] == {"FATHER_OF": 1}
+    assert report["rules"]["ran"][:2] == ["drop_inverse", "rules_to_anchored"]
+
+    # one row per key; its primary hit is the smallest (pericope id, verse), 1ch:6:0 v1 although
+    # gen:46:0 v11 comes first in the file, and every hit's pericope stays as support
+    levi = ("1ch:6:0", 1, LEVI_SONS, ["1ch:6:0", "gen:46:0"], 2)
+    anchored = [r for r in rows if r["source"] == "anchored_rule"]
+    assert [{k: v for k, v in r.items() if k not in STAMP - {"source"}} for r in anchored] == [
+        _anchored_row("person:anlan", "FATHER_OF", "person:moxi", P3, "num:26:0", 59, AMRAM, ["num:26:0"]),
+        _anchored_row("person:anlan", "FATHER_OF", "person:yalun", P3, "num:26:0", 59, AMRAM, ["num:26:0"]),
+        _anchored_row("person:anlan", "SPOUSE_OF", "person:yuejibie", P4, "num:26:0", 59, AMRAM, ["num:26:0"]),
+        _anchored_row("person:geshun", "SON_OF", "person:liwei", P1, *levi),
+        _anchored_row("person:gexia", "SON_OF", "person:liwei", P1, *levi),
+        _anchored_row("person:milali", "SON_OF", "person:liwei", P1, *levi),
+    ]
+    assert {(r["schema_version"], r["pp_version"]) for r in anchored} == {(SCHEMA_VERSION, pp.pp_version())}
+    by_pattern = {P1: 6, P2: 0, P3: 2, P4: 1}
+    assert report["flow"]["anchored"] == {
+        "enabled": True, "pattern_hits": 9, "by_pattern": by_pattern,
+        "guard_other_parent": 0, "guard_homonym": 0, "disagreement_children": 0, "disagreement_abstain": 0,
+        "emitted_hits": 9, "emitted_by_pattern": by_pattern, "unique_keys": 6,
+        "foreign_surface_skipped": 0, "ambiguous_name": 0, "key_set_sha256": _key_set_sha256(anchored)}
+    assert report["conflicts"] == []
+
+
+def test_anchored_guard_reads_curated_prior_and_llm_parents_only(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    with (tmp_path / "in" / "relations.jsonl").open("a", encoding="utf-8") as f:
+        for row in (_row("person:moxi", "SON_OF", "person:yuejibie", 4, source_pericope_id="num:26:0"),
+                    _row("person:yalun", "SON_OF", "person:moxi", 2, source_pericope_id="num:26:0")):
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    rows, report = _run("all", _paths(tmp_path / "in"))
+
+    # the llm row gives 摩西 a parent (a mother counts), so 「給暗蘭生了…摩西」 abstains and is
+    # logged; the id-order rule row is dropped first and gives 亞倫 no parent
+    keys = {(r["head_id"], r["relation"], r["tail_id"]) for r in rows if r["source"] == "anchored_rule"}
+    assert ("person:anlan", "FATHER_OF", "person:moxi") not in keys
+    assert ("person:anlan", "FATHER_OF", "person:yalun") in keys
+    assert report["conflicts"] == [{
+        "head_id": "person:anlan", "relation": "FATHER_OF", "tail_id": "person:moxi",
+        "source_pericope_id": "num:26:0", "verse": 59, "pattern": P3,
+        "reason": "other_parent", "other_parents": ["person:yuejibie"]}]
+    assert report["flow"]["drops"]["rule"] == {"FATHER_OF": 1, "SON_OF": 1}
+    anchored = report["flow"]["anchored"]
+    assert (anchored["guard_other_parent"], anchored["emitted_hits"], anchored["unique_keys"]) == (1, 8, 5)
+
+
+def test_anchored_disabled_drops_rule_rows_and_adds_none(tmp_path):
+    # the pre-registered K9 fallback: a config switch, no code change
+    doc = yaml.safe_load(anchored_rules.CONFIG_PATH.read_text(encoding="utf-8"))
+    path = tmp_path / "anchored_rules.yaml"
+    path.write_text(yaml.safe_dump({**doc, "enabled": False}, allow_unicode=True), encoding="utf-8")
+    rows, report = _run("all", {**_paths(), "anchored_config": path})
+    enabled_rows, _ = _run("all")
+
+    assert not any(r["source"] in ("rule", "anchored_rule") for r in rows)
+    assert report["flow"]["drops"]["rule"] == {"FATHER_OF": 1}
+    assert report["flow"]["anchored"] == {"enabled": False}
+    assert report["conflicts"] == []
+    assert rows == [r for r in enabled_rows if r["source"] != "anchored_rule"]
 
 
 # --- relation_policy ------------------------------------------------------------

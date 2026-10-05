@@ -13,6 +13,7 @@ cooccurrence edges come from 10.3, not from relations.jsonl).
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import os
 import subprocess
@@ -23,6 +24,7 @@ from pathlib import Path
 import pytest
 
 from relation_extraction import relation_postprocess as pp
+from relation_extraction.anchored_rules import GuardConfig
 
 ROOT = Path(__file__).resolve().parents[2]
 W1_PINS = {
@@ -106,6 +108,88 @@ def test_inverse_drops(real_inputs, all_run):
     kept = pp.drop_inverse(stamped, inputs, cfg, pp.Flow())
     assert len(stamped) - len(kept) == 752
     assert _pairs(kept) == _pairs(stamped)
+
+
+RULE_DROPS = {
+    "SON_OF": 401, "FATHER_OF": 140, "RULED": 65, "MOTHER_OF": 29, "MEMBER_OF": 25, "DAUGHTER_OF": 23,
+    "SPOUSE_OF": 22, "SIBLING_OF": 16, "RETURNED_FROM": 13, "BUILT": 9, "DESCENDANT_OF": 9, "ANCESTOR_OF": 7,
+    "EXILED_TO": 6, "LOCATED_IN": 4, "SUCCEEDED_BY": 2, "BORN_IN": 1}
+P1, P2, P3, P4 = "P1_child_of", "P2_is_child_of", "P3_begot", "P4_wife"
+HITS = {P1: 565, P2: 113, P3: 10, P4: 13}
+# flow.anchored per guard setting (ambiguous_name is report-only and not pinned). The key sets
+# equal the W1 simulator's (docs/records/2026-10-04_kg_fix/batch1/w1_1A/sim_1a_w1.py: sim2_final.json,
+# sim2_no_disagreement.json, and --guard off --disagree off without --homonym).
+ANCHORED = {
+    "full": {
+        "pattern_hits": 701, "by_pattern": HITS, "guard_other_parent": 56, "guard_homonym": 4,
+        "disagreement_children": 49, "disagreement_abstain": 176,
+        "emitted_hits": 465, "emitted_by_pattern": {P1: 377, P2: 68, P3: 7, P4: 13}, "unique_keys": 328,
+        "key_set_sha256": "57bf0c82e3cbced99ff07ad55413cacf907bd82d0aead72dcab302dae4723432"},
+    "disagreement_off": {
+        "pattern_hits": 701, "by_pattern": HITS, "guard_other_parent": 56, "guard_homonym": 4,
+        "disagreement_children": 0, "disagreement_abstain": 0,
+        "emitted_hits": 641, "emitted_by_pattern": {P1: 518, P2: 101, P3: 9, P4: 13}, "unique_keys": 469,
+        "key_set_sha256": "fbe95cfb5b84ea276acdc801dad5120f341661f2385edcb00ca741bebf3e21c6"},
+    "guards_off": {
+        "pattern_hits": 701, "by_pattern": HITS, "guard_other_parent": 0, "guard_homonym": 0,
+        "disagreement_children": 0, "disagreement_abstain": 0,
+        "emitted_hits": 701, "emitted_by_pattern": HITS, "unique_keys": 512,
+        "key_set_sha256": "6914aeb160abb085330b9bda4d8212198c59e8b71a84e941f448414bfc8e2459"},
+}
+ANCHORED_REASONS = ("other_parent", "homonym", "anchored_disagreement")
+
+
+@pytest.fixture(scope="module")
+def rows_before_anchored(real_inputs):
+    """What rules_to_anchored sees in all mode: the base-stamped rows less the inverses."""
+    inputs, cfg = real_inputs
+    return pp.drop_inverse([pp.base_stamp(r, cfg) for r in inputs.relations], inputs, cfg, pp.Flow())
+
+
+def _guard(guard: GuardConfig, variant: str) -> GuardConfig:
+    if variant == "disagreement_off":
+        return dataclasses.replace(guard, disagreement=False)
+    if variant == "guards_off":
+        return GuardConfig(other_parent=False, homonym_ids=frozenset(), disagreement=False)
+    return guard
+
+
+def _key(row) -> tuple[str, str, str]:
+    return row["head_id"], row["relation"], row["tail_id"]
+
+
+@pytest.mark.parametrize("variant", list(ANCHORED))
+def test_rule_drops_and_anchored_counts(real_inputs, all_run, rows_before_anchored, variant):
+    inputs, cfg = real_inputs
+    anchored_cfg = dataclasses.replace(cfg.anchored, guard=_guard(cfg.anchored.guard, variant))
+    flow = pp.Flow()
+    out = pp.rules_to_anchored(rows_before_anchored, inputs, dataclasses.replace(cfg, anchored=anchored_cfg), flow)
+
+    assert flow.drops == {"rule": RULE_DROPS}
+    assert sum(RULE_DROPS.values()) == 772
+    stats = {k: v for k, v in flow.anchored.items() if k != "ambiguous_name"}
+    assert stats == {"enabled": True, "foreign_surface_skipped": 2366, **ANCHORED[variant]}
+    anchored = [r for r in out if r["source"] == "anchored_rule"]
+    assert len(anchored) == len({_key(r) for r in anchored}) == stats["unique_keys"]
+    assert len(out) == len(rows_before_anchored) - 772 + len(anchored)
+    assert len(flow.conflicts) == stats["guard_other_parent"] + stats["guard_homonym"] + stats["disagreement_abstain"]
+    if variant != "full":
+        return
+
+    rows, report = all_run
+    assert report["flow"]["drops"]["rule"] == RULE_DROPS
+    assert report["flow"]["anchored"] == flow.anchored
+    assert Counter(c["reason"] for c in report["conflicts"] if c["reason"] in ANCHORED_REASONS) == {
+        "other_parent": 56, "homonym": 4, "anchored_disagreement": 176}
+    by_key = {_key(r): r for r in anchored}
+    # the rule rows behind kin-lot-not-father-of-terah and kin-leah-* are gone, with no anchored twin
+    for key in (("person:luode", "FATHER_OF", "person:tala"), ("person:liya", "FATHER_OF", "person:lvbian"),
+                ("person:liya", "FATHER_OF", "person:yisa")):
+        assert key not in {_key(r) for r in out}
+    # 1ch 29:26 (P1) and luk 3:32 (P2) both give 大衛 SON_OF 耶西; the smaller pericope id is primary
+    david = by_key[("person:dawei", "SON_OF", "person:yexi")]
+    assert (david["source_pericope_id"], david["verse"], david["notes"]) == ("1ch:29:2", 26, P1)
+    assert (david["support_pericopes"], david["evidence_count"]) == (["1ch:29:2", "luk:3:2"], 2)
 
 
 @pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")

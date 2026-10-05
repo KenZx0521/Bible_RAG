@@ -25,7 +25,8 @@ parent (parent_map, built by 6.05 from those rows), or when either endpoint is a
 known homonym node (guard.homonym_ids). Pass 2 (guard.disagreement) applies the
 same rule within the anchored hits that pass 1 kept: a child they give two or
 more parents is a merged homonym node (亞撒利雅 has 11 anchored fathers), and
-every parent hit of it abstains.
+every parent hit of it abstains. With enabled: false (the pre-registered K9
+fallback) 6.05 still drops the rule rows but adds no anchored row.
 
 Port of docs/records/2026-10-04_kg_fix/batch1/planner_1A/anchored_sim.py with
 the W1 changes of batch1/w1_1A/anchored_w1.py. PyYAML and the standard library
@@ -53,7 +54,7 @@ BEGOT_MODES = ("gei", "father", "off")
 SURFACES = ("declared", "any")
 LIST_STOPS = ("cont", "all", "off")
 CONFIG_KEYS = (
-    "version", "begot", "surface", "list_stop", "lexicon_types", "slot_types", "deny_ids",
+    "version", "enabled", "begot", "surface", "list_stop", "lexicon_types", "slot_types", "deny_ids",
     "min_name_len", "delim", "list_sep", "prev_ok", "trail_ok", "sentence_end",
     "child_re", "begot_re", "wife_re", "is_child_re", "guard",
 )
@@ -82,6 +83,7 @@ class GuardConfig:
 
 @dataclass(frozen=True)
 class AnchoredConfig:
+    enabled: bool                  # false: 6.05 adds no anchored row (the K9 fallback)
     begot: str
     surface: str
     list_stop: str
@@ -169,10 +171,13 @@ def _guard(path: Path, doc: Mapping) -> GuardConfig:
 def load_config(path: Path = CONFIG_PATH) -> AnchoredConfig:
     """The anchored-rule config; ValueError on an unknown, missing or malformed key."""
     doc = _read(path)
+    if not isinstance(doc["enabled"], bool):
+        raise ValueError(f"{path}: enabled must be true or false")
     if type(doc["min_name_len"]) is not int or doc["min_name_len"] < 1:
         raise ValueError(f"{path}: min_name_len must be a positive integer")
     delim = _chars(path, doc, "delim")
     return AnchoredConfig(
+        enabled=doc["enabled"],
         begot=_choice(path, doc, "begot", BEGOT_MODES),
         surface=_choice(path, doc, "surface", SURFACES),
         list_stop=_choice(path, doc, "list_stop", LIST_STOPS),
