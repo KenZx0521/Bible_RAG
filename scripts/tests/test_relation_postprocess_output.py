@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from entity_extraction import entity_overrides
+from entity_extraction import entity_overrides, geo_rules
 from relation_extraction import relation_postprocess as pp
 from relation_extraction.anchored_rules import GuardConfig
 
@@ -212,6 +212,42 @@ def test_event_event_drops(real_inputs, all_run, rows_before_anchored):
                                for r in inputs.relations) == 38
     generic = set(report["expected_after_10_2"]["generic_event_ids"])
     assert sum(r["head_id"] in generic or r["tail_id"] in generic for r in dropped) == 12
+
+
+def _support_after_10_2(inputs) -> set[tuple[str, str]]:
+    """{(pericope, entity_id)} of the MENTIONS edges 10.2 leaves, computed apart from 6.05."""
+    keep = geo_rules.compute_dan_keep_sources(pp.default_paths()["mentions"])
+    support = set()
+    for m in inputs.mentions:
+        key = m["source_id"].split(":v:")[0]   # what action_dan compares against s.id
+        if m["entity_id"] == "place:dan" and key not in keep:
+            continue
+        support.add((inputs.chunk_parent[key] if m["source_type"] == "chunk" else key, m["entity_id"]))
+    return support
+
+
+def test_gate_drops(real_inputs, all_run, rows_before_anchored):
+    rows, report = all_run
+    dan_near = ("place:dan", "NEAR", "place:yuedan")
+    # the gate's one drop: 但 NEAR 約旦 from 「疏割和撒拉但中間」 (1ki 7:46), whose 但 MENTIONS
+    # edge 10.2 deletes; prod and the batch-0 staging build both hold the edge unsupported
+    assert report["flow"]["drops"]["provenance_gate"] == {"NEAR": 1}
+    assert report["flow"]["drops_due_to_dan_filter"] == {"NEAR": 1}
+    assert report["rules"]["ran"].index("provenance_gate") > report["rules"]["ran"].index("drop_llm_event_event")
+    [row] = [r for r in rows_before_anchored if _key(r) == dan_near]
+    assert (row["source"], row["source_pericope_id"]) == ("llm", "1ki:7:5")
+    assert dan_near not in {_key(r) for r in rows}
+
+    # every row left but the exempt ones has both endpoints mentioned in its pericope
+    inputs, _ = real_inputs
+    support = _support_after_10_2(inputs)
+    assert [_key(r) for r in rows if r["source"] not in ("prior", "curated") and not (
+        r["source_pericope_id"] and {(r["source_pericope_id"], r["head_id"]),
+                                     (r["source_pericope_id"], r["tail_id"])} <= support)] == []
+    # G-3: the 64 priors name no pericope and pass ungated; the gate's one drop is an llm
+    # row, so every anchored row it saw is supported
+    priors = [r for r in rows if r["source"] == "prior"]
+    assert len(priors) == 64 and not any(r["source_pericope_id"] for r in priors)
 
 
 @pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")

@@ -12,7 +12,7 @@ Standard library only: 6.05 reads JSONL and connects to no database.
 from __future__ import annotations
 
 import json
-from collections.abc import Container
+from collections.abc import Container, Iterable, Mapping
 from pathlib import Path
 
 DAN_ID = "place:dan"
@@ -43,18 +43,16 @@ def is_geo_context(ctx: str) -> bool:
     return False
 
 
+def dan_keep_sources(mentions: Iterable[Mapping]) -> set[str]:
+    """The source keys of the place:dan mention rows whose 「但」 is the place name."""
+    return {rec["source_id"].split(":v:")[0] for rec in mentions
+            if rec.get("entity_id") == DAN_ID and is_geo_context(rec.get("context", ""))}
+
+
 def compute_dan_keep_sources(mentions_path: Path) -> set[str]:
-    keep: set[str] = set()
+    """dan_keep_sources over entity_mentions.jsonl, parsing only the lines that name place:dan."""
     with mentions_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            if '"place:dan"' not in line:
-                continue
-            rec = json.loads(line)
-            if rec.get("entity_id") != "place:dan":
-                continue
-            if is_geo_context(rec.get("context", "")):
-                keep.add(rec["source_id"].split(":v:")[0])
-    return keep
+        return dan_keep_sources(json.loads(line) for line in f if f'"{DAN_ID}"' in line)
 
 
 def keeps_dan_mention(entity_id: str, source_key: str, keep: Container[str]) -> bool:

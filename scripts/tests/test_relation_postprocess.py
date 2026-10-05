@@ -94,7 +94,8 @@ def test_none_mode_projects_back_to_input_rows():
     assert {r["schema_version"] for r in rows} == {SCHEMA_VERSION}
     assert {r["pp_version"] for r in rows} == {pp.pp_version()}
     assert report["rules"] == {"mode": "none", "ran": []}
-    assert report["flow"] == {"input": 9, "drops": {}, "anchored": {}, "flagged": {}, "output": 9}
+    assert report["flow"] == {"input": 9, "drops": {}, "drops_due_to_dan_filter": {}, "anchored": {},
+                              "flagged": {}, "output": 9}
     assert report["conflicts"] == []
 
 
@@ -368,12 +369,12 @@ def test_llm_event_event_rows_are_dropped(tmp_path):
     rows, report = _run("all", _paths(tmp_path / "in"))
 
     # the LLM's Event–Event edges go; a prior between two events is not the LLM's and stays,
-    # as does an llm edge with one Event endpoint (洪水 OCCURRED_IN 吾珥)
+    # as does an llm edge with one Event endpoint (日子 OCCURRED_IN 吾珥)
     keys = {(r["head_id"], r["relation"], r["tail_id"], r["source"]) for r in rows}
     assert not {("event:hongshui", "PRECEDED_BY", "event:dahui", "llm"),
                 ("event:dahui", "CAUSED", "event:hongshui", "llm")} & keys
     assert {("event:rizi", "PRECEDED_BY", "event:hongshui", "prior"),
-            ("event:hongshui", "OCCURRED_IN", "place:wuer", "llm")} <= keys
+            ("event:rizi", "OCCURRED_IN", "place:wuer", "llm")} <= keys
     assert report["flow"]["drops"]["llm_event_event"] == {"CAUSED": 1, "PRECEDED_BY": 1}
     assert report["rules"]["ran"][:3] == ["drop_inverse", "rules_to_anchored", "drop_llm_event_event"]
 
@@ -387,6 +388,96 @@ def test_llm_event_event_rows_are_dropped(tmp_path):
     assert pp.drop_llm_event_event(stamped, inputs, dataclasses.replace(cfg, overrides=relabel),
                                    flow) == stamped[:1]
     assert flow.drops == {"llm_event_event": {"CAUSED": 1}}
+
+
+# --- provenance_gate (REL-05, M3) -----------------------------------------------
+
+SALADAN = "在約旦平原、疏割和撒拉但中間"   # 1ki 7:46: the 但 of 撒拉但 is no place
+DAN_TO_BEERSHEBA = "從但到別是巴所有的以色列人"   # 1sa 3:20
+GATE_PLACES = {"place:dan": "但", "place:yuedan": "約旦", "place:yiselie": "以色列"}
+
+
+def _place(entity_id: str) -> dict:
+    return {"entity_id": entity_id, "type": "Place", "canonical_name": GATE_PLACES[entity_id], "aliases": [],
+            "description": "", "extraction_method": "fixture", "mention_count": 1}
+
+
+def _mention(entity_id: str, source_id: str, source_type: str, context: str) -> dict:
+    return {"mention_id": f"m:{source_id}:{entity_id}", "entity_id": entity_id, "source_id": source_id,
+            "source_type": source_type, "text_span": GATE_PLACES[entity_id], "context": context}
+
+
+def _append_jsonl(path: Path, rows) -> None:
+    with path.open("a", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def test_gate_drops_dan_orphan_and_exempts_prior(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    _append_jsonl(tmp_path / "in" / "entities.jsonl", [_place(eid) for eid in GATE_PLACES])
+    _append_jsonl(tmp_path / "in" / "entity_mentions.jsonl", [
+        _mention("place:yuedan", "1ki:7:5:v:46", "verse", SALADAN),
+        _mention("place:dan", "1ki:7:5:v:46", "verse", SALADAN),
+        _mention("place:dan", "1sa:3:0:v:20", "verse", DAN_TO_BEERSHEBA),
+        _mention("place:yiselie", "1sa:3:0:v:20", "verse", DAN_TO_BEERSHEBA)])
+    _append_jsonl(tmp_path / "in" / "relations.jsonl", [
+        _row("place:dan", "NEAR", "place:yuedan", 4, source_pericope_id="1ki:7:5"),
+        _row("place:dan", "LOCATED_IN", "place:yiselie", 4, source_pericope_id="1sa:3:0"),
+        _row("place:yuedan", "NEAR", "place:yiselie", 4, source_pericope_id=""),
+        _row("place:yiselie", "NEAR", "place:yuedan", None, source="curated", source_pericope_id="1ki:7:5")])
+    rows, report = _run("all", _paths(tmp_path / "in"))
+    keys = {(r["head_id"], r["relation"], r["tail_id"], r["source"]) for r in rows}
+
+    # 但 NEAR 約旦 rests on 「撒拉但」 alone, whose MENTIONS edge 10.2 deletes: it goes, the one
+    # drop the 「但」 filter causes. 「從但到別是巴」 is the place, so 但 LOCATED_IN 以色列 stays
+    assert ("place:dan", "NEAR", "place:yuedan", "llm") not in keys
+    assert ("place:dan", "LOCATED_IN", "place:yiselie", "llm") in keys
+    # unsupported without the filter: no pericope at all; 洪水 is never mentioned in gen:11:1
+    assert ("place:yuedan", "NEAR", "place:yiselie", "llm") not in keys
+    assert ("event:hongshui", "OCCURRED_IN", "place:wuer", "llm") not in keys
+    assert report["flow"]["drops"]["provenance_gate"] == {"NEAR": 2, "OCCURRED_IN": 1}
+    assert report["flow"]["drops_due_to_dan_filter"] == {"NEAR": 1}
+
+    # G-3: prior and curated rows pass ungated (創 11:26 names no pericope; 以色列 is not
+    # mentioned in 1ki:7:5); the anchored rows are gated, and all six are supported
+    assert {("person:tala", "FATHER_OF", "person:yabolahan", "prior"),
+            ("place:yiselie", "NEAR", "place:yuedan", "curated")} <= keys
+    assert sum(r["source"] == "anchored_rule" for r in rows) == 6
+    ran = report["rules"]["ran"]
+    assert ran.index("drop_llm_event_event") < ran.index("provenance_gate")
+
+
+def test_chunk_mentions_roll_up_to_parent():
+    inputs, cfg = pp.load_inputs(_paths())
+    # 吾珥 is mentioned only in chunk gen:11:1:0; that MENTIONS edge supports its parent pericope
+    assert [(m["source_id"], m["source_type"]) for m in inputs.mentions
+            if m["entity_id"] == "place:wuer"] == [("gen:11:1:0", "chunk")]
+    # 10.2 keys a chunk's 「但」 edge by the chunk id: the place name in chunk 1ki:12:2:0 keeps
+    # its edge although no verse of 1ki:12:2 names the place; 撒拉但 in chunk 1ki:7:5:0 loses it
+    inputs = dataclasses.replace(
+        inputs,
+        entities={**inputs.entities, **{eid: _place(eid) for eid in GATE_PLACES}},
+        mentions=[*inputs.mentions,
+                  _mention("place:dan", "1ki:12:2:0", "chunk", "一隻安在但"),
+                  _mention("place:yuedan", "1ki:12:2:v:30", "verse", "約旦"),
+                  _mention("place:dan", "1ki:7:5:0", "chunk", SALADAN),
+                  _mention("place:yuedan", "1ki:7:5:v:46", "verse", SALADAN)],
+        chunk_parent={**inputs.chunk_parent, "1ki:12:2:0": "1ki:12:2", "1ki:7:5:0": "1ki:7:5"})
+    stamped = [pp.base_stamp(r, cfg) for r in (
+        _row("person:tala", "DIED_IN", "place:wuer", 4, source_pericope_id="gen:11:1"),
+        _row("person:tala", "DIED_IN", "place:wuer", 4, source_pericope_id="gen:11:1:0"),
+        _row("place:dan", "NEAR", "place:yuedan", 4, source_pericope_id="1ki:12:2"),
+        _row("place:dan", "NEAR", "place:yuedan", 4, source_pericope_id="1ki:7:5"),
+        # an anchored row is gated like an llm one: 羅得 and 他拉 are not in num:26:0
+        _row("person:luode", "SON_OF", "person:tala", 6, source="anchored_rule", source_pericope_id="num:26:0"),
+    )]
+    flow = pp.Flow()
+
+    # support is keyed by pericope: the chunk id itself names none
+    assert pp.provenance_gate(stamped, inputs, cfg, flow) == [stamped[0], stamped[2]]
+    assert flow.drops == {"provenance_gate": {"DIED_IN": 1, "NEAR": 1, "SON_OF": 1}}
+    assert flow.dan_filter_drops == {"NEAR": 1}
 
 
 # --- relation_policy ------------------------------------------------------------

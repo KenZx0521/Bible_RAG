@@ -51,6 +51,23 @@ def test_keeps_dan_mention_filters_place_dan_only():
     assert geo_rules.keeps_dan_mention("place:dan", "gen:14:1", frozenset(keep))
 
 
+def test_dan_keep_sources_over_parsed_rows_matches_the_file(tmp_path):
+    # 6.05 holds entity_mentions.jsonl parsed; 10.2 reads the file. The keys are
+    # the same: source_id split at ':v:', so a chunk or pericope id stays itself.
+    rows = [
+        {"entity_id": "place:dan", "source_id": "gen:14:0:v:14", "source_type": "verse", "context": "直追到但"},
+        {"entity_id": "place:dan", "source_id": "1ki:12:2:0", "source_type": "chunk", "context": "一隻安在但"},
+        {"entity_id": "place:dan", "source_id": "jdg:18:3", "source_type": "pericope", "context": "從但到別是巴"},
+        {"entity_id": "place:dan", "source_id": "1ki:7:5:v:46", "source_type": "verse", "context": "疏割和撒拉但中間"},
+        {"entity_id": "person:dan", "source_id": "gen:30:1:v:6", "source_type": "verse", "context": "從但到別是巴"},
+    ]
+    path = tmp_path / "entity_mentions.jsonl"
+    path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows), encoding="utf-8")
+
+    assert geo_rules.dan_keep_sources(rows) == geo_rules.compute_dan_keep_sources(path) == {
+        "gen:14:0", "1ki:12:2:0", "jdg:18:3"}
+
+
 def test_cleanup_reexports_the_shared_rules():
     assert cleanup_noise_entities.compute_dan_keep_sources is geo_rules.compute_dan_keep_sources
     assert cleanup_noise_entities._is_geo_context is geo_rules.is_geo_context

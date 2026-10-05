@@ -32,11 +32,12 @@ file) stops the run before anything is written.
 The report (relations_postprocess_report/v1) records pp_version,
 schema_version, the rules, run_id ('6.05-' and 12 hex of sha256(pp_version +
 the input sha256s in INPUTS order)), every input's {path, sha256, rows}, the
-flow {input, drops {reason: {relation: n}}, anchored, flagged, output}, the
-conflicts, the output {path, sha256, rows, by_source, by_relation} and
-expected_after_10_2: the edge set the graph holds once 10.2 has DETACH
-DELETEd the generic Event nodes. scripts/tools/check_edge_set.py compares
-staging with that section through edge_set_sha256 and by_ee_key.
+flow {input, drops {reason: {relation: n}}, drops_due_to_dan_filter
+{relation: n}, anchored, flagged, output}, the conflicts, the output {path,
+sha256, rows, by_source, by_relation} and expected_after_10_2: the edge set
+the graph holds once 10.2 has DETACH DELETEd the generic Event nodes.
+scripts/tools/check_edge_set.py compares staging with that section through
+edge_set_sha256 and by_ee_key.
 
 Usage (from the project root):
     scripts/.venv/bin/python -m scripts.relation_extraction.relation_postprocess
@@ -64,10 +65,10 @@ from .relation_policy import source_of
 from .schema_loader import RelationSchema
 
 try:  # imported as scripts.relation_extraction (run with -m from the repo root)
-    from ..entity_extraction import entity_overrides
+    from ..entity_extraction import entity_overrides, geo_rules
     from ..entity_extraction.stoplists import GENERIC_EVENT_STOPLIST
 except ImportError:  # imported as relation_extraction (scripts/ on sys.path)
-    from entity_extraction import entity_overrides
+    from entity_extraction import entity_overrides, geo_rules
     from entity_extraction.stoplists import GENERIC_EVENT_STOPLIST
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -75,6 +76,8 @@ REPORT_FORMAT = "relations_postprocess_report/v1"
 MODES = ("all", "none")
 # The rows whose parents the anchored same-name guard reads (rules_to_anchored).
 GUARD_SOURCES = ("curated", "prior", "llm")
+# The rows provenance_gate passes without co-mention support (G-3).
+GATE_EXEMPT = ("curated", "prior")
 # The input files, in the order their sha256s enter run_id.
 INPUTS = ("relations", "entities", "mentions", "chunks", "pericopes", "overrides", "anchored_config", "schema")
 _DEFAULT_PATHS = {
@@ -130,6 +133,7 @@ class Flow:
     """What the rules did, for the report's flow and conflicts."""
 
     drops: dict[str, Counter] = field(default_factory=dict)   # reason -> relation counts
+    dan_filter_drops: Counter = field(default_factory=Counter)  # gate drops the 「但」 filter caused
     anchored: dict = field(default_factory=dict)
     flagged: Counter = field(default_factory=Counter)          # relation counts
     conflicts: list[dict] = field(default_factory=list)
@@ -264,6 +268,51 @@ def drop_llm_event_event(rows: list[dict], inputs: Inputs, cfg: Config, flow: Fl
     return kept
 
 
+def provenance_gate(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-05, M3: drop every row whose two endpoints are not both mentioned in its pericope.
+
+    The support is the MENTIONS layer as it stands after 10.2: (pericope,
+    entity_id) over entity_mentions.jsonl (_support). A row with no
+    source_pericope_id has none. curated and prior rows are exempt (G-3): a
+    prior cites a verse, not a pericope. A drop that only the 「但」 filter
+    caused, one the unfiltered mentions would support, is also counted in
+    flow.dan_filter_drops.
+    """
+    supported, unfiltered = _support(inputs)
+    kept = []
+    for row in rows:
+        if row["source"] in GATE_EXEMPT or _supported(row, supported):
+            kept.append(row)
+            continue
+        flow.drop("provenance_gate", row)
+        if _supported(row, unfiltered):
+            flow.dan_filter_drops[row["relation"]] += 1
+    return kept
+
+
+def _support(inputs: Inputs) -> tuple[set[tuple[str, str]], set[tuple[str, str]]]:
+    """({(pericope, entity_id)} after the 10.2 「但」 filter, the same without it).
+
+    A mention counts for its pericope (anchored_rules.pericope_of: a verse row
+    split at ':v:', a chunk row rolled up to its parent), as import_neo4j
+    anchors it. The filter keys a row as action_dan compares s.id, by
+    source_id split at ':v:', so a chunk row by its chunk id, not the parent.
+    """
+    keep = geo_rules.dan_keep_sources(inputs.mentions)
+    supported, unfiltered = set(), set()
+    for mention in inputs.mentions:
+        pair = (anchored_rules.pericope_of(mention, inputs.chunk_parent), mention["entity_id"])
+        unfiltered.add(pair)
+        if geo_rules.keeps_dan_mention(mention["entity_id"], mention["source_id"].split(":v:")[0], keep):
+            supported.add(pair)
+    return supported, unfiltered
+
+
+def _supported(row: Mapping, support: set[tuple[str, str]]) -> bool:
+    pid = row.get("source_pericope_id")
+    return bool(pid) and (pid, row["head_id"]) in support and (pid, row["tail_id"]) in support
+
+
 def _final_types(inputs: Inputs, cfg: Config) -> dict[str, str]:
     """entity_id -> final type: the entities.jsonl type through the curated overrides."""
     return {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
@@ -274,6 +323,7 @@ RULES: tuple[tuple[str, Rule], ...] = (
     ("drop_inverse", drop_inverse),
     ("rules_to_anchored", rules_to_anchored),
     ("drop_llm_event_event", drop_llm_event_event),
+    ("provenance_gate", provenance_gate),
 )
 
 
@@ -456,6 +506,7 @@ def build_report(rows: list[dict], inputs: Inputs, cfg: Config, mode: str, ran: 
         "inputs": {name: dict(meta) for name, meta in inputs.files.items()},
         "flow": {"input": len(inputs.relations),
                  "drops": {reason: dict(sorted(n.items())) for reason, n in flow.drops.items()},
+                 "drops_due_to_dan_filter": dict(sorted(flow.dan_filter_drops.items())),
                  "anchored": dict(flow.anchored), "flagged": dict(sorted(flow.flagged.items())),
                  "output": len(rows)},
         "conflicts": sorted(flow.conflicts, key=_line),
