@@ -54,8 +54,10 @@ services:
   # R2: a second backend on the already-built image, reading staging Neo4j, the
   # staging PG database and the staging entity collection. Passage collections
   # and BM25 are shared (the Step 0 sha gate guarantees they did not change).
-  # To test new backend code here, `docker compose build backend` first (that
-  # retags the image without restarting the production container).
+  # To test new backend code here, do not `docker compose build backend`: that
+  # overwrites bible_rag-backend:latest, which the next production `up` picks
+  # up. Build a separate tag (bible_rag-backend:w1) through an untracked
+  # override instead: docs/staging_promotion.md R2「W1 的交叉引用檢查」item 3.
   backend-staging:
     image: bible_rag-backend:latest
     pull_policy: never

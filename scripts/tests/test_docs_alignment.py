@@ -7,9 +7,13 @@ with flags in either doc is checked against that script's real --help (and
 in the middle of a rebuild. Also pins the batch-0 rebuild order (replay after
 the curated overlay) in both the doc and the fix plan, whose batch-1+ details
 live in a companion file, and checks that the cross links survive the split.
-Batch 1B (W1) pins the cross-reference runbook: backend before data, the
-deploy-guard as the first command of the data load, the image never rolled
-back ahead of the data, and no votes=999 sentinel left in the mechanism docs.
+Batch 1B (W1) pins the cross-reference runbook: backend before data (the
+R2-tested image itself, its id checked; the rollback image's id recorded and
+saved to bak/ once, in fail-closed blocks), the deploy-guard as the first
+command of the data load, one ratchet for the wave, the image never rolled
+back ahead of the data and rolled back by the recorded id (compose with
+--no-deps from a clean main-checkout shell), and no votes=999 sentinel left
+in the mechanism docs.
 """
 from __future__ import annotations
 
@@ -283,11 +287,12 @@ def _documented_flags(script: str, *paths: Path) -> set[str]:
 
 
 def _commands(text: str) -> list[str]:
-    """Fenced-block command lines in order: continuations joined, comments and blanks dropped."""
+    """Fenced-block command lines in order: continuations joined, runs of whitespace collapsed,
+    comments and blanks dropped."""
     lines = []
     for block in re.findall(r"```[a-z]*\n(.*?)```", text, re.S):
         for line in block.replace("\\\n", " ").splitlines():
-            line = re.sub(r"\s+#\s.*$", "", line).strip()
+            line = " ".join(re.sub(r"\s+#\s.*$", "", line).split())
             if line and not line.startswith("#"):
                 lines.append(line)
     return lines
@@ -380,15 +385,98 @@ def test_r2_and_diff_kg_help_say_a_repeated_allow_key_is_an_error():
     assert "same section and key" in " ".join(help_text("diff_kg").split())
 
 
+ROLLBACK_TAR = "bak/$D/images/backend_kg-pre-batch1-w1.tar.gz"
+ROLLBACK_ID = "bak/$D/images/backend_kg-pre-batch1-w1.id"
+W1_ID_FILE = "bak/$D/images/backend_w1.id"
+SMOKE_JSON = "results_quick/w1_step1_smoke.json"
+D_GUARD = ': "${D:?set D to the W1 R0 date}"'
+
+
+def _in_order(commands: list[str], keys) -> list[int]:
+    missing = [key for key in keys if not any(key in command for command in commands)]
+    assert not missing, (missing, commands)
+    positions = [_first(commands, key) for key in keys]
+    assert positions == sorted(positions), (keys, commands)
+    return positions
+
+
+def _blocks(text: str) -> list[list[str]]:
+    """_commands of each fenced block, in order."""
+    return [_commands(f"```\n{block}```") for block in re.findall(r"```[a-z]*\n(.*?)```", text, re.S)]
+
+
+def _assert_fail_closed(block: list[str], last_echo: str, options: str = "set -eu -o pipefail") -> None:
+    """A subshell under set -e: any failing line stops it before its closing echo. A test chained
+    with && or || would not stop it (set -e ignores all but the last command of such a list)."""
+    assert block[:3] == ["(", options, D_GUARD] and block[-2:] == [f"echo '{last_echo}'", ")"], block
+    assert not [c for c in block if c.startswith("test ") and re.search(r"&&|\|\|", c)], block
+
+
 def test_w1_step1_ships_the_backend_first_and_gates_on_the_exact_compare():
     step1 = section(staging_text(), "W1 升版第 1 步")
-    commands = _commands(step1)
-    keys = ("kg-pre-batch1-w1", "up -d --build backend", "smoke20_ids.txt",
-            "deploy-guard --container bible_rag_backend", "probes.xref_measure", "predict", "compare")
-    positions = [_first(commands, key) for key in keys]
-    assert positions == sorted(positions) and positions[0] == 0, commands
+    keys = ("kg-pre-batch1-w1", "docker tag bible_rag-backend:w1 bible_rag-backend:latest", "up -d --no-deps",
+            "smoke20_ids.txt", "deploy-guard --container bible_rag_backend", "probes.xref_measure",
+            "predict", "compare")
+    _in_order(_commands(step1), keys)
     for needle in ("087ab0d", "9bc112a6", "1,279", "57/262", "5,820"):
         assert needle in step1, needle
+    record = next(line for line in step1.splitlines() if line.startswith("- W1 紀錄"))
+    for needle in ("backend_w1.id", "backend_kg-pre-batch1-w1.id", "sha256"):
+        assert needle in record, needle
+
+
+def test_w1_step1_saves_once_then_deploys_in_fail_closed_blocks_before_verifying():
+    save, deploy, verify = _blocks(section(staging_text(), "W1 升版第 1 步"))
+    # noclobber: a re-run cannot overwrite the recorded rollback id or the archive
+    _assert_fail_closed(save, "rollback image saved", "set -eu -o pipefail -o noclobber")
+    _assert_fail_closed(deploy, "prod runs :w1")
+    assert "smoke20_ids.txt" in verify[0], verify
+
+
+def test_w1_step1_pins_and_saves_the_rollback_image_before_switching():
+    # handoff §4: on 2026-10-05 `docker image prune -a` removed tagged rollback images
+    save = _blocks(section(staging_text(), "W1 升版第 1 步"))[0]
+    _in_order(save, (
+        f"W1=$(cat {W1_ID_FILE})", "PROD=$(docker inspect -f '{{.Image}}' bible_rag_backend)",
+        'test "$PROD" != "$W1"', f"test ! -e {ROLLBACK_TAR}", f'echo "$PROD" > {ROLLBACK_ID}',
+        'docker tag "$PROD" bible_rag-backend:kg-pre-batch1-w1',
+        "docker create --name bible_rag_backend_kg_pre_batch1_w1 bible_rag-backend:kg-pre-batch1-w1",
+        f"docker save bible_rag-backend:kg-pre-batch1-w1 | gzip > {ROLLBACK_TAR}.part",
+        f"gunzip -c {ROLLBACK_TAR}.part | tar -tf - >/dev/null", f"mv {ROLLBACK_TAR}.part {ROLLBACK_TAR}",
+        "(cd bak/$D && sha256sum ./images/backend_kg-pre-batch1-w1.tar.gz >> SHA256SUMS)"))
+    r0 = section(staging_text(), "R0")
+    assert "docker save" in r0 and "W1 升版第 1 步" in r0
+
+
+def test_w1_step1_deploys_the_r2_tested_image_and_waits_for_health():
+    r2 = _commands(section(staging_text(), "R2"))
+    record = f"docker image inspect -f '{{{{.Id}}}}' bible_rag-backend:w1 > {W1_ID_FILE}"
+    up = _in_order(r2, ("w1_image.yml build backend", record, "w1_image.yml up -d backend-staging"))[2]
+    assert W1_ID_FILE in r2[up + 1] and "bible_rag_backend_staging)" in r2[up + 1], r2[up + 1]
+    step1 = section(staging_text(), "W1 升版第 1 步")
+    deploy = _blocks(step1)[1]
+    # the saved rollback and an unchanged :w1 gate the retag; prod must then run the R2 id
+    up = _in_order(deploy, (
+        f"W1=$(cat {W1_ID_FILE})", f"PRE=$(cat {ROLLBACK_ID})",
+        "grep -qF ' ./images/backend_kg-pre-batch1-w1.tar.gz' bak/$D/SHA256SUMS",
+        "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend_kg_pre_batch1_w1)\" = \"$PRE\"",
+        "test \"$(docker image inspect -f '{{.Id}}' bible_rag-backend:w1)\" = \"$W1\"",
+        "docker tag bible_rag-backend:w1 bible_rag-backend:latest", "docker compose up",
+        "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend)\" = \"$W1\""))[6]
+    assert {"--no-deps", "--no-build", "--wait"} <= set(deploy[up].split()), deploy[up]
+    assert not [c for c in _commands(step1) if re.search(r"(?<![\w-])--build\b", c) or c.startswith("curl")]
+
+
+def test_w1_step1_smoke_cannot_pass_on_a_stale_result_and_checks_pred_trans():
+    commands = _commands(section(staging_text(), "W1 升版第 1 步"))
+    parts = [part.strip() for part in commands[_first(commands, "smoke20_ids.txt")].split("&&")]
+    assert parts[1] == f"rm -f {SMOKE_JSON}", parts
+    assert parts[2].startswith("uv run python quick_retrieval_eval.py") and SMOKE_JSON in parts[3], parts
+    compare = ("xref_probe.py compare --pred bak/$D/xref_probe/pred_prod_step1.json "
+               "--measured bak/20261005_w1_1b_evidence/pred_trans.json")
+    _in_order(commands, ("xref_probe.py predict", compare))
+    readme = read(ROOT / "evaluation" / "experiments" / "2026-10-05_kg_w1" / "README.md")
+    assert f"rm -f {SMOKE_JSON}" in readme and "up -d --build backend" not in readme
 
 
 def test_w1_data_load_starts_with_the_deploy_guard():
@@ -409,6 +497,47 @@ def test_r4_and_r5_cover_the_xref_promotion():
     r5 = section(staging_text(), "R5")
     for needle in ("kg-pre-batch1-w1", "不可先於資料", "deploy-guard", "760", "86/262"):
         assert needle in r5, needle
+
+
+def test_r4_ratchets_the_whole_wave_once_with_the_merged_allowlist():
+    import validate_kg as vk
+    r4 = section(staging_text(), "R4")
+    ratchets = [c for c in _commands(r4) if "--ratchet" in c or "--accept" in c]
+    assert ratchets == ["uv run --project scripts python scripts/validate_kg.py --live --target prod "
+                        "--ratchet --accept W,R1,R11"], ratchets
+    assert {"W", "R1", "R11"} <= set(vk.CHECKS)
+    for needle in ("H8.no_provenance 916 → 0", "H8.unflagged 250,418 → 0", "kg_diff_allow_batch1w1.yaml"):
+        assert needle in r4, needle
+    assert "`--accept R11`" not in r4
+
+
+def test_r3_and_r5_compose_runs_without_deps_from_a_clean_main_checkout_shell():
+    # a shell that sourced staging.env would make compose recreate prod postgres (POSTGRES_DB)
+    for name in ("R3", "R5"):
+        ups = [s for s in code_snippets(section(staging_text(), name)) if "docker compose up" in s]
+        assert len(ups) >= 2 and all("--no-deps" in s.split() for s in ups), (name, ups)
+    r5 = section(staging_text(), "R5")
+    for needle in ("主 checkout", "乾淨", "staging.env", "POSTGRES_DB"):
+        assert needle in r5, needle
+
+
+def test_r5_rolls_back_to_the_recorded_image_id_and_reloads_it_when_pruned():
+    w1 = next(b for b in _blocks(section(staging_text(), "R5")) if "docker load" in " ".join(b))
+    _assert_fail_closed(w1, "prod runs kg-pre-batch1-w1")
+    # by id, not by tag: a moved tag still rolls back to the image recorded at step 1
+    _in_order(w1, (
+        f"PRE=$(cat {ROLLBACK_ID})", f'docker image inspect "$PRE" >/dev/null || gunzip -c {ROLLBACK_TAR} | docker load',
+        'docker tag "$PRE" bible_rag-backend:kg-pre-batch1-w1',
+        "docker tag bible_rag-backend:kg-pre-batch1-w1 bible_rag-backend:latest",
+        "docker compose up -d --no-deps --no-build --wait --wait-timeout 300 backend",
+        "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend)\" = \"$PRE\""))
+
+
+def test_staging_compose_sends_new_backend_code_to_a_separate_tag():
+    words = " ".join(line.lstrip("# ").strip() for line in read(ROOT / "docker-compose.staging.yml").splitlines())
+    assert "`docker compose build backend` first" not in words
+    for needle in ("bible_rag-backend:w1", "docs/staging_promotion.md R2"):
+        assert needle in words, needle
 
 
 @pytest.mark.parametrize("path", MECHANISM_DOCS, ids=_name)

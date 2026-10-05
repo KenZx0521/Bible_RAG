@@ -104,6 +104,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    tar -C output -czf bak/$D/output/llm_artifacts.tgz $FILES
    ```
 6. 最後照 bak/README.md 重新產生 `bak/$D/SHA256SUMS`。bak/README.md 目前還沒有第 3、5 項，以本節為準。
+7. backend 的回滾 image 不能只靠 `docker tag`：沒有容器引用的 image，即使有 tag 也會被 `docker image prune -a` 刪掉（2026-10-05 已發生過，見 W1 交接紀錄 `docs/records/2026-10-05_kg_w1_handoff.md` §4）。第 1 批 W1 在「W1 升版第 1 步」換 image 之前做：記下 prod 正在跑的 image id、打 tag、用一個停著的容器釘住、`docker save` 到 `bak/$D/images/`，sha256 補進 `bak/$D/SHA256SUMS`。
 
 ## R1 staging 建置
 1. 起 staging Neo4j（第一次會建立空的 volume），並確認 APOC 可用（Step 6.1 與 10.x 依賴它）：
@@ -194,14 +195,17 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    ```bash
    printf 'services:\n  backend:\n    image: bible_rag-backend:w1\n  backend-staging:\n    image: bible_rag-backend:w1\n' > /tmp/w1_image.yml
    docker compose -f docker-compose.yml -f docker-compose.staging.yml -f /tmp/w1_image.yml build backend
+   mkdir -p bak/$D/images
+   docker image inspect -f '{{.Id}}' bible_rag-backend:w1 > bak/$D/images/backend_w1.id
    docker compose -f docker-compose.yml -f docker-compose.staging.yml -f /tmp/w1_image.yml up -d backend-staging
+   test "$(docker inspect -f '{{.Image}}' bible_rag_backend_staging)" = "$(cat bak/$D/images/backend_w1.id)" && echo 'staging runs :w1'
    uv run --project scripts python scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend_staging
    docker exec -i bible_rag_backend_staging .venv/bin/python -m probes.xref_measure \
      < bak/$D/xref_probe/seeds.json > bak/$D/xref_probe/measured_staging.json
    uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_new.json \
      --measured bak/$D/xref_probe/measured_staging.json
    ```
-   deploy-guard 結束碼 0：容器裡的 `database/neo4j_db.py`、`utils/retrieval/cross_ref_retriever.py`、`probes/xref_measure.py` 與本 checkout 的 HEAD 逐位元相同，讀 `r.curated`，沒有 999 哨兵。compare 結束碼 0：5,820 個 key 0 列不同，哨兵 12/12。
+   `backend_w1.id` 是這個 image 的 id，記進 W1 紀錄：D3 與這裡的量測都在它上面跑，升版第 1 步上線的必須是同一個 id（不重建）。沒有印出 `staging runs :w1` 就停。deploy-guard 結束碼 0：容器裡的 `database/neo4j_db.py`、`utils/retrieval/cross_ref_retriever.py`、`probes/xref_measure.py` 與本 checkout 的 HEAD 逐位元相同，讀 `r.curated`，沒有 999 哨兵。compare 結束碼 0：5,820 個 key 0 列不同，哨兵 12/12。
 
 ## R3 升版（第 0 批不做）
 順序規則：backend 程式碼的變更要向前相容，先部署 backend，再升資料（例如第 1B 批）；一個缺陷項目一個 commit，各自附探針，validate 失敗時才分得出是哪一項造成。
@@ -231,15 +235,51 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    ```
    plain dump 內含兩張表的定義、主鍵、索引、外鍵與資料。DROP 沒有加 CASCADE：若還有別的物件依賴這兩張表，整個 transaction 會失敗並回滾，production 不受影響。
 3. Qdrant：把 `.env` 的 `QDRANT_ENTITY_COLLECTION` 改成 `bible_entities_vN`（backend 設定 `qdrant_entity_collection`，見 backend/config.py；scripts 也讀同一個變數），再重新建立 backend 容器（第 4 步會一併完成）。舊 collection 留到下一批 R0 之後再刪。另一個做法是一次性改用 Qdrant alias；alias 不能與現有 collection 同名，所以 backend 要改指新的 alias 名。
-4. 程式碼、registry、字典隨 image 上線：`docker compose up -d --build backend`。backend 沒有 volume mount，只 restart 會跑舊 image；建置要走 uv 快取（README「Docker 建置快取」）。
+4. 程式碼、registry、字典隨 image 上線：在沒有 source staging.env 的乾淨 shell 執行 `docker compose up -d --no-deps --build backend`（理由見 R5 開頭）。backend 沒有 volume mount，只 restart 會跑舊 image；建置要走 uv 快取（README「Docker 建置快取」）。
 
 ### W1 升版第 1 步：backend 先上，資料不動
-在沒有 source staging.env 的乾淨 shell 執行：這裡要對 production 做 `up -d`，而 `--target prod` 會拒絕 staging 的 shell。種子與期望檔沿用 R2「W1 的交叉引用檢查」的 `bak/$D/xref_probe/`。
+在主 checkout、沒有 source staging.env 的乾淨 shell 執行：這裡要對 production 做 `up`，而 `--target prod` 會拒絕 staging 的 shell；compose 的專案名取自目錄名，只有主 checkout 的 backend image 是 `bible_rag-backend:latest`。先把 `D` 設成 W1 R0 的日期（每段開頭的 `${D:?}` 沒設就停）。種子與期望檔沿用 R2「W1 的交叉引用檢查」的 `bak/$D/xref_probe/`。
+
+三段依序貼上。前兩段是子 shell 加 `set -e`，任何一行失敗整段就停；沒有印出最後一行的訊息，就不要貼下一段。第一段保存回滾 image，只做一次：
 ```bash
-docker tag "$(docker inspect -f '{{.Image}}' bible_rag_backend)" bible_rag-backend:kg-pre-batch1-w1
-docker compose up -d --build backend
-curl -f http://localhost:8000/api/v1/health
-(cd evaluation && uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke)
+(
+set -eu -o pipefail -o noclobber
+: "${D:?set D to the W1 R0 date}"
+W1=$(cat bak/$D/images/backend_w1.id)
+PROD=$(docker inspect -f '{{.Image}}' bible_rag_backend)
+test "$PROD" != "$W1"
+test ! -e bak/$D/images/backend_kg-pre-batch1-w1.tar.gz
+echo "$PROD" > bak/$D/images/backend_kg-pre-batch1-w1.id
+docker tag "$PROD" bible_rag-backend:kg-pre-batch1-w1
+docker create --name bible_rag_backend_kg_pre_batch1_w1 bible_rag-backend:kg-pre-batch1-w1
+docker save bible_rag-backend:kg-pre-batch1-w1 | gzip > bak/$D/images/backend_kg-pre-batch1-w1.tar.gz.part
+gunzip -c bak/$D/images/backend_kg-pre-batch1-w1.tar.gz.part | tar -tf - >/dev/null
+mv bak/$D/images/backend_kg-pre-batch1-w1.tar.gz.part bak/$D/images/backend_kg-pre-batch1-w1.tar.gz
+(cd bak/$D && sha256sum ./images/backend_kg-pre-batch1-w1.tar.gz >> SHA256SUMS)
+echo 'rollback image saved'
+)
+```
+第二段換成 R2 測過的 image，可以重跑：
+```bash
+(
+set -eu -o pipefail
+: "${D:?set D to the W1 R0 date}"
+W1=$(cat bak/$D/images/backend_w1.id)
+PRE=$(cat bak/$D/images/backend_kg-pre-batch1-w1.id)
+grep -qF ' ./images/backend_kg-pre-batch1-w1.tar.gz' bak/$D/SHA256SUMS
+test "$(docker inspect -f '{{.Image}}' bible_rag_backend_kg_pre_batch1_w1)" = "$PRE"
+test "$(docker image inspect -f '{{.Id}}' bible_rag-backend:w1)" = "$W1"
+docker tag bible_rag-backend:w1 bible_rag-backend:latest
+docker compose up -d --no-deps --no-build --wait --wait-timeout 300 backend
+test "$(docker inspect -f '{{.Image}}' bible_rag_backend)" = "$W1"
+echo 'prod runs :w1'
+)
+```
+第三段驗證：
+```bash
+(cd evaluation && rm -f results_quick/w1_step1_smoke.json \
+  && uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke \
+  && python3 -c "import json; d = json.load(open('results_quick/w1_step1_smoke.json')); print(d['n'], d['n_invalid'], sorted(q for q, e in d['per_question'].items() if e['strategy_errors']))")
 uv run --project scripts python scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend
 docker exec -i bible_rag_backend .venv/bin/python -m probes.xref_measure \
   < bak/$D/xref_probe/seeds.json > bak/$D/xref_probe/measured_prod_step1.json
@@ -247,12 +287,17 @@ uv run --project scripts python scripts/tools/xref_probe.py predict --seeds bak/
   --target prod --out bak/$D/xref_probe/pred_prod_step1.json
 uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_prod_step1.json \
   --measured bak/$D/xref_probe/measured_prod_step1.json
+uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_prod_step1.json \
+  --measured bak/20261005_w1_1b_evidence/pred_trans.json
 ```
-- **回滾用的 tag 取自 prod 容器正在跑的 image**（升版前是 9bc112a6），不取 `latest`：`latest` 若在 R2 被重建過，已經是 W1 的 image。R0 若已打過這個 tag，這一行會把它改指到容器實際在跑的 image。
-- **煙霧測試**：20 題預設檢索（只有 event_registry），通過條件是 [題號檔 README](../evaluation/experiments/2026-10-05_kg_w1/README.md) 的檢查印出 `20 0 []`。
+- **回滾 image 取自 prod 容器正在跑的 image**（升版前是 9bc112a6），不取 `latest`：`latest` 若在 R2 被重建過，已經是 W1 的 image。它的 id 記在 `backend_kg-pre-batch1-w1.id`，R5 依這個 id 退回，不依 tag。R0 若已打過這個 tag，第一段會把它改指到記下的 id。
+- **第一段只做一次**：prod 已經在跑 `:w1`，或 id 檔、存檔已經存在（`noclobber` 拒絕覆寫）時就停。所以第一段重跑時，不會把 W1 的 image 記成回滾 image，不會覆寫存檔，也不會在 SHA256SUMS 多補一行。第一段中途失敗時 prod 還沒換 image：查明原因後 `docker rm bible_rag_backend_kg_pre_batch1_w1`，刪掉 `backend_kg-pre-batch1-w1.id` 與 `.tar.gz.part`，再重跑第一段。
+- **回滾 image 在換 image 之前保住**（R0 第 7 項）：停著的容器 `bible_rag_backend_kg_pre_batch1_w1` 讓 `docker image prune -a` 刪不掉它；`docker system prune` 會先刪停著的容器，所以還要 `docker save`。`pipefail` 讓 save 中斷時整段失敗；先寫到 `.part`，`tar -tf` 從頭讀到尾沒有錯誤才改名、記 sha256，所以正式檔名只會是完整的存檔。image 的內容約 7 GB，存檔與核對要幾分鐘，prod 照常服務。這個容器留到下一批 R0 之後才 `docker rm`。
+- **上線的是 R2 測過的 image，不重建**：第 1 批計畫 §1「W1 升版」第 1 步原寫 `up -d --build backend`，改為把 R2 建的 `bible_rag-backend:w1` 改 tag 成 `latest`。第二段先確認第一段做完（SHA256SUMS 有存檔那一行、停著的容器還釘著回滾 image），而且 `:w1` 仍是 R2 記下的 `backend_w1.id`，才改 tag、`up`。`--no-build`：image 不在就失敗，不會在 prod 上重建；`--no-deps`：只動 backend（理由見 R5 開頭）；`--wait`：等 healthcheck 通過才返回（start_period 120 秒），unhealthy 或超過 300 秒時結束碼不是 0，整段就停。最後確認 prod 容器跑的是 `backend_w1.id`。
+- **煙霧測試**：20 題預設檢索（只有 event_registry），通過條件是印出 `20 0 []`（見[題號檔 README](../evaluation/experiments/2026-10-05_kg_w1/README.md)）。先刪掉上一次的結果檔，執行與檢查用 `&&` 串起來，舊檔不會讓檢查假性通過。
 - **deploy-guard** 結束碼 0。不是 0 就先查 image，不往下做。
-- **唯一的閘門是精確比對**：compare 結束碼 0，5,820 個 key 0 列不同，哨兵 12/12；`pred_prod_step1.json` 也要等於規劃時歸檔的 `bak/20261005_w1_1b_evidence/pred_trans.json`（2026-10-05 對當時的 prod 已驗證 0/5,820）。這個 image 帶上了 087ab0d（W1-0 的 md5 平手，prod 現行的 9bc112a6 還沒有）、1B-C1（讀 `r.curated`，刪除 999 哨兵）、`backend/probes/`，以及兩個串流的全部 scripts/ 與 bible_chunking/ 改動（都 COPY 進 image）。所以**不要拿 opt-in 的線上行為與 9bc112a6 比**：光是 md5 平手就讓約 1,279/2,779 個單一種子、57/262 個代理種子集的 id 集合改變；相對於 087ab0d 的 Cypher，C1 本身只改 5 個單一種子（只有權重）與 1/262 個種子集。
-- W1 紀錄要寫明：第 1 步上線的是 087ab0d 加 C1，判準是這裡的精確比對。
+- **唯一的閘門是精確比對**：兩個 compare 結束碼都是 0。第一個是 prod 的實測對預測：5,820 個 key 0 列不同，哨兵 12/12；第二個是 `pred_prod_step1.json` 對規劃時歸檔的 `bak/20261005_w1_1b_evidence/pred_trans.json`（2026-10-05 對當時的 prod 已驗證 0/5,820）。這個 image 帶上了 087ab0d（W1-0 的 md5 平手，prod 現行的 9bc112a6 還沒有）、1B-C1（讀 `r.curated`，刪除 999 哨兵）、`backend/probes/`，以及兩個串流的全部 scripts/ 與 bible_chunking/ 改動（都 COPY 進 image）。所以**不要拿 opt-in 的線上行為與 9bc112a6 比**：光是 md5 平手就讓約 1,279/2,779 個單一種子、57/262 個代理種子集的 id 集合改變；相對於 087ab0d 的 Cypher，C1 本身只改 5 個單一種子（只有權重）與 1/262 個種子集。
+- W1 紀錄要寫明：第 1 步上線的是 087ab0d 加 C1，判準是這裡的精確比對；並記下 R2 的 `backend_w1.id`、第 1 步之後 prod 容器的 image id（兩者必須相同）、回滾 image 的 id（`backend_kg-pre-batch1-w1.id`，升版前是 9bc112a6…），以及回滾存檔的 sha256。
 
 ### W1 升版第 1、2 步之間：opt-in xref A/B（只報告）
 第 1 批計畫 §5.2：同一個 W1 image 分別接舊資料（prod，第 1 步之後）與新資料（backend-staging），各跑一次 500 題，兩邊參數完全相同。kg_xref 的 68 題要在 500 題裡才算得到：
@@ -290,23 +335,37 @@ uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$
 ```
 - fingerprint 結束碼 0（`e522411e…`，xref_provenance 四個鍵與期望檔相同）；compare 結束碼 0，5,820 個 key 0 列不同，哨兵 12/12。
 - `validate_kg.py --live --target prod` 的 H8、R4、R11 三項 hard 全過，值見 [build_database.md](build_database.md) Step 10.6。
-- **R4 之後只做一個 commit**，與 W1 的合併允許清單放在一起（第 1 批計畫 §3）：用 validate_kg 的 `--ratchet` 與 `--accept` 寫入 H8.unflagged 250,418 → 0、R4.misaligned 59 → 0、R4.misaligned_any_verse 62 → 0，以及 `--accept R11`（249,502 → 250,358）；PROBES 的 failing 名單拿掉 `xref-heb1-0-not-curated-psa2` 與 `xref-rev20-not-curated-isa65`，新的 xref 探針不可留在 failing 裡。
+- **R4 之後只做一個 commit**，與 W1 的合併允許清單 `config/kg_diff_allow_batch1w1.yaml` 放在一起（第 1 批計畫 §3）。整波只跑一次 ratchet，1A、1B 共用這一行，在同一個乾淨的 shell、上面的檢查都通過之後執行，結束碼要是 0：
+  ```bash
+  uv run --project scripts python scripts/validate_kg.py --live --target prod --ratchet --accept W,R1,R11
+  ```
+  寫入 `config/kg_quality_baseline/`。1B 移動的指標：`--ratchet` 的 H8.no_provenance 916 → 0、H8.unflagged 250,418 → 0、R4.misaligned 59 → 0、R4.misaligned_any_verse 62 → 0，以及 `--accept` 的 R11（249,502 → 250,358）；W、R1 屬 1A。同一個 commit 裡，PROBES 的 failing 名單拿掉 `xref-heb1-0-not-curated-psa2` 與 `xref-rev20-not-curated-isa65`，新的 xref 探針不可留在 failing 裡。
 - **R4 之後的文件更新（U3）**，行號以 2026-10-05 為準。現行圖譜的數字與機制改成 250,418 → 250,366、supplementary 142 → 158、curated 由 `r.curated` 旗標判別：
   - 文件：docs/ARCHITECTURE.md :328、:336；docs/kg_construction_overview.md :108、:186；evaluation/README.md :269（curated 條數）。
   - 論文中描述現行圖譜的地方：paper/latex/sec3_kg.tex :199、:210-212、:263、:268、:290、:308；sec4_retrieval.tex :234、:287-292；main.tex :62；sec1_intro.tex :62；appendix.tex :147-150（回滾說「每種邊用一個謂詞就能刪」，但 curated 邊現在也帶 tsk 與 votes，已不成立）。
   - 實驗當時的數值保留，加註資料版本：sec6_experiments.tex :114、:317、:481。
 
 ## R5 回滾
+本節的 `docker compose` 一律在**主 checkout、沒有 source staging.env 的乾淨 shell** 執行（在 worktree 裡，compose 的專案名會變成 worktree 的目錄名，image 與 volume 都不是 production 的），而且加 `--no-deps`：staging 的 shell 帶著 `POSTGRES_DB=bible_rag_staging`，compose 收斂 backend 的依賴時會把它插值進 production 的 postgres 服務並重建該容器（見「執行前檢查」；docker-compose.staging.yml 也有同樣的警告）。`--no-deps` 讓 compose 只動 backend。
 - Neo4j：照 bak/README.md 的「還原指令」，載回 `bak/<日期>/neo4j/neo4j.dump`（停機約 1 分鐘）。
 - PG：用 R0 存的 `bak/<日期>/postgres/entity_tables.sql` 換回兩張表，指令同 R3 第 2 步。
 - Qdrant：把 `QDRANT_ENTITY_COLLECTION` 切回上一個 collection 名，再重新建立 backend 容器。
-- 程式碼與 registry：`git revert`，再 `docker compose up -d --build backend`。
+- 程式碼與 registry：`git revert`，再 `docker compose up -d --no-deps --build backend`。
 - **第 1 批 W1：image 不可先於資料回滾。** 資料可以單獨回滾，因為 W1 升版第 1 步的 image 新舊資料都能正確排序（過渡的 coalesce）。image 退回 `kg-pre-batch1-w1` 只能與資料回滾一起做，或在資料回滾之後做，不能在資料之前。順序顛倒時，舊 image 讀新資料：924 條帶 votes 的 curated 邊會被舊的 999 規則當成 TSK，影響 760/2,779 個單一種子、86/262 個代理種子集。image 有任何變動（重建、退回 tag）之後，碰資料之前都要先重跑 deploy-guard；退回舊 image 之後 deploy-guard 必然失敗，這時只能載入 W1 之前的 dump。退回 image：
   ```bash
+  (
+  set -eu -o pipefail
+  : "${D:?set D to the W1 R0 date}"
+  PRE=$(cat bak/$D/images/backend_kg-pre-batch1-w1.id)
+  docker image inspect "$PRE" >/dev/null || gunzip -c bak/$D/images/backend_kg-pre-batch1-w1.tar.gz | docker load
+  docker tag "$PRE" bible_rag-backend:kg-pre-batch1-w1
   docker tag bible_rag-backend:kg-pre-batch1-w1 bible_rag-backend:latest
-  docker compose up -d backend
+  docker compose up -d --no-deps --no-build --wait --wait-timeout 300 backend
+  test "$(docker inspect -f '{{.Image}}' bible_rag_backend)" = "$PRE"
+  echo 'prod runs kg-pre-batch1-w1'
+  )
   ```
-  第二行不加 `--build`，才會用剛退回的 tag。
+  `D` 是 W1 R0 的日期；與第 1 步一樣，任何一行失敗整段就停，沒有印出最後一行就是沒有退回。退回的對象是第 1 步記下的 id，不是 tag：image 已被清掉時從存檔載回（`docker load` 連 tag 一起還原；載入前可用 `bak/$D/SHA256SUMS` 核對），接著把 tag 改指回這個 id，所以 tag 被改指過也退回對的 image。載回之後仍找不到這個 id，`docker tag` 會失敗：停下來查，不要改用現有的 tag。`--no-build`，不加 `--build`，才會用剛退回的 tag；最後確認 prod 跑的是這個 id。
 - 第 1D 批起有了編譯快照（`output/kg_snapshots/<ts>/`）：回滾等於重新載入上一份快照，比還原 dump 快，而且三庫一定一致。
 
 ## 收尾

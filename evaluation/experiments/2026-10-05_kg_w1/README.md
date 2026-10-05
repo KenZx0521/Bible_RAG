@@ -1,6 +1,6 @@
 # W1 升版第 1 步：20 題煙霧測試
 
-- **用途**：`docs/records/2026-10-04_kg_batch1_plan.md` §1「W1 升版」第 1 步。先以 `docker compose up -d --build backend` 換上 1B 過渡版 backend（資料仍是舊的），再跑 health 與 20 題預設檢索。這只確認新 image 在各路由都能跑完，不量價值。
+- **用途**：`docs/records/2026-10-04_kg_batch1_plan.md` §1「W1 升版」第 1 步。先換上 R2 測過的 1B 過渡版 backend（`bible_rag-backend:w1` 改 tag 為 `latest`，不重建，見 `docs/staging_promotion.md`「W1 升版第 1 步」；資料仍是舊的），等 healthcheck 通過，再跑 20 題預設檢索。這只確認新 image 在各路由都能跑完，不量價值。
 - **題號檔**：`smoke20_ids.txt`，一行一題，`quick_retrieval_eval.py --ids-file` 直接讀。
 
 ## 選題規則
@@ -31,10 +31,11 @@
 在 evaluation/ 下執行。不加 `--graph-strategies`，用 backend 的預設策略（event_registry）：
 
 ```bash
-uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke
-python3 -c "import json; d = json.load(open('results_quick/w1_step1_smoke.json')); print(d['n'], d['n_invalid'], sorted(q for q, e in d['per_question'].items() if e['strategy_errors']))"
+rm -f results_quick/w1_step1_smoke.json \
+  && uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke \
+  && python3 -c "import json; d = json.load(open('results_quick/w1_step1_smoke.json')); print(d['n'], d['n_invalid'], sorted(q for q, e in d['per_question'].items() if e['strategy_errors']))"
 ```
 
-通過條件是印出 `20 0 []`，也就是 n=20、n_invalid=0、沒有任何一題帶 strategy_errors。
+通過條件是印出 `20 0 []`，也就是 n=20、n_invalid=0、沒有任何一題帶 strategy_errors。先刪上一次的結果檔，三段用 `&&` 串起來：收集中途失敗時，不會讀到舊檔而假性通過。
 
 2026-10-05 曾對升版前的 prod backend（:8000）試跑同一條指令：n=20、n_invalid=0、strategy_errors 0 題；20 題都套用了 event_registry，實際路由為 R1 3、R2 3、R3 4、R4 4、R5 3、R6 3。
