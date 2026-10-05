@@ -139,7 +139,30 @@ class Flow:
 # A rule takes the rows and returns the rows it keeps or makes; it records what
 # it dropped, flagged or logged in the Flow. Rows it makes go through base_stamp.
 Rule = Callable[[list[dict], Inputs, Config, Flow], list[dict]]
-RULES: tuple[tuple[str, Rule], ...] = ()
+
+
+# --- rules --------------------------------------------------------------------
+
+def drop_inverse(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-02: drop every row whose source is inverse, R5's materialised reverse of a directed row.
+
+    Each restates its forward row with head and tail swapped. entity_path walks
+    edges undirected (entity_path_retriever's -[r*1..N]-), so the pair stays
+    connected and the drop only frees LIMIT slots. A phase-5 cooccurrence
+    backfill (10.3) is not an inverse and is not this rule's.
+    """
+    kept = []
+    for row in rows:
+        if row["source"] == "inverse":
+            flow.drop("inverse", row)
+        else:
+            kept.append(row)
+    return kept
+
+
+RULES: tuple[tuple[str, Rule], ...] = (
+    ("drop_inverse", drop_inverse),
+)
 
 
 def default_paths() -> dict[str, Path]:

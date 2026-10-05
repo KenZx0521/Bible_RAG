@@ -83,6 +83,31 @@ def test_none_mode_counts(none_run):
     assert after["edge_set_sha256"] == NONE_AFTER_10_2_SHA256
 
 
+@pytest.fixture(scope="module")
+def all_run(real_inputs):
+    return pp.postprocess(*real_inputs, "all")
+
+
+def _pairs(rows) -> set[frozenset]:
+    return {frozenset((r["head_id"], r["tail_id"])) for r in rows}
+
+
+def test_inverse_drops(real_inputs, all_run):
+    rows, report = all_run
+    assert report["flow"]["drops"]["inverse"] == {
+        "FATHER_OF": 462, "SON_OF": 221, "ANCESTOR_OF": 27, "DESCENDANT_OF": 22, "TEACHER_OF": 13,
+        "DISCIPLE_OF": 7}
+    assert sum(report["flow"]["drops"]["inverse"].values()) == 752
+    assert not any(r["source"] == "inverse" for r in rows)
+
+    # entity_path walks edges undirected: the rule on its own leaves every pair connected
+    inputs, cfg = real_inputs
+    stamped = [pp.base_stamp(r, cfg) for r in inputs.relations]
+    kept = pp.drop_inverse(stamped, inputs, cfg, pp.Flow())
+    assert len(stamped) - len(kept) == 752
+    assert _pairs(kept) == _pairs(stamped)
+
+
 @pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")
 def test_none_mode_is_byte_identical_across_hash_seeds(tmp_path):
     out, report = tmp_path / "relations_clean.jsonl", tmp_path / "relations_clean.report.json"

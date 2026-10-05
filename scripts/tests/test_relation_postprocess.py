@@ -235,6 +235,36 @@ def test_pp_version_changes_when_models_or_schema_loader_change(tmp_path, change
     assert pp.pp_version(tmp_path) != pp.pp_version()
 
 
+# --- drop_inverse (REL-02) ------------------------------------------------------
+
+def _row(head: str, relation: str, tail: str, phase: int, **extra) -> dict:
+    return {"head_id": head, "relation": relation, "tail_id": tail, "extraction_phase": phase,
+            "notes": "", **extra}
+
+
+def test_drop_inverse_removes_every_inverse_row():
+    rows, report = _run("all")
+
+    # R5 restated every directed edge backwards (phase 5, derived_from=...); none survives
+    assert [r for r in rows if r["source"] == "inverse"] == []
+    assert report["flow"]["drops"]["inverse"] == {"SON_OF": 1}
+    assert report["rules"]["ran"][0] == "drop_inverse"
+
+    # inverse by the row's own source or, lacking one, by phase 5; a phase-5
+    # cooccurrence backfill is not an inverse, and the forward row stays
+    inputs, cfg = pp.load_inputs(_paths())
+    stamped = [pp.base_stamp(r, cfg) for r in (
+        _row("person:yabolahan", "SON_OF", "person:tala", 5, notes="derived_from=FATHER_OF"),
+        _row("person:nahe", "DESCENDANT_OF", "person:tala", 5, source="inverse"),
+        _row("person:nahe", "PARTICIPATED_IN", "event:hongshui", 5, notes="cooccurrence-backfill"),
+        _row("person:tala", "FATHER_OF", "person:yabolahan", 3),
+    )]
+    flow = pp.Flow()
+    assert pp.drop_inverse(stamped, inputs, cfg, flow) == stamped[2:]
+    assert flow.drops == {"inverse": {"SON_OF": 1, "DESCENDANT_OF": 1}}
+    assert [r["source"] for r in stamped] == ["inverse", "inverse", "cooccurrence", "prior"]
+
+
 # --- relation_policy ------------------------------------------------------------
 
 def test_source_rank_orders_curated_prior_llm_anchored():
