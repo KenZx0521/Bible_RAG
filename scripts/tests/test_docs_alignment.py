@@ -7,6 +7,9 @@ with flags in either doc is checked against that script's real --help (and
 in the middle of a rebuild. Also pins the batch-0 rebuild order (replay after
 the curated overlay) in both the doc and the fix plan, whose batch-1+ details
 live in a companion file, and checks that the cross links survive the split.
+Batch 1B (W1) pins the cross-reference runbook: backend before data, the
+deploy-guard as the first command of the data load, the image never rolled
+back ahead of the data, and no votes=999 sentinel left in the mechanism docs.
 """
 from __future__ import annotations
 
@@ -25,6 +28,10 @@ PLAN = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan.md"
 PLAN_BATCHES = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan_batches.md"
 PLANS = (PLAN, PLAN_BATCHES)
 PY = str(ROOT / "scripts" / ".venv" / "bin" / "python")
+CHECK_STEP0 = ROOT / "scripts" / "tools" / "check_step0.py"
+# docs that describe the current cross-reference mechanism (not experiment-time values)
+MECHANISM_DOCS = (ROOT / "docs" / "ARCHITECTURE.md", ROOT / "docs" / "kg_construction_overview.md",
+                  ROOT / "evaluation" / "README.md")
 
 # script name as it appears in the doc -> argv that prints its --help
 HELP_ARGV = {
@@ -42,6 +49,7 @@ HELP_ARGV = {
     "import_tsk_crossrefs": [PY, "scripts/import_tsk_crossrefs.py", "--help"],
     "import_qdrant": [PY, "scripts/import_qdrant.py", "--help"],
     "import_neo4j": [PY, "scripts/import_neo4j.py", "--help"],
+    "xref_probe": [PY, "scripts/tools/xref_probe.py", "--help"],
 }
 _SCRIPT_RE = re.compile(r"\b(" + "|".join(sorted(HELP_ARGV, key=len, reverse=True)) + r")(?:\.py)?\b")
 _FLAG_RE = re.compile(r"(?<![\w-])(--[a-z][a-z0-9-]*)")
@@ -259,6 +267,112 @@ def test_inventory_rows_are_current():
     lines = staging_text().splitlines()
     ci = next(line for line in lines if line.startswith("| check_identity.py"))
     assert "--target prod" in ci
+
+
+# ---------------------------------------------------------------- batch 1B: cross references
+
+def _documented_flags(script: str, *paths: Path) -> set[str]:
+    """Flags written after `script` in the code snippets of `paths` (one script per snippet)."""
+    flags = set()
+    for path in paths:
+        for snippet in code_snippets(read(path)):
+            if set(_SCRIPT_RE.findall(snippet)) == {script}:
+                args = snippet[_SCRIPT_RE.search(snippet).end():].split("#", 1)[0]
+                flags.update(_FLAG_RE.findall(args))
+    return flags
+
+
+def _commands(text: str) -> list[str]:
+    """Fenced-block command lines in order: continuations joined, comments and blanks dropped."""
+    lines = []
+    for block in re.findall(r"```[a-z]*\n(.*?)```", text, re.S):
+        for line in block.replace("\\\n", " ").splitlines():
+            line = re.sub(r"\s+#\s.*$", "", line).strip()
+            if line and not line.startswith("#"):
+                lines.append(line)
+    return lines
+
+
+def _first(commands: list[str], needle: str) -> int:
+    return next(i for i, command in enumerate(commands) if needle in command)
+
+
+def test_w1_runbook_documents_the_xref_probe_and_diff_kg_flags():
+    # with test_every_documented_flag_exists_in_that_scripts_cli these must exist in --help
+    probe = _documented_flags("xref_probe", *DOCS)
+    assert {"--expect", "--target", "--container", "--seeds", "--pred", "--measured", "--edges",
+            "--edges-out", "--output-dir", "--tsk", "--pericopes", "--questions", "--out"} <= probe, probe
+    assert "--fail-on-unused" in _documented_flags("diff_kg", STAGING_DOC)
+
+
+def test_step0_documents_the_xref_gate_and_that_1b_leaves_pericopes_alone():
+    s0 = section(doc_text(), "Step 0:")
+    for needle in ("validate_output.py", "932", "162", "159/159", "-?", "neo4j_relationships.jsonl"):
+        assert needle in s0, needle
+    assert "第 1B、2D 批會改 pericopes.jsonl" not in s0
+    assert "1B/2D touch pericopes.jsonl" not in read(CHECK_STEP0)
+
+
+def test_step5_and_step9_document_the_1b_properties_gates_and_rollback():
+    s5 = section(doc_text(), "Step 5:")
+    for needle in ("curated_sources", "supp_anchors", "md_anchors", "no duplicate pair"):
+        assert needle in s5, needle
+    s9 = section(doc_text(), "Step 9:")
+    for needle in ("--dry-run", "同向", "250,358", "249,434", "924", "250,366", "created 0",
+                   "xref_probe.py fingerprint --target staging --expect", "從 Step 5"):
+        assert needle in s9, needle
+    assert "DELETE r" not in s9
+
+
+def test_10_6_lists_the_hard_1b_checks_with_their_w1_values():
+    s106 = section(doc_text(), "10.6")
+    for needle in ("H8", "R4", "R11", "250,358", "unflagged", "misaligned_any_verse"):
+        assert needle in s106, needle
+
+
+def test_r2_runs_the_xref_checks_and_the_merged_allowlist_gate():
+    r2 = section(staging_text(), "R2")
+    for needle in ("xref_provenance", "mention_count", "kg_diff_allow_batch1w1.yaml --fail-on-unused",
+                   "不能再當閘門重跑", "xref_probe.py expect", "created 0",
+                   "xref_probe.py fingerprint --target staging --expect",
+                   "xref_probe.py deploy-guard --container bible_rag_backend_staging", "--edges"):
+        assert needle in r2, needle
+
+
+def test_w1_step1_ships_the_backend_first_and_gates_on_the_exact_compare():
+    step1 = section(staging_text(), "W1 升版第 1 步")
+    commands = _commands(step1)
+    keys = ("kg-pre-batch1-w1", "up -d --build backend", "smoke20_ids.txt",
+            "deploy-guard --container bible_rag_backend", "probes.xref_measure", "predict", "compare")
+    positions = [_first(commands, key) for key in keys]
+    assert positions == sorted(positions) and positions[0] == 0, commands
+    for needle in ("087ab0d", "9bc112a6", "1,279", "57/262", "5,820"):
+        assert needle in step1, needle
+
+
+def test_w1_data_load_starts_with_the_deploy_guard():
+    step2 = section(staging_text(), "W1 升版第 2 步")
+    first = _commands(step2)[0]
+    assert re.search(r"xref_probe\.py deploy-guard --container bible_rag_backend$", first), first
+    assert "不載入" in step2
+
+
+def test_r4_and_r5_cover_the_xref_promotion():
+    r4 = section(staging_text(), "R4")
+    for needle in ("xref_probe.py fingerprint --target prod --expect", "probes.xref_measure",
+                   "H8", "R11", "sec3_kg.tex", "appendix.tex", "sec6_experiments.tex"):
+        assert needle in r4, needle
+    r5 = section(staging_text(), "R5")
+    for needle in ("kg-pre-batch1-w1", "不可先於資料", "deploy-guard", "760", "86/262"):
+        assert needle in r5, needle
+
+
+@pytest.mark.parametrize("path", MECHANISM_DOCS, ids=_name)
+def test_mechanism_docs_describe_the_curated_flag_not_the_votes_sentinel(path):
+    stale = [line for line in read(path).splitlines()
+             if ("999" in line and re.search(r"votes|哨兵|sentinel|curated|手工", line))
+             or re.search(r"916 (?:條 )?curated", line)]
+    assert not stale, stale
 
 
 # ---------------------------------------------------------------- plan

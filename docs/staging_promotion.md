@@ -64,7 +64,8 @@
 | tools/export_live_state.py | R0 | ✓（`Neo4jConfig.from_env`；只用 read 交易） | — | — | 無（第 0 批新增）。`--promote` 不連庫 |
 | check_identity.py | 10.6、R4 | ✓ | ✓ | HOST、PORT→HTTP_PORT、`QDRANT_ENTITY_COLLECTION` | 第 0 批新增，唯讀。`--target staging` 只讀 shell 變數（預設 bolt://localhost:7688、bible_rag_staging；Qdrant 沒有預設），解析到 production 會拒絕；`--target prod` 讀 .env，shell 還帶著 staging 設定（`KG_TARGET=staging`、值與 .env 不同、7688、bible_rag_staging）時拒絕 |
 | validate_kg.py | 10.6、R4 | 經 check_identity 的 `--target` 解析 | 同左 | 同左 | 第 0 批新增，唯讀；兩個方向的守門同 check_identity |
-| tools/diff_kg.py | R2 | `--a`、`--b` 各選 prod／staging（預設 `--a prod --b staging`），經 check_identity 的 `--target` 解析 | — | — | 第 0 批新增，唯讀，只比 Neo4j；`--allow` 讀允許清單。prod 端會拒絕 staging 的 shell，只能在乾淨的 shell 跑，staging 端此時用預設的 bolt://localhost:7688（改過 `NEO4J_STAGING_BOLT_PORT` 時無法指定） |
+| tools/diff_kg.py | R2 | `--a`、`--b` 各選 prod／staging（預設 `--a prod --b staging`），經 check_identity 的 `--target` 解析 | — | — | 第 0 批新增，唯讀，只比 Neo4j；`--allow` 讀允許清單，`--fail-on-unused`（第 1B 批新增）讓沒用到的條目也算失敗。prod 端會拒絕 staging 的 shell，只能在乾淨的 shell 跑，staging 端此時用預設的 bolt://localhost:7688（改過 `NEO4J_STAGING_BOLT_PORT` 時無法指定） |
+| tools/xref_probe.py | R2、R3、R4 | `predict`、`fingerprint` 的 `--target` 經 check_identity 解析（READ session） | — | — | 第 1B 批新增，唯讀。`deploy-guard` 只對 backend 容器做 `docker exec … cat`；`seeds`、`expect`、`compare` 不連庫 |
 
 ## 執行前檢查（每次在 staging 跑寫入步驟之前）
 Step 3 會 TRUNCATE、Step 5 會清庫、8a／8b 的 `--recreate` 會刪 collection；變數沒指對，被清掉的就是 production。staging 的變數一律 source 現成的檔案，不要手打：
@@ -129,9 +130,14 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 1. 10.6 依該批的判準通過（見 [build_database.md](build_database.md) Step 10.6），而且 `export_event_registry.py --check` 結束碼 0。
 2. 通過該批的驗證門檻（計畫 §4；第 1 批起見 [records/2026-10-04_kg_data_layer_fix_plan_batches.md](records/2026-10-04_kg_data_layer_fix_plan_batches.md)）。與 live 的 diff 要逐項列出並解釋（預期中的差異見 [build_database.md](build_database.md) Step 10.6）。staging 對 live 的比對用 diff_kg，在**沒有 source staging.env 的乾淨 shell**（新開的終端機）跑；10.6 的兩項則要在 staging 的 shell 跑：
    ```bash
+   # 第 0 批（歷史紀錄，見下方「歷史允許清單」）
    uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch0.yaml --json
+   # 第 1 批 W1：一份合併的允許清單，沒用到的條目也算失敗
+   uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch1w1.yaml --fail-on-unused --json
    ```
-   - `--a`、`--b` 各選 prod 或 staging（預設就是 prod 對 staging），只比 Neo4j：labels、relationships、ee_edges（`TYPE phase=P source=S`）、mentions、xrefs、entity_ids、descriptions（逐字）、aliases（集合）、registry。prod 端的守門會拒絕還帶著 staging 設定的 shell（結束碼 1，安全的失敗）。
+   - `--a`、`--b` 各選 prod 或 staging（預設就是 prod 對 staging），只比 Neo4j：labels、relationships、ee_edges（`TYPE phase=P source=S`）、mentions、xrefs、xref_provenance（`source=S curated=C tsk=T` 的邊數，第 1B 批新增）、entity_ids、descriptions（逐字）、aliases（集合）、mention_count（逐實體，第 1B 批新增）、registry。prod 端的守門會拒絕還帶著 staging 設定的 shell（結束碼 1，安全的失敗）。
+   - **歷史允許清單不能再當閘門重跑**：`kg_diff_allow_batch0.yaml` 與更早的清單早於 xref_provenance、mention_count 兩段。現在用 batch-0 的清單重跑上面第一行，會因為 mention_count 的 4 筆 K10 殘差不在清單內而結束碼 1；這些檔案只記錄當時的判定。
+   - W1 的合併清單 `config/kg_diff_allow_batch1w1.yaml` 在 W1 整合時（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §1「W1 步驟」第 4 步）由 1A、1B 的片段合成，整份一起核可。一筆差異只會記在第一個比對到的條目上，被前面條目遮住的條目在 `--fail-on-unused` 下也算沒用到，所以片段不可重疊。1B 的條目（含 mention_count 段新看得到、第 0 批就有的 K10 殘差）：relationships `CROSS_REFERENCES` −52；xrefs `source=supplementary` +16、`source=tsk` −68（markdown 不變）；xref_provenance 每個鍵一條，`source=markdown curated=- tsk=-` −774、`source=supplementary curated=- tsk=-` −142、`source=tsk curated=- tsk=-` −249,502、`source=markdown curated=True tsk=True` +766、`source=markdown curated=True tsk=False` +8、`source=supplementary curated=True tsk=True` +158、`source=tsk curated=False tsk=True` +249,434；mention_count `event:baoluoxushuguizhudejingguo` −3、`event:baoluoxushuguizhujingguo` −3、`event:shanshangbaoxun` −22、`person:yeteluo` +27。
    - 允許清單放 `config/kg_diff_allow_<批次>.yaml`（git 追蹤，R2 時依實際 diff 建立，與該批紀錄一起 commit）。檔案只有 `version: 1` 與 `allow` 清單；每條要有 section、key（glob）、reason，計數類最多再加一個 `delta`（b − a）或 `max_abs_delta`；未知欄位（例如拼錯的 bound）或型別不對直接報錯，格式見 `diff_kg.py --help`。不在清單內的差異結束碼 1；沒用到的條目會列出，要刪。第 0 批不可放行 descriptions：stale 必須是 0。
 
    第 0 批的門檻：
@@ -148,11 +154,46 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    - evaluation 端把 `BACKEND_URL` 設成 `http://localhost:8001`（環境變數優先於 evaluation/.env）。先跑 quick_retrieval_eval（100 題），有差異再跑 500 題（計畫 §6）。
    - 第 0、1 批的 registry 與字典都不變，硬閘門是：預設組態 500 題的 sources 與 prompt 逐位相同（計畫 §6.3）。
    - backend pytest（含 test_event_registry）照常在 host 的 backend venv 跑，不依賴 staging。
-   - backend-staging 用現有 image。要測新的 backend 程式碼，先 `docker compose build backend`，它只更新 image，不動正在跑的 production 容器；但在 R3 之前不要對 production 執行 `up -d`，否則 production 會換上新 image。
+   - backend-staging 用現有 image。要測新的 backend 程式碼，先建 image：`docker compose build backend` 只更新 image，不動正在跑的 production 容器，但會覆寫 production 用的 `latest`，之後任何對 production 的 `up -d` 都會換上新 image。所以第 1 批起改建另一個 tag，做法見下方「W1 的交叉引用檢查」第 3 項。
    - 驗完停掉：`docker compose -f docker-compose.yml -f docker-compose.staging.yml stop backend-staging`。
+
+### W1 的交叉引用檢查（第 1B 批）
+「模擬等於實測」：`xref_probe.py` 離線算出 backend 應該回傳的 xref 候選，每列是 [id, hop, curated, weight]；backend 容器內的 `probes.xref_measure` 經真正的 retriever 量出同一批種子的結果，兩者逐列比對。種子是 2,779 個段落各當一次單一種子（多跳與 legacy 一跳），加上 262 題的代理種子集，共 5,820 個 key。compare 另外檢查 12 條哨兵：votes ≥ 999 的 3 對 TSK 邊，兩個方向都必須是 curated false、權重 0.60。產物放 `bak/$D/xref_probe/`（`D` 沿用 R0 的日期，每個檔約 2 MB），sha256 記進 W1 紀錄。規劃時的獨立 oracle 見 [w1_1B 歸檔](records/2026-10-04_kg_fix/batch1/w1_1B/README.md)，大檔在 `bak/20261005_w1_1b_evidence/`。本節與 R3、R4、R5 的 W1 段落裡，「第 1 批計畫」指 [records/2026-10-04_kg_batch1_plan.md](records/2026-10-04_kg_batch1_plan.md)。
+
+1. **建置之前**：Step 0、check_step0、validate_output 都通過後，在 Step 5 之前，由新的 Step 0 輸出產生期望檔，也就是離線重放 Step 5 與 Step 9 會建出的 CROSS_REFERENCES。期望檔不可事後回填（第 1 批計畫 §3）：
+   ```bash
+   mkdir -p bak/$D/xref_probe config/kg_expect/batch1_w1
+   uv run --project scripts python scripts/tools/xref_probe.py expect --output-dir output --tsk output/cross_references_tsk.txt \
+     --out config/kg_expect/batch1_w1/xref.json --edges-out bak/$D/xref_probe/expected_edges.jsonl
+   uv run --project scripts python scripts/tools/xref_probe.py seeds --pericopes output/pericopes.jsonl \
+     --questions docs/records/2026-10-04_kg_fix/batch1/inputs/bench/questions_table.json --out bak/$D/xref_probe/seeds.json
+   uv run --project scripts python scripts/tools/xref_probe.py predict --seeds bak/$D/xref_probe/seeds.json \
+     --edges bak/$D/xref_probe/expected_edges.jsonl --out bak/$D/xref_probe/pred_new.json
+   uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_new.json \
+     --measured bak/20261005_w1_1b_evidence/pred_new.json
+   ```
+   預期（2026-10-05 以 W1 的 Step 0 實跑）：expect 印出 `curated_rows 932, attached 924, curated_without_tsk 8, pure_tsk 249,434, total 250,366, votes_edges 250,358` 與 `fingerprint e522411e13c8e867cad36190c9002813b3da9a7d165ef5435d5cc161eff3775f`；seeds 為 5,820 keys（sha256 `674537f3…`）；pred_new 與歸檔的 oracle 比對結束碼 0。期望檔到第 1 批計畫 §1「W1 步驟」第 4 步經 Kay 核可才 commit。
+2. **Step 9 連跑兩次**（staging 的 shell，見 [build_database.md](build_database.md) Step 9）：兩次都印出同一個 `fingerprint:`，第二次是 `created 0`。接著對 staging 比對期望檔，結束碼必須是 0（指紋與 xref_provenance 計數都要相同）：
+   ```bash
+   uv run --project scripts python scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json
+   ```
+3. **backend-staging 換成 W1 HEAD 建的 image**（D3 也在這個 image 上跑）。W1 HEAD 建成另一個 tag，不覆寫 production 正在用的 `bible_rag-backend:latest`（W0 紀錄的做法），用一個不進 git 的 compose override 指定 tag。deploy-guard 比對的是本 checkout 的檔案，所以要在建 image 的同一個 checkout 跑：
+   ```bash
+   printf 'services:\n  backend:\n    image: bible_rag-backend:w1\n  backend-staging:\n    image: bible_rag-backend:w1\n' > /tmp/w1_image.yml
+   docker compose -f docker-compose.yml -f docker-compose.staging.yml -f /tmp/w1_image.yml build backend
+   docker compose -f docker-compose.yml -f docker-compose.staging.yml -f /tmp/w1_image.yml up -d backend-staging
+   uv run --project scripts python scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend_staging
+   docker exec -i bible_rag_backend_staging .venv/bin/python -m probes.xref_measure \
+     < bak/$D/xref_probe/seeds.json > bak/$D/xref_probe/measured_staging.json
+   uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_new.json \
+     --measured bak/$D/xref_probe/measured_staging.json
+   ```
+   deploy-guard 結束碼 0：容器裡的 `database/neo4j_db.py`、`utils/retrieval/cross_ref_retriever.py`、`probes/xref_measure.py` 與本 checkout 逐位元相同，讀 `r.curated`，沒有 999 哨兵。compare 結束碼 0：5,820 個 key 0 列不同，哨兵 12/12。
 
 ## R3 升版（第 0 批不做）
 順序規則：backend 程式碼的變更要向前相容，先部署 backend，再升資料（例如第 1B 批）；一個缺陷項目一個 commit，各自附探針，validate 失敗時才分得出是哪一項造成。
+
+第 1 批 W1 不照下面 1–4 的順序，改照下方「W1 升版第 1 步」「W1 升版第 2 步」：第 1 步只換 backend image，第 2 步才做這裡的第 1 步（Neo4j）。W1 的 PG、Qdrant、.env 都不動，所以不做第 2、3 步；第 4 步已在 W1 升版第 1 步完成。
 1. Neo4j：從 staging dump，再載入正式 volume。停機約 1 分鐘，期間 /api/v1/entity 會出錯：
    ```bash
    mkdir -p bak/$D/promote
@@ -179,15 +220,79 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 3. Qdrant：把 `.env` 的 `QDRANT_ENTITY_COLLECTION` 改成 `bible_entities_vN`（backend 設定 `qdrant_entity_collection`，見 backend/config.py；scripts 也讀同一個變數），再重新建立 backend 容器（第 4 步會一併完成）。舊 collection 留到下一批 R0 之後再刪。另一個做法是一次性改用 Qdrant alias；alias 不能與現有 collection 同名，所以 backend 要改指新的 alias 名。
 4. 程式碼、registry、字典隨 image 上線：`docker compose up -d --build backend`。backend 沒有 volume mount，只 restart 會跑舊 image；建置要走 uv 快取（README「Docker 建置快取」）。
 
+### W1 升版第 1 步：backend 先上，資料不動
+在沒有 source staging.env 的乾淨 shell 執行：這裡要對 production 做 `up -d`，而 `--target prod` 會拒絕 staging 的 shell。種子與期望檔沿用 R2「W1 的交叉引用檢查」的 `bak/$D/xref_probe/`。
+```bash
+docker tag "$(docker inspect -f '{{.Image}}' bible_rag_backend)" bible_rag-backend:kg-pre-batch1-w1
+docker compose up -d --build backend
+curl -f http://localhost:8000/api/v1/health
+(cd evaluation && uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke)
+uv run --project scripts python scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend
+docker exec -i bible_rag_backend .venv/bin/python -m probes.xref_measure \
+  < bak/$D/xref_probe/seeds.json > bak/$D/xref_probe/measured_prod_step1.json
+uv run --project scripts python scripts/tools/xref_probe.py predict --seeds bak/$D/xref_probe/seeds.json \
+  --target prod --out bak/$D/xref_probe/pred_prod_step1.json
+uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_prod_step1.json \
+  --measured bak/$D/xref_probe/measured_prod_step1.json
+```
+- **回滾用的 tag 取自 prod 容器正在跑的 image**（升版前是 9bc112a6），不取 `latest`：`latest` 若在 R2 被重建過，已經是 W1 的 image。R0 若已打過這個 tag，這一行會把它改指到容器實際在跑的 image。
+- **煙霧測試**：20 題預設檢索（只有 event_registry），通過條件是 [題號檔 README](../evaluation/experiments/2026-10-05_kg_w1/README.md) 的檢查印出 `20 0 []`。
+- **deploy-guard** 結束碼 0。不是 0 就先查 image，不往下做。
+- **唯一的閘門是精確比對**：compare 結束碼 0，5,820 個 key 0 列不同，哨兵 12/12；`pred_prod_step1.json` 也要等於規劃時歸檔的 `bak/20261005_w1_1b_evidence/pred_trans.json`（2026-10-05 對當時的 prod 已驗證 0/5,820）。這個 image 帶上了 087ab0d（W1-0 的 md5 平手，prod 現行的 9bc112a6 還沒有）、1B-C1（讀 `r.curated`，刪除 999 哨兵）、`backend/probes/`，以及兩個串流的全部 scripts/ 與 bible_chunking/ 改動（都 COPY 進 image）。所以**不要拿 opt-in 的線上行為與 9bc112a6 比**：光是 md5 平手就讓約 1,279/2,779 個單一種子、57/262 個代理種子集的 id 集合改變；相對於 087ab0d 的 Cypher，C1 本身只改 5 個單一種子（只有權重）與 1/262 個種子集。
+- W1 紀錄要寫明：第 1 步上線的是 087ab0d 加 C1，判準是這裡的精確比對。
+
+### W1 升版第 1、2 步之間：opt-in xref A/B（只報告）
+第 1 批計畫 §5.2：同一個 W1 image 分別接舊資料（prod，第 1 步之後）與新資料（backend-staging），各跑一次 500 題，兩邊參數完全相同。kg_xref 的 68 題要在 500 題裡才算得到：
+```bash
+cd evaluation
+uv run python quick_retrieval_eval.py --graph-strategies cross_ref_expand cross_reference --top-k 5 --metric-k 6 --label xref_old_w1
+BACKEND_URL=http://localhost:8001 uv run python quick_retrieval_eval.py --graph-strategies cross_ref_expand cross_reference --top-k 5 --metric-k 6 --label xref_new_w1
+uv run python xref_ab_slice.py results_quick/xref_old_w1.json results_quick/xref_new_w1.json --label w1_xref
+```
+- 結束碼 2 是防呆（兩邊的策略、top_k、metric_k、metric_version 不同，或段落沒有 gold、found_by），不存報告。
+- 結束碼 3 是 touched 題數超過 `--max-touched`（預設 34）：先停下來查，再決定要不要做第 2 步。預期 touched 約 17 題以下；kg_xref「只經 xref 到達 gold」預期沒有增益（模擬 14 → 14）。這不是閘門。
+- touched 的題先用同樣條件重問，排除 LLM 取樣雜訊：W0 的 legacy-100 有 1 題（GENERAL_BIBLE_QUESTION_016）只因 intent LLM 取樣就換了 top-5（第 1 批計畫 §9）。
+
+### W1 升版第 2 步：載入資料，第一個指令是 deploy-guard
+```bash
+uv run --project scripts python scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend
+```
+- 結束碼不是 0 就停，不載入 dump：prod 容器跑的不是本 checkout 建的、讀 `r.curated` 的 image（例如第 1 步之後被重建或退回過），新資料會被舊規則排序（第 1 批計畫 §2.2 的風險；部署順序顛倒的影響見 R5）。
+- 第 1、2 步可能相隔數小時，所以即使第 1 步剛跑過也要重跑。
+- 通過後才做上面 R3 第 1 步（Neo4j dump／load，停機約 1 分鐘）。載入資料之後不要再建 image；image 一有任何變動，先重跑 deploy-guard 再碰資料。
+
 ## R4 升版後檢查
 - 在 production 上執行 `validate_kg.py --live --target prod`、`export_event_registry.py --check`、`check_identity.py --target prod`。要在沒有 source staging.env 的新 shell 執行：validate_kg 與 check_identity 的 `--target prod` 讀 .env，shell 還帶著 staging 設定（`KG_TARGET=staging`、store 變數與 .env 不同、Neo4j 7688、bible_rag_staging）時會拒絕並結束碼 1，不會把 staging 當成 prod 報告；export_event_registry 沒有這層防護，只讀 `NEO4J_URI`，在 staging 的 shell 會默默檢查 staging 圖。
 - 抽查 /api/v1/entity（計畫 §6.4 列出各批的探針）。
+
+### W1 的交叉引用檢查（第 1B 批）
+在同一個乾淨的 shell 執行。`pred_new.json` 是 R2 用 `predict --edges expected_edges.jsonl` 算出的預測，等於歸檔的 oracle：
+```bash
+uv run --project scripts python scripts/tools/xref_probe.py fingerprint --target prod --expect config/kg_expect/batch1_w1/xref.json
+docker exec -i bible_rag_backend .venv/bin/python -m probes.xref_measure \
+  < bak/$D/xref_probe/seeds.json > bak/$D/xref_probe/measured_prod_r4.json
+uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_new.json \
+  --measured bak/$D/xref_probe/measured_prod_r4.json
+```
+- fingerprint 結束碼 0（`e522411e…`，xref_provenance 四個鍵與期望檔相同）；compare 結束碼 0，5,820 個 key 0 列不同，哨兵 12/12。
+- `validate_kg.py --live --target prod` 的 H8、R4、R11 三項 hard 全過，值見 [build_database.md](build_database.md) Step 10.6。
+- **R4 之後只做一個 commit**，與 W1 的合併允許清單放在一起（第 1 批計畫 §3）：用 validate_kg 的 `--ratchet` 與 `--accept` 寫入 H8.unflagged 250,418 → 0、R4.misaligned 59 → 0、R4.misaligned_any_verse 62 → 0，以及 `--accept R11`（249,502 → 250,358）；PROBES 的 failing 名單拿掉 `xref-heb1-0-not-curated-psa2` 與 `xref-rev20-not-curated-isa65`，新的 xref 探針不可留在 failing 裡。
+- **R4 之後的文件更新（U3）**，行號以 2026-10-05 為準。現行圖譜的數字與機制改成 250,418 → 250,366、supplementary 142 → 158、curated 由 `r.curated` 旗標判別：
+  - 文件：docs/ARCHITECTURE.md :328、:336；docs/kg_construction_overview.md :108、:186；evaluation/README.md :269（curated 條數）。
+  - 論文中描述現行圖譜的地方：paper/latex/sec3_kg.tex :199、:210-212、:263、:268、:290、:308；sec4_retrieval.tex :234、:287-292；main.tex :62；sec1_intro.tex :62；appendix.tex :147-150（回滾說「每種邊用一個謂詞就能刪」，但 curated 邊現在也帶 tsk 與 votes，已不成立）。
+  - 實驗當時的數值保留，加註資料版本：sec6_experiments.tex :114、:317、:481。
 
 ## R5 回滾
 - Neo4j：照 bak/README.md 的「還原指令」，載回 `bak/<日期>/neo4j/neo4j.dump`（停機約 1 分鐘）。
 - PG：用 R0 存的 `bak/<日期>/postgres/entity_tables.sql` 換回兩張表，指令同 R3 第 2 步。
 - Qdrant：把 `QDRANT_ENTITY_COLLECTION` 切回上一個 collection 名，再重新建立 backend 容器。
 - 程式碼與 registry：`git revert`，再 `docker compose up -d --build backend`。
+- **第 1 批 W1：image 不可先於資料回滾。** 資料可以單獨回滾，因為 W1 升版第 1 步的 image 新舊資料都能正確排序（過渡的 coalesce）。image 退回 `kg-pre-batch1-w1` 只能與資料回滾一起做，或在資料回滾之後做，不能在資料之前。順序顛倒時，舊 image 讀新資料：924 條帶 votes 的 curated 邊會被舊的 999 規則當成 TSK，影響 760/2,779 個單一種子、86/262 個代理種子集。image 有任何變動（重建、退回 tag）之後，碰資料之前都要先重跑 deploy-guard；退回舊 image 之後 deploy-guard 必然失敗，這時只能載入 W1 之前的 dump。退回 image：
+  ```bash
+  docker tag bible_rag-backend:kg-pre-batch1-w1 bible_rag-backend:latest
+  docker compose up -d backend
+  ```
+  第二行不加 `--build`，才會用剛退回的 tag。
 - 第 1D 批起有了編譯快照（`output/kg_snapshots/<ts>/`）：回滾等於重新載入上一份快照，比還原 dump 快，而且三庫一定一致。
 
 ## 收尾
