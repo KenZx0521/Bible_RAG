@@ -36,6 +36,8 @@ DOCS = (DOC, STAGING_DOC)
 PLAN = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan.md"
 PLAN_BATCHES = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan_batches.md"
 PLANS = (PLAN, PLAN_BATCHES, ROOT / "docs" / "records" / "2026-10-04_kg_batch1_plan.md")
+KG_FIX = ROOT / "docs" / "records" / "2026-10-04_kg_fix"
+RECORD_READMES = (KG_FIX / "README.md", KG_FIX / "batch1" / "w1_1B" / "README.md")
 PY = str(ROOT / "scripts" / ".venv" / "bin" / "python")
 CHECK_STEP0 = ROOT / "scripts" / "tools" / "check_step0.py"
 # docs that describe the current cross-reference mechanism (not experiment-time values)
@@ -167,7 +169,7 @@ def test_documented_stage_and_target_values_are_valid_choices(path):
     assert targets <= {"prod", "staging"}, targets
 
 
-@pytest.mark.parametrize("path", DOCS + PLANS, ids=_name)
+@pytest.mark.parametrize("path", DOCS + PLANS + RECORD_READMES, ids=_name)
 def test_relative_links_resolve(path):
     broken = []
     for target in _LINK_RE.findall(mask_code(read(path))):

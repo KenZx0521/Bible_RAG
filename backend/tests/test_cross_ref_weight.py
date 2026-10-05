@@ -48,15 +48,17 @@ def test_edge_weight_by_curated_flag():
 
 
 def test_tsk_edge_with_votes_1268_not_curated_weighs_0_60(monkeypatch):
-    _multi_hop_returns(monkeypatch, [
-        {"id": "eph:1:1", "hop_distance": 1, "votes": 1268, "curated": False},
-    ])
+    row = {"id": "eph:1:1", "hop_distance": 1, "votes": 1268, "curated": False}
+    _multi_hop_returns(monkeypatch, [row])
+    _one_hop_returns(monkeypatch, [row])
 
-    [cand] = asyncio.run(xr.retrieve_via_cross_references(["rom:8:1"]))
+    [expand] = asyncio.run(xr.retrieve_via_cross_references(["rom:8:1"]))
+    [legacy] = asyncio.run(xr.retrieve_cross_references(["rom:8:1"]))
 
-    assert cand["weight"] == 0.60
-    assert cand["curated"] is False
-    assert cand["votes"] == 1268
+    for cand in (expand, legacy):  # high votes never stand in for the flag
+        assert cand["weight"] == 0.60
+        assert cand["curated"] is False
+        assert cand["votes"] == 1268
 
 
 def test_curated_edge_with_few_votes_weighs_0_75(monkeypatch):

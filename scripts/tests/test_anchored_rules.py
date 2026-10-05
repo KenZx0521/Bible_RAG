@@ -431,11 +431,12 @@ def test_mother_counts_as_another_parent():
 
 
 @pytest.mark.parametrize("text, names", [
-    ("你是約翰的兒子西門，", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),   # parent slot
-    ("西門的兒子約翰。", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),       # child slot
+    ("你是約翰的兒子西門，", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),   # both slots
+    ("西門的兒子約翰。", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),       # both slots
     ("西門是約翰的兒子；", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),
     ("給西門生了約翰。", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),
-    ("西門的兒子耶戶。", {"西門": "person:bide", "耶戶": "person:yehu"}),               # one endpoint
+    ("西門的兒子耶戶。", {"西門": "person:bide", "耶戶": "person:yehu"}),               # parent slot only
+    ("耶戶的兒子西門。", {"耶戶": "person:yehu", "西門": "person:bide"}),               # child slot only
 ])
 def test_homonym_ids_abstain_in_either_slot(text, names):
     hits, stats, conflicts = _run(text, names)

@@ -60,12 +60,14 @@ def test_final_type_applies_overrides():
 class _Recorder:
     """Neo4j driver/session, PG connection/cursor and Qdrant client in one.
 
-    group:yehehua starts typed Group; every statement and payload is recorded.
+    group:yehehua starts with `labels` (typed Group unless a test says otherwise);
+    every statement and payload is recorded.
     """
 
     def __init__(self):
         self.cypher, self.sql, self.payloads = [], [], []
         self.rowcount = 1
+        self.labels = ["Entity", "Group"]
 
     def __enter__(self):
         return self
@@ -81,7 +83,7 @@ class _Recorder:
 
     def run(self, cypher, **params):
         self.cypher.append(cypher)
-        return SimpleNamespace(single=lambda: {"labels": ["Entity", "Group"]})
+        return SimpleNamespace(single=lambda: {"labels": list(self.labels)})
 
     def execute(self, sql, params=None):
         self.sql.append(sql)
@@ -118,7 +120,29 @@ def test_cleanup_yehehua_takes_the_label_from_the_file(recorder, tmp_path, monke
     assert recorder.payloads == [{"type": "Theme"}]
 
 
-def test_cleanup_yehehua_rejects_an_invalid_label_before_any_write(recorder, tmp_path, monkeypatch):
+@pytest.mark.parametrize("labels, remove", [
+    (["Entity", "Place"], "Place"),             # the stale type is read from the node, not assumed
+    (["Entity", "Group", "Place"], "Group:Place"),
+])
+def test_cleanup_yehehua_removes_the_type_labels_the_node_has(recorder, tmp_path, monkeypatch,
+                                                              labels, remove):
+    recorder.labels = labels
+    path = _write(tmp_path, "version: 1\noverrides:\n  group:yehehua: {label: Person}\n")
+    monkeypatch.setattr(cleanup_noise_entities, "OVERRIDES_PATH", path)
+
+    assert cleanup_noise_entities.main() == 0
+
+    assert recorder.cypher[-1] == (
+        f"MATCH (e:Entity {{entity_id: 'group:yehehua'}}) REMOVE e:{remove} SET e:Person")
+    assert recorder.payloads == [{"type": "Person"}]
+
+
+# The default actions run dan and generic-events before yehehua: the file is
+# read before either of them can write.
+@pytest.mark.parametrize("actions", [["--actions", "yehehua"], []], ids=["yehehua", "default"])
+def test_cleanup_yehehua_rejects_an_invalid_label_before_any_write(recorder, tmp_path, monkeypatch,
+                                                                   actions):
+    monkeypatch.setattr(sys, "argv", ["cleanup_noise_entities.py", *actions])
     path = _write(tmp_path, "version: 1\noverrides:\n  group:yehehua: {label: \"Person SET e.x = 1\"}\n")
     monkeypatch.setattr(cleanup_noise_entities, "OVERRIDES_PATH", path)
 

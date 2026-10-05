@@ -5,9 +5,11 @@ evidence scripts that measured the old definitions read
 docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json instead of the
 live module, so they replay on any HEAD (README of that directory). The
 ledger test pins the live list to the mechanical conversion of the frozen one
-plus each documented change.
+plus each documented change; the file's sha256 (the one w1_1B/README.md
+records) pins its bytes, so an edit made to it and the live list alike fails.
 """
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -17,6 +19,7 @@ from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS
 ROOT = Path(__file__).resolve().parents[2]
 RECORDS = ROOT / "docs/records/2026-10-04_kg_fix"
 FROZEN = RECORDS / "xref/supp_defs_a32fbea.json"
+FROZEN_SHA256 = "aa1d76c058031726c0672d81f77b5c5f4123411f2e4d27ed2ef530119d9de9ea"
 KEYS = ["source_pericope_id", "target_pericope_id", "source_verses",
         "target_verses", "ref_type", "description"]
 ARCHIVED = [
@@ -43,6 +46,12 @@ def test_frozen_definitions_shape():
     assert len(rows) == 161
     assert all(list(row) == KEYS for row in rows)
     assert all(isinstance(v, str) and v for row in rows for v in row.values())
+
+
+def test_frozen_definitions_bytes_match_the_recorded_sha256():
+    assert hashlib.sha256(FROZEN.read_bytes()).hexdigest() == FROZEN_SHA256
+    readme = (RECORDS / "batch1/w1_1B/README.md").read_text(encoding="utf-8")
+    assert f"| `xref/supp_defs_a32fbea.json` | `{FROZEN_SHA256}` |" in readme
 
 
 def test_archived_scripts_do_not_import_live_definitions():

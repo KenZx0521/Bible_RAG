@@ -37,6 +37,14 @@ from scripts.tools import xref_rank as xr
 ROOT = Path(__file__).resolve().parents[2]
 
 
+@pytest.fixture(autouse=True)
+def _no_real_runner(monkeypatch):
+    """No test reaches docker: run_guard swaps in a FakeDocker; without it, the runner refuses."""
+    def refuse(cmd, **kwargs):
+        raise AssertionError(f"test reached the real runner: {cmd}")
+    monkeypatch.setattr(xp, "run_command", refuse)
+
+
 def edge(a, b, source="tsk", curated=None, votes=None) -> dict:
     return {"a": a, "b": b, "source": source, "curated": curated, "votes": votes}
 
@@ -179,10 +187,18 @@ def test_predict_from_edges_file(tmp_path):
     rows = doc["rows"]
     assert sorted(rows) == ["legacy:isa:55:0", "legacy:jer:29:0", "q:Q1", "single:isa:55:0", "single:jer:29:0"]
     assert rows["legacy:isa:55:0"] == [["psa:23:0", 1, True, 0.75], ["jer:29:0", 1, False, 0.6]]
+    assert rows["legacy:jer:29:0"] == [["isa:55:0", 1, False, 0.6]]          # legacy is one hop: no psa:23:0
     # the curated=False flag beats source=supplementary, so the 2-hop path is not all curated
     assert rows["single:jer:29:0"] == [["isa:55:0", 1, False, 0.6], ["psa:23:0", 2, False, 0.5]]
     assert rows["q:Q1"] == [["isa:55:0", 1, False, 0.6], ["eph:1:1", 1, False, 0.6],
                             ["jer:1:1", 1, False, 0.6], ["psa:23:0", 2, False, 0.5]]
+
+
+def test_predict_applies_the_limit_to_legacy_too():
+    index = xr.XrefIndex.from_edges([edge("s:1:0", f"t:{i}:0", votes=i) for i in range(1, 13)])
+    rows = xp.predict(index, {"singles": ["s:1:0"], "sets": {}})
+    top10 = [[f"t:{i}:0", 1, False, 0.6] for i in range(12, 2, -1)]           # 12 one-hop, by votes
+    assert rows == {"single:s:1:0": top10, "legacy:s:1:0": top10}
 
 
 class FakeDriver:
@@ -302,6 +318,8 @@ def test_compare_exact_and_sentinels(tmp_path, capsys):
     curated["single:jer:29:0"] = [["isa:55:0", 1, True, 0.75]]   # the pre-C1 999-sentinel row
     assert run_compare(tmp_path, full(curated), curated) == 1
     curated["single:jer:29:0"] = [["isa:55:0", 1, True, 0.6]]    # right weight, wrong flag
+    assert run_compare(tmp_path, full(curated), curated) == 1
+    curated["single:jer:29:0"] = [["isa:55:0", 1, False, 0.5]]   # right flag, wrong weight
     assert run_compare(tmp_path, full(curated), curated) == 1
 
 

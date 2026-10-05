@@ -80,6 +80,10 @@ def test_derive_source_by_phase_notes_and_backfill():
     assert derive(5, "cooccurrence-backfill") == "cooccurrence"
     assert derive(5, "", backfilled=True) == "cooccurrence"
     assert derive(5, "", backfilled=False) == "inverse"
+    # Only backfilled exactly True marks a backfill: a stray truthy value read
+    # back from Neo4j or JSONL stays an R5 inverse.
+    assert derive(5, "", backfilled="true") == "inverse"
+    assert derive(5, "", backfilled=1) == "inverse"
     assert derive(4, "cooccurrence-backfill", backfilled=True) == "llm"
     assert [derive(p) for p in (None, 0, 1, 8)] == [None, None, None, None]
     # Pure over ints: an enum member from the other import name maps the same.
@@ -90,6 +94,8 @@ def test_derive_source_by_phase_notes_and_backfill():
     assert _relation(source="curated").effective_source == "curated"
     inverse = _relation(extraction_phase=ExtractionPhase.INVERSE_DERIVED, notes="derived_from=SON_OF")
     assert inverse.effective_source == "inverse"
+    backfill = _relation(extraction_phase=ExtractionPhase.INVERSE_DERIVED, notes="cooccurrence-backfill")
+    assert backfill.effective_source == "cooccurrence"  # the notes reach derive_source
 
 
 def test_legacy_row_round_trips_byte_identically():
@@ -117,6 +123,10 @@ def test_provenance_keys_follow_legacy_keys_only_when_set():
 
     data["sources"].append("inverse")
     assert relation.sources == ["prior", "llm"]  # to_dict hands out a copy
+    src = relation.to_dict()
+    loaded = ExtractedRelation.from_dict(src)
+    src["sources"].append("x")
+    assert loaded.sources == ["prior", "llm"]  # and from_dict takes one
 
 
 @pytest.mark.skipif(not RELATIONS.exists(), reason="output/relations.jsonl is a gitignored build product")
