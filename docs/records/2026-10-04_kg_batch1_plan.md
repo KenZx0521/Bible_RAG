@@ -448,7 +448,7 @@ D3 的 staging 端必須跑「由該波 HEAD 建出的 image」。
 
 ### 5.3 /api/v1/entity 抽查
 
-related_passages 與 related_entities 的查詢沒有 ORDER BY，比對前一律先依 id 排序。
+related_passages 與 related_entities 的查詢自 087ab0d（W1-0）起以 ORDER BY 加 md5 平手排序，同一份資料的結果是決定的；比對前仍一律先依 id 排序。排序只固定順序，不固定 LIMIT 10 取到哪些，所以 W1 只在同一個 image 上比：prod 自己在升版第 2 步前後各取一次（做法見 [staging_promotion.md](../staging_promotion.md)「W1 的 /api/v1/entity 比對」）。
 
 - **W1：以下必須與 prod 完全相同。** person:make、person:liwei、place:dan、group:yehehua、event:shanshangbaoxun、person:yeteluo、event:jinniudushijian。
 - **W1 的圖譜探針（Cypher READ）：**

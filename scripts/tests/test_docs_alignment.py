@@ -489,7 +489,7 @@ def test_w1_step1_pins_and_saves_the_rollback_image_before_switching():
 def test_w1_step1_deploys_the_r2_tested_image_and_waits_for_health():
     r2 = _commands(section(staging_text(), "R2"))
     record = f"docker image inspect -f '{{{{.Id}}}}' bible_rag-backend:w1 > {W1_ID_FILE}"
-    up = _in_order(r2, ("w1_image.yml build backend", record, "w1_image.yml up -d backend-staging"))[2]
+    up = _in_order(r2, ("w1_image.yml build backend", record, "w1_image.yml up -d --no-deps backend-staging"))[2]
     assert W1_ID_FILE in r2[up + 1] and "bible_rag_backend_staging)" in r2[up + 1], r2[up + 1]
     step1 = section(staging_text(), "W1 升版第 1 步")
     deploy = _blocks(step1)[1]
