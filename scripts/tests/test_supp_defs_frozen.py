@@ -1,16 +1,16 @@
 """The 161 supplementary definitions of a32fbea are frozen as JSON.
 
-1B rewrites SUPPLEMENTARY_CROSS_REFS in verse coordinates. The archived
+1B rewrote SUPPLEMENTARY_CROSS_REFS in verse coordinates. The archived
 evidence scripts that measured the old definitions read
 docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json instead of the
-live module, so they replay on any HEAD (README of that directory).
+live module, so they replay on any HEAD (README of that directory). The
+ledger test pins the live list to the mechanical conversion of the frozen one
+plus each documented change.
 """
 
 import json
 import re
 from pathlib import Path
-
-import pytest
 
 from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS
 
@@ -51,8 +51,29 @@ def test_archived_scripts_do_not_import_live_definitions():
         assert "docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json" in source, path
 
 
-def test_frozen_equals_live_until_coordinates():
-    if not hasattr(SUPPLEMENTARY_CROSS_REFS[0], "source_pericope_id"):
-        pytest.skip("live definitions are in verse coordinates; the ledger test covers them")
-    live = [{key: getattr(ref, key) for key in KEYS} for ref in SUPPLEMENTARY_CROSS_REFS]
-    assert _frozen() == live
+# Changes to the a32fbea definitions, keyed by the converted (src, tgt); each
+# lands in the commit that makes it, with its evidence in that commit.
+DELETED: set[tuple[str, str]] = set()
+RETARGETED: dict[tuple[str, str], tuple[str, str]] = {}
+
+
+def _converted(row) -> tuple[str, str]:
+    """The mechanical conversion: 'mat:1:2' + '22-23' → 'mat 1:22-23', both ends."""
+    ends = []
+    for pid, verses in ((row["source_pericope_id"], row["source_verses"]),
+                        (row["target_pericope_id"], row["target_verses"])):
+        book, chapter, _ = pid.split(":")
+        ends.append(f"{book} {chapter}:{verses}")
+    return ends[0], ends[1]
+
+
+def test_definition_ledger():
+    converted = [_converted(row) for row in _frozen()]
+    assert DELETED | set(RETARGETED) <= set(converted)
+    expected = [
+        (*RETARGETED.get(ends, ends), row["ref_type"], row["description"], None)
+        for ends, row in zip(converted, _frozen()) if ends not in DELETED
+    ]
+    live = [(ref.src, ref.tgt, ref.ref_type, ref.description, ref.tsk_exempt)
+            for ref in SUPPLEMENTARY_CROSS_REFS]
+    assert live == expected

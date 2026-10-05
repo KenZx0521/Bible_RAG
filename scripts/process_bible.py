@@ -38,10 +38,13 @@ from bible_chunking.models import (
     Neo4jNode,
     Neo4jRelationship,
 )
-from bible_chunking.nt_cross_references import (
-    SUPPLEMENTARY_CROSS_REFS,
-    resolve_pericope_id,
+from bible_chunking.curated_xrefs import (
+    XrefDefinitionError,
+    format_verses,
+    parse_anchor,
+    resolve_definitions,
 )
+from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS
 
 
 class BibleProcessor:
@@ -85,9 +88,17 @@ class BibleProcessor:
         logging.info("\n[Phase 2] Processing hierarchical chunking...")
         self._chunk_books()
 
-        # Phase 3: Export JSONL files
+        # Phase 3: Export JSONL files (an unresolvable supplementary
+        # cross-reference stops it before the first file is written)
         logging.info("\n[Phase 3] Exporting JSONL files...")
-        self._export_jsonl()
+        try:
+            self._export_jsonl()
+        except XrefDefinitionError as err:
+            for message in err.errors:
+                logging.error(f"  {message}")
+            logging.error(f"  {len(err.errors)} supplementary cross-reference error(s); "
+                          f"no JSONL written")
+            return False
 
         # Phase 4: Report statistics
         self._report_statistics()
@@ -182,64 +193,48 @@ class BibleProcessor:
                 return v
         return None
 
-    def _supplement_cross_references(self, neo4j_relationships: List[Dict],
-                                      verse_lookup: Dict[str, str]) -> int:
+    def _verse_map(self) -> Dict[Tuple[str, int, int], str]:
+        """
+        (book_id, chapter, verse) -> pericope_id, the verse map of
+        bible_chunking.curated_xrefs (same keys as verse_map_from_pericopes).
+        """
+        return {
+            (book.id, chapter.chapter_num, v_num): pericope.id
+            for book in self.books
+            for chapter in book.chapters
+            for pericope in chapter.pericopes
+            for verse in pericope.verses
+            for v_num in range(verse.verse_start, verse.verse_end + 1)
+        }
+
+    def _supplement_cross_references(self, neo4j_relationships: List[Dict]) -> int:
         """
         Add supplementary NT→OT cross-references from the curated list.
+
+        Both ends resolve verse by verse: one relationship per touched
+        (source, target) pericope pair, carrying that pair's verses. Raises
+        XrefDefinitionError listing every definition that does not resolve;
+        nothing is skipped and nothing falls back to a chapter.
         Returns the number of supplementary relationships added.
         """
-        count = 0
-        all_pericope_ids = set()
-        for book in self.books:
-            for chapter in book.chapters:
-                for pericope in chapter.pericopes:
-                    all_pericope_ids.add(pericope.id)
-
-        for ref in SUPPLEMENTARY_CROSS_REFS:
-            source_id = ref.source_pericope_id
-
-            # Resolve target pericope: use first target verse to find actual pericope
-            target_base = ref.target_pericope_id  # e.g. "isa:28:0"
-            parts = target_base.split(":")
-            if len(parts) >= 2:
-                t_book_id = parts[0]
-                t_chapter = int(parts[1])
-                # Parse first target verse
-                t_verse = None
-                if ref.target_verses:
-                    first_v = ref.target_verses.split(",")[0].split("-")[0].strip()
-                    if first_v.isdigit():
-                        t_verse = int(first_v)
-                resolved_target = self._resolve_to_pericope(
-                    verse_lookup, t_book_id, t_chapter, t_verse
-                )
-            else:
-                resolved_target = None
-
-            target_id = resolved_target or target_base
-
-            # Only add if both source and target exist as nodes
-            if source_id not in all_pericope_ids:
-                continue
-            if target_id not in all_pericope_ids:
-                # Fall back to chapter-level if pericope not found
-                target_id = f"{parts[0]}:{parts[1]}" if len(parts) >= 2 else target_id
-
+        anchors, errors = resolve_definitions(SUPPLEMENTARY_CROSS_REFS, self._verse_map())
+        if errors:
+            raise XrefDefinitionError(*errors)
+        for anchor in anchors:
+            src, tgt = parse_anchor(anchor.text)
             neo4j_relationships.append({
-                "start": source_id,
-                "end": target_id,
+                "start": anchor.start,
+                "end": anchor.end,
                 "type": "CROSS_REFERENCES",
                 "properties": {
                     "source": "supplementary",
-                    "ref_type": ref.ref_type,
-                    "source_verses": ref.source_verses,
-                    "target_verses": ref.target_verses,
-                    "description": ref.description,
+                    "ref_type": anchor.ref_type,
+                    "source_verses": format_verses(src.verses),
+                    "target_verses": format_verses(tgt.verses),
+                    "description": anchor.description,
                 },
             })
-            count += 1
-
-        return count
+        return len(anchors)
 
     def _export_jsonl(self) -> None:
         """Export all data to JSONL files."""
@@ -401,7 +396,7 @@ class BibleProcessor:
                         verse_embed_count += 1
 
         # Add supplementary cross-references
-        supp_count = self._supplement_cross_references(neo4j_relationships, verse_lookup)
+        supp_count = self._supplement_cross_references(neo4j_relationships)
         logging.info(f"  Added {supp_count} supplementary cross-references")
         logging.info(f"  Added {verse_embed_count} verse-level embeddings")
 
