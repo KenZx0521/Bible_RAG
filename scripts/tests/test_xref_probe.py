@@ -7,7 +7,8 @@ cross_ref_retriever._edge_weight; compare must refuse any drift and the
 sentinel rows the plan names. The graph reads go through a fake driver that
 records the access mode: predict --target and fingerprint must never open a
 write session.
-deploy-guard (1B-T4) reads the container through a fake runner: no docker call.
+deploy-guard (1B-T4) reads the container through a fake runner (no docker call)
+and the committed files through real, read-only git: HEAD, not the working tree.
 expect (1B-T3) replays Steps 5 and 9 on a tiny Step 0 output and TSK file;
 fingerprint reads the same table back through the fake driver. allow turns
 that expect file and a fake prod profile into 1B's allowlist fragment: exact
@@ -312,23 +313,34 @@ def test_compare_params_and_key_sets(tmp_path):
 
 # ---------------------------------------------------------------- deploy-guard
 
-REPO_BACKEND = Path(xp.__file__).resolve().parents[2] / "backend"
 NEO4J_DB, RETRIEVER, PROBE = "database/neo4j_db.py", "utils/retrieval/cross_ref_retriever.py", "probes/xref_measure.py"
 PRE_1B = {  # the 087ab0d lines plan §2.2 says must be gone from the container before the data load
     NEO4J_DB: b'        "     max(coalesce(r.votes, 999)) AS votes "\n',
     RETRIEVER: b"_CURATED_VOTES = 999\n",
 }
+GIT = ("git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", "-c", "commit.gpgsign=false",
+       "-c", "core.hooksPath=/dev/null")
 
 
 class FakeDocker:
-    """subprocess.run stand-in for `docker exec <container> cat <path>`; records every command."""
+    """subprocess.run stand-in: answers `docker exec <container> cat <path>` from `files` and
+    records it; passes the guard's read-only `git -C <backend> show HEAD:./<file>` to git.
+    `hang` names the programs ("docker", "git") that outlive the guard's timeout."""
 
-    def __init__(self, files: dict[str, bytes], fail: bytes | None = None):
-        self.files, self.fail, self.calls = files, fail, []
+    def __init__(self, files: dict[str, bytes], fail: bytes | None = None, hang: tuple = ()):
+        self.files, self.fail, self.hang, self.calls = files, fail, hang, []
 
-    def __call__(self, cmd, check, capture_output):
-        self.calls.append(cmd)
-        assert cmd[:2] == ["docker", "exec"] and cmd[3] == "cat" and check is False and capture_output
+    def __call__(self, cmd, check, capture_output, timeout):
+        assert check is False and capture_output and timeout == xp.GUARD_TIMEOUT_S
+        if cmd[0] == "git":
+            assert cmd[1] == "-C" and cmd[3] == "show" and cmd[4].startswith("HEAD:./"), cmd
+        else:
+            assert cmd[:2] == ["docker", "exec"] and cmd[3] == "cat", cmd
+            self.calls.append(cmd)
+        if cmd[0] in self.hang:
+            raise subprocess.TimeoutExpired(cmd, timeout)
+        if cmd[0] == "git":
+            return subprocess.run(cmd, check=check, capture_output=capture_output, timeout=timeout)
         if self.fail is not None:
             return SimpleNamespace(returncode=1, stdout=b"", stderr=self.fail)
         rel = cmd[4].removeprefix("/app/backend/")
@@ -338,8 +350,22 @@ class FakeDocker:
         return SimpleNamespace(returncode=0, stdout=self.files[rel], stderr=b"")
 
 
-def checkout_files() -> dict[str, bytes]:
-    return {rel: (REPO_BACKEND / rel).read_bytes() for rel in (NEO4J_DB, RETRIEVER, PROBE)}
+def head_files() -> dict[str, bytes]:
+    """The guarded files as committed at this checkout's HEAD: what a clean build holds."""
+    return {rel: subprocess.run(["git", "-C", str(ROOT), "cat-file", "blob", f"HEAD:backend/{rel}"],
+                                check=True, capture_output=True).stdout
+            for rel in (NEO4J_DB, RETRIEVER, PROBE)}
+
+
+def committed_backend(tmp_path: Path, files: dict[str, bytes]) -> Path:
+    """backend/ of a fresh git repo whose HEAD holds `files`."""
+    repo = tmp_path / "repo"
+    for rel, data in files.items():
+        (repo / "backend" / rel).parent.mkdir(parents=True, exist_ok=True)
+        (repo / "backend" / rel).write_bytes(data)
+    for args in (("init", "-q"), ("add", "-A"), ("commit", "-qm", "guarded files")):
+        subprocess.run([*GIT, "-C", str(repo), *args], check=True, capture_output=True)
+    return repo / "backend"
 
 
 def run_guard(monkeypatch, docker, *argv) -> int:
@@ -348,7 +374,7 @@ def run_guard(monkeypatch, docker, *argv) -> int:
 
 
 def test_deploy_guard_accepts_current_checkout(monkeypatch, capsys):
-    files = checkout_files()
+    files = head_files()
     docker = FakeDocker(files)
     assert run_guard(monkeypatch, docker) == 0
     assert docker.calls == [["docker", "exec", "bible_rag_backend", "cat", f"/app/backend/{rel}"]
@@ -363,19 +389,52 @@ def test_deploy_guard_accepts_current_checkout(monkeypatch, capsys):
     assert {cmd[2] for cmd in docker.calls} == {"bible_rag_backend_staging"}
 
 
+def test_deploy_guard_compares_with_head_not_the_working_tree(tmp_path):
+    committed = head_files()
+    backend = committed_backend(tmp_path, committed)
+    edited = {**committed, NEO4J_DB: committed[NEO4J_DB] + b"# uncommitted\n"}
+    (backend / NEO4J_DB).write_bytes(edited[NEO4J_DB])
+
+    # an image built from HEAD passes, whatever the working tree holds
+    assert xp.deploy_guard("c", FakeDocker(committed), backend=backend) == (
+        {rel: hashlib.sha256(data).hexdigest() for rel, data in committed.items()}, [])
+    # an image built with the uncommitted edit fails, although it equals the working tree
+    _, [problem] = xp.deploy_guard("c", FakeDocker(edited), backend=backend)
+    assert problem.startswith(f"{NEO4J_DB}: sha256 ") and f"at HEAD in {backend}" in problem
+    assert "image not built from this checkout's HEAD" in problem
+
+
+def test_deploy_guard_rejects_a_guarded_file_missing_at_head(tmp_path):
+    files = head_files()
+    backend = committed_backend(tmp_path, {rel: data for rel, data in files.items() if rel != PROBE})
+    (backend / PROBE).parent.mkdir(parents=True, exist_ok=True)
+    (backend / PROBE).write_bytes(files[PROBE])                  # untracked: in the tree, not at HEAD
+
+    _, [problem] = xp.deploy_guard("c", FakeDocker(files), backend=backend)
+    assert problem.startswith(f"{PROBE} unreadable at HEAD in {backend} (exit 128: ")
+
+
+@pytest.mark.parametrize("hang, what", [("docker", "docker exec failed for"), ("git", "unreadable at HEAD")])
+def test_deploy_guard_fails_closed_on_a_timeout(hang, what, monkeypatch, capsys):
+    assert run_guard(monkeypatch, FakeDocker(head_files(), hang=(hang,))) == 1
+    out = capsys.readouterr().out
+    assert out.count(f"(timed out after {xp.GUARD_TIMEOUT_S} s)") == 3 and out.count(what) == 3
+    assert "exit 1: 3 problems; do not load the data" in out
+    assert "deployed backend reads r.curated" not in out
+    assert f"GUARD_TIMEOUT_S ({xp.GUARD_TIMEOUT_S} s)" in " ".join(xp.__doc__.split())   # --help says it
+
+
 def test_deploy_guard_rejects_sentinel_code(monkeypatch, capsys, tmp_path):
-    files = {**checkout_files(), NEO4J_DB: PRE_1B[NEO4J_DB]}
+    files = {**head_files(), NEO4J_DB: PRE_1B[NEO4J_DB]}
     assert run_guard(monkeypatch, FakeDocker(files)) == 1
     out = capsys.readouterr().out
     assert "coalesce(r.votes, 999) present" in out and "lacks r.curated" in out
     assert "deployed backend reads r.curated" not in out
 
-    # the code checks stand on their own: a checkout holding the same pre-1B files still fails
-    files = {**checkout_files(), **PRE_1B}
-    for rel, data in files.items():
-        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
-        (tmp_path / rel).write_bytes(data)
-    shas, problems = xp.deploy_guard("bible_rag_backend", FakeDocker(files), backend=tmp_path)
+    # the code checks stand on their own: a HEAD holding the same pre-1B files still fails
+    files = {**head_files(), **PRE_1B}
+    backend = committed_backend(tmp_path, files)
+    shas, problems = xp.deploy_guard("bible_rag_backend", FakeDocker(files), backend=backend)
     assert shas == {rel: hashlib.sha256(data).hexdigest() for rel, data in files.items()}
     assert problems == [f"coalesce(r.votes, 999) present in {NEO4J_DB}",
                         f"_CURATED_VOTES present in {RETRIEVER}",
@@ -384,7 +443,7 @@ def test_deploy_guard_rejects_sentinel_code(monkeypatch, capsys, tmp_path):
 
 @pytest.mark.parametrize("rel", [NEO4J_DB, RETRIEVER, PROBE])
 def test_deploy_guard_rejects_image_from_other_checkout(rel, monkeypatch, capsys):
-    files = checkout_files()
+    files = head_files()
     files[rel] += b"\n"                                  # the new text plus one byte
     assert run_guard(monkeypatch, FakeDocker(files)) == 1
     out = capsys.readouterr().out
@@ -393,7 +452,7 @@ def test_deploy_guard_rejects_image_from_other_checkout(rel, monkeypatch, capsys
 
 
 def test_deploy_guard_rejects_missing_probe_module(monkeypatch, capsys):
-    files = {rel: data for rel, data in checkout_files().items() if rel != PROBE}
+    files = {rel: data for rel, data in head_files().items() if rel != PROBE}
     assert run_guard(monkeypatch, FakeDocker(files)) == 1
     out = capsys.readouterr().out
     assert "missing probes/xref_measure.py" in out and "exit 1: 1 problems" in out
@@ -406,7 +465,7 @@ def test_deploy_guard_docker_failure(monkeypatch, capsys):
     assert out.count("docker exec failed") == 3 and "No such container" in out
     assert "missing" not in out and "deployed backend reads r.curated" not in out
 
-    def no_docker(cmd, check, capture_output):
+    def no_docker(cmd, **kwargs):
         raise FileNotFoundError(2, "No such file or directory", "docker")
     assert run_guard(monkeypatch, no_docker) == 1        # docker itself absent: still never 0
 

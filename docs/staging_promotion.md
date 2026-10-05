@@ -190,7 +190,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    ```bash
    uv run --project scripts python scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json
    ```
-3. **backend-staging 換成 W1 HEAD 建的 image**（D3 也在這個 image 上跑）。W1 HEAD 建成另一個 tag，不覆寫 production 正在用的 `bible_rag-backend:latest`（W0 紀錄的做法），用一個不進 git 的 compose override 指定 tag。deploy-guard 比對的是本 checkout 的檔案，所以要在建 image 的同一個 checkout 跑：
+3. **backend-staging 換成 W1 HEAD 建的 image**（D3 也在這個 image 上跑）。W1 HEAD 建成另一個 tag，不覆寫 production 正在用的 `bible_rag-backend:latest`（W0 紀錄的做法），用一個不進 git 的 compose override 指定 tag。deploy-guard 比對的是本 checkout 在 HEAD 已提交的檔案（`git show HEAD:`，不看工作目錄），所以要在建 image 的同一個 checkout 跑，而且先 commit 再建 image（沒提交的改動即使建進 image 也會被擋下）：
    ```bash
    printf 'services:\n  backend:\n    image: bible_rag-backend:w1\n  backend-staging:\n    image: bible_rag-backend:w1\n' > /tmp/w1_image.yml
    docker compose -f docker-compose.yml -f docker-compose.staging.yml -f /tmp/w1_image.yml build backend
@@ -201,7 +201,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$D/xref_probe/pred_new.json \
      --measured bak/$D/xref_probe/measured_staging.json
    ```
-   deploy-guard 結束碼 0：容器裡的 `database/neo4j_db.py`、`utils/retrieval/cross_ref_retriever.py`、`probes/xref_measure.py` 與本 checkout 逐位元相同，讀 `r.curated`，沒有 999 哨兵。compare 結束碼 0：5,820 個 key 0 列不同，哨兵 12/12。
+   deploy-guard 結束碼 0：容器裡的 `database/neo4j_db.py`、`utils/retrieval/cross_ref_retriever.py`、`probes/xref_measure.py` 與本 checkout 的 HEAD 逐位元相同，讀 `r.curated`，沒有 999 哨兵。compare 結束碼 0：5,820 個 key 0 列不同，哨兵 12/12。
 
 ## R3 升版（第 0 批不做）
 順序規則：backend 程式碼的變更要向前相容，先部署 backend，再升資料（例如第 1B 批）；一個缺陷項目一個 commit，各自附探針，validate 失敗時才分得出是哪一項造成。
@@ -270,7 +270,8 @@ uv run python xref_ab_slice.py results_quick/xref_old_w1.json results_quick/xref
 ```bash
 uv run --project scripts python scripts/tools/xref_probe.py deploy-guard --container bible_rag_backend
 ```
-- 結束碼不是 0 就停，不載入 dump：prod 容器跑的不是本 checkout 建的、讀 `r.curated` 的 image（例如第 1 步之後被重建或退回過），新資料會被舊規則排序（第 1 批計畫 §2.2 的風險；部署順序顛倒的影響見 R5）。
+- 結束碼不是 0 就停，不載入 dump：prod 容器跑的不是本 checkout HEAD 建的、讀 `r.curated` 的 image（例如第 1 步之後被重建或退回過），新資料會被舊規則排序（第 1 批計畫 §2.2 的風險；部署順序顛倒的影響見 R5）。
+- 每個 `docker exec`、`git show` 最多等 30 秒。docker daemon 或容器沒有回應時，印出 `timed out after 30 s` 並以結束碼 1 結束，不會卡住：先查 daemon 與容器，同樣不載入。
 - 第 1、2 步可能相隔數小時，所以即使第 1 步剛跑過也要重跑。
 - 通過後才做上面 R3 第 1 步（Neo4j dump／load，停機約 1 分鐘）。載入資料之後不要再建 image；image 一有任何變動，先重跑 deploy-guard 再碰資料。
 

@@ -259,7 +259,30 @@ def test_precondition_unflagged_graph_exits_1_before_any_write(flags, monkeypatc
 
     assert graph.merges() == 0 and graph.edges == before
     assert all(s.get("default_access_mode") == READ_ACCESS for s in graph.sessions)
-    assert "5 of 5 CROSS_REFERENCES edges have curated or tsk unset" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "5 of 5 CROSS_REFERENCES edges have curated or tsk unset" in err
+    assert "are curated" not in err      # Step 5 did load them, only without flags
+    assert graph.closed
+
+
+@pytest.mark.parametrize("flags", [(), ("--dry-run",)])
+@pytest.mark.parametrize("edges", [(), (("gen:1:0", "gen:1:1", {"source": "tsk", "curated": False,
+                                                              "tsk": True}),)],
+                         ids=["empty", "tsk-only"])
+def test_precondition_no_curated_edge_exits_1_before_any_write(edges, flags, monkeypatch, tmp_path,
+                                                               capsys):
+    # Step 5 skips a missing neo4j_relationships.jsonl without failing. Step 9 would
+    # then create only pure TSK edges, and every count gate passes (attached 0).
+    graph = FakeGraph(edges=edges)
+    before = {pair: dict(p) for pair, p in graph.edges.items()}
+
+    assert _main(graph, monkeypatch, tmp_path, *flags) == 1
+
+    assert graph.merges() == 0 and graph.edges == before
+    assert all(s.get("default_access_mode") == READ_ACCESS for s in graph.sessions)
+    err = capsys.readouterr().err
+    assert f"0 of {len(edges)} CROSS_REFERENCES edges are curated" in err
+    assert "neo4j_relationships.jsonl" in err
     assert graph.closed
 
 

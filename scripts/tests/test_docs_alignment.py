@@ -319,7 +319,8 @@ def test_step5_and_step9_document_the_1b_properties_gates_and_rollback():
         assert needle in s5, needle
     s9 = section(doc_text(), "Step 9:")
     for needle in ("--dry-run", "同向", "250,358", "249,434", "924", "250,366", "created 0",
-                   "xref_probe.py fingerprint --target staging --expect", "從 Step 5"):
+                   "xref_probe.py fingerprint --target staging --expect", "從 Step 5",
+                   "curated 邊至少一條"):
         assert needle in s9, needle
     assert "DELETE r" not in s9
 
@@ -335,7 +336,8 @@ def test_r2_runs_the_xref_checks_and_the_merged_allowlist_gate():
     for needle in ("xref_provenance", "mention_count", "kg_diff_allow_batch1w1.yaml --fail-on-unused",
                    "不能再當閘門重跑", "xref_probe.py expect", "created 0",
                    "xref_probe.py fingerprint --target staging --expect",
-                   "xref_probe.py deploy-guard --container bible_rag_backend_staging", "--edges"):
+                   "xref_probe.py deploy-guard --container bible_rag_backend_staging", "--edges",
+                   "HEAD 已提交的檔案（`git show HEAD:`，不看工作目錄）"):
         assert needle in r2, needle
 
 
@@ -394,6 +396,9 @@ def test_w1_data_load_starts_with_the_deploy_guard():
     first = _commands(step2)[0]
     assert re.search(r"xref_probe\.py deploy-guard --container bible_rag_backend$", first), first
     assert "不載入" in step2
+    # the guard's timeout as its --help states it: a hung docker exec stops the load, never stalls it
+    seconds = re.search(r"GUARD_TIMEOUT_S \((\d+) s\)", " ".join(help_text("xref_probe").split()))
+    assert seconds and f"`timed out after {seconds[1]} s`" in step2
 
 
 def test_r4_and_r5_cover_the_xref_promotion():

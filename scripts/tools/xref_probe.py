@@ -26,9 +26,13 @@ flags are flat, so --help lists all of them.
   deploy-guard
            `docker exec <--container> cat` (read only) of the backend's xref
            code, GUARD_FILES. Exit 1 unless the container reads r.curated, has
-           no 999 sentinel and holds this checkout's exact files (sha256). Plan
-           §2.2 risk: run it as the first command of the data load and after
-           any image change, so the data never runs ahead of the code.
+           no 999 sentinel and holds the exact files committed at this
+           checkout's HEAD (sha256 against `git show HEAD:`, not the working
+           tree: an uncommitted edit fails even when the image was built with
+           it). A docker exec or git show still running after GUARD_TIMEOUT_S
+           (30 s) fails too. Plan §2.2 risk: run it as the first command of the
+           data load and after any image change, so the data never runs ahead
+           of the code.
   expect   the CROSS_REFERENCES table Steps 5 and 9 will build from the Step 0
            --output-dir (neo4j_relationships.jsonl, embedding_queue.jsonl) and
            --tsk, replayed offline (xref_projection). Writes {version, inputs,
@@ -265,23 +269,41 @@ GUARD_FILES = ("database/neo4j_db.py", "utils/retrieval/cross_ref_retriever.py",
 GUARD_MARKERS = (("database/neo4j_db.py", "coalesce(r.votes, 999)", False),
                  ("utils/retrieval/cross_ref_retriever.py", "_CURATED_VOTES", False),
                  ("database/neo4j_db.py", "r.curated", True))
+GUARD_TIMEOUT_S = 30  # per docker exec / git show: a hung daemon fails the guard, never stalls the load
 run_command = subprocess.run  # deploy-guard's runner; the tests swap it and never call docker
+
+
+def _capture(runner, cmd: list[str]) -> tuple[bytes | None, str | None]:
+    """(stdout, None) of one read-only command, or (None, why it failed); a command
+    still running after GUARD_TIMEOUT_S counts as failed."""
+    try:
+        done = runner(cmd, check=False, capture_output=True, timeout=GUARD_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        return None, f"timed out after {GUARD_TIMEOUT_S} s"
+    if done.returncode == 0:
+        return done.stdout, None
+    return None, f"exit {done.returncode}: {done.stderr.decode('utf-8', 'replace').strip()}"
 
 
 def _container_file(container: str, rel: str, runner) -> tuple[bytes | None, str | None]:
     """(bytes, None) of one backend file in the container, or (None, the reason it is unreadable)."""
-    done = runner(["docker", "exec", container, "cat", f"{CONTAINER_BACKEND}/{rel}"],
-                  check=False, capture_output=True)
-    if done.returncode == 0:
-        return done.stdout, None
-    err = done.stderr.decode("utf-8", "replace").strip()
+    data, err = _capture(runner, ["docker", "exec", container, "cat", f"{CONTAINER_BACKEND}/{rel}"])
+    if err is None:
+        return data, None
     kind = "missing" if "No such file or directory" in err else "docker exec failed for"
-    return None, f"{kind} {rel} in {container} (exit {done.returncode}: {err})"
+    return None, f"{kind} {rel} in {container} ({err})"
+
+
+def _head_file(backend: Path, rel: str, runner) -> tuple[bytes | None, str | None]:
+    """(bytes, None) of backend/<rel> as committed at HEAD, not the working tree, or (None, why not)."""
+    data, err = _capture(runner, ["git", "-C", str(backend), "show", f"HEAD:./{rel}"])
+    return (data, None) if err is None else (None, f"{rel} unreadable at HEAD in {backend} ({err})")
 
 
 def deploy_guard(container: str, runner, backend: Path = BACKEND_DIR) -> tuple[dict[str, str], list[str]]:
     """({file: sha256 in the container}, problems): problems is empty only when every
-    GUARD_FILES file is readable, equals backend/<file> byte for byte and passes GUARD_MARKERS."""
+    GUARD_FILES file is readable, equals backend/<file> as committed at HEAD byte for byte
+    (an uncommitted edit fails, even one built into the image) and passes GUARD_MARKERS."""
     shas, texts, problems = {}, {}, []
     for rel in GUARD_FILES:
         data, problem = _container_file(container, rel, runner)
@@ -289,10 +311,14 @@ def deploy_guard(container: str, runner, backend: Path = BACKEND_DIR) -> tuple[d
             problems.append(problem)
             continue
         texts[rel], shas[rel] = data, hashlib.sha256(data).hexdigest()
-        local = _sha256(backend / rel)
+        head, problem = _head_file(backend, rel, runner)
+        if problem:
+            problems.append(problem)
+            continue
+        local = hashlib.sha256(head).hexdigest()
         if shas[rel] != local:
-            problems.append(f"{rel}: sha256 {shas[rel][:12]} in {container}, {local[:12]} in {backend} "
-                            "(image not built from this checkout: rebuild before promoting)")
+            problems.append(f"{rel}: sha256 {shas[rel][:12]} in {container}, {local[:12]} at HEAD in {backend} "
+                            "(image not built from this checkout's HEAD: commit, rebuild, rerun)")
     for rel, text, wanted in GUARD_MARKERS:
         if rel in texts and (text.encode() in texts[rel]) != wanted:
             problems.append(f"{rel} lacks {text}" if wanted else f"{text} present in {rel}")

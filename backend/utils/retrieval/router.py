@@ -1299,8 +1299,8 @@ async def _route_r3(
             strategies.append("entity_path")
 
     # Cross-ref 2-hop expansion: surface neighbouring pericopes along
-    # CROSS_REFERENCES edges from the strongest seeds. Activates the 916
-    # hand-curated cross-book edges in the pre-rerank candidate pool.
+    # CROSS_REFERENCES edges from the strongest seeds: hand-curated (r.curated)
+    # and TSK cross-reference edges, into the pre-rerank candidate pool.
     expand = await _expand_via_cross_ref_seeds(
         deduped, existing_ids, _graph_on(use_graph, graph_strategies, "cross_ref_expand"),
         errors, "R3",

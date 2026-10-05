@@ -504,6 +504,7 @@ uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_ref
 ### 閘門（第 1B 批起；任一不過就結束碼 1）
 - **寫入之前**（`--dry-run` 也跑；只用 READ session，一個 MERGE 都不送）：
   - 旗標前置條件：CROSS_REFERENCES 中 `curated` 或 `tsk` 未設的邊必須是 0。第 1 批之前建的圖（例如第 0 批的 staging）一律拒絕，不會寫一半。
+  - curated 邊至少一條。Step 5 找不到 `neo4j_relationships.jsonl` 時不會失敗，只是一條交叉引用都不建；這時照跑 Step 9 只會建出 250,358 條純 TSK 邊，attached_to_curated 是 0，寫入後的計數閘門照樣全過。所以 `Before:` 一行是 `(0 curated)` 時一律拒絕，要先重跑 Step 5。
   - supplementary 節級支撐，只認同向：圖上每個 supplementary 錨點都要有一筆 TSK，從錨點的某個來源節指向某個目標節（定義的方向）。只有反向支撐或完全沒有支撐的錨點，除非列在 `supp_tsk_exempt_anchors`，否則逐筆印出兩個方向的最大 votes。用節級而不用段落級，是因為段落級連 XREF-2 刪掉的錯誤定義都「有支撐」。W1 印出 `supplementary anchors: 162 on 158 edges, tsk_exempt 0`，162 個錨點全部有同向支撐。
 - **寫入之後**：matched 等於 TSK 段落對數、count(tsk) 等於段落對數、count(tsk 且 curated) 等於 attached_to_curated、旗標未設的邊為 0。
 

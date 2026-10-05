@@ -14,8 +14,9 @@ Pipeline:
      (self-loops removed, max votes, verse-pair count kept).
   4. Precondition (read only, also on --dry-run): every CROSS_REFERENCES edge
      already carries curated and tsk, as Step 5 writes every curated row and
-     this script every TSK edge. A graph built before batch 1 is refused
-     before anything is written.
+     this script every TSK edge, and at least one edge is curated. A graph
+     built before batch 1, or one whose Step 5 skipped a missing
+     neo4j_relationships.jsonl, is refused before anything is written.
      Support gate (read only, also on --dry-run): every supplementary anchor
      on the graph ('rev 19:16>dan 2:47') needs a TSK line from one of its
      source verses to one of its target verses, unless the edge lists it in
@@ -308,14 +309,20 @@ def edge_counts(driver) -> dict:
 
 def precondition_failures(driver) -> list[str]:
     """Step 5 flags every curated row and this script every TSK edge, so an
-    unflagged edge means a graph built before batch 1 (crit#5)."""
+    unflagged edge means a graph built before batch 1 (crit#5). No curated edge
+    means Step 5 loaded no cross reference: it skips a missing
+    neo4j_relationships.jsonl, and the count gates would then pass on pure TSK."""
     counts = edge_counts(driver)
     print(f"Before: {counts['total']:,} CROSS_REFERENCES edges ({counts['curated']:,} curated)")
-    if not counts["unflagged"]:
-        return []
-    return [f"{counts['unflagged']:,} of {counts['total']:,} CROSS_REFERENCES edges have "
-            "curated or tsk unset: run Step 9 only on a graph Step 5 just built from a "
-            "batch-1 Step 0 output"]
+    if counts["unflagged"]:  # a pre-batch-1 Step 5 did load curated rows, only without flags
+        return [f"{counts['unflagged']:,} of {counts['total']:,} CROSS_REFERENCES edges have "
+                "curated or tsk unset: run Step 9 only on a graph Step 5 just built from a "
+                "batch-1 Step 0 output"]
+    if not counts["curated"]:
+        return [f"0 of {counts['total']:,} CROSS_REFERENCES edges are curated: Step 5 loaded "
+                "no markdown or supplementary edge (it skips a missing "
+                "output/neo4j_relationships.jsonl without failing); rerun Step 5 first"]
+    return []
 
 
 def support_failures(driver, index: Mapping) -> list[str]:

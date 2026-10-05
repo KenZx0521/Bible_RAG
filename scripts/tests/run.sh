@@ -6,8 +6,12 @@
 # borrows pytest from the evaluation venv through a throwaway shim directory
 # that holds only pytest's own packages.
 #
+# The process_bible tests load the BGE-M3 tokenizer. Offline, it comes from the
+# HF cache only: no hub request, and no download on a cold cache.
+#
 #   scripts/tests/run.sh [pytest args]
 set -euo pipefail
+export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SITE="$ROOT/evaluation/.venv/lib/python3.12/site-packages"
 SHIM="$(mktemp -d)"
