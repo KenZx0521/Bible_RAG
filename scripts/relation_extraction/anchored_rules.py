@@ -19,6 +19,11 @@ canonical name or alias. A list item followed by 的 owns the next clause and
 ends the list (list_stop). Patterns, character sets and these choices live in
 config/relations/anchored_rules.yaml.
 
+Same-name guard, pass 1 (K2 「同名時 abstain」): a parent hit abstains, and is
+logged as a conflict, when its child already has another curated, prior or llm
+parent (parent_map, built by 6.05 from those rows), or when either endpoint is a
+known homonym node (guard.homonym_ids).
+
 Port of docs/records/2026-10-04_kg_fix/batch1/planner_1A/anchored_sim.py with
 the W1 changes of batch1/w1_1A/anchored_w1.py. PyYAML and the standard library
 only: 6.05 reads files and connects to no database.
@@ -47,8 +52,11 @@ LIST_STOPS = ("cont", "all", "off")
 CONFIG_KEYS = (
     "version", "begot", "surface", "list_stop", "lexicon_types", "slot_types", "deny_ids",
     "min_name_len", "delim", "list_sep", "prev_ok", "trail_ok", "sentence_end",
-    "child_re", "begot_re", "wife_re", "is_child_re",
+    "child_re", "begot_re", "wife_re", "is_child_re", "guard",
 )
+GUARD_KEYS = ("other_parent", "homonym_ids")
+HOMONYM, OTHER_PARENT = "homonym", "other_parent"   # conflict reasons
+CONFLICT_KEYS = ("head_id", "relation", "tail_id", "source_pericope_id", "verse", "pattern")
 
 P1, P2, P3, P4 = "P1_child_of", "P2_is_child_of", "P3_begot", "P4_wife"
 PATTERNS = (P1, P2, P3, P4)
@@ -59,6 +67,12 @@ VERSE_MARK = re.compile(r"\*\*(\d+)\*\*\s*")
 
 Token = tuple[int, int, str]                   # (start, end, name)
 Resolve = Callable[[str, int], "str | None"]   # (span, start) -> Person id
+
+
+@dataclass(frozen=True)
+class GuardConfig:
+    other_parent: bool             # abstain when the child already has another parent
+    homonym_ids: frozenset[str]    # abstain when either endpoint is one of these
 
 
 @dataclass(frozen=True)
@@ -78,6 +92,7 @@ class AnchoredConfig:
     begot_re: re.Pattern
     wife_re: re.Pattern
     is_child_re: re.Pattern
+    guard: GuardConfig
 
 
 # --- config -----------------------------------------------------------------
@@ -127,12 +142,26 @@ def _read(path: Path) -> Mapping:
     return doc
 
 
+def _ids(path: Path, value, key: str) -> frozenset[str]:
+    if not isinstance(value, list) or not all(isinstance(x, str) and x for x in value):
+        raise ValueError(f"{path}: {key} must list entity ids")
+    return frozenset(value)
+
+
+def _guard(path: Path, doc: Mapping) -> GuardConfig:
+    guard = doc["guard"]
+    if not isinstance(guard, Mapping) or set(guard) != set(GUARD_KEYS):
+        raise ValueError(f"{path}: guard must be a mapping with exactly {list(GUARD_KEYS)}, "
+                         f"got {guard!r}")
+    if not isinstance(guard["other_parent"], bool):
+        raise ValueError(f"{path}: guard.other_parent must be true or false")
+    return GuardConfig(other_parent=guard["other_parent"],
+                       homonym_ids=_ids(path, guard["homonym_ids"], "guard.homonym_ids"))
+
+
 def load_config(path: Path = CONFIG_PATH) -> AnchoredConfig:
     """The anchored-rule config; ValueError on an unknown, missing or malformed key."""
     doc = _read(path)
-    deny = doc["deny_ids"]
-    if not isinstance(deny, list) or not all(isinstance(x, str) and x for x in deny):
-        raise ValueError(f"{path}: deny_ids must list entity ids")
     if type(doc["min_name_len"]) is not int or doc["min_name_len"] < 1:
         raise ValueError(f"{path}: min_name_len must be a positive integer")
     delim = _chars(path, doc, "delim")
@@ -142,7 +171,7 @@ def load_config(path: Path = CONFIG_PATH) -> AnchoredConfig:
         list_stop=_choice(path, doc, "list_stop", LIST_STOPS),
         lexicon_types=_labels(path, doc, "lexicon_types"),
         slot_types=_labels(path, doc, "slot_types"),
-        deny_ids=frozenset(deny),
+        deny_ids=_ids(path, doc["deny_ids"], "deny_ids"),
         min_name_len=doc["min_name_len"],
         list_sep=_chars(path, doc, "list_sep"),
         prev_ok=delim | _chars(path, doc, "prev_ok"),
@@ -152,6 +181,7 @@ def load_config(path: Path = CONFIG_PATH) -> AnchoredConfig:
         begot_re=_pattern(path, doc, "begot_re", 0),
         wife_re=_pattern(path, doc, "wife_re", 0),
         is_child_re=_pattern(path, doc, "is_child_re", 0),
+        guard=_guard(path, doc),
     )
 
 
@@ -317,6 +347,61 @@ def extract_verse(text: str, tokenizer: re.Pattern, resolve: Resolve,
     return out
 
 
+# --- same-name guard --------------------------------------------------------
+
+def parent_child(head: str, relation: str, tail: str) -> tuple[str, str] | None:
+    """(parent, child): FATHER_OF and MOTHER_OF read head->tail, SON_OF and DAUGHTER_OF tail->head."""
+    if relation in ("FATHER_OF", "MOTHER_OF"):
+        return head, tail
+    if relation in ("SON_OF", "DAUGHTER_OF"):
+        return tail, head
+    return None
+
+
+def parent_map_of(triples: Iterable[tuple[str, str, str]]) -> dict[str, set[str]]:
+    """{child: {parent}} of (head, relation, tail) triples; other relations are ignored."""
+    parents: dict[str, set[str]] = {}
+    for head, relation, tail in triples:
+        pair = parent_child(head, relation, tail)
+        if pair:
+            parents.setdefault(pair[1], set()).add(pair[0])
+    return parents
+
+
+def _conflict(hit: Mapping, reason: str, other_parents: Iterable[str]) -> dict:
+    return {**{key: hit[key] for key in CONFLICT_KEYS},
+            "reason": reason, "other_parents": sorted(other_parents)}
+
+
+def abstain_same_name(hits: Iterable[dict], parent_map: Mapping[str, Iterable[str]],
+                      guard: GuardConfig) -> tuple[list[dict], list[dict]]:
+    """(kept, conflicts): pass 1 of the same-name guard, hit order kept.
+
+    A SON_OF, DAUGHTER_OF or FATHER_OF hit with parent p and child c abstains
+    when p or c is in guard.homonym_ids (reason homonym, checked first), or,
+    with guard.other_parent, when parent_map[c] - {p} is not empty (reason
+    other_parent; a mother counts). SPOUSE_OF hits are never guarded. A conflict
+    is the hit's CONFLICT_KEYS plus reason and other_parents, the sorted
+    parent_map[c] - {p}.
+    """
+    kept: list[dict] = []
+    conflicts: list[dict] = []
+    for hit in hits:
+        pair = parent_child(hit["head_id"], hit["relation"], hit["tail_id"])
+        if pair is None:
+            kept.append(hit)
+            continue
+        parent, child = pair
+        others = set(parent_map.get(child, ())) - {parent}
+        if parent in guard.homonym_ids or child in guard.homonym_ids:
+            conflicts.append(_conflict(hit, HOMONYM, others))
+        elif guard.other_parent and others:
+            conflicts.append(_conflict(hit, OTHER_PARENT, others))
+        else:
+            kept.append(hit)
+    return kept, conflicts
+
+
 # --- corpus -----------------------------------------------------------------
 
 def _resolver(spans: Mapping[str, set[str]], ambiguous: set, where: tuple[str, int]) -> Resolve:
@@ -331,16 +416,9 @@ def _resolver(spans: Mapping[str, set[str]], ambiguous: set, where: tuple[str, i
     return resolve
 
 
-def run(pericopes: Iterable[Mapping], span_map: Mapping[str, Mapping[str, set[str]]],
-        tokenizer: re.Pattern, cfg: AnchoredConfig) -> tuple[list[dict], dict, list[dict]]:
-    """(hits, stats, conflicts) over pericopes in the order given (file order).
-
-    A hit is {head_id, relation, tail_id, source_pericope_id, verse, pattern,
-    evidence_span (the verse, first 200 characters)}. stats: pattern_hits,
-    by_pattern and ambiguous_name, the distinct (pericope, verse, start, span)
-    whose MENTIONS give more than one Person id (report-only). conflicts holds
-    guard abstentions; no guard runs in this version, so it is empty.
-    """
+def _extract(pericopes: Iterable[Mapping], span_map: Mapping[str, Mapping[str, set[str]]],
+             tokenizer: re.Pattern, cfg: AnchoredConfig) -> tuple[list[dict], set]:
+    """(hits in file order, the ambiguous (pericope, verse, start, span))."""
     hits: list[dict] = []
     ambiguous: set = set()
     for pericope in pericopes:
@@ -354,7 +432,34 @@ def run(pericopes: Iterable[Mapping], span_map: Mapping[str, Mapping[str, set[st
                 hits.append({"head_id": head, "relation": relation, "tail_id": tail,
                              "source_pericope_id": pid, "verse": verse, "pattern": pattern,
                              "evidence_span": text[:200]})
-    by_pattern = Counter(hit["pattern"] for hit in hits)
-    stats = {"pattern_hits": len(hits), "by_pattern": {p: by_pattern[p] for p in PATTERNS},
+    return hits, ambiguous
+
+
+def _by_pattern(hits: Iterable[Mapping]) -> dict[str, int]:
+    counts = Counter(hit["pattern"] for hit in hits)
+    return {p: counts[p] for p in PATTERNS}
+
+
+def run(pericopes: Iterable[Mapping], span_map: Mapping[str, Mapping[str, set[str]]],
+        tokenizer: re.Pattern, cfg: AnchoredConfig,
+        parent_map: Mapping[str, Iterable[str]]) -> tuple[list[dict], dict, list[dict]]:
+    """(hits, stats, conflicts) over pericopes in the order given (file order).
+
+    A hit is {head_id, relation, tail_id, source_pericope_id, verse, pattern,
+    evidence_span (the verse, first 200 characters)}. parent_map is
+    {child: {parent}} of the curated, prior and llm rows (parent_map_of),
+    required so that a caller cannot run the guard against no parents by
+    mistake; the same-name guard moves the hits it abstains to conflicts. stats:
+    pattern_hits and by_pattern before the guard, guard_other_parent and
+    guard_homonym, emitted_hits and emitted_by_pattern of the hits returned,
+    and ambiguous_name, the distinct (pericope, verse, start, span) whose
+    MENTIONS give more than one Person id (report-only).
+    """
+    hits, ambiguous = _extract(pericopes, span_map, tokenizer, cfg)
+    kept, conflicts = abstain_same_name(hits, parent_map, cfg.guard)
+    reasons = Counter(conflict["reason"] for conflict in conflicts)
+    stats = {"pattern_hits": len(hits), "by_pattern": _by_pattern(hits),
+             "guard_other_parent": reasons[OTHER_PARENT], "guard_homonym": reasons[HOMONYM],
+             "emitted_hits": len(kept), "emitted_by_pattern": _by_pattern(kept),
              "ambiguous_name": len(ambiguous)}
-    return hits, stats, []
+    return kept, stats, conflicts

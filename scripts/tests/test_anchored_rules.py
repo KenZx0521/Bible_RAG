@@ -8,10 +8,14 @@ from the slot. The W1 decisions are in config/relations/anchored_rules.yaml:
 only 「給F生C」 emits FATHER_OF (K1), a span resolves only as its entity's
 declared name (K2), the tokenizer knows Person/Place/Group names only (review
 2b), and a list item followed by 的 ends the list (review 2a, Q3 'cont').
+The same-name guard (K2 「同名時 abstain」, §6 #12) abstains a parent hit whose
+child already has another curated, prior or llm parent, or whose endpoint is a
+known homonym node (Q2), and logs it as a conflict.
 
 The regression fixture holds 46 real verses from the W1 simulation
-(docs/records/2026-10-04_kg_fix/batch1/w1_1A/gen_fixture.py); without a guard
-every expected and every later-abstained triple is a hit.
+(docs/records/2026-10-04_kg_fix/batch1/w1_1A/gen_fixture.py) with the parents
+each child already has; without a guard every expected and every abstained
+triple is a hit, with the guard exactly the expected ones.
 """
 
 from __future__ import annotations
@@ -29,7 +33,7 @@ import yaml
 from entity_extraction.entity_overrides import final_type, load_overrides
 from relation_extraction import anchored_rules
 from relation_extraction.anchored_rules import (
-    build_lexicon, build_span_map, compile_tokenizer, load_config, run,
+    GuardConfig, build_lexicon, build_span_map, compile_tokenizer, load_config, parent_map_of, run,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -38,16 +42,22 @@ FIXTURE_SHA256 = "17ce5b9babb2e9564ef0c2fd839468935ee5c3fc6e197ffca47166b2018e4d
 SIMULATOR = ROOT / "docs/records/2026-10-04_kg_fix/batch1/w1_1A/anchored_w1.py"
 
 CFG = load_config()
+NO_GUARD = dataclasses.replace(CFG, guard=GuardConfig(other_parent=False, homonym_ids=frozenset()))
 PID = "tst:1:0"
 P1, P2, P3, P4 = "P1_child_of", "P2_is_child_of", "P3_begot", "P4_wife"
 
 
-def _hits(text, names, cfg=CFG, lexicon=()):
-    """(head, relation, tail, pattern) of one verse; names maps a span to one Person id."""
+def _run(text, names, cfg=CFG, parent_map=None):
+    """run() over one verse; names maps a span to one Person id."""
     span_map = {PID: {span: {eid} for span, eid in names.items()}}
-    hits, _, _ = run([{"id": PID, "content": f"**1** {text}"}], span_map,
-                     compile_tokenizer([*names, *lexicon]), cfg)
-    return [(h["head_id"], h["relation"], h["tail_id"], h["pattern"]) for h in hits]
+    return run([{"id": PID, "content": f"**1** {text}"}], span_map,
+               compile_tokenizer(list(names)), cfg, parent_map or {})
+
+
+def _hits(text, names, cfg=CFG, parent_map=None):
+    """(head, relation, tail, pattern) of one verse."""
+    return [(h["head_id"], h["relation"], h["tail_id"], h["pattern"])
+            for h in _run(text, names, cfg, parent_map)[0]]
 
 
 def _entities(*rows):
@@ -66,7 +76,7 @@ def _pipeline(entities, mentions, pericopes, cfg=CFG, chunk_parent=None):
     final_types = {eid: final_type(eid, e["type"], load_overrides()) for eid, e in entities.items()}
     lexicon = build_lexicon(entities, final_types, mentions, cfg)
     span_map, skipped = build_span_map(entities, final_types, mentions, chunk_parent or {}, cfg)
-    hits, stats, conflicts = run(pericopes, span_map, compile_tokenizer(lexicon), cfg)
+    hits, stats, conflicts = run(pericopes, span_map, compile_tokenizer(lexicon), cfg, {})
     return lexicon, span_map, skipped, hits, stats, conflicts
 
 
@@ -79,16 +89,20 @@ def _fixture_row(case):
     return next(row for row in _fixture_rows() if row["case"] == case)
 
 
-def _fixture_run(row, cfg=CFG):
+def _fixture_run(row, cfg=CFG, parent_map=None):
     """run() over the fixture row's verse, with its own lexicon and pericope spans."""
     pid = row["pericope_id"]
     span_map = {pid: {span: set(ids) for span, ids in row["spans"].items()}}
     pericope = {"id": pid, "content": f"**{row['verse']}** {row['text']}"}
-    return run([pericope], span_map, compile_tokenizer(row["lexicon"]), cfg)
+    return run([pericope], span_map, compile_tokenizer(row["lexicon"]), cfg, parent_map or {})
 
 
-def _fixture_hits(row, cfg=CFG):
-    return _fixture_run(row, cfg)[0]
+def _fixture_parents(row):
+    return {child: set(parents) for child, parents in row["parents"].items()}
+
+
+def _fixture_hits(row, cfg=CFG, parent_map=None):
+    return _fixture_run(row, cfg, parent_map)[0]
 
 
 def _triples(hits):
@@ -103,6 +117,8 @@ def test_shipped_config_holds_the_w1_decisions():
     assert CFG.slot_types == {"Person"}
     assert CFG.deny_ids == {"group:yehehua"}
     assert CFG.min_name_len == 2
+    assert CFG.guard == GuardConfig(other_parent=True,
+                                    homonym_ids=frozenset({"person:bide", "person:yuehan（shitu）"}))
 
 
 def test_config_copies_the_simulator_constants():
@@ -125,6 +141,11 @@ def test_config_copies_the_simulator_constants():
     ({"slot_types": ["Persons"]}, "Persons"),
     ({"child_re": "的兒子"}, "child_re"),
     ({"wife_re": "的妻("}, "wife_re"),
+    ({"guard": {"other_parent": True}}, "homonym_ids"),
+    ({"guard": {"other_parent": "yes", "homonym_ids": []}}, "other_parent"),
+    ({"guard": {"other_parent": True, "homonym_ids": "person:bide"}}, "homonym_ids"),
+    ({"guard": {"other_parent": True, "homonym_ids": [], "disagree": True}}, "disagree"),
+    ({"guard": True}, "guard"),
 ])
 def test_loader_rejects_a_malformed_config(tmp_path, change, message):
     doc = yaml.safe_load(anchored_rules.CONFIG_PATH.read_text(encoding="utf-8"))
@@ -219,7 +240,7 @@ def test_word_boundaries(text, names, expected):
 def test_ambiguous_span_resolves_to_nothing():
     span_map = {PID: {"雅各": {"person:yage", "person:yage2"}, "約瑟": {"person:yuese"}}}
     hits, stats, _ = run([{"id": PID, "content": "**1** 雅各的兒子約瑟。"}], span_map,
-                         compile_tokenizer(["雅各", "約瑟"]), CFG)
+                         compile_tokenizer(["雅各", "約瑟"]), CFG, {})
     assert hits == []
     assert stats["ambiguous_name"] == 1
 
@@ -293,9 +314,9 @@ def test_no_cross_verse_match():
     span_map = {PID: {span: {eid} for span, eid in names.items()}}
     tokenizer = compile_tokenizer(list(names))
     split = [{"id": PID, "content": "**1** 耶西的兒子\n\n**2** 大衛作王。"}]
-    assert run(split, span_map, tokenizer, CFG)[0] == []
+    assert run(split, span_map, tokenizer, CFG, {})[0] == []
     one = [{"id": PID, "content": "**1** 耶西的\n\n**2** 兒子大衛作王。\n\n**3** 耶西的兒子大衛作王。"}]
-    hits = run(one, span_map, tokenizer, CFG)[0]
+    hits = run(one, span_map, tokenizer, CFG, {})[0]
     assert hits == [{"head_id": "person:dawei", "relation": "SON_OF", "tail_id": "person:yexi",
                      "source_pericope_id": PID, "verse": 3, "pattern": P1,
                      "evidence_span": "耶西的兒子大衛作王。"}]
@@ -330,8 +351,123 @@ def test_list_stops_at_de(case):
     ("named:jer:38:0:6", "all", ("person:majiya", "SON_OF", "person:hamilei"), False),
 ])
 def test_list_stop_modes(case, list_stop, triple, present):
-    hits = _fixture_hits(_fixture_row(case), dataclasses.replace(CFG, list_stop=list_stop))
+    # no guard: person:bide is a homonym id, which would hide what the list stop does
+    hits = _fixture_hits(_fixture_row(case), dataclasses.replace(NO_GUARD, list_stop=list_stop))
     assert (triple in _triples(hits)) is present
+
+
+# --- same-name guard (pass 1) -----------------------------------------------
+
+LEVI = {"利未": "person:liwei", "麥基": "person:maiji"}
+
+
+def test_parent_map_reads_each_relation_from_the_parent_side():
+    assert parent_map_of([
+        ("person:yage", "FATHER_OF", "person:yuese"),
+        ("person:lajie", "MOTHER_OF", "person:yuese"),
+        ("person:yuese", "SON_OF", "person:yage"),
+        ("person:dina", "DAUGHTER_OF", "person:liya"),
+        ("person:yage", "SPOUSE_OF", "person:lajie"),
+        ("person:yuese", "SIBLING_OF", "person:bianyamin"),
+    ]) == {"person:yuese": {"person:yage", "person:lajie"}, "person:dina": {"person:liya"}}
+
+
+def test_guard_abstains_when_child_has_another_parent():
+    hits, stats, conflicts = _run("利未是麥基的兒子；", LEVI, parent_map={"person:liwei": {"person:liya"}})
+    assert hits == []
+    assert conflicts == [{"head_id": "person:liwei", "relation": "SON_OF", "tail_id": "person:maiji",
+                          "source_pericope_id": PID, "verse": 1, "pattern": P2,
+                          "reason": "other_parent", "other_parents": ["person:liya"]}]
+    assert (stats["pattern_hits"], stats["guard_other_parent"], stats["guard_homonym"],
+            stats["emitted_hits"]) == (1, 1, 0, 0)
+    assert stats["emitted_by_pattern"][P2] == 0 and stats["by_pattern"][P2] == 1
+
+
+def test_guard_allows_the_same_parent():
+    names = {"耶西": "person:yexi", "大衛": "person:dawei"}
+    parents = {"person:dawei": {"person:yexi"}, "person:yexi": {"person:ebeide"}}
+    assert _hits("耶西的兒子大衛。", names, parent_map=parents) == [
+        ("person:dawei", "SON_OF", "person:yexi", P1)]
+    # the parent's own parents are no other parents of the child
+    assert _run("耶西的兒子大衛。", names, parent_map=parents)[2] == []
+
+
+def test_guard_reads_father_of_from_the_head():
+    row = _fixture_row("named:gen:36:0:14")
+    # 1ch 7:10 gives 耶烏施 the father 比勒罕 (a merged homonym node)
+    _, _, conflicts = _fixture_run(row, parent_map={"person:yewushi": {"person:bileihan"}})
+    assert [(c["head_id"], c["relation"], c["tail_id"], c["pattern"], c["other_parents"])
+            for c in conflicts] == [
+        ("person:yisao", "FATHER_OF", "person:yewushi", P3, ["person:bileihan"])]
+    # 以掃 has parents himself: as the father that blocks nothing
+    assert len(_fixture_hits(row, parent_map={"person:yisao": {"person:yisa"}})) == 4
+
+
+def test_mother_counts_as_another_parent():
+    row = _fixture_row("named:1ch:1:1:28")
+    assert row["parents"]["person:yisa"] == ["person:sala", "person:yabolahan"]
+    hits, stats, conflicts = _fixture_run(row, parent_map=_fixture_parents(row))
+    assert hits == []
+    assert [(c["head_id"], c["reason"], c["other_parents"]) for c in conflicts] == [
+        ("person:yisa", "other_parent", ["person:sala"]),
+        ("person:yishimali", "other_parent", ["person:xiajia"]),
+    ]
+    assert stats["guard_other_parent"] == 2
+
+
+@pytest.mark.parametrize("text, names", [
+    ("你是約翰的兒子西門，", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),   # parent slot
+    ("西門的兒子約翰。", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),       # child slot
+    ("西門是約翰的兒子；", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),
+    ("給西門生了約翰。", {"約翰": "person:yuehan（shitu）", "西門": "person:bide"}),
+    ("西門的兒子耶戶。", {"西門": "person:bide", "耶戶": "person:yehu"}),               # one endpoint
+])
+def test_homonym_ids_abstain_in_either_slot(text, names):
+    hits, stats, conflicts = _run(text, names)
+    assert hits == []
+    assert [c["reason"] for c in conflicts] == ["homonym"]
+    assert (stats["guard_homonym"], stats["guard_other_parent"]) == (1, 0)
+
+
+def test_homonym_guard_drops_peter_son_of_the_apostle_john():
+    row = _fixture_row("named:jhn:1:3:42")
+    hits, _, conflicts = _fixture_run(row, parent_map=_fixture_parents(row))
+    assert hits == []
+    assert conflicts == [{"head_id": "person:bide", "relation": "SON_OF", "tail_id": "person:yuehan（shitu）",
+                          "source_pericope_id": "jhn:1:3", "verse": 42, "pattern": P1,
+                          "reason": "homonym", "other_parents": []}]
+    assert _triples(_fixture_hits(row, NO_GUARD)) == [("person:bide", "SON_OF", "person:yuehan（shitu）")]
+
+
+def test_homonym_is_checked_before_other_parents():
+    _, stats, conflicts = _run("西門的兒子耶戶。", {"西門": "person:bide", "耶戶": "person:yehu"},
+                               parent_map={"person:yehu": {"person:yana"}})
+    assert [(c["reason"], c["other_parents"]) for c in conflicts] == [("homonym", ["person:yana"])]
+    assert (stats["guard_homonym"], stats["guard_other_parent"]) == (1, 0)
+
+
+def test_spouse_hits_are_not_guarded():
+    names = {"西門": "person:bide", "阿何利巴瑪": "person:ahelibama"}
+    hits, _, conflicts = _run("西門的妻子阿何利巴瑪。", names,
+                              parent_map={"person:ahelibama": {"person:yana"}})
+    assert _triples(hits) == [("person:ahelibama", "SPOUSE_OF", "person:bide")] and conflicts == []
+
+
+def test_run_requires_the_parent_map():
+    with pytest.raises(TypeError, match="parent_map"):
+        run([], {}, compile_tokenizer([]), CFG)
+
+
+def test_guard_parts_can_be_disabled_by_config():
+    parents = {"person:liwei": {"person:liya"}}
+    no_other = dataclasses.replace(CFG, guard=dataclasses.replace(CFG.guard, other_parent=False))
+    assert _hits("利未是麥基的兒子；", LEVI, no_other, parents) == [
+        ("person:liwei", "SON_OF", "person:maiji", P2)]
+    assert _hits("西門的兒子耶戶。", {"西門": "person:bide", "耶戶": "person:yehu"}, no_other) == []
+    no_homonym = dataclasses.replace(CFG, guard=dataclasses.replace(CFG.guard, homonym_ids=frozenset()))
+    assert _hits("西門的兒子耶戶。", {"西門": "person:bide", "耶戶": "person:yehu"}, no_homonym) == [
+        ("person:yehu", "SON_OF", "person:bide", P1)]
+    assert _hits("利未是麥基的兒子；", LEVI, no_homonym, parents) == []
 
 
 # --- determinism and regression ---------------------------------------------
@@ -358,7 +494,7 @@ def test_regression_fixture_without_guard():
     assert len(rows) == 46
     expected = abstained = 0
     for row in rows:
-        hits = _fixture_hits(row)
+        hits = _fixture_hits(row, NO_GUARD, _fixture_parents(row))
         got = sorted((h["head_id"], h["relation"], h["tail_id"], h["pattern"]) for h in hits)
         want = sorted(tuple(t[:4]) for t in row["expected"] + row["abstained"])
         assert got == want, row["case"]
@@ -369,7 +505,29 @@ def test_regression_fixture_without_guard():
     assert (expected, abstained) == (65, 13)
 
 
+def test_regression_fixture_with_guard():
+    rows = _fixture_rows()
+    assert {tuple(row["homonym_ids"]) for row in rows} == {tuple(sorted(CFG.guard.homonym_ids))}
+    expected = abstained = 0
+    for row in rows:
+        hits, stats, conflicts = _fixture_run(row, parent_map=_fixture_parents(row))
+        assert [[h["head_id"], h["relation"], h["tail_id"], h["pattern"]] for h in hits] == row["expected"], \
+            row["case"]
+        got = [[c["head_id"], c["relation"], c["tail_id"], c["pattern"],
+                c["reason"] + ("" if c["reason"] == "homonym" else ":" + ",".join(c["other_parents"]))]
+               for c in conflicts]
+        assert got == row["abstained"], row["case"]
+        assert stats["emitted_hits"] == len(hits)
+        assert stats["guard_other_parent"] + stats["guard_homonym"] == len(conflicts)
+        expected += len(hits)
+        abstained += len(conflicts)
+    assert (expected, abstained) == (65, 13)
+
+
 def test_stats_count_hits_by_pattern():
     _, stats, conflicts = _fixture_run(_fixture_row("named:gen:36:0:14"))
-    assert stats == {"pattern_hits": 4, "by_pattern": {P1: 0, P2: 0, P3: 3, P4: 1}, "ambiguous_name": 0}
+    by_pattern = {P1: 0, P2: 0, P3: 3, P4: 1}
+    assert stats == {"pattern_hits": 4, "by_pattern": by_pattern, "guard_other_parent": 0,
+                     "guard_homonym": 0, "emitted_hits": 4, "emitted_by_pattern": by_pattern,
+                     "ambiguous_name": 0}
     assert conflicts == []

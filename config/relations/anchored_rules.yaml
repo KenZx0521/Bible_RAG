@@ -50,3 +50,15 @@ child_re: '的(?:長|次|三|四|五|六|七|小)?(兒子|女兒)(?:是|有|就�
 begot_re: '(?:又|也)?生(?:了)?'
 wife_re: '的妻(?:子)?(?:是|名叫|叫)?'
 is_child_re: '是'
+
+# Same-name guard, pass 1 (K2 「同名時 abstain」, §6 #12). A SON_OF, DAUGHTER_OF or
+# FATHER_OF hit with parent P and child C abstains, logged in conflicts, when
+#   homonym_ids   P or C is a known homonym node (reason homonym, checked first);
+#                 Q2 seed: 彼得 and the apostle 約翰 (「你是約翰的兒子西門」 jhn 1:42
+#                 would make 彼得 the apostle's son)
+#   other_parent  true: C already has a parent other than P in the curated,
+#                 prior or llm rows; a mother counts (reason other_parent)
+# P4 SPOUSE_OF hits are never guarded.
+guard:
+  other_parent: true
+  homonym_ids: ['person:bide', 'person:yuehan（shitu）']
