@@ -14,7 +14,7 @@
 
 改寫是機械式的：只拆開「以根路徑開頭的字串常值」，docstring 不動。把參數代回原路徑後，110 個檔與改寫前逐字相同。
 
-自 1B 起，量測舊 supplementary 定義的四支腳本（`xref/supp.py`、`verifier_xref/mdpairs.py`、`batch1/1B/sim_supp.py`、`batch1/1B-reviewer/r1_supp.py`）不再 import `bible_chunking.nt_cross_references`（1B 把它改寫成經文座標），改讀凍結檔 `xref/supp_defs_a32fbea.json`：a32fbea 的 161 筆定義依原順序、每筆 6 個欄位，載入成 `SimpleNamespace` 後屬性與原 dataclass 相同。這四支只把那一行 import 換成讀凍結檔（上段「逐字未動」的唯一例外，變數名照舊），所以在任何 HEAD 都能重放；已驗證（2026-10-05）拿掉 `nt_cross_references.py` 後四支重跑，`supp_sim.json`、`supp_edges.json`、`supp_rows.json`、`r1_supp.json` 與 stdout 都和改前逐位元相同。`scripts/tests/test_supp_defs_frozen.py` 守住筆數、欄位與「不再 import live 模組」。
+自 1B 起，量測舊 supplementary 定義的四支腳本（`xref/supp.py`、`verifier_xref/mdpairs.py`、`batch1/1B/sim_supp.py`、`batch1/1B-reviewer/r1_supp.py`）不再 import `bible_chunking.nt_cross_references`（1B 把它改寫成經文座標），改讀凍結檔 `xref/supp_defs_a32fbea.json`：a32fbea 的 161 筆定義依原順序、每筆 6 個欄位，載入成 `SimpleNamespace` 後屬性與原 dataclass 相同。這四支只把那一行 import 換成讀凍結檔（上段「逐字未動」的唯一例外，變數名照舊），所以定義在任何 HEAD 都能重放。資料端照舊讀 `BIBLE_RAG_ROOT/output/`：`output/neo4j_relationships.jsonl` 要是 1B 之前的版本（sha256 `15ed2505…`，副本是 `$W1_1B_EVIDENCE/neo4j_relationships_pre1b.jsonl`），W1 Step 0 覆寫它之後 supplementary 從 145 列變成 158 列，`xref/supp.py` 的 `assert len(kept)==len(supp)` 就會失敗；`verifier_xref/mdpairs.py` 也仍 import live 的 `CROSS_REF_ABBREV`（`bible_chunking.config`）。已驗證（2026-10-05）拿掉 `nt_cross_references.py` 後四支重跑，`supp_sim.json`、`supp_edges.json`、`supp_rows.json`、`r1_supp.json` 與 stdout 都和改前逐位元相同。`scripts/tests/test_supp_defs_frozen.py` 守住凍結檔的筆數與欄位；這四支加上 `batch1/w1_1B/` 的 `sim_w1_1b.py`、`sim_states.py`、`golden.py`（共 7 支，即測試裡的 `ARCHIVED`）不再 import live 模組；`test_definition_ledger` 確認 live 定義等於凍結檔的機械式轉換，扣掉 XREF-2 刪的 2 筆、加上 X2 的改錨。
 
 `batch1/inputs/` 是原本只在 scratchpad 的兩份輸入：`bench/questions_table.json`（500 題逐題表）與 `kg_xref/`（2026-10-03 審查的 kg_xref 68 題）。
 
@@ -57,7 +57,7 @@ cd $D/scratchpad/kgfix/relations && BIBLE_RAG_ROOT=$A32 "$OLDPWD/scripts/.venv/b
 
 ## W1 1A 重算（`batch1/w1_1A/`）
 
-[第 1 批計畫](../2026-10-04_kg_batch1_plan.md) 1A 各列的重算數字出自這組腳本。原檔在 W1 工作階段 scratchpad 的 `w1/1A/`；歸檔時只改了路徑參數（下述）和 `anchored_v2` → `anchored_w1` 的 import 名稱，其餘逐字未動。
+[第 1 批計畫](../2026-10-04_kg_batch1_plan.md) 1A 各列的重算數字出自這組腳本。原檔在 W1 工作階段 scratchpad 的 `w1/1A/`。歸檔時改了這幾處：路徑參數（下述）；`anchored_v2` → `anchored_w1` 的 import 名稱；`gen_fixture.py`、`r4_final.py`、`multi_parent.py` 加上 argparse（`gen_fixture.py` 是 `--out`，另兩支是 `--out-dir`，`multi_parent.py` 的 clean2 檔名改成位置參數），`sim_1a_w1.py` 原本就有 argparse，只加 `--out-dir`；`sim_1a_w1.py`、`gen_fixture.py` 把 `../planner_1A` 加進 `sys.path`；`sim_1a_w1.py`、`gen_fixture.py`、`r4_final.py` 的 docstring 加長，`multi_parent.py` 新增 docstring（`sim_1a_w1.py` 原本的 Usage 行換成一段歸檔說明）。計算邏輯逐字未動，可與 `bak/20261005_w1_1A_evidence/` 的原檔 diff 驗證。
 
 | 這裡 | scratchpad 原檔 | 用途 |
 |---|---|---|
@@ -73,7 +73,8 @@ cd $D/scratchpad/kgfix/relations && BIBLE_RAG_ROOT=$A32 "$OLDPWD/scripts/.venv/b
 路徑：
 
 - `BIBLE_RAG_ROOT`、`KGFIX_SP` 同上表。`sim_1a_w1.py` 讀 `$KGFIX_SP/kgfix/relverify/edges.json`（2026-10-04 的 live 邊 dump），要先照上一節解開 `kgfix_scratchpad.tgz`。
-- 輸出寫到 `--out-dir`（預設是腳本所在的目錄）。`r4_final.py` 和 `multi_parent.py` 的 `--out-dir` 指向 `sim_1a_w1.py` 寫 `clean2_*.jsonl` 的目錄；`gen_fixture.py` 用 `--out` 指定輸出檔。
+- 輸出寫到 `--out-dir`（預設是腳本所在的目錄）。`r4_final.py` 和 `multi_parent.py` 的 `--out-dir` 指向 `sim_1a_w1.py` 寫 `clean2_*.jsonl` 的目錄；`gen_fixture.py` 用 `--out` 指定輸出檔。沒指定 `--out-dir`／`--out` 時寫在本目錄的產物（`clean2_*`、`anch2_*`、`sim2_{off,father,gei}_*`、`anchored_regression.jsonl`）由本目錄的 `.gitignore` 排除。
+- 重放區塊不設 `BIBLE_RAG_ROOT`，所以讀的是預設的 `/home/kenzx0521/Bible_RAG`（主 checkout）的 `output/`、`config/` 與 `scripts/`。要在 worktree 裡重放、讓它讀 worktree 的 `config/` 與 `scripts/`，先 `export BIBLE_RAG_ROOT=$PWD`：`after_10_2`、10.2 後 sha256 與 anchored key 三欄不變（2026-10-06 在 14e2063 之上重跑三組態），但 sim2 的 `probes` 欄會多出 26bc252 新增探針的分數，所以下面的比對先去掉 `probes` 欄。
 - `common.py` 用 `batch1/planner_1A/common.py`：腳本自己把 `../planner_1A` 加到 `sys.path` 尾端（本目錄仍優先），不用設 `PYTHONPATH`。
 - `clean2_*.jsonl` 每份約 2.2 MB，不歸檔；重跑一組只要幾秒。
 
@@ -86,13 +87,15 @@ CFG="--begot gei --surface declared --lexicon ppg --stop-de cont --guard any --h
 PYTHONHASHSEED=7 scripts/.venv/bin/python $A/sim_1a_w1.py $CFG --disagree any --out-dir $O/final
 PYTHONHASHSEED=7 scripts/.venv/bin/python $A/sim_1a_w1.py $CFG --disagree off --out-dir $O/no_disagreement
 PYTHONHASHSEED=7 scripts/.venv/bin/python $A/sim_1a_w1.py $CFG --disagree any --anchored off --out-dir $O/no_anchored
-cmp $O/final/sim2_gei_declared_ppg_cont_any_hom2_disany.json $A/sim2_final.json
-cmp $O/no_disagreement/sim2_gei_declared_ppg_cont_any_hom2.json $A/sim2_no_disagreement.json
-cmp $O/no_anchored/sim2_gei_declared_ppg_cont_any_hom2_disany_noanch.json $A/sim2_no_anchored.json
+cmp <(jq -S 'del(.probes)' $O/final/sim2_gei_declared_ppg_cont_any_hom2_disany.json) <(jq -S 'del(.probes)' $A/sim2_final.json)
+cmp <(jq -S 'del(.probes)' $O/no_disagreement/sim2_gei_declared_ppg_cont_any_hom2.json) <(jq -S 'del(.probes)' $A/sim2_no_disagreement.json)
+cmp <(jq -S 'del(.probes)' $O/no_anchored/sim2_gei_declared_ppg_cont_any_hom2_disany_noanch.json) <(jq -S 'del(.probes)' $A/sim2_no_anchored.json)
 scripts/.venv/bin/python $A/gen_fixture.py --out $O/anchored_regression.jsonl
 scripts/.venv/bin/python $A/multi_parent.py clean2_gei_declared_ppg_cont_any_hom2_disany.jsonl --out-dir $O/final
 scripts/.venv/bin/python $A/r4_final.py --out-dir $O/final   # 讀 7688（唯讀）
 ```
+
+比對先去掉 `probes` 欄：在含 26bc252 的樹上（`BIBLE_RAG_ROOT` 指向 W1 以後的 checkout），三份 sim2 只有 `probes` 欄與本目錄的檔不同（2026-10-06 在 14e2063 之上三組態實測，去掉後逐位元相同）；在 26bc252 之前的樹上（例如 2026-10-06 時仍在 f06cc7b 的主 checkout，即預設的根目錄）直接 `cmp` 也逐位元相同。
 
 預期值（sim2 的 `after_10_2`、`after_10_2_sha256`、`anchored_key_sha` 欄）：
 
@@ -109,6 +112,6 @@ scripts/.venv/bin/python $A/r4_final.py --out-dir $O/final   # 讀 7688（唯讀
 - `multi_parent.py`：383 個子女中有 8 個有 2 個以上非女性父母。
 - `r4_final.py`：H3 = 0、H9 = 0（當時 7688 仍是第 0 批的建置，46,205 條 MENTIONS）。它讀 live 資料庫，重跑會得到當下的狀態。
 
-兩個 sha 只取決於 `output/*.jsonl`、`config/relations/biblical_relations.yaml`、`scripts/relation_extraction/schema_loader.py` 與 `scripts/cleanup_noise_entities.py`（「但」過濾；`GENERIC_EVENT_STOPLIST` 只 import、不使用）。`config/kg_probes.yaml` 只影響 sim2 的探針與 R6 欄位：之後改了它，sim2 可能不再逐位元相同，sha 則不變（已用改過 `female_persons` 和探針的副本實測）。
+兩個 sha 只取決於 `output/*.jsonl`、`config/relations/biblical_relations.yaml`、`scripts/relation_extraction/schema_loader.py`、`scripts/cleanup_noise_entities.py` 與它轉出的兩個模組：`scripts/entity_extraction/geo_rules.py`（「但」過濾，7d9e680 從 `cleanup_noise_entities.py` 搬過去）、`scripts/entity_extraction/stoplists.py`（`GENERIC_EVENT_STOPLIST` 只 import、不使用）。`config/kg_probes.yaml` 只影響 sim2 的探針與 R6 欄位：之後改了它，sim2 可能不再逐位元相同，sha 則不變（已用改過 `female_persons` 和探針的副本實測）。
 
 整個 scratchpad `w1/1A/` 樹另存在 `bak/20261005_w1_1A_evidence/`（gitignored，`SHA256SUMS` 可驗），內容包括各組態的 clean2/anch2/sim2、critic 版本、fixture，以及試標用的 `rev/pilot.py` 與 `rev/pilot_labels.json`。正式 K9 的結果報告（C10）出來以前，試標標籤不進 repo，盲標者才看不到。

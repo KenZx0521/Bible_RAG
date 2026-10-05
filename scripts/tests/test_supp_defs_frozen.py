@@ -3,8 +3,11 @@
 1B rewrote SUPPLEMENTARY_CROSS_REFS in verse coordinates. The archived
 evidence scripts that measured the old definitions read
 docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json instead of the
-live module, so they replay on any HEAD (README of that directory). The
-ledger test pins the live list to the mechanical conversion of the frozen one
+live module, so their definitions replay on any HEAD. Their data does not:
+they still read BIBLE_RAG_ROOT/output/ (xref/supp.py asserts on the
+supplementary row count of the pre-1B neo4j_relationships.jsonl, which W1
+Step 0 overwrites), and verifier_xref/mdpairs.py still imports the live CROSS_REF_ABBREV
+(README of that directory). The ledger test pins the live list to the mechanical conversion of the frozen one
 plus each documented change; the file's sha256 (the one w1_1B/README.md
 records) pins its bytes, so an edit made to it and the live list alike fails.
 """

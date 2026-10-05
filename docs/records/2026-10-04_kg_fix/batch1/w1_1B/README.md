@@ -14,7 +14,7 @@
 
 - `sim_w1_1b.py`、`sim_states.py`、`golden.py` 不再 import `bible_chunking.nt_cross_references`（1B-C3c 會把它改寫成經文座標），改讀凍結檔 `xref/supp_defs_a32fbea.json`（1B-C3a），載入成 `SimpleNamespace` 後屬性相同；`scripts/tests/test_supp_defs_frozen.py` 守住這三支不再 import live 模組。
 - `sim_w1_1b.py`、`sim_states.py` 改讀 `$W1_1B_EVIDENCE/neo4j_relationships_pre1b.jsonl`，不讀 `output/neo4j_relationships.jsonl`（W1 Step 0 會覆寫它），並 assert 它的 sha256 是 `15ed2505…`。
-- 大型輸出（`xref_new_w1.json`、`pred_*.json`、`meas_*.json`）寫到 `$W1_1B_EVIDENCE`；小檔照舊寫在腳本旁。`golden.py`、`sup_*.py`、`ro_mc.py` 讀寫的是目前目錄，`ro_old_probe.py` 從目前目錄 exec `sim_backend_w1.py`，所以要在本目錄的複本裡執行。
+- 大型輸出（`xref_new_w1.json`、`pred_*.json`、`meas_*.json`）寫到 `$W1_1B_EVIDENCE`；小檔照舊寫在腳本旁。讀取端跟著搬：`sim_backend_w1.py` 讀 `$W1_1B_EVIDENCE/xref_new_w1.json`（原讀腳本旁），`ro_c1_probe.py` 讀 `$W1_1B_EVIDENCE/pred_trans.json`（原讀目前目錄）。`golden.py`、`sup_*.py`、`ro_mc.py` 讀寫的是目前目錄，`ro_old_probe.py` 從目前目錄 exec `sim_backend_w1.py`，所以要在本目錄的複本裡執行。
 - `sup_s3.py` 原本在 scratchpad 的 `critic/` 子目錄讀 `../golden_s3.json`；歸檔後與 `golden_s3.json` 同層，改讀 `golden_s3.json`。
 
 這幾支只用 `scripts/import_tsk_crossrefs.py` 的四個名字：`build_verse_map`、`parse_ref`、`expand_to_range`、`MAX_RANGE_VERSES`（`sim_w1_1b.py` 用前三個，`expand_to_range` 內部用第四個；`sup_*.py` 用 `parse_ref` 與 `MAX_RANGE_VERSES`）。1B-C6a 改 Step 9 時保留這四個名字與語意，重放才成立。
@@ -75,6 +75,7 @@
 
 ```bash
 export BIBLE_RAG_ROOT=$PWD
+export PYTHONHASHSEED=0   # sim_w1_1b.py 兩行 stdout 的 key 順序取決於它，見下方「已驗證」
 (cd bak/20261005_w1_1b_evidence && sha256sum -c SHA256SUMS)
 export W1_1B_EVIDENCE=$(mktemp -d)
 cp bak/20261005_w1_1b_evidence/neo4j_relationships_pre1b.jsonl $W1_1B_EVIDENCE/
@@ -90,4 +91,4 @@ $PY -c "import hashlib, json; [print(f, hashlib.sha256(json.dumps(json.load(open
 
 最後一行印出 golden 表 compact 排序 JSON 的 sha256：`golden_s3.json` 是 `99887e9a3ed94239351049c441456f33060d137c6c8b26e844781d1475aa5bfa`，`golden_final.json` 是 `c1da4fbbcb436b6f0efd34051759efc8e3583fdfd4049146a2a6f54f27e590a8`。
 
-已驗證（2026-10-05）：以模擬 1B 之後的根目錄重放（拿掉 `bible_chunking/nt_cross_references.py`、覆寫 `output/neo4j_relationships.jsonl`），六支離線腳本的 stdout 與規劃時逐位元相同；`xref_new_w1.json`、`pred_trans.json`、`pred_new.json` 與上表 sha256 相同；五個小檔與本目錄逐位元相同；`neo4j_relationships_pre1b.jsonl` 多一個位元組時 `sim_w1_1b.py`、`sim_states.py` 都以 AssertionError 停下。同日以改寫後的 `ro_*.py` 重跑（READ）：`ro_c1_probe.py` 在 prod 與 staging 都是 0/5,820 不符，兩份 `meas_trans_*.json` 的 sha256 與上表相同；`ro_old_probe.py` 0/2,779；`ro_mc.py` 的 `mc_diff_prod_vs_stg0.json` 與本目錄逐位元相同。
+已驗證（2026-10-05）：以模擬 1B 之後的根目錄重放（拿掉 `bible_chunking/nt_cross_references.py`、覆寫 `output/neo4j_relationships.jsonl`），六支離線腳本的 stdout 與規劃時逐位元相同（`sim_w1_1b.py` 依 `set(md_pairs) | set(supp_pairs)` 的迭代順序建邊，所以 stdout 的 `xref_provenance`、`xrefs by source` 兩行的 key 順序取決於 `PYTHONHASHSEED`：2026-10-06 試 0–11 共 12 個 seed，1 與 11 的順序和其他不同；`PYTHONHASHSEED=0` 與規劃時的順序相同，所以重放固定它，用別的 seed 時把這兩行當 dict 比。輸出檔與 fingerprint 不受 seed 影響，其餘五支的 stdout 也不受影響）；`xref_new_w1.json`、`pred_trans.json`、`pred_new.json` 與上表 sha256 相同；五個小檔與本目錄逐位元相同；`neo4j_relationships_pre1b.jsonl` 多一個位元組時 `sim_w1_1b.py`、`sim_states.py` 都以 AssertionError 停下。同日以改寫後的 `ro_*.py` 重跑（READ）：`ro_c1_probe.py` 在 prod 與 staging 都是 0/5,820 不符，兩份 `meas_trans_*.json` 的 sha256 與上表相同；`ro_old_probe.py` 0/2,779；`ro_mc.py` 的 `mc_diff_prod_vs_stg0.json` 與本目錄逐位元相同。

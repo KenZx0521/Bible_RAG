@@ -12,7 +12,7 @@
 > - 【推】：推論。
 > - 【更正】：審查者推翻了規劃值。
 > - 【待重算】：要等決策或修正後重跑模擬。
-> - 【驗・W1 重算】：W1 實作後以定案組態重跑（[w1_1A/sim2_final.json](2026-10-04_kg_fix/batch1/w1_1A/sim2_final.json)；10.2 後的邊集合 sha256 `661cfc62…` 與 6.05 實跑相同）。原本的值與標記留著當紀錄。
+> - 【驗・W1 重算】：W1 實作後以定案組態重跑（[w1_1A/sim2_final.json](2026-10-04_kg_fix/batch1/w1_1A/sim2_final.json)；10.2 後的邊集合 sha256 `661cfc62…` 與 6.05 實跑相同）。原本的值留著當紀錄；1A 原有的【待重算】改成這個標記。
 
 > **歸檔**：證據已複製到 `docs/records/2026-10-04_kg_fix/batch1/`（腳本與 <200 KB 的輸出），完整 scratchpad 在 `bak/20261004_kgfix_evidence/batch1plan_scratchpad.tgz`（gitignored）。下文的 `SP=/tmp/...` 路徑是規劃時的位置。
 
@@ -27,7 +27,7 @@
 | W1·1A | 沒有出處的衍生邊（H3） | 374 → 0 | 驗 reviewer_1A/r4_h3_on_staging.py |
 | | domain/range 違規（H9） | 14 → 0 | 同上 |
 | | FATHER_OF 雙向矛盾／女性 head | 25 / 42 → 0 / 0 | 驗 planner_1A/sim_1a.py（審查者重跑 sha b564a2a8 相同） |
-| | 有 ≥2 個非女性父母的子女（全部父母編碼） | 135/262（51.5%）→ 60/402（14.9%）；加同名防護後會再降。【驗・W1 重算】8/383（2.1%）；有 2 個以上父母的 1 個（live 87） | 驗 reviewer_1A |
+| | 有 ≥2 個非女性父母的子女（全部父母編碼） | 135/262（51.5%）→ 60/402（14.9%）；加同名防護後會再降。【驗・W1 重算】8/383（2.1%）；超過 2 個父母（3 個以上）的 1 個（live 87） | 驗 reviewer_1A |
 | | 10.3 共現升格邊／反向物化邊／字母序規則邊／LLM Event–Event 邊 | 9,060 / 756 / 771 / 26 → 全部 0 | 驗 prod READ |
 | | 語意邊總數 | 15,926 → 非錨定 5,301，加上錨定邊（原模擬 425）。【驗・W1 重算】5,616 = 非錨定 5,297 + 錨定 319；比 5,301 少的 4 條是 6.05 丟掉的 prior／llm 無向重複（大衛–約拿單 ALLY_OF 等） | 驗 reviewer_1A/r1_flow.py |
 | | 親屬邊 | 1,571 → 約 615（原模擬）【更正：計畫的「<300」不成立】。【驗・W1 重算】509（prior 30、llm 160、錨定 319） | 驗 |
@@ -180,7 +180,7 @@
 | 錨定唯一鍵 | 原本 437；改成 P/P/G 詞庫後 527；加上清單修正與同名防護後未知。W1：命中 701、兩段防護後輸出 465、唯一鍵 328；無向去重再丟 2 個、7 個併進 prior／llm 列，以錨定為主來源的列 319 | 【驗・W1 重算】 |
 | 錨定精確率 | 規劃者的 57/57 是「文字層」判讀；審查者以 seed 4242 抽樣，文字層 43/45（Wilson 下界 0.852）。實體層的錯例：彼得 SON_OF 使徒約翰、約瑟 SON_OF 約南、便雅憫 SON_OF 比勒罕。W1 規劃者試標（非人工、單一標註者，不是 K9 閘門樣本）：W1 的錨定 319 列以 seed 20261005 抽 60 列，text_correct 60/60（Wilson 下界 0.940），id_correct 51/60（0.739；另 7 列落在主要指涉是別人的合併節點，也算錯則 44/60，0.610），id 閘門至少要 57/60。錯的都在節點層的同名合併（延後-A） | 【更正】撤回價值表的「≥0.91」，改以 id 正確的人工閘門為準。2026-10-05 Kay 改以 text_correct 為閘門，見 §9.1 Q1 |
 | 錨定父母邊落在多父母衝突 | 126/420（30%），涉及 55 個子女。W1 由兩段同名防護處理：第一段 abstain 60 筆（其他父母 56、同名節點 4），第二段 49 個子女的 176 筆 | 驗；W1 見 Step 6.05 的報告 conflicts |
-| R6 函數性 | 只算 FATHER_OF 時是 135/252 → 3/49，但多父母的問題轉移到 SON_OF。改用全部父母編碼：135/262 → 60/402。【驗・W1 重算】只算 FATHER_OF：3/47（0.0638），不是 3/49；全部父母編碼：8/383，有 2 個以上父母的 1 個 | 【更正】 |
+| R6 函數性 | 只算 FATHER_OF 時是 135/252 → 3/49，但多父母的問題轉移到 SON_OF。改用全部父母編碼：135/262 → 60/402。【驗・W1 重算】只算 FATHER_OF：3/47（0.0638），不是 3/49；全部父母編碼：8/383，超過 2 個父母（3 個以上）的 1 個 | 【更正】 |
 | 第 0 批 4 條 SON_OF 的成因 | 不是同一次匯入裡先到先得，而是 prod 舊匯入的屬性因 onCreate-only 沒有被刷新（REL-10） | 【更正第 0 批紀錄】驗；2026-10-06 已更正[第 0 批紀錄](2026-10-04_kg_batch0_results.md)與 kg_diff_allow_batch0.yaml 的檔頭 |
 
 **相對 prod 的預期 diff**
@@ -593,7 +593,7 @@ W0 結果見 [2026-10-05_kg_batch1_w0_results.md](2026-10-05_kg_batch1_w0_result
 - **Q2 同名防護的 `homonym_ids`：** `[person:bide, "person:yuehan（shitu）"]`（彼得、使徒約翰；「約翰的兒子西門」不得連到使徒約翰）。
 - **Q3 清單項後面接「的」：** `list_stop: cont`。這一項帶出下一個子句，清單到此結束；只有緊接在槽位後的第一項保留（耶 38:6 保留瑪基雅）。
 - **Q4 第二段同名防護（1A-C3c）：** 上線。同一個子女從錨定命中得到兩個以上父母時，它的父母命中全數 abstain（W1：49 個子女、176 筆）。
-- **H11 改號（隨 1A 一併記錄）：** H11 已是 1A 的關係出處檢查（source_null、inverse、cooccurrence、unflagged_id_order、undirected_dup）。§2.4 1D C10 的新檢查（extraction_method、title_derived）改用 H12，§2.4 閘門的「H11=0」同此。
+- **H11 改號（隨 1A 一併記錄）：** H11 已是 1A 的關係出處檢查（source_null、inverse_edges、cooccurrence_edges、rule_edges、llm_event_event_edges、unflagged_id_order_edges、undirected_pair_duplicates 七項，見 `scripts/kg_validate/checks_h.py`）。§2.4 1D C10 的新檢查（extraction_method、title_derived）改用 H12，§2.4 閘門的「H11=0」同此。
 
 **執行面的更正（orchestrator 的工程判斷，不是 Kay 的決定）**
 - **W1 的 image 指令以 runbook 為準：** §1 W1 欄 R0 的 `docker tag`、「W1 升版」第 1 步的 `up -d --build backend` 與回滾的「image 退回 kg-pre-batch1-w1」，都由 staging_promotion.md 的「W1 升版第 1 步」與 R5 取代。上線的是 R2 測過、記下 id 的 `bible_rag-backend:w1`（改 tag 成 latest，`--no-build`，不在 prod 重建）；回滾 image 取自 prod 容器正在跑的 image id，打 tag、用一個停著的容器釘住，再 `docker save` 到 bak/（只打 tag 的 image 會被 `docker image prune -a` 刪掉，2026-10-05 發生過）。

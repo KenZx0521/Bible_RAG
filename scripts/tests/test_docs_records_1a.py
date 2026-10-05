@@ -12,12 +12,15 @@ onCreate-only import, REL-10) and call the 流珥 alias an ID-2 error. The
 batch-1 plan's 1A cells carry the W1 recomputation, every number read from
 w1_1A/sim2_final.json, §2.1 adds created_from to batch 0's MENTIONS property
 residual in a dated note, and §9 records the 2026-10-05 decisions. The kg_fix
-README names the archived scripts that need a32fbea.
+README names the archived scripts that need a32fbea. The archive READMEs say
+what archiving changed, which root and hash seed a replay depends on, and what
+the frozen-definition scripts still read (W1 review minors, docs_records 1).
 """
 from __future__ import annotations
 
 import json
 import re
+import subprocess
 
 import yaml
 
@@ -169,7 +172,16 @@ def test_plan_1a_cells_are_recomputed_from_sim2_final():
     }
     for row, needles in expect.items():
         assert W1 in row and all(needle in row for needle in needles), (needles, row)
-    assert f"有 2 個以上父母的 {allpar['children_gt2_parents']} 個" in _line(s01, "| | 有 ≥2 個非女性父母")
+    # M371: children_with_gt2_parents is len(parents) > 2; 「2 個以上」 reads as ≥2 in these docs
+    gt2 = f"超過 2 個父母（3 個以上）的 {allpar['children_gt2_parents']} 個"
+    live = SIM2["allparent_live"]["children_gt2_parents"]
+    rows = (_line(s01, "| | 有 ≥2 個非女性父母"), _line(s21, "| R6 函數性"))
+    assert f"{gt2}（live {live}）" in rows[0] and gt2 in rows[1], rows
+    assert not [row for row in rows if "2 個以上父母" in row], rows
+    # M372: the 1A 【待重算】 markers were replaced, not kept
+    legend = _line(plan, f"> - {W1}")
+    assert "原本的值留著當紀錄" in legend and "1A 原有的【待重算】改成這個標記" in legend, legend
+    assert "原本的值與標記留著" not in legend, legend
 
 
 def test_plan_1a_marks_the_pilot_and_the_h11_number():
@@ -216,3 +228,109 @@ def test_kg_fix_readme_names_the_scripts_that_need_a32fbea():
     note = section(readme, "a32fbea")
     assert all(f"`{rel}`" in note for rel in users), note
     assert "git archive a32fbea scripts config" in note and "9c1c6c3" in note, note
+
+
+# ---------------------------------------------------------------- review minors (docs_records 1)
+
+W1_1A = KGFIX / "batch1" / "w1_1A"
+W1_1B = KGFIX / "batch1" / "w1_1B"
+FINAL_TAG = "gei_declared_ppg_cont_any_hom2_disany"
+
+
+def _paragraph(text: str, needle: str) -> str:
+    return next(p for p in text.split("\n\n") if needle in p)
+
+
+def _ignored(path) -> bool:
+    """Matched by a .gitignore pattern, tracked or not (--no-index)."""
+    return subprocess.run(["git", "check-ignore", "-q", "--no-index", str(path)], cwd=ROOT).returncode == 0
+
+
+def _w1_1a_note() -> str:
+    return section(read(KGFIX / "README.md"), "W1 1A 重算")
+
+
+def test_w1_1a_archive_note_lists_every_change_made_while_archiving():
+    # M000: archiving also added argparse, sys.path and docstrings, not only the roots and the import name
+    intro = _paragraph(_w1_1a_note(), "歸檔時")
+    assert "其餘逐字未動" not in intro, intro
+    for needle in ("`anchored_v2` → `anchored_w1`", "argparse", "`--out-dir`", "`--out`", "`sys.path`", "docstring",
+                   "Usage", "計算邏輯逐字未動", "bak/20261005_w1_1A_evidence/"):
+        assert needle in intro, needle
+    for script in ("gen_fixture.py", "r4_final.py", "multi_parent.py"):
+        assert f"`{script}`" in intro and "argparse.ArgumentParser()" in read(W1_1A / script), script
+    for script in ("sim_1a_w1.py", "gen_fixture.py"):
+        assert "sys.path.append(" in read(W1_1A / script) and f"`{script}`" in intro, script
+
+
+def test_w1_1a_default_outputs_are_gitignored_and_the_archive_is_not():
+    # M001: --out-dir/--out default to the script's own directory inside the tracked docs tree
+    generated = [f"{kind}_{begot}_any_full_off_off{ext}" for begot in ("off", "father", "gei")
+                 for kind, ext in (("sim2", ".json"), ("clean2", ".jsonl"), ("anch2", ".jsonl"))]
+    generated += [f"sim2_{FINAL_TAG}.json", f"clean2_{FINAL_TAG}.jsonl", f"anch2_{FINAL_TAG}.jsonl",
+                  "anchored_regression.jsonl"]
+    assert not [name for name in generated if not _ignored(W1_1A / name)]
+    tracked = subprocess.run(["git", "ls-files", str(W1_1A)], cwd=ROOT, capture_output=True, text=True).stdout.split()
+    assert tracked and not [path for path in tracked if _ignored(ROOT / path)], tracked
+    assert "gitignore" in _line(_w1_1a_note(), "- 輸出寫到 `--out-dir`")
+
+
+def test_w1_1a_replay_names_its_root_and_compares_sim2_without_the_probes():
+    # M002/M324: the block reads the default (main) root; on a tree with 26bc252 sim2 differs only in probes
+    note = _w1_1a_note()
+    root = _line(note, "- 重放區塊不設 `BIBLE_RAG_ROOT`")
+    for needle in ("export BIBLE_RAG_ROOT=$PWD", "26bc252", "`probes`", "after_10_2"):
+        assert needle in root, needle
+    block = re.search(r"```bash\n(.*?)```", note, re.S)[1]
+    cmps = [line for line in block.splitlines() if line.startswith("cmp ")]
+    assert len(cmps) == 3 and all(line.count("jq -S 'del(.probes)'") == 2 for line in cmps), cmps
+    after = note[note.index("```", note.index("```bash") + 3) + 3:].lstrip("\n").split("\n\n")[0]
+    for needle in ("26bc252", "`probes`", "逐位元相同", "14e2063"):
+        assert needle in after, needle
+    # M017: the 「但」 filter moved to geo_rules.py (7d9e680); cleanup_noise_entities re-exports it
+    deps = _paragraph(note, "兩個 sha 只取決於")
+    for needle in ("scripts/entity_extraction/geo_rules.py", "scripts/entity_extraction/stoplists.py", "7d9e680"):
+        assert needle in deps, needle
+    cleanup = read(ROOT / "scripts" / "cleanup_noise_entities.py")
+    assert "from entity_extraction.geo_rules import compute_dan_keep_sources" in cleanup
+    assert "from entity_extraction.stoplists import GENERIC_EVENT_STOPLIST" in cleanup
+
+
+def test_kg_fix_readme_says_what_the_frozen_definition_scripts_still_read_and_what_is_tested():
+    # M005/M009: the definitions are frozen, the data side is not; the test guards 7 scripts and a ledger
+    from test_supp_defs_frozen import ARCHIVED
+    para = _paragraph(section(read(KGFIX / "README.md"), "路徑參數"), "自 1B 起")
+    assert "所以在任何 HEAD 都能重放" not in para, para
+    for needle in ("定義在任何 HEAD 都能重放", "`15ed2505…`", "`$W1_1B_EVIDENCE/neo4j_relationships_pre1b.jsonl`",
+                   "`assert len(kept)==len(supp)`", "`CROSS_REF_ABBREV`", "`test_definition_ledger`", "XREF-2",
+                   "X2", f"共 {len(ARCHIVED)} 支", "`ARCHIVED`"):
+        assert needle in para, needle
+    assert not [p for p in ARCHIVED if f"`{p.relative_to(KGFIX).as_posix()}`" not in para
+                and f"`{p.name}`" not in para], para
+    assert "assert len(kept)==len(supp)" in read(KGFIX / "xref" / "supp.py")
+    assert "from bible_chunking.config import CROSS_REF_ABBREV" in read(KGFIX / "verifier_xref" / "mdpairs.py")
+
+
+def test_w1_1b_readme_pins_the_hash_seed_and_names_the_relocated_reads():
+    readme = read(W1_1B / "README.md")
+    # M007: set iteration orders two stdout lines of sim_w1_1b.py by PYTHONHASHSEED
+    assert "set(md_pairs) | set(supp_pairs)" in read(W1_1B / "sim_w1_1b.py")
+    block = re.search(r"```bash\n(.*?)```", section(readme, "重放"), re.S)[1]
+    assert block.index("export PYTHONHASHSEED=0") < block.index("for s in sim_w1_1b"), block
+    verified = _paragraph(readme, "已驗證（2026-10-05）")
+    for needle in ("PYTHONHASHSEED", "`xref_provenance`", "`xrefs by source`", "fingerprint"):
+        assert needle in verified, needle
+    # M008: inputs that moved to $W1_1B_EVIDENCE although no root literal named them
+    bullet = _line(section(readme, "路徑參數"), "- 大型輸出")
+    reads = [(p.name, name) for p in sorted(W1_1B.glob("*.py"))
+             for name in re.findall(r"open\(W1_1B_EVIDENCE \+ '/([^']+)'\)", read(p))]
+    assert sorted(reads) == [("ro_c1_probe.py", "pred_trans.json"), ("sim_backend_w1.py", "xref_new_w1.json")], reads
+    assert not [r for r in reads if f"`{r[0]}` 讀 `$W1_1B_EVIDENCE/{r[1]}`" not in bullet], bullet
+
+
+def test_plan_9_h11_note_lists_every_h11_metric():
+    # M374: §9.1 copied five names from the §2.1 row; H11 reports seven
+    from kg_validate.checks_h import _h11_row_tests
+    names = [*_h11_row_tests(None, frozenset()), "undirected_pair_duplicates"]
+    note = _line(section(read(PLAN1), "9. W0 之後的決定"), "- **H11 改號")
+    assert len(names) == 7 and not [name for name in names if name not in note], note
