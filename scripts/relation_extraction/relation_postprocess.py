@@ -27,14 +27,16 @@ json.dumps(sort_keys=True, ensure_ascii=False) per line, with no timestamps;
 the report has sorted keys and sorted lists. The jsonl is written first, then the
 report, each through a temp file and os.replace. An input error (an endpoint
 missing from entities.jsonl, a row with no known source, an unreadable
-file) stops the run before anything is written.
+file) stops the run before anything is written, as does a key that all mode
+leaves with two rows (6.1 makes one edge per key).
 
 The report (relations_postprocess_report/v1) records pp_version,
 schema_version, the rules, run_id ('6.05-' and 12 hex of sha256(pp_version +
 the input sha256s in INPUTS order)), every input's {path, sha256, rows}, the
 flow {input, drops {reason: {relation: n}}, drops_due_to_dan_filter
-{relation: n}, anchored, flagged, output}, the conflicts, the output {path,
-sha256, rows, by_source, by_relation} and expected_after_10_2: the edge set
+{relation: n}, anchored, flagged, collapsed_keys {sources: n}, output}, the
+conflicts, the output {path, sha256, rows, by_source, by_relation} (rows
+counted by their primary source) and expected_after_10_2: the edge set
 the graph holds once 10.2 has DETACH DELETEd the generic Event nodes.
 scripts/tools/check_edge_set.py compares staging with that section through
 edge_set_sha256 and by_ee_key.
@@ -138,6 +140,7 @@ class Flow:
     dan_filter_drops: Counter = field(default_factory=Counter)  # gate drops the 「但」 filter caused
     anchored: dict = field(default_factory=dict)
     flagged: Counter = field(default_factory=Counter)          # relation counts
+    collapsed: Counter = field(default_factory=Counter)        # 'llm+prior' -> keys made of 2+ rows
     conflicts: list[dict] = field(default_factory=list)
 
     def drop(self, reason: str, row: Mapping) -> None:
@@ -399,6 +402,24 @@ def dedup_undirected(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) 
     return kept
 
 
+def collapse_by_key(rows: list[dict], inputs: Inputs, cfg: Config, flow: Flow) -> list[dict]:
+    """REL-10 (SON_OF onCreate-only, part 1): leave one row per (head_id, relation, tail_id).
+
+    6.1 merges one edge per key, so two rows of a key leave the edge with
+    whichever row's properties the import kept (batch 0: 雅各 SON_OF 以撒 is
+    phase 5 on prod, phase 4 on staging). relation_policy.collapse_by_key keeps
+    the key's best-ranked row, in the order of the two rules before it, and
+    folds every row of the key into sources, support_pericopes and
+    evidence_count, which all rows get (W1: the anchored rule repeats 5 llm keys
+    and 2 priors). 6.1 overwriting an edge's properties wholesale is part 2
+    (1A-C5a). A key made of two or more rows is counted in flow.collapsed by its
+    sources ('anchored_rule+llm').
+    """
+    collapsed, merged = relation_policy.collapse_by_key(rows)
+    flow.collapsed.update("+".join(row["sources"]) for row in merged)
+    return collapsed
+
+
 def _final_types(inputs: Inputs, cfg: Config) -> dict[str, str]:
     """entity_id -> final type: the entities.jsonl type through the curated overrides."""
     return {eid: entity_overrides.final_type(eid, entity["type"], cfg.overrides)
@@ -414,6 +435,7 @@ RULES: tuple[tuple[str, Rule], ...] = (
     ("flag_id_order", flag_id_order),
     ("resolve_kinship_direction", resolve_kinship_direction),
     ("dedup_undirected", dedup_undirected),
+    ("collapse_by_key", collapse_by_key),
 )
 
 
@@ -509,6 +531,15 @@ def _check_endpoints(rows: list[dict], entities: Mapping[str, dict], what: str) 
                          f"{', '.join(missing[:10])}{' ...' if len(missing) > 10 else ''}")
 
 
+def _check_unique_keys(rows: list[dict]) -> None:
+    """All mode hands 6.1 one row per key (collapse_by_key); a key left twice is a bug, not a row to merge."""
+    counts = Counter((row["head_id"], row["relation"], row["tail_id"]) for row in rows)
+    dup = sorted(" ".join(key) for key, n in counts.items() if n > 1)
+    if dup:
+        raise ValueError(f"{len(dup)} key(s) have two or more rows after the rules: "
+                         f"{', '.join(dup[:10])}{' ...' if len(dup) > 10 else ''}")
+
+
 def _line(row: Mapping) -> str:
     return json.dumps(row, sort_keys=True, ensure_ascii=False)
 
@@ -529,6 +560,8 @@ def postprocess(inputs: Inputs, cfg: Config, rules: str = "all") -> tuple[list[d
     for _, rule in selected:
         rows = rule(rows, inputs, cfg, flow)
     _check_endpoints(rows, inputs.entities, "output")
+    if rules == "all":
+        _check_unique_keys(rows)
     rows = sorted(rows, key=lambda row: (row["head_id"], row["relation"], row["tail_id"], _line(row)))
     return rows, build_report(rows, inputs, cfg, rules, [name for name, _ in selected], flow)
 
@@ -598,7 +631,7 @@ def build_report(rows: list[dict], inputs: Inputs, cfg: Config, mode: str, ran: 
                  "drops": {reason: dict(sorted(n.items())) for reason, n in flow.drops.items()},
                  "drops_due_to_dan_filter": dict(sorted(flow.dan_filter_drops.items())),
                  "anchored": dict(flow.anchored), "flagged": dict(sorted(flow.flagged.items())),
-                 "output": len(rows)},
+                 "collapsed_keys": dict(sorted(flow.collapsed.items())), "output": len(rows)},
         "conflicts": sorted(flow.conflicts, key=_line),
         "output": {"path": None, "sha256": hashlib.sha256(serialize(rows)).hexdigest(), "rows": len(rows),
                    "by_source": _counts(row["source"] for row in rows),

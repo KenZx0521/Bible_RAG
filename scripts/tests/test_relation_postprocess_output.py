@@ -25,6 +25,10 @@ import pytest
 import yaml
 
 from entity_extraction import entity_overrides, geo_rules
+from kg_validate.checks_probes import evaluate_probes
+from kg_validate.checks_r import check_r6
+from kg_validate.model import KG
+from kg_validate.registry import Context
 from relation_extraction import relation_postprocess as pp
 from relation_extraction.anchored_rules import GuardConfig
 
@@ -355,6 +359,81 @@ def test_conflict_drops(real_inputs, all_run):
     female = set(yaml.safe_load((ROOT / "config" / "kg_probes.yaml").read_text(encoding="utf-8"))["female_persons"])
     assert _r6(inputs.relations, female) == (25, 42)
     assert _r6(rows, female) == (0, 0)
+
+
+# The rows 6.05 hands 6.1 (1A-C4i on), as the W1 simulator predicted them (sim_1a_w1.py:
+# sim2_final.json): the sha256 of edge_set_lines over all 5,696 rows, and over the 5,616 left after 10.2
+FINAL_EDGE_SET_SHA256 = "80c0534862b3e8fcccb24d7b6e55e08f15ce29df46193ae3471f7293baa3c1de"
+FINAL_AFTER_10_2_SHA256 = "661cfc6289e2966e71a0c83d974be99d256e04e0f90ac78ae28f8fb518c7bbc1"
+KINSHIP = {"FATHER_OF": 50, "SON_OF": 335, "DAUGHTER_OF": 14, "MOTHER_OF": 15, "SPOUSE_OF": 30, "SIBLING_OF": 32,
+           "ANCESTOR_OF": 15, "DESCENDANT_OF": 18}
+
+
+def _after_10_2(rows, report) -> list[dict]:
+    gone = set(report["expected_after_10_2"]["generic_event_ids"])
+    return [r for r in rows if r["head_id"] not in gone and r["tail_id"] not in gone]
+
+
+def _parents(rows, female: set[str]) -> tuple[int, int, int]:
+    """(children, those with 2+ parents not on the female list, those with >2 parents) over all four encodings."""
+    parents: dict[str, set[str]] = {}
+    for r in rows:
+        if r["relation"] in ("FATHER_OF", "MOTHER_OF"):
+            parents.setdefault(r["tail_id"], set()).add(r["head_id"])
+        elif r["relation"] in ("SON_OF", "DAUGHTER_OF"):
+            parents.setdefault(r["head_id"], set()).add(r["tail_id"])
+    return (len(parents), sum(len(p - female) >= 2 for p in parents.values()),
+            sum(len(p) > 2 for p in parents.values()))
+
+
+def test_final_edge_set(none_run, all_run):
+    rows, report = all_run
+    # one row per key: of the 7 keys the anchored rule shares with the llm (5) or a prior (2), the
+    # better-ranked row is primary, so the anchored rows that 6.1 imports drop from 326 to 319
+    assert len(rows) == len({_key(r) for r in rows}) == report["output"]["rows"] == 5696
+    assert report["output"]["by_source"] == {"anchored_rule": 319, "llm": 5313, "prior": 64}
+    assert report["flow"]["collapsed_keys"] == {"anchored_rule+llm": 5, "anchored_rule+prior": 2}
+    assert pp.edge_set_sha256(rows) == FINAL_EDGE_SET_SHA256
+    after = report["expected_after_10_2"]
+    assert (len(after["generic_event_ids"]), after["edges_on_generic_events"], after["edges"]) == (16, 80, 5616)
+    by_source = Counter()
+    for key, n in after["by_ee_key"].items():
+        by_source[key.rsplit("source=", 1)[1]] += n
+    assert by_source == {"anchored_rule": 319, "llm": 5233, "prior": 64}
+    assert after["edge_set_sha256"] == FINAL_AFTER_10_2_SHA256
+    assert {rel: n for rel, n in after["by_type"].items() if rel in KINSHIP} == KINSHIP
+    assert sum(KINSHIP.values()) == 509
+
+    # batch 0's four SON_OF edges (prod and staging held different phases, REL-10): one row each
+    by_key = {_key(r): r for r in rows}
+    for key, primary in ((("person:yage", "SON_OF", "person:yisa"), ("llm", 4, "gen:28:1", None)),
+                         (("person:bianyamin", "SON_OF", "person:yage"), ("llm", 4, "gen:35:1", None)),
+                         (("person:bianyamin", "SON_OF", "person:lajie"), ("llm", 4, "gen:35:1", None)),
+                         (("person:dawei", "SON_OF", "person:yexi"), ("anchored_rule", 6, "1ch:29:2", 26))):
+        row = by_key[key]
+        assert (row["source"], row["extraction_phase"], row["source_pericope_id"], row.get("verse")) == primary
+        assert row["sources"] == [primary[0]]
+
+    # R6 and the 8 shipped relation probes, scored by validate_kg on the edges left after 10.2
+    kept = _after_10_2(rows, report)
+    probes = yaml.safe_load((ROOT / "config" / "kg_probes.yaml").read_text(encoding="utf-8"))
+    kg = KG(mode="snapshot", relations=[{"head": r["head_id"], "type": r["relation"], "tail": r["tail_id"]}
+                                        for r in kept])
+    ctx = Context(baseline={}, probes=probes)
+    r6 = check_r6(kg, ctx)
+    assert r6.metrics == {"probe_failures": 0, "failing_probes": [], "contradictions": 0, "female_head": 0,
+                          "functional_violation_rate": 0.0638}
+    assert (sum(r["relation"] == "FATHER_OF" for r in kept), r6.detail["children"],
+            r6.detail["children_with_2plus_fathers"]) == (50, 47, 3)
+    relation_probes = {fact["id"] for fact in probes["facts"] if fact["kind"] == "relation"}
+    assert len(relation_probes) == 8
+    assert [p["id"] for p in evaluate_probes(kg, ctx) if p["id"] in relation_probes and not p["passed"]] == []
+
+    # every parent encoding: children with 2+ non-female parents 135 of 262 -> 8 of 383, with >2
+    # parents 87 -> 1 (none mode after 10.2 is the batch-0 staging graph; live gives the same figures)
+    female = set(probes["female_persons"])
+    assert _parents(_after_10_2(*none_run), female) == (262, 135, 87)
+    assert _parents(kept, female) == (383, 8, 1)
 
 
 @pytest.mark.skipif(not _inputs_present(), reason="output/ JSONL artifacts are not present")

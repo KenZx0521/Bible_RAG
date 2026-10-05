@@ -36,7 +36,7 @@ import yaml
 from relation_extraction import anchored_rules
 from relation_extraction import relation_policy as policy
 from relation_extraction import relation_postprocess as pp
-from relation_extraction.relation_policy import SOURCE_RANK, parent_child, rank, source_of
+from relation_extraction.relation_policy import parent_child
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "relation_postprocess"
@@ -96,7 +96,7 @@ def test_none_mode_projects_back_to_input_rows():
     assert {r["pp_version"] for r in rows} == {pp.pp_version()}
     assert report["rules"] == {"mode": "none", "ran": []}
     assert report["flow"] == {"input": 9, "drops": {}, "drops_due_to_dan_filter": {}, "anchored": {},
-                              "flagged": {}, "output": 9}
+                              "flagged": {}, "collapsed_keys": {}, "output": 9}
     assert report["conflicts"] == []
 
 
@@ -282,7 +282,7 @@ def _anchored_row(head: str, relation: str, tail: str, pattern: str, pid: str, v
     return {"head_id": head, "relation": relation, "tail_id": tail, "source": "anchored_rule",
             "extraction_phase": 6, "notes": pattern, "source_pericope_id": pid, "verse": verse,
             "evidence_span": text, "head_canonical": names[head], "tail_canonical": names[tail],
-            "support_pericopes": support, "evidence_count": evidence_count}
+            "support_pericopes": support, "evidence_count": evidence_count, "sources": ["anchored_rule"]}
 
 
 def _key_set_sha256(rows) -> str:
@@ -539,11 +539,11 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
 
     # an id-order relation (directed, one type at both ends, no direction pair) reads only by
     # head/tail order, and the LLM's rows have their ends in id order: 加利利 LOCATED_IN 拿撒勒
-    # reverses the prior (路 1:26) and goes; every other llm row is kept unverified, the
-    # fixture's own 拿撒勒 LOCATED_IN 加利利 too, and an llm pair in both orders stays whole
+    # reverses the prior (路 1:26) and goes; every other llm row is kept unverified, and an llm
+    # pair in both orders stays whole. The fixture's own 拿撒勒 LOCATED_IN 加利利 (llm, flagged)
+    # states the prior's key, so it folds into that row and the prior's verified direction stands
     assert flags == {
         ("place:nasalei", "LOCATED_IN", "place:jialili", "prior"): True,
-        ("place:nasalei", "LOCATED_IN", "place:jialili", "llm"): False,
         ("person:tala", "SUCCEEDED_BY", "person:nahe", "llm"): False,
         ("person:nahe", "SUCCEEDED_BY", "person:tala", "llm"): False,
         ("person:moxi", "SUCCEEDED_BY", "person:yalun", "curated"): True}
@@ -551,6 +551,7 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
                                                                     for r in rows}
     assert report["flow"]["drops"]["contradicts_prior"] == {"LOCATED_IN": 1}
     assert report["flow"]["flagged"] == {"LOCATED_IN": 1, "SUCCEEDED_BY": 2}
+    assert [r["sources"] for r in rows if r["head_id"] == "place:nasalei"] == [["llm", "prior"]]
     ran = report["rules"]["ran"]
     assert ran.index("provenance_gate") < ran.index("flag_id_order")
 
@@ -714,23 +715,78 @@ def test_conflict_log_is_deterministic(tmp_path):
     assert results[0][3] == [given[4]]
 
 
-# --- relation_policy ------------------------------------------------------------
+# --- collapse_by_key (REL-10, SON_OF onCreate-only part 1) ----------------------
 
-def test_source_rank_orders_curated_prior_llm_anchored():
-    assert SOURCE_RANK == {"curated": 0, "prior": 1, "llm": 2, "anchored_rule": 3}
-    assert rank({"source": "prior"}) < rank({"extraction_phase": 4}) < rank({"source": "anchored_rule"})
-
-
-@pytest.mark.parametrize("row", [{"source": "inverse"}, {"extraction_phase": 2}, {"extraction_phase": 1},
-                                 {"extraction_phase": 5, "notes": "cooccurrence-backfill"}])
-def test_rank_fails_fast_on_an_unranked_source(row):
-    with pytest.raises(ValueError, match="rank"):
-        rank(row)
+def _triple(row: dict) -> tuple[str, str, str]:
+    return row["head_id"], row["relation"], row["tail_id"]
 
 
-def test_source_of_and_parent_child_read_a_row():
-    assert source_of({"extraction_phase": 5, "notes": "derived_from=SON_OF"}) == "inverse"
-    assert source_of({"source": "curated", "extraction_phase": 3}) == "curated"
-    assert parent_child({"head_id": "a", "relation": "SON_OF", "tail_id": "b"}) == ("b", "a")
-    assert parent_child({"head_id": "a", "relation": "MOTHER_OF", "tail_id": "b"}) == ("a", "b")
-    assert parent_child({"head_id": "a", "relation": "SPOUSE_OF", "tail_id": "b"}) is None
+def test_duplicate_key_raises(tmp_path, monkeypatch):
+    shutil.copytree(FIXTURE, tmp_path / "in")
+    # the llm also gives 革順 SON_OF 利未 (gen:46:0), a key the anchored rule makes from 1ch 6:1 and gen 46:11
+    _append_jsonl(tmp_path / "in" / "relations.jsonl",
+                  [_row("person:geshun", "SON_OF", "person:liwei", 4, source_pericope_id="gen:46:0")])
+    paths = _paths(tmp_path / "in")
+    # 6.1 makes one edge per key: a key the rules leave twice stops the run before anything is written
+    with monkeypatch.context() as patch:
+        patch.setattr(pp, "RULES", tuple(rule for rule in pp.RULES if rule[0] != "collapse_by_key"))
+        with pytest.raises(ValueError, match="person:geshun SON_OF person:liwei"):
+            _run("all", paths)
+
+    # collapse_by_key leaves one row per key: the llm row is primary (it outranks the anchored rule)
+    # with its own fields, and the support is every row's: 1 llm item and the 2 anchored hits
+    rows, report = _run("all", paths)
+    assert len(rows) == len({_triple(r) for r in rows})
+    [row] = [r for r in rows if _triple(r) == ("person:geshun", "SON_OF", "person:liwei")]
+    assert (row["source"], row["source_pericope_id"], row.get("verse")) == ("llm", "gen:46:0", None)
+    assert (row["sources"], row["support_pericopes"], row["evidence_count"]) == (
+        ["anchored_rule", "llm"], ["1ch:6:0", "gen:46:0"], 3)
+    assert report["flow"]["collapsed_keys"] == {"anchored_rule+llm": 1}
+    ran = report["rules"]["ran"]
+    assert ran.index("dedup_undirected") < ran.index("collapse_by_key")
+
+
+def _anchored(head: str, relation: str, tail: str, pid: str, verse: int, support: list[str], count: int) -> dict:
+    return _row(head, relation, tail, 6, source="anchored_rule", source_pericope_id=pid, verse=verse,
+                support_pericopes=support, evidence_count=count)
+
+
+def test_batch0_son_of_rows_have_fixed_primary():
+    # batch 0: prod held these four SON_OF edges as an older run's R5 copy (phase 5, no pericope) that
+    # 6.1's onCreate-only SET never refreshed, staging as relations.jsonl has them now (REL-10). 6.05
+    # hands 6.1 one row per key, the same in any input order: drop_inverse removes an R5 copy and
+    # collapse_by_key keeps a key's best-ranked row, W1's multi-source keys too (a prior or the llm
+    # outranks the anchored row of its key)
+    inputs, cfg = pp.load_inputs(_paths())
+    given = [pp.base_stamp(r, cfg) for r in (
+        _row("person:yage", "SON_OF", "person:yisa", 4, source_pericope_id="gen:28:1"),
+        _row("person:yage", "SON_OF", "person:yisa", 5, source_pericope_id="", notes="derived_from=FATHER_OF"),
+        _row("person:bianyamin", "SON_OF", "person:yage", 4, source_pericope_id="gen:35:1"),
+        _row("person:bianyamin", "SON_OF", "person:lajie", 4, source_pericope_id="gen:35:1"),
+        _anchored("person:dawei", "SON_OF", "person:yexi", "1ch:29:2", 26, ["1ch:29:2", "luk:3:2"], 2),
+        _row("person:yexi", "FATHER_OF", "person:dawei", 3, source_pericope_id=""),
+        _row("person:anlan", "FATHER_OF", "person:moxi", 3, source_pericope_id=""),
+        _anchored("person:anlan", "FATHER_OF", "person:moxi", "num:26:0", 59, ["num:26:0"], 1),
+        _row("person:anan", "SON_OF", "person:shuoba", 4, source_pericope_id="1ch:1:3"),
+        _anchored("person:anan", "SON_OF", "person:shuoba", "1ch:1:3", 40, ["1ch:1:3", "gen:36:1"], 2))]
+    results = []
+    for shift in range(len(given)):
+        flow = pp.Flow()
+        kept = pp.drop_inverse(given[shift:] + given[:shift], inputs, cfg, flow)
+        results.append((pp.collapse_by_key(kept, inputs, cfg, flow), flow.collapsed))
+    assert all(result == results[0] for result in results)
+    rows, collapsed = results[0]
+    assert [(*_triple(r), r["source"], r["extraction_phase"], r["source_pericope_id"], r.get("verse"))
+            for r in rows] == [
+        ("person:anan", "SON_OF", "person:shuoba", "llm", 4, "1ch:1:3", None),
+        ("person:anlan", "FATHER_OF", "person:moxi", "prior", 3, "", None),
+        ("person:bianyamin", "SON_OF", "person:lajie", "llm", 4, "gen:35:1", None),
+        ("person:bianyamin", "SON_OF", "person:yage", "llm", 4, "gen:35:1", None),
+        ("person:dawei", "SON_OF", "person:yexi", "anchored_rule", 6, "1ch:29:2", 26),
+        ("person:yage", "SON_OF", "person:yisa", "llm", 4, "gen:28:1", None),
+        ("person:yexi", "FATHER_OF", "person:dawei", "prior", 3, "", None)]   # the other encoding: its own key
+    assert [(r["sources"], r["support_pericopes"], r["evidence_count"]) for r in rows] == [
+        (["anchored_rule", "llm"], ["1ch:1:3", "gen:36:1"], 3), (["anchored_rule", "prior"], ["num:26:0"], 2),
+        (["llm"], ["gen:35:1"], 1), (["llm"], ["gen:35:1"], 1), (["anchored_rule"], ["1ch:29:2", "luk:3:2"], 2),
+        (["llm"], ["gen:28:1"], 1), (["prior"], [], 1)]
+    assert collapsed == {"anchored_rule+llm": 1, "anchored_rule+prior": 1}

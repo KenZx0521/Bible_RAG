@@ -106,6 +106,49 @@ def dedup_undirected(rows: Sequence[dict], schema: RelationSchema) -> tuple[list
     return kept, dropped
 
 
+def collapse_by_key(rows: Sequence[dict]) -> tuple[list[dict], list[dict]]:
+    """One row per (head_id, relation, tail_id): (the rows, in key order; those made of two or more).
+
+    The key's preferred row is its primary, and its fields stand: source,
+    pericope, verse, evidence span and direction_verified (a prior that states
+    the key verifies the llm row that repeats it). Every row adds its support
+    (_support_of): sources, support_pericopes and evidence_count, which each
+    output row carries, a single row's key too.
+    """
+    groups: dict[tuple[str, str, str], list[dict]] = {}
+    for row in rows:
+        groups.setdefault((row["head_id"], row["relation"], row["tail_id"]), []).append(row)
+    collapsed, merged = [], []
+    for _, group in sorted(groups.items()):
+        row = {**min(group, key=preference), **_support_of(group)}
+        collapsed.append(row)
+        if len(group) > 1:
+            merged.append(row)
+    return collapsed, merged
+
+
+def _support_of(group: Sequence[Mapping]) -> dict:
+    """sources and support_pericopes (sorted, unique) and evidence_count over the rows of one key.
+
+    support_pericopes holds each row's source_pericope_id and an anchored row's
+    own support_pericopes (every hit's pericope). evidence_count counts the
+    distinct (source, pericope, verse) items; a row that already counted its
+    evidence, the key's one anchored row (its hits' distinct (pericope, verse)),
+    adds that count.
+    """
+    pericopes, items, counted = set(), set(), 0
+    for row in group:
+        pericopes.update(row.get("support_pericopes") or ())
+        if row.get("source_pericope_id"):
+            pericopes.add(row["source_pericope_id"])
+        if "evidence_count" in row:
+            counted += row["evidence_count"]
+        else:
+            items.add((source_of(row), row.get("source_pericope_id") or "", row.get("verse")))
+    return {"sources": sorted({source_of(row) for row in group}), "support_pericopes": sorted(pericopes),
+            "evidence_count": len(items) + counted}
+
+
 def _brief(row: Mapping) -> dict:
     return {**{key: row.get(key) for key in BRIEF_KEYS}, "source": source_of(row)}
 
