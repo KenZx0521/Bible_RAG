@@ -338,7 +338,7 @@
       "title": "relation provenance complete: every edge has a source; no inverse, rule, co-occurrence or LLM Event–Event edge; LLM id-order edges flagged; one row per undirected pair",
       "severity": "hard",
       "hard_from": "1A",
-      "plan_reference": "co-occurrence 9,060 / inverse 756 / rule 771 / LLM Event–Event 26 -> 0 (batch-1 plan §0.1); source_null 15,926 (W1 gate table)",
+      "plan_reference": "co-occurrence 9,060 / inverse 756 / rule 771 / LLM Event–Event 26 -> 0; source_null 15,926 = every live semantic edge (語意邊總數) -> 0 (batch-1 plan §0.1; target 0 in the §2.1 閘門 table)",
       "query": "Entity-Entity edges; source is r.source, else derived from extraction_phase/notes/backfilled for legacy rows (models.derive_source). source_null: no r.source; inverse_edges: source inverse; cooccurrence_edges: source cooccurrence or backfilled true; rule_edges: source rule; llm_event_event_edges: source llm with both ends labelled Event; unflagged_id_order_edges: type in the schema's id_order_relations() (directed, one type at both ends, in no direction_pairs entry), source not prior or curated, direction_verified not false; undirected_pair_duplicates: rows beyond the first per (undirected relation, {head, tail}), summed",
       "metrics": {
         "source_null": {

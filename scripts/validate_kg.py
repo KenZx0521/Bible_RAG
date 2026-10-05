@@ -27,6 +27,8 @@ write each check back to its own file):
   warn    report only (W: label/relationship counts drifting > ±tolerance_pct)
 A metric's own "severity" (hard|record) overrides its check's for that metric,
 e.g. a record ratchet inside a hard check: it regresses (exit 2), never fails.
+Loading the baseline rejects a hard metric without a target (or target_from),
+a target_from metric that is not hard, and a metric severity in a warn check.
 Hard checks per batch (`hard_from` holds the batch; on a record check, the
 batch at which it is planned to become hard):
   0    H1, H2, H7, D1
@@ -35,7 +37,9 @@ batch at which it is planned to become hard):
   1B   H8, R4, R11
 Prod fails the 1A and 1B checks until the W1 promotion (H11: every prod edge
 predates the source property; H8: no prod CROSS_REFERENCES carries the curated
-and tsk flags yet), so gate staging before that.
+and tsk flags yet), and batch 0's H1 as well (prod lacks the :Entity(entity_id)
+uniqueness constraint; the W1 dump carries staging's), so gate staging before
+that.
 A check that raised (error), or a metric that came back None without a
 declared reason (unmeasured), exits 1 whatever its severity: a check that did
 not run never passes. Declared n/a (D1 and H5 on a snapshot; R3 all-forms and

@@ -109,11 +109,15 @@ def check_r3(kg: KG, ctx: Context) -> CheckResult:
 
 
 def _verses(spec: str | None) -> list[int] | None:
-    """'5' / '8-9' / '10-12, 14' -> verse numbers; None when unparseable."""
+    """'5' / '8-9' / '10-12, 14' -> verse numbers; None when unparseable. A
+    descending part ('5,9-5') makes the whole spec unparseable, as '9-5'
+    alone is, instead of dropping out of the list."""
     out: list[int] = []
     for part in (spec or "").replace("，", ",").split(","):
         bounds = [b for b in part.strip().split("-") if b]
         if not bounds or not all(b.isdigit() for b in bounds):
+            return None
+        if int(bounds[0]) > int(bounds[-1]):
             return None
         out.extend(range(int(bounds[0]), int(bounds[-1]) + 1))
     return out or None
@@ -190,7 +194,7 @@ def check_r4(kg: KG, ctx: Context) -> CheckResult:
     return CheckResult({name: len(edges) for name, edges in hits.items()},
                        {"supplementary": len(supplementary),
                         "legacy_fields": sum(1 for x in supplementary if not x.supp_anchors)},
-                       [{name: edges[:10]} for name, edges in hits.items() if edges])
+                       [{name: sorted(edges)[:10]} for name, edges in hits.items() if edges])
 
 
 @check("R5")
@@ -312,7 +316,8 @@ def check_r10(kg: KG, ctx: Context) -> CheckResult:
 @check("R11", needs=("cross_references.jsonl",))
 def check_r11(kg: KG, ctx: Context) -> CheckResult:
     # Step 9 writes tsk and votes together (1B-C6a): a tsk flag without votes is a broken write.
-    unbacked = [f"{x.src}->{x.tgt}" for x in kg.xrefs if x.tsk is True and x.votes is None]
+    # Samples are sorted before the cap: live reads the edges in Neo4j's return order.
+    unbacked = sorted(f"{x.src}->{x.tgt}" for x in kg.xrefs if x.tsk is True and x.votes is None)
     return CheckResult({"tsk_votes_edges": sum(1 for x in kg.xrefs if x.votes is not None),
                         "tsk_flag_without_votes": len(unbacked)}, {},
                        [{"tsk_flag_without_votes": unbacked[:10]}] if unbacked else [])

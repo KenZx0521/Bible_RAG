@@ -41,7 +41,7 @@
         "at": "2026-10-04",
         "origin": "live:prod (bolt://localhost:7687)"
       },
-      "ids_note": "failing ids = the probes kg_probes.yaml marks 'fails today'; their count equals the 2026-10-04 live failures, a live run reports any id that disagrees as new/fixed"
+      "ids_note": "failing ids = the probes that failed on the 2026-10-04 live prod run, all marked 'fails today' in kg_probes.yaml. Probes added later that also say 'fails today' (1A's kin-esau-father-of-jalam, edge-no-dan-near-jordan and edge-no-galilee-in-nazareth; 1B's nine xref probes) are kept out on purpose: they must pass on W1 and are never --accept'ed in, so every live run before W1 reports them as PROBES new; any other id that disagrees is reported as new/fixed"
     },
     {
       "id": "W",

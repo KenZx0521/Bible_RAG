@@ -123,6 +123,14 @@ def test_shipped_probes_cover_the_1a_facts():
     assert _results_1a((*W1_EDGES, *LIUER_AS_JETHRO)) == {pid: pid not in LIUER_GUARDS for pid in PROBES_1A}
 
 
+def test_1a_fail_today_probes_stay_out_of_the_stored_ids():
+    # kg_probes.yaml header, PROBES/R6 ids_note: they must pass once W1 is
+    # loaded and are never --accept'ed in (every pre-W1 run reports them new)
+    by_id = {c["id"]: c["metrics"] for c in vk.load_baseline(SHIPPED_BASELINE)["checks"]}
+    stored = set(by_id["PROBES"]["failing"]["value"]) | set(by_id["R6"]["failing_probes"]["value"])
+    assert not stored & FAIL_TODAY_1A
+
+
 # ---------------------------------------------------------------------------
 # the split baseline layout
 # ---------------------------------------------------------------------------

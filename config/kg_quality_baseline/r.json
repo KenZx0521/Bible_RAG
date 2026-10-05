@@ -194,7 +194,7 @@
         "at": "2026-10-05",
         "origin": "live:prod (bolt://localhost:7687)"
       },
-      "ids_note": "failing ids = the probes kg_probes.yaml marks 'fails today'; their count equals the 2026-10-04 live failures, a live run reports any id that disagrees as new/fixed",
+      "ids_note": "failing ids = the R6 probes that failed on the 2026-10-04 live prod run, all marked 'fails today' in kg_probes.yaml; 1A's kin-esau-father-of-jalam, added later and also marked so, is kept out on purpose (see PROBES.ids_note). R6 is hard from 1A, so its new/fixed are relative to the target [], not to these ids: every failing id prints as new and fixed stays []. PROBES (record) compares with its stored ids, so a healed id shows in PROBES.fixed",
       "severity_note": "K3 (batch-1 plan §2.1, §7): hard from 1A for the probes, contradictions and female_head; the functionality readings (functional_violation_rate, the every-encoding multi-parent counts) carry severity record, ratchets that must not regress: the 0.05 target is kept for reference, reaching it is deferred-A (same-name merges)"
     },
     {

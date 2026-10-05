@@ -242,10 +242,14 @@ def test_r4_legacy_fields_fallback(snap, source_verses, target_verses, expected)
 
 
 @pytest.mark.parametrize("anchors", [["heb 1:5 psa 2:7"], ["heb 1:5>psa 2:?"], ["heb 1:5>psa 2:7>psa 2:8"],
-                                     ["heb1:5>psa 2:7"], ["heb 1:5>psa 2:7", "heb 1:5"], []],
-                         ids=["no_arrow", "unknown_verse", "three_ends", "no_space", "second_anchor", "empty"])
+                                     ["heb1:5>psa 2:7"], ["heb 1:5>psa 2:7", "heb 1:5"], [],
+                                     ["heb 1:5,9-5>psa 2:7"]],
+                         ids=["no_arrow", "unknown_verse", "three_ends", "no_space", "second_anchor", "empty",
+                              "descending_subrange"])
 def test_r4_unparsed_anchor(snap, anchors):
-    # an empty list falls back to the legacy scalars, which a 1B row lacks
+    # an empty list falls back to the legacy scalars, which a 1B row lacks; a
+    # descending part makes the whole verse list unreadable, as '9-5' alone
+    # does, instead of being dropped (heb 1:5 alone would read as aligned)
     _anchors(snap, *anchors)
     assert _r4(snap) == (0, 0, 1)
 
@@ -333,6 +337,24 @@ def test_r11_equal_rejects_extra_tsk_edges(snap, tmp_path, capsys):
     assert (m["value"], m["target"], m["status"]) == (2, 1, "fail")
 
 
+def test_xref_samples_are_the_first_ten_sorted(snap):
+    # Live reads CROSS_REFERENCES in Neo4j's return order (no ORDER BY), so H8,
+    # R4 and R11 sort their samples before the cap of 10: the same violations
+    # list alike on every run. 11 of each, appended in reverse order.
+    targets = [f"psa:{n}:0" for n in range(30, 19, -1)]  # no such pericopes: R4 cannot read them
+    for tgt in targets:
+        append_row(snap / "cross_references.jsonl",
+                   {**NEW_TSK, "target_id": tgt, "curated": False, "tsk": True, "votes": None})
+        append_row(snap / "cross_references.jsonl",
+                   {"source_id": SUPP[0], "target_id": tgt, **_curated("supplementary", "heb 1:5>psa 2:7", None)})
+    tsk = sorted(f"{NEW_TSK['source_id']}->{tgt}" for tgt in targets)[:10]
+    supp = sorted(f"{SUPP[0]}->{tgt} heb 1:5>psa 2:7" for tgt in targets)[:10]
+    results = measure(snap)
+    assert results["R11"].samples == [{"tsk_flag_without_votes": tsk}]
+    assert results["H8"].samples == [{"flag_mismatch": tsk}]
+    assert results["R4"].samples == [{"unparsed": supp}]
+
+
 # ---------------------------------------------------------------------------
 # kg_probes.yaml: the 1B pairs
 # ---------------------------------------------------------------------------
@@ -391,3 +413,10 @@ def test_new_xref_probes_discriminate():
     assert _new_probe_results(LIVE_PAIRS) == {pid: pid == DELETION_GUARD for pid in NEW_PROBES}
     assert _new_probe_results(W1_PAIRS) == dict.fromkeys(NEW_PROBES, True)
     assert _new_probe_results([*W1_PAIRS, UNDELETED]) == {pid: pid != DELETION_GUARD for pid in NEW_PROBES}
+
+
+def test_new_xref_probes_stay_out_of_the_stored_ids():
+    # kg_probes.yaml header, PROBES.ids_note: the nine must pass once W1 is
+    # loaded and are never --accept'ed in (every pre-W1 run reports them new)
+    probes = next(c for c in vk.load_baseline(SHIPPED_BASELINE)["checks"] if c["id"] == "PROBES")
+    assert not set(probes["metrics"]["failing"]["value"]) & set(NEW_PROBES)

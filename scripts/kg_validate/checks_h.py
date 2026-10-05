@@ -166,9 +166,10 @@ H8_RULES = {
 @check("H8", needs=("cross_references.jsonl",))
 def check_h8(kg: KG, ctx: Context) -> CheckResult:
     hits = {name: [x for x in kg.xrefs if rule(x)] for name, rule in H8_RULES.items()}
+    # Samples are sorted before the cap: live reads the edges in Neo4j's return order.
     return CheckResult({name: len(xs) for name, xs in hits.items()},
                        {"by_source": {name: dict(Counter(x.source for x in xs)) for name, xs in hits.items()}},
-                       [{name: [f"{x.src}->{x.tgt}" for x in xs[:10]]} for name, xs in hits.items() if xs])
+                       [{name: sorted(f"{x.src}->{x.tgt}" for x in xs)[:10]} for name, xs in hits.items() if xs])
 
 
 @check("H9", needs=("relations.jsonl",))
@@ -204,9 +205,11 @@ def _h11_row_tests(kg: KG, id_order: frozenset[str]) -> dict[str, Callable[[dict
     """H11's per-edge metrics, in report order: name -> does this edge count.
 
     6.05 stamps a source on every row and retires the R5 inverses, the R2
-    rule edges (anchored_rule replaces them), 10.3's co-occurrence edges and
-    the LLM's Event–Event edges; an LLM row of an id-order relation (only its
-    head/tail order gives a direction) must carry direction_verified false.
+    rule edges (anchored_rule replaces them) and the LLM's Event–Event edges;
+    10.3's co-occurrence edges are out of the default chain (opt-in
+    --legacy-cooccurrence, which runs after 6.05/6.1, so 6.05 never sees
+    them); an LLM row of an id-order relation (only its head/tail order gives
+    a direction) must carry direction_verified false.
     """
     return {
         "source_null": lambda r: not r["source"],

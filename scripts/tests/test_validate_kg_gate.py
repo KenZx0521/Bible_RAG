@@ -243,6 +243,29 @@ def test_metric_severity_must_be_hard_or_record(tmp_path, severity, loads):
             vk.load_baseline(path)
 
 
+@pytest.mark.parametrize("check_id,name,severity,loads", [
+    ("H7", "embedding_queue_sha256", "hard", True),
+    # record compares with the stored value, which a target_from metric never has: any sha would pass
+    ("H7", "embedding_queue_sha256", "record", False),
+    ("R6", "female_head", "hard", True),
+    # its target is null: a hard metric with no target could never fail
+    ("R6", "children_with_gt2_parents", "hard", False),
+    # W is warn (report only, tolerance_pct): a metric severity there would do nothing
+    ("W", "histogram", "hard", False),
+    ("W", "histogram", "record", False),
+], ids=["sha_hard", "sha_record", "hard_with_target", "hard_without_target", "warn_hard", "warn_record"])
+def test_metric_severity_must_leave_the_metric_a_bound(tmp_path, check_id, name, severity, loads):
+    doc = vk.load_baseline(SHIPPED_BASELINE)
+    next(c for c in doc["checks"] if c["id"] == check_id)["metrics"][name]["severity"] = severity
+    path = tmp_path / "baseline.json"
+    path.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    if loads:
+        assert vk.load_baseline(path) == doc
+    else:
+        with pytest.raises(ValueError, match=f"{check_id}.{name}"):
+            vk.load_baseline(path)
+
+
 def test_record_check_error_fails_the_gate(snap, tmp_path, capsys, monkeypatch):
     baseline = fresh_baseline(tmp_path, snap)
     cli(snap, baseline, capsys, "--ratchet")

@@ -11,6 +11,11 @@
 # ids, so each fix batch turns its probes green one by one. A new probe that
 # fails today enters the baseline only through `validate_kg --accept PROBES`
 # (or R6), a reviewed approval: --ratchet never adds a failure.
+# The probes W1 added that say "fails today" (1A's kin-esau-father-of-jalam,
+# edge-no-dan-near-jordan, edge-no-galilee-in-nazareth; 1B's nine xref
+# probes) are kept out of the stored ids on purpose: they must pass once W1
+# is loaded and are never --accept'ed in, so every live run before W1 (prod,
+# the batch-0 staging) reports these 12 as PROBES new.
 #
 # Fact kinds (expect: present | absent, except book_region):
 #   relation      head, rel, tail            (head)-[rel]->(tail) between entities

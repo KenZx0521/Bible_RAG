@@ -105,12 +105,29 @@ def _read_doc(path: Path) -> dict:
             source = (m.get("target_from") or "").partition(":")[0]
             if m.get("direction") not in DIRECTIONS or (source and source not in TARGET_SOURCES):
                 raise ValueError(f"{path}: {check['id']}.{name} has an unknown direction or target_from")
-            if "severity" in m and m["severity"] not in METRIC_SEVERITIES:
-                raise ValueError(f"{path}: {check['id']}.{name} has severity {m['severity']!r}; "
-                                 f"a metric may only be {' or '.join(METRIC_SEVERITIES)}")
+            _check_severity(path, check, name, m)
             if "count_of" in m:
                 _check_count(path, check, name, m)
     return doc
+
+
+def _check_severity(path: Path, check: dict, name: str, m: dict) -> None:
+    """The metric's severity (its own, else its check's) must leave the gate a
+    bound to hold it to: hard scores against target or target_from, record
+    against the stored value, which a target_from metric never has, and a warn
+    check is report only, so a metric severity there would do nothing."""
+    where = f"{path}: {check['id']}.{name}"
+    if "severity" in m and m["severity"] not in METRIC_SEVERITIES:
+        raise ValueError(f"{where} has severity {m['severity']!r}; "
+                         f"a metric may only be {' or '.join(METRIC_SEVERITIES)}")
+    if "severity" in m and check["severity"] == "warn":
+        raise ValueError(f"{where} has a severity in warn check {check['id']}, which is report only")
+    severity = m.get("severity", check["severity"])
+    if m.get("target_from") and severity != "hard":
+        raise ValueError(f"{where} has target_from and severity {severity!r}; "
+                         "a target_from metric must be hard (its value is never stored)")
+    if severity == "hard" and m.get("target") is None and not m.get("target_from"):
+        raise ValueError(f"{where} is hard; a hard metric needs target or target_from")
 
 
 def _check_count(path: Path, check: dict, name: str, m: dict) -> None:

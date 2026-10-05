@@ -8,7 +8,10 @@ Metric statuses:
   n/a         value None for a reason the check declared (e.g. D1 on a snapshot)
 A metric is hard or record by its own "severity" when the baseline gives one,
 else by its check's; the check takes its worst metric status (_PRECEDENCE), so
-a record metric inside a hard check regresses (exit 2) and never fails.
+a record metric inside a hard check regresses (exit 2) and never fails. Every
+scored metric has a bound: load rejects a hard metric without a target (or
+target_from), a target_from metric that is not hard, and a metric severity in
+a warn check (registry._check_severity).
 Exit code: 1 when any non-warn check is fail, unmeasured or error; else 2 when
 any regressed; else 0.
 """
