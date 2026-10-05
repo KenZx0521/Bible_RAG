@@ -10,8 +10,11 @@ row is [id, hop, curated, weight] as the returned candidate carries it, so the
 retriever call sites (the XREF-3 weights) are measured, not re-implemented.
 Logging goes to stderr. Compare with `xref_probe compare --pred P --measured M`.
 
-Every Neo4j session is opened with READ_ACCESS, so the server rejects any
-write. Postgres is never queried: get_content_by_id is stubbed for the run.
+Every Neo4j session is opened with READ_ACCESS, so session.run (the only form
+neo4j_db uses; a test pins it) and begin_transaction are read-only on the
+server. execute_write would still open a WRITE transaction, so neither the
+probe nor neo4j_db calls it. Postgres is never queried: get_content_by_id is
+stubbed for the run.
 Both swaps replace module attributes, which is safe only in this process:
 never import this module from the app.
 

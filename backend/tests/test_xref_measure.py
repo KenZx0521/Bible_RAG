@@ -9,6 +9,8 @@ real stores are only touched by the acceptance runs.
 import asyncio
 import io
 import json
+import re
+from pathlib import Path
 
 import neo4j
 import pytest
@@ -22,6 +24,7 @@ SEEDS = {"version": 1, "questions_sha256": "0" * 64,
          "singles": ["jer:29:0", "rom:8:1"], "sets": {"GENERAL_001": ["rom:8:1", "jer:29:0"]}}
 KEYS = ["legacy:jer:29:0", "legacy:rom:8:1", "q:GENERAL_001", "single:jer:29:0", "single:rom:8:1"]
 NEIGHBOUR = {"id": "isa:55:0", "hop_distance": 1, "curated": False, "votes": 1130}
+ROUTER = Path(__file__).resolve().parents[1] / "utils" / "retrieval" / "router.py"
 
 
 class FakeResult:
@@ -115,6 +118,40 @@ def test_measure_goes_through_the_retrievers(monkeypatch, driver):
     assert ("multi_hop", ["rom:8:1"], 2, 10) in calls
     assert ("legacy", "rom:8:1", 10) in calls
     assert ("multi_hop", ["rom:8:1", "jer:29:0"], 2, 10) in calls
+
+
+def test_params_follow_the_router_settings(monkeypatch, driver):
+    """RAG_CROSS_REF_MAX_HOPS / RAG_CROSS_REF_EXPAND_LIMIT reach the probe as they reach the router."""
+    calls = []
+
+    async def multi_hop(ids, max_hops=2, limit=30):
+        calls.append(("multi_hop", list(ids), max_hops, limit))
+        return [dict(NEIGHBOUR)]
+
+    monkeypatch.setattr(neo4j_db, "get_cross_references_multi_hop", multi_hop)
+    monkeypatch.setattr(settings, "rag_cross_ref_max_hops", 3)
+    monkeypatch.setattr(settings, "rag_cross_ref_expand_limit", 7)
+
+    doc = asyncio.run(xref_measure.measure(SEEDS))
+
+    assert doc["params"] == {"max_hops": 3, "limit": 7}
+    assert ("multi_hop", ["rom:8:1"], 3, 7) in calls
+
+
+def test_legacy_top_k_is_the_router_literal():
+    """LEGACY_TOP_K copies the router's legacy call; every call site must still pass it."""
+    calls = re.findall(r"\bretrieve_cross_references\(([^)]*)\)", ROUTER.read_text(encoding="utf-8"))
+
+    assert calls == [f"source_ids, top_k={xref_measure.LEGACY_TOP_K}"]
+
+
+def test_neo4j_db_runs_queries_only_through_session_run():
+    """READ_ACCESS binds session.run and begin_transaction, not execute_write: the
+    probe's read-only claim holds only while neo4j_db calls nothing else."""
+    source = Path(neo4j_db.__file__).read_text(encoding="utf-8")
+
+    assert set(re.findall(r"\bsession\.(\w+)\(", source)) == {"run"}
+    assert not re.search(r"\b(execute_write|write_transaction)\b", source)
 
 
 def test_postgres_is_stubbed_and_restored(monkeypatch, driver):
