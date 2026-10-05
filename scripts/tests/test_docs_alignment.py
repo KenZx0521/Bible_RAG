@@ -68,6 +68,7 @@ HELP_ARGV = {
     "kin_review": [PY, "scripts/tools/kin_review.py", "--help"],
     "relations_expect": [PY, "scripts/tools/relations_expect.py", "--help"],
     "residuals_expect": [PY, "scripts/tools/residuals_expect.py", "--help"],
+    "check_w1_registration": [PY, "scripts/tools/check_w1_registration.py", "--help"],
 }
 _SCRIPT_RE = re.compile(r"\b(" + "|".join(sorted(HELP_ARGV, key=len, reverse=True)) + r")(?:\.py)?\b")
 _FLAG_RE = re.compile(r"(?<![\w-])(--[a-z][a-z0-9-]*)")
@@ -407,10 +408,11 @@ def test_r2_merges_the_w1_fragments_at_the_yaml_level_before_the_rebuild():
     r2 = section(staging_text(), "R2")
     commands = _commands(r2)
     merge = " ".join(commands[_first(commands, "diff_kg.py --merge-out")].split())
-    assert merge.endswith("diff_kg.py --merge-out config/kg_diff_allow_batch1w1.yaml " + " ".join(
+    assert merge.endswith("diff_kg.py --merge-out config/kg_diff_allow_batch1w1.yaml --sha-out "
+                          "config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256 " + " ".join(
         f"--allow config/kg_expect/batch1_w1/{name}" for name in W1_FRAGMENTS)), merge
     for needle in ("不可用 `cat` 串接", "條數等於各片段之和", "sha256 記進 W1 紀錄", "第 2 步（staging 重建）之前",
-                   "第 1 批起預先登錄，不依 R2 的 diff 建立"):
+                   "第 1 批起預先登錄，不依 R2 的 diff 建立", "`sha256sum -c config/kg_expect/batch1_w1/"):
         assert needle in r2, needle
     assert "片段串接而成" not in r2 and "R2 時依實際 diff 建立，與該批紀錄一起 commit" not in r2
     help_words = " ".join(help_text("diff_kg").split())

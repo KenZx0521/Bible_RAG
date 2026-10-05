@@ -56,7 +56,12 @@ fragment, joins their allow lists in the order given under one version: 1,
 refuses a section and key repeated across fragments, checks that the entry
 count is the fragments' sum, writes the file with each fragment's name,
 sha256 and count as comments (not its path, so the bytes do not depend on
-how a path is spelt) and prints the file's sha256. It reads no target.
+how a path is spelt) and prints the file's sha256. It reads no target. With
+--sha-out it also writes that sha256 as a sha256sum line ("<sha256>  <the
+--merge-out path as given>"), so `sha256sum -c` run where the merge ran checks
+it. W1 commits that file with the expected files before the rebuild; the
+merged file itself waits for the ratchet after R4 (plan §3), and
+check_w1_registration compares the two before Step 3.
 
 Targets resolve through check_identity.resolve_target, whose guards apply:
 --a prod is refused in a shell that exports staging settings, so run this
@@ -69,12 +74,13 @@ Usage (from the project root):
     scripts/.venv/bin/python scripts/tools/diff_kg.py --allow <allow.yaml> --json
     scripts/.venv/bin/python scripts/tools/diff_kg.py --a prod --b staging --allow <allow.yaml> --fail-on-unused --json
     scripts/.venv/bin/python scripts/tools/diff_kg.py --merge-out <merged.yaml> --allow <fragment1.yaml> --allow <fragment2.yaml>
+    scripts/.venv/bin/python scripts/tools/diff_kg.py --merge-out <merged.yaml> --sha-out <merged.sha256> --allow ...
 
 Exit code: 0 every difference is allowed (and, under --fail-on-unused, every
 allow entry matched one); 1 a difference is not allowed, an allow entry matched
 nothing under --fail-on-unused, or a target / the registry could not be read.
 --merge-out: 0 written; 1 a fragment is unreadable or invalid or two fragments
-overlap (nothing written).
+overlap (nothing written, --sha-out included).
 """
 
 from __future__ import annotations
@@ -425,21 +431,28 @@ def _merge(parser, args) -> int:
     """--merge-out: the --allow fragments as one allowlist file; reads no target, writes nothing on an error."""
     if not args.allow:
         parser.error("--merge-out needs the fragments as --allow, one per fragment, in order")
-    out = args.merge_out
+    out, sha_out = args.merge_out, args.sha_out
     if any(out.resolve() == fragment.resolve() for fragment in args.allow):
         parser.error(f"--merge-out would overwrite the fragment {out}")
+    if sha_out and any(sha_out.resolve() == path.resolve() for path in (out, *args.allow)):
+        parser.error(f"--sha-out would overwrite {sha_out}, the merged file or a fragment")
     try:
         text, counts = merge_allowlists(args.allow)
         if len(parse_allowlist(text, out)) != sum(counts):
             raise ValueError(f"{out}: merged entries differ from the fragments' sum {sum(counts)}")
+        line = f"{hashlib.sha256(text.encode('utf-8')).hexdigest()}  {out}"
         out.write_text(text, encoding="utf-8")
+        if sha_out:
+            sha_out.write_text(line + "\n", encoding="utf-8")
     except (OSError, ValueError) as e:
         print(f"ERROR: --merge-out: {e}", file=sys.stderr)
         return 1
     for fragment, n in zip(args.allow, counts):
         print(f"  {fragment}: {n} entries")
     print(f"merged {sum(counts)} entries ({' + '.join(map(str, counts))}) into {out}")
-    print(f"{hashlib.sha256(text.encode('utf-8')).hexdigest()}  {out}")
+    print(line)
+    if sha_out:
+        print(f"wrote that line to {sha_out}")
     return 0
 
 
@@ -453,6 +466,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--merge-out", type=Path,
                         help="write the --allow fragments merged into this allowlist and print its sha256 "
                              "(see above); reads no target")
+    parser.add_argument("--sha-out", type=Path,
+                        help="with --merge-out: also write the merged file's sha256 here as one sha256sum line "
+                             "(W1 registers it before the rebuild)")
     parser.add_argument("--no-registry", action="store_true", help="skip the export_event_registry diff")
     parser.add_argument("--samples", type=int, default=10, help="differences printed per section")
     parser.add_argument("--json", action="store_true", help="print the full report as JSON")
@@ -466,6 +482,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.merge_out:
         return _merge(parser, args)
+    if args.sha_out:
+        parser.error("--sha-out needs --merge-out")
     if args.a == args.b:
         parser.error("--a and --b must name different targets")
     if args.allow and len(args.allow) > 1:

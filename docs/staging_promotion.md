@@ -65,9 +65,10 @@
 | tools/export_live_state.py | R0 | ✓（`Neo4jConfig.from_env`；只用 read 交易） | — | — | 無（第 0 批新增）。`--promote` 不連庫 |
 | check_identity.py | 10.6、R4 | ✓ | ✓ | HOST、PORT→HTTP_PORT、`QDRANT_ENTITY_COLLECTION` | 第 0 批新增，唯讀。`--target staging` 只讀 shell 變數（預設 bolt://localhost:7688、bible_rag_staging；Qdrant 沒有預設），解析到 production 會拒絕；`--target prod` 讀 .env，shell 還帶著 staging 設定（`KG_TARGET=staging`、值與 .env 不同、7688、bible_rag_staging）時拒絕 |
 | validate_kg.py | 10.6、R4 | 經 check_identity 的 `--target` 解析 | 同左 | 同左 | 第 0 批新增，唯讀；兩個方向的守門同 check_identity |
-| tools/diff_kg.py | R2 | `--a`、`--b` 各選 prod／staging（預設 `--a prod --b staging`），經 check_identity 的 `--target` 解析 | — | — | 第 0 批新增，唯讀，只比 Neo4j；`--allow` 讀允許清單，`--fail-on-unused`（第 1B 批新增）讓沒用到的條目也算失敗。`--merge-out`（第 1B 批新增）把多個 `--allow` 片段合成一份允許清單，不連庫。prod 端會拒絕 staging 的 shell，只能在乾淨的 shell 跑，staging 端此時用預設的 bolt://localhost:7688（改過 `NEO4J_STAGING_BOLT_PORT` 時無法指定） |
+| tools/diff_kg.py | R2 | `--a`、`--b` 各選 prod／staging（預設 `--a prod --b staging`），經 check_identity 的 `--target` 解析 | — | — | 第 0 批新增，唯讀，只比 Neo4j；`--allow` 讀允許清單，`--fail-on-unused`（第 1B 批新增）讓沒用到的條目也算失敗。`--merge-out`（第 1B 批新增）把多個 `--allow` 片段合成一份允許清單，不連庫；`--sha-out` 另把合併檔的 sha256 寫成 sha256sum 格式的登記檔。prod 端會拒絕 staging 的 shell，只能在乾淨的 shell 跑，staging 端此時用預設的 bolt://localhost:7688（改過 `NEO4J_STAGING_BOLT_PORT` 時無法指定） |
 | tools/xref_probe.py | R2、R3、R4 | `predict`、`fingerprint` 的 `--target` 經 check_identity 解析（READ session）；`allow` 固定讀 prod | — | — | 第 1B 批新增，唯讀。`deploy-guard` 只對 backend 容器做 `docker exec … cat`；`seeds`、`expect`、`compare` 不連庫 |
 | tools/check_merged_inputs.py | W1 鏈（取代 1） | — | — | — | 第 1A 批新增，不連資料庫：output/ 兩個實體檔的 sha256 對 `output/frozen/grounded_manifest.json` |
+| tools/check_w1_registration.py | W1 鏈（6.05 之後、3 之前） | — | — | — | 第 1A 批新增，不連資料庫，只讀檔案與 git：登記檔都已 commit 且未改動、合併允許清單的 sha256 等於登記值、6.05 的輸出是登記的那一份；不過就停，不跑 Step 3 |
 | tools/check_edge_set.py | 10.6、R2、R4 | `--target` 經 check_identity 解析（READ） | — | — | 第 1A 批新增，唯讀：語意層對 6.05 報告扣掉 10.2，`--expect` 再對登記的期望檔 |
 | tools/kin_review.py | K9（W1 第 2 步之前） | — | — | — | 第 1A 批新增，不連資料庫：讀 relations_clean 與 output/ 的實體、提及、段落、描述快取 |
 | tools/relations_expect.py | E1（W1 第 2 步之前） | `--a`（預設 prod）經 check_identity 解析（READ） | — | — | 第 1A 批新增，唯讀，寫期望檔與允許清單片段。prod 端會拒絕 staging 的 shell，在乾淨的 shell 跑 |
@@ -127,13 +128,13 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    若已有上一次的 staging 庫，先執行 `docker exec bible_rag_postgres dropdb -U bible --if-exists bible_rag_staging`。**只對 staging 執行。**
 3. Qdrant 不需事先建立：8a 的 `embed_entities.py --recreate` 會建出 `bible_entities_vN`；同一個 vN 重跑時，`--recreate` 會清掉上一次 staging 的點。
 4. `source scripts/tools/staging.env`，並通過執行前檢查。
-5. 依 [build_database.md](build_database.md)「執行順序」的重灌鏈逐步執行（Step 4／4.1 跳過）。第 1 批 W1：開始之前要先完成事前登記，也就是 R2「W1 的交叉引用檢查」第 1 項的期望檔與片段、R2 第 2 項的合併允許清單，以及 R2「W1 的關係層檢查」第 1、2 項的 K9 標註與 1A 的期望檔、片段（residuals_expect 要趁 7688 還是第 0 批的建置時讀）。重建時 validate_output 之後的 `xref_probe expect`（R2 該項的最後一段）只重算比對，不重新登記；6.05 的輸出必須是登記的那一份，6.1 之後加跑兩次 `--replace`（「W1 的關係層檢查」第 3 項）。K8 的 staging-P1 對照組不在這裡建，R4 之後才建（R4「W1 的 K8 對照組」）。
+5. 依 [build_database.md](build_database.md)「執行順序」的重灌鏈逐步執行（Step 4／4.1 跳過）。第 1 批 W1：開始之前要先完成事前登記，也就是 R2「W1 的交叉引用檢查」第 1 項的期望檔與片段、R2 第 2 項的合併允許清單（與 `--sha-out` 寫出的 sha256 檔），以及 R2「W1 的關係層檢查」第 1、2 項的 K9 標註與 1A 的期望檔、片段（residuals_expect 要趁 7688 還是第 0 批的建置時讀）。關卡是重灌鏈在 6.05 之後、Step 3 之前跑的 `scripts/tools/check_w1_registration.py`：登記檔都已 commit 且沒有改動、合併檔的 sha256 等於登記值、6.05 的輸出就是登記的那一份，結束碼不是 0 就停。這一關不能跳過：Step 5 清空 7688 之後，residuals_expect 拒讀，殘差期望檔再也產生不出來。重建時 validate_output 之後的 `xref_probe expect`（R2 該項的最後一段）只重算比對，不重新登記；6.1 之後加跑兩次 `--replace`（「W1 的關係層檢查」第 3 項）。K8 的 staging-P1 對照組不在這裡建，R4 之後才建（R4「W1 的 K8 對照組」）。
 6. 每一批第一次 staging 重建都要實測各步耗時並填入下表（計畫 §8）：
 
    | 步驟 | 實測耗時 |
    |---|---|
    | 第 0 批：0、1(merge)、3、5、6.1、8a、9、10.1–10.5、7(replay)、8b、10.6、export --check | 2026-10-04 第 0 批實測：0=5s、3=5s、5=28s、6.1=1s、8a=26s、9=6s、10.1–10.5=19s、7=1s、8b=24s、10.6=6s，合計約 2 分鐘；`--stage ner` 另需 34 分鐘（1(merge) 本身 <10s） |
-   | 第 1 批 W1：0（含 check_step0、validate_output）、xref_probe expect、check_merged_inputs、6.05（兩次）、3、5、6.1（再加 `--replace` 兩次）、8a、9（兩次）、10.1、10.2、10.4、10.5、7(replay)、8b、10.6、export --check | W1 第 2 步實測後填入，並記進 W1 紀錄 |
+   | 第 1 批 W1：0（含 check_step0、validate_output）、xref_probe expect、check_merged_inputs、6.05（兩次）、check_w1_registration、3、5、6.1（再加 `--replace` 兩次）、8a、9（兩次）、10.1、10.2、10.4、10.5、7(replay)、8b、10.6、export --check | W1 第 2 步實測後填入，並記進 W1 紀錄 |
 
 ## R2 驗證
 1. 10.6 依該批的判準通過（見 [build_database.md](build_database.md) Step 10.6），而且 `export_event_registry.py --check` 結束碼 0。
@@ -149,10 +150,11 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    - W1 的合併清單 `config/kg_diff_allow_batch1w1.yaml` 由工具產生的片段合成，不手抄：1A 的 `relations_allow.yaml`、`residuals_allow.yaml` 與 1B 的 `xref_allow.yaml`，都在 `config/kg_expect/batch1_w1/`。合併在 YAML 層做，不可用 `cat` 串接：每個片段都是完整的 YAML 文件，各有 `version: 1` 與 `allow:`，串起來後一般的 YAML 載入只留最後一個 `allow:`，其他片段無聲消失（diff_kg 現在遇到重複的鍵直接報錯）。用 `--merge-out` 合併：逐一載入片段，把各自的 `allow` 依序接在同一個 `version: 1` 底下，跨片段重複的 section 與 key 直接報錯，核對合併後的條數等於各片段之和，最後印出合併檔的 sha256。不連庫，任何 shell 都可以跑：
      ```bash
      uv run --project scripts python scripts/tools/diff_kg.py --merge-out config/kg_diff_allow_batch1w1.yaml \
+       --sha-out config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256 \
        --allow config/kg_expect/batch1_w1/relations_allow.yaml --allow config/kg_expect/batch1_w1/residuals_allow.yaml \
        --allow config/kg_expect/batch1_w1/xref_allow.yaml
      ```
-     合併檔在 [第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §1「W1 步驟」第 2 步（staging 重建）之前組好，印出的 sha256 記進 W1 紀錄；R2 用它跑（先以 `sha256sum` 核對與紀錄相同），第 4 步經 Kay 核可，R4 之後與 ratchet 放同一個 commit；看過 staging 的 diff 之後不可再改（計畫 §3）。一筆差異只會記在第一個比對到的條目上，被前面條目遮住的條目在 `--fail-on-unused` 下也算沒用到，所以片段不可重疊。1B 的片段由下方「W1 的交叉引用檢查」第 1 步的 `xref_probe.py allow` 從期望檔與 prod 的 profile 算出，只含 relationships `CROSS_REFERENCES`、xrefs、xref_provenance 三段，每個不同的鍵一條 exact `delta`。mention_count 段的 4 筆 K10 殘差（第 0 批就有，加了這一段才看得到）只來自 1A 的 `residuals_allow.yaml`，1B 的片段不含。1A 的兩個片段由下方「W1 的關係層檢查」第 2 項的 relations_expect、residuals_expect 產生。
+     合併檔在 [第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §1「W1 步驟」第 2 步（staging 重建）之前組好，印出的 sha256 記進 W1 紀錄。合併檔本身 R4 之後才與 ratchet 放同一個 commit，所以事前登記的是它的 sha256：`--sha-out` 把印出的那一行寫成 `config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256`（sha256sum 格式），與期望檔、片段一起在第 2 步之前 commit；重灌鏈的 check_w1_registration 在 Step 3 之前核對它，也核對合併檔就是這三個片段依序合併的結果。R2 用它跑（先以 `sha256sum -c config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256` 核對），第 4 步經 Kay 核可；看過 staging 的 diff 之後不可再改（計畫 §3）。一筆差異只會記在第一個比對到的條目上，被前面條目遮住的條目在 `--fail-on-unused` 下也算沒用到，所以片段不可重疊。1B 的片段由下方「W1 的交叉引用檢查」第 1 步的 `xref_probe.py allow` 從期望檔與 prod 的 profile 算出，只含 relationships `CROSS_REFERENCES`、xrefs、xref_provenance 三段，每個不同的鍵一條 exact `delta`。mention_count 段的 4 筆 K10 殘差（第 0 批就有，加了這一段才看得到）只來自 1A 的 `residuals_allow.yaml`，1B 的片段不含。1A 的兩個片段由下方「W1 的關係層檢查」第 2 項的 relations_expect、residuals_expect 產生。
    - 允許清單放 `config/kg_diff_allow_<批次>.yaml`（git 追蹤）。第 0 批是在 R2 依實際 diff 建立、與該批紀錄一起 commit；第 1 批起預先登錄，不依 R2 的 diff 建立（見上一項）。檔案只有 `version: 1` 與 `allow` 清單；每條要有 section、key（glob）、reason，計數類最多再加一個 `delta`（b − a）或 `max_abs_delta`；未知欄位（例如拼錯的 bound）或型別不對直接報錯，同一個 section 下逐字相同的 key 出現兩次（不論 bound）也直接報錯，片段間的重複在 `--merge-out` 合併時就擋下，不會拖到 R2 才以沒用到的條目出現（只擋逐字重複，互相涵蓋的 glob 仍要人工確認）；同一個 mapping 裡重複的鍵（同一條寫了兩個 `delta`，或 `cat` 串起來的兩個 `allow:`）也直接報錯。格式見 `diff_kg.py --help`。不在清單內的差異結束碼 1；沒用到的條目會列出，要刪。第 0 批不可放行 descriptions：stale 必須是 0。
 
    第 0 批的門檻：
@@ -198,7 +200,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    ```
    預期（2026-10-05 以同一份期望檔對 prod 實跑）：10 條，relationships `CROSS_REFERENCES` 1 條、xrefs 2 條、xref_provenance 7 條，沒有 mention_count。片段開頭的註解記下期望檔的 sha256 與 fingerprint（不記路徑，同一份期望檔與 prod 重跑得到相同的位元組）；要改就重跑，不手改。與 1A 片段的合併見 R2 第 2 項。
 
-   期望檔與片段跟 1A 的期望檔一樣，在第 2 步之前 commit。`xref.json`、`xref_allow.yaml` 與合併檔的 sha256 都記進 W1 紀錄；合併檔要到 R4 之後才 commit（R2 第 2 項）。第 4 步經 Kay 核可的就是這些已登記的檔，不是看過 staging 之後重產的版本。
+   期望檔與片段跟 1A 的期望檔一樣，在第 2 步之前 commit。`xref.json`、`xref_allow.yaml` 與合併檔的 sha256 都記進 W1 紀錄；合併檔要到 R4 之後才 commit，事前登記的是 `--sha-out` 寫出的 sha256 檔（R2 第 2 項）。第 4 步經 Kay 核可的就是這些已登記的檔，不是看過 staging 之後重產的版本。
 
    重建時（第 2 步）Step 0 會再跑一次。Step 0、check_step0、validate_output 都通過後、Step 5 之前，把期望檔重算到 `bak/`，再與登記的那份逐位元比對。expect 對同一份輸入的輸出逐位元相同（2026-10-05 重跑兩次），所以不同就表示 Step 0 的輸出或 TSK 檔變了：停下來查，不可覆寫登記的期望檔：
    ```bash
@@ -263,10 +265,12 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
      --validate-a bak/$D/e1/validate_prod.json --validate-b bak/$D/e1/validate_staging.json \
      --out config/kg_expect/batch1_w1/residuals_expected.json --allow-out config/kg_expect/batch1_w1/residuals_allow.yaml
    ```
-   預期（2026-10-05 以同樣的參數寫到 scratch 的候選檔）：relations_expected 是 5,616 條、`661cfc62…`，output sha256 `1c0cf064…`；relations_allow 90 條（relationships 28、ee_edges 62）；residuals_allow 4 條，都在 mention_count；residuals_expected 的 R1 是 prod 1,938、staging 2,124，`mentions_props` 的逐屬性條數見第 4 項（2026-10-06 補上，片段不變）。片段開頭的註解記下來源，要改就重跑，不手改。這四個檔與 1B 的 `xref.json`、`xref_allow.yaml` 一起在第 2 步之前 commit；三個片段以 R2 第 2 項的 `--merge-out` 合成 `config/kg_diff_allow_batch1w1.yaml`（不可 `cat`；預期 104 條：90＋4＋1B 的 10），合併檔到 R4 之後才 commit。第 4 步經 Kay 核可的就是這些已登記的檔。
-3. **重建時（第 2 步，staging 的 shell）**。6.05 照 [build_database.md](build_database.md) Step 6.05 連跑兩次並 `cmp`，而且輸出必須是登記的那一份（K9 通過時，也等於 `bak/$D/k9/anchored.json` 的 meta.clean_sha256）。6.1 照常不帶 `--replace` 匯入之後、8a 之前（也就是 10.2 之前：10.2 刪掉 16 個泛名詞 Event 之後，6.1 的端點檢查會先拒絕），再以 `--replace` 重匯兩次。三次讀到的語意層 (key, props) 摘要必須相同，都是 5,696 條：整組 SET 覆寫是冪等的，`--replace` 重建出的層也與標準鏈逐屬性相同（1A-C5d）。摘要是唯讀的 Cypher，語意層的定義與 6.1 相同：
+   預期（2026-10-05 以同樣的參數寫到 scratch 的候選檔）：relations_expected 是 5,616 條、`661cfc62…`，output sha256 `1c0cf064…`；relations_allow 90 條（relationships 28、ee_edges 62）；residuals_allow 4 條，都在 mention_count；residuals_expected 的 R1 是 prod 1,938、staging 2,124，`mentions_props` 的逐屬性條數見第 4 項（2026-10-06 補上，片段不變）。片段開頭的註解記下來源，要改就重跑，不手改。這四個檔與 1B 的 `xref.json`、`xref_allow.yaml` 一起在第 2 步之前 commit；三個片段以 R2 第 2 項的 `--merge-out` 合成 `config/kg_diff_allow_batch1w1.yaml`（不可 `cat`；預期 104 條：90＋4＋1B 的 10），`--sha-out` 寫出的 sha256 檔與這六個檔一起 commit，合併檔到 R4 之後才 commit。第 4 步經 Kay 核可的就是這些已登記的檔。
+3. **重建時（第 2 步，staging 的 shell）**。6.05 照 [build_database.md](build_database.md) Step 6.05 連跑兩次並 `cmp`，而且輸出必須是登記的那一份（K9 通過時，也等於 `bak/$D/k9/anchored.json` 的 meta.clean_sha256）：重灌鏈接著跑的 check_w1_registration 比對報告、輸出與 10.2 後邊集合的 sha256 和 `relations_expected.json` 記的值，結束碼 0 才進 Step 3。6.1 照常不帶 `--replace` 匯入之後、8a 之前（也就是 10.2 之前：10.2 刪掉 16 個泛名詞 Event 之後，6.1 的端點檢查會先拒絕），再以 `--replace` 重匯兩次。三次讀到的語意層 (key, props) 摘要必須相同，都是 5,696 條：整組 SET 覆寫是冪等的，`--replace` 重建出的層也與標準鏈逐屬性相同（1A-C5d）。摘要是唯讀的 Cypher，語意層的定義與 6.1 相同：
    ```bash
-   test "$(jq -r .output.sha256 output/relations_clean.report.json)" = "$(jq -r .output_sha256 config/kg_expect/batch1_w1/relations_expected.json)" && echo 'registered 6.05 output'
+   # 6.05 連跑兩次並 cmp 之後、Step 3 之前：結束碼不是 0 就停
+   uv run --project scripts python scripts/tools/check_w1_registration.py
+   # Step 3、5、6.1 照重灌鏈跑完之後、8a 之前
    Q="MATCH (h:Entity)-[r]->(t:Entity) WHERE NOT type(r) IN ['MENTIONS', 'CROSS_REFERENCES']
      WITH h.entity_id AS h, type(r) AS ty, t.entity_id AS t, apoc.convert.toJson(apoc.map.sortedProperties(properties(r))) AS p
      ORDER BY h, ty, t, p
@@ -281,7 +285,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    ```
    最後一行印出 `5696, "<sha256>"`；三個檔與這個 sha256 記進 W1 紀錄。2026-10-05 對第 0 批的 staging 連讀兩次，結果相同（15,926 條）；同樣邊數的 prod 讀到另一個值（phase 等屬性不同）。
 4. **R2 閘門**（第 2 步之後；「W1 的交叉引用檢查」第 3 項讓 backend-staging 跑 `:w1` 之後，R2 第 3 項停掉它之前）：
-   - 6.05 兩次逐位元相同、輸出等於登記值，三次 props 摘要相同（第 3 項）。
+   - 6.05 兩次逐位元相同、check_w1_registration 結束碼 0（輸出等於登記值），三次 props 摘要相同（第 3 項）。
    - Step 10.6 的 1A 判準全過（指令在 [build_database.md](build_database.md) Step 10.6）：validate_kg 沒有失敗、退步只有 R1，而且 R1 等於 `residuals_expected.json` 的 2,124；check_edge_set `--expect` 結束碼 0（5,616 條、`661cfc62…`）；check_identity `--fail-on id` 結束碼 0。PROBES 另外確認 1A 修好的 4 個探針在 fixed 裡，而且 failing 剩 7 個 id（基準的 13 個扣掉 1A 的 4 個與 1B 的 2 個）：
      ```bash
      jq -e '["edge-no-dan-orphan-nehemiah-wall", "kin-leah-not-father-of-isaac", "kin-leah-not-father-of-reuben", "kin-lot-not-father-of-terah"] - .checks.PROBES.metrics.failing.fixed == [] and (.checks.PROBES.metrics.failing.value | length) == 7' bak/$D/validate_staging_w1.json

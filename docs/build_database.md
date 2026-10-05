@@ -75,7 +75,7 @@ uv sync --project scripts   # BGE-M3 / CKIP 權重於首次執行時自動從 Hu
 - **從零**（沒有 staging 的機器）：`process_bible.py` → `check_step0.py`（Step 0 是決定性的，fresh clone 重跑應與 git 追蹤的基準逐位元相同；不符就先查原因）→ `validate_output.py`（必跑，見 Step 0）→ Step 1 → 2 / 2.1 → 3 → 4 / 4.1 → 5 → 6 → 6.05 → 6.1 → 8a → 9 → 10.1 → 10.2 → 10.4 → 10.5 → 7 → 8b → 10.6（改用 `--target prod`）→ `export_event_registry.py --check` → `docker compose up -d --build backend`。共現搶救已退出預設鏈（見 Step 10）。若能從 [staging_promotion.md](staging_promotion.md) R0 的 `llm_artifacts.tgz` 還原 `output/frozen/`、relations.jsonl 與兩個實體檔，Step 6 沿用還原的 relations.jsonl、Step 7 改走 `--replay --fail-on-stale`，就不必重跑 LLM。第 1 批期間 Step 1 照重灌鏈換成 `check_merged_inputs.py`，不要 merge（理由見表下）；W2 重跑 NER 之後才回到 `--stage merge`。
 - **重灌**（JSONL 與 `output/frozen/` 俱在；一律先建在 staging，見 [staging_promotion.md](staging_promotion.md)）。下面是第 1 批 W1 的重灌鏈，在第 1D 批改寫重灌鏈之前是唯一的一條：
 
-  **0 → check_step0 → validate_output（必跑）→ xref_probe expect（重算比對）→ check_merged_inputs（取代 1）→ 6.05 → 3 → 4（sha 未變就跳過）→ 5 → 6.1 → 8a(embed) → 9（連跑兩次＋xref_probe fingerprint --expect）→ 10.1 → 10.2 → 10.4 → 10.5 → 7(replay --fail-on-stale) → 8b(embed --recreate) → 10.6 → export_event_registry --check**
+  **0 → check_step0 → validate_output（必跑）→ xref_probe expect（重算比對）→ check_merged_inputs（取代 1）→ 6.05 → check_w1_registration（登記檢查）→ 3 → 4（sha 未變就跳過）→ 5 → 6.1 → 8a(embed) → 9（連跑兩次＋xref_probe fingerprint --expect）→ 10.1 → 10.2 → 10.4 → 10.5 → 7(replay --fail-on-stale) → 8b(embed --recreate) → 10.6 → export_event_registry --check**
 
   | 順序 | 指令（前綴 `uv run --project scripts python`） | 說明 |
   |---|---|---|
@@ -83,6 +83,7 @@ uv sync --project scripts   # BGE-M3 / CKIP 權重於首次執行時自動從 Hu
   | xref_probe expect | `scripts/tools/xref_probe.py expect --output-dir output --tsk output/cross_references_tsk.txt --out bak/$D/xref_probe/xref_rebuild.json`，再以 `cmp` 比對登記的 `config/kg_expect/batch1_w1/xref.json` | `D` 是 R0 的日期。期望檔在 W1 第 2 步之前登記，這裡只重算比對，不同就停，不可覆寫（[staging_promotion.md](staging_promotion.md) R2「W1 的交叉引用檢查」第 1 項） |
   | check_merged_inputs | `scripts/tools/check_merged_inputs.py` | 取代 Step 1：entities.jsonl、entity_mentions.jsonl 的 sha256 要等於 `output/frozen/grounded_manifest.json` 記的 source。結束碼 0 相符；1 不符或缺檔，照它印出的 `tar` 指令從 [staging_promotion.md](staging_promotion.md) R0 的 `llm_artifacts.tgz` 還原兩檔（先以 `MANIFEST.sha256` 核對）；2 無法檢查 |
   | 6.05 | `-m scripts.relation_extraction.relation_postprocess`，連跑兩次並 `cmp`（見 Step 6.05） | 離線、不連庫：relations.jsonl → relations_clean.jsonl 加報告。排在所有寫庫的步驟之前，輸入有錯就在清庫之前停下 |
+  | check_w1_registration | `scripts/tools/check_w1_registration.py` | 事前登記的關卡，不連庫：`config/kg_expect/batch1_w1/` 的六個期望檔與片段、合併允許清單的 sha256 檔都已 commit 且沒有改動；`config/kg_diff_allow_batch1w1.yaml` 的 sha256 等於登記值，而且就是三個片段依序 `--merge-out` 的結果；剛跑的 6.05 報告、輸出與 10.2 後邊集合的 sha256 等於 `relations_expected.json` 記的值。結束碼 0 才往下；1 就停，不跑 Step 3：Step 5 會清空還是第 0 批建置的 7688，之後 residuals_expect 拒讀（結束碼 2），殘差期望檔再也產生不出來；2 無法檢查（`--root` 不是有 commit 的 git checkout） |
   | 3 | `scripts/import_postgres.py` | 六張表 |
   | 4 / 4.1 | （跳過） | 閘門通過＝embedding_queue 未變，段落向量與 BM25 都不必重建，Step 2 / 2.1 也不跑。閘門沒過而且是刻意變更時，才重跑 2 / 2.1 / 4 / 4.1 |
   | 5 | `scripts/import_neo4j.py` | 先清空目標 Neo4j 再重建 |
@@ -101,7 +102,7 @@ uv sync --project scripts   # BGE-M3 / CKIP 權重於首次執行時自動從 Hu
   **W1 為什麼跳過 Step 1**：`output/ner_*.jsonl` 是第 0 批在 7526e12 之前產生的 NER 半邊，字典已把流珥併進葉忒羅。merge 不會拒絕它，只發 WARNING，接著寫出少了 person:liuer 的 entities.jsonl（9,119 行）；6.05 再因 6 列的端點 person:liuer 不存在而硬失敗。所以 W1 不重寫兩個實體檔，只確認它們仍是第 0 批的 build（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §6 #10）。check_merged_inputs 只用於 W1。
 
 - **一致性**：結構層（Step 0，已驗證逐位元相同）、NER 半邊（600 筆樣本重跑 2,830/2,830 相同）、TSK、curated 層、6.05（同一份輸入連跑兩次逐位元相同）都是決定性的。LLM 產物（Step 1 Phase 4 的 grounded 半邊、Step 6 R4、Step 7 描述，temperature=0.2）重跑必有漂移，所以重灌鏈一律重用凍結產物：grounded 半邊與描述在 `output/frozen/`，關係沿用 relations.jsonl，再由 6.05 處理。只有刻意重跑 LLM 的批次（2A、2B、延後-B/C）才會讓這些層變動。
-- **事前登記**（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §3）：W1 的期望檔（1A 的 `relations_expected.json`、`residuals_expected.json`，1B 的 `xref.json`）與合併允許清單 `config/kg_diff_allow_batch1w1.yaml`，都在 W1 第 2 步（staging 重建）之前產生並記下 sha256；重建與 R2 只拿來比對，看過 staging 的 diff 之後不可再改。順序與指令見 [staging_promotion.md](staging_promotion.md) R2。
+- **事前登記**（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §3）：W1 的期望檔（1A 的 `relations_expected.json`、`residuals_expected.json`，1B 的 `xref.json`）、三個允許清單片段與合併允許清單 `config/kg_diff_allow_batch1w1.yaml`，都在 W1 第 2 步（staging 重建）之前產生並記下 sha256；重建與 R2 只拿來比對，看過 staging 的 diff 之後不可再改。合併檔本身 R4 之後才與 ratchet 一起 commit，所以登記的是它的 sha256：`diff_kg.py --merge-out --sha-out` 寫出的 `config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256`，與期望檔、片段一起在第 2 步之前 commit。重灌鏈在 6.05 之後、Step 3 之前以 check_w1_registration 確認全部已登記，沒有就停（見上表）。順序與指令見 [staging_promotion.md](staging_promotion.md) R2。
 - ⚠ Step 6 長跑注意（已驗證，比舊說法嚴重）：checkpoint 是在配對**送進 R4 之前**逐對寫入的（`_stream_with_checkpoint`），所以 R4 中途崩潰後 `--resume` 會把整批配對當成已處理，產出 0 條 LLM 邊；`--no-llm` 與 `--pericope-id` 都以覆寫模式改寫 `relations.jsonl` 與 `relations_unclassified.jsonl`。第 2A 批修好之前，不要對既有產物重跑 Step 6；試跑時用 `RE_OUTPUT_PATH`、`RE_CHECKPOINT_PATH`、`RE_UNCLASSIFIED_PATH` 導到別的檔案，跑完比對量級（歷史 run 約 6,958 條）。
 
 ## Step 0: 經文切分與 sha 閘門

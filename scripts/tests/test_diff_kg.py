@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -584,14 +585,39 @@ def test_merge_out_refuses_a_cat_fragment_and_writes_nothing(tmp_path, no_target
     assert not (tmp_path / "merged.yaml").exists()
 
 
+def test_sha_out_registers_the_merged_sha256_as_a_sha256sum_line(tmp_path, monkeypatch, no_target, capsys):
+    # the merged file is committed only after R4 (plan §3); its sha256 is what W1 registers before the rebuild
+    monkeypatch.chdir(tmp_path)
+    fragments(tmp_path)
+    argv = ["--merge-out", "merged.yaml", "--sha-out", "merged.sha256",
+            "--allow", "residuals_allow.yaml", "--allow", "xref_allow.yaml"]
+    assert dk.main(argv) == 0
+    line = f"{sha(tmp_path / 'merged.yaml')}  merged.yaml\n"
+    assert (tmp_path / "merged.sha256").read_text(encoding="utf-8") == line
+    assert line in capsys.readouterr().out
+    assert subprocess.run(["sha256sum", "--check", "--quiet", "merged.sha256"], cwd=tmp_path).returncode == 0
+
+
+def test_sha_out_is_not_written_when_the_merge_fails(tmp_path, no_target, capsys):
+    a, b = fragments(tmp_path)
+    side = tmp_path / "merged.sha256"
+    assert dk.main(["--merge-out", str(tmp_path / "merged.yaml"), "--sha-out", str(side),
+                    "--allow", str(a), "--allow", str(b), "--allow", str(a)]) == 1
+    assert "repeats section mention_count" in capsys.readouterr().err
+    assert not side.exists() and not (tmp_path / "merged.yaml").exists()
+
+
 @pytest.mark.parametrize("argv, message", [
     (["--merge-out", "m.yaml"], "--merge-out needs the fragments as --allow"),
     (["--merge-out", "x.yaml", "--allow", "./x.yaml"], "--merge-out would overwrite the fragment"),
     (["--allow", "a.yaml", "--allow", "b.yaml"], "a diff takes one merged --allow file"),  # plan §3
+    (["--sha-out", "m.sha256", "--allow", "a.yaml"], "--sha-out needs --merge-out"),
+    (["--merge-out", "m.yaml", "--sha-out", "./m.yaml", "--allow", "a.yaml"], "--sha-out would overwrite"),
+    (["--merge-out", "m.yaml", "--sha-out", "x.yaml", "--allow", "x.yaml"], "--sha-out would overwrite"),
 ])
 def test_merge_out_and_allow_usage_errors_exit_2(argv, message, tmp_path, monkeypatch, no_target, capsys):
     monkeypatch.chdir(tmp_path)
     with pytest.raises(SystemExit) as exc:
         dk.main(argv)
     assert exc.value.code == 2 and message in capsys.readouterr().err
-    assert not (tmp_path / "m.yaml").exists() and not (tmp_path / "x.yaml").exists()
+    assert not [p.name for p in tmp_path.iterdir()]
