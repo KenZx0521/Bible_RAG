@@ -15,7 +15,7 @@ evaluation/
 ├── apply_coverage.py            # 答案要點覆蓋率離線補算
 ├── experiments/                 # 各實驗的事前登記、題號檔與腳本
 │   ├── 2026-10-03_event_registry/   # event_registry 附加槽的檢索 A/B、AA 校準與答案端探針
-│   └── 2026-10-05_kg_w1/        # W1 升版第 1 步的 20 題煙霧測試題號檔
+│   └── 2026-10-05_kg_w1/        # W1 升版的題號檔:第 1 步的 20 題煙霧測試、第 1、2 步之間的 graph_event 抽查(K10)
 ├── src/
 │   ├── config.py                # 讀取 ../.env(共用)+ ./.env(eval 專屬,優先)
 │   ├── models.py                # Pydantic 資料模型

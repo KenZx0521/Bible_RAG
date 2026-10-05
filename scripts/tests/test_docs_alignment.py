@@ -545,7 +545,7 @@ def test_xref_ab_window_restarts_staging_on_w1_and_reports_ci_by_stratum():
 
 def test_w1_data_load_starts_with_the_deploy_guard():
     step2 = section(staging_text(), "W1 升版第 2 步")
-    first = _commands(step2)[0]
+    first = _blocks(step2)[0][3]   # the first command after the fail-closed block's guards
     assert re.search(r"xref_probe\.py deploy-guard --container bible_rag_backend$", first), first
     assert "不載入" in step2
     # the guard's timeout as its --help states it: a hung docker exec stops the load, never stalls it
