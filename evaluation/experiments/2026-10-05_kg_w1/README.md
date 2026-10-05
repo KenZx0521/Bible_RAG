@@ -4,7 +4,7 @@
 
 | 檔案 | 用在 | 判準 |
 |---|---|---|
-| `smoke20_ids.txt` | 升版第 1 步的 20 題煙霧測試 | 印出 `20 0 []` |
+| `smoke20_ids.txt` | 升版第 1 步的 20 題煙霧測試 | 印出 `20 0 [] {'event_registry': 20}` |
 | `graph_event_k10_ids.txt` | 升版第 1、2 步之間的 graph_event 抽查（K10） | 只報告 |
 
 ## 20 題煙霧測試（升版第 1 步）
@@ -42,10 +42,10 @@
 ```bash
 rm -f results_quick/w1_step1_smoke.json \
   && uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/smoke20_ids.txt --label w1_step1_smoke \
-  && python3 -c "import json; d = json.load(open('results_quick/w1_step1_smoke.json')); print(d['n'], d['n_invalid'], sorted(q for q, e in d['per_question'].items() if e['strategy_errors']))"
+  && python3 -c "import json; d = json.load(open('results_quick/w1_step1_smoke.json')); print(d['n'], d['n_invalid'], sorted(q for q, e in d['per_question'].items() if e['strategy_errors']), d['config']['graph_strategies_applied'])"
 ```
 
-通過條件是印出 `20 0 []`，也就是 n=20、n_invalid=0、沒有任何一題帶 strategy_errors。先刪上一次的結果檔，三段用 `&&` 串起來：收集中途失敗時，不會讀到舊檔而假性通過。
+通過條件是印出 `20 0 [] {'event_registry': 20}`，也就是 n=20、n_invalid=0、沒有任何一題帶 strategy_errors，而且 backend 回報 20 題都只套用 event_registry（quick_retrieval_eval 記在 `config.graph_strategies_applied` 的計數）：新 image 的預設路徑仍只跑 event_registry。先刪上一次的結果檔，三段用 `&&` 串起來：收集中途失敗時，不會讀到舊檔而假性通過。
 
 2026-10-05 曾對升版前的 prod backend（:8000）試跑同一條指令：n=20、n_invalid=0、strategy_errors 0 題；20 題都套用了 event_registry，實際路由為 R1 3、R2 3、R3 4、R4 4、R5 3、R6 3。
 

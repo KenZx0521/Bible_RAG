@@ -240,8 +240,15 @@ def test_k8_builds_the_p1_control_twice_after_r4_on_the_w1_image():
         "--graph-strategies entity_path --top-k 5 --metric-k 6 --label ep_p1b",
         "ab_compare.py results_quick/ep_p1a.json results_quick/ep_p1b.json",
         "ab_compare.py results_quick/ep_p1a.json results_quick/ep_w1.json"))
-    for needle in ("−0.005", "只報告", "雜訊地板", "W1 升版第 1、2 步之間", "bak/$D/promote/"):
+    for needle in ("−0.005", "只報告", "雜訊地板", "W1 升版第 1、2 步之間", "bak/$D/promote/", "`validate_p1b.json`",
+                   "不可覆寫 R2 的 `bak/$D/validate_staging_w1.json`", "兩次 `--replace`", "`bak/$D/props_*.txt`"):
         assert needle in k8, needle
+    # M363: the W1 chain's 10.6 writes R2's gate report; P1's own report goes to k8/, and R2 recorded its sha256
+    _in_order(_commands(k8), ("backfill_event_relations.py --legacy-cooccurrence", "mkdir -p bak/$D/k8",
+                              "validate_kg.py --live --target staging --json > bak/$D/k8/validate_p1a.json"))
+    assert not [c for c in _commands(k8) if "validate_staging_w1.json" in c], _commands(k8)
+    _in_order(_commands(section(text, W1A)), (".checks.PROBES.metrics.failing.fixed",
+                                               "(cd bak/$D && sha256sum ./validate_staging_w1.json >> SHA256SUMS)"))
 
 
 def test_w1_staging_writes_bible_entities_v3_pending_kay():

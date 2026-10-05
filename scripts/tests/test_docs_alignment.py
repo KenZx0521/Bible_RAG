@@ -432,6 +432,7 @@ ROLLBACK_TAR = "bak/$D/images/backend_kg-pre-batch1-w1.tar.gz"
 ROLLBACK_ID = "bak/$D/images/backend_kg-pre-batch1-w1.id"
 W1_ID_FILE = "bak/$D/images/backend_w1.id"
 SMOKE_JSON = "results_quick/w1_step1_smoke.json"
+ARCHIVE_HAS_PROD = 'grep -Ex "(\\./)?blobs/sha256/${PROD#sha256:}" >/dev/null'   # M302: no -q, tar is never SIGPIPEd
 D_GUARD = ': "${D:?set D to the W1 R0 date}"'
 
 
@@ -485,30 +486,25 @@ def test_w1_step1_pins_and_saves_the_rollback_image_before_switching():
         'docker tag "$PROD" bible_rag-backend:kg-pre-batch1-w1',
         "docker create --name bible_rag_backend_kg_pre_batch1_w1 bible_rag-backend:kg-pre-batch1-w1",
         f"docker save bible_rag-backend:kg-pre-batch1-w1 | gzip > {ROLLBACK_TAR}.part",
-        f"gunzip -c {ROLLBACK_TAR}.part | tar -tf - >/dev/null", f"mv {ROLLBACK_TAR}.part {ROLLBACK_TAR}",
+        f"gunzip -c {ROLLBACK_TAR}.part | tar -tf - | {ARCHIVE_HAS_PROD}", f"mv {ROLLBACK_TAR}.part {ROLLBACK_TAR}",
         "(cd bak/$D && sha256sum ./images/backend_kg-pre-batch1-w1.tar.gz >> SHA256SUMS)"))
     r0 = section(staging_text(), "R0")
     assert "docker save" in r0 and "W1 升版第 1 步" in r0 and "停著的容器" in r0
 
 
 def test_w1_step1_deploys_the_r2_tested_image_and_waits_for_health():
-    r2 = _commands(section(staging_text(), "R2"))
-    record = f"docker image inspect -f '{{{{.Id}}}}' bible_rag-backend:w1 > {W1_ID_FILE}"
-    up = _in_order(r2, ("w1_image.yml build backend", "mkdir -p bak/$D/images", record,
-                        "w1_image.yml up -d --no-deps backend-staging", "echo 'staging runs :w1'"))[3]
-    assert W1_ID_FILE in r2[up + 1] and "bible_rag_backend_staging)" in r2[up + 1], r2[up + 1]
-    # && not ;: a failed test must not print it (_assert_fail_closed once R2 item 3 is a subshell, M307)
-    assert r2[up + 1].endswith(" && echo 'staging runs :w1'"), r2[up + 1]
+    # R2 item 3, which records the :w1 id, is pinned in test_docs_alignment_w1 (a fail-closed block, M307)
     step1 = section(staging_text(), "W1 升版第 1 步")
     deploy = _blocks(step1)[1]
-    # the saved rollback and an unchanged :w1 gate the retag; prod must then run the R2 id
+    # prod still on the recorded rollback image (or on :w1 in a re-run, M303), the saved rollback and an
+    # unchanged :w1 gate the retag; prod must then run the R2 id
     up = _in_order(deploy, (
-        f"W1=$(cat {W1_ID_FILE})", f"PRE=$(cat {ROLLBACK_ID})",
-        "grep -qF ' ./images/backend_kg-pre-batch1-w1.tar.gz' bak/$D/SHA256SUMS",
+        f"W1=$(cat {W1_ID_FILE})", f"PRE=$(cat {ROLLBACK_ID})", "P=$(docker inspect -f '{{.Image}}' bible_rag_backend)",
+        'case "$P" in "$PRE"|"$W1") ;; *)', "grep -qF ' ./images/backend_kg-pre-batch1-w1.tar.gz' bak/$D/SHA256SUMS",
         "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend_kg_pre_batch1_w1)\" = \"$PRE\"",
         "test \"$(docker image inspect -f '{{.Id}}' bible_rag-backend:w1)\" = \"$W1\"",
         "docker tag bible_rag-backend:w1 bible_rag-backend:latest", "docker compose up",
-        "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend)\" = \"$W1\""))[6]
+        "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend)\" = \"$W1\""))[8]
     assert {"--no-deps", "--no-build", "--wait"} <= set(deploy[up].split()), deploy[up]
     assert re.search(r"--wait-timeout 300(?!\d)", deploy[up]), deploy[up]  # the bullet's 300 s
     assert not [c for c in _commands(step1) if re.search(r"(?<![\w-])--build\b", c) or c.startswith("curl")]
@@ -529,7 +525,8 @@ def test_w1_step1_smoke_cannot_pass_on_a_stale_result_and_checks_pred_trans():
 
 
 def test_xref_ab_window_restarts_staging_on_w1_and_reports_ci_by_stratum():
-    # R2 item 3 stops backend-staging; plan §5.2 wants Δvrec CI and win/loss, in-sample apart from held-out
+    # R2 item 3 stops backend-staging; plan §5.2 wants Δvrec CI and win/loss by stratum, and [expanded] holds
+    # the 68 kg_xref questions 1B's design used, so it is not called held-out (M310)
     ab = section(staging_text(), "W1 升版第 1、2 步之間")
     restart, *rest = _blocks(ab)
     _assert_fail_closed(restart, "both arms run :w1")
@@ -546,7 +543,7 @@ def test_xref_ab_window_restarts_staging_on_w1_and_reports_ci_by_stratum():
     _in_order(evals, ("rm -f results_quick/xref_old_w1.json results_quick/xref_new_w1.json", "--label xref_old_w1",
                       "BACKEND_URL=http://localhost:8001", "xref_ab_slice.py",
                       "ab_compare.py results_quick/xref_old_w1.json results_quick/xref_new_w1.json"))
-    for needle in ("95% CI", "W/L", "`[legacy]`", "`[expanded]`", "held-out",
+    for needle in ("95% CI", "W/L", "`[legacy]`", "`[expanded]`", "不是乾淨的 held-out",
                    "](records/2026-10-05_kg_batch1_w0_results.md)「補記"):
         assert needle in ab, needle
     assert "§9" not in ab
