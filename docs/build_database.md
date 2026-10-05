@@ -72,29 +72,37 @@ uv sync --project scripts   # BGE-M3 / CKIP 權重於首次執行時自動從 Hu
 
 ### 執行順序
 
-- **從零**（沒有 staging 的機器）：`process_bible.py` → `check_step0.py`（Step 0 是決定性的，fresh clone 重跑應與 git 追蹤的基準逐位元相同；不符就先查原因）→（選）`validate_output.py` → Step 1 → 2 / 2.1 → 3 → 4 / 4.1 → 5 → 6 → 6.1 → 8a → 9 → 10.1–10.5 → 7 → 8b → 10.6（改用 `--target prod`）→ `export_event_registry.py --check` → `docker compose up -d --build backend`。若能從 [staging_promotion.md](staging_promotion.md) R0 的 `llm_artifacts.tgz` 還原 `output/frozen/` 與 NER 半邊（`ner_*.jsonl` 加 `ner_manifest.json`），Step 1 改走 `--stage merge`（缺 NER 半邊時先跑 `--stage ner`）、Step 7 改走 `--replay --fail-on-stale`，就與重灌鏈相同、不必重跑 LLM。
-- **重灌**（JSONL 與 `output/frozen/` 俱在；一律先建在 staging，見 [staging_promotion.md](staging_promotion.md)）：
+- **從零**（沒有 staging 的機器）：`process_bible.py` → `check_step0.py`（Step 0 是決定性的，fresh clone 重跑應與 git 追蹤的基準逐位元相同；不符就先查原因）→ `validate_output.py`（必跑，見 Step 0）→ Step 1 → 2 / 2.1 → 3 → 4 / 4.1 → 5 → 6 → 6.05 → 6.1 → 8a → 9 → 10.1 → 10.2 → 10.4 → 10.5 → 7 → 8b → 10.6（改用 `--target prod`）→ `export_event_registry.py --check` → `docker compose up -d --build backend`。共現搶救已退出預設鏈（見 Step 10）。若能從 [staging_promotion.md](staging_promotion.md) R0 的 `llm_artifacts.tgz` 還原 `output/frozen/`、relations.jsonl 與兩個實體檔，Step 6 沿用還原的 relations.jsonl、Step 7 改走 `--replay --fail-on-stale`，就不必重跑 LLM。第 1 批期間 Step 1 照重灌鏈換成 `check_merged_inputs.py`，不要 merge（理由見表下）；W2 重跑 NER 之後才回到 `--stage merge`。
+- **重灌**（JSONL 與 `output/frozen/` 俱在；一律先建在 staging，見 [staging_promotion.md](staging_promotion.md)）。下面是第 1 批 W1 的重灌鏈，在第 1D 批改寫重灌鏈之前是唯一的一條：
 
-  **0 → 1(merge) → 3 → 4（sha 未變就跳過）→ 5 → 6.1 → 8a(embed) → 9 → 10.1–10.5 → 7(replay --fail-on-stale) → 8b(embed --recreate) → 10.6 → export_event_registry --check**
+  **0 → check_step0 → validate_output（必跑）→ xref_probe expect（重算比對）→ check_merged_inputs（取代 1）→ 6.05 → 3 → 4（sha 未變就跳過）→ 5 → 6.1 → 8a(embed) → 9（連跑兩次＋xref_probe fingerprint --expect）→ 10.1 → 10.2 → 10.4 → 10.5 → 7(replay --fail-on-stale) → 8b(embed --recreate) → 10.6 → export_event_registry --check**
 
   | 順序 | 指令（前綴 `uv run --project scripts python`） | 說明 |
   |---|---|---|
-  | 0 | `scripts/process_bible.py --input-dir bible_md --output-dir output`，再 `scripts/tools/check_step0.py` | 閘門結束碼不是 0 就停（見 Step 0） |
-  | 1 | `scripts/extract_entities.py --stage merge` | NER 半邊＋凍結的 grounded 半邊。merge 要讀 `output/ner_*.jsonl` 與 `ner_manifest.json`：凍結後的第一次、ner_* 沒有 manifest（第 0 批之前產生的），或 NER 程式、字典、embedding_queue 有改時，先跑 `--stage ner`（拒絕條件見 Step 1） |
+  | 0 | `scripts/process_bible.py --input-dir bible_md --output-dir output`，再 `scripts/tools/check_step0.py`、`scripts/validate_output.py output` | 三者都不寫庫，結束碼不是 0 就停（見 Step 0）。validate_output 必跑 |
+  | xref_probe expect | `scripts/tools/xref_probe.py expect --output-dir output --tsk output/cross_references_tsk.txt --out bak/$D/xref_probe/xref_rebuild.json`，再以 `cmp` 比對登記的 `config/kg_expect/batch1_w1/xref.json` | `D` 是 R0 的日期。期望檔在 W1 第 2 步之前登記，這裡只重算比對，不同就停，不可覆寫（[staging_promotion.md](staging_promotion.md) R2「W1 的交叉引用檢查」第 1 項） |
+  | check_merged_inputs | `scripts/tools/check_merged_inputs.py` | 取代 Step 1：entities.jsonl、entity_mentions.jsonl 的 sha256 要等於 `output/frozen/grounded_manifest.json` 記的 source。結束碼 0 相符；1 不符或缺檔，照它印出的 `tar` 指令從 [staging_promotion.md](staging_promotion.md) R0 的 `llm_artifacts.tgz` 還原兩檔（先以 `MANIFEST.sha256` 核對）；2 無法檢查 |
+  | 6.05 | `-m scripts.relation_extraction.relation_postprocess`，連跑兩次並 `cmp`（見 Step 6.05） | 離線、不連庫：relations.jsonl → relations_clean.jsonl 加報告。排在所有寫庫的步驟之前，輸入有錯就在清庫之前停下 |
   | 3 | `scripts/import_postgres.py` | 六張表 |
   | 4 / 4.1 | （跳過） | 閘門通過＝embedding_queue 未變，段落向量與 BM25 都不必重建，Step 2 / 2.1 也不跑。閘門沒過而且是刻意變更時，才重跑 2 / 2.1 / 4 / 4.1 |
   | 5 | `scripts/import_neo4j.py` | 先清空目標 Neo4j 再重建 |
-  | 6.1 | `scripts/import_relations_neo4j.py output/relations.jsonl` | 沿用既有 relations.jsonl，不重跑 Step 6 的 LLM |
-  | 8a | `scripts/embed_entities.py --recreate` | 只為了讓 10.x 有 collection 可寫：沒有它，10.2（staging 下）刪點、10.4 upsert 都會失敗，10.5 找不到 extracted 點會 SystemExit。這時 P/P/G 描述還是空的，8b 會整個取代 |
-  | 9 | `scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt` | |
-  | 10.1–10.5 | 見 Step 10 | 10.3 將在第 1A 批退場 |
-  | 7 | `-m scripts.relation_extraction.desc_generator --replay --fail-on-stale` | 從正式快取 `output/frozen/descriptions.jsonl` 重放，不呼叫 LLM。必須在 10.5 之後：種子的 titles_sha 是用 live（10.x 之後）的 MENTIONS 算的。stale 或 missing 不是 0 就停（見 Step 7） |
+  | 6.1 | `scripts/import_relations_neo4j.py` | 讀 6.05 的 relations_clean.jsonl 與報告，不帶 `--replace`。必須緊接在 Step 5 之後：圖裡已有語意邊就拒絕（見 Step 6.1） |
+  | 8a | `scripts/embed_entities.py --recreate` | 只為了讓 10.x 有 collection 可寫：沒有它，10.2（staging 下）刪點、10.4 upsert 都會失敗，10.5 找不到 extracted 點會 SystemExit。這時 P/P/G 描述還是空的，8b 會整個取代。W1 寫 `bible_entities_v3`（建議，待 Kay 確認，見 Step 8） |
+  | 9 | `scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt` 連跑兩次，再 `scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json` | 第二次 `created 0`、兩次同一個指紋，fingerprint 結束碼 0（見 Step 9） |
+  | 10.1 | `scripts/backfill_aliases.py` | 見 Step 10 |
+  | 10.2 | `scripts/cleanup_noise_entities.py` | 第 1C 批之前，「但」的誤命中仍在這裡真的刪 MENTIONS |
+  | 10.4 | `scripts/backfill_head_events.py` | |
+  | 10.5 | `scripts/backfill_manual_patches.py --apply` | 10.3（共現搶救）已退出預設鏈，不在這裡跑（見 Step 10） |
+  | 7 | `-m scripts.relation_extraction.desc_generator --replay --fail-on-stale` | 從正式快取 `output/frozen/descriptions.jsonl` 重放，不呼叫 LLM。必須在 10.5 之後：種子的 titles_sha 是用 live（10.x 之後）的 MENTIONS 算的。W1 不改 MENTIONS，stale 與 missing 都必須是 0（見 Step 7） |
   | 8b | `scripts/embed_entities.py --recreate` | 用最終的描述、aliases、MENTIONS 重嵌。10.2/10.4/10.5 寫進 Qdrant 的都是它們在 Neo4j 寫下的狀態的投影，8b 從 Neo4j 重讀，全部涵蓋 |
-  | 10.6 | `scripts/validate_kg.py --live --target staging`、`scripts/check_identity.py --target staging --fail-on id` | 判準見 Step 10.6 |
+  | 10.6 | `scripts/validate_kg.py --live --target staging`、`scripts/check_identity.py --target staging --fail-on id`、`scripts/tools/check_edge_set.py --target staging` | 判準見 Step 10.6 |
   | export | `scripts/export_event_registry.py --check` | 結束碼 0 才算建完。只有刻意改 registry 的批次才不帶 `--check` 重寫，並人工審 diff |
 
-- **一致性**：結構層（Step 0，已驗證逐位元相同）、NER 半邊（600 筆樣本重跑 2,830/2,830 相同）、TSK、curated 層都是決定性的。LLM 產物（Step 1 Phase 4 的 grounded 半邊、Step 6 R4、Step 7 描述，temperature=0.2）重跑必有漂移，所以重灌鏈一律重用凍結產物：grounded 半邊與描述在 `output/frozen/`，關係沿用 relations.jsonl。只有刻意重跑 LLM 的批次（2A、2B、延後-B/C）才會讓這些層變動。
-- ⚠ Step 6 長跑注意（已驗證，比舊說法嚴重）：checkpoint 是在配對**送進 R4 之前**逐對寫入的，所以 R4 中途崩潰後 `--resume` 會把整批配對當成已處理，產出 0 條 LLM 邊；`--no-llm` 與 `--pericope-id` 都以覆寫模式改寫 `relations.jsonl` 與 `relations_unclassified.jsonl`（extract_relations.py:117-128、171-235）。第 2A 批修好之前，不要對既有產物重跑 Step 6；試跑時用 `RE_OUTPUT_PATH`、`RE_CHECKPOINT_PATH`、`RE_UNCLASSIFIED_PATH` 導到別的檔案，跑完比對量級（歷史 run 約 6,958 條）。
+  **W1 為什麼跳過 Step 1**：`output/ner_*.jsonl` 是第 0 批在 7526e12 之前產生的 NER 半邊，字典已把流珥併進葉忒羅。merge 不會拒絕它，只發 WARNING，接著寫出少了 person:liuer 的 entities.jsonl（9,119 行）；6.05 再因 6 列的端點 person:liuer 不存在而硬失敗。所以 W1 不重寫兩個實體檔，只確認它們仍是第 0 批的 build（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §6 #10）。check_merged_inputs 只用於 W1。
+
+- **一致性**：結構層（Step 0，已驗證逐位元相同）、NER 半邊（600 筆樣本重跑 2,830/2,830 相同）、TSK、curated 層、6.05（同一份輸入連跑兩次逐位元相同）都是決定性的。LLM 產物（Step 1 Phase 4 的 grounded 半邊、Step 6 R4、Step 7 描述，temperature=0.2）重跑必有漂移，所以重灌鏈一律重用凍結產物：grounded 半邊與描述在 `output/frozen/`，關係沿用 relations.jsonl，再由 6.05 處理。只有刻意重跑 LLM 的批次（2A、2B、延後-B/C）才會讓這些層變動。
+- **事前登記**（[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §3）：W1 的期望檔（1A 的 `relations_expected.json`、`residuals_expected.json`，1B 的 `xref.json`）與合併允許清單 `config/kg_diff_allow_batch1w1.yaml`，都在 W1 第 2 步（staging 重建）之前產生並記下 sha256；重建與 R2 只拿來比對，看過 staging 的 diff 之後不可再改。順序與指令見 [staging_promotion.md](staging_promotion.md) R2。
+- ⚠ Step 6 長跑注意（已驗證，比舊說法嚴重）：checkpoint 是在配對**送進 R4 之前**逐對寫入的（`_stream_with_checkpoint`），所以 R4 中途崩潰後 `--resume` 會把整批配對當成已處理，產出 0 條 LLM 邊；`--no-llm` 與 `--pericope-id` 都以覆寫模式改寫 `relations.jsonl` 與 `relations_unclassified.jsonl`。第 2A 批修好之前，不要對既有產物重跑 Step 6；試跑時用 `RE_OUTPUT_PATH`、`RE_CHECKPOINT_PATH`、`RE_UNCLASSIFIED_PATH` 導到別的檔案，跑完比對量級（歷史 run 約 6,958 條）。
 
 ## Step 0: 經文切分與 sha 閘門
 
@@ -343,7 +351,7 @@ uv run --project scripts python scripts/import_neo4j.py
 ## Step 6: 關係抽取（Grounded RE）
 
 ### 說明
-為 Entity 之間補上語意關係邊（FATHER_OF、RULED、BORN_IN 等 37 種），修復對照論文 *Graph RAG Survey* 後發現的「Entity↔Entity 邊 = 0」最大缺口。LLM 受限於 yaml schema 候選池（不能自由生成關係名稱），且 `evidence_span` 必須是上下文子字串才會被接受。
+為 Entity 之間補上語意關係邊（FATHER_OF、RULED、BORN_IN 等 37 種），修復對照論文 *Graph RAG Survey* 後發現的「Entity↔Entity 邊 = 0」最大缺口。LLM 受限於 yaml schema 候選池（不能自由生成關係名稱），且 `evidence_span` 必須是上下文子字串才會被接受。產物是原始 triples：第 1A 批起先經 Step 6.05 清理，6.1 只匯入 6.05 的輸出。
 
 ### 前提
 - Step 5 完成（Entity / Pericope / MENTIONS 已在 Neo4j）
@@ -356,21 +364,22 @@ uv run --project scripts python scripts/import_neo4j.py
 - Neo4j（Entity + Pericope + MENTIONS）
 - Postgres `pericopes.content`
 
-### Grounded 4-Phase Pipeline
+### Grounded Pipeline
 | Phase | 動作 |
 |------|------|
 | R1 Pair Mining | 同 pericope 共現 entity 對（schema type-allowed 才保留） |
-| R2 Rule Classifier | yaml `prompt_signals` regex/keyword 命中（高信心走規則） |
 | R3 Domain Priors | yaml priors 直接賦邊（專家共識，bypass LLM） |
 | R4 Grounded LLM | gemma4:31b-it-q8_0 從候選池選一個或回 NONE，evidence 必須是子字串 |
-| R5 Inverse Materializer | FATHER_OF↔SON_OF 自動雙向 |
+| R5 Inverse Materializer | 選用，加 `--inverse` 才跑（預設關閉，REL-02）。schema 只為不分性別的兩對（ANCESTOR_OF／DESCENDANT_OF、TEACHER_OF／DISCIPLE_OF）保留反向；6.05 本來就會丟掉反向列 |
+
+R2（yaml `prompt_signals` 的字面訊號規則，方向取自 id 順序）已在第 1A 批移除（REL-01）：每個候選對都進 R4，親屬的字面訊號改由 6.05 的錨定句型處理。2026-05 那次 run 的 relations.jsonl 仍含 R2 的規則列（772）與 R5 的反向列（752），由 6.05 丟掉。
 
 ### 指令
 ```bash
 # 完整抽取（估 10-20 小時離線；支援 --resume）
 uv run --project scripts python -m scripts.relation_extraction.extract_relations --resume
 
-# 規則 + priors only（無 LLM，適合快速驗證）
+# priors only（無 LLM，適合快速驗證）
 uv run --project scripts python -m scripts.relation_extraction.extract_relations --no-llm
 
 # 限定 pericope 範圍 debug
@@ -378,31 +387,95 @@ uv run --project scripts python -m scripts.relation_extraction.extract_relations
 ```
 
 ### 輸出
-- `output/relations.jsonl`（最終 triples）
+- `output/relations.jsonl`（原始 triples，Step 6.05 的輸入）
 - `output/relations_checkpoint.jsonl`（resumable state；`--resume` 讀此檔跳過已處理對）
-- `output/relations_unclassified.jsonl`（LLM 回 NONE 的對，事後分析是否擴張 schema）
+- `output/relations_unclassified.jsonl`（LLM 回 NONE 的對，事後分析是否擴張 schema；也是已退役的 10.3 的輸入）
+
+---
+
+## Step 6.05: 關係後處理（第 1A 批起）
+
+### 說明
+Step 6 寫出各 phase 的全部產物：字母序規則列（phase 2）、priors（3）、LLM 列（4）、反向物化列（5）。第 1A 批之前 6.1 原樣匯入它們。6.05 夾在中間：離線（不連庫、不看 `KG_TARGET`），依固定順序跑一串清理規則，寫出 6.1 唯一接受的 `output/relations_clean.jsonl` 與報告 `output/relations_clean.report.json`。程式是 `scripts/relation_extraction/relation_postprocess.py`，句型與防護在 `config/relations/anchored_rules.yaml`。
+
+### 輸入
+- `output/` 的 relations.jsonl（W1 沿用 2026-05 的 6,958 列）、entities.jsonl、entity_mentions.jsonl、chunks.jsonl、pericopes.jsonl
+- `config/curated/entity_overrides.yaml`（最終型別）、`config/relations/anchored_rules.yaml`、`config/relations/biblical_relations.yaml`
+- 端點不在 entities.jsonl、某列沒有可辨識的 source、檔案讀不到，或規則跑完後同一個鍵還有兩列，都在寫檔之前停下（結束碼 1）
+
+### 規則（依序；W1 實跑，輸入 6,958 列）
+| 規則 | 動作 | W1 |
+|---|---|---|
+| drop_inverse | 丟 R5 的反向物化列 | −752 |
+| rules_to_anchored | 丟 R2 的字母序規則列，換成錨定句型命中（見下） | −772；錨定唯一鍵 +328 |
+| drop_llm_event_event | 丟兩端都是 Event 的 LLM 列（PRECEDED_BY、CAUSED：同段落探勘出的配對，多半是雜訊） | −38 |
+| domain_range | 丟 schema 不接受的端點型別（以 entity_overrides 之後的最終型別判斷） | −13 |
+| provenance_gate | 丟兩端沒有同時出現在出處段落的列。MENTIONS 取 10.2「但」過濾之後的狀態；prior、curated 豁免 | −1 |
+| flag_id_order | id 序關係（CAUSED、LOCATED_IN、PRECEDED_BY、SUCCEEDED_BY）的 LLM 列標 `direction_verified: false`，與 prior 相反的丟掉 | 標記 48；與 prior 相反 −1 |
+| resolve_kinship_direction | 同一對父母子女只留一個方向，依來源 curated > prior > llm > anchored_rule | 0 |
+| dedup_undirected | 無向關係（SPOUSE_OF、SIBLING_OF、NEAR…）每對只留一列 | −6 |
+| collapse_by_key | 每個 (head, relation, tail) 一列，各來源併進 `sources`、`support_pericopes`、`evidence_count` | 7 鍵由兩個來源合成 |
+| stamp_provenance | 寫 run_id、model（LLM 列）、confidence_raw（錨定列為 null），刪掉 `confidence` | |
+
+結果 5,696 列，主來源 llm 5,313、anchored_rule 319、prior 64。10.2 刪掉 16 個泛名詞 Event 時會帶走其中 80 條，所以圖上應有 5,616 條，邊集合 sha256 `661cfc62…`（報告的 expected_after_10_2）。
+
+### 錨定句型與兩段同名防護
+- 四個句型都在同一節內比對：P1「P 的兒子／女兒 C」、P2「C 是 P 的兒子／女兒」、P3「給 F 生 C」、P4「H 的妻 W」。方向由句型決定，不看 id 順序。兩端經該段落的 MENTIONS 解析成唯一的 Person，詞庫只用 Person／Place／Group 的名稱。W1 命中 701、輸出 465、唯一鍵 328。
+- 第一段防護：子女已有 curated、prior 或 llm 的其他父母，或任一端是已知的同名節點（`guard.homonym_ids`：彼得、使徒約翰），就 abstain（W1 為 56 與 4）。第二段（`guard.disagreement`）只看第一段留下的錨定命中：同一個子女被給了兩個以上的父母，表示這個節點合併了同名的人（亞撒利雅有 11 個錨定父親），它的父母命中全數 abstain（W1 49 個子女、176 筆）。abstain 都記在報告的 conflicts。
+- `enabled: false` 是事前登記的 K9 退路：K9 人工抽樣（`scripts/tools/kin_review.py`，閘門欄位 text_correct，Wilson 下界 ≥ 0.85；[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §2.1）沒過才改。這時 6.05 照樣丟規則列，但不加錨定列，圖上應有 5,297 條（sha256 `bbc5c830…`），期望檔要用這個 sha 重產。
+
+### 報告（relations_clean.report.json）
+- pp_version（程式與設定檔的 sha256）、schema_version、rules（mode 與跑過的規則）、run_id（pp_version 加全部輸入的 sha256），以及每個輸入的 {path, sha256, rows}。
+- flow：input、各規則的 drops（依關係型別）、drops_due_to_dan_filter、anchored（命中、防護、唯一鍵與其 sha256）、flagged、collapsed_keys、output；conflicts 是每一筆 abstain 與方向衝突。
+- output：{path, sha256, rows, by_source, by_relation}。6.1 只匯入 sha256 與列數都對得上的檔。
+- expected_after_10_2：10.2 刪除泛名詞 Event 之後圖上應有的邊（edges、edge_set_sha256、by_ee_key、by_type），10.6 的 check_edge_set 拿它比對 staging。
+
+### 指令
+```bash
+# 全部規則 → output/relations_clean.jsonl 與 output/relations_clean.report.json
+uv run --project scripts python -m scripts.relation_extraction.relation_postprocess
+
+# 決定性：連跑兩次逐位元相同。輸出路徑要相同，因為報告記了 output.path；D 是 R0 的日期
+mkdir -p bak/$D/pp_run1
+cp output/relations_clean.jsonl output/relations_clean.report.json bak/$D/pp_run1/
+uv run --project scripts python -m scripts.relation_extraction.relation_postprocess
+cmp output/relations_clean.jsonl bak/$D/pp_run1/relations_clean.jsonl
+cmp output/relations_clean.report.json bak/$D/pp_run1/relations_clean.report.json
+
+# K8 的 staging-P1 對照組：不跑任何規則，6,958 列只蓋上 source、schema_version、pp_version。
+# 寫到另一組檔，不覆寫 relations_clean；6.1 以 output/relations_p1.jsonl 匯入（報告取同名的 .report.json）
+uv run --project scripts python -m scripts.relation_extraction.relation_postprocess --rules none \
+  --out output/relations_p1.jsonl --report output/relations_p1.report.json
+```
+- 輸出只取決於輸入的位元組與程式（`PP_FILES`）：列依 (head_id, relation, tail_id) 排序、沒有時間戳，jsonl 與報告都先寫暫存檔再 rename。W1 實跑兩次：output sha256 `1c0cf064…`、pp-f22a025275cc、run_id 6.05-5f333ab72253，兩個檔都 cmp 相同。改到 PP_FILES 裡任何檔都會改變 pp_version、run_id 與 output sha256（邊集合不一定變）。
+- 結束碼：0 寫出；1 輸入錯誤，什麼都沒寫；2 參數錯誤。
 
 ---
 
 ## Step 6.1: 匯入關係到 Neo4j
 
 ### 說明
-將 Step 6 抽出的 triples MERGE 到 Neo4j（idempotent，可重複執行）。透過 APOC `apoc.merge.relationship` 建立動態邊型（FATHER_OF、RULED 等）。
+把 6.05 的 relations_clean.jsonl 寫成 Entity↔Entity 邊，透過 APOC `apoc.merge.relationship` 建立動態邊型（FATHER_OF、RULED 等）。第 1A 批起：
+- **只收 6.05 的產物**：連線之前核對報告（同目錄的 `.report.json`，或 `--report`）。檔案的 sha256 與列數要等於報告的 output，每列要帶報告的 pp_version 與 head_id、relation、tail_id、source，(head_id, relation, tail_id) 不可重複；不符就結束碼 2，什麼都不匯入。Step 6 的 relations.jsonl 沒有報告，一律拒絕。
+- **只能緊接在 Step 5 之後**：語意層（MENTIONS、CROSS_REFERENCES 以外的 Entity↔Entity 邊）已經有邊時，結束碼 1、不寫入（訊息是 `Step 5 empties the graph`）。所以 6.1 不能在建好的圖上重跑，要重匯就從 Step 5 重建。`--replace` 只限 staging（source 過 staging.env 的 shell）：在同一個交易內先刪掉整個語意層（10.3 的邊也刪），再寫入檔案，供手動驗證用，標準鏈不帶。
+- **不靜默略過**：先以一次讀取列出圖裡缺的端點，缺任何一個就結束碼 1、不寫入。全部列都在同一個寫入交易內，每個 statement 寫入的邊數必須等於送出的列數，否則整個匯入回滾（結束碼 1）。
+- **邊屬性整組覆寫**：每條邊的屬性就是檔案那一列扣掉 head_id、relation、tail_id、去掉 null 值，新邊舊邊都一樣。舊版只在 ON CREATE 寫屬性，舊匯入的屬性會殘留在既有的邊上（REL-10）。
 
 ### 輸入
-- `output/relations.jsonl`（from Step 6）
+- `output/relations_clean.jsonl` 與 `output/relations_clean.report.json`（from Step 6.05）
 
 ### 邊屬性
-- `confidence`、`evidence_span`（截斷 512 字）、`source_pericope_id`、`extraction_phase`、`head_canonical`、`tail_canonical`、`notes`
+- `source`、`sources`、`run_id`、`pp_version`、`schema_version`、`extraction_phase`、`evidence_span`、`evidence_count`、`support_pericopes`、`source_pericope_id`、`head_canonical`、`tail_canonical`、`notes`
+- prior 與 LLM 列有 `confidence_raw`（Step 6 原本的 confidence；錨定列沒有），LLM 列有 `model`，錨定列有 `verse`，id 序關係的列有 `direction_verified`（LLM 列 false，prior 列 true）。不再寫 `confidence`。
 
 ### 指令
 ```bash
-uv run --project scripts python scripts/import_relations_neo4j.py output/relations.jsonl
+uv run --project scripts python scripts/import_relations_neo4j.py   # 預設讀 output/relations_clean.jsonl
 ```
 
-### 結果（規模視 Step 6 抽取結果而定）
-- Entity↔Entity 邊跨 ~37 種關係類型
-- 統計輸出：每種 relation 邊數 + Top 25 排行
+### 結果
+- W1：5,696 條、35 種關係型別；10.2 之後 5,616 條（10.6 的 check_edge_set 比對）
+- 結束碼：0 匯入（或檔案是空的）；1 已有語意層（沒帶 `--replace`）、缺端點或寫入數不符，什麼都沒寫；2 沒有輸入檔或契約拒絕，都在連線之前
 
 ---
 
@@ -417,11 +490,12 @@ Person/Place/Group 三類 entity 中有 ~4,223 個 `description` 欄位空白（
 - 重灌鏈用 `--replay` 從正式快取寫回 Neo4j，不呼叫 LLM。快取以 (entity_id, titles_sha) 定址：實體目前的標題集合雜湊對不上任何快取條目時，回報為 stale、不寫回，留到第 2B 批重生。快取裡有、圖裡沒有的實體回報為 missing。
 - **replay 排在 10.5 之後**：種子的 titles_sha 是用 live 的 MENTIONS 算的，也就是 10.2 刪掉「但」的誤命中、10.4/10.5 補上 curated 邊之後的狀態。放在 6.1 之後會讓 place:dan、person:yeteluo 判為 stale，而 10.5 對 extracted 節點不寫描述，兩條描述就永久遺失（scripts/tests/test_export_live_state.py 模擬了兩種順序）。
 - replay 是閘門：每次都把 written、stale、missing 寫成 JSON 報告（`--report`，預設 `output/frozen/replay_reports/replay_<時間>.json`；stale 附目前的標題與快取裡的 titles_sha），`--fail-on-stale` 在 stale 或 missing 不是 0 時結束碼 1。相符的列照樣寫回（冪等）。
-- **會刻意改動 MENTIONS 的批次（1A、1C、1D）**：標題集合變了，stale 是預期的，鏈會停在 Step 7。處理：(1) 讀這次的報告，逐筆確認 stale 與 missing 都落在該批預期改動的實體內（stale 條目附目前的標題與兩個 titles_sha；missing 只能來自刻意的刪除或改 id）；(2) 把清單與報告路徑列進該批紀錄並核可；(3) 確認後不帶 `--fail-on-stale` 重跑 Step 7（相符的列第一次就已寫回，重跑只是讓這一步以結束碼 0 留下報告），再接 8b。stale 的實體保留 Step 5 匯入的描述（P/P/G 是空的），留到 2B 重生；它們與 live 的描述差異逐條列進該批的 diff_kg 允許清單（`config/kg_diff_allow_<批次>.yaml` 的 `descriptions` section，見 [staging_promotion.md](staging_promotion.md) R2）。名單外的 stale 一律當退步查。
+- **第 1A、1B 批（W1）不改 MENTIONS**（10.3 退場只少了共現邊），stale 與 missing 都必須是 0：`--fail-on-stale` 結束碼不是 0 就停下查，不走下一項的核可流程。
+- **會刻意改動 MENTIONS 的批次（1C、1D）**：標題集合變了，stale 是預期的，鏈會停在 Step 7。處理：(1) 讀這次的報告，逐筆確認 stale 與 missing 都落在該批預期改動的實體內（stale 條目附目前的標題與兩個 titles_sha；missing 只能來自刻意的刪除或改 id）；(2) 把清單與報告路徑列進該批紀錄並核可；(3) 確認後不帶 `--fail-on-stale` 重跑 Step 7（相符的列第一次就已寫回，重跑只是讓這一步以結束碼 0 留下報告），再接 8b。stale 的實體保留 Step 5 匯入的描述（P/P/G 是空的），留到 2B 重生；它們與 live 的描述差異逐條列進該批的 diff_kg 允許清單（`config/kg_diff_allow_<批次>.yaml` 的 `descriptions` section，見 [staging_promotion.md](staging_promotion.md) R2）。名單外的 stale 一律當退步查。
 - 兩種模式在連線前都呼叫 `kg_target.assert_target("neo4j")`（見 [staging_promotion.md](staging_promotion.md)「執行前檢查」）。
 
 ### 前提
-- Step 5 完成；重灌鏈中還要 10.1–10.5 完成
+- Step 5 完成；重灌鏈中還要 10.1、10.2、10.4、10.5 完成
 - 產生模式：Ollama 已 pull `DESC_OLLAMA_MODEL` 指定的模型（見 Checklist 0.4）；replay 模式：快取檔存在（預設 `output/frozen/descriptions.jsonl`，可用 `--cache` 或 `DESC_CACHE_PATH` 改）
 
 ### 指令
@@ -459,6 +533,7 @@ uv run --project scripts python -m scripts.relation_extraction.desc_generator --
 
 ### Collection 設計
 - `bible_entities`（1024 維 BGE-M3，COSINE distance）；名稱取自 `QDRANT_ENTITY_COLLECTION`，與 backend 設定 `qdrant_entity_collection` 同名。staging 寫入 `bible_entities_vN`（見 [staging_promotion.md](staging_promotion.md)），10.2/10.4/10.5 的 Qdrant 同步也跟著這個變數走
+- 第 1 批 W1 的 staging collection 是 `bible_entities_v3`（建議，待 Kay 確認）：W1 的 R0 把 `scripts/tools/staging.env` 從 v2 遞增到 v3，第 0 批的 v2 留作對照，8a、8b 的 `--recreate` 只動 v3。v3 要與 `bible_entities_detB` 逐點相同，見 Step 10.6
 - payload：`{entity_id, type, canonical_name, aliases, description, pericope_titles, pericope_ids}`
 - point id：由 `entity_id` 經 UUID5 衍生（idempotent upsert）
 
@@ -520,13 +595,13 @@ uv run --project scripts python scripts/import_tsk_crossrefs.py output/cross_ref
 ## Step 10: KG 修復與 curated 資料重放（重建後必跑）
 
 ### 說明
-P0（2026-07-06）與排序層修復產生的 curated 資料**不在 Step 1–9 的 JSONL 產物中**：字典 aliases、噪音清理、共現關係搶救、18 個頭部 Event 節點、106 條手動 MENTIONS 邊。任何全量重建（重灌三庫）後若不重放此鏈，圖譜停在 P0 前狀態，檢索端依賴的資料（alias 查詢、curated Event 錨點、keyword-exact pin 的橋）會缺失。
+P0（2026-07-06）與排序層修復產生的 curated 資料**不在 Step 1–9 的 JSONL 產物中**：字典 aliases、噪音清理、18 個頭部 Event 節點、106 條手動 MENTIONS 邊。P0 的共現關係搶救（10.3）已在第 1A 批退出預設鏈，見下方指令。任何全量重建（重灌三庫）後若不重放此鏈，圖譜停在 P0 前狀態，檢索端依賴的資料（alias 查詢、curated Event 錨點、keyword-exact pin 的橋）會缺失。
 
 **不需重跑**：`backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`（Step 5 匯入時自動處理）。
 
 ### 前提
-- Step 1–6.1、8a、9 完成（Step 7 與 8b 排在 10.5 之後）；`QDRANT_ENTITY_COLLECTION` 指向的 entity collection 已由 8a 建好：10.2（staging 下）刪點、10.4 upsert 對不存在的 collection 都會失敗，10.5 找不到 extracted 點會 SystemExit
-- `output/relations_unclassified.jsonl` 存在（Step 6 產物，10.3 的輸入）
+- Step 1–6.1、8a、9 完成（W1 以 check_merged_inputs 取代 Step 1；Step 7 與 8b 排在 10.5 之後）；`QDRANT_ENTITY_COLLECTION` 指向的 entity collection 已由 8a 建好：10.2（staging 下）刪點、10.4 upsert 對不存在的 collection 都會失敗，10.5 找不到 extracted 點會 SystemExit
+- 只有 legacy 的 10.3 讀 `output/relations_unclassified.jsonl`（Step 6 產物）
 - `config/curated/manual_graph_patches.jsonl`（git-tracked，106 邊/6 節點快照，10.5 的輸入）
 - `config/curated/entity_overrides.yaml`（git-tracked，10.2 yehehua 改成的型別取自此檔；碰任何庫之前先驗證，格式不對就中止）
 
@@ -539,12 +614,14 @@ uv run --project scripts python scripts/backfill_aliases.py
 # 10.2 噪音清理（「但」子字串誤命中 gate、16 泛名詞 Event 刪除、耶和華 Group→Person，型別讀 entity_overrides.yaml）
 #      同步範圍不是三庫：「但」只刪 Neo4j 的 MENTIONS（PG entity_mentions 仍有 place:dan 1,882 列，
 #      Qdrant 不動）；generic-events 與 yehehua 才同步 PG 與 Qdrant。KG_TARGET=staging 下：碰 Neo4j 之前先確認 PG 兩張表與
-#      entity collection 都在，同步失敗就中止，修好後以同一組 --actions 重跑會補完同步；production 照舊只印警告並跳過
+#      entity collection 都在，同步失敗就中止，修好後以同一組 --actions 重跑會補完同步；production 照舊只印警告並跳過。
+#      第 1C 批把「但」的判斷移進 NER 之前，「但」在這裡仍是真的刪除
 uv run --project scripts python scripts/cleanup_noise_entities.py
 
-# 10.3 未分類關係搶救（relations_unclassified.jsonl → +5,641 PARTICIPATED_IN、+3,419 OCCURRED_IN）
-#      第 1A 批退場（共現升格，嚴格精確率約 0.2）；之後不在預設鏈中
-uv run --project scripts python scripts/backfill_event_relations.py
+# 10.3 已退出預設鏈（第 1A 批，D2）：共現升格，嚴格精確率約 0.2，而且晚於 6.05，出處閘門管不到。
+#      不帶旗標時結束碼 2、不連庫。只有 K8 的 staging-P1 對照組與重現論文數字才跑（原本 +5,641 PARTICIPATED_IN、
+#      +3,419 OCCURRED_IN；寫入 source 'cooccurrence'、extraction_phase 7）：
+# uv run --project scripts python scripts/backfill_event_relations.py --legacy-cooccurrence
 
 # 10.4 頭部 Event curated 補灌（11 個既有 Event 灌問法別名 + 18 curated 節點/56 邊；三庫同步）
 uv run --project scripts python scripts/backfill_head_events.py
@@ -554,8 +631,7 @@ uv run --project scripts python scripts/backfill_manual_patches.py --apply
 ```
 
 ### 順序依據
-- 10.2 在 10.3 之前：10.3 以 MATCH 找端點，先刪掉的泛名詞 Event 就不會再被接上搶救邊。
-- 但這個順序**擋不住**「但」的孤兒邊。10.2 對 place:dan 只刪 MENTIONS，不刪節點，也不刪衍生邊；10.3 讀的是 2026-05 的 relations_unclassified.jsonl 快照，也不查 live MENTIONS，所以照樣產生 370 條 OCCURRED_IN 孤兒邊（同族另有 RULED 3、NEAR 1）。兩步對調結果相同。根治靠 provenance 閘門（第 1A 批的 6.05）與 10.3 退場，不是調整順序（計畫 §3.3）。
+- 語意邊全部由 6.1 匯入，6.05 事先就以 10.2 之後的狀態判斷：provenance_gate 用 10.2「但」過濾後的 MENTIONS（同一份 geo_rules），擋掉只靠「但」誤命中支撐的列（W1：NEAR 1）；expected_after_10_2 預先扣掉 10.2 刪除泛名詞 Event 時帶走的 80 條。10.2 對 place:dan 只刪 MENTIONS，不刪節點與衍生邊。第 1A 批之前的「但」孤兒邊（370 條 OCCURRED_IN）來自 10.3：它讀 2026-05 的 relations_unclassified.jsonl 快照、不查 live MENTIONS，調整順序擋不住，所以根治靠 6.05 的閘門與 10.3 退場（計畫 §3.3）。
 - 10.4/10.5 依賴 entity collection（8a）與 PG entities 表（Step 3）；10.5 放最後 — 其快照導出自 10.4 之後的線上狀態。
 - Step 7（replay）在 10.5 之後、8b 在 Step 7 之後：理由見「執行順序」與 Step 7。
 
@@ -581,6 +657,21 @@ uv run --project scripts python scripts/check_identity.py --target staging --fai
 - **第 0 批的判準**。等價重建刻意保留 live 的狀態，所以不會全綠；預期差異要逐項列進該批的紀錄，不可直接 ratchet：
   - validate_kg：hard（H1、H2、H7）全過；結束碼 2 只能來自事先列出的退步。已知 R1 從基準 1,938 升到約 2,124（以 output/ JSONL 投影實測；verse remap 後 start_pos=0 從 1,785 變 1,947）。「但」的 370 條孤兒邊仍會被 10.3 重新產生（H3 到第 1A 批才是硬門檻）；mention_count 也會變。
   - check_identity：`--fail-on id` 結束碼 0，即三庫 id 集合差為 0。其餘欄位的差異在第 1D 批前屬正常：PG 的 P/P/G description 全空（Step 3 早於 Step 7；live 為 3,045 筆）、PG aliases（部分 10.x 補的 aliases 只進了 Neo4j；live 為 14 筆）。staging 的 Qdrant 預期 0 差異（8b 從 Neo4j 重讀，aliases 是原生 list），但 live 的 Qdrant aliases 是 JSON 字串（9,093 筆），所以 staging 對 live 的比對在這裡會不同，同樣屬正常。
+- **第 1A 批起的硬門檻：H3、H9、H11、R6**（關係），加上第 0 批的 H1、H2、H7、D1。
+  - H3（沒有共現支撐的衍生邊）、H9（domain/range 違規）是 0；H11 的 source_null、inverse_edges、cooccurrence_edges、rule_edges、llm_event_event_edges、unflagged_id_order_edges、undirected_pair_duplicates 都是 0；R6 的 probe_failures、contradictions、female_head 是 0，failing_probes 是 `[]`。R6 的函數性指標（functional_violation_rate 與全部父母編碼的多父母計數）仍是 record ratchet。
+  - W1 預期（以 validate_kg 對 6.05 輸出的離線投影實跑）：以上全為 0；R6 的 functional_violation_rate 0.0638（基準 0.5357）、children_with_2plus_nonfemale_parents 8（基準 135）、children_with_gt2_parents 1（基準 87）；PROBES 的 failing 剩 7 個 id，都在基準的 13 個之內（subset 規則，不算退步），1A 新增的探針全過。升版前的 prod 是 H3 374、H9 14、H11.source_null 15,926，所以 1A 同樣只驗 staging。
+  - 結束碼 1 一律不接受；結束碼 2 只能來自 R1（第 0 批的殘差，W1 不改 MENTIONS）。在 staging 的 shell：
+    ```bash
+    uv run --project scripts python scripts/validate_kg.py --live --target staging --json > bak/$D/validate_staging_w1.json
+    jq -e '.failures == [] and .regressions - ["R1"] == []' bak/$D/validate_staging_w1.json
+    jq -e --slurpfile e config/kg_expect/batch1_w1/residuals_expected.json \
+      '.checks.R1.metrics.book_region_mentions.value == $e[0].validate_kg.R1.b' bak/$D/validate_staging_w1.json
+    uv run --project scripts python scripts/tools/check_edge_set.py --target staging --expect config/kg_expect/batch1_w1/relations_expected.json
+    ```
+    兩個 jq 都要結束碼 0：沒有失敗、退步只有 R1，而且 R1 等於事前登記的殘差（`residuals_expected.json`，2,124）。mention_count 的 4 筆殘差由 R2 的 diff_kg 比對，合併允許清單的 mention_count 只取自 `residuals_allow.yaml`。
+  - check_edge_set 結束碼 0：staging 的語意層等於 6.05 報告扣掉 10.2（5,616 條，sha256 `661cfc62…`；ee 鍵 prior 22、llm 35、anchored_rule 4），也等於事前登記的 `relations_expected.json`。第 0 批的 staging 是 15,926 條，結束碼 1。
+  - 6.05 連跑兩次逐位元相同（Step 6.05 的 cmp）。
+  - entity collection（建議，待 Kay 確認）：W1 不改實體、MENTIONS 與描述，所以 8b 寫出的 `bible_entities_v3` 必須與 W1-0 用同一份 embed 程式建的 `bible_entities_detB` 逐點相同（point id、向量、payload；比法同 [W0 紀錄](records/2026-10-05_kg_batch1_w0_results.md)「補記：W1-0 opt-in 決定性」）。通過後 detB 可以刪。
 - **第 1B 批起的硬門檻：H8、R4、R11**（交叉引用）。
   - H8：`no_provenance`（curated 與 votes 都沒有）、`unflagged`（curated 或 tsk 任一未設）、`flag_mismatch`（curated 與 curated_sources 是否非空不符，或 tsk 與 votes 是否存在不符），target 都是 0。
   - R4：source 或 curated_sources 含 supplementary 的邊，逐個錨點判定。`misaligned` 是任一錨點某一端的第一節不在端點段落的 verse_range；`misaligned_any_verse` 是任一節不在；`unparsed` 是錨點或段落讀不了。target 都是 0。沒有錨點的邊（1B 之前建的圖）退回讀舊欄位 source_verses/target_verses。

@@ -15,7 +15,10 @@ image, the deploy-guard as the first command of the data load, one ratchet
 for the wave, the U3 count grep, the image never rolled
 back ahead of the data and rolled back by the recorded id (compose with
 --no-deps from a clean main-checkout shell), and no votes=999 sentinel left
-in the mechanism docs.
+in the mechanism docs. Batch 1A (W1) pins the single W1 rebuild chain (Step 1
+replaced by check_merged_inputs, the offline 6.05 before any store write, no
+10.3), the same order in the from-scratch chain and the README pipeline, and
+the 1A hard checks and gates of Step 10.6.
 """
 from __future__ import annotations
 
@@ -56,6 +59,15 @@ HELP_ARGV = {
     "import_qdrant": [PY, "scripts/import_qdrant.py", "--help"],
     "import_neo4j": [PY, "scripts/import_neo4j.py", "--help"],
     "xref_probe": [PY, "scripts/tools/xref_probe.py", "--help"],
+    "extract_relations": [PY, "-m", "scripts.relation_extraction.extract_relations", "--help"],
+    "relation_postprocess": [PY, "-m", "scripts.relation_extraction.relation_postprocess", "--help"],
+    "import_relations_neo4j": [PY, "scripts/import_relations_neo4j.py", "--help"],
+    "backfill_event_relations": [PY, "scripts/backfill_event_relations.py", "--help"],
+    "check_merged_inputs": [PY, "scripts/tools/check_merged_inputs.py", "--help"],
+    "check_edge_set": [PY, "scripts/tools/check_edge_set.py", "--help"],
+    "kin_review": [PY, "scripts/tools/kin_review.py", "--help"],
+    "relations_expect": [PY, "scripts/tools/relations_expect.py", "--help"],
+    "residuals_expect": [PY, "scripts/tools/residuals_expect.py", "--help"],
 }
 _SCRIPT_RE = re.compile(r"\b(" + "|".join(sorted(HELP_ARGV, key=len, reverse=True)) + r")(?:\.py)?\b")
 _FLAG_RE = re.compile(r"(?<![\w-])(--[a-z][a-z0-9-]*)")
@@ -625,6 +637,94 @@ def test_mechanism_docs_describe_the_curated_flag_not_the_votes_sentinel(path):
              if ("999" in line and re.search(r"votes|哨兵|sentinel|curated|手工", line))
              or re.search(r"916 (?:條 )?curated", line)]
     assert not stale, stale
+
+
+# ---------------------------------------------------------------- batch 1A: the W1 rebuild chain
+
+def _rebuild_chain(text: str) -> tuple[list[str], list[list[str]]]:
+    """The bold `**0 → …**` line's steps and the cells of the table right under it, found the
+    way test_export_live_state finds them (first such line; a non-table line ends the table)."""
+    chain = re.search(r"^\s*\*\*(0 → .+?)\*\*\s*$", text, re.M)
+    assert chain, "no **0 → …** chain line"
+    rows = []
+    for line in text[chain.end():].lstrip("\n").splitlines():
+        if not line.strip().startswith("|"):
+            break
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if cells[0] and cells[0] != "順序" and not set(cells[0]) <= {"-", ":"}:
+            rows.append(cells)
+    return [step.strip() for step in chain.group(1).split("→")], rows
+
+
+_STEP1 = re.compile(r"^1(?![\d.])")   # a Step-1 label (1, 1(merge)), not 10.x
+
+
+def test_w1_chain_skips_step1_and_runs_6_05_before_any_store_write():
+    # plan §6 #10: a W1 merge drops person:liuer; 6.05 is offline, so its input errors stop the
+    # chain before Step 3/5 write anything. Decision O3: validate_output and 1B's xref checks are in it.
+    labels, rows = _rebuild_chain(doc_text())
+    table = [row[0] for row in rows]
+    for steps in (labels, table):
+        assert not [s for s in steps if _STEP1.match(s) or s.startswith("10.3") or "–" in s], steps
+        order = _positions(steps, ("check_merged_inputs", "6.05", "3", "5", "6.1", "10.5", "7"))
+        assert order == sorted(order), steps
+    order = _positions(labels, ("check_step0", "validate_output（必跑）", "xref_probe expect", "check_merged_inputs"))
+    assert order == sorted(order), labels
+    step9 = labels[_positions(labels, ("9",))[0]]
+    assert "連跑兩次" in step9 and "fingerprint --expect" in step9, step9
+    assert _positions(table, ("0", "xref_probe expect", "check_merged_inputs")) == [0, 1, 2], table
+    command = {row[0]: row[1] for row in rows}
+    assert "validate_output.py output" in command["0"] and "（選）" not in " ".join(rows[0]), rows[0]
+    assert "xref_rebuild.json" in command["xref_probe expect"], command["xref_probe expect"]
+    assert "fingerprint --target staging --expect" in command["9"], command["9"]
+    assert command["6.1"] == "`scripts/import_relations_neo4j.py`", command["6.1"]   # no --replace, default input
+    assert "bible_entities_v3" in " ".join(rows[table.index("8a")]), rows[table.index("8a")]
+    assert "person:liuer" in section(doc_text(), "執行順序")
+
+
+def test_fresh_chain_runs_validate_output_and_6_05_and_leaves_10_3_out():
+    fresh = next(line for line in section(doc_text(), "執行順序").splitlines() if line.startswith("- **從零**"))
+    assert "→ `validate_output.py`（必跑" in fresh and "（選）" not in fresh, fresh
+    assert "→ 5 → 6 → 6.05 → 6.1 → 8a → 9 → 10.1 → 10.2 → 10.4 → 10.5 → 7 → 8b → 10.6" in fresh, fresh
+    assert "10.3" not in fresh and "10.1–10.5" not in fresh, fresh
+
+
+def test_readme_pipeline_runs_6_05_before_6_1_and_keeps_10_3_legacy_only():
+    block = section(read(ROOT / "README.md"), "Data Pipeline")
+    commands = _commands(block)
+    _in_order(commands, ("relation_extraction.extract_relations", "relation_extraction.relation_postprocess",
+                         "import_relations_neo4j.py", "backfill_aliases.py", "cleanup_noise_entities.py",
+                         "backfill_head_events.py", "backfill_manual_patches.py --apply"))
+    assert not [c for c in commands if "backfill_event_relations" in c], commands
+    assert "# python scripts/backfill_event_relations.py --legacy-cooccurrence" in block
+    assert "--legacy-cooccurrence" in help_text("backfill_event_relations")
+    assert "共現關係搶救、" not in block
+
+
+def test_steps_6_to_10_document_6_05_the_new_6_1_and_the_retired_10_3():
+    text = doc_text()
+    s605 = section(text, "Step 6.05:")
+    for needle in ("relations_clean.jsonl", "relations_clean.report.json", "--rules none", "enabled: false",
+                   "752", "772", "319", "5,696", "5,616", "661cfc62", "bbc5c830", "cmp", "kin_review"):
+        assert needle in s605, needle
+    s6 = section(text, "Step 6:")
+    assert "R2 Rule Classifier" not in s6 and "--inverse" in s6 and "priors only" in s6
+    s61 = section(text, "Step 6.1:")
+    assert "idempotent" not in s61 and "output/relations.jsonl" not in s61 and "--replace" in s61
+    s7 = section(text, "Step 7:")
+    assert "（1A、1C、1D）" not in s7 and "第 1A、1B 批" in s7
+    s10 = section(text, "Step 10:")
+    assert not [c for c in _commands(s10) if "backfill_event_relations" in c]
+    assert "backfill_event_relations.py --legacy-cooccurrence" in s10 and "共現關係搶救、" not in s10
+    assert "bible_entities_v3" in section(text, "Step 8:")
+
+
+def test_10_6_lists_the_hard_1a_checks_and_their_w1_gates():
+    s106 = section(doc_text(), "10.6")
+    for needle in ("第 1A 批起的硬門檻：H3、H9、H11、R6", "D1", "jq -e '.failures == [] and .regressions - [\"R1\"] == []'",
+                   "residuals_expected.json", "relations_expected.json", "PROBES", "bible_entities_detB",
+                   "check_edge_set.py --target staging --expect config/kg_expect/batch1_w1/relations_expected.json"):
+        assert needle in s106, needle
 
 
 # ---------------------------------------------------------------- plan

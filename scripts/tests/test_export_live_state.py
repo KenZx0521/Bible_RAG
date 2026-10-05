@@ -541,7 +541,7 @@ def test_replay_before_curated_overlay_loses_descriptions(tmp_path, no_llm):
 _DOC = Path(__file__).resolve().parents[2] / "docs" / "build_database.md"
 # 8a builds the collection 10.4/10.5 write to; replay needs 10.5's MENTIONS;
 # 8b re-embeds with the replayed descriptions; 10.6 checks the final state.
-_CHAIN_ORDER = ("5", "6.1", "8a", "10.1", "7", "8b", "10.6")
+_CHAIN_ORDER = ("5", "6.1", "8a", "10.1", "10.5", "7", "8b", "10.6")
 
 
 def _positions(labels, keys):

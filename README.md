@@ -486,9 +486,10 @@ python scripts/import_qdrant_hybrid.py
 # 6. 匯入 Neo4j 圖譜
 python scripts/import_neo4j.py
 
-# 7. 關係抽取與匯入（grounded RE）
+# 7. 關係抽取、後處理（Step 6.05，離線）與匯入（grounded RE）
 python -m scripts.relation_extraction.extract_relations
-python scripts/import_relations_neo4j.py
+python -m scripts.relation_extraction.relation_postprocess
+python scripts/import_relations_neo4j.py   # 只收 6.05 的 relations_clean.jsonl；圖裡已有語意邊就拒絕（第 6 步清庫後才是空的）
 
 # 8. TSK 串珠交叉引用（Pericope 層 CROSS_REFERENCES）
 #    資料檔不進 git（output/ 被 ignore），fresh clone 需先自
@@ -501,12 +502,12 @@ python scripts/embed_entities.py
 # 10. KG 修復與 curated 資料重放（重建後必跑，順序與細節見 docs/build_database.md Step 10）
 python scripts/backfill_aliases.py
 python scripts/cleanup_noise_entities.py
-python scripts/backfill_event_relations.py
+# python scripts/backfill_event_relations.py --legacy-cooccurrence   # 10.3 已退出預設鏈，只供對照組與重現論文
 python scripts/backfill_head_events.py
 python scripts/backfill_manual_patches.py --apply
 ```
 
-> 第 10 步不可省略：P0 與排序層修復的 curated 資料（字典 aliases、噪音清理、共現關係搶救、18 個頭部 Event 節點、106 條手動圖邊）不在 JSONL 產物中，缺了它們重建出的圖譜停在 P0 前狀態。唯一不需重放的是 `backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`。執行紀錄：[docs/records/2026-07-06_kg_p0_execution.md](docs/records/2026-07-06_kg_p0_execution.md)、[docs/records/2026-07-06_kg_fixes_execution.md](docs/records/2026-07-06_kg_fixes_execution.md)。
+> 第 10 步不可省略：P0 與排序層修復的 curated 資料（字典 aliases、噪音清理、18 個頭部 Event 節點、106 條手動圖邊）不在 JSONL 產物中，缺了它們重建出的圖譜停在 P0 前狀態。P0 的共現關係升格（10.3，嚴格精確率約 0.2）已在第 1A 批退出預設鏈，不帶 `--legacy-cooccurrence` 會直接結束。唯一不需重放的是 `backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`。執行紀錄：[docs/records/2026-07-06_kg_p0_execution.md](docs/records/2026-07-06_kg_p0_execution.md)、[docs/records/2026-07-06_kg_fixes_execution.md](docs/records/2026-07-06_kg_fixes_execution.md)。
 
 ## Development
 
