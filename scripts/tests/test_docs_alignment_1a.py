@@ -20,9 +20,12 @@ pipeline: the chain rows carry what their W1 step needs (check_merged_inputs
 quotes the plan's sha pins and restores before comparing, 6.05 points to the
 registered output, 6.1 to the --replace re-imports, 10.6 runs the exact Step
 10.6 commands plus v3 == detB); the 從零 line swaps Step 1 only when the
-artifacts were restored; Step 6.05 dates its R2/R5 rows; a new R11 target is
+artifacts were restored; Step 6.05 dates its R2/R5 rows and says run_id
+leaves out the mode (the K8 control shares W1's); a new R11 target is
 edited, since --accept moves only the value; every backend-staging up skips
-deps; and the README runs the Step 0 gates first.
+deps; and the README pipeline, under a pointer to 「執行順序」, runs the Step 0
+gates first and sketches the 從零 chain (8a/8b around 10.x, Step 7, 10.6 on
+prod, export_event_registry --check last).
 """
 from __future__ import annotations
 
@@ -33,8 +36,9 @@ import import_relations_neo4j as imp
 import validate_kg as vk
 from scripts.tools import check_merged_inputs as cmi
 from scripts.tools import check_w1_registration as cwr
-from test_docs_alignment import (D_GUARD, ROOT, _blocks, _commands, _first, _in_order, _positions, _rebuild_chain,
-                                 doc_text, headings, help_text, read, section, staging_text)
+from test_docs_alignment import (D_GUARD, ROOT, _blocks, _commands, _documented_flags, _first, _in_order, _positions,
+                                 _rebuild_chain, doc_text, headings, help_text, read, section, staging_text)
+from test_relation_postprocess import _run
 
 SEED = "20261007"
 EXPECT = "config/kg_expect/batch1_w1/"
@@ -387,6 +391,41 @@ def test_r2_names_all_three_10_6_checks_for_the_staging_shell():
 
 
 def test_readme_pipeline_runs_the_step0_gates_before_entity_extraction():
+    # decision O3: validate_output is mandatory before any store write
     commands = _commands(section(read(ROOT / "README.md"), "Data Pipeline"))
     _in_order(commands, ("process_bible.py", "check_step0.py", "validate_output.py output", "extract_entities.py",
-                         "import_neo4j.py"))
+                         "import_postgres.py", "import_neo4j.py"))
+
+
+README_CHECKED = ("validate_kg", "check_identity", "export_event_registry", "desc_generator", "check_merged_inputs")
+
+
+def test_readme_pipeline_sketches_the_fresh_chain_and_defers_to_the_build_order():
+    # 從零 line: … 6.1 → 8a → 9 → 10.1 … 10.5 → 7 → 8b → 10.6 (--target prod) → export_event_registry --check
+    block = section(read(ROOT / "README.md"), "Data Pipeline")
+    commands = _commands(block)
+    _in_order(commands, ("import_relations_neo4j.py", "embed_entities.py --recreate", "import_tsk_crossrefs.py",
+                         "backfill_aliases.py", "backfill_manual_patches.py --apply",
+                         "relation_extraction.desc_generator", "validate_kg.py --live --target prod",
+                         "check_identity.py --target prod --fail-on id", "export_event_registry.py --check"))
+    embeds = [i for i, command in enumerate(commands) if "embed_entities.py" in command]
+    assert len(embeds) == 2 and all("--recreate" in commands[i] for i in embeds), commands   # 8a and 8b
+    assert embeds[1] > _first(commands, "desc_generator") and "export_event_registry.py --check" in commands[-1]
+    lead = block.split("```", 1)[0]
+    for needle in ("](docs/build_database.md)「執行順序」為準", "`check_merged_inputs.py`", "`--replay --fail-on-stale`"):
+        assert needle in lead, needle
+    missing = {(s, f) for s in README_CHECKED for f in _documented_flags(s, ROOT / "README.md") if f not in help_text(s)}
+    assert not missing, missing
+
+
+def test_step6_05_says_run_id_leaves_out_the_mode():
+    # the K8 control (--rules none) and W1 report one run_id for different outputs
+    (_, everything), (_, none) = _run("all"), _run("none")
+    assert everything["run_id"] == none["run_id"] and everything["output"]["sha256"] != none["output"]["sha256"]
+    s605 = section(doc_text(), "Step 6.05:")
+    report = next(line for line in s605.splitlines() if line.startswith("- pp_version"))
+    for needle in ("不含 mode", "`--rules none` 對照組與 W1 的 run_id 相同", "rules.mode", "output 的 sha256"):
+        assert needle in report, needle
+    start = s605.index("# K8 的 staging-P1 對照組")
+    k8 = s605[start:s605.index("--rules none", start)]
+    assert "# run_id 不含 mode，與 W1 的相同；紀錄要連同 rules.mode 與 output 的 sha256 引用" in k8, k8

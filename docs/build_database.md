@@ -426,7 +426,7 @@ uv run --project scripts python -m scripts.relation_extraction.extract_relations
 - `enabled: false` 是事前登記的 K9 退路：K9 人工抽樣（`scripts/tools/kin_review.py`，閘門欄位 text_correct，Wilson 下界 ≥ 0.85；[第 1 批計畫](records/2026-10-04_kg_batch1_plan.md) §2.1）沒過才改。這時 6.05 照樣丟規則列，但不加錨定列，圖上應有 5,297 條（sha256 `bbc5c830…`），期望檔要用這個 sha 重產。
 
 ### 報告（relations_clean.report.json）
-- pp_version（程式與設定檔的 sha256）、schema_version、rules（mode 與跑過的規則）、run_id（pp_version 加全部輸入的 sha256），以及每個輸入的 {path, sha256, rows}。
+- pp_version（程式與設定檔的 sha256）、schema_version、rules（mode 與跑過的規則）、run_id（pp_version 加全部輸入的 sha256），以及每個輸入的 {path, sha256, rows}。run_id 只識別程式與輸入，不含 mode：K8 的 `--rules none` 對照組與 W1 的 run_id 相同，紀錄引用 run_id 時要連同 rules.mode 與 output 的 sha256。
 - flow：input、各規則的 drops（依關係型別）、drops_due_to_dan_filter、anchored（命中、防護、唯一鍵與其 sha256）、flagged、collapsed_keys、output；conflicts 是每一筆 abstain 與方向衝突。
 - output：{path, sha256, rows, by_source, by_relation}。6.1 只匯入 sha256 與列數都對得上的檔。
 - expected_after_10_2：10.2 刪除泛名詞 Event 之後圖上應有的邊（edges、edge_set_sha256、by_ee_key、by_type），10.6 的 check_edge_set 拿它比對 staging。
@@ -444,6 +444,7 @@ cmp output/relations_clean.jsonl bak/$D/pp_run1/relations_clean.jsonl
 cmp output/relations_clean.report.json bak/$D/pp_run1/relations_clean.report.json
 
 # K8 的 staging-P1 對照組：不跑任何規則，6,958 列只蓋上 source、schema_version、pp_version。
+# run_id 不含 mode，與 W1 的相同；紀錄要連同 rules.mode 與 output 的 sha256 引用
 # 寫到另一組檔，不覆寫 relations_clean；6.1 以 output/relations_p1.jsonl 匯入（報告取同名的 .report.json）
 uv run --project scripts python -m scripts.relation_extraction.relation_postprocess --rules none \
   --out output/relations_p1.jsonl --report output/relations_p1.report.json

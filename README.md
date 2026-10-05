@@ -463,50 +463,60 @@ uv run python run_eval.py --visualize-only
 
 ## Data Pipeline
 
-建構資料庫的完整管線：
+從零重建的概略。順序與閘門以 [docs/build_database.md](docs/build_database.md)「執行順序」為準：各步的判準、指令前綴（`uv run --project scripts python`）與第 1 批 W1 的重灌鏈都在那裡，下面括號裡的 Step 是該文件的步驟編號。若從 [docs/staging_promotion.md](docs/staging_promotion.md) R0 的 `llm_artifacts.tgz` 還原了 LLM 產物，三個呼叫 LLM 的步驟都不必重跑：Step 1 在第 1 批期間改跑 `check_merged_inputs.py`，不要 merge（W1 的重灌鏈同樣以它取代 Step 1）；Step 6 沿用還原的 relations.jsonl；Step 7 改走 `--replay --fail-on-stale`。
 
 ```bash
-# 1. 處理聖經 Markdown → JSON
+# 1. 處理聖經 Markdown → JSON（Step 0）
 python scripts/process_bible.py
 python scripts/tools/check_step0.py         # sha 閘門，結束碼 0 才往下
 python scripts/validate_output.py output    # 交叉引用閘門（第 1B 批起必跑），結束碼 0 才往下
 
-# 2. 抽取實體 (人物/地名/事件)
+# 2. 抽取實體 (人物/地名/事件)（Step 1，含 LLM，要跑數小時）
 python scripts/extract_entities.py
 
-# 3. 生成嵌入向量與 BM25 稀疏向量
+# 3. 生成嵌入向量與 BM25 稀疏向量（Step 2 / 2.1）
 python scripts/generate_embeddings.py
 python scripts/generate_sparse_vectors.py
 
-# 4. 匯入 PostgreSQL
+# 4. 匯入 PostgreSQL（Step 3）
 python scripts/import_postgres.py
 
-# 5. 匯入 Qdrant（dense 與 hybrid 兩個 collection）
+# 5. 匯入 Qdrant（dense 與 hybrid 兩個 collection；Step 4 / 4.1）
 python scripts/import_qdrant.py
 python scripts/import_qdrant_hybrid.py
 
-# 6. 匯入 Neo4j 圖譜
+# 6. 匯入 Neo4j 圖譜（Step 5，先清空再重建）
 python scripts/import_neo4j.py
 
-# 7. 關係抽取、後處理（Step 6.05，離線）與匯入（grounded RE）
+# 7. 關係抽取、後處理（Step 6.05，離線）與匯入（grounded RE；Step 6 / 6.05 / 6.1）
 python -m scripts.relation_extraction.extract_relations
 python -m scripts.relation_extraction.relation_postprocess
 python scripts/import_relations_neo4j.py   # 只收 6.05 的 relations_clean.jsonl；圖裡已有語意邊就拒絕（第 6 步清庫後才是空的）
 
-# 8. TSK 串珠交叉引用（Pericope 層 CROSS_REFERENCES）
+# 8. Entity 節點向量化，第一次（Step 8a，Qdrant bible_entities collection）
+#    只為讓第 10 步有 collection 可寫，這時 P/P/G 的描述還是空的
+python scripts/embed_entities.py --recreate
+
+# 9. TSK 串珠交叉引用（Pericope 層 CROSS_REFERENCES；Step 9）
 #    資料檔不進 git（output/ 被 ignore），fresh clone 需先自
 #    https://github.com/scrollmapper/bible_databases 下載（openbible.info CC-BY）
 python scripts/import_tsk_crossrefs.py output/cross_references_tsk.txt
 
-# 9. Entity 節點向量化（Qdrant bible_entities collection）
-python scripts/embed_entities.py
-
-# 10. KG 修復與 curated 資料重放（重建後必跑，順序與細節見 docs/build_database.md Step 10）
+# 10. KG 修復與 curated 資料重放（重建後必跑，Step 10.1–10.5，細節見 docs/build_database.md Step 10）
 python scripts/backfill_aliases.py
 python scripts/cleanup_noise_entities.py
 # python scripts/backfill_event_relations.py --legacy-cooccurrence   # 10.3 已退出預設鏈，只供對照組與重現論文
 python scripts/backfill_head_events.py
 python scripts/backfill_manual_patches.py --apply
+
+# 11. Entity 描述（Step 7，含 LLM；必須在 10.5 之後）與第二次向量化（Step 8b，用最終的描述重嵌）
+python -m scripts.relation_extraction.desc_generator
+python scripts/embed_entities.py --recreate
+
+# 12. 品質閘門（Step 10.6；從零用 --target prod，在乾淨的 shell 跑，判準見 Step 10.6）與 registry 比對
+python scripts/validate_kg.py --live --target prod
+python scripts/check_identity.py --target prod --fail-on id
+python scripts/export_event_registry.py --check   # 結束碼 0 才算建完
 ```
 
 > 第 10 步不可省略：P0 與排序層修復的 curated 資料（字典 aliases、噪音清理、18 個頭部 Event 節點、106 條手動圖邊）不在 JSONL 產物中，缺了它們重建出的圖譜停在 P0 前狀態。P0 的共現關係升格（10.3，嚴格精確率約 0.2）已在第 1A 批退出預設鏈，不帶 `--legacy-cooccurrence` 會直接結束。唯一不需重放的是 `backfill_verse_mentions.py` — 其 verse→pericope remap 已內建於 `import_neo4j.py`。執行紀錄：[docs/records/2026-07-06_kg_p0_execution.md](docs/records/2026-07-06_kg_p0_execution.md)、[docs/records/2026-07-06_kg_fixes_execution.md](docs/records/2026-07-06_kg_fixes_execution.md)。
