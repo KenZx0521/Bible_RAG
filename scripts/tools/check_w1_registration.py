@@ -8,15 +8,25 @@ before the staging rebuild, and the rebuild only compares against them
 One of them cannot be made later: residuals_expect reads the staging graph
 while it is still the batch-0 build, and refuses a b side that holds semantic
 edges with a source (exit 2). Step 5 empties that graph and 6.1 writes such
-edges, so a residuals_expected.json missing at Step 5 is lost for good. Before
-this check the chain only compared xref.json. This one reads no database:
+edges, so a residuals_expected.json missing at Step 5, or one --check at R2
+refuses (exit 2, e.g. one written before mentions_props existed), is lost for
+good. Before this check the chain only compared xref.json. This one reads no
+database:
 
   registered  each file the runbook registers under config/kg_expect/batch1_w1/
               (relations_expected.json, relations_allow.yaml,
               residuals_expected.json, residuals_allow.yaml, xref.json,
               xref_allow.yaml, kg_diff_allow_batch1w1.sha256) exists, is not
               empty and equals its blob at HEAD: committed, and no edit since,
-              staged or not.
+              staged or not. The three expected files must also hold what their
+              tool writes and the later gates read (INVALID otherwise):
+              residuals_expected.json passes residuals_expect.load_registered,
+              the loader of --check (version, mentions_props with both per-side
+              digests, basis targets read with no sourced semantic edge, R1
+              integers); relations_expected.json is version 1 with the three
+              sha256 the 6.05 row compares, and check_edge_set --expect loads
+              it; xref.json is version 1 with the fingerprint and the
+              xref_provenance counts xref_probe fingerprint --expect compares.
   merged      config/kg_diff_allow_batch1w1.yaml hashes to the sha256 that
               kg_diff_allow_batch1w1.sha256 registers (the sha256sum line
               diff_kg --merge-out --sha-out writes), and is byte for byte the
@@ -59,17 +69,19 @@ for _path in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "scripts")):
     if _path not in sys.path:
         sys.path.insert(0, _path)
 
-from scripts.tools import diff_kg  # noqa: E402
-from scripts.tools.check_edge_set import CannotCheck as BadReport, load_reference  # noqa: E402
+from scripts.tools import diff_kg, residuals_expect  # noqa: E402
+from scripts.tools.check_edge_set import CannotCheck as BadReport, load_expect, load_reference  # noqa: E402
 
 EXPECT_DIR = "config/kg_expect/batch1_w1/"
 # the merge order of docs/staging_promotion.md R2 item 2: 1A relations, 1A residuals, 1B xref
 FRAGMENTS = tuple(EXPECT_DIR + name for name in ("relations_allow.yaml", "residuals_allow.yaml", "xref_allow.yaml"))
 RELATIONS_EXPECTED = EXPECT_DIR + "relations_expected.json"
+RESIDUALS_EXPECTED = EXPECT_DIR + "residuals_expected.json"
+XREF_EXPECTED = EXPECT_DIR + "xref.json"
 MERGED = "config/kg_diff_allow_batch1w1.yaml"
 MERGED_SHA = EXPECT_DIR + "kg_diff_allow_batch1w1.sha256"
-REGISTERED = (RELATIONS_EXPECTED, FRAGMENTS[0], EXPECT_DIR + "residuals_expected.json", FRAGMENTS[1],
-              EXPECT_DIR + "xref.json", FRAGMENTS[2], MERGED_SHA)
+REGISTERED = (RELATIONS_EXPECTED, FRAGMENTS[0], RESIDUALS_EXPECTED, FRAGMENTS[1],
+              XREF_EXPECTED, FRAGMENTS[2], MERGED_SHA)
 DEFAULT_REPORT = Path("output") / "relations_clean.report.json"
 SHA_FIELDS = ("report_sha256", "output_sha256", "edge_set_sha256")
 GIT_TIMEOUT_S = 30
@@ -82,7 +94,9 @@ HAZARD = (
     "residuals_expect refuses it (exit 2) and residuals_expected.json can never be produced. Register what "
     "is missing as docs/staging_promotion.md R2 says (W1 的交叉引用檢查 item 1; item 2's --merge-out "
     "--sha-out; W1 的關係層檢查 items 1-2), commit everything under config/kg_expect/batch1_w1/ and rerun "
-    "this check. A 6.05 output that is not the registered one: find out why first (an input or PP_FILES "
+    "this check. An INVALID expected file was written by an older tool or edited: regenerate it with the "
+    "tool at HEAD (residuals_expect only while 7688 still holds the batch-0 build), commit it and rerun. "
+    "A 6.05 output that is not the registered one: find out why first (an input or PP_FILES "
     "changed); never regenerate an expected file to fit it, and never edit one after seeing a staging "
     "diff (plan §3).")
 
@@ -172,17 +186,27 @@ def check_merged(root: Path) -> str:
            f"({' + '.join(map(str, counts))} entries)"
 
 
-def registered_605(root: Path) -> dict[str, str]:
-    """relations_expected.json's report, output and edge-set sha256."""
-    try:
-        data = _read(root / RELATIONS_EXPECTED)
-    except Failed as e:
-        raise Failed("INVALID", f"nothing registered: {RELATIONS_EXPECTED}: {e}") from e
+def _version_1(path: Path, rel: str) -> dict:
+    """A version 1 JSON document; Failed INVALID otherwise (or MISSING, EMPTY, UNREADABLE)."""
+    data = _read(path)
     try:
         doc = json.loads(data)
     except ValueError as e:
-        raise Failed("INVALID", f"{RELATIONS_EXPECTED} is not JSON: {e}") from e
-    shas = {field: doc.get(field) if isinstance(doc, dict) else None for field in SHA_FIELDS}
+        raise Failed("INVALID", f"{rel} is not JSON: {e}") from e
+    if not isinstance(doc, dict) or doc.get("version") != 1:
+        raise Failed("INVALID", f"{rel} is not a version 1 document: version "
+                                f"{doc.get('version') if isinstance(doc, dict) else None!r}")
+    return doc
+
+
+def registered_605(root: Path) -> dict[str, str]:
+    """relations_expected.json's report, output and edge-set sha256."""
+    try:
+        doc = _version_1(root / RELATIONS_EXPECTED, RELATIONS_EXPECTED)
+    except Failed as e:
+        why = str(e) if e.status == "INVALID" else f"nothing registered: {RELATIONS_EXPECTED}: {e}"
+        raise Failed("INVALID", why) from e
+    shas = {field: doc.get(field) for field in SHA_FIELDS}
     missing = [field for field, sha in shas.items() if not (isinstance(sha, str) and _SHA256.fullmatch(sha))]
     if missing:
         raise Failed("INVALID", f"{RELATIONS_EXPECTED} has no {', '.join(missing)} (64 hex)")
@@ -205,6 +229,51 @@ def check_605(root: Path, report: Path) -> str:
             f"{ref.sha256[:12]}… ({ref.edges:,} edges after 10.2) as {RELATIONS_EXPECTED} registered")
 
 
+# --- the expected files' content: what each tool writes and the later gates read ---------
+
+def relations_content(root: Path) -> str:
+    """version 1, the three sha256 of the 6.05 row, and check_edge_set --expect's own loader."""
+    shas = registered_605(root)
+    try:
+        load_expect(root / RELATIONS_EXPECTED)
+    except BadReport as e:
+        raise Failed("INVALID", str(e)) from e
+    return f"version 1, edge set {shas['edge_set_sha256'][:12]}…"
+
+
+def residuals_content(root: Path) -> str:
+    """residuals_expect's own loader, the one --check runs at R2 when nothing can regenerate the file."""
+    try:
+        doc = residuals_expect.load_registered(root / RESIDUALS_EXPECTED)
+    except residuals_expect.CannotGenerate as e:
+        raise Failed("INVALID", str(e)) from e
+    props, r1 = doc["mentions_props"], doc["validate_kg"]["R1"]
+    return (f"mentions_props of {props['edges']['a']:,} and {props['edges']['b']:,} edges, sha256 a "
+            f"{props['sha256']['a'][:12]}…, b {props['sha256']['b'][:12]}…, R1.b {r1['b']:,}")
+
+
+def xref_content(root: Path) -> str:
+    """version 1, the fingerprint and the xref_provenance counts xref_probe fingerprint --expect compares."""
+    doc = _version_1(root / XREF_EXPECTED, XREF_EXPECTED)
+    fingerprint, provenance = doc.get("fingerprint"), doc.get("xref_provenance")
+    if not (isinstance(fingerprint, str) and _SHA256.fullmatch(fingerprint)):
+        raise Failed("INVALID", f"{XREF_EXPECTED} has no fingerprint (64 hex): {fingerprint!r}")
+    if not (isinstance(provenance, dict) and provenance and all(
+            isinstance(n, int) and not isinstance(n, bool) and n >= 0 for n in provenance.values())):
+        raise Failed("INVALID", f"{XREF_EXPECTED} has no xref_provenance of edge counts: {str(provenance)[:200]}")
+    return f"version 1, fingerprint {fingerprint[:12]}…, {len(provenance)} xref_provenance keys"
+
+
+CONTENT = {RELATIONS_EXPECTED: relations_content, RESIDUALS_EXPECTED: residuals_content,
+           XREF_EXPECTED: xref_content}
+
+
+def check_registered(root: Path, rel: str) -> str:
+    """rel is committed and unmodified; an expected file also holds what its tool writes."""
+    text = check_committed(root, rel)
+    return f"{text}; {CONTENT[rel](root)}" if rel in CONTENT else text
+
+
 # --- run -----------------------------------------------------------------------------
 
 def _shown(path: Path, root: Path) -> str:
@@ -217,7 +286,7 @@ def _shown(path: Path, root: Path) -> str:
 def run_checks(root: Path, report: Path) -> list[tuple[str, str, str]]:
     """(status, name, text) per check, in order; CannotCheck when git cannot read the checkout."""
     require_checkout(root)
-    checks = [(rel, lambda rel=rel: check_committed(root, rel)) for rel in REGISTERED]
+    checks = [(rel, lambda rel=rel: check_registered(root, rel)) for rel in REGISTERED]
     checks += [(MERGED, lambda: check_merged(root)), (_shown(report, root), lambda: check_605(root, report))]
     rows = []
     for name, check in checks:
@@ -247,8 +316,8 @@ def main(argv: list[str] | None = None) -> int:
     if failed:
         print(f"STOP: not as registered: {', '.join(failed)}.\n{HAZARD}")
         return 1
-    print("OK: the W1 expected files, fragments and merged allowlist sha256 are committed, the merged "
-          "allowlist and the 6.05 output are the registered ones; continue with Step 3")
+    print("OK: the W1 expected files (holding what their tools write), fragments and merged allowlist sha256 "
+          "are committed, the merged allowlist and the 6.05 output are the registered ones; continue with Step 3")
     return 0
 
 

@@ -15,8 +15,9 @@ batch-0 staging (b) shows now. This reads them before W1 step 2 rebuilds b, and 
                b was read), git_head, premise,
                validate_kg: {a, b: {origin, sha256}}}, mention_count: {entity_id: {a, b,
                delta}}, mentions_props: {edges: {a, b}, only_a, only_b, differing:
-               {property: edges}}, validate_kg: {R1: {a, b}}}. At R2, validate_kg's R1
-               on the W1 staging must equal validate_kg.R1.b, and --check must pass.
+               {property: edges}, sha256: {a, b}}, validate_kg: {R1: {a, b}}}. At R2,
+               validate_kg's R1 on the W1 staging must equal validate_kg.R1.b, and
+               --check must pass.
   --allow-out  1A's residuals fragment of the merged W1 allowlist, in diff_kg's --allow
                YAML (diff_kg.render_allowlist): one exact entry per entity whose
                mention_count differs (section mention_count, key the entity_id, delta
@@ -28,7 +29,14 @@ with diff_kg.diff_entities, so the keys and deltas are the ones diff_kg reports 
 diff_kg counts MENTIONS but never compares their properties; mentions_props does: an
 edge is (source label, source id, entity_id), and per property it counts the edges on
 both sides whose value differs (a property missing on one side differs from any value),
-plus the edges on one side only.
+plus the edges on one side only. Counts cannot see a change confined to edges or
+properties that already differ (another start_pos on an edge whose start_pos differs
+anyway), so mentions_props also holds one digest per side, sha256.a and sha256.b: the
+sha256 of the canonical JSON (sorted keys, no spaces, UTF-8, no NaN) of the list of
+[source label, source id, entity_id, [[property, value], ...] by property name], sorted
+by the canonical JSON of (source label, source id, entity_id). It does not depend on the
+order the edges are read in; 1, 1.0, true and "1" are different values; a value JSON
+cannot hold (a temporal type, NaN) exits 2 instead of being converted.
 R1 is book_region_mentions from validate_kg --live --json reports on the same two
 targets (--validate-a, --validate-b), never typed by hand: a report's origin must name
 the target this tool resolves (live:NAME (URI)), and its R1 must be a measured integer.
@@ -47,10 +55,14 @@ side. Nothing is written on 1 or 2: both files go to <path>.tmp first and replac
 their paths only after both writes succeeded.
 
 --check FILE (R2, after W1 step 2) re-reads only the MENTIONS of both targets and writes
-nothing: 0 when mentions_props equals FILE's, 1 when a count differs (each one printed),
-2 when FILE is not a registered residuals_expected.json with mentions_props, its basis
-names other targets than this run resolves (checked before any read), or a target
-cannot be read. b holding 1A's semantic edges is expected there.
+nothing: 0 when both digests and every count equal FILE's mentions_props (W1 changes no
+MENTIONS: each side's edges and values are exactly the registered ones); 1 when a digest
+or a count differs (each one printed: sha256.a or sha256.b names the side); 2 when FILE
+is not what this tool writes (load_registered: version, mentions_props with both
+digests, basis targets, no sourced semantic edge on either side, R1 integers; a file
+written before the digests existed is refused), its basis names other targets than this
+run resolves (all checked before any read), or a target cannot be read. b holding 1A's
+semantic edges is expected there.
 
 Targets resolve through check_identity.resolve_target, as in diff_kg: --a prod is
 refused in a shell that exports staging settings, so run this from a shell without
@@ -108,10 +120,12 @@ RETURN CASE WHEN s:Chunk THEN 'Chunk' WHEN s:Pericope THEN 'Pericope' ELSE head(
 R1_METRIC = "book_region_mentions"
 VERSION = 1
 _GLOB = re.compile(r"[*?\[]")
+_SHA256 = re.compile(r"[0-9a-f]{64}")
+SIDES = ("a", "b")
 PREMISE = ("W1 不改 MENTIONS 與實體：W1 staging 的 mention_count、MENTIONS 屬性差異與 R1 必須等於 b"
            "（batch-0 staging，於 W1 Step 2 重建前讀取，語意邊皆無 source）。R2 時 diff_kg 的 mention_count "
            "差異須恰為本檔各實體，validate_kg 的 R1 須等於 validate_kg.R1.b，residuals_expect --check 須讀到"
-           "與 mentions_props 相同的逐屬性條數。")
+           "與 mentions_props 相同的兩邊逐邊摘要（sha256.a、sha256.b）與逐屬性條數。")
 HEADER = (
     "1A residuals fragment of the merged W1 allowlist, written by residuals_expect.py: regenerate it, "
     "never edit it.",
@@ -235,14 +249,28 @@ def residuals(a: dict[str, dict], b: dict[str, dict]) -> dict[str, dict]:
     return out
 
 
+def _canonical(value) -> str:
+    """Canonical JSON: sorted keys, no spaces, no NaN; TypeError or ValueError for a value JSON cannot hold."""
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+def mentions_sha256(edges: dict[tuple, dict]) -> str:
+    """One side's MENTIONS digest: every edge and every property value, independent of the read order."""
+    rows = [[*edge, [[prop, props[prop]] for prop in sorted(props)]] for edge, props in edges.items()]
+    rows.sort(key=lambda row: _canonical(row[:3]))
+    return hashlib.sha256(_canonical(rows).encode("utf-8")).hexdigest()
+
+
 def mentions_props(a: dict[tuple, dict], b: dict[tuple, dict]) -> dict:
-    """Per property, the MENTIONS edges on both sides whose value differs; the edges on one side only."""
+    """Per property, the MENTIONS edges on both sides whose value differs; the edges on one side only;
+    each side's digest."""
     differing = Counter()
     for edge in a.keys() & b.keys():
         pa, pb = a[edge], b[edge]
         differing.update(prop for prop in pa.keys() | pb.keys() if pa.get(prop) != pb.get(prop))
     return {"edges": {"a": len(a), "b": len(b)}, "only_a": len(a.keys() - b.keys()),
-            "only_b": len(b.keys() - a.keys()), "differing": dict(sorted(differing.items()))}
+            "only_b": len(b.keys() - a.keys()), "differing": dict(sorted(differing.items())),
+            "sha256": {"a": mentions_sha256(a), "b": mentions_sha256(b)}}
 
 
 def build(targets: dict, sides: dict, r1: dict, at: str) -> tuple[dict, str]:
@@ -285,18 +313,25 @@ def generate(args) -> tuple[dict, str]:
 
 # --- check (R2) ------------------------------------------------------------------
 
+def _is_int(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 def _is_count(value) -> bool:
-    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+    return _is_int(value) and value >= 0
 
 
 def flat_props(props) -> dict[str, int]:
-    """mentions_props as {edges.a, edges.b, only_a, only_b, differing.<property>: edges}; ValueError
-    for any other shape."""
-    if not isinstance(props, dict) or set(props) != {"edges", "only_a", "only_b", "differing"}:
-        raise ValueError(f"mentions_props is not {{edges, only_a, only_b, differing}}: {str(props)[:200]}")
-    edges, differing = props["edges"], props["differing"]
-    if not isinstance(edges, dict) or set(edges) != {"a", "b"} or not isinstance(differing, dict):
+    """mentions_props's counts as {edges.a, edges.b, only_a, only_b, differing.<property>: edges};
+    ValueError for any other shape, or digests that are not {a, b} of 64 lowercase hex."""
+    if not isinstance(props, dict) or set(props) != {"edges", "only_a", "only_b", "differing", "sha256"}:
+        raise ValueError(f"mentions_props is not {{edges, only_a, only_b, differing, sha256}}: {str(props)[:200]}")
+    edges, differing, digests = props["edges"], props["differing"], props["sha256"]
+    if not isinstance(edges, dict) or set(edges) != set(SIDES) or not isinstance(differing, dict):
         raise ValueError("mentions_props.edges is not {a, b}, or differing is not a mapping")
+    if not (isinstance(digests, dict) and set(digests) == set(SIDES)
+            and all(isinstance(d, str) and _SHA256.fullmatch(d) for d in digests.values())):
+        raise ValueError(f"mentions_props.sha256 is not {{a, b}} of 64 lowercase hex: {str(digests)[:200]}")
     flat = {"edges.a": edges["a"], "edges.b": edges["b"], "only_a": props["only_a"], "only_b": props["only_b"],
             **{f"differing.{prop}": n for prop, n in differing.items()}}
     bad = sorted(key for key, n in flat.items() if not _is_count(n))
@@ -305,16 +340,30 @@ def flat_props(props) -> dict[str, int]:
     return flat
 
 
+def _check_side(doc: dict, side: str) -> None:
+    """ValueError unless basis.<side> names its target and was read with no sourced semantic edge
+    (build refuses either side holding one), and validate_kg.R1.<side> is an integer (load_r1)."""
+    if not all(isinstance(_dig(doc, "basis", side, key), str) for key in ("target", "neo4j_uri")):
+        raise ValueError(f"basis.{side} names no target and neo4j_uri")
+    sourced = _dig(doc, "basis", side, "sourced_semantic_edges")
+    if not (_is_int(sourced) and sourced == 0):
+        raise ValueError(f"basis.{side}.sourced_semantic_edges is {sourced!r}, not 0: not read off the batch-0 build")
+    r1 = _dig(doc, "validate_kg", "R1", side)
+    if not _is_int(r1):
+        raise ValueError(f"validate_kg.R1.{side} is {r1!r}, not an integer")
+
+
 def load_registered(path: Path) -> dict:
-    """A residuals_expected.json this tool wrote: mentions_props, and both targets in its basis."""
+    """A residuals_expected.json as this tool writes it: version, mentions_props with both digests,
+    and per side the basis target, no sourced semantic edge and an integer R1. check_w1_registration
+    runs this on the committed file before Step 3, while staging still holds the batch-0 build."""
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(doc, dict) or doc.get("version") != VERSION:
             raise ValueError(f"not a version {VERSION} residuals_expected.json")
         flat_props(doc.get("mentions_props"))
-        for side in ("a", "b"):
-            if not all(isinstance(_dig(doc, "basis", side, key), str) for key in ("target", "neo4j_uri")):
-                raise ValueError(f"basis.{side} names no target and neo4j_uri")
+        for side in SIDES:
+            _check_side(doc, side)
     except (OSError, ValueError) as e:
         raise CannotGenerate(f"{path}: not a residuals_expected.json with mentions_props written by this "
                              f"tool: {e}") from e
@@ -322,10 +371,13 @@ def load_registered(path: Path) -> dict:
 
 
 def mismatches(registered: dict, measured: dict) -> list[str]:
-    """One line per count that differs from the registered one (a property not listed counts 0)."""
+    """One line per side whose digest differs from the registered one, then one per count that
+    differs (a property not listed counts 0)."""
     reg, now_ = flat_props(registered), flat_props(measured)
-    return [f"{key}: registered {reg.get(key, 0):,}, now {now_.get(key, 0):,}"
-            for key in sorted(reg.keys() | now_.keys()) if reg.get(key, 0) != now_.get(key, 0)]
+    digests = [f"sha256.{side}: registered {registered['sha256'][side]}, now {measured['sha256'][side]}"
+               for side in SIDES if registered["sha256"][side] != measured["sha256"][side]]
+    return digests + [f"{key}: registered {reg.get(key, 0):,}, now {now_.get(key, 0):,}"
+                      for key in sorted(reg.keys() | now_.keys()) if reg.get(key, 0) != now_.get(key, 0)]
 
 
 def check(args) -> tuple[dict, list[str]]:
@@ -351,7 +403,8 @@ def props_summary(props: dict) -> list[str]:
     differing = ", ".join(f"{prop} {n:,}" for prop, n in props["differing"].items()) or "none"
     return [f"  MENTIONS: {props['edges']['a']:,} -> {props['edges']['b']:,} edges, only a {props['only_a']:,}, "
             f"only b {props['only_b']:,}",
-            f"    properties differing on the edges in both: {differing}"]
+            f"    properties differing on the edges in both: {differing}",
+            f"    sha256 a {props['sha256']['a']}, b {props['sha256']['b']}"]
 
 
 def summary(doc: dict, entries: int) -> list[str]:
@@ -439,7 +492,8 @@ def _run_check(args) -> int:
         return 2
     head = f"MENTIONS properties of a {args.a}, b {args.b} against {args.check}"
     if differ:
-        print("\n".join([f"MISMATCH: {head}: {len(differ)} counts differ", *(f"  {line}" for line in differ)]),
+        print("\n".join([f"MISMATCH: {head}: {len(differ)} registered values differ",
+                         *(f"  {line}" for line in differ)]),
               file=sys.stderr)
         return 1
     print("\n".join([f"residuals_expect --check: {head}: equal", *props_summary(measured)]))

@@ -1,7 +1,8 @@
 """W1 residual expectations (scripts/tools/residuals_expect.py, batch 1A-T5): the
-per-entity mention_count residuals, the per-property MENTIONS residual and R1, read while
-staging still holds the batch-0 build; and --check, which re-reads the MENTIONS residual
-of the W1 staging at R2 against the registered file.
+per-entity mention_count residuals, the per-property MENTIONS residual with one digest of
+every edge and value per side, and R1, read while staging still holds the batch-0 build;
+and --check, which re-reads the MENTIONS of the W1 staging at R2 and requires both digests
+and every count to equal the registered file's.
 
 Both targets are fakes: read_query answers the tool's own statements from per-target
 rows, and the entity rows are diff_kg's PROFILE_QUERIES["entities"] rows, so the
@@ -13,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -67,6 +69,23 @@ STAGING_MENTIONS = [
 EXPECTED_MENTIONS = {"edges": {"a": 5, "b": 5}, "only_a": 0, "only_b": 0,
                      "differing": {"backfilled": 1, "created_from": 1, "end_pos": 1, "source_granularity": 2,
                                    "start_pos": 1, "verse_mention_freq": 1}}
+
+
+def _canonical(value) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+def _digest(rows: list[dict]) -> str:
+    """The per-side MENTIONS digest as documented, recomputed here: sha256 of the canonical JSON
+    list of [source label, source id, entity_id, [[property, value], ...] by property], by edge."""
+    edges = [[r["source_label"], r["source_id"], r["entity_id"], [[k, r["props"][k]] for k in sorted(r["props"])]]
+             for r in rows]
+    return hashlib.sha256(_canonical(sorted(edges, key=lambda e: _canonical(e[:3]))).encode("utf-8")).hexdigest()
+
+
+def _counts(props: dict) -> dict:
+    """mentions_props without its two digests."""
+    return {key: value for key, value in props.items() if key != "sha256"}
 
 
 class FakeDriver:
@@ -346,10 +365,13 @@ def test_fragment_bytes_do_not_depend_on_the_run(tmp_path, graphs, monkeypatch):
 def test_mentions_props_counted_per_property_from_fake_reads(tmp_path, graphs, capsys):
     assert run(tmp_path) == 0
 
-    assert _expected(tmp_path)["mentions_props"] == EXPECTED_MENTIONS
+    props = _expected(tmp_path)["mentions_props"]
+    assert _counts(props) == EXPECTED_MENTIONS
+    assert props["sha256"] == {"a": _digest(PROD_MENTIONS), "b": _digest(STAGING_MENTIONS)}
     out = capsys.readouterr().out
     assert "MENTIONS: 5 -> 5 edges, only a 0, only b 0" in out
     assert "source_granularity 2" in out and "created_from 1" in out
+    assert f"sha256 a {_digest(PROD_MENTIONS)}, b {_digest(STAGING_MENTIONS)}" in out
 
 
 def test_mention_edges_on_one_side_only_are_counted_not_compared(tmp_path, graphs):
@@ -359,7 +381,18 @@ def test_mention_edges_on_one_side_only_are_counted_not_compared(tmp_path, graph
 
     assert run(tmp_path) == 0
 
-    assert _expected(tmp_path)["mentions_props"] == dict(EXPECTED_MENTIONS, only_a=1, only_b=1)
+    assert _counts(_expected(tmp_path)["mentions_props"]) == dict(EXPECTED_MENTIONS, only_a=1, only_b=1)
+
+
+def test_mentions_digest_is_the_edges_and_their_exact_values_not_the_read_order():
+    """Sorted by edge, so the read order does not matter; canonical JSON, so 1, 1.0 and true differ."""
+    edges = rx.mention_edges(STAGING_MENTIONS, "staging")
+    shuffled = rx.mention_edges(STAGING_MENTIONS[::-1], "staging")
+    assert list(edges) != list(shuffled)
+    assert rx.mentions_sha256(edges) == rx.mentions_sha256(shuffled) == _digest(STAGING_MENTIONS)
+    key = ("Pericope", "mrk_001_001", "person:make")
+    seen = {rx.mentions_sha256({**edges, key: dict(edges[key], start_pos=value)}) for value in (1, 1.0, True, "1")}
+    assert len(seen) == 4 and rx.mentions_sha256(edges) in seen   # start_pos 1 is the registered value
 
 
 def test_mention_key_read_twice_exits_2(tmp_path, graphs, capsys):
@@ -370,6 +403,17 @@ def test_mention_key_read_twice_exits_2(tmp_path, graphs, capsys):
 
     assert _nothing_written(tmp_path)
     assert "exo_018_001" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("value", [date(2026, 10, 6), float("nan")], ids=["temporal", "nan"])
+def test_a_mentions_value_json_cannot_hold_exits_2_rather_than_being_converted(tmp_path, graphs, capsys, value):
+    rows = [dict(m, props=dict(m["props"])) for m in STAGING_MENTIONS]
+    rows[4]["props"]["created_at"] = value
+    graphs.mentions["staging"] = rows
+
+    assert run(tmp_path) == 2
+
+    assert _nothing_written(tmp_path) and "CANNOT GENERATE" in capsys.readouterr().err
 
 
 def check(registered: Path, *extra: str) -> int:
@@ -397,6 +441,40 @@ def test_check_passes_on_a_w1_staging_that_keeps_the_registered_residual(tmp_pat
     assert graphs.queries == [rx.MENTIONS_CYPHER, rx.MENTIONS_CYPHER]   # MENTIONS only, both sides
     out = capsys.readouterr().out
     assert str(registered) in out and "source_granularity 2" in out
+    assert f"sha256 a {_digest(PROD_MENTIONS)}, b {_digest(STAGING_MENTIONS)}" in out
+
+
+def test_check_does_not_depend_on_the_order_the_edges_are_read_in(tmp_path, graphs):
+    assert run(tmp_path) == 0
+    _w1_staging(graphs)
+    graphs.mentions = {name: rows[::-1] for name, rows in graphs.mentions.items()}
+
+    assert check(tmp_path / "residuals_expected.json") == 0
+
+
+@pytest.mark.parametrize("side, name, row, change", [
+    ("b", "staging", 1, {"start_pos": 11}),           # start_pos already differs on this edge (prod has none)
+    ("b", "staging", 0, {"source_granularity": "verse"}),   # already differing: pericope -> verse
+    ("a", "prod", 1, {"verse_mention_freq": 2}),       # prod's side of an already-differing edge
+])
+def test_check_exits_1_on_a_change_the_counts_cannot_see(tmp_path, graphs, capsys, side, name, row, change):
+    """W1 does not change MENTIONS: one value on an edge whose property already differs leaves every
+    count as registered, and only that side's digest shows it."""
+    assert run(tmp_path) == 0
+    registered = _expected(tmp_path)["mentions_props"]["sha256"]
+    _w1_staging(graphs)
+    rows = [dict(m, props=dict(m["props"])) for m in graphs.mentions[name]]
+    rows[row]["props"].update(change)
+    graphs.mentions[name] = rows
+    capsys.readouterr()
+
+    assert check(tmp_path / "residuals_expected.json") == 1
+
+    err = capsys.readouterr().err
+    other = "a" if side == "b" else "b"
+    assert f"sha256.{side}: registered {registered[side]}, now {_digest(rows)}" in err, err
+    assert f"sha256.{other}" not in err and "differing." not in err and "edges." not in err
+    assert "MISMATCH" in err and err.count(": registered ") == 1
 
 
 @pytest.mark.parametrize("change", ["property-dropped", "property-added", "edge-added", "edge-gone"])
@@ -423,7 +501,22 @@ def test_check_exits_1_naming_each_differing_field(tmp_path, graphs, change, cap
                 "edge-added": ["edges.b: registered 5, now 6", "only_b: registered 0, now 1"],
                 "edge-gone": ["edges.b: registered 5, now 4", "only_a: registered 0, now 1"]}[change]
     assert all(line in err for line in expected), err
+    assert "sha256.b: registered" in err and "sha256.a" not in err   # the counts follow b's edges
     assert "MISMATCH" in err and "source_granularity" not in err
+
+
+# what the generator guarantees and load_registered requires: a broken copy of the generated file
+BROKEN = {
+    "no-mentions-props": lambda doc: doc.pop("mentions_props"),    # written before mentions_props existed
+    "no-digests": lambda doc: doc["mentions_props"].pop("sha256"),  # written before the per-side digests
+    "digest-not-hex": lambda doc: doc["mentions_props"]["sha256"].update(b="e522411e"),
+    "count-not-integer": lambda doc: doc["mentions_props"]["differing"].update(created_from="106"),
+    "b-sourced": lambda doc: doc["basis"]["b"].update(sourced_semantic_edges=5616),   # read off a W1 build
+    "a-sourced-bool": lambda doc: doc["basis"]["a"].update(sourced_semantic_edges=False),
+    "r1-not-integer": lambda doc: doc["validate_kg"]["R1"].update(b="2124"),
+    "r1-missing": lambda doc: doc["validate_kg"].pop("R1"),
+    "other-version": lambda doc: doc.update(version=2),
+}
 
 
 def _registered(tmp_path: Path, broken: str) -> Path:
@@ -435,17 +528,15 @@ def _registered(tmp_path: Path, broken: str) -> Path:
         return path
     assert run(tmp_path) == 0
     doc = _expected(tmp_path)
-    if broken == "no-mentions-props":      # a file written before mentions_props existed
-        del doc["mentions_props"]
-    elif broken == "count-not-integer":
-        doc["mentions_props"]["differing"]["created_from"] = "106"
-    elif broken == "other-uri":            # registered against another staging than this run resolves
+    if broken == "other-uri":             # a valid file, registered against another staging than --check resolves
         doc["basis"]["b"]["neo4j_uri"] = "bolt://localhost:7689"
+    else:
+        BROKEN[broken](doc)
     path.write_text(json.dumps(doc), encoding="utf-8")
     return path
 
 
-@pytest.mark.parametrize("broken", ["missing", "not-json", "no-mentions-props", "count-not-integer", "other-uri"])
+@pytest.mark.parametrize("broken", ["missing", "not-json", "other-uri", *BROKEN])
 def test_check_on_a_bad_registered_file_exits_2_before_any_read(tmp_path, graphs, broken, capsys):
     registered = _registered(tmp_path, broken)
     graphs.opened.clear()
@@ -454,6 +545,16 @@ def test_check_on_a_bad_registered_file_exits_2_before_any_read(tmp_path, graphs
 
     assert graphs.opened == []
     assert "CANNOT CHECK" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("broken", BROKEN)
+def test_load_registered_refuses_what_the_generator_never_writes(tmp_path, graphs, broken):
+    """check_w1_registration validates the committed file with this same loader before Step 3."""
+    assert run(tmp_path) == 0
+    assert rx.load_registered(tmp_path / "residuals_expected.json")["version"] == rx.VERSION   # as generated
+
+    with pytest.raises(rx.CannotGenerate, match="not a residuals_expected.json"):
+        rx.load_registered(_registered(tmp_path, broken))
 
 
 def test_check_on_an_unreadable_target_exits_2(tmp_path, graphs, monkeypatch, capsys):

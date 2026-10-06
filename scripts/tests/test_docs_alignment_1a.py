@@ -5,7 +5,9 @@ is near the 800-line limit, so 1A's runbook pins live here: the 1A rows of the
 inventory; K9 pre-registered and labelled before the 1A expected files, both
 before the W1 rebuild (decisions Q1, O5); the --replace props digest and the
 1A R2 gates, among them the batch-0 MENTIONS property residual re-read with
-residuals_expect --check and named again at R4 (plan §2.1); the /api/v1/entity identity check as a prod before/after on one
+residuals_expect --check, both per-side digests and the counts, and named again at R4
+(plan §2.1), and the W1 README crediting diff_kg, not --check, with the K10
+mention_count residuals; the /api/v1/entity identity check as a prod before/after on one
 image (decision O1); the K8 staging-P1 control after R4 on the same image; the
 W1 staging entity collection v3 (decision O7, pending Kay); 1A's share of the
 single R4 ratchet; two 1B leftovers (backend-staging without deps, and
@@ -13,7 +15,8 @@ when Step 9's second run happens); and the registration pre-flight
 check_w1_registration: in the W1 chain right after 6.05 and before Step 3 (Step 5
 empties the batch-0 staging residuals_expect reads), the gate of R1 item 5, and
 the files, merge order and merged-sha256 file it checks equal to the ones the
-runbook registers (diff_kg --merge-out --sha-out).
+runbook registers (diff_kg --merge-out --sha-out), and the three expected files'
+content it validates named where the runbook and the chain row describe it.
 
 W1 review minors on the build side, docs/build_database.md and the README
 pipeline: the chain rows carry what their W1 step needs (check_merged_inputs
@@ -36,6 +39,7 @@ import import_relations_neo4j as imp
 import validate_kg as vk
 from scripts.tools import check_merged_inputs as cmi
 from scripts.tools import check_w1_registration as cwr
+from scripts.tools import residuals_expect as rx
 from test_docs_alignment import (D_GUARD, ROOT, _blocks, _commands, _documented_flags, _first, _in_order, _positions,
                                  _rebuild_chain, doc_text, headings, help_text, read, section, staging_text)
 from test_relation_postprocess import _run
@@ -54,6 +58,10 @@ FIXED_1A = ("edge-no-dan-orphan-nehemiah-wall", "kin-leah-not-father-of-isaac",
             "kin-leah-not-father-of-reuben", "kin-lot-not-father-of-terah")
 NORMALISE = "jq -S '.related_passages |= sort_by(.id) | .related_entities |= sort_by(.entity_id)'"
 REG = "check_w1_registration"
+W1_README = ROOT / "evaluation" / "experiments" / "2026-10-05_kg_w1" / "README.md"
+# mentions_props.sha256 of the candidate read 2026-10-06 while 7688 still held the batch-0 build
+MENTIONS_SHA = ("cd458a0bf25390821a391502a46ecf1fd1768e7e60b1b695f45528a5c80b5cb0",
+                "17eefb2751e5dd383b68aa9529ce6b0f7ad15c5153c6edccab81f77db74daa77")
 
 
 def _row(name: str) -> str:
@@ -165,6 +173,29 @@ def test_r2_rechecks_the_registered_mentions_residual_and_r4_names_its_counts():
     for needle in ("labels 與 MENTIONS 的條數不變", "40,261", "5,782", "created_from 106", "W1 紀錄"):
         assert needle in moved, needle
     assert "R2（`--check`）" in _row("tools/residuals_expect.py")
+
+
+def test_r2_check_requires_both_mentions_digests_and_r4_and_the_inventory_say_so():
+    # W1 does not change MENTIONS: counts alone miss a change confined to already-differing edges
+    gate = section(staging_text(), W1A)
+    gate = gate[gate.index("4. **R2 閘門**"):]
+    item = gate[gate.index("- MENTIONS 屬性的第 0 批殘差"):gate.index("- entity collection")]
+    registered = [f"`{sha[:12]}…`" for sha in MENTIONS_SHA]
+    for needle in ("逐邊摘要", "`sha256.a`", "`sha256.b`", "條數不變", "沒有摘要", *registered):
+        assert needle in item, needle
+    moved = next(line for line in section(staging_text(), "R4").splitlines() if "1A 移動的指標" in line)
+    assert "逐邊摘要" in moved and "逐邊摘要" in _row("tools/residuals_expect.py")
+    assert "逐邊摘要" in rx.PREMISE and "逐屬性條數" in rx.PREMISE
+
+
+def test_w1_readme_credits_diff_kg_with_the_mention_count_residuals():
+    # the K10 mention_count residuals are diff_kg's exact deltas from residuals_allow.yaml (R2 item 2);
+    # residuals_expect --check reads only the MENTIONS properties
+    block = section(read(W1_README), "為什麼受 mention_count 影響")
+    line = next(text for text in block.splitlines() if text.startswith("W1 不改實體與 MENTIONS"))
+    for needle in ("R2 第 2 項", "diff_kg", "`residuals_allow.yaml`", "`--fail-on-unused`", "MENTIONS 屬性"):
+        assert needle in line, needle
+    assert line.index("diff_kg") < line.index("residuals_allow.yaml") < line.index("residuals_expect.py --check")
 
 
 def test_r2_starts_backend_staging_without_deps():
@@ -302,6 +333,16 @@ def test_the_registration_check_reads_what_the_runbook_registers():
     assert f"`sha256sum -c {cwr.MERGED_SHA}`" in r2
     assert cwr.DEFAULT_REPORT.as_posix() == "output/relations_clean.report.json"
     assert "合併檔要到 R4 之後才 commit" in r2   # plan §3: what is registered before the rebuild is its sha256
+
+
+def test_the_registration_check_validates_the_expected_files_content():
+    # a residuals_expected.json without mentions_props passed while only committed-ness was checked
+    assert set(cwr.CONTENT) == {cwr.RELATIONS_EXPECTED, f"{EXPECT}residuals_expected.json", f"{EXPECT}xref.json"}
+    chain = " ".join(_chain_rows()[REG])
+    for text in (chain, _row(f"tools/{REG}.py")):
+        for needle in ("內容", "mentions_props", "逐邊摘要", "INVALID"):
+            assert needle in text, needle
+    assert "--check" in chain and "結束碼 2" in chain   # what the old format would have hit, after Step 5
 
 
 # ---------------------------------------------------------------- build side: the W1 chain rows and texts

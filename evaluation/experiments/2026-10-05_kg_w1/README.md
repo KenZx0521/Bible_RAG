@@ -80,7 +80,7 @@ graph_event 對每個事件關鍵字取 mention_count 最高的 3 個事件（`f
 - 保羅歸主：prod 依序是 event:baoluoxushuguizhudejingguo、event:baoluoxushuguizhujingguo（mention_count 各 4）、event:saoluodezhuanbian（1）；staging 三個都是 1，順序改由 md5 平手決定（event:baoluoxushuguizhudejingguo、event:saoluodezhuanbian、event:baoluoxushuguizhujingguo）。
 - 登山寶訓、山上寶訓、八福：兩邊都只對到 event:shanshangbaoxun，mention_count 從 23 變成 1。
 
-W1 不改實體與 MENTIONS，所以 W1 的 staging 帶著同樣的殘差（R2 的 `residuals_expect.py --check` 核對）。
+W1 不改實體與 MENTIONS，所以 W1 的 staging 帶著同樣的殘差。K10 的 4 筆 mention_count 殘差由 `docs/staging_promotion.md` R2 第 2 項的 diff_kg 核對：合併允許清單 mention_count 段的 4 筆 exact delta 只來自 `residuals_allow.yaml`，在 `--fail-on-unused` 下必須恰好用到；`residuals_expect.py --check` 核對的是另一種殘差，MENTIONS 屬性。
 
 ### 跑法
 
