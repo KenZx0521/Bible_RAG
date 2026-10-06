@@ -9,7 +9,7 @@
 
 ## 20 題煙霧測試（升版第 1 步）
 
-- **用途**：`docs/records/2026-10-04_kg_batch1_plan.md` §1「W1 升版」第 1 步。先換上 R2 測過的 1B 過渡版 backend（`bible_rag-backend:w1` 改 tag 為 `latest`，不重建，見 `docs/staging_promotion.md`「W1 升版第 1 步」；資料仍是舊的），等 healthcheck 通過，再跑 20 題預設檢索。這只確認新 image 在各路由都能跑完，不量價值。
+- **用途**：`docs/records/2026-10-04_kg_batch1_plan.md` §1「W1 升版」第 1 步。先換上 R2 測過的 1B 過渡版 backend（`bible_rag-backend:w1` 改 tag 為 `latest`，不重建，見 `docs/staging_promotion_w1.md`「W1 升版第 1 步」；資料仍是舊的），等 healthcheck 通過，再跑 20 題預設檢索。這只確認新 image 在各路由都能跑完，不量價值。
 - **題號檔**：`smoke20_ids.txt`。
 
 ### 選題規則
@@ -51,7 +51,7 @@ rm -f results_quick/w1_step1_smoke.json \
 
 ## graph_event 抽查（升版第 1、2 步之間，K10）
 
-- **用途**：第 1 批計畫 §7 的 K10「W1 先 accept 並抽查 graph_event」，以及 §5.2 的 W1 列「graph_event｜抽查保羅歸主、山上寶訓的題目（受 mention_count 殘差影響）」。在 `docs/staging_promotion.md`「W1 升版第 1、2 步之間」的 opt-in 視窗裡，同一個 `:w1` image 分別接舊資料（prod，:8000）與新資料（backend-staging，:8001），各跑一次 `--graph-strategies graph_event`，再以 ab_compare 比較。只報告，不設門檻；結果記進 W1 紀錄，放在 K10 的 accept 旁邊。
+- **用途**：第 1 批計畫 §7 的 K10「W1 先 accept 並抽查 graph_event」，以及 §5.2 的 W1 列「graph_event｜抽查保羅歸主、山上寶訓的題目（受 mention_count 殘差影響）」。在 `docs/staging_promotion_w1.md`「W1 升版第 1、2 步之間」的 opt-in 視窗裡，同一個 `:w1` image 分別接舊資料（prod，:8000）與新資料（backend-staging，:8001），各跑一次 `--graph-strategies graph_event`，再以 ab_compare 比較。只報告，不設門檻；結果記進 W1 紀錄，放在 K10 的 accept 旁邊。
 - **題號檔**：`graph_event_k10_ids.txt`。
 
 ### 選題規則
@@ -84,4 +84,4 @@ W1 不改實體與 MENTIONS，所以 W1 的 staging 帶著同樣的殘差。K10 
 
 ### 跑法
 
-指令在 `docs/staging_promotion.md`「W1 升版第 1、2 步之間」：兩邊各跑一次 `quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/graph_event_k10_ids.txt --graph-strategies graph_event --top-k 5 --metric-k 6`，再跑 `ab_compare.py`。參數與 2026-10-03 的 graph_event 單一策略量測（`results_quick/s2_graph_event_20261003.json`）相同；那一次 VERSE_LOOKUP_006 走 R1（只有 verse_direct 的 1 段），其餘 5 題的前 5 段裡各有 1–4 段來自 graph_event。
+指令在 `docs/staging_promotion_w1.md`「W1 升版第 1、2 步之間」：兩邊各跑一次 `quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/graph_event_k10_ids.txt --graph-strategies graph_event --top-k 5 --metric-k 6`，再跑 `ab_compare.py`。參數與 2026-10-03 的 graph_event 單一策略量測（`results_quick/s2_graph_event_20261003.json`）相同；那一次 VERSE_LOOKUP_006 走 R1（只有 verse_direct 的 1 段），其餘 5 題的前 5 段裡各有 1–4 段來自 graph_event。

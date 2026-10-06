@@ -50,9 +50,9 @@ from scripts.tools import xref_probe as xp
 from scripts.relation_extraction import relation_postprocess as pp
 from scripts.tools import check_w1_registration as cwr
 from scripts.tools import kin_review as kr
-from test_docs_alignment import (_FLAG_RE, D_GUARD, DOC, ROOT, SMOKE_JSON, STAGING_DOC, U3_GREP, W1_ID_FILE,
-                                 _assert_fail_closed, _blocks, _commands, _first, _in_order, doc_text, help_text, read,
-                                 section, staging_text)
+from test_docs_alignment import (_FLAG_RE, D_GUARD, DOC, ROOT, SMOKE_JSON, STAGING_DOC, STAGING_W1_DOC, U3_GREP,
+                                 W1_ID_FILE, _assert_fail_closed, _blocks, _commands, _first, _in_order, code_snippets,
+                                 doc_text, help_text, read, section, staging_text)
 from test_kin_review import counted, write_labels, write_sample
 from test_relation_postprocess import _run
 
@@ -144,13 +144,27 @@ def test_w1_step2_is_one_fail_closed_block_that_dumps_completely_before_prod_sto
 
 
 def test_r3_keeps_the_generic_neo4j_step_and_sends_w1_to_its_own_block():
-    r3 = section(staging_text(), "R3")
-    generic = r3[:r3.index("### W1 升版第 1 步")]
+    # since 2026-10-06 the W1 steps live in staging_promotion_w1.md; R3 keeps only the generic steps
+    generic = section(read(STAGING_DOC), "R3")
+    assert "### W1 升版第 1 步" not in generic and "## W1 升版第 1 步" in read(STAGING_W1_DOC)
     note = next(line for line in generic.splitlines() if line.startswith("第 1 批 W1"))
     assert "第 2 步才做這裡的第 1 步" not in note and "「W1 升版第 2 步」" in note, note
+    assert "](staging_promotion_w1.md)" in note, note
     _in_order(_commands(generic), ("docker stop -t 60 bible_rag_neo4j_staging",
                                    "database dump neo4j --to-stdout > bak/$D/promote/neo4j_staging.dump",
                                    "database load neo4j --from-stdin"))
+
+
+def test_r3_and_r5_compose_runs_without_deps_from_a_clean_main_checkout_shell():
+    # a shell that sourced staging.env would make compose recreate prod postgres (POSTGRES_DB);
+    # R3's W1 steps (one `up` each in step 1 and R5) live in staging_promotion_w1.md since 2026-10-06
+    for name, text in (("R3", section(read(STAGING_DOC), "R3") + read(STAGING_W1_DOC)),
+                       ("R5", section(staging_text(), "R5"))):
+        ups = [s for s in code_snippets(text) if "docker compose up" in s]
+        assert len(ups) >= 2 and all("--no-deps" in s.split() for s in ups), (name, ups)
+    r5 = section(staging_text(), "R5")
+    for needle in ("主 checkout", "乾淨", "staging.env", "POSTGRES_DB"):
+        assert needle in r5, needle
 
 
 # ---------------------------------------------------------------- step 1-2 window: graph_event (K10)
@@ -597,9 +611,9 @@ def test_every_w1_retrieval_run_names_its_backend():
 
 def test_every_backend_staging_start_waits_for_health():
     # M392: D3 and ep_w1 ran right after an `up` that returned before the healthcheck passed
-    ups = [(path.name, c) for path in (STAGING_DOC, DOC) for c in _commands(read(path))
+    ups = [(path.name, c) for path in (STAGING_DOC, STAGING_W1_DOC, DOC) for c in _commands(read(path))
            if re.search(r"\bup -d\b.*\bbackend-staging\b", c)]
-    assert {name for name, _ in ups} == {STAGING_DOC.name, DOC.name} and len(ups) >= 4, ups
+    assert {name for name, _ in ups} == {STAGING_DOC.name, STAGING_W1_DOC.name, DOC.name} and len(ups) >= 4, ups
     assert all(WAIT_UP in c for _, c in ups), ups
 
 

@@ -132,7 +132,7 @@
 **W2 升版**
 1. 載入 Neo4j。
 2. PG 在單一 transaction 內換掉 entities 與 entity_mentions。
-3. .env 只改 `QDRANT_ENTITY_COLLECTION`，指向 W2 staging 建好的 collection（建議 bible_entities_v3，v2 留作第 0 批的對照）。2026-10-06 註：O7 建議 W1 staging 就改用 v3，W2 因此改用 v4（待 Kay 確認，見 §9.1）。
+3. .env 只改 `QDRANT_ENTITY_COLLECTION`，指向 W2 staging 建好的 collection（建議 bible_entities_v3，v2 留作第 0 批的對照）。2026-10-06 註：O7 建議 W1 staging 就改用 v3，W2 因此改用 v4（Kay 2026-10-06 確認，見 §9.1 Q6）。
 4. `up -d --build backend`，同時移除 1B 的過渡 coalesce。
 5. R4。
 6. ratchet。
@@ -599,4 +599,14 @@ W0 結果見 [2026-10-05_kg_batch1_w0_results.md](2026-10-05_kg_batch1_w0_result
 - **W1 的 image 指令以 runbook 為準：** §1 W1 欄 R0 的 `docker tag`、「W1 升版」第 1 步的 `up -d --build backend` 與回滾的「image 退回 kg-pre-batch1-w1」，都由 staging_promotion.md 的「W1 升版第 1 步」與 R5 取代。上線的是 R2 測過、記下 id 的 `bible_rag-backend:w1`（改 tag 成 latest，`--no-build`，不在 prod 重建）；回滾 image 取自 prod 容器正在跑的 image id，打 tag、用一個停著的容器釘住，再 `docker save` 到 bak/（只打 tag 的 image 會被 `docker image prune -a` 刪掉，2026-10-05 發生過）。
 - **O1 /api 比對：** §1 W1 驗收欄的「/api 的 W1 清單與 prod 完全相同」與 §5.3 原本是在 R2 拿 staging 比 prod，改為 prod 自己在 W1 升版第 2 步前後比（同一個 W1 image、同一個 PG，只有 Neo4j 換了），見 staging_promotion.md「W1 的 /api/v1/entity 比對」。原因是 prod 的 9bc112a6 沒有 087ab0d，同一份資料取到的 LIMIT 10 集合也會不同。§5.3 原本「查詢沒有 ORDER BY」那句自 087ab0d 起已過時，已在 4a8e826 改寫。
 - **O5 期望檔與合併允許清單的時點：** 期望檔與三個允許清單片段（1A 的 `relations_allow.yaml`、`residuals_allow.yaml`，1B 的 `xref_allow.yaml`）都由工具產生，在 §1「W1 步驟」第 2 步（staging 重建）之前 commit，sha256 記進 W1 紀錄。合併檔 `config/kg_diff_allow_batch1w1.yaml` 也在第 2 步之前以 diff_kg `--merge-out` 組好，sha256 記進 W1 紀錄；`--sha-out` 寫出的 `config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256` 與期望檔、片段一起在第 2 步之前 commit。R2（第 3 步）以這份合併檔跑 diff_kg，第 4 步經 Kay 核可的就是這些已登記的檔；合併檔本身 R4 之後才與 ratchet 放同一個 commit。看過 staging 的 diff 之後，期望檔、片段與合併檔都不再修改。這取代 §3 期望檔列「Kay 核可後 commit」的時點：先登記、後核可。順序與指令見 staging_promotion.md 的 R1 第 5 項與 R2。
-- **O7（待 Kay 確認）：** W1 staging 的實體 collection 改用 `bible_entities_v3`（R0 時把 scripts/tools/staging.env 遞增），v2 留作第 0 批的對照；W2 因此改用 v4（§1「W2 升版」第 3 步原寫 v3）。W1 不改實體、MENTIONS 與描述，所以 v3 要與 W1-0 的 bible_entities_detB 逐點相同。
+- **O7（Kay 2026-10-06 確認，見下方 Q6）：** W1 staging 的實體 collection 改用 `bible_entities_v3`（R0 時把 scripts/tools/staging.env 遞增），v2 留作第 0 批的對照；W2 因此改用 v4（§1「W2 升版」第 3 步原寫 v3）。W1 不改實體、MENTIONS 與描述，所以 v3 要與 W1-0 的 bible_entities_detB 逐點相同。
+
+**Kay 的決定（2026-10-06）**
+
+Kay 對五個待決項目的答覆是「1-5 都照你的建議，技術債先列為已知債」。以下只補記，不改寫上面的原文。
+- **Q6 確認 O7：** W1 staging 的實體 collection 用 `bible_entities_v3`（R0 第 8 項在 E1 之後把 `scripts/tools/staging.env` 遞增並 commit），v2 留作第 0 批的對照，W2 用 v4；R2 要求 v3 與 `bible_entities_detB` 逐點相同。另加一道失敗即停的前置檢查：重灌鏈在 6.05 之後、Step 3 之前跑的 check_w1_registration 多一列，HEAD 的 `scripts/tools/staging.env` 與 staging 的 shell 的 `QDRANT_ENTITY_COLLECTION` 都必須是 `bible_entities_v3`，是 v2、別的值或沒設就 INVALID、結束碼 1，8a、8b 的 `--recreate` 因此碰不到 v2。
+- **Q7 確認 O5（M390）：** 對 W1 而言，O5 取代 §3 期望檔列「Kay 核可後 commit」的順序：期望檔、片段與合併允許清單的 sha256 在 §1「W1 步驟」第 2 步之前凍結並 commit，Kay 在第 4 步看過 staging 的 diff 之後核可。Kay 不核可時：已登記的檔一律不改，W1 停下，prod 不動；重新規劃、重新登記，再從 Step 5 重建 staging。為了讓重新登記做得到（residuals_expect 只能讀第 0 批的 7688），R0 另在 E1 之後、R1 動 staging 之前備份第 0 批的 staging：neo4j-staging 的 dump 與 bible_rag_staging 的 `pg_dump -Fc`（W1 不動 Qdrant 的 v2，不用備份）；重跑 residuals_expect 之前，先把兩者還原成第 0 批。指令見 [staging_promotion.md](../staging_promotion.md) R0 第 9 項與「W1 第 4 步：Kay 核可」。
+- **Q10 K8 的時點（M364）：** K8 的 staging-P1 對照組在 W1 的 R4 之後建，只報告；事前登記的門檻（500 題 Δvrec ≥ −0.005）沒達到也不回滾，10.3 不回預設鏈，事件層由 2A 補。這取代 §7 K8 列的「W1 前」。理由是 staging 只有一個；兩組要用同一個 `:w1` image，R2 才建；R2 到升版第 2 步之間 staging 必須是 W1 的建置（「W1 升版第 1、2 步之間」的 xref、graph_event A/B 與第 2 步的 dump 都要它）。不是因為 residuals_expect 擋住所有更早的時點。
+- **Q11 已知技術債（函式長度）：** W1 改到的既有正式程式函式裡，W1 前後都 ≥ 50 行的 8 個列為已知債，R2 之前不重構。行數以 AST 量，從 f06cc7b（`kg-pre-batch1-w1`）到 W1 合併的 69f3571，其中 4 個在 W1 期間變長：`backend/database/neo4j_db.py::get_cross_references_multi_hop` 65→70、`backend/utils/retrieval/cross_ref_retriever.py::retrieve_via_cross_references` 58→59、`backend/utils/retrieval/router.py::_route_r3` 131、`backend/utils/retrieval/router.py::_route_r5` 167、`scripts/import_neo4j.py::main` 119→120、`scripts/process_bible.py::BibleProcessor._export_jsonl` 178→166、`scripts/relation_extraction/extract_relations.py::main` 119→103、`scripts/validate_output.py::validate_output` 174→182。另有歸檔的證據腳本 `docs/records/2026-10-04_kg_fix/batch1/w1_1A/sim_1a_w1.py::main` 329（W1 新增）：凍結的證據必須逐字保留，不重構。W1 改到的另外 3 個降到 50 行以下，不是債：`scripts/cleanup_noise_entities.py::action_yehehua` 61→34、`scripts/import_relations_neo4j.py::main` 54→45、`scripts/import_tsk_crossrefs.py::main` 98→7；W1 沒有讓任何正式程式函式新長到 ≥ 50 行。W1 沒改到的其他 ≥ 50 行函式（例如 router.py 另外 10 個）不在這份清單裡。
+
+**文件位置（2026-10-06）**：staging_promotion.md 到了 800 行的上限，R3 裡 W1 升版的四節（「W1 升版第 1 步」「W1 的 /api/v1/entity 比對」「W1 升版第 1、2 步之間」「W1 升版第 2 步」）原文不變移到 [staging_promotion_w1.md](../staging_promotion_w1.md)。本計畫（例如 §5.3 與上面的 O1）引用這幾節時，以該檔為準。

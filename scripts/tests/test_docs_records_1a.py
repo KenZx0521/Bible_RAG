@@ -17,10 +17,15 @@ what archiving changed, which root and hash seed a replay depends on, and what
 the frozen-definition scripts still read (W1 review minors, docs_records 1).
 The plan's §2.1 pilot gives the 57/60 id gate as history (Q1 moved the gate to
 text_correct), and §9.1 records O5: expected files, fragments and the merged
-allowlist's sha256 are registered before W1 step 2 (docs_records 2).
+allowlist's sha256 are registered before W1 step 2 (docs_records 2). §9.1's
+dated block of Kay's 2026-10-06 decisions confirms O7 (Q6) and O5 with the
+rejection rule and the batch-0 staging backup (Q7), times K8 after R4 (Q10),
+and lists the long functions W1 touched as known debt (Q11), each length as
+an AST scan measures it before W1 (f06cc7b) and at the W1 merge (69f3571).
 """
 from __future__ import annotations
 
+import ast
 import json
 import re
 import subprocess
@@ -212,11 +217,13 @@ def test_plan_section_9_records_the_w1_decisions_and_runbook_overrides():
     s9 = section(plan, "9. W0 之後的決定")
     for needle in ("Q1", "text_correct", "id_correct", "60/60", "51/60", "Q2", "person:bide", "person:yuehan（shitu）",
                    "Q3", "list_stop: cont", "Q4", "C3c", "H12", "bible_rag-backend:w1", "docker save", "O1",
-                   "087ab0d", "O7", "bible_entities_v3", "v4", "待 Kay 確認", "](../staging_promotion.md)"):
+                   "087ab0d", "O7", "bible_entities_v3", "v4", "](../staging_promotion.md)"):
         assert needle in s9, needle
     s1 = section(plan, "1. 分波計畫")
     w2 = s1[s1.index("**W2 升版**"):]
     assert "O7" in _line(w2, "3. ") and "v4" in _line(w2, "3. ")
+    # Kay confirmed O7 on 2026-10-06 (Q6): no pending marker is left on it
+    assert "待 Kay 確認" not in plan and "Q6" in _line(s9, "- **O7") and "Q6" in _line(w2, "3. ")
     assert "§9" in _line(s1[s1.index("**W1 升版**"):], "1. ")
 
 
@@ -362,3 +369,85 @@ def test_plan_9_1_records_o5_and_supersedes_the_section_3_commit_timing():
     # the quoted §3 text is still there (history is not rewritten), and the runbook registers the same sha file
     assert "Kay 核可後 commit" in _line(section(plan, "3. 跨批共用機制"), "| 期望檔")
     assert f"--sha-out {sha_file}" in section(read(ROOT / "docs" / "staging_promotion.md"), "R2")
+
+
+# ---------------------------------------------------------------- Kay's decisions 2026-10-06 (DK2)
+
+PRE_W1, W1_MERGE = "f06cc7b", "69f3571"   # tag kg-pre-batch1-w1 and the W1 merge commit
+_DEBT = re.compile(r"`([\w/.-]+\.py)::([\w.]+)` (\d+)(?:→(\d+))?")
+
+
+def _kay_1006() -> str:
+    s91 = section(read(PLAN1), "9.1 W1 實作期間")
+    return s91[s91.index("**Kay 的決定（2026-10-06"):]
+
+
+def test_plan_9_1_records_kays_2026_10_06_decisions_on_o7_o5_and_k8():
+    note = _kay_1006()
+    q6, q7, q10 = (_line(note, f"- **{q} ") for q in ("Q6", "Q7", "Q10"))
+    for needle in ("O7", "`bible_entities_v3`", "v4", "detB", "check_w1_registration", "`QDRANT_ENTITY_COLLECTION`",
+                   "`scripts/tools/staging.env`", "Step 3", "INVALID", "--recreate", "v2"):
+        assert needle in q6, needle
+    for needle in ("O5", "M390", "§3", "「Kay 核可後 commit」", "第 2 步之前", "第 4 步", "不改", "prod 不動",
+                   "從 Step 5", "`pg_dump -Fc`", "bible_rag_staging", "7688", "Qdrant", "residuals_expect",
+                   "R0 第 9 項", "](../staging_promotion.md)"):
+        assert needle in q7, needle
+    for needle in ("K8", "M364", "R4", "只報告", "事前登記", "不回滾", "−0.005", "§7", "`:w1`", "R2", "staging 只有一個",
+                   "W1 升版第 1、2 步之間"):
+        assert needle in q10, needle
+    # the plan's pointers (§5.3, O1) to the W1 promotion sections resolve through a dated note, not a rewrite
+    moved = _line(note, "**文件位置（2026-10-06）**")
+    for needle in ("](../staging_promotion_w1.md)", "§5.3", "O1", "「W1 的 /api/v1/entity 比對」", "原文不變"):
+        assert needle in moved, needle
+    assert "](../staging_promotion.md)「W1 的 /api/v1/entity 比對」" in section(read(PLAN1), "5.3")
+
+
+def _functions(rev: str, path: str) -> dict[str, tuple[int, str]]:
+    """{dotted name: (lines, source)} of every function in `path` at `rev`; {} when the file is not there."""
+    out = subprocess.run(["git", "show", f"{rev}:{path}"], cwd=ROOT, capture_output=True, text=True)
+    if out.returncode != 0:
+        return {}
+    found = {}
+
+    def walk(node, prefix: str) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                found[prefix + child.name] = (child.end_lineno - child.lineno + 1,
+                                              ast.get_source_segment(out.stdout, child))
+                walk(child, f"{prefix}{child.name}.")
+            elif isinstance(child, ast.ClassDef):
+                walk(child, f"{prefix}{child.name}.")
+    walk(ast.parse(out.stdout), "")
+    return found
+
+
+def _w1_long_functions() -> dict[tuple[str, str], tuple[int | None, int]]:
+    """{(path, name): (lines before, lines at the merge)} of the production functions (backend/, scripts/, no
+    tests) that W1 changed or added and that are ≥ 50 lines on either side."""
+    files = subprocess.run(["git", "diff", "--name-only", PRE_W1, W1_MERGE, "--", "backend", "scripts"], cwd=ROOT,
+                           capture_output=True, text=True, check=True).stdout.split()
+    found = {}
+    for path in (f for f in files if f.endswith(".py") and "/tests/" not in f):
+        before, after = _functions(PRE_W1, path), _functions(W1_MERGE, path)
+        for name, (lines, source) in after.items():
+            old_lines, old_source = before.get(name, (None, None))   # a function new in W1 counts as changed
+            if old_source != source and max(lines, old_lines or 0) >= 50:
+                found[(path, name)] = (old_lines, lines)
+    return found
+
+
+def test_plan_9_1_q11_lists_the_long_functions_w1_touched_as_measured():
+    q11 = _line(_kay_1006(), "- **Q11 ")
+    entries = {(path, name): (int(first), int(second or first)) for path, name, first, second in _DEBT.findall(q11)}
+    for (path, name), (first, second) in entries.items():
+        before, after = _functions(PRE_W1, path).get(name, (None,))[0], _functions(W1_MERGE, path)[name][0]
+        assert (first, second) == (before or after, after), (path, name, before, after)
+    archive = {key for key in entries if key[0].startswith("docs/records/")}
+    assert archive == {("docs/records/2026-10-04_kg_fix/batch1/w1_1A/sim_1a_w1.py", "main")}, archive
+    measured = _w1_long_functions()
+    debt = {key for key, (before, after) in measured.items() if after >= 50}
+    assert len(debt) == 8 and {key for key in entries if entries[key][1] >= 50} - archive == debt, debt
+    assert all(before and before >= 50 for key, (before, _) in measured.items() if key in debt)   # none new in W1
+    assert {key for key in entries if entries[key][1] < 50} == set(measured) - debt   # paid down by W1
+    for needle in ("W1 改到", "已知債", "R2 之前不重構", "逐字", "AST", PRE_W1, W1_MERGE, "router.py", "不是債"):
+        assert needle in q11, needle

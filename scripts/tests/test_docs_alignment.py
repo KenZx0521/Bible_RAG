@@ -1,7 +1,8 @@
 """The rebuild docs must match the scripts they tell people to run.
 
 The runbook is split in two: docs/build_database.md (Step 0-10, rebuild order)
-and docs/staging_promotion.md (staging, R0-R5 promotion). Every script name
+and docs/staging_promotion.md (staging, R0-R5 promotion; its W1 promotion steps
+moved to docs/staging_promotion_w1.md, read as one text with it). Every script name
 with flags in either doc is checked against that script's real --help (and
 --stage/--target choices), so a renamed or removed flag fails here instead of
 in the middle of a rebuild. Also pins the batch-0 rebuild order (replay after
@@ -32,7 +33,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "build_database.md"
 STAGING_DOC = ROOT / "docs" / "staging_promotion.md"
-DOCS = (DOC, STAGING_DOC)
+STAGING_W1_DOC = ROOT / "docs" / "staging_promotion_w1.md"   # R3's W1 steps, split out 2026-10-06
+DOCS = (DOC, STAGING_DOC, STAGING_W1_DOC)
 PLAN = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan.md"
 PLAN_BATCHES = ROOT / "docs" / "records" / "2026-10-04_kg_data_layer_fix_plan_batches.md"
 PLANS = (PLAN, PLAN_BATCHES, ROOT / "docs" / "records" / "2026-10-04_kg_batch1_plan.md")
@@ -92,7 +94,7 @@ def doc_text() -> str:
 
 
 def staging_text() -> str:
-    return read(STAGING_DOC)
+    return read(STAGING_DOC) + "\n" + read(STAGING_W1_DOC)
 
 
 def plan_text() -> str:
@@ -603,16 +605,6 @@ def test_staging_doc_headings_are_unique():
     # a repeated heading gets the same markdown anchor as the first one
     names = headings(staging_text())
     assert len(names) == len(set(names)), sorted({n for n in names if names.count(n) > 1})
-
-
-def test_r3_and_r5_compose_runs_without_deps_from_a_clean_main_checkout_shell():
-    # a shell that sourced staging.env would make compose recreate prod postgres (POSTGRES_DB)
-    for name in ("R3", "R5"):
-        ups = [s for s in code_snippets(section(staging_text(), name)) if "docker compose up" in s]
-        assert len(ups) >= 2 and all("--no-deps" in s.split() for s in ups), (name, ups)
-    r5 = section(staging_text(), "R5")
-    for needle in ("主 checkout", "乾淨", "staging.env", "POSTGRES_DB"):
-        assert needle in r5, needle
 
 
 def test_r5_rolls_back_to_the_recorded_image_id_and_reloads_it_when_pruned():

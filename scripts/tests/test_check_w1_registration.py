@@ -7,7 +7,10 @@ fragment, and the merged allowlist's sha256 file, is committed, the three
 expected files hold what their tools write (residuals_expected.json passes
 residuals_expect's own loader, the one --check runs at R2), the merged
 allowlist is the registered one, and the fresh 6.05 output is the one
-relations_expected.json registered. Each test builds a throwaway git checkout:
+relations_expected.json registered. It also refuses to let 8a/8b --recreate the
+batch-0 control: HEAD's scripts/tools/staging.env and the shell's
+QDRANT_ENTITY_COLLECTION must both be bible_entities_v3 (decision O7, confirmed
+2026-10-06). Each test builds a throwaway git checkout:
 the fragments merged by the real diff_kg --merge-out --sha-out, the 6.05 output
 and report written with relation_postprocess's own serialize and
 expected_after_10_2 (test_check_edge_set.write_reference), and
@@ -32,6 +35,7 @@ from scripts.tools import diff_kg as dk
 from scripts.tools import residuals_expect as rx
 from test_check_edge_set import ROWS, write_reference
 
+ROOT = Path(__file__).resolve().parents[2]
 GIT = ("git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", "-c", "commit.gpgsign=false",
        "-c", "core.hooksPath=/dev/null")
 E = "config/kg_expect/batch1_w1/"
@@ -42,6 +46,9 @@ FRAGMENT_ENTRIES = {
     "xref_allow.yaml": {"section": "xrefs", "key": "source=tsk", "delta": -68, "reason": "1B"},
 }
 REPORT = "output/relations_clean.report.json"
+STAGING_ENV = "scripts/tools/staging.env"
+COLLECTION = "QDRANT_ENTITY_COLLECTION"   # the row's name
+W1_COLLECTION = "bible_entities_v3"
 RESIDUALS = E + "residuals_expected.json"
 XREF = E + "xref.json"
 SIDES = {"a": ("prod", "bolt://localhost:7687"), "b": ("staging", "bolt://localhost:7688")}
@@ -111,6 +118,14 @@ def residuals_doc() -> dict:
     return rx.build(targets, sides, r1, "2026-10-06T01:20:10+08:00")[0]
 
 
+def write_staging_env(root: Path, collection: str) -> None:
+    """The real staging.env, its entity collection set to `collection`."""
+    text = (ROOT / STAGING_ENV).read_text(encoding="utf-8")
+    line = re.compile(rf"^export {COLLECTION}=.*$", re.M)
+    assert len(line.findall(text)) == 1, text
+    write(root, STAGING_ENV, line.sub(f"export {COLLECTION}={collection}", text))
+
+
 def write_json(root: Path, rel: str, doc) -> None:
     write(root, rel, json.dumps(doc, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
 
@@ -118,7 +133,8 @@ def write_json(root: Path, rel: str, doc) -> None:
 @pytest.fixture
 def checkout(tmp_path, monkeypatch, capsys):
     """A checkout after W1 pre-registration: the six files and the merged sha256 committed, the merged
-    allowlist written but not committed (that waits for R4), and a fresh 6.05 output in output/."""
+    allowlist written but not committed (that waits for R4), and a fresh 6.05 output in output/; staging.env
+    bumped to v3 and committed (R0 item 8), and the staging shell holding v3."""
     def no_target(*_, **__):
         raise AssertionError("the registration check must not resolve a database target")
     monkeypatch.setattr(dk, "resolve_target", no_target)
@@ -135,7 +151,9 @@ def checkout(tmp_path, monkeypatch, capsys):
     write_json(root, RESIDUALS, residuals_doc())
     write(root, cwr.RELATIONS_EXPECTED, expected(write_605(root)))
     merge(root)
-    commit(root, *cwr.REGISTERED)
+    write_staging_env(root, W1_COLLECTION)
+    commit(root, *cwr.REGISTERED, STAGING_ENV)
+    monkeypatch.setenv(COLLECTION, W1_COLLECTION)
     capsys.readouterr()
     return root
 
@@ -151,7 +169,8 @@ def test_registered_checkout_exits_0(checkout, capsys):
     result = run(checkout, capsys)
 
     assert result.code == 0, result.out
-    assert result.rows == {**{rel: "OK" for rel in cwr.REGISTERED}, cwr.MERGED: "OK", REPORT: "OK"}
+    assert result.rows == {**{rel: "OK" for rel in cwr.REGISTERED}, cwr.MERGED: "OK", REPORT: "OK", COLLECTION: "OK"}
+    assert W1_COLLECTION in result.texts[COLLECTION] and "bible_entities_v2" in result.texts[COLLECTION]
     assert "continue with Step 3" in result.out
     digests = residuals_doc()["mentions_props"]["sha256"]
     for needle in ("mentions_props", digests["a"][:12], digests["b"][:12], "R1.b 2,124"):
@@ -170,6 +189,8 @@ def test_runbook_names_and_merge_order():
     assert cwr.MERGED == "config/kg_diff_allow_batch1w1.yaml"
     assert cwr.MERGED_SHA == E + "kg_diff_allow_batch1w1.sha256"
     assert cwr._PROJECT_ROOT / cwr.DEFAULT_REPORT == pp.DEFAULT_REPORT   # where 6.05 writes it
+    assert (cwr.STAGING_ENV, cwr.W1_COLLECTION, cwr.BATCH0_COLLECTION) == (
+        STAGING_ENV, W1_COLLECTION, "bible_entities_v2")
 
 
 @pytest.mark.parametrize("rel", [E + "residuals_expected.json", E + "xref.json", E + "relations_allow.yaml",
@@ -401,3 +422,71 @@ def test_a_directory_without_git_or_commits_exits_2(tmp_path, capsys):
     git(tmp_path, "init", "-q")
     assert cwr.main(["--root", str(tmp_path)]) == 2
     assert "CANNOT CHECK" in capsys.readouterr().out
+
+
+# --- the staging entity collection: 8a/8b --recreate must never reach the batch-0 control --
+
+@pytest.mark.parametrize("head, shell, named", [
+    ("bible_entities_v2", W1_COLLECTION, [f"{STAGING_ENV} at HEAD has 'bible_entities_v2' (the batch-0 control)"]),
+    (W1_COLLECTION, "bible_entities_v2", ["this shell has 'bible_entities_v2' (the batch-0 control)"]),
+    (W1_COLLECTION, None, ["this shell has it unset"]),
+    ("bible_entities_v4", "bible_entities_v4", ["at HEAD has 'bible_entities_v4'", "this shell has 'bible_entities_v4'"]),
+], ids=["not-bumped", "shell-not-resourced", "shell-not-sourced", "w2-collection"])
+def test_a_staging_collection_other_than_v3_exits_1(checkout, capsys, monkeypatch, head, shell, named):
+    if head != W1_COLLECTION:   # the fixture committed v3
+        write_staging_env(checkout, head)
+        commit(checkout, STAGING_ENV)
+    if shell is None:
+        monkeypatch.delenv(COLLECTION)
+    else:
+        monkeypatch.setenv(COLLECTION, shell)
+
+    result = run(checkout, capsys)
+
+    _only_invalid(result, COLLECTION)
+    for needle in (*named, f"W1 writes {W1_COLLECTION}", "--recreate"):
+        assert needle in result.texts[COLLECTION], needle
+    for needle in ("R0 item 8", "bible_entities_v2 is the batch-0 staging collection"):
+        assert needle in result.out, needle
+
+
+def test_a_bump_on_disk_but_not_committed_exits_1(checkout, capsys):
+    """The shell sourced the bumped file, but HEAD (what the W1 record and the :w1 image pin) still says v2."""
+    write_staging_env(checkout, "bible_entities_v2")
+    commit(checkout, STAGING_ENV)
+    write_staging_env(checkout, W1_COLLECTION)
+
+    result = run(checkout, capsys)
+
+    _only_invalid(result, COLLECTION)
+    assert "at HEAD has 'bible_entities_v2'" in result.texts[COLLECTION]
+
+
+def test_a_staging_env_missing_at_head_exits_1(checkout, capsys):
+    git(checkout, "rm", "-q", "--", STAGING_ENV)
+    git(checkout, "commit", "-q", "-m", "drop")
+
+    result = run(checkout, capsys)
+
+    _only_invalid(result, COLLECTION)
+    assert f"{STAGING_ENV} is not committed at HEAD" in result.texts[COLLECTION]
+
+
+@pytest.mark.parametrize("text, value", [
+    ("export QDRANT_ENTITY_COLLECTION=bible_entities_v3\n", W1_COLLECTION),
+    ("QDRANT_ENTITY_COLLECTION=bible_entities_v3\n", W1_COLLECTION),
+    ("export QDRANT_ENTITY_COLLECTION=bible_entities_v3   # W1\n", W1_COLLECTION),
+    ("export QDRANT_ENTITY_COLLECTION='bible_entities_v3'\n", W1_COLLECTION),
+    ("export QDRANT_ENTITY_COLLECTION=bible_entities_v3\nexport QDRANT_ENTITY_COLLECTION=bible_entities_v2\n",
+     "bible_entities_v2"),   # bash keeps the last assignment
+    ("# export QDRANT_ENTITY_COLLECTION=bible_entities_v3\n", None),
+    ("export QDRANT_ENTITY_COLLECTION=${QDRANT_ENTITY_COLLECTION:-bible_entities_v3}\n",
+     "${QDRANT_ENTITY_COLLECTION:-bible_entities_v3}"),   # not a literal: never equals v3, so INVALID
+])
+def test_the_collection_is_read_as_bash_assigns_it(text, value):
+    assert cwr.assigned_collection(text) == value
+
+
+def test_the_real_staging_env_names_one_versioned_collection():
+    # v2 until R0 item 8 commits the bump, v3 after: either way the parser reads the real file's format
+    assert re.fullmatch(r"bible_entities_v\d+", cwr.committed_collection(ROOT) or ""), cwr.committed_collection(ROOT)

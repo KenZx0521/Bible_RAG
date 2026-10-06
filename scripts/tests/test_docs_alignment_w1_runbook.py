@@ -98,8 +98,10 @@ def test_k8_p1_moves_every_step9_log_path_off_r2s_logs_including_the_greps():
     assert len(before) == 4 and all(_covered(p, patterns) for p in before), before   # the tee and three greps
     after = [p for c in step9 for p in PATH_RE.findall(c.replace(m[1], m[2]))]
     assert after and not [p for p in after if _covered(p, patterns)], after
-    for needle in ("`bak/$D/k8/step9_p1b_run`", "grep", "`bak/$D/qdrant_*.sha256`", "O7", "待 Kay 確認"):
+    for needle in ("`bak/$D/k8/step9_p1b_run`", "grep", "`bak/$D/qdrant_*.sha256`", "O7"):
         assert needle in k8_text, needle
+    # O7 is decided (Kay 2026-10-06, Q6): R2 always writes the qdrant_*.sha256 files, no 「不採用」 branch
+    assert "待 Kay 確認" not in k8_text and "O7 不採用" not in k8_text
 
 
 @pytest.mark.skipif(os.geteuid() == 0, reason="root ignores the write bit")
@@ -389,9 +391,11 @@ def test_kay_approval_is_a_checkpoint_between_r2_and_promotion_step_1():
     for needle in ("第 1 批計畫", "§1", "`config/kg_expect/batch1_w1/`", f"`{SHA_CHECK}`", "`bak/$D/diff_kg_staging_w1.json`",
                    "`bak/$D/validate_staging_w1.json`", "`bak/$D/check_identity_staging_w1.json`", "residuals_expect",
                    "D3", "`evaluation/results_quick/d3_w1.json`", "K9", "`ep_w1`", "W1 紀錄",
-                   "`docs/records/<日期>_kg_batch1_w1_results.md`", "不開始", "待 Kay 確認", "M390",
+                   "`docs/records/<日期>_kg_batch1_w1_results.md`", "不開始", "M390", "Q7",
                    "不改任何已登記的檔", "從 Step 5"):
         assert needle in kay, needle
+    # Q7 (Kay 2026-10-06) decided the rejection outcome and how 7688 returns to batch 0
+    assert "待 Kay 確認" not in kay and "一併待 Kay 決定" not in kay
     assert list((ROOT / "docs" / "records").glob("*_kg_batch1_w0_results.md")), "W0 record naming"
     opening = section(text, STEP1).splitlines()[1]
     assert f"「{KAY}」" in opening and "W1 紀錄" in opening, opening
