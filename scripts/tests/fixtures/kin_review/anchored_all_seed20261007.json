@@ -1,0 +1,427 @@
+{
+  "format": "kin_review_sample/v1",
+  "items": [
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 2,
+        "verse_text": "父1的兒子是子1。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子1",
+        "description": null,
+        "id": "person:zi1",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "e057cc29e1fc",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父1",
+        "description": null,
+        "id": "person:fu1",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 12,
+        "verse_text": "父11的兒子是子11。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子11",
+        "description": null,
+        "id": "person:zi11",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "60b45707124d",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父11",
+        "description": null,
+        "id": "person:fu11",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 13,
+        "verse_text": "子0生孫0。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子0",
+        "description": null,
+        "id": "person:zi0",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "bb9817f928f1",
+      "relation": "FATHER_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "孫0",
+        "description": null,
+        "id": "person:sun0",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 11,
+        "verse_text": "父10的兒子是子10。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子10",
+        "description": null,
+        "id": "person:zi10",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "d6ea343b702d",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父10",
+        "description": null,
+        "id": "person:fu10",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 6,
+        "verse_text": "父5的兒子是子5。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子5",
+        "description": null,
+        "id": "person:zi5",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "4ec4f0b718a7",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父5",
+        "description": null,
+        "id": "person:fu5",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 8,
+        "verse_text": "父7的兒子是子7。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子7",
+        "description": null,
+        "id": "person:zi7",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "b4abf0246b51",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父7",
+        "description": null,
+        "id": "person:fu7",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 7,
+        "verse_text": "父6的兒子是子6。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子6",
+        "description": null,
+        "id": "person:zi6",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "37d3737ea8d1",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父6",
+        "description": null,
+        "id": "person:fu6",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 3,
+        "verse_text": "父2的兒子是子2。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子2",
+        "description": null,
+        "id": "person:zi2",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "805537d61ae0",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父2",
+        "description": null,
+        "id": "person:fu2",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 5,
+        "verse_text": "父4的兒子是子4。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子4",
+        "description": null,
+        "id": "person:zi4",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "7d58aa5e39f4",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父4",
+        "description": null,
+        "id": "person:fu4",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 4,
+        "verse_text": "父3的兒子是子3。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子3",
+        "description": null,
+        "id": "person:zi3",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "25d7c1f47abb",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父3",
+        "description": null,
+        "id": "person:fu3",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "gen:21:0",
+        "title": "以撒出生",
+        "verse": 3,
+        "verse_text": "亞伯拉罕給撒拉所生的兒子起名叫以撒。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "以撒",
+        "description": null,
+        "id": "person:yisa",
+        "mention_books": [
+          [
+            "gen",
+            1
+          ]
+        ],
+        "top_pericopes": [
+          {
+            "mentions": 1,
+            "pericope_id": "gen:21:0",
+            "title": "以撒出生"
+          }
+        ]
+      },
+      "item_id": "4c2d5788ac7f",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [
+          "亞伯蘭"
+        ],
+        "canonical_name": "亞伯拉罕",
+        "description": "以色列的先祖。",
+        "id": "person:yabolahan",
+        "mention_books": [
+          [
+            "gen",
+            4
+          ],
+          [
+            "1ch",
+            2
+          ],
+          [
+            "rut",
+            1
+          ]
+        ],
+        "top_pericopes": [
+          {
+            "mentions": 4,
+            "pericope_id": "gen:21:0",
+            "title": "以撒出生"
+          },
+          {
+            "mentions": 2,
+            "pericope_id": "1ch:1:0",
+            "title": "家譜"
+          },
+          {
+            "mentions": 1,
+            "pericope_id": "rut:4:1",
+            "title": "大衛的家譜"
+          }
+        ]
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 10,
+        "verse_text": "父9的兒子是子9。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子9",
+        "description": null,
+        "id": "person:zi9",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "54d15edff591",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父9",
+        "description": null,
+        "id": "person:fu9",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 9,
+        "verse_text": "父8的兒子是子8。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子8",
+        "description": null,
+        "id": "person:zi8",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "4f37a8db4476",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父8",
+        "description": null,
+        "id": "person:fu8",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    },
+    {
+      "evidence": {
+        "pericope_id": "1ch:1:0",
+        "title": "家譜",
+        "verse": 1,
+        "verse_text": "父0的兒子是子0。"
+      },
+      "head": {
+        "aliases": [],
+        "canonical_name": "子0",
+        "description": null,
+        "id": "person:zi0",
+        "mention_books": [],
+        "top_pericopes": []
+      },
+      "item_id": "d30c769c9520",
+      "relation": "SON_OF",
+      "tail": {
+        "aliases": [],
+        "canonical_name": "父0",
+        "description": null,
+        "id": "person:fu0",
+        "mention_books": [],
+        "top_pericopes": []
+      }
+    }
+  ],
+  "meta": {
+    "clean_sha256": "067010830cbf666a1ef9609c7380f650362ce3c28b39028d5fbd68edba3bd0d8",
+    "inputs_sha256": {
+      "descriptions": "07a546080f0a8537a27264e61db0c638a46ff61f1fcb02a20bc14f1673a7ee82",
+      "entities": "6bf26d847ef4e7665a2076dbc3eb38af0535ca338773778c30e2f28082581216",
+      "mentions": "6604f8a472f1983cdfd8c501bd13ec269ea9945056a8603e1043e7437d763266",
+      "pericopes": "6d06435354076aa35d1b0a2e5a11139fae56c56e51a786bc2c000988ca5b79ed"
+    },
+    "pool_sha256": "3e1b33018203072a0da5a34c5050ed4d9f0799e9bd58064263efd4cd56b058bb",
+    "pool_size": 14,
+    "rubric": {
+      "id_correct": "text_correct 為 true，而且 head 與 tail 兩個節點都就是這節經文裡的那個人，才記 true：看 canonical_name、aliases、description、top_pericopes、mention_books 描繪的主要人物。任一端是同名的另一人，或是合併了多個同名人物、以別人為主的節點，記 false。text_correct 為 false 時一律記 false。",
+      "text_correct": "只看 evidence 的經文：經文是否明說 head 與 tail 這兩個名字之間有 relation 所指的親屬關係，而且方向對（X SON_OF Y：X 是 Y 的兒子；X FATHER_OF Y：X 是 Y 的父親；ANCESTOR_OF／DESCENDANT_OF 指隔代；SPOUSE_OF、SIBLING_OF 不分方向）？要生育或婚姻意義上的關係，稱謂或比喻（例如對先知自稱「你兒子」）不算。明說才記 true；沒說、只是推論、方向反了或關係種類不對都記 false。這一欄不管兩端節點實際指的是誰。"
+    },
+    "seed": 20261007
+  }
+}

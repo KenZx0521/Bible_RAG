@@ -1,4 +1,4 @@
-"""Pins of Kay's 2026-10-06 decisions in the W1 runbook (Q6, Q7, Q10).
+"""Pins of Kay's 2026-10-06 decisions in the W1 runbook (Q6, Q7, Q8, Q9, Q10).
 
 docs/staging_promotion.md sat at the 800-line limit, so R3's W1 promotion
 (step 1, the /api/v1/entity before/after, the opt-in A/B window and step 2)
@@ -14,18 +14,28 @@ touches staging, and a rejection at W1 step 4 restores exactly those dumps
 before E1 is rerun. Q10 decides M364: K8's P1 control runs after R4 for the
 real reason (one staging; :w1 built at R2; the step 1-2 A/B window needs W1
 data on staging), not because residuals_expect forbids every earlier slot.
+Q8 and Q9 amend K9's pre-registration before any labelling: Kay's spot-check
+replaces the final labels before the gate, kin_review refuses a short
+spot-check before judging the gate (--min-spotcheck-extra 10, the jq stays as
+an independent check), every report gives before/after numbers, the overrides
+and the identity rate among the text_correct items, and llm/prior items carry
+the verse before and after the evidence as context while anchored samples
+and their rubric stay as registered; plan §9.1 notes both.
 """
 from __future__ import annotations
 
 import re
+import shlex
 
 import pytest
 import yaml
 from scripts.tools import check_w1_registration as cwr
+from scripts.tools import kin_review as kr
 from scripts.tools import residuals_expect as rx
 from test_docs_alignment import (DOC, ROOT, STAGING_DOC, STAGING_W1_DOC, _assert_fail_closed, _blocks, _commands,
-                                 _in_order, _rebuild_chain, headings, mask_code, read, section, staging_text)
-from test_docs_alignment_w1 import _bash, _item
+                                 _first, _in_order, _rebuild_chain, headings, help_text, mask_code, read, section,
+                                 staging_text)
+from test_docs_alignment_w1 import W1A, _bash, _block, _item
 
 MOVED = ("W1 升版第 1 步", "W1 的 /api/v1/entity 比對", "W1 升版第 1、2 步之間", "W1 升版第 2 步")
 KAY = "W1 第 4 步：Kay 核可"
@@ -206,3 +216,46 @@ def test_k8_timing_states_the_real_constraint():
                    "graph_event", "W1 的建置", "dump", "`bak/$D/promote/`", "](staging_promotion_w1.md)"):
         assert needle in why, needle
     assert "residuals_expect" not in why and "第 0 批" not in why, why
+
+
+# ---------------------------------------------------------------- (4) Q8, Q9: K9's pre-registration, before labelling
+
+def _k9() -> str:
+    return _item(section(staging_text(), W1A), "1")
+
+
+def test_k9_preregistration_states_q8_and_q9():
+    k9 = _k9()
+    for needle in ("Q8", "Q9", "Kay 2026-10-06", "M381", "M340", "標註開始之前", f"「{kr.ANNOTATION}」",
+                   "取代", "兩欄一起", "抽查前、後", "每一筆改動", "item_id", "最終標籤 → Kay 的標籤",
+                   "k_id_given_text", "n_text", "條件身分率", "前一節與後一節", "同一卷", "`context`",
+                   "anchored 的 sample 與判準不變", "--min-spotcheck-extra 10", "結束碼 2"):
+        assert needle in k9, needle
+    assert "kin_review 只報告抽查" not in k9 and "報告標明「非人工」（" not in k9
+
+
+def test_k9_gate_refuses_a_short_spot_check_before_the_gate_and_keeps_the_jq():
+    gate = _block(W1A, "--sample $K/anchored.json")
+    score = gate[_first(gate, "kin_review.py --mode score")]
+    assert "--spotcheck $K/anchored_kay.jsonl --min-spotcheck-extra 10" in score, score
+    assert _first(gate, "kin_review.py --mode score") < _first(gate, "jq -e --slurpfile kay $K/anchored_kay.jsonl")
+    reports = [c for c in _commands(section(staging_text(), W1A)) if "kin_review.py --mode score" in c and c != score]
+    assert reports and not [c for c in reports if "--spotcheck" in c or "--min-spotcheck-extra" in c], reports
+    argv = shlex.split(score.split("kin_review.py", 1)[1].replace("$K", "k9"))
+    assert kr.parse_args(argv).min_spotcheck_extra == 10    # the documented line parses as written
+    words = " ".join(help_text("kin_review").split())
+    for needle in ("--min-spotcheck-extra", "replaces its item's final label", "decision Q8"):
+        assert needle in words, needle
+
+
+PLAN_Q8_Q9 = ("Q8", "Q9", "M381", "M340", "Kay 2026-10-06", "照建議", "取代", "兩欄", "閘門", "抽查前、後",
+              "條件身分率", "Wilson", "前一節與後一節", "anchored", "標註開始之前", "](../staging_promotion.md)")
+
+
+def test_plan_9_1_notes_q8_and_q9_in_kays_2026_10_06_block():
+    kay = section(read(PLAN1), "9.1").split("**Kay 的決定（2026-10-06）**", 1)[1]
+    note = next(line for line in kay.splitlines() if line.startswith("- **Q8"))
+    for needle in PLAN_Q8_Q9:
+        assert needle in note, needle
+    order = [re.match(r"- \*\*(Q\d+)", line)[1] for line in kay.splitlines() if re.match(r"- \*\*Q\d+", line)]
+    assert order == ["Q6", "Q7", "Q8", "Q10", "Q11"], order

@@ -90,7 +90,7 @@ def _jsonl(path, rows) -> str:
     return str(path)
 
 
-def world(tmp_path, rows=ROWS) -> list[str]:
+def world(tmp_path, rows=ROWS, pericopes=PERICOPES) -> list[str]:
     """The sample-mode input flags over the fixture world."""
     entities = [{"entity_id": eid, "type": "Person", "canonical_name": name,
                  "aliases": ["亞伯蘭"] if eid == "person:yabolahan" else []}
@@ -100,7 +100,7 @@ def world(tmp_path, rows=ROWS) -> list[str]:
     return ["--clean", _jsonl(tmp_path / "relations_clean.jsonl", rows),
             "--entities", _jsonl(tmp_path / "entities.jsonl", entities),
             "--mentions", _jsonl(tmp_path / "entity_mentions.jsonl", MENTIONS),
-            "--pericopes", _jsonl(tmp_path / "pericopes.jsonl", PERICOPES),
+            "--pericopes", _jsonl(tmp_path / "pericopes.jsonl", pericopes),
             "--descriptions", _jsonl(tmp_path / "descriptions.jsonl", descriptions)]
 
 
@@ -112,9 +112,9 @@ def run(argv) -> int:
         return stop.code
 
 
-def sample(tmp_path, *flags, rows=ROWS, name="sample.json", code=0):
+def sample(tmp_path, *flags, rows=ROWS, pericopes=PERICOPES, name="sample.json", code=0):
     out = tmp_path / name
-    assert run(["--mode", "sample", *world(tmp_path, rows), *flags, "--out", str(out)]) == code
+    assert run(["--mode", "sample", *world(tmp_path, rows, pericopes), *flags, "--out", str(out)]) == code
     return json.loads(out.read_text(encoding="utf-8")) if code == 0 else None
 
 
@@ -325,9 +325,16 @@ def test_spotcheck_section(tmp_path):
                                               58: (True, True)}, "kay")
     report = score(tmp_path, a, b, "--adjudication", adjudication, "--spotcheck", spot)
     assert report["disagreements"][0]["final"] == {"text_correct": True, "id_correct": False}
-    assert report["spotcheck"] == {"n": 4, "agree": 2, "disagree": ["item052", "item058"], "annotator": "kay"}
+    # decision Q8: Kay's rows replace the final labels; every changed field is listed
+    assert report["spotcheck"] == {
+        "n": 4, "agree": 2, "disagree": ["item052", "item058"], "annotator": "kay",
+        "overrides": [{"item_id": "item052", "field": "id_correct", "final": False, "kay": True},
+                      {"item_id": "item058", "field": "text_correct", "final": False, "kay": True},
+                      {"item_id": "item058", "field": "id_correct", "final": False, "kay": True}],
+        "extra": 3, "adjudicated_missing": [], "min_extra": None}
     assert report["inputs"]["spotcheck"]["path"] == spot
-    none = {"n": 0, "agree": 0, "disagree": [], "annotator": None}
+    none = {"n": 0, "agree": 0, "disagree": [], "annotator": None, "overrides": [], "extra": 0,
+            "adjudicated_missing": [], "min_extra": None}
     assert score(tmp_path, labels, labels)["spotcheck"] == none
     unknown = write_labels(tmp_path, "k.jsonl", {60: (True, True)}, "kay")
     assert score(tmp_path, labels, labels, "--spotcheck", unknown, code=2) is None

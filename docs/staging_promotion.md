@@ -327,11 +327,11 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 
 ### W1 的關係層檢查（第 1A 批）
 1A 的語意邊全部由 6.1 從 6.05 的 relations_clean.jsonl 匯入（[build_database.md](build_database.md) Step 6.05、6.1）。期望檔有兩份：`relations_expected.json` 是 6.05 報告扣掉 10.2 之後的邊集合，`residuals_expected.json` 是第 0 批遺留的 mention_count、MENTIONS 屬性與 R1 殘差（K10、第 1 批計畫 §2.1）。兩者與 1A 的兩個允許清單片段，都在第 1 批計畫 §1「W1 步驟」第 2 步（staging 重建）之前產生並 commit，sha256 記進 W1 紀錄，看過 staging 的 diff 之後不可再改（第 1 批計畫 §3）。K9 沒過時的退路會改變 6.05 的輸出，所以順序是 K9 → 期望檔 → 重建。`D` 沿用 R0 的日期。
-1. **K9 親屬邊抽樣（事前登記：以下在開始標註之前寫定，之後不改）**。先照 [build_database.md](build_database.md) Step 6.05 在 output/ 跑出 relations_clean.jsonl 與報告（連跑兩次 cmp）。三個樣本都抽自這一份檔，sample 檔的 meta 記下它的 sha256。
+1. **K9 親屬邊抽樣（事前登記：以下在開始標註之前寫定，之後不改）**。抽查取代最終標籤、條件身分率與 llm／prior 的前後節，是 Kay 2026-10-06 的決定 Q8（M381）與 Q9（M340），在標註開始之前補進這一項。先照 [build_database.md](build_database.md) Step 6.05 在 output/ 跑出 relations_clean.jsonl 與報告（連跑兩次 cmp）。三個樣本都抽自這一份檔，sample 檔的 meta 記下它的 sha256。
    - 抽樣：anchored_rule n = 60、seed 20261007；llm n = 30、同一個 seed；prior 全部 30 列（`--all`，seed 只決定順序）。2026-10-05 以現在的 6.05 輸出（`1c0cf064…`）計算，三個池子是 319、160、30 列。規劃時的試標用 seed 20261005，不是閘門樣本；試標的標註留在 bak/，不給標註者看。
-   - 判準（同一份 rubric，寫在 sample 檔裡）：text_correct 是經文明說這兩個名字之間有這種關係，方向也對；id_correct 是 text_correct 成立，而且兩端節點的主要指涉（description、最常出現的段落標題、提及的書卷）就是經文裡的那個人。
-   - 標註：兩個互不知情的 AI session，各在一個只放了 sample 檔的空目錄裡標（看不到 repo、程式、句型與試標）；第三個 session 只裁決兩者不一致的項目；最後 Kay 抽查全部裁決項目，另加至少 10 項。報告標明「非人工」（kin_review 自動寫入）。
-   - 閘門（決定 Q1）：anchored 的 text_correct，Wilson 下界 ≥ 0.85，也就是 60 項至少 57 項正確（57/60 的下界是 0.863，56/60 是 0.841）。id_correct 一律只報告，是延後-A 的基準（anchored 60、llm 30、prior 30）；llm、prior 兩個樣本整個只報告。
+   - 判準（同一份 rubric，寫在 sample 檔裡）：text_correct 是經文明說這兩個名字之間有這種關係，方向也對；id_correct 是 text_correct 成立，而且兩端節點的主要指涉（description、最常出現的段落標題、提及的書卷）就是經文裡的那個人。llm、prior 的 sample 另有 `context` 欄（決定 Q9），與 evidence 分開，不是 evidence：evidence 的前一節與後一節（同一卷，可跨章；卷首、卷末那一邊是 null，evidence 定位不到時兩邊都是 null）。這兩個 sample 的 text_correct 判準改成看 evidence 的經文、用前後一節幫助讀懂（例如代名詞指的是誰），關係仍要由 evidence 的經文說出，只在 context 裡說的不算；id_correct 的判準不變。anchored 的 sample 與判準不變，閘門照原登記。
+   - 標註：兩個互不知情的 AI session，各在一個只放了 sample 檔的空目錄裡標（看不到 repo、程式、句型與試標）；第三個 session 只裁決兩者不一致的項目；最後 Kay 抽查全部裁決項目，另加至少 10 項。Kay 抽查的標籤取代該項的最終標籤（A、B 一致或裁決之後的標籤，兩欄一起），閘門讀取代之後的標籤（決定 Q8）；抽查涵蓋不足時 kin_review 不判閘門（下面的 `--min-spotcheck-extra 10`，結束碼 2）。報告列出抽查前、後的 k、n 與 Wilson 下界，以及每一筆改動（item_id、欄位、最終標籤 → Kay 的標籤），並標明「非人工（AI 雙盲＋裁決，Kay 抽查）」（kin_review 自動寫入）。
+   - 閘門（決定 Q1）：anchored 的 text_correct，Wilson 下界 ≥ 0.85，也就是 60 項至少 57 項正確（57/60 的下界是 0.863，56/60 是 0.841）。id_correct 一律只報告，是延後-A 的基準（anchored 60、llm 30、prior 30）；llm、prior 兩個樣本整個只報告。下界以 Kay 抽查取代之後的標籤計算（決定 Q8）。每份報告另報條件身分率（決定 Q9）：最終 text_correct 為 true 的項目裡，id_correct 也為 true 的比例，即 k_id_given_text／n_text 與它的 Wilson 下界（z = 1.96），抽查前、後各一，只報告。
    - 沒過時的唯一退路：`config/relations/anchored_rules.yaml` 改 `enabled: false`，重跑 6.05（圖上 5,297 條，sha256 `bbc5c830…`）。探針照 C8g 的做法調整：kin-david-son-of-jesse 改寫成 prior 邊 `person:yexi FATHER_OF person:dawei`，撤掉 kin-esau-father-of-jalam。同一個 commit 改 `scripts/tests/test_validate_kg_shipped.py` 的 PROBES_1A、W1_EDGES；`scripts/tests/test_relation_postprocess_output.py::test_final_edge_set` 釘的值（列數、by_source、collapsed_keys、FINAL_EDGE_SET_SHA256、FINAL_AFTER_10_2_SHA256、KINSHIP 與 16 個探針）與同檔其他釘 anchored 數字的測試（test_stamps 的 anchored 列數與 ee 鍵條數 anchored 4／319、test_rule_drops_and_anchored_counts 的 anchored 統計），依退路重跑的 6.05 輸出重釘，能比的都要等於 `sim2_no_anchored.json`（10.2 之後 5,297 條、`bbc5c830…`）；以及同檔 test_batch0_graph_r6_and_failing_probes 的第 0 批圖上失敗的探針清單（拿掉 kin-esau-father-of-jalam）。第 2 項的期望檔改用 `sim2_no_anchored.json` 的 sha。不重抽，也不換 seed、欄位或門檻。
    ```bash
    (
@@ -353,12 +353,12 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    K=bak/$D/k9
    uv run --project scripts python scripts/tools/kin_review.py --mode score --sample $K/anchored.json \
      --labels $K/anchored_a.jsonl --labels $K/anchored_b.jsonl --adjudication $K/anchored_adj.jsonl \
-     --spotcheck $K/anchored_kay.jsonl --out $K/anchored_report.json
+     --spotcheck $K/anchored_kay.jsonl --min-spotcheck-extra 10 --out $K/anchored_report.json
    jq -e --slurpfile kay $K/anchored_kay.jsonl '([.disagreements[].item_id] - [$kay[].item_id] == []) and (([$kay[].item_id] | unique | length) >= (.disagreements | length) + 10)' $K/anchored_report.json
    echo 'K9 anchored passed'
    )
    ```
-   anchored 那一行不帶 `--gate-field`、`--min-lb`：預設就是 text_correct 與 0.85。kin_review 結束碼 0 才算通過，1 就走上面的退路。接著的 jq 確認 Kay 的抽查涵蓋全部裁決項目，另加至少 10 項（kin_review 只報告抽查，不擋）；不過就補齊抽查，再重跑這一段。llm、prior 只報告，不論閘門的結果都要跑：
+   anchored 那一行不帶 `--gate-field`、`--min-lb`：預設就是 text_correct 與 0.85。Kay 的抽查會改變閘門讀的標籤，所以 `--min-spotcheck-extra 10` 讓 kin_review 先確認抽查涵蓋全部裁決項目，另加至少 10 項；不夠就結束碼 2，什麼都不寫，也不判閘門：補齊抽查，再重跑這一段。kin_review 結束碼 0 才算通過，1 才走上面的退路。接著的 jq 從報告與抽查檔再獨立核對一次同一條涵蓋規則。llm、prior 只報告，不論閘門的結果都要跑：
    ```bash
    (
    set -eu -o pipefail

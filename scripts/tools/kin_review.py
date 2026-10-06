@@ -21,16 +21,35 @@ source, sources, notes (the anchored pattern), phase, run_id, model or
 confidence reaches the file. The meta holds the seed, the pool size and
 sha256, the sha256 of every input, and the rubric of the two fields.
 
+Decision Q9 (Kay 2026-10-06, M340): an llm or prior item also has a context
+field, apart from the evidence: the verse right before the first evidence
+verse and the one right after the last, in the book's reading order
+(chapters and verses by number, across a chapter or pericope, never into
+another book; null at a book's edge or when the evidence cannot be placed).
+Their rubric judges text_correct on the evidence verses read with that
+context. anchored_rule samples and their rubric are the pre-registered gate
+protocol and stay byte for byte what they were.
+
 --mode score reads the sample, two --labels files (one annotator each,
 'ai:<session>'; a row per item {item_id, text_correct, id_correct,
 annotator, note}), an optional --adjudication (rows for exactly the items the
 two disagree on, by a third 'ai:' session: neither A's nor B's annotator) and
 an optional --spotcheck (Kay's rows for any items; an 'ai:' annotator is
 refused, since the report says 「Kay 抽查」). The report has, per field, k, n
-and the Wilson lower bound (z = 1.96) of the final labels, the raw agreement
-and Cohen's κ of the two labellings, the disagreements, the spot-check
-against the final labels, every input's sha256, the gate, and the
-annotation ANNOTATION.
+and the Wilson lower bound (z = 1.96) of the final labels before and after
+the spot-check, the identity rate among the final text_correct items
+(k_id_given_text, n_text and its Wilson lower bound) before and after it, the
+raw agreement and Cohen's κ of the two labellings, the disagreements, the
+spot-check against the final labels with every override, every input's
+sha256, the gate, and the annotation ANNOTATION.
+
+Decision Q8 (Kay 2026-10-06, M381, option a): a spot-check row replaces the
+final label of its item, both fields, after the agreement and the
+adjudication and before the Wilson bounds and the gate; the gate reads the
+labels after the spot-check. --min-spotcheck-extra N refuses (exit 2,
+nothing written, no gate) a spot-check that misses an adjudicated item or has
+fewer than N other items: Kay's labels change what the gate reads, so a short
+spot-check is not judged.
 
 Adjudication is per item, not per field (staging_promotion.md K9:
 「只裁決兩者不一致的項目」): the adjudication row replaces both fields of the
@@ -44,17 +63,19 @@ and reported as the deferred-A baseline, never gating.
 
 Exit codes: sample 0 written, 2 bad input or usage. score 0 the gate's
 lower bound ≥ --min-lb (or --report-only), 1 below (the report is still
-written), 2 bad input or usage (nothing written). Both modes remove an
-existing --out before reading any input, so a failed rerun leaves no earlier
-report at that path (a usage error stops before --out is touched), and write
-it through <out>.tmp and os.replace. An --out (or its .tmp) that is one of
+written), 2 bad input, a spot-check short of --min-spotcheck-extra, or usage
+(nothing written). Both modes remove an existing --out before reading any
+input, so a failed rerun leaves no earlier report at that path (a usage
+error stops before --out is touched), and write it through <out>.tmp and
+os.replace. An --out (or its .tmp) that is one of
 the inputs is a usage error.
 
 Usage (from the project root):
     scripts/.venv/bin/python scripts/tools/kin_review.py --mode sample \\
         --clean output/relations_clean.jsonl --source anchored_rule --n 60 --seed S --out sample.json
     scripts/.venv/bin/python scripts/tools/kin_review.py --mode score --sample sample.json \\
-        --labels a.jsonl --labels b.jsonl --adjudication c.jsonl --spotcheck kay.jsonl --out report.json
+        --labels a.jsonl --labels b.jsonl --adjudication c.jsonl --spotcheck kay.jsonl \\
+        --min-spotcheck-extra 10 --out report.json
 """
 
 from __future__ import annotations
@@ -84,32 +105,42 @@ KINSHIP = ("FATHER_OF", "MOTHER_OF", "SON_OF", "DAUGHTER_OF",
            "SIBLING_OF", "SPOUSE_OF", "ANCESTOR_OF", "DESCENDANT_OF")
 SOURCES = ("anchored_rule", "llm", "prior")
 TOP_PERICOPES, TOP_BOOKS = 5, 6
-SAMPLE_FORMAT, REPORT_FORMAT = "kin_review_sample/v1", "kin_review_report/v1"
+SAMPLE_FORMAT, REPORT_FORMAT = "kin_review_sample/v1", "kin_review_report/v2"
+CONTEXT_SOURCES = ("llm", "prior")              # decision Q9: these samples show the verses around the evidence
 FIELDS = ("text_correct", "id_correct")
 DEFAULT_GATE_FIELD, DEFAULT_MIN_LB, Z = "text_correct", 0.85, 1.96
 ANNOTATION = "非人工（AI 雙盲＋裁決，Kay 抽查）"
 AI_PREFIX = "ai:"
+_TEXT_RULE = (
+    "是否明說 head 與 tail 這兩個名字之間有 relation 所指的親屬關係，"
+    "而且方向對（X SON_OF Y：X 是 Y 的兒子；X FATHER_OF Y：X 是 Y 的父親；ANCESTOR_OF／"
+    "DESCENDANT_OF 指隔代；SPOUSE_OF、SIBLING_OF 不分方向）？要生育或婚姻意義上的關係，"
+    "稱謂或比喻（例如對先知自稱「你兒子」）不算。明說才記 true；沒說、只是推論、方向反了或"
+    "關係種類不對都記 false。這一欄不管兩端節點實際指的是誰。")
 RUBRIC = {
-    "text_correct": (
-        "只看 evidence 的經文：經文是否明說 head 與 tail 這兩個名字之間有 relation 所指的親屬關係，"
-        "而且方向對（X SON_OF Y：X 是 Y 的兒子；X FATHER_OF Y：X 是 Y 的父親；ANCESTOR_OF／"
-        "DESCENDANT_OF 指隔代；SPOUSE_OF、SIBLING_OF 不分方向）？要生育或婚姻意義上的關係，"
-        "稱謂或比喻（例如對先知自稱「你兒子」）不算。明說才記 true；沒說、只是推論、方向反了或"
-        "關係種類不對都記 false。這一欄不管兩端節點實際指的是誰。"),
+    "text_correct": "只看 evidence 的經文：經文" + _TEXT_RULE,
     "id_correct": (
         "text_correct 為 true，而且 head 與 tail 兩個節點都就是這節經文裡的那個人，才記 true："
         "看 canonical_name、aliases、description、top_pericopes、mention_books 描繪的主要人物。"
         "任一端是同名的另一人，或是合併了多個同名人物、以別人為主的節點，記 false。"
         "text_correct 為 false 時一律記 false。"),
 }
+RUBRIC_WITH_CONTEXT = {
+    **RUBRIC,
+    "text_correct": (
+        "看 evidence 的經文，並用 context 附的前一節與後一節（同一卷，可跨章；卷首或卷末沒有的那一邊是 null）"
+        "幫助讀懂它，例如代名詞或省略的人指的是誰。關係仍要由 evidence 的經文說出，只在 context 裡說的不算。"
+        "evidence 的經文" + _TEXT_RULE),
+}
+_CHAPTER = re.compile(r"(.+):(\d+)")
 _CITATION = re.compile(r"(\S+?)\s*(\d+):(\d+)")
 _DEFAULTS = {"clean": "output/relations_clean.jsonl", "entities": "output/entities.jsonl",
              "mentions": "output/entity_mentions.jsonl", "pericopes": "output/pericopes.jsonl",
              "descriptions": "output/frozen/descriptions.jsonl"}
 _MODE_FLAGS = {"sample": ("clean", "entities", "mentions", "pericopes", "descriptions",
                           "source", "n", "all", "seed"),
-               "score": ("sample", "labels", "adjudication", "spotcheck", "gate_field",
-                         "min_lb", "report_only")}
+               "score": ("sample", "labels", "adjudication", "spotcheck", "min_spotcheck_extra",
+                         "gate_field", "min_lb", "report_only")}
 
 
 class BadInput(Exception):
@@ -187,6 +218,7 @@ class Corpus:
     descriptions: dict[str, str]
     pericopes: dict[str, dict]
     verse_home: dict[tuple[str, int], str]     # (chapter id, verse) -> pericope id
+    reading: dict[tuple[str, int], tuple]      # (chapter id, verse) -> (verse before, verse after) in its book
     by_pericope: dict[str, Counter]            # entity -> mention rows per pericope
     by_book: dict[str, Counter]                # entity -> mention rows per book
 
@@ -219,7 +251,29 @@ def load_corpus(args: argparse.Namespace, ids: set[str]) -> Corpus:
     pericopes = {row["id"]: row for row in _jsonl(args.pericopes)}
     verse_home = {(p.get("parent_id"), number): pid for pid, p in pericopes.items()
                   for number, _ in verses_of(p.get("content") or "")}
-    return Corpus(entities, descriptions, pericopes, verse_home, *_mention_counts(args.mentions, ids))
+    return Corpus(entities, descriptions, pericopes, verse_home, reading_order(verse_home),
+                  *_mention_counts(args.mentions, ids))
+
+
+def reading_order(verse_home: Mapping[tuple[str, int], str]) -> dict[tuple[str, int], tuple]:
+    """(chapter id, verse) -> (the verse before it, the verse after it) within its book.
+
+    Chapters and verses go by number, across chapters and pericopes; None at
+    either end of a book. A verse number the text has no '**N**' mark for is
+    no gap: RCUV's '**29-30**' block of 創 24 (verses_of keeps it in verse 28's
+    text, as the evidence does) makes 28 and 31 neighbours.
+    """
+    books = defaultdict(list)
+    for chapter, verse in verse_home:
+        number = _CHAPTER.fullmatch(chapter or "")
+        if number:
+            books[number.group(1)].append((int(number.group(2)), verse, chapter))
+    links = {}
+    for verses in books.values():
+        keys = [(chapter, verse) for _, verse, chapter in sorted(verses)]
+        for i, key in enumerate(keys):
+            links[key] = (keys[i - 1] if i else None, keys[i + 1] if i + 1 < len(keys) else None)
+    return links
 
 
 def _top(counter: Counter, n: int) -> list[tuple[str, int]]:
@@ -261,8 +315,8 @@ def _locate(row: Mapping, corpus: Corpus) -> tuple[str | None, list[int]]:
     return home, [int(cited.group(3))] if home else []
 
 
-def evidence(row: Mapping, corpus: Corpus) -> dict:
-    pid, verses = _locate(row, corpus)
+def evidence(row: Mapping, corpus: Corpus, located: tuple[str | None, list[int]]) -> dict:
+    pid, verses = located
     pericope = corpus.pericopes.get(pid) if pid else None
     text = dict(verses_of(pericope.get("content") or "")) if pericope else {}
     if any(v not in text for v in verses):
@@ -272,6 +326,34 @@ def evidence(row: Mapping, corpus: Corpus) -> dict:
             "verse_text": " ".join(text[v] for v in verses) if verses else row.get("evidence_span") or ""}
 
 
+def _verse(key: tuple[str, int] | None, corpus: Corpus) -> dict | None:
+    if key is None:
+        return None
+    pid = corpus.verse_home[key]
+    pericope = corpus.pericopes[pid]
+    return {"pericope_id": pid, "title": pericope.get("title"), "verse": key[1],
+            "verse_text": dict(verses_of(pericope.get("content") or ""))[key[1]]}
+
+
+def context(located: tuple[str | None, list[int]], corpus: Corpus) -> dict:
+    """The verse before the first evidence verse and the one after the last (decision Q9)."""
+    pid, verses = located
+    if not verses:
+        return {"before": None, "after": None}
+    chapter = corpus.pericopes[pid].get("parent_id")
+    before = corpus.reading.get((chapter, verses[0]), (None, None))[0]
+    after = corpus.reading.get((chapter, verses[-1]), (None, None))[1]
+    return {"before": _verse(before, corpus), "after": _verse(after, corpus)}
+
+
+def sample_item(row: Mapping, corpus: Corpus, *, with_context: bool) -> dict:
+    located = _locate(row, corpus)
+    item = {"item_id": item_id(key_of(row)), "relation": row["relation"],
+            "head": endpoint(row["head_id"], corpus), "tail": endpoint(row["tail_id"], corpus),
+            "evidence": evidence(row, corpus, located)}
+    return {**item, "context": context(located, corpus)} if with_context else item
+
+
 def run_sample(args: argparse.Namespace) -> dict:
     pool = build_pool(_jsonl(args.clean), args.source)
     n = len(pool) if args.all else args.n
@@ -279,11 +361,10 @@ def run_sample(args: argparse.Namespace) -> dict:
         raise BadInput(f"--n {n} does not fit a pool of {len(pool)} {args.source} kinship rows")
     drawn = random.Random(args.seed).sample(pool, n)
     corpus = load_corpus(args, {eid for row in pool for eid in (row["head_id"], row["tail_id"])})
-    items = [{"item_id": item_id(key_of(row)), "relation": row["relation"],
-              "head": endpoint(row["head_id"], corpus), "tail": endpoint(row["tail_id"], corpus),
-              "evidence": evidence(row, corpus)} for row in drawn]
+    with_context = args.source in CONTEXT_SOURCES
+    items = [sample_item(row, corpus, with_context=with_context) for row in drawn]
     meta = {"seed": args.seed, "pool_size": len(pool), "pool_sha256": pool_sha256(pool),
-            "clean_sha256": _sha256(args.clean), "rubric": RUBRIC,
+            "clean_sha256": _sha256(args.clean), "rubric": RUBRIC_WITH_CONTEXT if with_context else RUBRIC,
             "inputs_sha256": {name: _sha256(getattr(args, name))
                               for name in ("entities", "mentions", "pericopes", "descriptions")}}
     return {"format": SAMPLE_FORMAT, "meta": meta, "items": items}
@@ -382,27 +463,65 @@ def _input(path: Path | None, annotator: str | None = None, *, labelled: bool = 
     return {**entry, "annotator": annotator} if labelled else entry
 
 
-def _spotcheck(path: Path | None, ids: list[str], final: dict) -> tuple[dict, str | None]:
+def _spotcheck(path: Path | None, ids: list[str]) -> tuple[dict, str | None]:
+    """({item_id: Kay's label} ({} without --spotcheck), the annotator); an 'ai:' annotator is refused."""
     if path is None:
-        return {"n": 0, "agree": 0, "disagree": [], "annotator": None}, None
+        return {}, None
     rows, annotator = read_labels(path, ids, complete=False, ai=False)
     if annotator and annotator.startswith(AI_PREFIX):
         raise BadInput(f"{path}: annotator {annotator!r} is an AI session; the spot-check is Kay's "
                        "(the report says Kay 抽查)")
-    disagree = sorted(iid for iid, row in rows.items() if _pick(row) != final[iid])
-    return {"n": len(rows), "agree": len(rows) - len(disagree), "disagree": disagree,
-            "annotator": annotator}, annotator
+    return {iid: _pick(row) for iid, row in rows.items()}, annotator
 
 
-def field_stats(ids: list[str], final: dict, a: dict, b: dict) -> tuple[dict, dict]:
-    """Per field: ({k, n, p, wilson_lb} of the final labels, {raw, kappa} of labellings A and B)."""
-    fields, agreement = {}, {}
+def spotcheck_report(ids: list[str], final: dict, kay: dict, disagreements: list[dict], annotator: str | None,
+                     min_extra: int | None) -> dict:
+    """Kay's labels against the final ones: every override (item, field) and the coverage of the adjudication."""
+    overrides = [{"item_id": iid, "field": field, "final": final[iid][field], "kay": kay[iid][field]}
+                 for iid in ids if iid in kay for field in FIELDS if kay[iid][field] != final[iid][field]]
+    disagree = sorted({o["item_id"] for o in overrides})
+    adjudicated = [d["item_id"] for d in disagreements]
+    return {"n": len(kay), "agree": len(kay) - len(disagree), "disagree": disagree, "annotator": annotator,
+            "overrides": overrides, "extra": len(kay.keys() - set(adjudicated)),
+            "adjudicated_missing": [iid for iid in adjudicated if iid not in kay], "min_extra": min_extra}
+
+
+def check_coverage(spotcheck: dict, path: Path | None) -> None:
+    """--min-spotcheck-extra N: every adjudicated item and N others, or exit 2 before any gate."""
+    if spotcheck["min_extra"] is None:
+        return
+    if spotcheck["adjudicated_missing"]:
+        raise BadInput(f"{path}: the spot-check does not cover the adjudicated items "
+                       f"{spotcheck['adjudicated_missing'][:5]}")
+    if spotcheck["extra"] < spotcheck["min_extra"]:
+        raise BadInput(f"{path}: the spot-check has {spotcheck['extra']} items beyond the adjudicated ones, "
+                       f"--min-spotcheck-extra wants {spotcheck['min_extra']}")
+
+
+def field_stats(ids: list[str], labels: dict) -> dict:
+    """Per field: {k, n, p, wilson_lb} of `labels`."""
+    stats = {}
     for field in FIELDS:
-        k, n = sum(final[i][field] for i in ids), len(ids)
-        fields[field] = {"k": k, "n": n, "p": k / n, "wilson_lb": wilson_lower_bound(k, n)}
+        k, n = sum(labels[i][field] for i in ids), len(ids)
+        stats[field] = {"k": k, "n": n, "p": k / n, "wilson_lb": wilson_lower_bound(k, n)}
+    return stats
+
+
+def identity_given_text(ids: list[str], labels: dict) -> dict:
+    """Decision Q9: id_correct among the text_correct items (p and the bound are None when there are none)."""
+    texts = [i for i in ids if labels[i]["text_correct"]]
+    k, n = sum(labels[i]["id_correct"] for i in texts), len(texts)
+    return {"k_id_given_text": k, "n_text": n, "p": k / n if n else None,
+            "wilson_lb": wilson_lower_bound(k, n) if n else None}
+
+
+def agreement_stats(ids: list[str], a: dict, b: dict) -> dict:
+    """Per field: {raw, kappa} of labellings A and B."""
+    agreement = {}
+    for field in FIELDS:
         pair = [[labels[i][field] for i in ids] for labels in (a, b)]
-        agreement[field] = {"raw": sum(x == y for x, y in zip(*pair)) / n, "kappa": cohen_kappa(*pair)}
-    return fields, agreement
+        agreement[field] = {"raw": sum(x == y for x, y in zip(*pair)) / len(ids), "kappa": cohen_kappa(*pair)}
+    return agreement
 
 
 def _gate(args: argparse.Namespace, fields: dict) -> dict:
@@ -412,8 +531,8 @@ def _gate(args: argparse.Namespace, fields: dict) -> dict:
             "wilson_lb": bound, "pass": None if args.report_only else bound >= min_lb}
 
 
-def run_score(args: argparse.Namespace) -> dict:
-    ids, sample_meta = read_sample(args.sample)
+def _labellings(args: argparse.Namespace, ids: list[str]) -> tuple[dict, dict, dict | None, list]:
+    """(A, B, the adjudication or None, [A's, B's, the adjudication's annotator])."""
     (a, who_a), (b, who_b) = (read_labels(p, ids, complete=True, ai=True) for p in args.labels)
     if who_a == who_b:
         raise BadInput(f"both --labels files are by {who_a}; the labelling must be double-blind")
@@ -423,12 +542,24 @@ def run_score(args: argparse.Namespace) -> dict:
         if who_c in (who_a, who_b):
             raise BadInput(f"--adjudication is by {who_c}, who labelled A or B; the adjudication must be "
                            "a third session")
+    return a, b, adjudicated, [who_a, who_b, who_c]
+
+
+def run_score(args: argparse.Namespace) -> dict:
+    ids, sample_meta = read_sample(args.sample)
+    a, b, adjudicated, (who_a, who_b, who_c) = _labellings(args, ids)
     final, disagreements = final_labels(ids, a, b, adjudicated)
-    spotcheck, who_k = _spotcheck(args.spotcheck, ids, final)
-    fields, agreement = field_stats(ids, final, a, b)
+    kay, who_k = _spotcheck(args.spotcheck, ids)
+    spotcheck = spotcheck_report(ids, final, kay, disagreements, who_k, args.min_spotcheck_extra)
+    check_coverage(spotcheck, args.spotcheck)
+    checked = {iid: kay.get(iid, final[iid]) for iid in ids}          # decision Q8: Kay's label replaces
+    fields = field_stats(ids, checked)
     gate = _gate(args, fields)
     return {"format": REPORT_FORMAT, "annotation": ANNOTATION, "n": len(ids), "wilson_z": Z,
-            "sample": sample_meta, "fields": fields, "agreement": agreement, "disagreements": disagreements,
+            "sample": sample_meta, "fields": fields, "fields_before_spotcheck": field_stats(ids, final),
+            "identity_given_text": identity_given_text(ids, checked),
+            "identity_given_text_before_spotcheck": identity_given_text(ids, final),
+            "agreement": agreement_stats(ids, a, b), "disagreements": disagreements,
             "spotcheck": spotcheck, "gate": gate, "exit": 1 if gate["pass"] is False else 0,
             "inputs": {"sample": _input(args.sample, labelled=False),
                        "labels": [_input(p, who) for p, who in zip(args.labels, (who_a, who_b))],
@@ -436,15 +567,24 @@ def run_score(args: argparse.Namespace) -> dict:
                        "spotcheck": _input(args.spotcheck, who_k)}}
 
 
+def _bound(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.3f}"
+
+
 def render_score(doc: dict) -> str:
     lines = [f"kin_review score: n {doc['n']}, {doc['annotation']}"]
     for field in FIELDS:
-        f, agree = doc["fields"][field], doc["agreement"][field]
-        kappa = "n/a" if agree["kappa"] is None else f"{agree['kappa']:.3f}"
+        f, was, agree = doc["fields"][field], doc["fields_before_spotcheck"][field], doc["agreement"][field]
         lines.append(f"  {field:<13} {f['k']}/{f['n']}  Wilson lower bound {f['wilson_lb']:.3f}"
-                     f"  agreement {agree['raw']:.3f}  κ {kappa}")
+                     f"  (before spot-check {was['k']}/{was['n']}, {was['wilson_lb']:.3f})"
+                     f"  agreement {agree['raw']:.3f}  κ {_bound(agree['kappa'])}")
+    i, was = doc["identity_given_text"], doc["identity_given_text_before_spotcheck"]
+    lines.append(f"  identity given text {i['k_id_given_text']}/{i['n_text']}  Wilson lower bound "
+                 f"{_bound(i['wilson_lb'])}  (before spot-check {was['k_id_given_text']}/{was['n_text']}, "
+                 f"{_bound(was['wilson_lb'])})")
     spot, gate = doc["spotcheck"], doc["gate"]
-    lines.append(f"  disagreements {len(doc['disagreements'])}  spot-check {spot['agree']}/{spot['n']} agree")
+    lines.append(f"  disagreements {len(doc['disagreements'])}  spot-check {spot['agree']}/{spot['n']} agree, "
+                 f"overrides {len(spot['overrides'])}")
     if gate["report_only"]:
         lines.append(f"exit 0: report only ({gate['field']} lower bound {gate['wilson_lb']:.3f})")
     else:
@@ -473,7 +613,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--adjudication", type=Path,
                         help="score: final labels for the items A and B disagree on")
     parser.add_argument("--spotcheck", type=Path,
-                        help="score: Kay's spot-check labels (reported, never gating)")
+                        help="score: Kay's spot-check labels; each row replaces its item's final label, both "
+                             "fields, before the Wilson bounds and the gate (decision Q8)")
+    parser.add_argument("--min-spotcheck-extra", type=int, metavar="N",
+                        help="score: exit 2 (no gate) unless --spotcheck covers every adjudicated item and at "
+                             "least N others")
     parser.add_argument("--gate-field", choices=FIELDS,
                         help=f"score: the field the gate reads (default {DEFAULT_GATE_FIELD}, decision Q1)")
     gate = parser.add_mutually_exclusive_group()
@@ -502,6 +646,10 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
             parser.error("--mode score needs --sample and --labels twice")
         if args.min_lb is not None and not 0 < args.min_lb <= 1:
             parser.error("--min-lb must be in (0, 1]")
+        if args.min_spotcheck_extra is not None and args.min_spotcheck_extra < 0:
+            parser.error("--min-spotcheck-extra must be >= 0")
+        if args.min_spotcheck_extra is not None and args.spotcheck is None:
+            parser.error("--min-spotcheck-extra needs --spotcheck")
         args.gate_field = args.gate_field or DEFAULT_GATE_FIELD
         args.min_lb = DEFAULT_MIN_LB if args.min_lb is None else args.min_lb
         args.report_only = bool(args.report_only)
