@@ -58,7 +58,7 @@ from test_relation_postprocess import _run
 
 MAIN = "/home/kenzx0521/Bible_RAG"
 BRANCH = "feat/graph-strategy-gating"
-ALLOWED_UNTRACKED = "?? docker-compose.yml.bak-20260730-160725"
+COMPOSE_BACKUP = "docker-compose.yml.bak-20260730-160725"   # 2026-07-30 manual copy, never committed
 EXPECT = "config/kg_expect/batch1_w1/"
 DUMP = "bak/$D/promote/neo4j_staging.dump"
 HEAD_FILE = "bak/$D/images/backend_w1.head"
@@ -86,7 +86,7 @@ def test_r0_item_0_tags_the_pre_merge_commit_and_merges_both_streams_into_main()
     item = _item(r0, "0")
     assert r0.index(item) < r0.index("1. `git tag kg-pre-<批次>`")
     for needle in (f"`{MAIN}`", f"`{BRANCH}`", "`w1/1a`", "`w1/1b`", "R0–R5", "`git status --porcelain`",
-                   f"`{ALLOWED_UNTRACKED}`", "合併前的 commit", "W1 紀錄"):
+                   f"`{COMPOSE_BACKUP}`", "合併前的 commit", "W1 紀錄"):
         assert needle in item, needle
     merge, suites = _blocks(item)
     assert merge[0] == f"cd {MAIN}", merge
@@ -97,11 +97,11 @@ def test_r0_item_0_tags_the_pre_merge_commit_and_merges_both_streams_into_main()
     _in_order(merge, (f'test "$(git branch --show-current)" = {BRANCH}', "PRE=$(git rev-parse HEAD)",
                       'git tag kg-pre-batch1-w1 "$PRE"', "git merge --no-ff --no-edit w1/1a"))
     _in_order(suites, (
-        "git merge-base --is-ancestor w1/1b HEAD",
-        'test "$(git rev-parse kg-pre-batch1-w1)" = "$(git rev-parse HEAD^1)"', "scripts/tests/run.sh",
+        "git merge-base --is-ancestor kg-pre-batch1-w1 HEAD", "git merge-base --is-ancestor w1/1b HEAD",
+        "scripts/tests/run.sh",
         "backend/.venv/bin/python -m pytest backend/tests -q",
         "(cd evaluation && uv run --offline python -m pytest tests -q)",
-        "S=$(git status --porcelain)", f"case \"$S\" in ''|'{ALLOWED_UNTRACKED}') ;;"))
+        f"X=$(git status --porcelain -- . ':(exclude){COMPOSE_BACKUP}'", 'test -z "$X"'))
     assert "第 0 項" in _item(r0, "1")
 
 
@@ -269,8 +269,7 @@ def test_r2_scopes_the_uncommitted_change_claim_to_the_three_guard_files():
     # M293: deploy-guard compares GUARD_FILES only; any other uncommitted change still ships in the image
     xref = section(staging_text(), "W1 的交叉引用檢查")
     assert len(xp.GUARD_FILES) == 3 and all(f"`{name}`" in xref for name in xp.GUARD_FILES), xp.GUARD_FILES
-    for needle in ("GUARD_FILES 這三個檔沒提交的改動即使建進 image 也會被擋下", "其他檔的改動 deploy-guard 看不到",
-                   "建 image 前工作目錄要乾淨"):
+    for needle in ("GUARD_FILES 這三個檔沒提交的改動即使建進 image 也會被擋下", "其他檔的改動 deploy-guard 看不到"):
         assert needle in xref, needle
     assert "（沒提交的改動即使建進 image 也會被擋下）" not in xref
 

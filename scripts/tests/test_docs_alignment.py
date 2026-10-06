@@ -537,7 +537,8 @@ def test_xref_ab_window_restarts_staging_on_w1_and_reports_ci_by_stratum():
         "-f /tmp/w1_image.yml up -d --no-deps --no-build --wait --wait-timeout 300 backend-staging",
         "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend_staging)\" = \"$W1\"",
         "test \"$(docker inspect -f '{{.Image}}' bible_rag_backend)\" = \"$W1\""))
-    evals = [command for block in rest for command in block]
+    # the last fence ends with the answer-side lists' own fail-closed subshell (test_docs_alignment_w1_runbook)
+    evals = [command for block in rest for command in (block[:block.index("(")] if "(" in block else block)]
     # a bare `cd evaluation` would leave the operator in evaluation/ for step 2's repo-root paths
     assert evals and all(c.startswith("(cd evaluation && ") and c.endswith(")") for c in evals), evals
     _in_order(evals, ("rm -f results_quick/xref_old_w1.json results_quick/xref_new_w1.json", "--label xref_old_w1",
@@ -572,7 +573,7 @@ def test_r4_and_r5_cover_the_xref_promotion():
 def test_r4_ratchets_the_whole_wave_once_with_the_merged_allowlist():
     import validate_kg as vk
     r4 = section(staging_text(), "R4")
-    ratchets = [c for c in _commands(r4) if "--ratchet" in c or "--accept" in c]
+    ratchets = [c.split(" && ")[-1] for c in _commands(r4) if "--ratchet" in c or "--accept" in c]
     assert ratchets == ["uv run --project scripts python scripts/validate_kg.py --live --target prod "
                         "--ratchet --accept W,R1,R11"], ratchets
     assert {"W", "R1", "R11"} <= set(vk.CHECKS)

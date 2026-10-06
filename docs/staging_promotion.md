@@ -98,25 +98,28 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    echo "kg-pre-batch1-w1 = $PRE, merged at $(git rev-parse HEAD)"
    )
    ```
-   第二段可以重跑：確認合併 commit 帶著 `w1/1b`、第一個 parent 就是 tag，跑三套測試，最後 `git status --porcelain` 必須是空的，唯一允許的是 `?? docker-compose.yml.bak-20260730-160725`（2026-07-30 的手動備份，與 W1 無關）。backend 的 venv 沒有 pytest，與 `scripts/tests/run.sh` 一樣借 evaluation 的：
+   第二段可以重跑，合併之後多了修正 commit 也一樣：確認 tag 是 HEAD 的祖先、HEAD 的第一個 parent 鏈上緊接在 tag 之後的 commit 以 tag 為第一個 parent 而且含有整個 `w1/1a`（就是那個合併 commit），而且帶著 `w1/1b`，跑三套測試，最後 `git status --porcelain` 扣掉三個路徑之後必須是空的：`docker-compose.yml.bak-20260730-160725`（2026-07-30 的手動備份，與 W1 無關）、合併允許清單 `config/kg_diff_allow_batch1w1.yaml`（R4 之後才 commit，R2 第 2 項）與 W1 紀錄（W1 結束時才 commit，見下）；區塊不印出是哪一行，停下時看 `git status`。合併之後要修（例如某套測試沒過）：在主 checkout 的同一個 branch 上另做修正 commit，不 amend、不 rebase 合併 commit，也不回 worktree 改；修正 commit 的 sha 與原因記進 W1 紀錄，再重跑第二段。backend 的 venv 沒有 pytest，與 `scripts/tests/run.sh` 一樣借 evaluation 的：
    ```bash
    (
    set -eu -o pipefail
    test "$(git rev-parse --show-toplevel)" = /home/kenzx0521/Bible_RAG
+   git merge-base --is-ancestor kg-pre-batch1-w1 HEAD
+   M=$(git rev-list --first-parent --topo-order kg-pre-batch1-w1..HEAD | tail -n 1)
+   test "$(git rev-parse "$M^1")" = "$(git rev-parse kg-pre-batch1-w1)"
+   git merge-base --is-ancestor w1/1a "$M"
    git merge-base --is-ancestor w1/1b HEAD
-   test "$(git rev-parse kg-pre-batch1-w1)" = "$(git rev-parse HEAD^1)"
    scripts/tests/run.sh -q
    SHIM=$(mktemp -d)
    trap 'rm -rf "$SHIM"' EXIT
    for p in pytest _pytest pluggy iniconfig pygments py.py; do ln -s "$PWD/evaluation/.venv/lib/python3.12/site-packages/$p" "$SHIM/$p"; done
    PYTHONPATH=$SHIM backend/.venv/bin/python -m pytest backend/tests -q
    (cd evaluation && uv run --offline python -m pytest tests -q)
-   S=$(git status --porcelain)
-   case "$S" in ''|'?? docker-compose.yml.bak-20260730-160725') ;; *) printf '%s\n' "$S"; exit 1;; esac
+   X=$(git status --porcelain -- . ':(exclude)docker-compose.yml.bak-20260730-160725' ':(exclude)config/kg_diff_allow_batch1w1.yaml' ':(exclude)docs/records/*_kg_batch1_w1_results.md')
+   test -z "$X"
    echo "W1 checkout ready at $(git rev-parse HEAD)"
    )
    ```
-   印出最後一行才往下。之後 R0–R5 都在這個 checkout、從這個合併 commit 起跑，不在 worktree 裡跑任何一步；同一個 branch 上只再多出本文要求的 commit（例如第 8 項的 staging.env、R2 的事前登記檔、R4 之後的 ratchet）。W1 紀錄記下 tag 與合併 commit 的 sha，以及三個時點的 `git rev-parse HEAD`：事前登記的檔 commit 之後（R2「W1 的交叉引用檢查」第 1 項）、重建開始時（R1 第 5 項）、R2 建 `:w1` image 時（同一節第 3 項寫進 `bak/$D/images/backend_w1.head`）。
+   印出最後一行才往下。之後 R0–R5 都在這個 checkout、從這個合併 commit 起跑，不在 worktree 裡跑任何一步；同一個 branch 上只再多出本文要求的 commit（例如第 8 項的 staging.env、R2 的事前登記檔、R4 之後的 ratchet、W1 結束時的 W1 紀錄）與上面的修正 commit。W1 紀錄 `docs/records/<日期>_kg_batch1_w1_results.md`（R2「W1 第 4 步：Kay 核可」）從這裡開始寫，W1 結束（R4「W1 的 K8 對照組」的報告記完）才單獨 commit；在那之前它不進 git，第二段與 R2 建 `:w1` 前的檢查都不擋它。W1 紀錄記下 tag 與合併 commit 的 sha，以及三個時點的 `git rev-parse HEAD`：事前登記的檔 commit 之後（R2「W1 的交叉引用檢查」第 1 項）、重建開始時（R1 第 5 項）、R2 建 `:w1` image 時（同一節第 3 項寫進 `bak/$D/images/backend_w1.head`）。
 1. `git tag kg-pre-<批次>`（例：`kg-pre-batch0`）作為 run-of-record。第 1 批 W1 的 tag 已在第 0 項打在合併前的 commit 上，這裡不再打。
 2. 三庫備份：照 [bak/README.md](../bak/README.md)「重新備份」建 `bak/<日期>/`。PG 做 `pg_dump -Fc` 加 globals；Qdrant 三個 collection 各做 snapshot；Neo4j 先 `docker stop -t 60`，再 `neo4j-admin database dump`（停機約 1 分鐘）。
 3. 另存 PG 兩張實體表的 plain SQL，R5 換表回滾時使用：
@@ -173,16 +176,18 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 
 ## R2 驗證
 1. 10.6 依該批的判準通過（見 [build_database.md](build_database.md) Step 10.6），而且 `export_event_registry.py --check` 結束碼 0。
-2. 通過該批的驗證門檻（計畫 §4；第 1 批起見 [records/2026-10-04_kg_data_layer_fix_plan_batches.md](records/2026-10-04_kg_data_layer_fix_plan_batches.md)）。與 live 的 diff 要逐項列出並解釋（預期中的差異見 [build_database.md](build_database.md) Step 10.6）。staging 對 live 的比對用 diff_kg，在**沒有 source staging.env 的乾淨 shell**（新開的終端機）跑；10.6 的三項（validate_kg、check_identity、第 1A 批起的 check_edge_set）則要在 staging 的 shell 跑：
+2. 通過該批的驗證門檻（計畫 §4；第 1 批起見 [records/2026-10-04_kg_data_layer_fix_plan_batches.md](records/2026-10-04_kg_data_layer_fix_plan_batches.md)）。與 live 的 diff 要逐項列出並解釋（預期中的差異見 [build_database.md](build_database.md) Step 10.6）。staging 對 live 的比對用 diff_kg，在**沒有 source staging.env 的乾淨 shell**（新開的終端機）跑；10.6 的三項（validate_kg、check_identity、第 1A 批起的 check_edge_set）則要在 staging 的 shell 跑。第 0 批的指令見下方「歷史允許清單」。第 1 批 W1 用一份合併的允許清單，沒用到的條目也算失敗。先以事前登記的 sha256 核對合併檔，兩者是同一個失敗即停的子 shell：sha256 不符就不跑 diff_kg。報告存到 `bak/$D/diff_kg_staging_w1.json`，沒有印出最後一行就停：
    ```bash
-   # 第 0 批（歷史紀錄，見下方「歷史允許清單」）
-   uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch0.yaml --json
-   # 第 1 批 W1：一份合併的允許清單，沒用到的條目也算失敗
-   sha256sum -c config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256   # 事前登記的 sha256；結束碼 0 才跑下一行
-   uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch1w1.yaml --fail-on-unused --json
+   (
+   set -eu -o pipefail
+   : "${D:?set D to the W1 R0 date}"
+   sha256sum -c config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256
+   uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch1w1.yaml --fail-on-unused --json > bak/$D/diff_kg_staging_w1.json
+   echo 'W1 diff_kg passed'
+   )
    ```
    - `--a`、`--b` 各選 prod 或 staging（預設就是 prod 對 staging），只比 Neo4j：labels、relationships、ee_edges（`TYPE phase=P source=S`）、mentions、xrefs、xref_provenance（`source=S curated=C tsk=T` 的邊數，第 1B 批新增）、entity_ids、descriptions（逐字）、aliases（集合）、mention_count（逐實體，第 1B 批新增）、registry。prod 端的守門會拒絕還帶著 staging 設定的 shell（結束碼 1，安全的失敗）。
-   - **歷史允許清單不能再當閘門重跑**：`kg_diff_allow_batch0.yaml` 與更早的清單早於 xref_provenance、mention_count 兩段。現在用 batch-0 的清單重跑上面第一行，會因為 mention_count 的 4 筆 K10 殘差不在清單內而結束碼 1；這些檔案只記錄當時的判定。
+   - **歷史允許清單不能再當閘門重跑**：`kg_diff_allow_batch0.yaml` 與更早的清單早於 xref_provenance、mention_count 兩段。第 0 批當時的指令是 `uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch0.yaml --json`；現在用 batch-0 的清單重跑它，會因為 mention_count 的 4 筆 K10 殘差不在清單內而結束碼 1；這些檔案只記錄當時的判定。
    - W1 的合併清單 `config/kg_diff_allow_batch1w1.yaml` 由工具產生的片段合成，不手抄：1A 的 `relations_allow.yaml`、`residuals_allow.yaml` 與 1B 的 `xref_allow.yaml`，都在 `config/kg_expect/batch1_w1/`。合併在 YAML 層做，不可用 `cat` 串接：每個片段都是完整的 YAML 文件，各有 `version: 1` 與 `allow:`，串起來後一般的 YAML 載入只留最後一個 `allow:`，其他片段無聲消失（diff_kg 現在遇到重複的鍵直接報錯）。用 `--merge-out` 合併：逐一載入片段，把各自的 `allow` 依序接在同一個 `version: 1` 底下，跨片段重複的 section 與 key 直接報錯，核對合併後的條數等於各片段之和，最後印出合併檔的 sha256。不連庫，任何 shell 都可以跑：
      ```bash
      uv run --project scripts python scripts/tools/diff_kg.py --merge-out config/kg_diff_allow_batch1w1.yaml \
@@ -266,11 +271,13 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    echo 'step 9: created 0, same fingerprint, expect matched'
    )
    ```
-3. **backend-staging 換成 W1 HEAD 建的 image**（D3 也在這個 image 上跑）。W1 HEAD 建成另一個 tag，不覆寫 production 正在用的 `bible_rag-backend:latest`（W0 紀錄的做法），用一個不進 git 的 compose override 指定 tag。deploy-guard 比對的是本 checkout 在 HEAD 已提交的檔案（`git show HEAD:`，不看工作目錄），所以要在建 image 的同一個 checkout 跑，而且先 commit 再建 image（GUARD_FILES 這三個檔沒提交的改動即使建進 image 也會被擋下；其他檔的改動 deploy-guard 看不到，所以建 image 前工作目錄要乾淨）。第一段建 image、記下 id 並換上 backend-staging，是子 shell 加 `set -e`（同升版第 1 步）：`D` 沒設、`:w1` 不存在（id 檔是空的）、healthcheck 沒在 300 秒內通過（`--wait`，D3 與 ep_w1 緊接著打這個容器）或 staging 容器跑的不是這個 id，都在印出最後一行之前停下：
+3. **backend-staging 換成 W1 HEAD 建的 image**（D3 也在這個 image 上跑）。W1 HEAD 建成另一個 tag，不覆寫 production 正在用的 `bible_rag-backend:latest`（W0 紀錄的做法），用一個不進 git 的 compose override 指定 tag。deploy-guard 比對的是本 checkout 在 HEAD 已提交的檔案（`git show HEAD:`，不看工作目錄），所以要在建 image 的同一個 checkout 跑，而且先 commit 再建 image（GUARD_FILES 這三個檔沒提交的改動即使建進 image 也會被擋下；其他檔的改動 deploy-guard 看不到）。Dockerfile 只 COPY `backend/`、`bible_chunking/`、`scripts/`（另有 backend 的 pyproject.toml、uv.lock），`backend_w1.head` 要能代表 image 的內容，所以建 image 前，image 的輸入（Dockerfile、.dockerignore、docker-compose.yml 與 docker-compose.staging.yml、這三個目錄）在 `git status --porcelain` 裡一行都不能有：改過的、已 `git add` 的、未追蹤的都算，先 commit 或移走再建；區塊不印出是哪一行，停下時看 `git status`。這些路徑以外的檔不進 image，不擋，例如合併允許清單 `config/kg_diff_allow_batch1w1.yaml`（R4 之後才與 ratchet 一起 commit；登記它的 `kg_diff_allow_batch1w1.sha256` 已 commit）、W1 紀錄（W1 結束才 commit，R0 第 0 項）、D3 寫在 `evaluation/results_quick/` 的結果與 `docker-compose.yml.bak-20260730-160725`。第一段建 image、記下 id 並換上 backend-staging，是子 shell 加 `set -e`（同升版第 1 步）：image 的輸入有改動、`D` 沒設、`:w1` 不存在（id 檔是空的）、healthcheck 沒在 300 秒內通過（`--wait`，D3 與 ep_w1 緊接著打這個容器）或 staging 容器跑的不是這個 id，都在印出最後一行之前停下：
    ```bash
    (
    set -eu -o pipefail
    : "${D:?set D to the W1 R0 date}"
+   X=$(git status --porcelain -- Dockerfile .dockerignore docker-compose.yml docker-compose.staging.yml backend bible_chunking scripts)
+   test -z "$X"
    printf 'services:\n  backend:\n    image: bible_rag-backend:w1\n  backend-staging:\n    image: bible_rag-backend:w1\n' > /tmp/w1_image.yml
    docker compose -f docker-compose.yml -f docker-compose.staging.yml -f /tmp/w1_image.yml build backend
    mkdir -p bak/$D/images
@@ -294,7 +301,6 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 
 ### W1 的關係層檢查（第 1A 批）
 1A 的語意邊全部由 6.1 從 6.05 的 relations_clean.jsonl 匯入（[build_database.md](build_database.md) Step 6.05、6.1）。期望檔有兩份：`relations_expected.json` 是 6.05 報告扣掉 10.2 之後的邊集合，`residuals_expected.json` 是第 0 批遺留的 mention_count、MENTIONS 屬性與 R1 殘差（K10、第 1 批計畫 §2.1）。兩者與 1A 的兩個允許清單片段，都在第 1 批計畫 §1「W1 步驟」第 2 步（staging 重建）之前產生並 commit，sha256 記進 W1 紀錄，看過 staging 的 diff 之後不可再改（第 1 批計畫 §3）。K9 沒過時的退路會改變 6.05 的輸出，所以順序是 K9 → 期望檔 → 重建。`D` 沿用 R0 的日期。
-
 1. **K9 親屬邊抽樣（事前登記：以下在開始標註之前寫定，之後不改）**。先照 [build_database.md](build_database.md) Step 6.05 在 output/ 跑出 relations_clean.jsonl 與報告（連跑兩次 cmp）。三個樣本都抽自這一份檔，sample 檔的 meta 記下它的 sha256。
    - 抽樣：anchored_rule n = 60、seed 20261007；llm n = 30、同一個 seed；prior 全部 30 列（`--all`，seed 只決定順序）。2026-10-05 以現在的 6.05 輸出（`1c0cf064…`）計算，三個池子是 319、160、30 列。規劃時的試標用 seed 20261005，不是閘門樣本；試標的標註留在 bak/，不給標註者看。
    - 判準（同一份 rubric，寫在 sample 檔裡）：text_correct 是經文明說這兩個名字之間有這種關係，方向也對；id_correct 是 text_correct 成立，而且兩端節點的主要指涉（description、最常出現的段落標題、提及的書卷）就是經文裡的那個人。
@@ -361,12 +367,11 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    )
    ```
    預期（2026-10-05 以同樣的參數寫到 scratch 的候選檔）：relations_expected 是 5,616 條、`661cfc62…`，output sha256 `1c0cf064…`；relations_allow 90 條（relationships 28、ee_edges 62）；residuals_allow 4 條，都在 mention_count；residuals_expected 的 R1 是 prod 1,938、staging 2,124，`mentions_props` 的逐屬性條數與兩邊的逐邊摘要見第 4 項（2026-10-06 補上，片段不變）。片段開頭的註解記下來源，要改就重跑，不手改。6.05 的報告記下自己的 `--out` 路徑（output.path），所以 report_sha256（relations_expected.json 與 relations_allow.yaml 開頭的註解都記它）取決於 6.05 寫到哪裡：relations_expect 要照上面的指令，讀預設路徑 output/relations_clean.report.json 的報告；寫到 scratch 的候選檔只供核對條目（除了這個 sha256 都相同），不可 commit。重灌鏈的 check_w1_registration 也比 report_sha256，所以重建時的 6.05 同樣寫到預設路徑；output_sha256 與 edge_set_sha256 與路徑無關。這四個檔與 1B 的 `xref.json`、`xref_allow.yaml` 一起在第 2 步之前 commit；三個片段以 R2 第 2 項的 `--merge-out` 合成 `config/kg_diff_allow_batch1w1.yaml`（不可 `cat`；預期 104 條：90＋4＋1B 的 10），`--sha-out` 寫出的 sha256 檔與這六個檔一起 commit，合併檔到 R4 之後才 commit。第 4 步經 Kay 核可的就是這些已登記的檔。
-3. **重建時（第 2 步，staging 的 shell）**。6.05 照 [build_database.md](build_database.md) Step 6.05 連跑兩次並 `cmp`，而且輸出必須是登記的那一份（K9 通過時，也等於 `bak/$D/k9/anchored.json` 的 meta.clean_sha256）：重灌鏈接著跑的 check_w1_registration 比對報告、輸出與 10.2 後邊集合的 sha256 和 `relations_expected.json` 記的值，結束碼 0 才進 Step 3。6.1 照常不帶 `--replace` 匯入之後、8a 之前（也就是 10.2 之前：10.2 刪掉 16 個泛名詞 Event 之後，6.1 的端點檢查會先拒絕），再以 `--replace` 重匯兩次。三次讀到的語意層 (key, props) 摘要必須相同，都是 5,696 條：整組 SET 覆寫是冪等的，`--replace` 重建出的層也與標準鏈逐屬性相同（1A-C5d）。摘要是唯讀的 Cypher，語意層的定義與 6.1 相同：
-   6.05 連跑兩次並 cmp 之後、Step 3 之前，結束碼不是 0 就停：
+3. **重建時（第 2 步，staging 的 shell）**。6.05 照 [build_database.md](build_database.md) Step 6.05 連跑兩次並 `cmp`，而且輸出必須是登記的那一份（K9 通過時，也等於 `bak/$D/k9/anchored.json` 的 meta.clean_sha256）：重灌鏈接著跑的 check_w1_registration 比對報告、輸出與 10.2 後邊集合的 sha256 和 `relations_expected.json` 記的值，結束碼 0 才進 Step 3。6.05 連跑兩次並 cmp 之後、Step 3 之前，結束碼不是 0 就停：
    ```bash
    uv run --project scripts python scripts/tools/check_w1_registration.py
    ```
-   Step 3、5、6.1 照重灌鏈跑完之後、8a 之前：
+   6.1 照常不帶 `--replace` 匯入之後、8a 之前（也就是 10.2 之前：10.2 刪掉 16 個泛名詞 Event 之後，6.1 的端點檢查會先拒絕），再以 `--replace` 重匯兩次。三次讀到的語意層 (key, props) 摘要必須相同，都是 5,696 條：整組 SET 覆寫是冪等的，`--replace` 重建出的層也與標準鏈逐屬性相同（1A-C5d）。Step 3、5、6.1 照重灌鏈跑完之後、8a 之前跑下面這段；摘要是唯讀的 Cypher，語意層的定義與 6.1 相同：
    ```bash
    (
    set -eu -o pipefail
@@ -432,6 +437,9 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
      (cd bak/$D && sha256sum ./check_identity_staging_w1.json >> SHA256SUMS)
      ```
 
+### W1 第 4 步：Kay 核可
+第 1 批計畫 §1「W1 步驟」第 4 步。R2 全部通過之後、W1 升版第 1 步之前，停下來請 Kay 核可。核可的是：已 commit 的事前登記檔（`config/kg_expect/batch1_w1/` 的六個期望檔與片段、`kg_diff_allow_batch1w1.sha256`）；合併允許清單 `config/kg_diff_allow_batch1w1.yaml`（R4 之後才 commit，核可前再跑一次 `sha256sum -c config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256`）；R2 各關卡的輸出：10.6 的 `bak/$D/validate_staging_w1.json`、`bak/$D/check_identity_staging_w1.json` 與 check_edge_set，diff_kg 的 `bak/$D/diff_kg_staging_w1.json`，residuals_expect 的 `--check`，Step 9 的兩個 log 與 fingerprint，xref 的 compare，props 摘要，`v3 == detB`（O7，待 Kay 確認）；D3 的 `evaluation/results_quick/d3_w1.json`；K9 的三份報告（`bak/$D/k9/*_report.json`）；以及到這時為止的 A/B 報告（K8 實驗組的 `ep_w1`；xref、graph_event 的 A/B 在升版第 1、2 步之間才量）。核可記在 W1 紀錄 `docs/records/<日期>_kg_batch1_w1_results.md`（命名同 W0 紀錄 `2026-10-05_kg_batch1_w0_results.md`）：日期、核可時的 `git rev-parse HEAD`、合併檔與上面各檔的 sha256。W1 紀錄裡沒有這一筆，就不開始升版第 1 步。Kay 不核可時（M390，待 Kay 確認）建議的預設：不改任何已登記的檔（看過 staging 的 diff 之後不可再改，第 1 批計畫 §3），W1 停在這裡，prod 不動；重新規劃、重新登記，再從 Step 5 重建 staging。注意 1A 的殘差期望檔只能對第 0 批的 7688 產生（R1 第 5 項），重新登記前 7688 怎麼回到第 0 批，一併待 Kay 決定。
+
 ## R3 升版（第 0 批不做）
 順序規則：backend 程式碼的變更要向前相容，先部署 backend，再升資料（例如第 1B 批）；一個缺陷項目一個 commit，各自附探針，validate 失敗時才分得出是哪一項造成。
 
@@ -443,7 +451,6 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
    docker run --rm --user 7474:7474 --entrypoint neo4j-admin \
      -v bible_rag_neo4j_staging_data:/data neo4j:5.15-community \
      database dump neo4j --to-stdout > bak/$D/promote/neo4j_staging.dump
-
    docker stop -t 60 bible_rag_neo4j
    docker run --rm -i --user 7474:7474 --entrypoint neo4j-admin \
      -v bible_rag_neo4j_data:/data neo4j:5.15-community \
@@ -463,7 +470,7 @@ uv run --project scripts python scripts/kg_target.py --require-staging neo4j pos
 4. 程式碼、registry、字典隨 image 上線：在沒有 source staging.env 的乾淨 shell 執行 `docker compose up -d --no-deps --build backend`（理由見 R5 開頭）。backend 沒有 volume mount，只 restart 會跑舊 image；建置要走 uv 快取（README「Docker 建置快取」）。
 
 ### W1 升版第 1 步：backend 先上，資料不動
-在主 checkout、沒有 source staging.env 的乾淨 shell 執行：這裡要對 production 做 `up`，而 `--target prod` 會拒絕 staging 的 shell；compose 的專案名取自目錄名，只有主 checkout 的 backend image 是 `bible_rag-backend:latest`。先把 `D` 設成 W1 R0 的日期（每段開頭的 `${D:?}` 沒設就停）。種子與期望檔沿用 R2「W1 的交叉引用檢查」的 `bak/$D/xref_probe/`。
+前提：R2 全部通過，而且「W1 第 4 步：Kay 核可」已記進 W1 紀錄，沒有就不開始。在主 checkout、沒有 source staging.env 的乾淨 shell 執行：這裡要對 production 做 `up`，而 `--target prod` 會拒絕 staging 的 shell；compose 的專案名取自目錄名，只有主 checkout 的 backend image 是 `bible_rag-backend:latest`。先把 `D` 設成 W1 R0 的日期（每段開頭的 `${D:?}` 沒設就停）。種子與期望檔沿用 R2「W1 的交叉引用檢查」的 `bak/$D/xref_probe/`。
 
 三段依序貼上。前兩段是子 shell 加 `set -e`，任何一行失敗整段就停；沒有印出最後一行的訊息，就不要貼下一段。第一段保存回滾 image，只做一次：
 ```bash
@@ -617,10 +624,17 @@ echo 'both arms run :w1'
   && BACKEND_URL=http://localhost:8000 uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/graph_event_k10_ids.txt --graph-strategies graph_event --top-k 5 --metric-k 6 --label ge_old_w1 \
   && BACKEND_URL=http://localhost:8001 uv run python quick_retrieval_eval.py --ids-file experiments/2026-10-05_kg_w1/graph_event_k10_ids.txt --graph-strategies graph_event --top-k 5 --metric-k 6 --label ge_new_w1)
 (cd evaluation && uv run python ab_compare.py results_quick/ge_old_w1.json results_quick/ge_new_w1.json --label w1_graph_event)
+(
+set -eu -o pipefail
+: "${D:?set D to the W1 R0 date}"
+rm -f bak/$D/answer_side_*.txt
+for r in xref graph_event; do jq -r '.ledger | to_entries[] | select(.value.status | IN("gold_in", "gold_out", "gold_swap", "changed")) | .key' evaluation/results_quick/ab_w1_$r.json > bak/$D/answer_side_$r.txt.part; mv bak/$D/answer_side_$r.txt.part bak/$D/answer_side_$r.txt; done
+echo 'answer-side candidates listed'
+)
 ```
 - ab_compare 的 core top-5 identical／mismatch、改動帳本（identical、order_only、nongold_swap、gold_in、gold_out、gold_swap）與各指標的 Δ、W/L 都記進 W1 紀錄，放在 K10 的 accept（`residuals_allow.yaml` 的 4 筆 mention_count）旁邊。有變動的題先用同樣條件重問，排除 intent LLM 的取樣雜訊（同上）。只報告，不設門檻，不擋第 2 步。
-- **答案端（第 1 批計畫 §5.2）**：xref 與 graph_event 都一樣，只在檢索結果有實質差異時才跑。coverage 是主要指標，faithfulness strict ≥ 0.97 守門，逐題的 |Δcoverage| 與雜訊地板 0.060（同一份 context 的 coverage |Δ| 平均）比較。跑不跑、依據哪些數字，都記進 W1 紀錄。
-- 兩項都量完，照 R2 第 3 項停掉 backend-staging。
+- **答案端（第 1 批計畫 §5.2）是第 2 步之前必須做完的決定**：第 2 步把 W1 的資料載入 prod 之後，舊資料那一臂就不在了，所以跑不跑、依據哪些數字，都要在這個視窗裡記進 W1 紀錄。xref 與 graph_event 都一樣，只在檢索結果有實質差異時才跑。實質差異的定義：上面最後一段從兩份 ab_compare 報告（`--label` 存的 `results_quick/ab_w1_xref.json`、`ab_w1_graph_event.json`）的改動帳本列出的題，也就是同路由、top-k 的 gold 段落有進出的題（`gold_in`、`gold_out`、`gold_swap`；`changed` 是段落沒有 gold 標記、無法判斷，也算），而且重問之後仍是這幾種；`identical`、`order_only`、`nongold_swap` 的 gold 段落沒變，不算。重問是清單裡的題兩臂以同樣參數再各跑一次，標籤另取，不覆寫上面的結果檔與 ab_compare 報告：xref 的舊資料臂是 `(cd evaluation && BACKEND_URL=http://localhost:8000 uv run python quick_retrieval_eval.py --ids-file ../bak/$D/answer_side_xref.txt --graph-strategies cross_ref_expand cross_reference --top-k 5 --metric-k 6 --label xref_old_w1_reask)`，再換成 `http://localhost:8001` 與 `xref_new_w1_reask` 跑一次，接著 `(cd evaluation && uv run python ab_compare.py results_quick/xref_old_w1_reask.json results_quick/xref_new_w1_reask.json --label w1_xref_reask)`；graph_event 改用 `--ids-file ../bak/$D/answer_side_graph_event.txt --graph-strategies graph_event`，標籤是 `ge_old_w1_reask`、`ge_new_w1_reask` 與 `--label w1_graph_event_reask`。重問的帳本（`results_quick/ab_w1_xref_reask.json`、`ab_w1_graph_event_reask.json`）裡仍是這幾種的題，才是實質差異。列清單那一段先刪掉舊清單：重跑時 jq 失敗，不會留下上一次的清單讓第 2 步的 `cat` 通過。兩個清單都是空的，或重問後都不再是這幾種：答案端不跑，W1 紀錄寫明不跑與兩個清單的題數。仍有題：趁兩臂都還開著跑 `run_eval.py`（收集加評估，500 題），兩臂參數與該項的檢索量測相同、只換 BACKEND_URL，例如 xref 先跑 `(cd evaluation && BACKEND_URL=http://localhost:8000 uv run python run_eval.py --graph-strategies cross_ref_expand cross_reference)`，再把 BACKEND_URL 換成 `http://localhost:8001` 跑一次（graph_event 是 `--graph-strategies graph_event`）。兩次都寫進 `evaluation/results/`，跑完一臂先把目錄改名（例如 `results_xref_old_w1`），下一臂的收集才不會清掉它。coverage（`answer_coverage`）是主要指標，faithfulness strict（`ragas_faithfulness_strict`）的 run 平均 ≥ 0.97 守門，清單裡的題逐題比較 |Δcoverage| 與雜訊地板 0.060（同一份 context 的 coverage |Δ| 平均）；結果一併記進 W1 紀錄。
+- 兩項 A/B 量完、答案端的決定（要跑時連同結果）記進 W1 紀錄之後，才照 R2 第 3 項停掉 backend-staging，接著做第 2 步。
 
 ### W1 升版第 2 步：載入資料，第一個指令是 deploy-guard
 這是 W1 唯一寫入 prod 資料的一步，所以不貼上面 R3 第 1 步的通用指令，改貼下面這一整段（Neo4j 停機約 1 分鐘）。在主 checkout、沒有 source staging.env 的乾淨 shell 執行，同第 1 步：deploy-guard 比對的是本 checkout 的 HEAD，`--a prod` 會拒絕帶著 staging 設定的 shell，`--target staging` 在乾淨的 shell 解析成預設的 bolt://localhost:7688。整段是子 shell 加 `set -e`，任何一行失敗就停；沒有印出最後一行，就是沒有載入完成：
@@ -632,11 +646,13 @@ uv run --project scripts python scripts/tools/xref_probe.py deploy-guard --conta
 W1=$(cat bak/$D/images/backend_w1.id)
 test "$(docker inspect -f '{{.Image}}' bible_rag_backend)" = "$W1"
 uv run --project scripts python scripts/tools/xref_probe.py fingerprint --target staging --expect config/kg_expect/batch1_w1/xref.json
-uv run --project scripts python scripts/tools/check_edge_set.py --target staging \
-  --expect config/kg_expect/batch1_w1/relations_expected.json
+uv run --project scripts python scripts/tools/check_edge_set.py --target staging --expect config/kg_expect/batch1_w1/relations_expected.json
 uv run --project scripts python scripts/tools/residuals_expect.py --a prod --b staging \
   --check config/kg_expect/batch1_w1/residuals_expected.json
 mkdir -p bak/$D/promote
+sha256sum -c config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256
+uv run --project scripts python scripts/tools/diff_kg.py --a prod --b staging --allow config/kg_diff_allow_batch1w1.yaml --fail-on-unused --json > bak/$D/promote/diff_kg_w1.json
+cat bak/$D/answer_side_xref.txt bak/$D/answer_side_graph_event.txt
 test ! -e bak/$D/promote/neo4j_staging.dump
 docker stop -t 60 bible_rag_neo4j_staging
 docker run --rm --user 7474:7474 --entrypoint neo4j-admin \
@@ -656,7 +672,7 @@ echo 'prod neo4j loaded'
 - **deploy-guard 是第一個指令**：結束碼不是 0 就停，不載入 dump：prod 容器跑的不是本 checkout HEAD 建的、讀 `r.curated` 的 image（例如第 1 步之後被重建或退回過），新資料會被舊規則排序（第 1 批計畫 §2.2 的風險；部署順序顛倒的影響見 R5）。下一行再確認 prod 跑的仍是 R2 記下的 `backend_w1.id`。
 - 每個 `docker exec`、`git show` 最多等 30 秒。docker daemon 或容器沒有回應時，印出 `timed out after 30 s` 並以結束碼 1 結束，不會卡住：先查 daemon 與容器，同樣不載入。
 - 第 1、2 步可能相隔數小時，deploy-guard 放在這一段裡，所以每次都會重跑。載入資料之後不要再建 image；image 一有任何變動，先重跑 deploy-guard 再碰資料。
-- **staging 唯讀再驗一次**：dump 出去的必須是 R2 驗過、第 4 步經 Kay 核可的那份資料，而 staging 從 R2 到這裡一直開著。三項都對已登記的檔、判準與 R2 相同：xref 的指紋與 xref_provenance（「W1 的交叉引用檢查」第 2 項）、語意層的邊集合（「W1 的關係層檢查」第 4 項的 check_edge_set）、MENTIONS 的逐邊摘要與屬性的第 0 批殘差（同一項的 `residuals_expect.py --check`，本來就要在乾淨的 shell 跑）。任何一項結束碼不是 0 就停，這時 prod 還沒動。
+- **staging 唯讀再驗一次**：dump 出去的必須是 R2 驗過、第 4 步經 Kay 核可的那份資料，而 staging 從 R2 到這裡一直開著。四項都對已登記的檔、判準與 R2 相同：xref 的指紋與 xref_provenance（「W1 的交叉引用檢查」第 2 項）、語意層的邊集合（「W1 的關係層檢查」第 4 項的 check_edge_set）、MENTIONS 的逐邊摘要與屬性的第 0 批殘差（同一項的 `residuals_expect.py --check`，本來就要在乾淨的 shell 跑），以及 R2 第 2 項的 diff_kg（先 `sha256sum -c` 核對合併清單，再以它加 `--fail-on-unused` 比對；labels、entity_ids、descriptions、aliases、mention_count、registry 也因此重驗一次，報告存到 `bak/$D/promote/diff_kg_w1.json`）。prod 還沒載入，diff_kg 比的仍是舊資料對 staging，與 R2 相同。任何一項結束碼不是 0 就停，這時 prod 還沒動。接著 `cat` 兩個答案端候選清單：檔案不在就停，答案端的決定（第 1、2 步之間）要先做完、記進 W1 紀錄。
 - **dump 完整才停 prod**：dump 先寫到 `.part`，neo4j-admin 失敗時整段就停；`test -s` 擋掉空檔；之後才改名，sha256 補進 `bak/$D/SHA256SUMS`（同第 1 步的回滾存檔）。prod 的 `docker stop` 排在這些之後。`test ! -e` 讓 dump 只做一次，SHA256SUMS 不會多補一行。
 - 中途失敗時，先看停在哪一行：
   - SHA256SUMS 補上之前：prod 沒動。staging 已停就 `docker start bible_rag_neo4j_staging`，等它 healthy；刪掉 `.part`，以及已改名、但還沒補進 SHA256SUMS 的 dump，再重跑整段。
@@ -694,11 +710,12 @@ uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$
 ```
 - fingerprint 結束碼 0（`e522411e…`，xref_provenance 四個鍵與期望檔相同）；compare 結束碼 0，5,820 個 key 0 列不同，哨兵 12/12。
 - `validate_kg.py --live --target prod` 的 H8、R4、R11 三項 hard 全過，值見 [build_database.md](build_database.md) Step 10.6。
-- **R4 之後只做一個 commit**，與 W1 的合併允許清單 `config/kg_diff_allow_batch1w1.yaml` 放在一起（第 1 批計畫 §3）。整波只跑一次 ratchet，1A、1B 共用這一行，在同一個乾淨的 shell、上面的檢查都通過之後執行，結束碼要是 0：
+- **R4 之後只做一個 commit**，與 W1 的合併允許清單 `config/kg_diff_allow_batch1w1.yaml` 放在一起（第 1 批計畫 §3）。在同一個乾淨的 shell、上面的檢查都通過之後執行。三步以 `&&` 串成一條指令：先以事前登記的 sha256 核對合併清單，相符才 `git add`，`git add` 成功才跑 ratchet；不符就停，不 add、不 ratchet、不 commit（看過 staging 的 diff 之後不可再改，第 1 批計畫 §3）。ratchet 整波只跑一次，1A、1B 共用，結束碼要是 0：
   ```bash
-  uv run --project scripts python scripts/validate_kg.py --live --target prod --ratchet --accept W,R1,R11
+  sha256sum -c config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256 && git add config/kg_diff_allow_batch1w1.yaml \
+    && uv run --project scripts python scripts/validate_kg.py --live --target prod --ratchet --accept W,R1,R11
   ```
-  寫入 `config/kg_quality_baseline/`。結束碼不是 0 時，基準檔也已經寫入（validate_kg 先 ratchet、寫檔，之後才判定結束碼）：`git checkout -- config/kg_quality_baseline/` 還原，不 commit，先查原因。1B 移動的指標：`--ratchet` 的 H8.no_provenance 916 → 0、H8.unflagged 250,418 → 0、R4.misaligned 59 → 0、R4.misaligned_any_verse 62 → 0，以及 `--accept` 的 R11（249,502 → 250,358）。同一個 commit 裡，PROBES 的 failing 名單拿掉 `xref-heb1-0-not-curated-psa2` 與 `xref-rev20-not-curated-isa65`，新的 xref 探針不可留在 failing 裡。
+  寫入 `config/kg_quality_baseline/`。ratchet 結束碼不是 0 時，基準檔也已經寫入（validate_kg 先 ratchet、寫檔，之後才判定結束碼）：`git checkout -- config/kg_quality_baseline/` 還原，不 commit，先查原因。1B 移動的指標：`--ratchet` 的 H8.no_provenance 916 → 0、H8.unflagged 250,418 → 0、R4.misaligned 59 → 0、R4.misaligned_any_verse 62 → 0，以及 `--accept` 的 R11（249,502 → 250,358）。同一個 commit 裡，PROBES 的 failing 名單拿掉 `xref-heb1-0-not-curated-psa2` 與 `xref-rev20-not-curated-isa65`，新的 xref 探針不可留在 failing 裡。
   1A 移動的指標：`--accept` 的 W（Entity–Entity 語意邊 15,926 → 5,616、35 種型別，例如 PARTICIPATED_IN 7,130 → 1,489、OCCURRED_IN 4,313 → 894、FATHER_OF 647 → 50、SON_OF 659 → 335，CAUSED 與 PRECEDED_BY 歸零；labels 與 MENTIONS 的條數不變，MENTIONS 的屬性帶著已 accept 的第 0 批殘差：source_granularity 40,261 條，start_pos、end_pos、backfilled、verse_mention_freq 各 5,782 條，created_from 106 條，由 R2 的 `residuals_expect.py --check` 比對（兩邊的逐邊摘要也等於登記值：W1 沒有改動任何 MENTIONS），W1 紀錄要列出這些條數與摘要；CROSS_REFERENCES 屬 1B）與 R1（1,938 → 2,124，第 0 批的殘差，等於 `residuals_expected.json` 的 b）；`--ratchet` 的 H3 374 → 0、H9 14 → 0、H11（source_null 15,926、inverse_edges 756、cooccurrence_edges 9,060、rule_edges 771、llm_event_event_edges 26、unflagged_id_order_edges 81、undirected_pair_duplicates 6，全部 → 0）、R6 的 contradictions 25 → 0、female_head 42 → 0、functional_violation_rate 0.5357 → 0.0638、children_with_2plus_nonfemale_parents 135 → 8、children_with_gt2_parents 87 → 1；第 0 批的 H1.missing_constraint 也會跟著從 1 變 0（dump 帶來的約束）。同一個 commit 裡，PROBES 的 failing 名單另拿掉 1A 修好的 `edge-no-dan-orphan-nehemiah-wall`、`kin-lot-not-father-of-terah`、`kin-leah-not-father-of-isaac`、`kin-leah-not-father-of-reuben`，兩批合計剩 7 個 id（`alias-matthew-not-levi`、`alias-paul-not-saul`、`book-region-egypt`、`book-region-mark`、`book-region-matthew`、`mention-not-elijah-in-eleazar`、`mention-not-mary-in-samaria`）；R6 的 failing_probes 從 3 個 id 變成 `[]`；1A 新增的親屬、出處探針同樣不可留在 failing 裡。
 - **R4 之後的文件更新（U3）**，行號以 2026-10-05 為準。現行圖譜的數字與機制改成 250,418 → 250,366、supplementary 142 → 158、curated 916 → 932、curated 由 `r.curated` 旗標判別；總關係數 319,988 也會變（1A 同時改語意邊），以 R4 時 prod 的實數為準：
   - 文件不靠行號，用 grep 找（1A 的文件改動會讓行號移動）：
@@ -712,14 +729,16 @@ uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$
 ### W1 的 K8 對照組：entity_path（第 1A 批，R4 之後，只報告）
 第 1 批計畫 §5.2 與 K8：entity_path 的對照組是 staging-P1（6.05 `--rules none`，仍跑 10.3），實驗組是 1A 的建置，也就是 R2 量的 `ep_w1`。P1 重建兩次，兩次之間的差就是雜訊地板。事前登記：500 題 Δvrec ≥ −0.005，只報告；沒達到也不讓 10.3 回到預設鏈，事件層由 2A 補。
 - **為什麼排在 R4 之後**：staging 只有一個，P1 會整個覆寫它。排在第 2 步之前，會毀掉 residuals_expect 要讀的第 0 批 staging，而兩組要用同一個 `:w1` image（`backend_w1.id`），它要到 R2 才建；排在 R2 與升版之間，則要再重建一次 1A 才能升版。R4 之後 staging 的 1A 圖已經用不到，升版用的 dump 在 `bak/$D/promote/`。
-- **P1 的建置**（staging 的 shell、主 checkout，照「執行前檢查」）：照 [build_database.md](build_database.md) 的 W1 重灌鏈整條重建，只換四處：6.05 改跑 `--rules none`、寫到另一組檔（不覆寫登記的 relations_clean）；6.1 改匯入那一組檔，之後的兩次 `--replace` 與 props 摘要不跑（那是 W1 的冪等檢查：不帶檔名的 `--replace` 會改匯入登記的 relations_clean，摘要也會覆寫 R2 的 `bak/$D/props_*.txt`）；10.2 之後、10.4 之前加跑 10.3；10.6 不當閘門（P1 本來就過不了 H3、H11），validate_kg 的報告寫到 `bak/$D/k8/`（第二次是 `validate_p1b.json`），不可覆寫 R2 的 `bak/$D/validate_staging_w1.json`（R2 已把它的 sha256 補進 SHA256SUMS），接在後面的 `jq -e` 也不跑。
+- **P1 的建置**（staging 的 shell、主 checkout，照「執行前檢查」）：照 [build_database.md](build_database.md) 的 W1 重灌鏈整條重建。重灌鏈寫在 `bak/$D/` 固定路徑的檔都是 R2 的證據（10.6 的兩個報告的 sha256 已在 SHA256SUMS），P1 一個都不寫：下面第一行先把它們設成唯讀，哪一步漏改路徑就會寫入失敗而停下；第二行建 P1 自己的 `bak/$D/k8/`。只換這幾處：xref_probe expect 的重算寫到 `bak/$D/k8/xref_rebuild_p1a.json`（第二次 P1 是 `xref_rebuild_p1b.json`；照樣與登記的 xref.json `cmp`）；6.05 改跑 `--rules none`、寫到另一組檔（不覆寫登記的 relations_clean），連跑兩次的 cmp（`bak/$D/pp_run1/`）不跑；6.1 改匯入那一組檔，之後的兩次 `--replace` 與 props 摘要不跑（那是 W1 的冪等檢查：不帶檔名的 `--replace` 會改匯入登記的 relations_clean，摘要也會覆寫 R2 的 `bak/$D/props_*.txt`）；Step 9 那一段的 `bak/$D/step9_run` 全部換成 `bak/$D/k8/step9_p1a_run`（第二次 P1 是 `bak/$D/k8/step9_p1b_run`）：tee 與後面三個 grep 都要換，只換 tee 的話，grep 讀的是 R2 的唯讀 log，P1 怎樣都會過；10.2 之後、10.4 之前加跑 10.3；10.6 不當閘門（P1 本來就過不了 H3、H11），validate_kg 與 check_identity 寫到 `bak/$D/k8/`（第二次是 `validate_p1b.json`、`check_identity_p1b.json`），不可覆寫 R2 的 `bak/$D/validate_staging_w1.json`、`bak/$D/check_identity_staging_w1.json`，接在後面的 `jq -e` 與 `v3 == detB`（`bak/$D/qdrant_*.sha256`）也不跑。`bak/$D/qdrant_*.sha256` 是 O7（待 Kay 確認）的 `v3 == detB` 才有的檔：O7 不採用、R2 沒寫這些檔時，從 chmod 那一行拿掉這個 glob，否則 chmod 找不到檔而結束碼 1。
   ```bash
+  chmod a-w bak/$D/validate_staging_w1.json bak/$D/check_identity_staging_w1.json bak/$D/step9_run1.log bak/$D/step9_run2.log bak/$D/xref_probe/xref_rebuild.json bak/$D/pp_run1/* bak/$D/props_*.txt bak/$D/qdrant_*.sha256
+  mkdir -p bak/$D/k8
   uv run --project scripts python -m scripts.relation_extraction.relation_postprocess --rules none \
     --out output/relations_p1.jsonl --report output/relations_p1.report.json
   uv run --project scripts python scripts/import_relations_neo4j.py output/relations_p1.jsonl
   uv run --project scripts python scripts/backfill_event_relations.py --legacy-cooccurrence
-  mkdir -p bak/$D/k8
   uv run --project scripts python scripts/validate_kg.py --live --target staging --json > bak/$D/k8/validate_p1a.json   # 10.6；第二次 P1 改寫 validate_p1b.json
+  uv run --project scripts python scripts/check_identity.py --target staging --fail-on id --json > bak/$D/k8/check_identity_p1a.json
   ```
 - **量測**：第一次 P1 建好之後，照「W1 升版第 1、2 步之間」第一段啟動 backend-staging（印出 `both arms run :w1` 才往下），量 `ep_p1a`；第二次 P1 建好之後量 `ep_p1b`。兩次之間 backend-staging 不必重啟：backend 只快取 event_registry，讀的是 image 裡的靜態檔。參數與 `ep_w1` 完全相同，第二行要等第二次 P1 建好才跑：
   ```bash
@@ -731,7 +750,7 @@ uv run --project scripts python scripts/tools/xref_probe.py compare --pred bak/$
   (cd evaluation && uv run python ab_compare.py results_quick/ep_p1a.json results_quick/ep_w1.json --label w1_ep_p1a)
   (cd evaluation && uv run python ab_compare.py results_quick/ep_p1b.json results_quick/ep_w1.json --label w1_ep_p1b)
   ```
-- **報告**（記進 W1 紀錄）：Δvrec（`verse_recall_at_k` 那一列）的平均、95% CI 與勝負題數 W/L，`[legacy]`、`[expanded]`、`[all]` 分開記；1A 對兩次 P1 的 Δ 與雜訊地板（P1 對 P1）並列。touched 的題先用同樣條件重問，排除 intent LLM 的取樣雜訊（W0 的 GENERAL_BIBLE_QUESTION_016）。量完照 R2 第 3 項停掉 backend-staging；staging 留在 P1 的狀態，W2 的重建會整個取代它。
+- **報告**（記進 W1 紀錄）：Δvrec（`verse_recall_at_k` 那一列）的平均、95% CI 與勝負題數 W/L，`[legacy]`、`[expanded]`、`[all]` 分開記；1A 對兩次 P1 的 Δ 與雜訊地板（P1 對 P1）並列。touched 的題先用同樣條件重問，排除 intent LLM 的取樣雜訊（W0 的 GENERAL_BIBLE_QUESTION_016）。量完照 R2 第 3 項停掉 backend-staging；staging 留在 P1 的狀態，W2 的重建會整個取代它。W1 紀錄到這裡記完，單獨 commit（R0 第 0 項）。
 
 ## R5 回滾
 本節的 `docker compose` 一律在**主 checkout、沒有 source staging.env 的乾淨 shell** 執行（在 worktree 裡，compose 的專案名會變成 worktree 的目錄名，image 與 volume 都不是 production 的），而且加 `--no-deps`：staging 的 shell 帶著 `POSTGRES_DB=bible_rag_staging`，compose 收斂 backend 的依賴時會把它插值進 production 的 postgres 服務並重建該容器（見「執行前檢查」；docker-compose.staging.yml 也有同樣的警告）。`--no-deps` 讓 compose 只動 backend。

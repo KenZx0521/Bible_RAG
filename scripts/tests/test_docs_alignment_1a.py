@@ -277,9 +277,10 @@ def test_k8_builds_the_p1_control_twice_after_r4_on_the_w1_image():
                    "不可覆寫 R2 的 `bak/$D/validate_staging_w1.json`", "兩次 `--replace`", "`bak/$D/props_*.txt`"):
         assert needle in k8, needle
     # M363: the W1 chain's 10.6 writes R2's gate report; P1's own report goes to k8/, and R2 recorded its sha256
-    _in_order(_commands(k8), ("backfill_event_relations.py --legacy-cooccurrence", "mkdir -p bak/$D/k8",
+    _in_order(_commands(k8), ("mkdir -p bak/$D/k8", "backfill_event_relations.py --legacy-cooccurrence",
                               "validate_kg.py --live --target staging --json > bak/$D/k8/validate_p1a.json"))
-    assert not [c for c in _commands(k8) if "validate_staging_w1.json" in c], _commands(k8)
+    # the leading chmod only makes R2's files read-only (test_docs_alignment_w1_runbook)
+    assert not [c for c in _commands(k8)[1:] if "validate_staging_w1.json" in c], _commands(k8)
     _in_order(_commands(section(text, W1A)), (".checks.PROBES.metrics.failing.fixed",
                                                "(cd bak/$D && sha256sum ./validate_staging_w1.json >> SHA256SUMS)"))
 
