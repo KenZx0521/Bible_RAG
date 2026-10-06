@@ -564,6 +564,8 @@ def test_llm_id_order_rows_are_flagged_and_prior_contradiction_dropped(tmp_path)
     ran = report["rules"]["ran"]
     assert ran.index("provenance_gate") < ran.index("flag_id_order")
 
+
+def test_flag_id_order_marks_only_id_order_rows_and_copies_them():
     # called directly: a paired relation (SON_OF, FATHER_OF) or an undirected one (NEAR) gets
     # no field, a prior's neither, nor an id-order row that is neither llm nor prior/curated
     # (anchored_rule, cooccurrence); the rule copies the rows it marks, True or False, it does
