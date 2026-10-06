@@ -56,10 +56,10 @@
     {
       "id": "H3",
       "title": "derived edges supported by co-occurrence in their source pericope",
-      "severity": "record",
+      "severity": "hard",
       "hard_from": "1A",
       "plan_reference": "374",
-      "query": "Entity-Entity edges except phase 3 (prior), curated, and phase-5 inverses of priors (empty source): both ends MENTIONed by source_pericope_id or by one of its chunks; an empty source_pericope_id counts as unsupported",
+      "query": "Entity-Entity edges except source prior or curated, the curated flag, and inverses of priors (source inverse, notes derived_from=, empty source_pericope_id); source is r.source, else derived from extraction_phase/notes/backfilled for legacy rows (models.derive_source: phase 3 = prior): both ends MENTIONed by source_pericope_id or by one of its chunks; an empty source_pericope_id counts as unsupported",
       "metrics": {
         "unsupported": {
           "value": 374,
@@ -252,27 +252,39 @@
     {
       "id": "H8",
       "title": "CROSS_REFERENCES carry an explicit provenance flag",
-      "severity": "record",
+      "severity": "hard",
       "hard_from": "1B",
-      "plan_reference": "916",
-      "query": "CROSS_REFERENCES with curated IS NULL and votes IS NULL (curated-ness is only inferable from missing votes)",
+      "plan_reference": "no_provenance 916; unflagged 250,418; flag_mismatch 0",
+      "query": "CROSS_REFERENCES: no_provenance = curated IS NULL AND votes IS NULL (before 1B curated-ness is only inferable from missing votes); unflagged = curated IS NULL OR tsk IS NULL; flag_mismatch = curated set and != (curated_sources non-empty), or tsk set and != (votes IS NOT NULL)",
       "metrics": {
         "no_provenance": {
           "value": 916,
           "direction": "down",
           "tolerance": 0,
           "target": 0
+        },
+        "unflagged": {
+          "value": 250418,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "flag_mismatch": {
+          "value": 0,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
         }
       },
       "measured": {
-        "at": "2026-10-04",
+        "at": "2026-10-05",
         "origin": "live:prod (bolt://localhost:7687)"
       }
     },
     {
       "id": "H9",
       "title": "relation domain/range follows config/relations/biblical_relations.yaml",
-      "severity": "record",
+      "severity": "hard",
       "hard_from": "1A",
       "plan_reference": ">=14",
       "query": "Entity-Entity edges whose (head label, tail label) the schema entry rejects; edge types missing from the schema",
@@ -318,6 +330,62 @@
       },
       "measured": {
         "at": "2026-10-04",
+        "origin": "live:prod (bolt://localhost:7687)"
+      }
+    },
+    {
+      "id": "H11",
+      "title": "relation provenance complete: every edge has a source; no inverse, rule, co-occurrence or LLM Event–Event edge; LLM id-order edges flagged; one row per undirected pair",
+      "severity": "hard",
+      "hard_from": "1A",
+      "plan_reference": "co-occurrence 9,060 / inverse 756 / rule 771 / LLM Event–Event 26 -> 0; source_null 15,926 = every live semantic edge (語意邊總數) -> 0 (batch-1 plan §0.1; target 0 in the §2.1 閘門 table)",
+      "query": "Entity-Entity edges; source is r.source, else derived from extraction_phase/notes/backfilled for legacy rows (models.derive_source). source_null: no r.source; inverse_edges: source inverse; cooccurrence_edges: source cooccurrence or backfilled true; rule_edges: source rule; llm_event_event_edges: source llm with both ends labelled Event; unflagged_id_order_edges: type in the schema's id_order_relations() (directed, one type at both ends, in no direction_pairs entry), source not prior or curated, direction_verified not false; undirected_pair_duplicates: rows beyond the first per (undirected relation, {head, tail}), summed",
+      "metrics": {
+        "source_null": {
+          "value": 15926,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "inverse_edges": {
+          "value": 756,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "cooccurrence_edges": {
+          "value": 9060,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "rule_edges": {
+          "value": 771,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "llm_event_event_edges": {
+          "value": 26,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "unflagged_id_order_edges": {
+          "value": 81,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        },
+        "undirected_pair_duplicates": {
+          "value": 6,
+          "direction": "down",
+          "tolerance": 0,
+          "target": 0
+        }
+      },
+      "measured": {
+        "at": "2026-10-05",
         "origin": "live:prod (bolt://localhost:7687)"
       }
     }

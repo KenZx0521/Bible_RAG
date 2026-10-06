@@ -1,0 +1,968 @@
+[
+{
+"src": "mat 1:22-23",
+"tgt": "isa 7:14",
+"ref_type": "quotation",
+"desc": "童女懷孕生子"
+},
+{
+"src": "mat 2:6",
+"tgt": "mic 5:2",
+"ref_type": "quotation",
+"desc": "伯利恆出君王"
+},
+{
+"src": "mat 2:15",
+"tgt": "hos 11:1",
+"ref_type": "quotation",
+"desc": "從埃及召出我的兒子"
+},
+{
+"src": "mat 2:18",
+"tgt": "jer 31:15",
+"ref_type": "quotation",
+"desc": "拉結為兒女哀哭"
+},
+{
+"src": "mat 3:3",
+"tgt": "isa 40:3",
+"ref_type": "quotation",
+"desc": "在曠野有人聲喊著說"
+},
+{
+"src": "mat 4:4",
+"tgt": "deu 8:3",
+"ref_type": "quotation",
+"desc": "人活著不是單靠食物"
+},
+{
+"src": "mat 4:7",
+"tgt": "deu 6:16",
+"ref_type": "quotation",
+"desc": "不可試探主你的神"
+},
+{
+"src": "mat 4:10",
+"tgt": "deu 6:13",
+"ref_type": "quotation",
+"desc": "當拜主你的神單要事奉他"
+},
+{
+"src": "mat 4:15-16",
+"tgt": "isa 9:1-2",
+"ref_type": "quotation",
+"desc": "在黑暗中的百姓看見了大光"
+},
+{
+"src": "mat 8:17",
+"tgt": "isa 53:4",
+"ref_type": "quotation",
+"desc": "他代替我們的軟弱"
+},
+{
+"src": "mat 11:10",
+"tgt": "mal 3:1",
+"ref_type": "quotation",
+"desc": "我差遣我的使者在你前面"
+},
+{
+"src": "mat 12:18-21",
+"tgt": "isa 42:1-4",
+"ref_type": "quotation",
+"desc": "看哪我的僕人"
+},
+{
+"src": "mat 13:35",
+"tgt": "psa 78:2",
+"ref_type": "quotation",
+"desc": "我要開口用比喻"
+},
+{
+"src": "mat 21:5",
+"tgt": "zec 9:9",
+"ref_type": "quotation",
+"desc": "你的王騎著驢來"
+},
+{
+"src": "mat 21:5",
+"tgt": "isa 62:11",
+"ref_type": "allusion",
+"desc": "你的拯救者來了"
+},
+{
+"src": "mat 21:42",
+"tgt": "psa 118:22-23",
+"ref_type": "quotation",
+"desc": "匠人所棄的石頭已作了房角石"
+},
+{
+"src": "mat 22:37",
+"tgt": "deu 6:5",
+"ref_type": "quotation",
+"desc": "你要盡心盡性盡意愛主你的神"
+},
+{
+"src": "mat 22:39",
+"tgt": "lev 19:18",
+"ref_type": "quotation",
+"desc": "愛人如己"
+},
+{
+"src": "mat 26:31",
+"tgt": "zec 13:7",
+"ref_type": "quotation",
+"desc": "擊打牧人羊就分散"
+},
+{
+"src": "mat 27:9",
+"tgt": "zec 11:12-13",
+"ref_type": "quotation",
+"desc": "三十塊錢"
+},
+{
+"src": "mat 27:46",
+"tgt": "psa 22:1",
+"ref_type": "quotation",
+"desc": "我的神為什麼離棄我"
+},
+{
+"src": "mrk 1:3",
+"tgt": "isa 40:3",
+"ref_type": "quotation",
+"desc": "在曠野有人聲喊著說"
+},
+{
+"src": "mrk 1:2",
+"tgt": "mal 3:1",
+"ref_type": "quotation",
+"desc": "差遣使者在你前面"
+},
+{
+"src": "mrk 12:10-11",
+"tgt": "psa 118:22-23",
+"ref_type": "quotation",
+"desc": "匠人所棄的石頭"
+},
+{
+"src": "mrk 12:29-30",
+"tgt": "deu 6:4-5",
+"ref_type": "quotation",
+"desc": "你要盡心愛主你的神"
+},
+{
+"src": "mrk 15:34",
+"tgt": "psa 22:1",
+"ref_type": "quotation",
+"desc": "我的神為什麼離棄我"
+},
+{
+"src": "luk 1:17",
+"tgt": "mal 4:5-6",
+"ref_type": "allusion",
+"desc": "以利亞的心志能力"
+},
+{
+"src": "luk 3:4-6",
+"tgt": "isa 40:3-5",
+"ref_type": "quotation",
+"desc": "在曠野有人聲喊著說"
+},
+{
+"src": "luk 4:18-19",
+"tgt": "isa 61:1-2",
+"ref_type": "quotation",
+"desc": "主的靈在我身上因為他膏了我"
+},
+{
+"src": "luk 20:17",
+"tgt": "psa 118:22",
+"ref_type": "quotation",
+"desc": "匠人所棄的石頭"
+},
+{
+"src": "luk 22:37",
+"tgt": "isa 53:12",
+"ref_type": "quotation",
+"desc": "他被列在罪犯之中"
+},
+{
+"src": "jhn 1:1-3",
+"tgt": "gen 1:1",
+"ref_type": "allusion",
+"desc": "太初有道（起初神創造）"
+},
+{
+"src": "jhn 2:17",
+"tgt": "psa 69:9",
+"ref_type": "quotation",
+"desc": "我為你的殿心裏焦急"
+},
+{
+"src": "jhn 6:31",
+"tgt": "psa 78:24",
+"ref_type": "quotation",
+"desc": "他從天上賜下糧食給他們吃"
+},
+{
+"src": "jhn 10:34",
+"tgt": "psa 82:6",
+"ref_type": "quotation",
+"desc": "我曾說你們是神"
+},
+{
+"src": "jhn 12:38",
+"tgt": "isa 53:1",
+"ref_type": "quotation",
+"desc": "主啊誰信我們所傳的"
+},
+{
+"src": "jhn 12:40",
+"tgt": "isa 6:10",
+"ref_type": "quotation",
+"desc": "使他們瞎了眼硬了心"
+},
+{
+"src": "jhn 12:15",
+"tgt": "zec 9:9",
+"ref_type": "quotation",
+"desc": "你的王騎著驢駒來"
+},
+{
+"src": "jhn 19:24",
+"tgt": "psa 22:18",
+"ref_type": "quotation",
+"desc": "他們分了我的外衣"
+},
+{
+"src": "jhn 19:37",
+"tgt": "zec 12:10",
+"ref_type": "quotation",
+"desc": "他們要仰望自己所扎的人"
+},
+{
+"src": "act 2:17-21",
+"tgt": "jol 2:28-32",
+"ref_type": "quotation",
+"desc": "以後我要將我的靈澆灌"
+},
+{
+"src": "act 2:25-28",
+"tgt": "psa 16:8-11",
+"ref_type": "quotation",
+"desc": "你必不將我的靈魂撇在陰間"
+},
+{
+"src": "act 2:34-35",
+"tgt": "psa 110:1",
+"ref_type": "quotation",
+"desc": "主對我主說你坐在我的右邊"
+},
+{
+"src": "act 4:11",
+"tgt": "psa 118:22",
+"ref_type": "quotation",
+"desc": "匠人所棄的石頭已作了房角石"
+},
+{
+"src": "act 8:32-33",
+"tgt": "isa 53:7-8",
+"ref_type": "quotation",
+"desc": "他像羊被牽到宰殺之地"
+},
+{
+"src": "act 13:33",
+"tgt": "psa 2:7",
+"ref_type": "quotation",
+"desc": "你是我的兒子我今日生你"
+},
+{
+"src": "act 13:34",
+"tgt": "isa 55:3",
+"ref_type": "quotation",
+"desc": "我必將所應許大衛那聖潔可靠的恩典賜給你們"
+},
+{
+"src": "act 13:35",
+"tgt": "psa 16:10",
+"ref_type": "quotation",
+"desc": "你必不叫你的聖者見朽壞"
+},
+{
+"src": "act 15:16-17",
+"tgt": "amo 9:11-12",
+"ref_type": "quotation",
+"desc": "重新修造大衛倒塌的帳幕"
+},
+{
+"src": "rom 1:17",
+"tgt": "hab 2:4",
+"ref_type": "quotation",
+"desc": "義人必因信得生"
+},
+{
+"src": "rom 3:10-12",
+"tgt": "psa 14:1-3",
+"ref_type": "quotation",
+"desc": "沒有義人連一個也沒有"
+},
+{
+"src": "rom 3:13",
+"tgt": "psa 5:9",
+"ref_type": "quotation",
+"desc": "他們的喉嚨是敞開的墳墓"
+},
+{
+"src": "rom 3:13",
+"tgt": "psa 140:3",
+"ref_type": "quotation",
+"desc": "嘴唇裏有虺蛇的毒氣"
+},
+{
+"src": "rom 3:14",
+"tgt": "psa 10:7",
+"ref_type": "quotation",
+"desc": "他們滿口是咒罵苦毒"
+},
+{
+"src": "rom 3:15-17",
+"tgt": "isa 59:7-8",
+"ref_type": "quotation",
+"desc": "殺人流血他們的腳飛跑"
+},
+{
+"src": "rom 3:18",
+"tgt": "psa 36:1",
+"ref_type": "quotation",
+"desc": "他眼中不怕神"
+},
+{
+"src": "rom 4:3",
+"tgt": "gen 15:6",
+"ref_type": "quotation",
+"desc": "亞伯拉罕信神就算為他的義"
+},
+{
+"src": "rom 4:7-8",
+"tgt": "psa 32:1-2",
+"ref_type": "quotation",
+"desc": "得赦免其過的人是有福的"
+},
+{
+"src": "rom 8:36",
+"tgt": "psa 44:22",
+"ref_type": "quotation",
+"desc": "為你的緣故我們終日被殺"
+},
+{
+"src": "rom 9:7",
+"tgt": "gen 21:12",
+"ref_type": "allusion",
+"desc": "從以撒生的才要稱為你的後裔"
+},
+{
+"src": "rom 9:15",
+"tgt": "exo 33:19",
+"ref_type": "quotation",
+"desc": "我要憐憫誰就憐憫誰"
+},
+{
+"src": "rom 9:17",
+"tgt": "exo 9:16",
+"ref_type": "quotation",
+"desc": "我將你興起來特要在你身上彰顯我的權能"
+},
+{
+"src": "rom 9:33",
+"tgt": "isa 28:16",
+"ref_type": "quotation",
+"desc": "在錫安放一塊絆腳石"
+},
+{
+"src": "rom 9:33",
+"tgt": "isa 8:14",
+"ref_type": "quotation",
+"desc": "作了絆腳的石頭跌人的磐石"
+},
+{
+"src": "rom 10:6-8",
+"tgt": "deu 30:12-14",
+"ref_type": "quotation",
+"desc": "這道離你不遠"
+},
+{
+"src": "rom 10:11",
+"tgt": "isa 28:16",
+"ref_type": "quotation",
+"desc": "信靠他的人必不至於羞愧"
+},
+{
+"src": "rom 10:13",
+"tgt": "jol 2:32",
+"ref_type": "quotation",
+"desc": "凡求告主名的就必得救"
+},
+{
+"src": "rom 10:15",
+"tgt": "isa 52:7",
+"ref_type": "quotation",
+"desc": "報福音傳喜信的人的腳蹤何等佳美"
+},
+{
+"src": "rom 10:16",
+"tgt": "isa 53:1",
+"ref_type": "quotation",
+"desc": "主啊誰信我們所傳的呢"
+},
+{
+"src": "rom 11:3-4",
+"tgt": "1ki 19:10,18",
+"ref_type": "quotation",
+"desc": "我為自己留下七千人"
+},
+{
+"src": "rom 11:8",
+"tgt": "isa 29:10",
+"ref_type": "quotation",
+"desc": "神給他們昏迷的心"
+},
+{
+"src": "rom 11:9-10",
+"tgt": "psa 69:22-23",
+"ref_type": "quotation",
+"desc": "願他們的筵席變為網羅"
+},
+{
+"src": "rom 11:26-27",
+"tgt": "isa 59:20-21",
+"ref_type": "quotation",
+"desc": "必有一位救主從錫安出來"
+},
+{
+"src": "rom 15:3",
+"tgt": "psa 69:9",
+"ref_type": "quotation",
+"desc": "辱罵你人的辱罵都落在我身上"
+},
+{
+"src": "rom 15:12",
+"tgt": "isa 11:10",
+"ref_type": "quotation",
+"desc": "耶西的根要興起來"
+},
+{
+"src": "1co 1:19",
+"tgt": "isa 29:14",
+"ref_type": "quotation",
+"desc": "我要滅絕智慧人的智慧"
+},
+{
+"src": "1co 3:19",
+"tgt": "job 5:13",
+"ref_type": "quotation",
+"desc": "他叫有智慧的中了自己的詭計"
+},
+{
+"src": "1co 3:20",
+"tgt": "psa 94:11",
+"ref_type": "quotation",
+"desc": "主知道智慧人的意念是虛妄的"
+},
+{
+"src": "1co 10:7",
+"tgt": "exo 32:6",
+"ref_type": "quotation",
+"desc": "百姓坐下吃喝起來玩耍"
+},
+{
+"src": "1co 15:54",
+"tgt": "isa 25:8",
+"ref_type": "quotation",
+"desc": "死被得勝吞滅了"
+},
+{
+"src": "1co 15:55",
+"tgt": "hos 13:14",
+"ref_type": "quotation",
+"desc": "死啊你得勝的權勢在哪裏"
+},
+{
+"src": "2co 4:6",
+"tgt": "gen 1:3",
+"ref_type": "allusion",
+"desc": "那吩咐光從黑暗裏照出來的神"
+},
+{
+"src": "2co 6:2",
+"tgt": "isa 49:8",
+"ref_type": "quotation",
+"desc": "在悅納的時候我應允了你"
+},
+{
+"src": "2co 6:16",
+"tgt": "lev 26:12",
+"ref_type": "quotation",
+"desc": "我要在他們中間居住"
+},
+{
+"src": "gal 3:6",
+"tgt": "gen 15:6",
+"ref_type": "quotation",
+"desc": "亞伯拉罕信神就算為他的義"
+},
+{
+"src": "gal 3:8",
+"tgt": "gen 12:3",
+"ref_type": "quotation",
+"desc": "萬國都必因你得福"
+},
+{
+"src": "gal 3:10",
+"tgt": "deu 27:26",
+"ref_type": "quotation",
+"desc": "凡不常照律法書上所記一切之事去行的就被咒詛"
+},
+{
+"src": "gal 3:11",
+"tgt": "hab 2:4",
+"ref_type": "quotation",
+"desc": "義人必因信得生"
+},
+{
+"src": "gal 3:13",
+"tgt": "deu 21:23",
+"ref_type": "quotation",
+"desc": "凡掛在木頭上都是被咒詛的"
+},
+{
+"src": "gal 4:30",
+"tgt": "gen 21:10",
+"ref_type": "quotation",
+"desc": "把使女和她兒子趕出去"
+},
+{
+"src": "eph 4:8",
+"tgt": "psa 68:18",
+"ref_type": "quotation",
+"desc": "他升上高天擄掠了仇敵"
+},
+{
+"src": "eph 5:31",
+"tgt": "gen 2:24",
+"ref_type": "quotation",
+"desc": "人要離開父母與妻子連合二人成為一體"
+},
+{
+"src": "eph 6:2-3",
+"tgt": "exo 20:12",
+"ref_type": "quotation",
+"desc": "要孝敬父母使你得福在世長壽"
+},
+{
+"src": "php 2:10-11",
+"tgt": "isa 45:23",
+"ref_type": "quotation",
+"desc": "萬膝都要跪拜萬口都要宣認"
+},
+{
+"src": "heb 1:5",
+"tgt": "psa 2:7",
+"ref_type": "quotation",
+"desc": "你是我的兒子我今日生你"
+},
+{
+"src": "heb 1:5",
+"tgt": "2sa 7:14",
+"ref_type": "quotation",
+"desc": "我要作他的父他要作我的子"
+},
+{
+"src": "heb 1:7",
+"tgt": "psa 104:4",
+"ref_type": "quotation",
+"desc": "以風為使者以火焰為僕役"
+},
+{
+"src": "heb 1:8-9",
+"tgt": "psa 45:6-7",
+"ref_type": "quotation",
+"desc": "你的寶座是永永遠遠的"
+},
+{
+"src": "heb 1:10-12",
+"tgt": "psa 102:25-27",
+"ref_type": "quotation",
+"desc": "你起初立了地的根基"
+},
+{
+"src": "heb 1:13",
+"tgt": "psa 110:1",
+"ref_type": "quotation",
+"desc": "你坐在我的右邊"
+},
+{
+"src": "heb 2:6-8",
+"tgt": "psa 8:4-6",
+"ref_type": "quotation",
+"desc": "人算什麼你竟顧念他"
+},
+{
+"src": "heb 2:12",
+"tgt": "psa 22:22",
+"ref_type": "quotation",
+"desc": "我要將你的名傳與我的弟兄"
+},
+{
+"src": "heb 2:13",
+"tgt": "isa 8:17-18",
+"ref_type": "quotation",
+"desc": "看哪我與神所給我的兒女"
+},
+{
+"src": "heb 3:7-11",
+"tgt": "psa 95:7-11",
+"ref_type": "quotation",
+"desc": "你們今日若聽他的話就不可硬著心"
+},
+{
+"src": "heb 3:15",
+"tgt": "psa 95:7-8",
+"ref_type": "quotation",
+"desc": "不可硬著心"
+},
+{
+"src": "heb 4:4",
+"tgt": "gen 2:2",
+"ref_type": "quotation",
+"desc": "到第七日神歇了一切的工"
+},
+{
+"src": "heb 4:3,5,7",
+"tgt": "psa 95:11",
+"ref_type": "quotation",
+"desc": "他們斷不可進入我的安息"
+},
+{
+"src": "heb 5:5",
+"tgt": "psa 2:7",
+"ref_type": "quotation",
+"desc": "你是我的兒子我今日生你"
+},
+{
+"src": "heb 5:6",
+"tgt": "psa 110:4",
+"ref_type": "quotation",
+"desc": "你是照著麥基洗德的等次永遠為祭司"
+},
+{
+"src": "heb 7:1-2",
+"tgt": "gen 14:18-20",
+"ref_type": "quotation",
+"desc": "麥基洗德迎接亞伯拉罕"
+},
+{
+"src": "heb 7:17,21",
+"tgt": "psa 110:4",
+"ref_type": "quotation",
+"desc": "照著麥基洗德的等次永遠為祭司"
+},
+{
+"src": "heb 8:8-12",
+"tgt": "jer 31:31-34",
+"ref_type": "quotation",
+"desc": "我要與以色列家另立新約"
+},
+{
+"src": "heb 10:5-7",
+"tgt": "psa 40:6-8",
+"ref_type": "quotation",
+"desc": "祭物和禮物是你不願意的"
+},
+{
+"src": "heb 10:16-17",
+"tgt": "jer 31:33-34",
+"ref_type": "quotation",
+"desc": "我要將我的律法放在他們心上"
+},
+{
+"src": "heb 10:37-38",
+"tgt": "hab 2:3-4",
+"ref_type": "quotation",
+"desc": "義人必因信得生"
+},
+{
+"src": "heb 11:3",
+"tgt": "gen 1:1",
+"ref_type": "allusion",
+"desc": "因著信我們知道諸世界是藉神話造成的"
+},
+{
+"src": "heb 11:4",
+"tgt": "gen 4:3-5",
+"ref_type": "allusion",
+"desc": "亞伯因著信獻祭與神"
+},
+{
+"src": "heb 11:5",
+"tgt": "gen 5:24",
+"ref_type": "allusion",
+"desc": "以諾因著信被接去"
+},
+{
+"src": "heb 11:7",
+"tgt": "gen 6:13-22",
+"ref_type": "allusion",
+"desc": "挪亞因著信預備了方舟"
+},
+{
+"src": "heb 11:8-10",
+"tgt": "gen 12:1-4",
+"ref_type": "allusion",
+"desc": "亞伯拉罕因著信蒙召出去"
+},
+{
+"src": "heb 11:17-19",
+"tgt": "gen 22:1-14",
+"ref_type": "allusion",
+"desc": "亞伯拉罕因著信獻以撒"
+},
+{
+"src": "heb 12:5-6",
+"tgt": "pro 3:11-12",
+"ref_type": "quotation",
+"desc": "我兒不可輕看主的管教"
+},
+{
+"src": "heb 12:26",
+"tgt": "hag 2:6",
+"ref_type": "quotation",
+"desc": "再一次我不單要震動地還要震動天"
+},
+{
+"src": "heb 13:5",
+"tgt": "deu 31:6",
+"ref_type": "quotation",
+"desc": "我總不撇下你也不丟棄你"
+},
+{
+"src": "heb 13:6",
+"tgt": "psa 118:6",
+"ref_type": "quotation",
+"desc": "主是幫助我的我必不懼怕"
+},
+{
+"src": "jas 2:23",
+"tgt": "gen 15:6",
+"ref_type": "quotation",
+"desc": "亞伯拉罕信神就算為他的義"
+},
+{
+"src": "jas 2:8",
+"tgt": "lev 19:18",
+"ref_type": "quotation",
+"desc": "要愛人如己"
+},
+{
+"src": "1pe 1:16",
+"tgt": "lev 19:2",
+"ref_type": "quotation",
+"desc": "你們要聖潔因為我是聖潔的"
+},
+{
+"src": "1pe 1:24-25",
+"tgt": "isa 40:6-8",
+"ref_type": "quotation",
+"desc": "凡有血氣的盡都如草惟有主的道是永存的"
+},
+{
+"src": "1pe 2:6",
+"tgt": "isa 28:16",
+"ref_type": "quotation",
+"desc": "在錫安放一塊石頭作為根基是寶貴的房角石"
+},
+{
+"src": "1pe 2:7",
+"tgt": "psa 118:22",
+"ref_type": "quotation",
+"desc": "匠人所棄的石頭已作了房角的頭塊石頭"
+},
+{
+"src": "1pe 2:8",
+"tgt": "isa 8:14",
+"ref_type": "quotation",
+"desc": "作了絆腳的石頭跌人的磐石"
+},
+{
+"src": "1pe 2:9",
+"tgt": "exo 19:5-6",
+"ref_type": "quotation",
+"desc": "你們是被揀選的族類是有君尊的祭司"
+},
+{
+"src": "1pe 2:10",
+"tgt": "hos 2:23",
+"ref_type": "quotation",
+"desc": "從前不是子民現在卻是神的子民"
+},
+{
+"src": "1pe 2:22",
+"tgt": "isa 53:9",
+"ref_type": "quotation",
+"desc": "他並沒有犯罪口裏也沒有詭詐"
+},
+{
+"src": "1pe 2:24",
+"tgt": "isa 53:5-6",
+"ref_type": "quotation",
+"desc": "因他受的鞭傷你們得了醫治"
+},
+{
+"src": "1pe 2:25",
+"tgt": "isa 53:6",
+"ref_type": "quotation",
+"desc": "你們從前好像迷路的羊"
+},
+{
+"src": "1pe 3:10-12",
+"tgt": "psa 34:12-16",
+"ref_type": "quotation",
+"desc": "主的眼看顧義人主的耳聽他們的呼求"
+},
+{
+"src": "1pe 3:14-15",
+"tgt": "isa 8:12-13",
+"ref_type": "quotation",
+"desc": "不要怕人的威嚇也不要驚慌"
+},
+{
+"src": "1pe 5:5",
+"tgt": "pro 3:34",
+"ref_type": "quotation",
+"desc": "神阻擋驕傲的人賜恩給謙卑的人"
+},
+{
+"src": "2pe 2:22",
+"tgt": "pro 26:11",
+"ref_type": "quotation",
+"desc": "狗所吐的他轉過來又吃"
+},
+{
+"src": "jud 1:9",
+"tgt": "zec 3:2",
+"ref_type": "allusion",
+"desc": "主責備你吧"
+},
+{
+"src": "rev 1:7",
+"tgt": "dan 7:13",
+"ref_type": "allusion",
+"desc": "看哪他駕雲降臨"
+},
+{
+"src": "rev 1:7",
+"tgt": "zec 12:10",
+"ref_type": "allusion",
+"desc": "連刺他的人也要看見他"
+},
+{
+"src": "rev 1:13-16",
+"tgt": "dan 10:5-6",
+"ref_type": "allusion",
+"desc": "人子的形像"
+},
+{
+"src": "rev 2:7",
+"tgt": "gen 2:9",
+"ref_type": "allusion",
+"desc": "生命樹"
+},
+{
+"src": "rev 4:8",
+"tgt": "isa 6:3",
+"ref_type": "allusion",
+"desc": "聖哉聖哉聖哉"
+},
+{
+"src": "rev 4:6-7",
+"tgt": "ezk 1:5-10",
+"ref_type": "allusion",
+"desc": "四活物的形像"
+},
+{
+"src": "rev 5:5-6",
+"tgt": "dan 7:13-14",
+"ref_type": "allusion",
+"desc": "被殺的羔羊配得權柄"
+},
+{
+"src": "rev 7:16-17",
+"tgt": "isa 49:10",
+"ref_type": "allusion",
+"desc": "不再飢不再渴"
+},
+{
+"src": "rev 11:15",
+"tgt": "dan 7:14,27",
+"ref_type": "allusion",
+"desc": "世上的國成了我主基督的國"
+},
+{
+"src": "rev 15:3-4",
+"tgt": "exo 15:1-18",
+"ref_type": "allusion",
+"desc": "摩西的歌"
+},
+{
+"src": "rev 18:2",
+"tgt": "isa 13:19-22",
+"ref_type": "allusion",
+"desc": "巴比倫傾倒了"
+},
+{
+"src": "rev 18:2-8",
+"tgt": "jer 51:6-9,45",
+"ref_type": "allusion",
+"desc": "巴比倫大城傾倒了"
+},
+{
+"src": "rev 19:1",
+"tgt": "psa 118:1",
+"ref_type": "allusion",
+"desc": "哈利路亞"
+},
+{
+"src": "rev 19:11-16",
+"tgt": "dan 7:13-14",
+"ref_type": "allusion",
+"desc": "萬王之王萬主之主"
+},
+{
+"src": "rev 20:4",
+"tgt": "isa 65:17",
+"ref_type": "allusion",
+"desc": "新天新地"
+},
+{
+"src": "rev 21:1",
+"tgt": "isa 65:17",
+"ref_type": "quotation",
+"desc": "我造新天新地"
+},
+{
+"src": "rev 21:4",
+"tgt": "isa 25:8",
+"ref_type": "quotation",
+"desc": "神要擦去他們一切的眼淚"
+},
+{
+"src": "rev 22:1-2",
+"tgt": "gen 2:9-10",
+"ref_type": "allusion",
+"desc": "生命樹和生命河"
+},
+{
+"src": "rev 22:1",
+"tgt": "ezk 47:1-12",
+"ref_type": "allusion",
+"desc": "生命水的河"
+}
+]

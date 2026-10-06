@@ -1,0 +1,10 @@
+# What sim_1a_w1.py and gen_fixture.py write here when --out-dir / --out is
+# left at its default (this directory); see ../../README.md「W1 1A 重算」.
+# The archived summaries are sim2_final.json, sim2_no_disagreement.json and
+# sim2_no_anchored.json, which none of these patterns match.
+clean2_*.jsonl
+anch2_*.jsonl
+sim2_off_*.json
+sim2_father_*.json
+sim2_gei_*.json
+anchored_regression.jsonl

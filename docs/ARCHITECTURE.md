@@ -128,7 +128,10 @@ flowchart TB
 
     X1 --> J4["output/entities.jsonl<br/>entity_mentions.jsonl"]
     J4 --> X2["relation_extraction/<br/>Grounded 關係抽取(37 型)"]
-    X2 --> J5["output/relations.jsonl"]
+    X2 --> J5["output/relations.jsonl<br/>(原始 triples)"]
+    J5 --> PP["relation_postprocess.py<br/>Step 6.05 離線後處理"]
+    J4 --> PP
+    PP --> J6["output/relations_clean.jsonl<br/>+ 報告"]
 
     J1 --> IPG["import_postgres.py"] --> PG[("PostgreSQL")]
     J4 --> IPG
@@ -137,7 +140,7 @@ flowchart TB
     E2 --> IQ2 --> QD2[("bible_embeddings_hybrid")]
     J3 --> IN1["import_neo4j.py<br/>(結構 + MENTIONS)"] --> NEO[("Neo4j")]
     J4 --> IN1
-    J5 --> IN2["import_relations_neo4j.py<br/>(實體↔實體事實邊)"] --> NEO
+    J6 --> IN2["import_relations_neo4j.py<br/>(實體↔實體事實邊)"] --> NEO
     TSK["TSK 串珠資料<br/>(openbible.info, public domain)"] --> IN3["import_tsk_crossrefs.py<br/>250,418 條 CROSS_REFERENCES"] --> NEO
     J4 --> E3["embed_entities.py<br/>實體向量化"] --> QD3[("bible_entities")]
 ```
@@ -240,13 +243,16 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    R1["R1 Pair Mining<br/>同 pericope 共現實體對<br/>schema type-allowed 才保留<br/>上限 80 對/pericope"] --> R2["R2 規則分類器<br/>yaml prompt_signals regex<br/>兩實體 25 字內、信心 ≥0.85"]
-    R2 --> R3["R3 領域先驗<br/>71 條黃金族譜先驗<br/>(bypass LLM)"]
+    R1["R1 Pair Mining<br/>同 pericope 共現實體對<br/>schema type-allowed 才保留<br/>上限 80 對/pericope"] --> R3["R3 領域先驗<br/>71 條黃金族譜先驗<br/>(bypass LLM)"]
     R3 --> R4["R4 Grounded LLM<br/>gemma4:31b 從候選池選一或 NONE<br/>JSON grammar 約束<br/>evidence 必須是原文子字串"]
-    R4 --> R5["R5 反向邊具體化<br/>FATHER_OF ↔ SON_OF 自動雙向<br/>confidence ×0.9"]
+    R4 -.->|"--inverse(選用)"| R5["R5 反向邊具體化<br/>只剩不分性別的兩對<br/>confidence ×0.9"]
+    R4 --> PP["Step 6.05 關係後處理<br/>離線、決定性<br/>→ relations_clean.jsonl"]
+    R5 -.-> PP
 ```
 
-**37 種關係本體**(`config/relations/biblical_relations.yaml`,closed-set;每型定義 domain/range 型別、方向、inverse、prompt_signals、few-shot、分階段 confidence priors):
+R2(yaml 字面訊號規則,方向取自 id 順序)已在第 1A 批移除:每個候選對都進 R4,親屬的字面訊號改由 6.05 的錨定句型處理。R5 預設關閉,schema 只為 ANCESTOR_OF/DESCENDANT_OF、TEACHER_OF/DISCIPLE_OF 保留 inverse(帶性別的 inverse 一律改 null)。
+
+**37 種關係本體**(`config/relations/biblical_relations.yaml`,closed-set;每型定義 domain/range 型別、方向、inverse、few-shot、分階段 confidence priors):
 
 | 類別 | 關係 |
 |------|------|
@@ -259,8 +265,9 @@ flowchart LR
 | Event×Event(2)/Group×Place(2) | PRECEDED_BY, CAUSED / ORIGINATED_FROM, SETTLED_IN |
 
 - **Grounding 約束**:LLM 只能從該實體對的型別合法候選集選一個或回 NONE;`evidence_span` 必須是上下文子字串才接受(雙重 post-hoc 驗證)— 防幻覺;
-- 支援 `--resume`(checkpoint)、`--no-llm`(僅規則+先驗);完整跑 10–20 小時離線;
-- 產出:`relations.jsonl` **6,958 條**(rule 772 / prior 64 / LLM 5,370 / inverse 752)+ `relations_unclassified.jsonl` **77,953 條**(LLM 回 NONE 的對 — 後來成為 P0 事件層搶救的現成素材);
+- 支援 `--resume`(checkpoint)、`--no-llm`(只跑 R1 與 R3 先驗,跳過 R4);完整跑 10–20 小時離線;
+- 產出:`relations.jsonl` **6,958 條**(2026-05 那次 run,R2 與 R5 當時都在跑:rule 772 / prior 64 / LLM 5,370 / inverse 752)+ `relations_unclassified.jsonl` **77,953 條**(LLM 回 NONE 的對 — 後來成為 P0 事件層搶救的現成素材);
+- **Step 6.05 關係後處理**(`relation_postprocess.py`,第 1A 批起;詳見 [build_database.md](build_database.md) Step 6.05):離線、不連庫,同一份輸入連跑兩次逐位元相同。依序丟掉 R5 反向列(752)、R2 字母序規則列(772,換成 `config/relations/anchored_rules.yaml` 的錨定句型:同一節內「P 的兒子 C」「給 F 生 C」等,方向由句型決定、兩段同名防護,328 個唯一鍵)、LLM 的 Event–Event 列(38)、domain/range 違規(13)、出處閘門(1)、與 prior 方向相反的 LOCATED_IN(1);id 序關係的 LLM 列標 `direction_verified: false`(48);親屬方向與無向去重後每個 (head, relation, tail) 一列。產出 `relations_clean.jsonl` **5,696 列**(llm 5,313 / anchored_rule 319 / prior 64)加報告,6.1 只匯入它;10.2 刪泛名詞 Event 帶走 80 條,圖上 **5,616 條**語意邊(W1 升版前 prod 是 15,926 條,其中 9,060 條是 10.3 的共現升格邊,10.3 已退出預設鏈);
 - 另有 `desc_generator.py`(gemma4:e4b)為 ~4,223 個空 description 的 Person/Place/Group 從 mentioning pericope titles 生成 ≤80 字 grounded description。
 
 ### 3.6 向量化
@@ -279,7 +286,7 @@ flowchart LR
 | `import_qdrant.py` | `bible_embeddings` | dense-only |
 | `import_qdrant_hybrid.py` | `bible_embeddings_hybrid` | named vectors:dense + sparse |
 | `import_neo4j.py` | 結構節點 + MENTIONS + 手工 CROSS_REFERENCES | P0 後含 verse→pericope remap 與誠實計數器(見 §5.2) |
-| `import_relations_neo4j.py` | 實體↔實體事實邊 | APOC 動態邊型 MERGE(idempotent);邊帶 `confidence`/`evidence_span`/`source_pericope_id` |
+| `import_relations_neo4j.py` | 實體↔實體事實邊 | 只收 6.05 的 `relations_clean.jsonl`(核對報告的 sha256、列數與 pp_version);APOC 動態邊型 MERGE,單一交易內整組 SET 邊屬性、寫入數必須等於列數,語意層已有邊就拒絕;邊帶 `source`/`sources`/`run_id`/`pp_version`/`confidence_raw`/`evidence_span`/`source_pericope_id`,不再寫 `confidence` |
 | `import_tsk_crossrefs.py` | TSK 串珠 | 見 §3.8 |
 
 ### 3.8 TSK 串珠(Treasury of Scripture Knowledge)
@@ -289,7 +296,7 @@ P0 階段(2026-07-06)將串珠從 916 條手工邊擴充至 **250,418 條**:
 - 資料源:openbible.info CC-BY(scrollmapper/bible_databases),public domain;
 - 344,799 行原始資料 → 過濾負 votes(1,166)與自環(9,811)→ **250,358 條 unique pericope 對**(僅 7 條 unmapped);
 - verse→pericope 映射用 `embedding_queue.jsonl` 反查表,31,102 節 100% 覆蓋;
-- 每條邊帶 `votes`(TSK 社群投票數)與 `source: 'tsk'`,與手工 markdown 邊(視為最高可信 votes=999)區分 — 這個分權設計是後來 TSK 抑噪修復的基礎。
+- 每條 TSK 邊帶 `votes`(TSK 社群投票數)與 `source: 'tsk'`;手工 curated 邊與 TSK 邊的區分,第 1B 批起由建置時寫入的 `curated`/`tsk` 旗標表示(同一段落對可以兩者皆是,這時也帶 votes),backend 讀 `r.curated` — 這個分權設計是後來 TSK 抑噪修復的基礎。
 
 ---
 
@@ -334,7 +341,7 @@ graph LR
 - **ID 格式**:階層冒號分隔 `gen` → `gen:1` → `gen:1:0` → `gen:1:0:0`;verse 級 `gen:1:0:v:3` **不建節點**(只存在 Qdrant / PG),這是當初粒度設計的關鍵取捨(也是 mention 靜默丟棄 bug 的根源,見 §5);
 - 實體節點屬性:`canonical_name`(非 `name`)、`aliases`(原生 LIST)、`description`、`mention_count`;
 - **CROSS_REFERENCES 三來源**:markdown 原始標記(774 條,平行對觀)、人工補強清單(142 條,NT→OT 著名引用,`quotation`/`allusion` 分型)、TSK 串珠(250,358 條,帶 votes);
-- 關係抽取事實邊帶 `confidence` / `evidence_span` / `source_pericope_id` / `extraction_phase`,可溯源、可按信心過濾(P0 共現回填邊標 `confidence: 0.35` 與 LLM 抽取邊區分)。
+- 關係抽取事實邊帶 `source`(prior / llm / anchored_rule)/ `run_id` / `pp_version` / `confidence_raw`(Step 6 的原始信心,錨定邊沒有)/ `evidence_span` / `source_pericope_id` / `extraction_phase`,可溯源(第 1A 批起;之前的 `confidence` 不再寫入。P0 的共現回填邊標 `confidence: 0.35`,10.3 退出預設鏈後只出現在 K8 對照組)。
 
 ### 4.2 Live 規模(2026-07-06 直查)
 
@@ -511,7 +518,7 @@ flowchart TD
 | `verse_direct` | PostgreSQL | VerseRef 直查 verse range / 單節 / 整章 |
 | `sql_chapter` / `sql_supplement` | PostgreSQL | 章直查 / 從候選命中章補抓同章段落 |
 | `graph_person/event/place` | Neo4j | `find_entity_by_name`(canonical/alias CONTAINS,mention_count 降序)→ `MENTIONS` → Pericope;多人物另查**共同出現段落**(w=0.9);Event 錨點按書卷章節升序(先出敘事起點)並標 `keyword_exact`/`anchor_rank` 供 pin;Cypher 級 chunk→父 pericope remap(防同內容佔兩席) |
-| `cross_ref_expand` | Neo4j | N-hop(≤2)`CROSS_REFERENCES` 展開;**seed_support(多 seed 交集)→ votes 降序**;2+ hop 只在 1-hop 補不滿時 fallback;hop 權重分權:手工邊(votes=999)0.75/0.55、TSK 邊 0.60/0.50(刻意壓在 semantic 0.7 之下);cap 10;seed 選擇 round-robin 跨策略防壟斷 |
+| `cross_ref_expand` | Neo4j | N-hop(≤2)`CROSS_REFERENCES` 展開;**seed_support(多 seed 交集)→ curated 優先 → votes 降序 → md5 平手**;2+ hop 只在 1-hop 補不滿時 fallback;hop 權重分權:手工 curated 邊(`r.curated`)0.75/0.55、TSK 邊 0.60/0.50(刻意壓在 semantic 0.7 之下);cap 10;seed 選擇 round-robin 跨策略防壟斷 |
 | `entity_path` | Neo4j | 實體↔實體事實邊(37 型,排除結構邊)多跳推理(≤2 hop)→ MENTIONS → Pericope |
 | `entity_query`(EQ) | Qdrant `bible_entities` + Neo4j | query 向量 → 實體比對(top-8,threshold 0.4)→ MENTIONS;**hub-aware 限流**(mention_count>50 的 hub 實體每實體只取 3 段、一般 5 段,防 topic 污染);supplement cap 5;橋接「現代提問詞 → 古譯本經文」 |
 | `book_anchor` | Qdrant | 問題點名書卷時,book_filter 語意檢索保證該書卷有 seed |

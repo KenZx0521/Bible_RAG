@@ -1299,8 +1299,8 @@ async def _route_r3(
             strategies.append("entity_path")
 
     # Cross-ref 2-hop expansion: surface neighbouring pericopes along
-    # CROSS_REFERENCES edges from the strongest seeds. Activates the 916
-    # hand-curated cross-book edges in the pre-rerank candidate pool.
+    # CROSS_REFERENCES edges from the strongest seeds: hand-curated (r.curated)
+    # and TSK cross-reference edges, into the pre-rerank candidate pool.
     expand = await _expand_via_cross_ref_seeds(
         deduped, existing_ids, _graph_on(use_graph, graph_strategies, "cross_ref_expand"),
         errors, "R3",
@@ -1581,7 +1581,7 @@ async def _route_r5(
                 continue
             if result:
                 if label == "cross_ref" and settings.rag_use_cross_ref_expand:
-                    # Multi-hop expansion candidates already carry votes-aware
+                    # Multi-hop expansion candidates already carry provenance-aware
                     # per-candidate weights (curated 0.75 / TSK 0.5-0.6).
                     # Blanket-raising them to the route's 0.85 was what let
                     # TSK topical neighbours outrank narrative-correct seeds

@@ -12,12 +12,14 @@ files); shared pieces are in _validate_kg_helpers.py.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 
 import pytest
 
 import validate_kg as vk
+from kg_validate import model
 from _validate_kg_helpers import (
     SHIPPED_BASELINE,
     SHIPPED_PROBES,
@@ -42,17 +44,21 @@ from _validate_kg_helpers import snap  # noqa: F401
 # the clean fixture
 # ---------------------------------------------------------------------------
 
+H11_METRICS = ("source_null", "inverse_edges", "cooccurrence_edges", "rule_edges",
+               "llm_event_event_edges", "unflagged_id_order_edges", "undirected_pair_duplicates")
 VIOLATION_METRICS = [
     ("H1", "duplicate_ids"), ("H1", "missing_constraint"),
     ("H2", "bad_type_labels"),
     ("H3", "unsupported"), ("H4", "whitespace_names"), ("H6", "missing_region_or_pos"),
     ("H7", "prefix_mismatch"), ("H8", "no_provenance"),
     ("H9", "domain_range_violations"), ("H9", "unknown_relation_types"),
+    *(("H11", name) for name in H11_METRICS),
     ("R1", "book_region_mentions"), ("R2", "contaminated"), ("R3", "foreign_surface_entities"),
     ("R3", "all_forms_entities"),
     ("R4", "misaligned"), ("R5", "cross_type_names"),
     ("R6", "probe_failures"), ("R6", "contradictions"), ("R6", "female_head"),
-    ("R6", "functional_violation_rate"),
+    ("R6", "functional_violation_rate"), ("R6", "children_with_2plus_nonfemale_parents"),
+    ("R6", "children_with_gt2_parents"),
     ("R8", "junk_event"), ("R8", "junk_theme"), ("R8", "junk_object"),
     ("R9", "duplicate_positions"), ("R9", "span_mismatch"),
     ("R10", "conflicting_aliases"), ("PROBES", "failures"),
@@ -157,6 +163,61 @@ def test_d1_runs_export_event_registry_check_against_the_target(monkeypatch):
     assert "--check" in seen["cmd"]
 
 
+def _edge(head: str, relation: str, tail: str, **over) -> dict:
+    """An llm row from gen:22:0; `over` changes its provenance (source None = a legacy row)."""
+    return {"head_id": head, "relation": relation, "tail_id": tail, "source_pericope_id": "gen:22:0",
+            "extraction_phase": 4, "notes": "", "source": "llm", **over}
+
+
+INVERSE = {"extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"}
+COOCCURRENCE = {"extraction_phase": 5, "backfilled": True, "notes": "cooccurrence-backfill"}
+SON_OF = ("person:yisa", "SON_OF", "person:yabolahan")
+JOINED = ("person:yisa", "PARTICIPATED_IN", "event:xianyisa")
+LOCATED = ("place:moliya", "LOCATED_IN", "place:aiji")
+
+
+@pytest.mark.parametrize("rows,counts", [
+    pytest.param([_edge(*JOINED, source=None)], {"source_null": 1}, id="legacy-row-without-source"),
+    pytest.param([_edge(*SON_OF, source="inverse", **INVERSE)], {"inverse_edges": 1}, id="inverse"),
+    pytest.param([_edge(*SON_OF, source=None, **INVERSE)], {"source_null": 1, "inverse_edges": 1},
+                 id="legacy-inverse-by-phase"),
+    pytest.param([_edge(*JOINED, source="cooccurrence", **{**COOCCURRENCE, "extraction_phase": 7})],
+                 {"cooccurrence_edges": 1}, id="cooccurrence"),
+    pytest.param([_edge(*JOINED, source=None, **COOCCURRENCE)], {"source_null": 1, "cooccurrence_edges": 1},
+                 id="legacy-cooccurrence-by-phase"),
+    pytest.param([_edge(*JOINED, backfilled=True)], {"cooccurrence_edges": 1}, id="backfilled-flag"),
+    pytest.param([_edge("person:tala", "FATHER_OF", "person:nahe", source="rule", extraction_phase=2,
+                        notes="signal=...的兒子")], {"rule_edges": 1}, id="rule"),
+    pytest.param([_edge("event:bidehuojiu", "PRECEDED_BY", "event:xianyisa", direction_verified=False)],
+                 {"llm_event_event_edges": 1}, id="llm-event-event"),
+    pytest.param([_edge(*LOCATED)], {"unflagged_id_order_edges": 1}, id="unflagged-llm-located-in"),
+    pytest.param([_edge(*LOCATED, direction_verified=False)], {}, id="flagged-llm-located-in"),
+    pytest.param([_edge(*LOCATED, source="prior", extraction_phase=3, source_pericope_id="")], {},
+                 id="prior-located-in"),
+    pytest.param([_edge(*LOCATED, source="curated", extraction_phase=None)], {}, id="curated-located-in"),
+    pytest.param([_edge("person:bide", "ALLY_OF", "person:make"), _edge("person:make", "ALLY_OF", "person:bide")],
+                 {"undirected_pair_duplicates": 1}, id="undirected-reverse-pair"),
+    # the source alone, and the legacy rows that score by phase (prod's rule 771 / llm E–E 26 / unflagged 81)
+    pytest.param([_edge(*JOINED, source="cooccurrence", extraction_phase=7)], {"cooccurrence_edges": 1},
+                 id="cooccurrence-without-backfilled-flag"),
+    pytest.param([_edge("event:bidehuojiu", "PRECEDED_BY", "event:xianyisa", source="prior", extraction_phase=3,
+                        source_pericope_id="", direction_verified=True)], {}, id="prior-event-event"),
+    pytest.param([_edge("person:tala", "FATHER_OF", "person:nahe", source=None, extraction_phase=2,
+                        notes="signal=...的兒子")], {"source_null": 1, "rule_edges": 1}, id="legacy-rule-by-phase"),
+    pytest.param([_edge("event:bidehuojiu", "PRECEDED_BY", "event:xianyisa", source=None, direction_verified=False)],
+                 {"source_null": 1, "llm_event_event_edges": 1}, id="legacy-llm-event-event-by-phase"),
+    pytest.param([_edge(*LOCATED, source=None, extraction_phase=3, source_pericope_id="")], {"source_null": 1},
+                 id="legacy-prior-located-in-by-phase"),
+    pytest.param([_edge(*JOINED, source="")], {"source_null": 1}, id="empty-source-is-null"),
+])
+def test_h11_metrics(snap, rows, counts):
+    # Every metric is a hard 0 from 1A on: the injected rows move exactly the
+    # metrics named, and each of the others stays 0.
+    write_rows(snap / "relations.jsonl", read_rows(snap / "relations.jsonl") + rows)
+    res = measure(snap)
+    assert {name: metric(res, "H11", name) for name in H11_METRICS} == {**dict.fromkeys(H11_METRICS, 0), **counts}
+
+
 # ---------------------------------------------------------------------------
 # record checks
 # ---------------------------------------------------------------------------
@@ -166,14 +227,35 @@ def test_h3_unsupported_derived_edge(snap):
     assert metric(measure(snap), "H3", "unsupported") == 1
 
 
-@pytest.mark.parametrize("over", [
-    {"extraction_phase": 3},                                   # prior
-    {"curated": True},                                         # curated
-    {"extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"},  # inverse of a prior
+LEGACY = {"source": None}  # an edge written before the source property existed (all of prod today)
+
+
+@pytest.mark.parametrize("over,unsupported", [
+    pytest.param({"source": "prior", "extraction_phase": 3}, 0, id="prior-exempt"),
+    pytest.param({"source": "curated", "extraction_phase": None}, 0, id="curated-exempt"),
+    pytest.param({"curated": True}, 0, id="curated-flag-exempt"),
+    pytest.param({}, 1, id="llm-unsupported"),
+    pytest.param({"source": "llm", "extraction_phase": 3}, 1, id="source-wins-over-phase"),
+    pytest.param({"source": "anchored_rule", "extraction_phase": 6}, 1, id="anchored-rule-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 3}, 0, id="legacy-phase-3-exempt"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"},
+                 0, id="legacy-inverse-of-prior-exempt"),
+    pytest.param({**LEGACY, "extraction_phase": 4}, 1, id="legacy-phase-4-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "backfilled": True, "notes": "cooccurrence-backfill"},
+                 1, id="legacy-cooccurrence-gated"),
+    # the inverse exemption needs all three: source inverse, no pericope, derived_from notes
+    pytest.param({"source": "llm", "extraction_phase": 5, "source_pericope_id": "", "notes": "derived_from=FATHER_OF"},
+                 1, id="llm-with-derived-notes-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "notes": "derived_from=FATHER_OF"},
+                 1, id="legacy-inverse-with-pericope-gated"),
+    pytest.param({**LEGACY, "extraction_phase": 5, "backfilled": True, "source_pericope_id": "",
+                  "notes": "derived_from=FATHER_OF"}, 1, id="legacy-backfilled-phase-5-is-cooccurrence"),
 ])
-def test_h3_exemptions(snap, over):
+def test_h3_uses_source_then_falls_back_to_phase(snap, over, unsupported):
+    # The row's source decides; a row without one gets the source its phase
+    # implies (models.derive_source), so prod's legacy rows score as before.
     append_row(snap / "relations.jsonl", unsupported_edge(**over))
-    assert metric(measure(snap), "H3", "unsupported") == 0
+    assert metric(measure(snap), "H3", "unsupported") == unsupported
 
 
 def test_h3_edge_without_provenance_counts(snap):
@@ -202,10 +284,10 @@ def test_h8_xref_without_provenance_flag(snap):
 def test_h9_domain_range_and_unknown_type(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:yage", "relation": "FATHER_OF",
                                           "tail_id": "place:aiji", "source_pericope_id": "exo:1:0",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     append_row(snap / "relations.jsonl", {"head_id": "person:yage", "relation": "LOVES",
                                           "tail_id": "place:aiji", "source_pericope_id": "exo:1:0",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     res = measure(snap)
     assert metric(res, "H9", "domain_range_violations") == 1
     assert metric(res, "H9", "unknown_relation_types") == 1
@@ -311,7 +393,67 @@ def test_live_and_snapshot_of_one_graph_pass_one_baseline(snap, tmp_path, capsys
     assert vk.main(live) == 0  # and live still passes once the snapshot reading is filled
 
 
-@pytest.mark.parametrize("field,value", [("source_id", "heb:1:0"), ("target_verses", "13")])
+# What 6.05 stamps on an id-order llm edge. H11 counts it as unflagged unless
+# direction_verified reads False, so a mode that drops the field fails H11.
+PROVENANCE = {"direction_verified": False, "sources": ["llm"]}
+
+
+def _neo4j_columns(cypher: str, row: dict) -> dict:
+    """The record Neo4j returns for `row`: only the columns the Cypher selects,
+    an absent property as null. SHOW ... YIELD (no AS) returns the row as is."""
+    columns = re.findall(r"\bAS (\w+)", cypher)
+    return {c: row.get(c) for c in columns} if columns else row
+
+
+def test_load_live_reads_direction_verified_and_sources(snap, monkeypatch):
+    """load_live through the real _LIVE_QUERIES: live_shaped() reuses the
+    snapshot's rows and never runs them, so a relations Cypher missing a column
+    would only surface on staging (the flagged edges read as None, H11 fails)."""
+    stored = {
+        "entities": [{"entity_id": "place:moliya", "labels": ["Entity", "Place"], "canonical_name": "摩利亞"},
+                     {"entity_id": "place:jianan", "labels": ["Entity", "Place"], "canonical_name": "迦南"}],
+        # every property _relation_row reads, none at its default: a column the Cypher drops reads None
+        "relations": [{"head_id": "place:moliya", "relation": "LOCATED_IN", "tail_id": "place:jianan",
+                       "source_pericope_id": "gen:22:0", "extraction_phase": 4, "notes": "x", "curated": True,
+                       "backfilled": False, "source": "llm", **PROVENANCE},
+                      {"head_id": "place:jianan", "relation": "NEAR", "tail_id": "place:moliya",
+                       "source_pericope_id": "gen:22:0", "extraction_phase": 4}],  # legacy: neither property
+    }
+    names = {cypher: name for name, cypher in model._LIVE_QUERIES.items()}
+    ran: dict[str, str] = {}
+
+    def read_query(driver, cypher, **params):
+        ran[names[cypher]] = cypher
+        return [_neo4j_columns(cypher, row) for row in stored.get(names[cypher], [])]
+
+    monkeypatch.setattr(model, "read_query", read_query)
+    kg = vk.load_live(driver=None)
+    assert set(ran) == set(model._LIVE_QUERIES)
+    assert "r.direction_verified AS direction_verified" in ran["relations"]
+    assert "r.sources AS sources" in ran["relations"]
+    flagged, legacy = kg.relations
+    assert {k: flagged[k] for k in PROVENANCE} == PROVENANCE
+    assert (legacy["direction_verified"], legacy["sources"]) == (None, None)
+    expected = model._relation_row(stored["relations"][0])
+    assert None not in expected.values()  # a column _relation_row gains must be set above too
+    assert flagged == expected  # so every column it reads is one the relations Cypher selects
+    assert set(flagged) == set(vk.load_snapshot(snap).relations[0])  # live and snapshot rows: same keys
+
+
+def test_snapshot_relation_rows_carry_direction_verified_and_sources(snap, tmp_path):
+    edit_rows(snap / "relations.jsonl", lambda r: r["relation"] == "OCCURRED_IN", **PROVENANCE)
+    kg = vk.load_snapshot(snap)
+    flagged = next(r for r in kg.relations if r["type"] == "OCCURRED_IN")
+    assert {k: flagged[k] for k in PROVENANCE} == PROVENANCE
+    assert {(r["direction_verified"], r["sources"]) for r in kg.relations if r is not flagged} == {(None, None)}
+    vk.write_snapshot(kg, tmp_path / "dump")  # and a dump keeps them
+    assert vk.load_snapshot(tmp_path / "dump").relations == kg.relations
+
+
+# heb 1:5 is outside heb:1:0 (1-4); psa 2:13 is outside psa:2:0 (1-12). The
+# other anchor cases and the legacy scalars are in test_validate_kg_xref.py.
+@pytest.mark.parametrize("field,value", [("source_id", "heb:1:0"), ("supp_anchors", ["heb 1:5>psa 2:13"])],
+                         ids=["source_id", "supp_anchors"])
 def test_r4_misaligned_supplementary_anchor(snap, field, value):
     edit_rows(snap / "cross_references.jsonl", lambda r: r["source"] == "supplementary", **{field: value})
     assert metric(measure(snap), "R4", "misaligned") == 1
@@ -326,34 +468,52 @@ def test_r5_cross_type_same_name(snap):
 def test_r6_contradiction(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:yisa", "relation": "FATHER_OF",
                                           "tail_id": "person:yabolahan", "source_pericope_id": "gen:22:0",
-                                          "extraction_phase": 2})
+                                          "extraction_phase": 2, "source": "rule"})
     assert metric(measure(snap), "R6", "contradictions") == 2  # both directions are contradicted
 
 
 def test_r6_son_of_contradicts_father_of(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:yabolahan", "relation": "SON_OF",
                                           "tail_id": "person:yisa", "source_pericope_id": "gen:22:0",
-                                          "extraction_phase": 5, "notes": "derived_from=FATHER_OF"})
+                                          "extraction_phase": 5, "notes": "derived_from=FATHER_OF",
+                                          "source": "inverse"})
     assert metric(measure(snap), "R6", "contradictions") == 1
 
 
 def test_r6_female_head_and_functionality(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:maliya", "relation": "FATHER_OF",
                                           "tail_id": "person:make", "source_pericope_id": "act:12:1",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     append_row(snap / "relations.jsonl", {"head_id": "person:nahe", "relation": "FATHER_OF",
                                           "tail_id": "person:luode", "source_pericope_id": "gen:11:2",
-                                          "extraction_phase": 4})
+                                          "extraction_phase": 4, "source": "llm"})
     res = measure(snap)
     assert metric(res, "R6", "female_head") == 1
     # children: yabolahan, halan, luode(2 fathers), yisa, make -> 1/5
     assert metric(res, "R6", "functional_violation_rate") == pytest.approx(0.2)
 
 
+def test_r6_all_parent_encodings(snap):
+    # A parent is the head of FATHER_OF/MOTHER_OF or the tail of SON_OF/DAUGHTER_OF:
+    # after 1A most kinship is anchored SON_OF, which the FATHER_OF-only rate misses.
+    write_rows(snap / "relations.jsonl", read_rows(snap / "relations.jsonl") + [
+        _edge("person:luode", "SON_OF", "person:nahe"),       # luode: halan (FATHER_OF), nahe
+        _edge("person:maliya", "MOTHER_OF", "person:luode"),  # ... and maliya: 3 parents
+        _edge("person:make", "DAUGHTER_OF", "person:bide"),   # make: bide
+        _edge("person:maliya", "MOTHER_OF", "person:make"),   # ... and maliya, a female_persons id
+        _edge("person:nahe", "DAUGHTER_OF", "person:tala"),   # nahe: tala, only via DAUGHTER_OF
+    ])
+    res = measure(snap)
+    assert metric(res, "R6", "children_with_2plus_nonfemale_parents") == 1  # luode; make's 2nd is female
+    assert metric(res, "R6", "children_with_gt2_parents") == 1  # luode
+    assert res["R6"].detail["children_with_parents"] == 6  # yabolahan, halan, luode, yisa, make, nahe
+    assert metric(res, "R6", "functional_violation_rate") == 0.0  # no child has two FATHER_OF heads
+
+
 def test_r6_counts_failing_kinship_probes(snap):
     append_row(snap / "relations.jsonl", {"head_id": "person:luode", "relation": "FATHER_OF",
                                           "tail_id": "person:tala", "source_pericope_id": "gen:11:2",
-                                          "extraction_phase": 2})
+                                          "extraction_phase": 2, "source": "rule"})
     res = measure(snap)
     assert metric(res, "R6", "probe_failures") == 1
     assert "kin-lot-not-father-of-terah" in res["R6"].detail["failing_probes"]

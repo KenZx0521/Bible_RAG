@@ -12,6 +12,7 @@
 > - 【推】：推論。
 > - 【更正】：審查者推翻了規劃值。
 > - 【待重算】：要等決策或修正後重跑模擬。
+> - 【驗・W1 重算】：W1 實作後以定案組態重跑（[w1_1A/sim2_final.json](2026-10-04_kg_fix/batch1/w1_1A/sim2_final.json)；10.2 後的邊集合 sha256 `661cfc62…` 與 6.05 實跑相同）。原本的值留著當紀錄；1A 原有的【待重算】改成這個標記。
 
 > **歸檔**：證據已複製到 `docs/records/2026-10-04_kg_fix/batch1/`（腳本與 <200 KB 的輸出），完整 scratchpad 在 `bak/20261004_kgfix_evidence/batch1plan_scratchpad.tgz`（gitignored）。下文的 `SP=/tmp/...` 路徑是規劃時的位置。
 
@@ -26,10 +27,10 @@
 | W1·1A | 沒有出處的衍生邊（H3） | 374 → 0 | 驗 reviewer_1A/r4_h3_on_staging.py |
 | | domain/range 違規（H9） | 14 → 0 | 同上 |
 | | FATHER_OF 雙向矛盾／女性 head | 25 / 42 → 0 / 0 | 驗 planner_1A/sim_1a.py（審查者重跑 sha b564a2a8 相同） |
-| | 有 ≥2 個非女性父母的子女（全部父母編碼） | 135/262（51.5%）→ 60/402（14.9%）；加同名防護後會再降【待重算】 | 驗 reviewer_1A |
+| | 有 ≥2 個非女性父母的子女（全部父母編碼） | 135/262（51.5%）→ 60/402（14.9%）；加同名防護後會再降。【驗・W1 重算】8/383（2.1%）；超過 2 個父母（3 個以上）的 1 個（live 87） | 驗 reviewer_1A |
 | | 10.3 共現升格邊／反向物化邊／字母序規則邊／LLM Event–Event 邊 | 9,060 / 756 / 771 / 26 → 全部 0 | 驗 prod READ |
-| | 語意邊總數 | 15,926 → 非錨定 5,301，加上錨定邊（原模擬 425）【待重算】 | 驗 reviewer_1A/r1_flow.py |
-| | 親屬邊 | 1,571 → 約 615（原模擬）【更正：計畫的「<300」不成立】【待重算】 | 驗 |
+| | 語意邊總數 | 15,926 → 非錨定 5,301，加上錨定邊（原模擬 425）。【驗・W1 重算】5,616 = 非錨定 5,297 + 錨定 319；比 5,301 少的 4 條是 6.05 丟掉的 prior／llm 無向重複（大衛–約拿單 ALLY_OF 等） | 驗 reviewer_1A/r1_flow.py |
+| | 親屬邊 | 1,571 → 約 615（原模擬）【更正：計畫的「<300」不成立】。【驗・W1 重算】509（prior 30、llm 160、錨定 319） | 驗 |
 | W1·1B | supplementary 錨點錯位（首節規則／逐節規則） | 59 / 62 → 0 | 驗 1B-reviewer/r3_r4.py |
 | | 被靜默丟掉的定義 | 16 → 0 | 驗 r1_supp.py |
 | | 被 curated 邊吞掉的 TSK 證據 | 856 對 → 0（curated 邊帶 votes 923/924 條） | 驗 r2_tsk.py |
@@ -89,11 +90,11 @@
 
 | | W0 準備（不升版） | W1：1A＋1B | W2：1C＋1D |
 |---|---|---|---|
-| 前置 | K0 已核可；三套測試全綠 | W0 完成；K1–K10、X1–X4 已決；R0 完成：三庫備份、`git tag kg-pre-batch1-w1`、`docker tag bible_rag-backend:latest bible_rag-backend:kg-pre-batch1-w1` | W1 已升版並 ratchet；C1–C6、E1–E9 已決；R0 完成，另加 PG 的 entity_tables.sql、Qdrant snapshot、image tag |
+| 前置 | K0 已核可；三套測試全綠 | W0 完成；K1–K10、X1–X4 已決；R0 完成：三庫備份、`git tag kg-pre-batch1-w1`、`docker tag bible_rag-backend:latest bible_rag-backend:kg-pre-batch1-w1`（image 的保存已改，見 §9.1） | W1 已升版並 ratchet；C1–C6、E1–E9 已決；R0 完成，另加 PG 的 entity_tables.sql、Qdrant snapshot、image tag |
 | 步驟 | 見下方 W0 步驟 | 見下方 W1 步驟 | 見下方 W2 步驟 |
 | 驗收 | 拆檔前後測試數相同；AA 中同路由題 100% 相同，並記錄路由殘差 r0；R3 演練的計數等於 staging（節點 13,589、關係 319,988），check_identity 的 id 差為 0 | §2.1 與 §2.2 的閘門全過；D3；opt-in A/B 報告；/api 的 W1 清單與 prod 完全相同 | §2.3 與 §2.4 的閘門全過；D3；/api 的 W2 清單符合預期 |
 | 升版 | 否 | 見下方 W1 升版 | 見下方 W2 升版 |
-| 回滾 | — | 載回 Neo4j dump；image 退回 kg-pre-batch1-w1。資料回滾時 backend 不必退，因為第 1 步的 image 同時相容新舊資料 | Neo4j dump、用 PG entity_tables.sql 換回兩張表、.env 切回、image tag。**W2 是第一份快照，沒有上一份快照可以重載，只能用 dump 回滾** |
+| 回滾 | — | 載回 Neo4j dump；image 退回 kg-pre-batch1-w1（依記下的 image id，見 §9.1）。資料回滾時 backend 不必退，因為第 1 步的 image 同時相容新舊資料 | Neo4j dump、用 PG entity_tables.sql 換回兩張表、.env 切回、image tag。**W2 是第一份快照，沒有上一份快照可以重載，只能用 dump 回滾** |
 
 **W0 步驟**
 1. 歸檔 scratchpad 的證據到 docs/records/2026-10-04_kg_fix/batch1/，包括 kg_xref 68 題、questions_table.json 與各模擬器，並把路徑改成參數。
@@ -122,7 +123,7 @@
 10. 升版。
 
 **W1 升版**
-1. backend 先上（1B 過渡版）：`up -d --build backend`，跑 20 題煙霧測試，再跑「模擬等於實測」探針。
+1. backend 先上（1B 過渡版）：`up -d --build backend`，跑 20 題煙霧測試，再跑「模擬等於實測」探針。（image 指令已由 runbook 取代，見 §9.1）
 2. staging dump 後載入 prod Neo4j，停機約 1 分鐘。
 3. R4：在乾淨的 shell 跑，參數 `--target prod`。
 4. R4 之後才 ratchet 與 accept，並與允許清單放同一個 commit。
@@ -131,7 +132,7 @@
 **W2 升版**
 1. 載入 Neo4j。
 2. PG 在單一 transaction 內換掉 entities 與 entity_mentions。
-3. .env 只改 `QDRANT_ENTITY_COLLECTION`，指向 W2 staging 建好的 collection（建議 bible_entities_v3，v2 留作第 0 批的對照）。
+3. .env 只改 `QDRANT_ENTITY_COLLECTION`，指向 W2 staging 建好的 collection（建議 bible_entities_v3，v2 留作第 0 批的對照）。2026-10-06 註：O7 建議 W1 staging 就改用 v3，W2 因此改用 v4（待 Kay 確認，見 §9.1）。
 4. `up -d --build backend`，同時移除 1B 的過渡 coalesce。
 5. R4。
 6. ratchet。
@@ -173,23 +174,24 @@
 
 | 項目 | 值 | 狀態 |
 |---|---|---|
-| 6.05 輸入與丟棄 | 輸入 6,958 列。丟棄：rule 772、inverse 752、Event–Event 38（live 為 26）、domain/range 13、閘門 1、與 prior 相反 1、矛盾 1、無向重複 6 | 驗（兩邊一致） |
+| 6.05 輸入與丟棄 | 輸入 6,958 列。丟棄：rule 772、inverse 752、Event–Event 38（live 為 26）、domain/range 13、閘門 1、與 prior 相反 1、矛盾 1、無向重複 6。【驗・W1 重算】同上，只有親屬方向矛盾是 0（規劃時 1）；輸出 5,696 列 | 驗（兩邊一致） |
 | 標記方向未驗證 | 48 條（計畫寫 75） | 【更正】驗 |
 | 非錨定邊保留（扣掉 10.2 的 80 條後） | 5,301 | 驗 |
-| 錨定唯一鍵 | 原本 437；改成 P/P/G 詞庫後 527；加上清單修正與同名防護後未知 | 【待重算】 |
-| 錨定精確率 | 規劃者的 57/57 是「文字層」判讀；審查者以 seed 4242 抽樣，文字層 43/45（Wilson 下界 0.852）。實體層的錯例：彼得 SON_OF 使徒約翰、約瑟 SON_OF 約南、便雅憫 SON_OF 比勒罕 | 【更正】撤回價值表的「≥0.91」，改以 id 正確的人工閘門為準 |
-| 錨定父母邊落在多父母衝突 | 126/420（30%），涉及 55 個子女 | 驗 |
-| R6 函數性 | 只算 FATHER_OF 時是 135/252 → 3/49，但多父母的問題轉移到 SON_OF。改用全部父母編碼：135/262 → 60/402 | 【更正】 |
-| 第 0 批 4 條 SON_OF 的成因 | 不是同一次匯入裡先到先得，而是 prod 舊匯入的屬性因 onCreate-only 沒有被刷新（REL-10） | 【更正第 0 批紀錄】驗 |
+| 錨定唯一鍵 | 原本 437；改成 P/P/G 詞庫後 527；加上清單修正與同名防護後未知。W1：命中 701、兩段防護後輸出 465、唯一鍵 328；無向去重再丟 2 個、7 個併進 prior／llm 列，以錨定為主來源的列 319 | 【驗・W1 重算】 |
+| 錨定精確率 | 規劃者的 57/57 是「文字層」判讀；審查者以 seed 4242 抽樣，文字層 43/45（Wilson 下界 0.852）。實體層的錯例：彼得 SON_OF 使徒約翰、約瑟 SON_OF 約南、便雅憫 SON_OF 比勒罕。W1 規劃者試標（非人工、單一標註者，不是 K9 閘門樣本）：W1 的錨定 319 列以 seed 20261005 抽 60 列，text_correct 60/60（Wilson 下界 0.940），id_correct 51/60（0.739；另 7 列落在主要指涉是別人的合併節點，也算錯則 44/60，0.610）；當時以 id_correct 為閘門，需 57/60（2026-10-05 Q1 改為 text_correct，見 §9.1）。id 錯的都在節點層的同名合併（延後-A） | 【更正】撤回價值表的「≥0.91」，改以 id 正確的人工閘門為準。2026-10-05 Kay 改以 text_correct 為閘門，見 §9.1 Q1 |
+| 錨定父母邊落在多父母衝突 | 126/420（30%），涉及 55 個子女。W1 由兩段同名防護處理：第一段 abstain 60 筆（其他父母 56、同名節點 4），第二段 49 個子女的 176 筆 | 驗；W1 見 Step 6.05 的報告 conflicts |
+| R6 函數性 | 只算 FATHER_OF 時是 135/252 → 3/49，但多父母的問題轉移到 SON_OF。改用全部父母編碼：135/262 → 60/402。【驗・W1 重算】只算 FATHER_OF：3/47（0.0638），不是 3/49；全部父母編碼：8/383，超過 2 個父母（3 個以上）的 1 個 | 【更正】 |
+| 第 0 批 4 條 SON_OF 的成因 | 不是同一次匯入裡先到先得，而是 prod 舊匯入的屬性因 onCreate-only 沒有被刷新（REL-10） | 【更正第 0 批紀錄】驗；2026-10-06 已更正[第 0 批紀錄](2026-10-04_kg_batch0_results.md)與 kg_diff_allow_batch0.yaml 的檔頭 |
 
 **相對 prod 的預期 diff**
-- relationships 有 28 型改變：PARTICIPATED_IN −5,641、OCCURRED_IN −3,419；FATHER_OF、SON_OF 等親屬型【待重算】。
-- ee_edges：舊鍵 `* source=-` 全部歸零；新鍵有 prior 22 鍵（+64）、llm 35 鍵（+5,233）、anchored_rule【待重算】。
+- relationships 有 28 型改變：PARTICIPATED_IN −5,641、OCCURRED_IN −3,419；親屬型【驗・W1 重算】FATHER_OF −597、SON_OF −324、ANCESTOR_OF −34、DESCENDANT_OF −31、MOTHER_OF −29、SPOUSE_OF −18、SIBLING_OF −16、DAUGHTER_OF −13（仍是 28 型）。
+- ee_edges：舊鍵 `* source=-` 全部歸零；新鍵有 prior 22 鍵（+64）、llm 35 鍵（+5,233）、【驗・W1 重算】anchored_rule 4 鍵（+319）：SON_OF 298、DAUGHTER_OF 10、SPOUSE_OF 6、FATHER_OF 5。
 - labels、mentions、entity_ids、descriptions、aliases、registry 都是 0 差。
 
 **第 0 批的殘差會跟著上線**【驗 reviewer_1A r2、r3】。diff_kg 量不到這些，必須寫進紀錄並 accept：
 - mention_count 有 4 個實體不同：event:shanshangbaoxun 23→1、兩個保羅歸主事件 4→1、person:yeteluo 3→30。
 - MENTIONS 屬性：start_pos 等欄位有 5,782 條不同，source_granularity 有 40,261 條不同。
+  - 【補記 2026-10-06】漏列的第四項殘差欄位：created_from 有 106 條不同（手動補丁的 MENTIONS：prod 沒有這個屬性，第 0 批 staging 是 `manual_patch`）。「start_pos 等欄位」指 start_pos、end_pos、backfilled、verse_mention_freq，各 5,782 條；兩邊都是 46,205 條、只在一邊的 0 條。W1 由 residuals_expect 把逐屬性條數登記進 `residuals_expected.json` 的 `mentions_props`，R2 以 `--check` 重讀比對（[staging_promotion.md](../staging_promotion.md) R2「W1 的關係層檢查」第 4 項）。
 - R1 由 1,938 變 2,124，用 `--accept R1` 處理。
 
 **閘門**
@@ -202,10 +204,12 @@
 | PROBES | failing ⊆ baseline 扣掉 1A 修好的 4 個；新增探針全過 | record（subset 規則） |
 | 邊集合等同 | staging 的 (head, type, tail, source) 排序後的 sha，等於 relations_clean 扣掉 10.2 端點後的 sha | 是 |
 | 6.05 決定性 | 連跑兩次 sha 相同 | 是 |
-| 錨定規則人工抽樣（n≥40，**以 id 正確計**） | Wilson 下界 ≥0.85 | 是 |
+| 錨定規則人工抽樣（n≥40，**以 id 正確計**）；2026-10-05 起改為 text_correct、n=60，id_correct 只報告（§9.1 Q1） | Wilson 下界 ≥0.85 | 是 |
 | diff_kg（允許清單外 0、registry 0）、D1、H1、H2、H7、H10 | — | 是 |
 | D3 | 同路由題逐位相同 | 是 |
 | entity_path 500 題 Δvrec | ≥ −0.005（事前登記：失敗也不回退 10.3） | 否（報告） |
+
+> 註（H11 的編號，2026-10-06）：H11 已由 1A 用於關係出處（上表第一列）。§2.4 1D C10 的「新增 H11」（extraction_method 與 title_derived）要改用下一個空號 H12，§2.4 閘門的「H11=0」同此，見 §9.1。
 
 **風險**
 - 同名不同人仍是主要殘留，屬延後-A。
@@ -448,7 +452,7 @@ D3 的 staging 端必須跑「由該波 HEAD 建出的 image」。
 
 ### 5.3 /api/v1/entity 抽查
 
-related_passages 與 related_entities 的查詢沒有 ORDER BY，比對前一律先依 id 排序。
+related_passages 與 related_entities 的查詢自 087ab0d（W1-0）起以 ORDER BY 加 md5 平手排序，同一份資料的結果是決定的；比對前仍一律先依 id 排序。排序只固定順序，不固定 LIMIT 10 取到哪些，所以 W1 只在同一個 image 上比：prod 自己在升版第 2 步前後各取一次（做法見 [staging_promotion.md](../staging_promotion.md)「W1 的 /api/v1/entity 比對」）。
 
 - **W1：以下必須與 prod 完全相同。** person:make、person:liwei、place:dan、group:yehehua、event:shanshangbaoxun、person:yeteluo、event:jinniudushijian。
 - **W1 的圖譜探針（Cypher READ）：**
@@ -473,7 +477,7 @@ related_passages 與 related_entities 的查詢沒有 ORDER BY，比對前一律
 
 - 每次升版都保留 validate_kg、6.05 report、check_identity 的輸出與 sha。
 - 人工抽樣都用固定 seed，標註結果存檔並附 sha，以 ratchet 管理：
-  - 1A：錨定規則 n≥40（以 id 正確計）；LLM 親屬 n≥30（只報告）；prior 30 條全審。
+  - 1A：錨定規則 n≥40（以 id 正確計）；LLM 親屬 n≥30（只報告）；prior 30 條全審。2026-10-05 起閘門改為錨定 n=60 的 text_correct，id_correct 三組都只報告（§9.1 Q1）。
   - 1C：刪除的書名區邊 n=100；改記到真提及的 n=50；新增的邊全審。
   - 1D：描述隨機抽 10 個，加上一份必查清單。
 
@@ -483,8 +487,8 @@ related_passages 與 related_entities 的查詢沒有 ORDER BY，比對前一律
 
 | # | 偏離 | 理由 |
 |---|---|---|
-| 1 | 親屬邊不是「<300」，而是約 615【待重算】 | 原型的詞界過嚴，P1 幾乎沒有命中；照計畫列出的句型實作後，P1 有 402 條 |
-| 2 | 方向未驗證的邊是 48 條，不是 75 條 | 75 條中有 26 條 Event–Event 邊本來就要丟，另 1 條與 prior 方向相反也要丟 |
+| 1 | 親屬邊不是「<300」，而是約 615。【驗・W1 重算】509 | 原型的詞界過嚴，P1 幾乎沒有命中；照計畫列出的句型實作後，P1 有 402 條。W1 的 509 已含兩段同名防護 |
+| 2 | 方向未驗證的邊是 48 條，不是 75 條（【驗・W1 重算】48：LOCATED_IN 47、SUCCEEDED_BY 1） | 75 條中有 26 條 Event–Event 邊本來就要丟，另 1 條與 prior 方向相反也要丟 |
 | 3 | head<tail 比例門檻改為 H11 unflagged=0，並另設 direction_pair 表 | LOCATED_IN 的比例是 0.98，原門檻必然失敗；yaml inverse 改 null 之後，不能再用 inverse 推導 |
 | 4 | R6 的 ≤5% 從硬門檻改為 record；改以全部父母編碼的指標 ratchet | 剩下的違反都屬身分層問題；只看 FATHER_OF 會看不到問題轉移到 SON_OF |
 | 5 | PROBES 從「全過」改為 subset 規則 | baseline 裡有 13 個失敗探針，1A 只修得到 4 個 |
@@ -579,3 +583,20 @@ W0 結果見 [2026-10-05_kg_batch1_w0_results.md](2026-10-05_kg_batch1_w0_result
     - 從兩個等價的庫重建出的實體向量逐位元相同；
     - legacy-100 opt-in AA 的結果見 W0 紀錄的補記。
 - **影響：** W1 的 staging 重建會用新的 `embed_entities`，所以 entity_query 的向量會與 prod 現行的 `bible_entities` 不同（舊向量的標題取決於存放順序）。§5.2 的 entity_query A/B 要把這一點列為已知變因。
+
+### 9.1 W1 實作期間的決定與更正（2026-10-05／06）
+
+只補記，不改寫上面各節的原文；上面的列若與這裡不同，以這裡與 [staging_promotion.md](../staging_promotion.md) 為準。
+
+**Kay 的決定（2026-10-05）**
+- **Q1 K9 的閘門欄位：** 錨定列以 text_correct（經文確實說了這個關係與方向）為硬閘門，n = 60，Wilson 下界 ≥ 0.85（至少 57/60）。id_correct（兩端節點的主要指涉就是經文那個人）用同一套標註規則，只報告，當作延後-A 的基準：錨定 60、llm 30、prior 全部 30。text_correct 沒過才退回 `enabled: false`。理由是 §2.1 的規劃者試標：text 60/60，id 只有 51/60；id 錯的都是節點層的同名合併，llm 親屬列同樣受影響，不是錨定句型本身的問題。這取代 §2.1 閘門表與 §5.4 的「以 id 正確計、n≥40」。
+- **Q2 同名防護的 `homonym_ids`：** `[person:bide, "person:yuehan（shitu）"]`（彼得、使徒約翰；「約翰的兒子西門」不得連到使徒約翰）。
+- **Q3 清單項後面接「的」：** `list_stop: cont`。這一項帶出下一個子句，清單到此結束；只有緊接在槽位後的第一項保留（耶 38:6 保留瑪基雅）。
+- **Q4 第二段同名防護（1A-C3c）：** 上線。同一個子女從錨定命中得到兩個以上父母時，它的父母命中全數 abstain（W1：49 個子女、176 筆）。
+- **H11 改號（隨 1A 一併記錄）：** H11 已是 1A 的關係出處檢查（source_null、inverse_edges、cooccurrence_edges、rule_edges、llm_event_event_edges、unflagged_id_order_edges、undirected_pair_duplicates 七項，見 `scripts/kg_validate/checks_h.py`）。§2.4 1D C10 的新檢查（extraction_method、title_derived）改用 H12，§2.4 閘門的「H11=0」同此。
+
+**執行面的更正（orchestrator 的工程判斷，不是 Kay 的決定）**
+- **W1 的 image 指令以 runbook 為準：** §1 W1 欄 R0 的 `docker tag`、「W1 升版」第 1 步的 `up -d --build backend` 與回滾的「image 退回 kg-pre-batch1-w1」，都由 staging_promotion.md 的「W1 升版第 1 步」與 R5 取代。上線的是 R2 測過、記下 id 的 `bible_rag-backend:w1`（改 tag 成 latest，`--no-build`，不在 prod 重建）；回滾 image 取自 prod 容器正在跑的 image id，打 tag、用一個停著的容器釘住，再 `docker save` 到 bak/（只打 tag 的 image 會被 `docker image prune -a` 刪掉，2026-10-05 發生過）。
+- **O1 /api 比對：** §1 W1 驗收欄的「/api 的 W1 清單與 prod 完全相同」與 §5.3 原本是在 R2 拿 staging 比 prod，改為 prod 自己在 W1 升版第 2 步前後比（同一個 W1 image、同一個 PG，只有 Neo4j 換了），見 staging_promotion.md「W1 的 /api/v1/entity 比對」。原因是 prod 的 9bc112a6 沒有 087ab0d，同一份資料取到的 LIMIT 10 集合也會不同。§5.3 原本「查詢沒有 ORDER BY」那句自 087ab0d 起已過時，已在 4a8e826 改寫。
+- **O5 期望檔與合併允許清單的時點：** 期望檔與三個允許清單片段（1A 的 `relations_allow.yaml`、`residuals_allow.yaml`，1B 的 `xref_allow.yaml`）都由工具產生，在 §1「W1 步驟」第 2 步（staging 重建）之前 commit，sha256 記進 W1 紀錄。合併檔 `config/kg_diff_allow_batch1w1.yaml` 也在第 2 步之前以 diff_kg `--merge-out` 組好，sha256 記進 W1 紀錄；`--sha-out` 寫出的 `config/kg_expect/batch1_w1/kg_diff_allow_batch1w1.sha256` 與期望檔、片段一起在第 2 步之前 commit。R2（第 3 步）以這份合併檔跑 diff_kg，第 4 步經 Kay 核可的就是這些已登記的檔；合併檔本身 R4 之後才與 ratchet 放同一個 commit。看過 staging 的 diff 之後，期望檔、片段與合併檔都不再修改。這取代 §3 期望檔列「Kay 核可後 commit」的時點：先登記、後核可。順序與指令見 staging_promotion.md 的 R1 第 5 項與 R2。
+- **O7（待 Kay 確認）：** W1 staging 的實體 collection 改用 `bible_entities_v3`（R0 時把 scripts/tools/staging.env 遞增），v2 留作第 0 批的對照；W2 因此改用 v4（§1「W2 升版」第 3 步原寫 v3）。W1 不改實體、MENTIONS 與描述，所以 v3 要與 W1-0 的 bible_entities_detB 逐點相同。

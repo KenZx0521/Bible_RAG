@@ -25,24 +25,39 @@ write each check back to its own file):
   hard    each metric must meet its target            -> exit 1
   record  each metric must not regress past baseline  -> exit 2
   warn    report only (W: label/relationship counts drifting > ±tolerance_pct)
-Batch 0 hard checks are H1, H2, H7 and D1; `hard_from` records the batch at
-which each record check is planned to become hard. A check that raised
-(error), or a metric that came back None without a declared reason
-(unmeasured), exits 1 whatever its severity: a check that did not run never
-passes. Declared n/a (D1 and H5 on a snapshot; R3 all-forms and R9 without
-occurrence rows, R9 also when no row carries a text_id) is reported with its
-reason, not failed.
+A metric's own "severity" (hard|record) overrides its check's for that metric,
+e.g. a record ratchet inside a hard check: it regresses (exit 2), never fails.
+Loading the baseline rejects a hard metric without a target (or target_from),
+a target_from metric that is not hard, and a metric severity in a warn check.
+Hard checks per batch (`hard_from` holds the batch; on a record check, the
+batch at which it is planned to become hard):
+  0    H1, H2, H7, D1
+  1A   H3, H9, H11, R6; R6's functionality readings (functional_violation_rate
+       and the every-encoding multi-parent counts) stay record ratchets (K3).
+  1B   H8, R4, R11
+Prod fails the 1A and 1B checks until the W1 promotion (H11: every prod edge
+predates the source property; H8: no prod CROSS_REFERENCES carries the curated
+and tsk flags yet), and batch 0's H1 as well (prod lacks the :Entity(entity_id)
+uniqueness constraint; the W1 dump carries staging's), so gate staging before
+that.
+A check that raised (error), or a metric that came back None without a
+declared reason (unmeasured), exits 1 whatever its severity: a check that did
+not run never passes. Declared n/a (D1 and H5 on a snapshot; R3 all-forms and
+R9 without occurrence rows, R9 also when no row carries a text_id) is reported
+with its reason, not failed.
 
 --ratchet moves stored baselines only toward improvement (and fills null
 ones); a regressed metric keeps its old baseline and the run exits 2. Metrics
-with direction "equal" (H10's Event-MENTIONS fingerprint) never move by
-ratchet: an intentional change is approved with --accept ID (it cannot bypass
-a hard target, only the stored record value). Direction "subset" (PROBES
-.failing, R6.failing_probes) stores the failing probe ids: any id outside the
-stored set is a regression even when the count is unchanged, and --ratchet
-only removes ids. Their counts (failures, probe_failures) carry count_of and
-are always stored as len(ids). H7's sha target is read from config/step0_sha.json
-(--step0-sha), the file check_step0.py records, and is never copied here.
+with direction "equal" (H10's Event-MENTIONS fingerprint, R11.tsk_votes_edges)
+never move by ratchet: an intentional change is approved with --accept ID (it
+cannot bypass a hard target, only the stored record value). Direction
+"subset" (PROBES.failing, R6.failing_probes) stores the failing probe ids:
+any id outside the stored set is a regression even when the count is
+unchanged, and --ratchet only removes ids; R6 is hard, so there the target []
+fails any failing probe. Their counts (failures, probe_failures) carry
+count_of and are always stored as len(ids). H7's sha target is read from
+config/step0_sha.json (--step0-sha), the file check_step0.py records, and is
+never copied here.
 
 Snapshot format kg_snapshot/v1 (JSONL = one object per line). Every file is
 required; --allow-partial scores an incomplete one with the checks that read
@@ -59,8 +74,12 @@ a missing file reported n/a, and refuses --ratchet/--accept:
                           to one MENTIONS edge per (label, source, entity); the first row wins, as the
                           import's MERGE does. R3's all-forms reading and R9 read every row.
   relations.jsonl         head_id, relation | type, tail_id, source_pericope_id, extraction_phase,
-                          notes, curated?, backfilled?
-  cross_references.jsonl  source_id, target_id, source, votes, curated?, tsk?, source_verses?, target_verses?
+                          notes, curated?, backfilled?, source?, direction_verified? (false = an
+                          id-order edge whose direction no prior confirmed), sources? (every source
+                          supporting the edge); live reads the same edge properties, absent = null
+  cross_references.jsonl  source_id, target_id, source, votes, curated?, tsk?, curated_sources?,
+                          supp_anchors? ['heb 1:5>psa 2:7'], md_anchors? ['mrk 1:?>psa 2:7'] (1B lists,
+                          one row per pair), source_verses?, target_verses? (legacy scalars, pre-1B)
   pericopes.jsonl         id, book_id, verse_range        chunks.jsonl  id, pericope_id
   books.jsonl             id, name
 Text checks (R2, R9) read --embedding-queue (output/embedding_queue.jsonl), the K0

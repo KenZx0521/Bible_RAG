@@ -2,9 +2,11 @@
 
 Exit codes and ratchet direction run through main() against a baseline built
 from the shipped config/kg_quality_baseline/ with its values cleared, so the
-shipped severities/directions are what is being tested. The split baseline
-directory itself is read merged and written back part by part (its own
-section below). The live projection test is read-only and skips without Neo4j.
+shipped severities/directions are what is being tested, except where a
+record-mechanics test relabels H3 and R6 as record (H3_R6_AS_RECORD);
+test_shipped_h3_h9_and_r6_are_hard holds their shipped severities. The split
+baseline directory itself is read merged and written back part by part (its
+own section below). The live projection test is read-only and skips without Neo4j.
 
 Split from test_validate_kg.py, together with test_validate_kg_checks.py and
 test_validate_kg_shipped.py; shared pieces are in _validate_kg_helpers.py.
@@ -30,6 +32,7 @@ from _validate_kg_helpers import (
     edit_rows,
     fresh_baseline,
     measure,
+    pin_data_count_targets,
     read_rows,
     unsupported_edge,
     write_rows,
@@ -38,13 +41,19 @@ from _validate_kg_helpers import (
 # snap is a pytest fixture: importing it is what makes it available here.
 from _validate_kg_helpers import snap  # noqa: F401
 
+# The record-mechanics tests (regression exit 2, ratchet, tolerance, probe swap,
+# write-back) break H3 with unsupported edges and R6 with a probe swap. Both
+# are hard from 1A, so those tests score them as record checks, explicitly;
+# test_shipped_h3_h9_and_r6_are_hard holds the shipped severities.
+H3_R6_AS_RECORD = {"H3": "record", "R6": "record"}
+
 
 # ---------------------------------------------------------------------------
 # exit codes, ratchet, warnings
 # ---------------------------------------------------------------------------
 
 def test_exit_codes_pass_hard_fail_and_regression(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     code, _ = cli(snap, baseline, capsys, "--ratchet")
     assert code == 0
     code, report = cli(snap, baseline, capsys)
@@ -61,8 +70,60 @@ def test_exit_codes_pass_hard_fail_and_regression(snap, tmp_path, capsys):
     assert report["checks"]["H2"]["status"] == "fail"
 
 
-def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
+def _prior_father(head: str, tail: str) -> dict:
+    """A prior (phase 3) FATHER_OF with no source pericope: H3 exempts it, so of the
+    scored checks only R6 (and W's histogram, a warning) sees it."""
+    return {"head_id": head, "relation": "FATHER_OF", "tail_id": tail, "source_pericope_id": "",
+            "extraction_phase": 3, "notes": "", "source": "prior"}
+
+
+def test_record_metric_inside_a_hard_check_regresses_without_failing(snap, tmp_path, capsys):
+    # K3: R6 turns hard in 1A while its functionality rate stays a record ratchet
     baseline = fresh_baseline(tmp_path, snap)
+    doc = json.loads(baseline.read_text(encoding="utf-8"))
+    r6 = next(c for c in doc["checks"] if c["id"] == "R6")
+    r6["severity"] = "hard"
+    r6["metrics"]["functional_violation_rate"]["severity"] = "record"
+    baseline.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    assert cli(snap, baseline, capsys, "--ratchet")[0] == 0
+    assert _stored(baseline, "R6", "functional_violation_rate") == 0.0
+
+    append_row(snap / "relations.jsonl", _prior_father("person:nahe", "person:yisa"))
+    code, report = cli(snap, baseline, capsys)  # 以撒 has 2 fathers: rate 0.25, over the 0.05 target
+    rate = report["checks"]["R6"]["metrics"]["functional_violation_rate"]
+    assert (code, report["regressions"], report["failures"]) == (2, ["R6"], [])
+    assert rate["status"] == "regressed" and rate["severity"] == "record"
+    vk.print_report(report)
+    assert "functional_violation_rate=0.25 (vs 0) [regressed]" in capsys.readouterr().out  # its baseline, not 0.05
+
+    append_row(snap / "relations.jsonl", _prior_father("person:maliya", "person:make"))
+    code, report = cli(snap, baseline, capsys)  # a female head: a hard metric of the same check
+    r6 = report["checks"]["R6"]
+    assert (code, report["hard_failures"], r6["status"]) == (1, ["R6"], "fail")
+    assert r6["metrics"]["female_head"]["status"] == "fail"
+    assert r6["metrics"]["functional_violation_rate"]["status"] == "regressed"
+
+
+@pytest.mark.parametrize("check_id,row,name", [
+    ("H3", unsupported_edge(), "unsupported"),
+    # 雅各 VISITED 馬可: a Person where the schema's range is Place; a prior, so H3 exempts it
+    ("H9", {**_prior_father("person:yage", "person:make"), "relation": "VISITED"}, "domain_range_violations"),
+    ("R6", _prior_father("person:maliya", "person:make"), "female_head"),
+    ("R6", _prior_father("person:yisa", "person:yabolahan"), "contradictions"),  # the fixture's reverse edge
+])
+def test_shipped_h3_h9_and_r6_are_hard(snap, tmp_path, capsys, check_id, row, name):
+    # batch-1 plan §2.1: one defect a record check would only call a regression
+    # (exit 2) fails the shipped 1A gate
+    baseline = fresh_baseline(tmp_path, snap)
+    assert cli(snap, baseline, capsys, "--ratchet")[0] == 0
+    append_row(snap / "relations.jsonl", row)
+    code, report = cli(snap, baseline, capsys)
+    assert (code, report["hard_failures"], report["regressions"]) == (1, [check_id], [])
+    assert report["checks"][check_id]["metrics"][name]["status"] == "fail"
+
+
+def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     append_row(snap / "relations.jsonl", unsupported_edge())
     append_row(snap / "relations.jsonl", unsupported_edge(head_id="person:bide"))
     cli(snap, baseline, capsys, "--ratchet")
@@ -82,8 +143,20 @@ def test_ratchet_only_moves_toward_improvement(snap, tmp_path, capsys):
     assert code == 2 and _stored(baseline, "H3", "unsupported") == 1  # regressed: never moves up
 
 
+def _r11_as_record_up(path: Path) -> None:
+    """Relabel R11 in the baseline file (or part) at `path` record/up, as it was
+    before 1B-C8f. R11 was the only shipped 'up' metric; hard and equal now, it
+    never ratchets, so the up-ratchet is exercised on this copy instead."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    r11 = next(c for c in doc["checks"] if c["id"] == "R11")
+    r11["severity"] = "record"
+    r11["metrics"]["tsk_votes_edges"]["direction"] = "up"
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def test_ratchet_raises_up_direction_metric(snap, tmp_path, capsys):
     baseline = fresh_baseline(tmp_path, snap)
+    _r11_as_record_up(baseline)
     cli(snap, baseline, capsys, "--ratchet")
     append_row(snap / "cross_references.jsonl", {"source_id": "exo:1:0", "target_id": "gen:22:0",
                                                  "source": "tsk", "votes": 3, "curated": False, "tsk": True})
@@ -92,7 +165,7 @@ def test_ratchet_raises_up_direction_metric(snap, tmp_path, capsys):
 
 
 def test_tolerance_absorbs_small_regressions(snap, tmp_path, capsys):
-    baseline = fresh_baseline(tmp_path, snap)
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     cli(snap, baseline, capsys, "--ratchet")
     doc = json.loads(baseline.read_text(encoding="utf-8"))
     next(c for c in doc["checks"] if c["id"] == "H3")["metrics"]["unsupported"]["tolerance"] = 1
@@ -130,9 +203,9 @@ def test_w_histogram_drift_warns_without_failing(snap, tmp_path, capsys):
 def test_probe_swap_with_unchanged_count_is_a_regression(snap, tmp_path, capsys):
     """A must-hold probe breaking while a known failure heals keeps the count:
     the per-id baseline still flags it (edges lost in a rebuild, review E-1)."""
-    baseline = fresh_baseline(tmp_path, snap)
+    baseline = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)
     lot = {"head_id": "person:luode", "relation": "FATHER_OF", "tail_id": "person:tala",
-           "source_pericope_id": "gen:11:2", "extraction_phase": 2}
+           "source_pericope_id": "gen:11:2", "extraction_phase": 2, "source": "rule"}
     append_row(snap / "relations.jsonl", lot)
     cli(snap, baseline, capsys, "--ratchet")
     assert _stored(baseline, "PROBES", "failing") == ["kin-lot-not-father-of-terah"]
@@ -157,6 +230,43 @@ def test_baseline_count_must_equal_its_id_set(tmp_path):
     (tmp_path / "baseline.json").write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
     with pytest.raises(ValueError, match="PROBES.failures"):
         vk.load_baseline(tmp_path / "baseline.json")
+
+
+@pytest.mark.parametrize("severity,loads", [("hard", True), ("record", True), ("warn", False),
+                                            ("soft", False), (None, False)])
+def test_metric_severity_must_be_hard_or_record(tmp_path, severity, loads):
+    doc = vk.load_baseline(SHIPPED_BASELINE)
+    next(c for c in doc["checks"] if c["id"] == "R6")["metrics"]["female_head"]["severity"] = severity
+    path = tmp_path / "baseline.json"
+    path.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    if loads:
+        assert vk.load_baseline(path) == doc
+    else:
+        with pytest.raises(ValueError, match="R6.female_head"):
+            vk.load_baseline(path)
+
+
+@pytest.mark.parametrize("check_id,name,severity,loads", [
+    ("H7", "embedding_queue_sha256", "hard", True),
+    # record compares with the stored value, which a target_from metric never has: any sha would pass
+    ("H7", "embedding_queue_sha256", "record", False),
+    ("R6", "female_head", "hard", True),
+    # its target is null: a hard metric with no target could never fail
+    ("R6", "children_with_gt2_parents", "hard", False),
+    # W is warn (report only, tolerance_pct): a metric severity there would do nothing
+    ("W", "histogram", "hard", False),
+    ("W", "histogram", "record", False),
+], ids=["sha_hard", "sha_record", "hard_with_target", "hard_without_target", "warn_hard", "warn_record"])
+def test_metric_severity_must_leave_the_metric_a_bound(tmp_path, check_id, name, severity, loads):
+    doc = vk.load_baseline(SHIPPED_BASELINE)
+    next(c for c in doc["checks"] if c["id"] == check_id)["metrics"][name]["severity"] = severity
+    path = tmp_path / "baseline.json"
+    path.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    if loads:
+        assert vk.load_baseline(path) == doc
+    else:
+        with pytest.raises(ValueError, match=f"{check_id}.{name}"):
+            vk.load_baseline(path)
 
 
 def test_record_check_error_fails_the_gate(snap, tmp_path, capsys, monkeypatch):
@@ -255,15 +365,20 @@ def test_unusable_live_target_exits_1_with_a_message(monkeypatch, capsys, uri, m
 # the split baseline directory: read merged, written back part by part
 # ---------------------------------------------------------------------------
 
-def split_baseline(tmp_path: Path, snap: Path) -> Path:
-    """fresh_baseline's cleared values, kept in the shipped split layout."""
+def split_baseline(tmp_path: Path, snap: Path, severities: dict[str, str] | None = None) -> Path:
+    """fresh_baseline's cleared values, severity overrides and pinned targets,
+    kept in the shipped split layout."""
     dest = tmp_path / "baseline"
     shutil.copytree(SHIPPED_BASELINE, dest)
     for part in dest.glob("*.json"):
         doc = json.loads(part.read_text(encoding="utf-8"))
-        for check in doc.get("checks", []):
+        if "checks" not in doc:
+            continue  # index.json
+        for check in doc["checks"]:
+            check["severity"] = (severities or {}).get(check["id"], check["severity"])
             for metric in check["metrics"].values():
                 metric["value"] = None
+        doc["checks"] = pin_data_count_targets(doc["checks"], snap)
         part.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     write_step0_sha(tmp_path / "step0_sha.json", _sha(snap / "embedding_queue.jsonl"))
     return dest
@@ -277,19 +392,20 @@ def _rewritten_by(baseline: Path, run) -> set[str]:
 
 
 def test_ratchet_and_accept_write_each_check_back_to_its_part(snap, tmp_path, capsys):
-    baseline = split_baseline(tmp_path, snap)
+    baseline = split_baseline(tmp_path, snap, H3_R6_AS_RECORD)
 
     def run(*extra: str):
         return lambda: cli(snap, baseline, capsys, *extra)
 
     append_row(snap / "relations.jsonl", unsupported_edge())
     assert _rewritten_by(baseline, run("--ratchet")) == {"h.json", "r.json", "misc.json"}  # nulls filled
-    single = fresh_baseline(tmp_path, snap)  # the same run on one file stores the same checks
+    single = fresh_baseline(tmp_path, snap, H3_R6_AS_RECORD)  # the same run on one file stores the same checks
     assert cli(snap, single, capsys, "--ratchet")[0] == 0
     assert vk.load_baseline(baseline)["checks"] == vk.load_baseline(single)["checks"]
 
     write_rows(snap / "relations.jsonl", read_rows(snap / "relations.jsonl")[:-1])  # H3 heals
     assert _rewritten_by(baseline, run("--ratchet")) == {"h.json"}
+    _r11_as_record_up(baseline / "r.json")  # an up metric to ratchet, as in test_ratchet_raises_up_direction_metric
     append_row(snap / "cross_references.jsonl", {"source_id": "exo:1:0", "target_id": "gen:22:0",
                                                  "source": "tsk", "votes": 3, "curated": False, "tsk": True})
     assert _rewritten_by(baseline, run("--ratchet")) == {"r.json"}  # R11 rises

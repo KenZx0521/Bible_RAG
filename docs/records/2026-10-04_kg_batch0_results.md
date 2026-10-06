@@ -16,7 +16,7 @@
   - Step 7 描述：從快取重放 7,946 條，stale 0、missing 0；
   - `--ner-only`：已加防護，必須帶 `--force`。
 - **新發現並已修正：NER 不是決定性的。** 計畫原本以為可重現，實際上換個 hash seed 輸出就不同。已在 7526e12 修正。
-- **新發現：live 的 NER 半邊早於 2026-05-15 的字典修改。** 重抽時「流珥」會併入葉忒羅。這屬於第 1C 批的預期差異，本批的等價重建因此沿用現行 entities.jsonl，沒有跑 merge。
+- **新發現：live 的 NER 半邊早於 2026-05-15 的字典修改。** 重抽時「流珥」會併入葉忒羅，本批的等價重建因此沿用現行 entities.jsonl，沒有跑 merge。**（2026-10-06 更正）** 原文把這當成第 1C 批的預期差異，其實是 ID-2（同名不同人）的別名錯誤：經文 10 處「流珥」只有出 2:18、民 10:29 指葉忒羅，其餘 8 處是以掃的兒子（創 36、代上 1）與代上 9:8 的另一個人。Kay 的 C4 決定在 W2 之前撤回這個別名（[第 1 批計畫](2026-10-04_kg_batch1_plan.md) §8），由探針 kin-jethro-not-son-of-esau、kin-nahath-not-son-of-jethro 把關。
 
 ## R0 備份
 
@@ -41,7 +41,7 @@
    - 原因是 4c0a60e（2026-05-15）把「流珥」加為葉忒羅的別名，live 的 NER 從未用新字典重跑；
    - 其餘約 2.3 萬筆差異只是 mention_id 編號。
    
-   因此本批的 P1 沿用現行 entities.jsonl（跳過 Step 1 merge）。split→merge 的逐位元等價已由測試以真實檔案驗證。第 1C 批重跑 NER 時，這一組會成為預期差異。
+   因此本批的 P1 沿用現行 entities.jsonl（跳過 Step 1 merge）。split→merge 的逐位元等價已由測試以真實檔案驗證。原文接著說第 1C 批重跑 NER 時這一組會成為預期差異；**2026-10-06 更正**：這個別名是 ID-2 錯誤，W2 之前撤回（C4），見「結論」。
 
 > 注意：`output/ner_*.jsonl` 是由 860a51d 產生的，早於 7526e12 的決定性修正。第 1C 批前要用現行程式重跑 `--stage ner`。
 
@@ -77,7 +77,7 @@
 - person:bianyamin→person:lajie（gen:35:1）
 - person:dawei→person:yexi（1ch:29:2）
 
-每條邊各被兩個 phase 產生一次：一次來自先驗或規則，沒有出處段落；一次來自後續 phase，帶有出處。`apoc.merge.relationship` 只在第一次建立時寫入屬性，所以最先匯入的那一份留下。live 留的是沒出處的那份，staging 留的是有出處的那份。允許清單：`config/kg_diff_allow_batch0.yaml`。這個 onCreate-only 的語意，留到第 1A 批的 Step 6.05 一併處理。
+**成因（2026-10-06 更正）**：原文寫成「同一次匯入裡兩個 phase 各產生一次，最先匯入的勝出」，這不對。relations.jsonl 每個 (head, relation, tail) 只有一列（6,958 列，0 個重複鍵；第 1 批審查的 `2026-10-04_kg_fix/batch1/reviewer_1A/r1_flow.json` 的 dup_keys 同為 0），這 4 條都帶出處（3 條 phase 4、1 條 phase 2），staging 從它重建，所以拿到有出處的那份。prod 的這 4 條是更早一次匯入留下的 phase 5 反向物化邊（confidence 0.891、source_pericope_id 為空；2026-10-06 對 7687、7688 READ 確認）。舊版 6.1 的 `apoc.merge.relationship` 只在建立時寫屬性（onCreate-only，REL-10），之後的匯入碰到既有的邊不會刷新，舊屬性就一直留著。允許清單：`config/kg_diff_allow_batch0.yaml`（條目不變，只更正檔頭說明）。第 1A 批的處理：6.05 保證每鍵一列，6.1 改成在單一交易內整組 SET 邊屬性，新邊舊邊都一樣。
 
 ## 環境現況
 
@@ -91,6 +91,6 @@
 
 ## 第 1 批之前
 
-- 第 1C 批：用現行程式重跑 `--stage ner`，並把「流珥併入葉忒羅」列為預期差異。
-- 第 1A 批：處理 onCreate-only merge 造成的 phase 歸屬不決定性；同時讓 10.3 退場（Kay 的 D2 決策）。
+- 第 1C 批：用現行程式重跑 `--stage ner`。「流珥併入葉忒羅」**不是**預期差異（2026-10-06 更正）：這是 ID-2（同名不同人）的別名錯誤，Kay 的 C4 決定在 W2 之前撤回別名，由探針 kin-jethro-not-son-of-esau、kin-nahath-not-son-of-jethro 把關。
+- 第 1A 批：處理 onCreate-only 匯入殘留的舊邊屬性（REL-10，2026-10-06 更正成因）：6.05 每鍵一列、6.1 整組 SET；同時讓 10.3 退場（Kay 的 D2 決策）。
 - 計畫 §8 的工時推論可以下修：重灌鏈本身只要約 2 分鐘，主要成本在 NER（34 分鐘）與人工審查。

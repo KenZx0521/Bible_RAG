@@ -6,7 +6,8 @@ every verse must land in a pericope; XREF-2 per plan (D10 pending).
 Outputs supp_sim.json (per-definition rows) and prints the summary tables used in the plan."""
 import json, collections
 from common import *
-from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS as S
+from types import SimpleNamespace; from pathlib import Path  # archived evidence script: frozen a32fbea definitions, see docs/records/2026-10-04_kg_fix/README.md
+S = [SimpleNamespace(**d) for d in json.load(open(Path(BIBLE_RAG_ROOT)/'docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json', encoding='utf-8'))]
 
 vmap, peri = load_pericopes()
 tsk = load_tsk()

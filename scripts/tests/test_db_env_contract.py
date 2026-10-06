@@ -35,7 +35,7 @@ import import_qdrant
 import import_qdrant_hybrid
 import import_relations_neo4j
 import import_tsk_crossrefs
-from _db_env_helpers import _FakeQdrant, _Stop
+from _db_env_helpers import _FakeQdrant, _Stop, write_relations_clean
 from scripts.relation_extraction import extract_relations
 from scripts.relation_extraction.config import Neo4jConfig
 
@@ -201,8 +201,7 @@ def test_neo4j_settings_follow_env(script, staging_env, monkeypatch):
 
 
 def test_import_relations_neo4j_follows_env(staging_env, monkeypatch, tmp_path):
-    rel = tmp_path / "relations.jsonl"
-    rel.write_text('{"relation": "FATHER_OF"}\n', encoding="utf-8")
+    rel = write_relations_clean(tmp_path)   # passes the input contract, so main() connects
     store = {}
     monkeypatch.setattr(import_relations_neo4j.GraphDatabase, "driver", _capturing(store, stop=True))
     monkeypatch.setattr(sys, "argv", ["import_relations_neo4j.py", str(rel)])

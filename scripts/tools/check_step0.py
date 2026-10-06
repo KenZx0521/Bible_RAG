@@ -15,7 +15,7 @@ every rebuild anyway, and batch 1B changes the cross-reference rows in them on
 purpose. embedding_queue.jsonl is the hard invariant (it is the embedding
 input); the other four guard the PG structure tables.
 
-A batch that changes Step 0 on purpose (1B/2D touch pericopes.jsonl's
+A batch that changes Step 0 on purpose (2D touches pericopes.jsonl's
 cross_references field) re-records with --record; the baseline diff then shows
 up in the commit next to the code that caused it. If embedding_queue.jsonl
 changed, Step 2/2.1/4/4.1 must be re-run before the gate is re-recorded.

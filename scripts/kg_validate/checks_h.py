@@ -1,4 +1,6 @@
-"""H checks (plan §3.6): batch-0 hard gates H1, H2, H7 and the H3–H10 records.
+"""H checks (plan §3.6): H1–H11, H11 being batch 1A's relation provenance.
+Which are hard, and from which batch, is the baseline's call (severity,
+hard_from in config/kg_quality_baseline/h.json; listed in validate_kg.py).
 
 D1 (export_event_registry --check) is registered by scripts/validate_kg.py,
 which owns the subprocess it runs.
@@ -9,15 +11,24 @@ from __future__ import annotations
 import hashlib
 from collections import Counter
 from pathlib import Path
+from typing import Callable
 
 from check_identity import DIFF_KINDS, TYPE_LABELS, run as run_identity, type_of
+from relation_extraction.models import derive_source
 
-from .model import KG, PPG
+from .model import KG, PPG, XRef
 from .registry import CheckResult, Context, check
 
 ID_PREFIX_LABEL = {label.lower(): label for label in TYPE_LABELS}
-PRIOR_PHASE = 3      # ExtractionPhase.DOMAIN_PRIOR: source_pericope_id is empty or a verse ref
-INVERSE_PHASE = 5    # ExtractionPhase.INVERSE_DERIVED (also reused by 10.3 co-occurrence)
+# Sources whose rows carry no pericope of their own: a prior's source_pericope_id
+# is empty or a verse ref, a curated overlay has none.
+UNANCHORED_SOURCES = ("prior", "curated")
+
+
+def effective_source(r: dict) -> str | None:
+    """The relation row's source; a row written before the property existed
+    (every prod edge until W1) gets the one its phase implies."""
+    return r["source"] or derive_source(r["extraction_phase"], r["notes"], r["backfilled"])
 
 
 # ---------------------------------------------------------------------------
@@ -66,8 +77,16 @@ def check_h7(kg: KG, ctx: Context) -> CheckResult:
 
 
 # ---------------------------------------------------------------------------
-# Record checks: H3–H10
+# H3–H10: record checks until their batch (hard_from) hardens them
 # ---------------------------------------------------------------------------
+
+def _h3_exempt(r: dict) -> bool:
+    source = effective_source(r)
+    if source in UNANCHORED_SOURCES or r["curated"]:
+        return True
+    # inverse of a prior: priors carry no pericope, so neither does this
+    return source == "inverse" and not r["source_pericope_id"] and r["notes"].startswith("derived_from=")
+
 
 @check("H3", needs=("relations.jsonl", "mentions.jsonl", "chunks.jsonl"))
 def check_h3(kg: KG, ctx: Context) -> CheckResult:
@@ -75,12 +94,10 @@ def check_h3(kg: KG, ctx: Context) -> CheckResult:
     by_type: Counter = Counter()
     no_provenance, samples = 0, []
     for r in kg.relations:
-        if r["extraction_phase"] == PRIOR_PHASE or r["curated"]:
+        if _h3_exempt(r):
             continue
         pid = r["source_pericope_id"]
         if not pid:
-            if r["extraction_phase"] == INVERSE_PHASE and r["notes"].startswith("derived_from="):
-                continue  # inverse of a prior: priors carry no pericope, so neither does this
             no_provenance += 1
         elif (pid, r["head"]) in support and (pid, r["tail"]) in support:
             continue
@@ -130,12 +147,29 @@ def check_h6(kg: KG, ctx: Context) -> CheckResult:
                        [f"{m['source_id']}->{m['entity_id']}" for m in missing[:10]])
 
 
+def _flag_mismatch(x: XRef) -> bool:
+    # A set flag must agree with the evidence it summarises: curated with
+    # curated_sources (1B Step 5), tsk with votes (Step 9).
+    return ((x.curated is not None and bool(x.curated) != bool(x.curated_sources))
+            or (x.tsk is not None and bool(x.tsk) != (x.votes is not None)))
+
+
+H8_RULES = {
+    # Before 1B curated edges are recognised only by having no votes (backend coalesce(votes, 999)).
+    "no_provenance": lambda x: x.curated is None and x.votes is None,
+    # From 1B every edge carries both flags; prod before W1 carries neither.
+    "unflagged": lambda x: x.curated is None or x.tsk is None,
+    "flag_mismatch": _flag_mismatch,
+}
+
+
 @check("H8", needs=("cross_references.jsonl",))
 def check_h8(kg: KG, ctx: Context) -> CheckResult:
-    # Today curated edges are recognised only by having no votes (backend coalesce(votes, 999)).
-    bare = [x for x in kg.xrefs if x.curated is None and x.votes is None]
-    return CheckResult({"no_provenance": len(bare)}, {"by_source": dict(Counter(x.source for x in bare))},
-                       [f"{x.src}->{x.tgt}" for x in bare[:10]])
+    hits = {name: [x for x in kg.xrefs if rule(x)] for name, rule in H8_RULES.items()}
+    # Samples are sorted before the cap: live reads the edges in Neo4j's return order.
+    return CheckResult({name: len(xs) for name, xs in hits.items()},
+                       {"by_source": {name: dict(Counter(x.source for x in xs)) for name, xs in hits.items()}},
+                       [{name: sorted(f"{x.src}->{x.tgt}" for x in xs)[:10]} for name, xs in hits.items() if xs])
 
 
 @check("H9", needs=("relations.jsonl",))
@@ -161,3 +195,57 @@ def check_h10(kg: KG, ctx: Context) -> CheckResult:
                   for m in kg.mentions if kg.label(m["entity_id"]) == "Event")
     fingerprint = hashlib.sha256("\n".join(keys).encode("utf-8")).hexdigest()
     return CheckResult({"event_mentions": len(keys), "fingerprint": fingerprint})
+
+
+# ---------------------------------------------------------------------------
+# Hard check (batch 1A): H11
+# ---------------------------------------------------------------------------
+
+def _h11_row_tests(kg: KG, id_order: frozenset[str]) -> dict[str, Callable[[dict], bool]]:
+    """H11's per-edge metrics, in report order: name -> does this edge count.
+
+    6.05 stamps a source on every row and retires the R5 inverses, the R2
+    rule edges (anchored_rule replaces them) and the LLM's Event–Event edges;
+    10.3's co-occurrence edges are out of the default chain (opt-in
+    --legacy-cooccurrence, which runs after 6.05/6.1, so 6.05 never sees
+    them); an LLM row of an id-order relation (only its head/tail order gives
+    a direction) must carry direction_verified false.
+    """
+    return {
+        "source_null": lambda r: not r["source"],
+        "inverse_edges": lambda r: effective_source(r) == "inverse",
+        "cooccurrence_edges": lambda r: effective_source(r) == "cooccurrence" or r["backfilled"] is True,
+        "rule_edges": lambda r: effective_source(r) == "rule",
+        "llm_event_event_edges": lambda r: (effective_source(r) == "llm"
+                                            and kg.label(r["head"]) == kg.label(r["tail"]) == "Event"),
+        "unflagged_id_order_edges": lambda r: (r["type"] in id_order
+                                               and effective_source(r) not in UNANCHORED_SOURCES
+                                               and r["direction_verified"] is not False),
+    }
+
+
+def _undirected_duplicates(relations: list[dict], schema) -> dict[tuple[str, frozenset], int]:
+    """(relation, {head, tail}) -> rows beyond the first, for each pair of an
+    undirected relation stated more than once (either way round)."""
+    undirected = {e.name for e in schema.iter_entries() if e.direction == "undirected"}
+    pairs = Counter((r["type"], frozenset((r["head"], r["tail"]))) for r in relations if r["type"] in undirected)
+    return {key: n - 1 for key, n in pairs.items() if n > 1}
+
+
+@check("H11", needs=("relations.jsonl",))
+def check_h11(kg: KG, ctx: Context) -> CheckResult:
+    tests = _h11_row_tests(kg, ctx.schema.id_order_relations())
+    hits = {name: [r for r in kg.relations if counts(r)] for name, counts in tests.items()}
+    dups = _undirected_duplicates(kg.relations, ctx.schema)
+    metrics = {name: len(rows) for name, rows in hits.items()}
+    metrics["undirected_pair_duplicates"] = sum(dups.values())
+    by_type = {name: dict(Counter(r["type"] for r in rows).most_common()) for name, rows in hits.items() if rows}
+    dup_types: Counter = Counter()
+    for (relation, _), extra in dups.items():
+        dup_types[relation] += extra
+    if dup_types:
+        by_type["undirected_pair_duplicates"] = dict(dup_types.most_common())
+    samples = [f"{name}: {r['head']} -{r['type']}-> {r['tail']}" for name, rows in hits.items() for r in rows[:2]]
+    samples += [f"undirected_pair_duplicates: {' ~ '.join(sorted(pair))} {relation}"
+                for relation, pair in list(dups)[:2]]
+    return CheckResult(metrics, {"by_type": by_type}, samples)

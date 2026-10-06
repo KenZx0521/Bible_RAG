@@ -3,7 +3,14 @@
 Run as:
 
     python -m scripts.relation_extraction.extract_relations \\
-        [--limit-pericopes N] [--no-llm] [--resume]
+        [--limit-pericopes N] [--no-llm] [--inverse] [--resume]
+
+There is no R2 rule path (REL-01): every mined candidate goes to R4, and
+6.05's anchored slot rules stand in for R2's yaml keyword match.
+
+Phase R5 (inverse materialisation) runs only with --inverse (REL-02): 6.05
+drops inverse rows anyway, and the schema keeps an inverse only for the two
+gender-neutral pairs (ANCESTOR_OF/DESCENDANT_OF, TEACHER_OF/DISCIPLE_OF).
 """
 
 from __future__ import annotations
@@ -28,28 +35,27 @@ from .inverse_materializer import materialize_inverses
 from .models import ExtractedRelation, ExtractionPhase, RelationCandidate
 from .pair_miner import list_pericopes_with_entities, mine_pairs
 from .priors_loader import load_priors, resolve_priors
-from .rule_classifier import classify_by_rules
 from .schema_loader import RelationSchema
 
 logger = logging.getLogger("relation_extraction")
 
 
-def _parse_args() -> argparse.Namespace:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--limit-pericopes", type=int, default=None,
                         help="Process only the first N pericopes (debug aid).")
     parser.add_argument("--pericope-id", type=str, default=None,
                         help="Process only this single pericope id.")
     parser.add_argument("--no-llm", action="store_true",
-                        help="Skip Phase R4 LLM classification (rules + priors only).")
+                        help="Skip Phase R4 LLM classification (priors only).")
     parser.add_argument("--no-priors", action="store_true",
                         help="Skip Phase R3 priors loading.")
-    parser.add_argument("--no-inverse", action="store_true",
-                        help="Skip Phase R5 inverse materialization.")
+    parser.add_argument("--inverse", action="store_true",
+                        help="Run Phase R5 inverse materialization (off by default).")
     parser.add_argument("--resume", action="store_true",
                         help="Skip pairs already present in checkpoint file.")
     parser.add_argument("--verbose", action="store_true")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def _build_pg_connection():
@@ -102,6 +108,15 @@ def _dedup_triples(triples: list[ExtractedRelation]) -> list[ExtractedRelation]:
         if existing is None or t.confidence > existing.confidence:
             by_key[key] = t
     return list(by_key.values())
+
+
+def _finalize_triples(
+    all_triples: list[ExtractedRelation], schema: RelationSchema, inverse: bool,
+) -> list[ExtractedRelation]:
+    """The rows written to relations.jsonl: R5 inverses only when asked, then dedup."""
+    if inverse:
+        all_triples = all_triples + materialize_inverses(all_triples, schema)
+    return _dedup_triples(all_triples)
 
 
 def _select_pericopes(driver, args) -> list[str]:
@@ -171,19 +186,7 @@ def main() -> int:
         with _checkpoint_writer(pipeline_cfg.checkpoint_path, args.resume) as ckpt_fp:
             tracked = _stream_with_checkpoint(pair_iter, seen, ckpt_fp)
 
-            llm_pending: list[RelationCandidate] = []
-            rule_hits = 0
-            for cand in tracked:
-                rule_match = classify_by_rules(cand, schema)
-                if rule_match and rule_match.confidence >= pipeline_cfg.rule_confidence_floor:
-                    key = (rule_match.head_id, rule_match.tail_id, rule_match.relation)
-                    if key not in prior_keys:
-                        all_triples.append(rule_match)
-                        rule_hits += 1
-                    continue
-                llm_pending.append(cand)
-
-            logger.info("Phase R2: %d rule-hit triples", rule_hits)
+            llm_pending: list[RelationCandidate] = list(tracked)
 
             if llm_pending and not args.no_llm:
                 logger.info("Phase R4: %d candidates queued for LLM (model=%s)",
@@ -213,11 +216,7 @@ def main() -> int:
                             len(llm_pending))
                 unclassified_pairs.extend(llm_pending)
 
-        if not args.no_inverse:
-            inverses = materialize_inverses(all_triples, schema)
-            all_triples.extend(inverses)
-
-        all_triples = _dedup_triples(all_triples)
+        all_triples = _finalize_triples(all_triples, schema, args.inverse)
         out_count = _persist_results(all_triples, pipeline_cfg.output_path)
         logger.info("Wrote %d triples to %s", out_count, pipeline_cfg.output_path)
 

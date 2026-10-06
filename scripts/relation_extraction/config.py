@@ -87,7 +87,6 @@ class REPipelineConfig:
     grounding_window: int = 1
     min_pair_freq: int = 1
     max_pairs_per_pericope: int = 80
-    rule_confidence_floor: float = 0.85
     skip_self_loops: bool = True
 
     @classmethod
@@ -122,7 +121,6 @@ class REPipelineConfig:
             grounding_window=int(os.getenv("RE_GROUNDING_WINDOW", "1")),
             min_pair_freq=int(os.getenv("RE_MIN_PAIR_FREQ", "1")),
             max_pairs_per_pericope=int(os.getenv("RE_MAX_PAIRS_PER_PERICOPE", "80")),
-            rule_confidence_floor=float(os.getenv("RE_RULE_CONFIDENCE_FLOOR", "0.85")),
             skip_self_loops=os.getenv("RE_SKIP_SELF_LOOPS", "true").lower() in {"1", "true", "yes"},
         )
 

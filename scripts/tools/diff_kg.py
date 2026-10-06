@@ -7,28 +7,41 @@ difference listed and explained. validate_kg scores one graph against its
 baseline and check_identity compares the three stores of one target; neither
 compares two graphs. This does, on Neo4j (the store retrieval reads):
 
-  labels         node count per label
-  relationships  edge count per relationship type
-  ee_edges       Entity–Entity edges per "TYPE phase=P source=S"
-  mentions       MENTIONS edges per "SourceLabel source=S"
-  xrefs          CROSS_REFERENCES per "source=S"
-  entity_ids     entity_id present on one side only
-  descriptions   Entity.description, verbatim (missing == empty)
-  aliases        Entity.aliases as sets (missing == []); a non-list (JSON string) only equals itself
-  registry       export_event_registry.build_registry() run against each side's
-                 read-only driver: one key per event that differs, plus "dropped:<id>"
-                 for the dropped list
+  labels           node count per label
+  relationships    edge count per relationship type
+  ee_edges         Entity–Entity edges per "TYPE phase=P source=S"
+  mentions         MENTIONS edges per "SourceLabel source=S"
+  xrefs            CROSS_REFERENCES per "source=S"
+  xref_provenance  CROSS_REFERENCES per "source=S curated=C tsk=T": the flags Steps 5
+                   and 9 write, keyed as xref_probe expect files' xref_provenance
+  entity_ids       entity_id present on one side only
+  descriptions     Entity.description, verbatim (missing == empty)
+  aliases          Entity.aliases as sets (missing == []); a non-list (JSON string)
+                   only equals itself
+  mention_count    Entity.mention_count per entity_id on both sides (missing == null,
+                   which never equals a number); a delta only between two numbers
+  registry         export_event_registry.build_registry() run against each side's
+                   read-only driver: one key per event that differs, plus "dropped:<id>"
+                   for the dropped list
 Unset properties print as "-" in keys.
 
 Allowed differences come from a YAML file (--allow). Every difference not
 matched by an entry exits 1; entries that matched nothing are listed so a
-stale allowance gets noticed. Entry fields: section, key (fnmatch glob over
+stale allowance gets noticed, and with --fail-on-unused they exit 1 as well (a
+difference uses only the first entry it matches, so an entry shadowed by an
+earlier one counts as unused). Entry fields: section, key (fnmatch glob over
 the keys above), reason (both non-empty strings, required), and for the count
-sections at most one bound: delta (exact b - a, an integer) or max_abs_delta
-(a non-negative integer). Validation is strict: an unknown field (a misspelt
-bound such as max_delta) or a mistyped value is an error, never ignored,
-because an ignored bound would make the entry allow any delta. The file
-holds version: 1 and allow, nothing else:
+sections and mention_count at most one bound: delta (exact b - a, an integer)
+or max_abs_delta (a non-negative integer). Validation is strict: an unknown
+field (a misspelt bound such as max_delta) or a mistyped value is an error,
+never ignored, because an ignored bound would make the entry allow any delta.
+Two entries with the same section and key (the same glob string, whatever
+their bounds) are an error too: a verbatim repeat must fail when the file is
+loaded or merged, not as an unused entry at R2; give different deltas
+different exact keys. So is a repeated mapping key (plain YAML keeps the last
+value: an entry's second delta would win silently). Overlapping globs that are
+different strings (event:* next to event:x) are not detected and still need a
+manual check. The file holds version: 1 and allow, nothing else:
 
     version: 1
     allow:
@@ -36,6 +49,23 @@ holds version: 1 and allow, nothing else:
         key: "OCCURRED_IN phase=5 *"
         delta: -12
         reason: 10.3 co-occurrence edges are rebuilt from cleaned MENTIONS (EV-03)
+
+A wave's one merged allowlist is built from the streams' fragments with
+--merge-out, never with cat: each fragment is a whole document, so a cat
+repeats version and allow, and plain YAML would keep only the last
+fragment's list (here that is a load error). --merge-out loads each --allow
+fragment, joins their allow lists in the order given under one version: 1,
+refuses a section and key repeated across fragments, checks that the entry
+count is the fragments' sum, writes the file with each fragment's name,
+sha256 and count as comments (not its path, so the bytes do not depend on
+how a path is spelt) and prints the file's sha256. It reads no target, and
+the diff's own flags (--fail-on-unused, --json, --no-registry, --samples) are
+a usage error with it: a merge's exit 0 must not read as a passed diff. With
+--sha-out it also writes that sha256 as a sha256sum line ("<sha256>  <the
+--merge-out path as given>"), so `sha256sum -c` run where the merge ran checks
+it. W1 commits that file with the expected files before the rebuild; the
+merged file itself waits for the ratchet after R4 (plan §3), and
+check_w1_registration compares the two before Step 3.
 
 Targets resolve through check_identity.resolve_target, whose guards apply:
 --a prod is refused in a shell that exports staging settings, so run this
@@ -46,18 +76,29 @@ builder's auto-commit runs).
 Usage (from the project root):
     scripts/.venv/bin/python scripts/tools/diff_kg.py                       # prod vs staging
     scripts/.venv/bin/python scripts/tools/diff_kg.py --allow <allow.yaml> --json
+    scripts/.venv/bin/python scripts/tools/diff_kg.py --a prod --b staging --allow <allow.yaml> --fail-on-unused --json
+    scripts/.venv/bin/python scripts/tools/diff_kg.py --merge-out <merged.yaml> --allow <fragment1.yaml> --allow <fragment2.yaml>
+    scripts/.venv/bin/python scripts/tools/diff_kg.py --merge-out <merged.yaml> --sha-out <merged.sha256> --allow ...
 
-Exit code: 0 every difference is allowed; 1 a difference is not allowed, or
-a target / the registry could not be read.
+Exit code: 0 every difference is allowed (and, under --fail-on-unused, every
+allow entry matched one); 1 a difference is not allowed, an allow entry matched
+nothing under --fail-on-unused, a target / the registry could not be read, or
+the --allow file is unreadable or invalid (including a repeated section/key;
+checked before any target is read). --merge-out: 0 written; 1 a fragment is
+unreadable or invalid or two fragments repeat a section and key (nothing
+written, --sha-out included). Either way 2 is a usage error.
 """
 
 from __future__ import annotations
 
 import argparse
 import fnmatch
+import hashlib
 import json
+import re
 import sys
 from collections import Counter
+from collections.abc import Hashable
 from pathlib import Path
 
 _SCRIPTS = Path(__file__).resolve().parents[1]
@@ -79,9 +120,13 @@ PROFILE_QUERIES = {
     "xrefs": """
         MATCH (:Pericope)-[x:CROSS_REFERENCES]->(:Pericope)
         RETURN x.source AS source, count(*) AS n""",
+    "xref_provenance": """
+        MATCH (:Pericope)-[x:CROSS_REFERENCES]->(:Pericope)
+        RETURN x.source AS source, x.curated AS curated, x.tsk AS tsk, count(*) AS n""",
     "entities": """
         MATCH (e:Entity)
-        RETURN e.entity_id AS entity_id, e.description AS description, e.aliases AS aliases""",
+        RETURN e.entity_id AS entity_id, e.description AS description, e.aliases AS aliases,
+               e.mention_count AS mention_count""",
 }
 
 
@@ -95,9 +140,11 @@ _COUNT_KEYS = {
     "ee_edges": lambda r: f"{r['type']} phase={_v(r['phase'])} source={_v(r['source'])}",
     "mentions": lambda r: f"{r['source_label']} source={_v(r['source'])}",
     "xrefs": lambda r: f"source={_v(r['source'])}",
+    "xref_provenance": lambda r: f"source={_v(r['source'])} curated={_v(r['curated'])} tsk={_v(r['tsk'])}",
 }
 COUNT_SECTIONS = tuple(_COUNT_KEYS)
-SECTIONS = COUNT_SECTIONS + ("entity_ids", "descriptions", "aliases", "registry")
+NUMERIC_SECTIONS = COUNT_SECTIONS + ("mention_count",)  # allow entries may bound their delta
+SECTIONS = COUNT_SECTIONS + ("entity_ids", "descriptions", "aliases", "mention_count", "registry")
 
 
 def read_profile(driver) -> dict:
@@ -136,6 +183,8 @@ def diff_entities(a: dict[str, dict], b: dict[str, dict]) -> list[dict]:
             out.append(_diff("descriptions", eid, x["description"], y["description"]))
         if _alias_key(x["aliases"]) != _alias_key(y["aliases"]):
             out.append(_diff("aliases", eid, x["aliases"], y["aliases"]))
+        if x.get("mention_count") != y.get("mention_count"):
+            out.append(_diff("mention_count", eid, x.get("mention_count"), y.get("mention_count")))
     return out
 
 
@@ -219,8 +268,8 @@ def _entry_problem(entry) -> str | None:
         if not isinstance(entry.get(name), str) or not entry[name].strip():
             return f"needs {name} as a non-empty string"
     bounds = [name for name in ("delta", "max_abs_delta") if name in entry]
-    if bounds and entry["section"] not in COUNT_SECTIONS:
-        return f"delta/max_abs_delta only apply to {', '.join(COUNT_SECTIONS)}"
+    if bounds and entry["section"] not in NUMERIC_SECTIONS:
+        return f"delta/max_abs_delta only apply to {', '.join(NUMERIC_SECTIONS)}"
     if len(bounds) > 1:
         return "takes delta or max_abs_delta, not both"
     if "delta" in entry and not _is_int(entry["delta"]):
@@ -230,18 +279,99 @@ def _entry_problem(entry) -> str | None:
     return None
 
 
-def load_allowlist(path) -> list[dict]:
+def _yaml_load(text: str, where):
+    """yaml.safe_load, except that a key repeated in one mapping is an error: plain YAML keeps
+    the last value, so a cat of two whole fragments would load as the last one alone."""
     import yaml
-    doc = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+
+    class UniqueKeyLoader(yaml.SafeLoader):
+        def construct_mapping(self, node, deep=False):
+            seen = set()
+            for key_node, _ in node.value:
+                key = self.construct_object(key_node, deep=deep)
+                if not isinstance(key, Hashable):
+                    continue                                    # super() reports an unhashable key
+                if key in seen:
+                    raise yaml.constructor.ConstructorError(
+                        None, None, f"repeats the mapping key {key!r} (a cat of whole fragments repeats "
+                        "version and allow: join them with --merge-out)", key_node.start_mark)
+                seen.add(key)
+            return super().construct_mapping(node, deep=deep)
+
+    try:
+        return yaml.load(text, Loader=UniqueKeyLoader)  # noqa: S506  (a SafeLoader subclass)
+    except yaml.YAMLError as e:
+        raise ValueError(f"{where}: {e}") from e
+
+
+def parse_allowlist(text: str, where) -> list[dict]:
+    """The validated entries of allowlist YAML `text` (rules in the module docstring); `where` names it."""
+    doc = _yaml_load(text, where)
     if (not isinstance(doc, dict) or set(doc) - {"version", "allow"} or doc.get("version") != 1
             or not isinstance(doc.get("allow", []), (list, type(None)))):  # `allow:` alone is empty
-        raise ValueError(f"{path}: expected a mapping of version: 1 and an allow list, and nothing else")
+        raise ValueError(f"{where}: expected a mapping of version: 1 and an allow list, and nothing else")
     entries = doc.get("allow") or []
+    first_at: dict[tuple[str, str], int] = {}
     for i, entry in enumerate(entries):
         problem = _entry_problem(entry)
         if problem:
-            raise ValueError(f"{path}: allow[{i}] {problem}")
+            raise ValueError(f"{where}: allow[{i}] {problem}")
+        first = first_at.setdefault((entry["section"], entry["key"]), i)
+        if first != i:
+            raise ValueError(f"{where}: allow[{i}] repeats section {entry['section']} key {entry['key']!r} "
+                             f"of allow[{first}]; a difference counts only toward the first entry it matches, "
+                             "so merge fragments without overlap")
     return entries
+
+
+def load_allowlist(path) -> list[dict]:
+    return parse_allowlist(Path(path).read_text(encoding="utf-8"), path)
+
+
+# printable to JSON but not read back verbatim from a YAML double-quoted scalar
+_YAML_UNSAFE = re.compile(r"[\x7f-\x9f\u2028\u2029\ufeff]")
+
+
+def _yaml_str(text: str) -> str:
+    """`text` as a YAML double-quoted scalar: JSON's escapes are YAML's, plus \\u escapes for _YAML_UNSAFE."""
+    return _YAML_UNSAFE.sub(lambda m: f"\\u{ord(m.group()):04x}", json.dumps(text, ensure_ascii=False))
+
+
+def render_allowlist(entries: list[dict], header) -> str:
+    """Allowlist YAML for `entries` under `# header` lines: fields in the order section, key, bound,
+    reason; strings double-quoted, bounds plain integers. Raises unless it loads back as `entries`."""
+    lines = [f"# {line}" for line in header] + ["version: 1", "allow:"]  # `allow:` alone loads as empty
+    for e in entries:
+        lines += [f"  - section: {e['section']}", f"    key: {_yaml_str(e['key'])}"]
+        lines += [f"    {name}: {e[name]}" for name in ("delta", "max_abs_delta") if name in e]
+        lines.append(f"    reason: {_yaml_str(e['reason'])}")
+    text = "\n".join(lines) + "\n"
+    if parse_allowlist(text, "rendered allowlist") != entries:
+        raise ValueError("rendered allowlist does not load back as the entries it was rendered from")
+    return text
+
+
+MERGE_HEADER = ("allowlist merged by diff_kg.py --merge-out from these fragments, in order; "
+                "regenerate it, never edit it:")
+
+
+def merge_allowlists(paths) -> tuple[str, list[int]]:
+    """(allowlist YAML, entries per fragment): the fragments' allow lists joined in order under one
+    version: 1. A (section, key) repeated across fragments is an error naming both."""
+    entries, counts, header = [], [], [MERGE_HEADER]
+    first_at: dict[tuple[str, str], str] = {}
+    for path in map(Path, paths):
+        part = load_allowlist(path)
+        for i, entry in enumerate(part):
+            here, key = f"{path.name} allow[{i}]", (entry["section"], entry["key"])
+            if key in first_at:
+                raise ValueError(f"{here} repeats section {key[0]} key {key[1]!r} of {first_at[key]}; a difference "
+                                 "counts only toward the first entry it matches, so fragments must not overlap")
+            first_at[key] = here
+        entries += part
+        counts.append(len(part))
+        header.append(f"{path.name}: sha256 {hashlib.sha256(path.read_bytes()).hexdigest()}, {len(part)} entries")
+    return render_allowlist(entries, header), counts
 
 
 def _matches(entry: dict, diff: dict) -> bool:
@@ -278,7 +408,7 @@ def print_report(report: dict, samples: int) -> None:
         if not diffs:
             continue
         bad = sum(d["allowed_by"] is None for d in diffs)
-        print(f"  {section:<14} {len(diffs)} differences ({bad} not allowed)")
+        print(f"  {section:<15} {len(diffs)} differences ({bad} not allowed)")
         # unallowed first: they are what the operator has to explain
         for d in sorted(diffs, key=lambda d: d["allowed_by"] is not None)[:samples]:
             change = f"{d['a']} -> {d['b']} ({d['delta']:+d})" if d["delta"] is not None \
@@ -291,24 +421,90 @@ def print_report(report: dict, samples: int) -> None:
         print(f"  unused allowance: {entry['section']} {entry['key']} ({entry['reason']})")
     for error in report["errors"]:
         print(f"  ERROR {error}")
+    print(f"exit {report['exit_code']}: {_exit_reason(report)}")
+
+
+def _exit_reason(report: dict) -> str:
+    strict = report["fail_on_unused"]
+    if report["exit_code"] == 0:
+        return "every difference is allowed" + (" and every allowance is used" if strict else "")
     unallowed = sum(d["allowed_by"] is None for d in report["differences"])
-    reason = "every difference is allowed" if report["exit_code"] == 0 else \
-        f"{unallowed} differences not allowed, {len(report['errors'])} errors"
-    print(f"exit {report['exit_code']}: {reason}")
+    reason = f"{unallowed} differences not allowed, {len(report['errors'])} errors"
+    return reason + (f", {len(report['unused_allowances'])} unused allowances" if strict else "")
 
 
-def main(argv: list[str] | None = None) -> int:
+def _merge(parser, args) -> int:
+    """--merge-out: the --allow fragments as one allowlist file; reads no target, writes nothing on an error."""
+    # --a / --b cannot be told from their defaults; the other diff flags would be ignored silently
+    diff_flags = [flag for flag, given in (("--fail-on-unused", args.fail_on_unused), ("--json", args.json),
+                                           ("--no-registry", args.no_registry),
+                                           ("--samples", args.samples != parser.get_default("samples"))) if given]
+    if diff_flags:
+        parser.error(f"--merge-out does not diff; drop {' '.join(diff_flags)}")
+    if not args.allow:
+        parser.error("--merge-out needs the fragments as --allow, one per fragment, in order")
+    out, sha_out = args.merge_out, args.sha_out
+    if any(out.resolve() == fragment.resolve() for fragment in args.allow):
+        parser.error(f"--merge-out would overwrite the fragment {out}")
+    if sha_out and any(sha_out.resolve() == path.resolve() for path in (out, *args.allow)):
+        parser.error(f"--sha-out would overwrite {sha_out}, the merged file or a fragment")
+    try:
+        text, counts = merge_allowlists(args.allow)
+        if len(parse_allowlist(text, out)) != sum(counts):
+            raise ValueError(f"{out}: merged entries differ from the fragments' sum {sum(counts)}")
+        line = f"{hashlib.sha256(text.encode('utf-8')).hexdigest()}  {out}"
+        out.write_text(text, encoding="utf-8")
+        if sha_out:
+            sha_out.write_text(line + "\n", encoding="utf-8")
+    except (OSError, ValueError) as e:
+        print(f"ERROR: --merge-out: {e}", file=sys.stderr)
+        return 1
+    for fragment, n in zip(args.allow, counts):
+        print(f"  {fragment}: {n} entries")
+    print(f"merged {sum(counts)} entries ({' + '.join(map(str, counts))}) into {out}")
+    print(line)
+    if sha_out:
+        print(f"wrote that line to {sha_out}")
+    return 0
+
+
+def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--a", choices=("prod", "staging"), default="prod", help="reference target (default prod)")
     parser.add_argument("--b", choices=("prod", "staging"), default="staging", help="compared target (default staging)")
-    parser.add_argument("--allow", type=Path, help="YAML list of allowed differences (format above)")
+    parser.add_argument("--allow", type=Path, action="append",
+                        help="YAML list of allowed differences (format above): one (merged) file for a diff, "
+                             "or one per fragment, in order, for --merge-out")
+    parser.add_argument("--merge-out", type=Path,
+                        help="write the --allow fragments merged into this allowlist and print its sha256 "
+                             "(see above); reads no target")
+    parser.add_argument("--sha-out", type=Path,
+                        help="with --merge-out: also write the merged file's sha256 here as one sha256sum line "
+                             "(W1 registers it before the rebuild)")
     parser.add_argument("--no-registry", action="store_true", help="skip the export_event_registry diff")
     parser.add_argument("--samples", type=int, default=10, help="differences printed per section")
     parser.add_argument("--json", action="store_true", help="print the full report as JSON")
+    parser.add_argument("--fail-on-unused", action="store_true",
+                        help="exit 1 when an allow entry matched no difference (without it they are only listed)")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _parser()
     args = parser.parse_args(argv)
+    if args.merge_out:
+        return _merge(parser, args)
+    if args.sha_out:
+        parser.error("--sha-out needs --merge-out")
     if args.a == args.b:
         parser.error("--a and --b must name different targets")
-    allow = load_allowlist(args.allow) if args.allow else []
+    if args.allow and len(args.allow) > 1:
+        parser.error("a diff takes one merged --allow file (one per wave); join fragments with --merge-out first")
+    try:
+        allow = load_allowlist(args.allow[0]) if args.allow else []
+    except (OSError, ValueError) as e:  # before any target is read, like _merge
+        print(f"ERROR: --allow: {e}", file=sys.stderr)
+        return 1
 
     drivers, names = {}, {}
     try:
@@ -326,8 +522,9 @@ def main(argv: list[str] | None = None) -> int:
             driver.close()
 
     classified, unused = classify(diffs, allow)
-    failed = errors or any(d["allowed_by"] is None for d in classified)
-    report = {"a": names["a"], "b": names["b"], "exit_code": 1 if failed else 0, "errors": errors,
+    failed = errors or any(d["allowed_by"] is None for d in classified) or (args.fail_on_unused and unused)
+    report = {"a": names["a"], "b": names["b"], "exit_code": 1 if failed else 0,
+              "fail_on_unused": args.fail_on_unused, "errors": errors,
               "differences": classified, "unused_allowances": unused}
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2, default=str))

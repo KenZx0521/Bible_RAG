@@ -65,7 +65,8 @@ for p in peri:
                 if q!=p['id']: pairs[(p['id'],q)].append(t)
 print('parse failures:',len(fails), fails[:10])
 import json as _j
-from bible_chunking.nt_cross_references import SUPPLEMENTARY_CROSS_REFS as S
+from types import SimpleNamespace; from pathlib import Path  # archived evidence script: frozen a32fbea definitions, see docs/records/2026-10-04_kg_fix/README.md
+S = [SimpleNamespace(**d) for d in json.load(open(Path(BIBLE_RAG_ROOT)/'docs/records/2026-10-04_kg_fix/xref/supp_defs_a32fbea.json', encoding='utf-8'))]
 def first(s): return int(s.split(',')[0].split('-')[0])
 cs=set()
 for r in S:

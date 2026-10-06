@@ -29,7 +29,7 @@ import import_qdrant_hybrid
 import import_relations_neo4j
 import import_tsk_crossrefs
 # staging_target is a pytest fixture: importing it is what makes it available here.
-from _db_env_helpers import _Stop, staging_target  # noqa: F401
+from _db_env_helpers import _Stop, staging_target, write_relations_clean  # noqa: F401
 
 # The staging_target fixture sets _db_env_helpers.STAGING_TARGET; these are the
 # production values each of its store settings must differ from.
@@ -78,12 +78,13 @@ WRITERS = {
         stubs=((import_tsk_crossrefs, "build_verse_map", lambda path: {}),)),
     "import_relations_neo4j": Writer(
         import_relations_neo4j, ("neo4j",), ((import_relations_neo4j.GraphDatabase, "driver"),),
-        argv=lambda tmp: [_file(tmp / "relations.jsonl", '{"relation": "FATHER_OF"}\n')]),
+        argv=lambda tmp: [str(write_relations_clean(tmp))]),
     "backfill_aliases": Writer(
         backfill_aliases, ("neo4j",), ((backfill_aliases, "get_driver"),)),
     "backfill_event_relations": Writer(
         backfill_event_relations, ("neo4j",), ((backfill_event_relations, "get_driver"),),
-        argv=lambda tmp: ["--input", _file(tmp / "relations_unclassified.jsonl")]),
+        argv=lambda tmp: ["--legacy-cooccurrence",   # without it main() exits 2 first
+                          "--input", _file(tmp / "relations_unclassified.jsonl")]),
     "backfill_verse_mentions": Writer(
         backfill_verse_mentions, ("neo4j",), ((backfill_verse_mentions, "get_driver"),),
         argv=_output_dir_with({"entity_mentions.jsonl": '{"source_type": "verse", '

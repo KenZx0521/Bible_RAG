@@ -1,0 +1,1028 @@
+{
+ "begot_mode": "gei",
+ "surface_mode": "declared",
+ "log": {
+  "input": 6958,
+  "input_kin": 1571,
+  "anchored_raw": 641,
+  "anchored_unique": 469,
+  "gate_drops_due_to_dan_filter": {
+   "NEAR": 1
+  },
+  "direction_unverified": {
+   "LOCATED_IN": 47,
+   "SUCCEEDED_BY": 1
+  },
+  "multi_source_keys": 7,
+  "output": 5836
+ },
+ "anchored_stats": {
+  "foreign_surface_skipped": 2366,
+  "P1_child_of": 518,
+  "P4_wife": 13,
+  "same_name_guard_abstain": 60,
+  "ambiguous_name": 156,
+  "P3_begot": 9,
+  "P2_is_child_of": 101
+ },
+ "drops": {
+  "1_rule_phase2": {
+   "SON_OF": 401,
+   "MEMBER_OF": 25,
+   "BUILT": 9,
+   "FATHER_OF": 140,
+   "ANCESTOR_OF": 7,
+   "SUCCEEDED_BY": 2,
+   "RULED": 65,
+   "SIBLING_OF": 16,
+   "SPOUSE_OF": 22,
+   "DAUGHTER_OF": 23,
+   "DESCENDANT_OF": 9,
+   "MOTHER_OF": 29,
+   "RETURNED_FROM": 13,
+   "LOCATED_IN": 4,
+   "BORN_IN": 1,
+   "EXILED_TO": 6
+  },
+  "2_inverse_phase5": {
+   "SON_OF": 221,
+   "TEACHER_OF": 13,
+   "DISCIPLE_OF": 7,
+   "FATHER_OF": 462,
+   "DESCENDANT_OF": 22,
+   "ANCESTOR_OF": 27
+  },
+  "3_llm_event_event": {
+   "PRECEDED_BY": 24,
+   "CAUSED": 14
+  },
+  "4_domain_range": {
+   "LEADER_OF": 7,
+   "MEMBER_OF": 1,
+   "SETTLED_IN": 4,
+   "ORIGINATED_FROM": 1
+  },
+  "5_provenance_gate": {
+   "NEAR": 1
+  },
+  "6_contradicts_prior_direction": {
+   "LOCATED_IN": 1
+  },
+  "7_kin_direction_conflict": {
+   "SON_OF": 1
+  },
+  "7b_undirected_duplicate": {
+   "ENEMY_OF": 1,
+   "ALLY_OF": 1,
+   "SPOUSE_OF": 4
+  }
+ },
+ "drops_total": {
+  "1_rule_phase2": 772,
+  "2_inverse_phase5": 752,
+  "3_llm_event_event": 38,
+  "4_domain_range": 13,
+  "5_provenance_gate": 1,
+  "6_contradicts_prior_direction": 1,
+  "7_kin_direction_conflict": 1,
+  "7b_undirected_duplicate": 6
+ },
+ "kin_drops": {
+  "1_rule_phase2": 647,
+  "2_inverse_phase5": 732,
+  "7_kin_direction_conflict": 1,
+  "7b_undirected_duplicate": 4
+ },
+ "final_by_source": {
+  "prior": 64,
+  "llm": 5313,
+  "anchored_rule": 459
+ },
+ "final_kin_total": 649,
+ "final_kin_by_rel": {
+  "FATHER_OF": 52,
+  "MOTHER_OF": 15,
+  "DESCENDANT_OF": 18,
+  "SON_OF": 473,
+  "DAUGHTER_OF": 14,
+  "ANCESTOR_OF": 15,
+  "SPOUSE_OF": 30,
+  "SIBLING_OF": 32
+ },
+ "final_kin_by_source": {
+  "prior": 30,
+  "llm": 160,
+  "anchored_rule": 459
+ },
+ "final_by_rel": {
+  "ALLY_OF": 63,
+  "ANCESTOR_OF": 15,
+  "BORN_IN": 10,
+  "BUILT": 7,
+  "DAUGHTER_OF": 14,
+  "DESCENDANT_OF": 18,
+  "DESTROYED": 38,
+  "DIED_IN": 20,
+  "DISCIPLE_OF": 14,
+  "ENEMY_OF": 32,
+  "EXILED_TO": 14,
+  "FATHER_OF": 52,
+  "FOUNDED": 1,
+  "GAVE": 76,
+  "INITIATED": 403,
+  "LEADER_OF": 63,
+  "LOCATED_IN": 50,
+  "MEMBER_OF": 331,
+  "MOTHER_OF": 15,
+  "NEAR": 28,
+  "OCCURRED_IN": 919,
+  "ORIGINATED_FROM": 50,
+  "PARTICIPATED_IN": 1521,
+  "POSSESSED": 551,
+  "RECEIVED": 171,
+  "RETURNED_FROM": 28,
+  "RULED": 79,
+  "SETTLED_IN": 219,
+  "SIBLING_OF": 32,
+  "SON_OF": 473,
+  "SPOUSE_OF": 30,
+  "SUCCEEDED_BY": 5,
+  "TEACHER_OF": 8,
+  "VICTIM_OF": 233,
+  "VISITED": 253
+ },
+ "r6_relations_jsonl_before": {
+  "FATHER_OF": 647,
+  "contradictions": 25,
+  "female_head": 42,
+  "children": 252,
+  "children_2plus_fathers": 135,
+  "functional_violation_rate": 0.5357
+ },
+ "r6_live_before": {
+  "FATHER_OF": 647,
+  "contradictions": 25,
+  "female_head": 42,
+  "children": 252,
+  "children_2plus_fathers": 135,
+  "functional_violation_rate": 0.5357
+ },
+ "r6_after": {
+  "FATHER_OF": 52,
+  "contradictions": 0,
+  "female_head": 0,
+  "children": 49,
+  "children_2plus_fathers": 3,
+  "functional_violation_rate": 0.0612,
+  "contra_samples": [],
+  "female_samples": []
+ },
+ "kin_conflicts": [
+  [
+   "person:bilijia",
+   "SON_OF",
+   "person:mishulan",
+   "anchored_rule",
+   "llm"
+  ]
+ ],
+ "kin_conflicts_n": 1,
+ "probes": {
+  "edge-no-dan-orphan-nehemiah-wall": true,
+  "kin-terah-father-of-abraham": true,
+  "kin-abraham-father-of-isaac": true,
+  "kin-jacob-father-of-joseph": true,
+  "kin-lot-not-father-of-terah": true,
+  "kin-isaac-not-father-of-abraham": true,
+  "kin-leah-not-father-of-reuben": true,
+  "kin-leah-not-father-of-isaac": true
+ },
+ "same_type_directed_head_lt_tail": {
+  "FATHER_OF": [
+   52,
+   0.808
+  ],
+  "MOTHER_OF": [
+   15,
+   0.933
+  ],
+  "SUCCEEDED_BY": [
+   5,
+   0.8
+  ],
+  "DISCIPLE_OF": [
+   14,
+   0.929
+  ],
+  "TEACHER_OF": [
+   8,
+   1.0
+  ],
+  "LOCATED_IN": [
+   50,
+   0.98
+  ],
+  "DESCENDANT_OF": [
+   18,
+   1.0
+  ],
+  "SON_OF": [
+   473,
+   0.507
+  ],
+  "DAUGHTER_OF": [
+   14,
+   0.857
+  ],
+  "ANCESTOR_OF": [
+   15,
+   1.0
+  ]
+ },
+ "guard_conflicts_n": 60,
+ "disagree_conflicts": [],
+ "anchored_key_sha": "fbe95cfb5b84ea276acdc801dad5120f341661f2385edcb00ca741bebf3e21c6",
+ "guard_conflicts": [
+  {
+   "head_id": "person:yabolahan",
+   "relation": "FATHER_OF",
+   "tail_id": "person:yishimali",
+   "source_pericope_id": "gen:16:0",
+   "verse": 16,
+   "other_parents": [
+    "person:xiajia"
+   ]
+  },
+  {
+   "head_id": "person:yisa",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "gen:25:3",
+   "verse": 19,
+   "other_parents": [
+    "person:sala"
+   ]
+  },
+  {
+   "head_id": "person:wusi",
+   "relation": "SON_OF",
+   "tail_id": "person:dishan",
+   "source_pericope_id": "gen:36:1",
+   "verse": 28,
+   "other_parents": [
+    "person: nahe"
+   ]
+  },
+  {
+   "head_id": "person:xisilun",
+   "relation": "SON_OF",
+   "tail_id": "person:lvbian",
+   "source_pericope_id": "gen:46:0",
+   "verse": 9,
+   "other_parents": [
+    "person:faleisi"
+   ]
+  },
+  {
+   "head_id": "person:yabimilei",
+   "relation": "SON_OF",
+   "tail_id": "person:yelu‧bali",
+   "source_pericope_id": "jdg:9:0",
+   "verse": 1,
+   "other_parents": [
+    "person:jidian"
+   ]
+  },
+  {
+   "head_id": "person:yuenadan",
+   "relation": "SON_OF",
+   "tail_id": "person:yabiyata",
+   "source_pericope_id": "2sa:15:1",
+   "verse": 27,
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:yuenadan",
+   "relation": "SON_OF",
+   "tail_id": "person:yabiyata",
+   "source_pericope_id": "2sa:15:1",
+   "verse": 36,
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:yahaxie",
+   "relation": "SON_OF",
+   "tail_id": "person:yaha",
+   "source_pericope_id": "1ki:22:2",
+   "verse": 49,
+   "other_parents": [
+    "person:yuelanwang"
+   ]
+  },
+  {
+   "head_id": "person:yahaxie",
+   "relation": "SON_OF",
+   "tail_id": "person:yaha",
+   "source_pericope_id": "1ki:22:3",
+   "verse": 51,
+   "other_parents": [
+    "person:yuelanwang"
+   ]
+  },
+  {
+   "head_id": "person:yueashi",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehasi",
+   "source_pericope_id": "2ki:13:1",
+   "verse": 10,
+   "other_parents": [
+    "person:yahaxie"
+   ]
+  },
+  {
+   "head_id": "person:yueashi",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehasi",
+   "source_pericope_id": "2ki:13:3",
+   "verse": 25,
+   "other_parents": [
+    "person:yahaxie"
+   ]
+  },
+  {
+   "head_id": "person:yisa",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "1ch:1:1",
+   "verse": 28,
+   "other_parents": [
+    "person:sala"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "1ch:1:1",
+   "verse": 28,
+   "other_parents": [
+    "person:xiajia"
+   ]
+  },
+  {
+   "head_id": "person:yisao",
+   "relation": "SON_OF",
+   "tail_id": "person:yisa",
+   "source_pericope_id": "1ch:1:2",
+   "verse": 34,
+   "other_parents": [
+    "person:libaijia"
+   ]
+  },
+  {
+   "head_id": "person:wusi",
+   "relation": "SON_OF",
+   "tail_id": "person:dishan",
+   "source_pericope_id": "1ch:1:3",
+   "verse": 42,
+   "other_parents": [
+    "person: nahe"
+   ]
+  },
+  {
+   "head_id": "person:yifa",
+   "relation": "SON_OF",
+   "tail_id": "person:yadai",
+   "source_pericope_id": "1ch:2:4",
+   "verse": 47,
+   "other_parents": [
+    "person:jitula"
+   ]
+  },
+  {
+   "head_id": "person:yueshafa",
+   "relation": "SON_OF",
+   "tail_id": "person:yasa",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 10,
+   "other_parents": [
+    "person:asuba"
+   ]
+  },
+  {
+   "head_id": "person:yahaxie",
+   "relation": "SON_OF",
+   "tail_id": "person:yuelan",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 11,
+   "other_parents": [
+    "person:yuelanwang"
+   ]
+  },
+  {
+   "head_id": "person:xixijia",
+   "relation": "SON_OF",
+   "tail_id": "person:yahasi",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 13,
+   "other_parents": [
+    "person:yabiya"
+   ]
+  },
+  {
+   "head_id": "person:manaxi",
+   "relation": "SON_OF",
+   "tail_id": "person:xixijia",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 13,
+   "other_parents": [
+    "person:yuese"
+   ]
+  },
+  {
+   "head_id": "person:yuexiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yamen",
+   "source_pericope_id": "1ch:3:1",
+   "verse": 14,
+   "other_parents": [
+    "person:manaxi"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:suoluobabo",
+   "source_pericope_id": "1ch:3:2",
+   "verse": 19,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:saoluo",
+   "relation": "SON_OF",
+   "tail_id": "person:ximian",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 24,
+   "other_parents": [
+    "person:jishi"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:saoluo",
+   "source_pericope_id": "1ch:4:3",
+   "verse": 25,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:yueashi",
+   "relation": "SON_OF",
+   "tail_id": "person:bijie",
+   "source_pericope_id": "1ch:7:1",
+   "verse": 8,
+   "other_parents": [
+    "person:yahaxie"
+   ]
+  },
+  {
+   "head_id": "person:bianyamin",
+   "relation": "SON_OF",
+   "tail_id": "person:bileihan",
+   "source_pericope_id": "1ch:7:1",
+   "verse": 10,
+   "other_parents": [
+    "person:lajie",
+    "person:yage"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:nafutali",
+   "source_pericope_id": "1ch:7:2",
+   "verse": 13,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:anli",
+   "relation": "SON_OF",
+   "tail_id": "person:yinli",
+   "source_pericope_id": "1ch:9:0",
+   "verse": 4,
+   "other_parents": [
+    "person:bijie"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:shifatiya",
+   "source_pericope_id": "1ch:9:0",
+   "verse": 8,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:sadu",
+   "source_pericope_id": "1ch:9:1",
+   "verse": 11,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:mishilimi",
+   "source_pericope_id": "1ch:9:1",
+   "verse": 12,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:keli",
+   "source_pericope_id": "1ch:9:3",
+   "verse": 19,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:matatiya",
+   "relation": "SON_OF",
+   "tail_id": "person:yedudun",
+   "source_pericope_id": "1ch:25:0",
+   "verse": 3,
+   "other_parents": [
+    "person:shalong"
+   ]
+  },
+  {
+   "head_id": "person:anli",
+   "relation": "SON_OF",
+   "tail_id": "person:mijialei",
+   "source_pericope_id": "1ch:27:1",
+   "verse": 18,
+   "other_parents": [
+    "person:bijie"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehanan",
+   "source_pericope_id": "2ch:23:0",
+   "verse": 1,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:sadu",
+   "source_pericope_id": "ezr:7:0",
+   "verse": 2,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:shalong",
+   "relation": "SON_OF",
+   "tail_id": "person:haluohei",
+   "source_pericope_id": "neh:3:0",
+   "verse": 12,
+   "other_parents": [
+    "person:yabi"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:yueye",
+   "source_pericope_id": "neh:11:0",
+   "verse": 7,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:mishulan",
+   "relation": "SON_OF",
+   "tail_id": "person:sadu",
+   "source_pericope_id": "neh:11:0",
+   "verse": 11,
+   "other_parents": [
+    "person:bilijia"
+   ]
+  },
+  {
+   "head_id": "person:yuenadan",
+   "relation": "SON_OF",
+   "tail_id": "person:shimaya",
+   "source_pericope_id": "neh:12:5",
+   "verse": 35,
+   "other_parents": [
+    "person:saoluo"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 2,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 7,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 9,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yishimali",
+   "relation": "SON_OF",
+   "tail_id": "person:nitanya",
+   "source_pericope_id": "jer:41:0",
+   "verse": 15,
+   "other_parents": [
+    "person:xiajia",
+    "person:yabolahan"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:xibitai",
+   "source_pericope_id": "mat:4:2",
+   "verse": 21,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:xibitai",
+   "source_pericope_id": "mat:10:0",
+   "verse": 2,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yaleifei",
+   "source_pericope_id": "mat:10:0",
+   "verse": 3,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yaleifei",
+   "source_pericope_id": "mrk:3:2",
+   "verse": 18,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:maliya",
+   "source_pericope_id": "mrk:6:0",
+   "verse": 3,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:xibitai",
+   "source_pericope_id": "mrk:10:4",
+   "verse": 35,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:liwei",
+   "relation": "SON_OF",
+   "tail_id": "person:maiji",
+   "source_pericope_id": "luk:3:2",
+   "verse": 24,
+   "other_parents": [
+    "person:liya"
+   ]
+  },
+  {
+   "head_id": "person:liwei",
+   "relation": "SON_OF",
+   "tail_id": "person:ximian",
+   "source_pericope_id": "luk:3:2",
+   "verse": 30,
+   "other_parents": [
+    "person:liya"
+   ]
+  },
+  {
+   "head_id": "person:yuese",
+   "relation": "SON_OF",
+   "tail_id": "person:yuenan",
+   "source_pericope_id": "luk:3:2",
+   "verse": 30,
+   "other_parents": [
+    "person:lajie",
+    "person:yage",
+    "person:yuexi"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yisa",
+   "source_pericope_id": "luk:3:2",
+   "verse": 34,
+   "other_parents": [
+    "person:libaijia"
+   ]
+  },
+  {
+   "head_id": "person:yisa",
+   "relation": "SON_OF",
+   "tail_id": "person:yabolahan",
+   "source_pericope_id": "luk:3:2",
+   "verse": 34,
+   "other_parents": [
+    "person:sala"
+   ]
+  },
+  {
+   "head_id": "person:yage",
+   "relation": "SON_OF",
+   "tail_id": "person:yaleifei",
+   "source_pericope_id": "luk:6:2",
+   "verse": 15,
+   "other_parents": [
+    "person:libaijia",
+    "person:yisa"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:1:3",
+   "verse": 42,
+   "other_parents": [
+    "homonym"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:21:1",
+   "verse": 15,
+   "other_parents": [
+    "homonym"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:21:1",
+   "verse": 16,
+   "other_parents": [
+    "homonym"
+   ]
+  },
+  {
+   "head_id": "person:bide",
+   "relation": "SON_OF",
+   "tail_id": "person:yuehan（shitu）",
+   "source_pericope_id": "jhn:21:1",
+   "verse": 17,
+   "other_parents": [
+    "homonym"
+   ]
+  }
+ ],
+ "anchored_final_by_rel": {
+  "SON_OF": 436,
+  "DAUGHTER_OF": 10,
+  "FATHER_OF": 7,
+  "SPOUSE_OF": 6
+ },
+ "anchored_keys_unique": 466,
+ "generic_event_ids": 16,
+ "edges_on_generic_events": 80,
+ "after_10_2": 5756,
+ "after_10_2_sha256": "b23efe4dc91b654834655430ad7d708281ac05c254a17627d8d8d0678c8d6315",
+ "after_10_2_by_source": {
+  "prior": 64,
+  "llm": 5233,
+  "anchored_rule": 459
+ },
+ "after_10_2_kin": 649,
+ "after_10_2_kin_by_rel": {
+  "ANCESTOR_OF": 15,
+  "DAUGHTER_OF": 14,
+  "DESCENDANT_OF": 18,
+  "FATHER_OF": 52,
+  "MOTHER_OF": 15,
+  "SIBLING_OF": 32,
+  "SON_OF": 473,
+  "SPOUSE_OF": 30
+ },
+ "allparent_live": {
+  "children": 262,
+  "children_2plus_nonfemale_parents": 135,
+  "children_gt2_parents": 87
+ },
+ "allparent_after": {
+  "children": 432,
+  "children_2plus_nonfemale_parents": 56,
+  "children_gt2_parents": 22
+ },
+ "r6_after_10_2": {
+  "FATHER_OF": 52,
+  "contradictions": 0,
+  "female_head": 0,
+  "children": 49,
+  "children_2plus_fathers": 3,
+  "functional_violation_rate": 0.0612
+ },
+ "relationships_diff": {
+  "ALLY_OF": -1,
+  "ANCESTOR_OF": -34,
+  "BORN_IN": -1,
+  "BUILT": -9,
+  "CAUSED": -10,
+  "DAUGHTER_OF": -13,
+  "DESCENDANT_OF": -31,
+  "DISCIPLE_OF": -7,
+  "ENEMY_OF": -1,
+  "EXILED_TO": -6,
+  "FATHER_OF": -595,
+  "LEADER_OF": -7,
+  "LOCATED_IN": -5,
+  "MEMBER_OF": -26,
+  "MOTHER_OF": -29,
+  "NEAR": -1,
+  "OCCURRED_IN": -3419,
+  "ORIGINATED_FROM": -1,
+  "PARTICIPATED_IN": -5641,
+  "PRECEDED_BY": -16,
+  "RETURNED_FROM": -13,
+  "RULED": -65,
+  "SETTLED_IN": -4,
+  "SIBLING_OF": -16,
+  "SON_OF": -186,
+  "SPOUSE_OF": -18,
+  "SUCCEEDED_BY": -2,
+  "TEACHER_OF": -13
+ },
+ "ee_new_keys": {
+  "ALLY_OF phase=3 source=prior": 2,
+  "ALLY_OF phase=4 source=llm": 61,
+  "ANCESTOR_OF phase=4 source=llm": 15,
+  "BORN_IN phase=3 source=prior": 1,
+  "BORN_IN phase=4 source=llm": 9,
+  "BUILT phase=3 source=prior": 1,
+  "BUILT phase=4 source=llm": 6,
+  "DAUGHTER_OF phase=4 source=llm": 4,
+  "DAUGHTER_OF phase=6 source=anchored_rule": 10,
+  "DESCENDANT_OF phase=4 source=llm": 18,
+  "DESTROYED phase=3 source=prior": 1,
+  "DESTROYED phase=4 source=llm": 37,
+  "DIED_IN phase=3 source=prior": 1,
+  "DIED_IN phase=4 source=llm": 19,
+  "DISCIPLE_OF phase=3 source=prior": 4,
+  "DISCIPLE_OF phase=4 source=llm": 10,
+  "ENEMY_OF phase=3 source=prior": 1,
+  "ENEMY_OF phase=4 source=llm": 31,
+  "EXILED_TO phase=3 source=prior": 1,
+  "EXILED_TO phase=4 source=llm": 13,
+  "FATHER_OF phase=3 source=prior": 12,
+  "FATHER_OF phase=4 source=llm": 33,
+  "FATHER_OF phase=6 source=anchored_rule": 7,
+  "FOUNDED phase=4 source=llm": 1,
+  "GAVE phase=4 source=llm": 76,
+  "INITIATED phase=4 source=llm": 384,
+  "LEADER_OF phase=3 source=prior": 1,
+  "LEADER_OF phase=4 source=llm": 62,
+  "LOCATED_IN phase=3 source=prior": 3,
+  "LOCATED_IN phase=4 source=llm": 47,
+  "MEMBER_OF phase=3 source=prior": 1,
+  "MEMBER_OF phase=4 source=llm": 330,
+  "MOTHER_OF phase=3 source=prior": 7,
+  "MOTHER_OF phase=4 source=llm": 8,
+  "NEAR phase=3 source=prior": 1,
+  "NEAR phase=4 source=llm": 27,
+  "OCCURRED_IN phase=4 source=llm": 894,
+  "ORIGINATED_FROM phase=4 source=llm": 50,
+  "PARTICIPATED_IN phase=4 source=llm": 1489,
+  "POSSESSED phase=4 source=llm": 551,
+  "RECEIVED phase=3 source=prior": 1,
+  "RECEIVED phase=4 source=llm": 170,
+  "RETURNED_FROM phase=3 source=prior": 2,
+  "RETURNED_FROM phase=4 source=llm": 26,
+  "RULED phase=3 source=prior": 3,
+  "RULED phase=4 source=llm": 76,
+  "SETTLED_IN phase=4 source=llm": 219,
+  "SIBLING_OF phase=3 source=prior": 4,
+  "SIBLING_OF phase=4 source=llm": 28,
+  "SON_OF phase=4 source=llm": 37,
+  "SON_OF phase=6 source=anchored_rule": 436,
+  "SPOUSE_OF phase=3 source=prior": 7,
+  "SPOUSE_OF phase=4 source=llm": 17,
+  "SPOUSE_OF phase=6 source=anchored_rule": 6,
+  "SUCCEEDED_BY phase=3 source=prior": 4,
+  "SUCCEEDED_BY phase=4 source=llm": 1,
+  "TEACHER_OF phase=3 source=prior": 2,
+  "TEACHER_OF phase=4 source=llm": 6,
+  "VICTIM_OF phase=4 source=llm": 229,
+  "VISITED phase=3 source=prior": 4,
+  "VISITED phase=4 source=llm": 249
+ },
+ "ee_new_by_source": {
+  "prior": 64,
+  "llm": 5233,
+  "anchored_rule": 459
+ },
+ "ee_new_key_counts": {
+  "prior": 22,
+  "llm": 35,
+  "anchored_rule": 4
+ },
+ "new_probes": {
+  "kin-david-son-of-jesse": true,
+  "kin-esau-father-of-jeush": true,
+  "kin-amram-father-of-moses": true,
+  "edge-no-dan-near-jordan": true,
+  "edge-no-galilee-in-nazareth": true,
+  "kin-peter-not-son-of-john": true,
+  "kin-jethro-not-son-of-esau": true,
+  "kin-nahath-not-son-of-jethro": true,
+  "kin-reuel-son-of-esau(liuer)": true
+ },
+ "liuer_edges": [
+  "person:liuer SON_OF person:yisao [anchored_rule]",
+  "person:misa SON_OF person:liuer [anchored_rule]",
+  "person:naha SON_OF person:liuer [anchored_rule]",
+  "person:shama SON_OF person:liuer [anchored_rule]",
+  "person:xiela SON_OF person:liuer [anchored_rule]"
+ ]
+}
