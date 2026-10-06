@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import functools
 import gzip
+import hashlib
 import inspect
 import io
 import json
@@ -446,14 +447,15 @@ def test_k9_documents_the_label_rows_and_enforces_kays_spot_check_coverage():
                                                 (13, 3, False)])
 def test_k9_spot_check_jq_wants_every_adjudicated_item_plus_ten(tmp_path, spot, disagree, ok):
     gate = _block(W1A, "--sample $K/anchored.json")
-    check = gate[_first(gate, "jq -e --slurpfile kay")]
+    sha, check = gate[_first(gate, "S=$(sha256sum")], gate[_first(gate, "jq -e --slurpfile kay")]
     ids = [f"item{i:03d}" for i in range(60)]
-    (tmp_path / "anchored_report.json").write_text(json.dumps(
-        {"disagreements": [{"item_id": i} for i in ids[:disagree]]}), encoding="utf-8")
     covered = ids[1:spot + 1] if spot == 13 else ids[:spot]   # 13: one adjudicated item left out
-    (tmp_path / "anchored_kay.jsonl").write_text("".join(json.dumps({"item_id": i}) + "\n" for i in covered),
-                                                 encoding="utf-8")
-    run = _bash(f"K=.; {check}", tmp_path)
+    kay = "".join(json.dumps({"item_id": i}) + "\n" for i in covered)
+    (tmp_path / "anchored_kay.jsonl").write_text(kay, encoding="utf-8")
+    (tmp_path / "anchored_report.json").write_text(json.dumps(
+        {"disagreements": [{"item_id": i} for i in ids[:disagree]], "spotcheck": {"min_extra": 10},
+         "inputs": {"spotcheck": {"sha256": hashlib.sha256(kay.encode()).hexdigest()}}}), encoding="utf-8")
+    run = _bash(f"set -e -o pipefail; K=.; {sha}; {check}", tmp_path)
     assert (run.returncode == 0) is ok, run
 
 

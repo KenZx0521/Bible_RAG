@@ -149,9 +149,10 @@ def test_backup_and_restore_name_the_staging_container_volume_image_and_database
 
 def test_kay_rejection_restores_the_backed_up_staging_before_e1_reruns():
     kay = section(staging_text(), KAY)
-    for needle in ("M390", "Q7", "Kay 2026-10-06", "不改任何已登記的檔", "prod 不動", "從 Step 5", "R0 第 9 項", "E1",
+    for needle in ("M390", "Q7", "Kay 2026-10-06", "不改任何已登記的檔", "prod 不動", "從頭重跑", "R0 第 9 項", "E1",
                    "residuals_expect", "healthy", "`bible_entities_v3`"):
         assert needle in kay, needle
+    assert "再從 Step 5 重建" not in kay   # Step 5 alone would skip check_w1_registration
     block = _restore()
     _assert_fail_closed(block, "staging restored to batch 0")
     _in_order(block, (*(f"(cd bak/$D && grep -F ' {path}' SHA256SUMS | sha256sum -c -)" for path in SUMS),
@@ -162,15 +163,18 @@ def test_kay_rejection_restores_the_backed_up_staging_before_e1_reruns():
                       f"pg_restore -U bible -d bible_rag_staging --exit-on-error < {PG_DUMP}"))
 
 
-# a stand-in docker: records each call; the staging query prints SOURCED, pg_dump PG, neo4j-admin NEO
+# a stand-in docker: records each call; the staging query prints SOURCED, psql COUNTS (PG staging's
+# entities|entity_mentions), pg_dump PG, neo4j-admin NEO
 STUB = """docker() {{ echo "docker $*" >> calls
-  case "$1 $2" in
-    "exec bible_rag_neo4j_staging") printf 'n\\n{sourced}\\n';;
-    "exec bible_rag_postgres") printf '{pg}';;
-    "run --rm") printf '{neo}';;
+  case "$*" in
+    "exec bible_rag_neo4j_staging "*) printf 'n\\n{sourced}\\n';;
+    "exec bible_rag_postgres psql "*) printf '{counts}\\n';;
+    "exec bible_rag_postgres pg_dump "*) printf '{pg}';;
+    "run --rm "*) printf '{neo}';;
   esac; }}
 D=x
 """
+BATCH0_COUNTS = "9124|173768"   # bible_rag_staging entities|entity_mentions, read 2026-10-06
 
 
 def _calls(root) -> list[str]:
@@ -178,31 +182,37 @@ def _calls(root) -> list[str]:
     return path.read_text().splitlines() if path.exists() else []
 
 
-@pytest.mark.parametrize("sourced, pg, neo, ok", [("0", "PG", "NEO", True), ("5616", "PG", "NEO", False),
-                                                  ("0", "", "NEO", False), ("0", "PG", "", False)],
-                         ids=["batch-0", "w1-build", "empty-pg-dump", "empty-neo4j-dump"])
-def test_the_backup_keeps_only_complete_dumps_of_a_batch0_staging(tmp_path, sourced, pg, neo, ok):
-    result = _bash(STUB.format(sourced=sourced, pg=pg, neo=neo) + "\n".join(_backup()), tmp_path)
+def stub(sourced="0", counts=BATCH0_COUNTS, pg="PG", neo="NEO") -> str:
+    return STUB.format(sourced=sourced, counts=counts, pg=pg, neo=neo)
+
+
+@pytest.mark.parametrize("sourced, counts, pg, neo, ok", [
+    ("0", BATCH0_COUNTS, "PG", "NEO", True), ("5616", BATCH0_COUNTS, "PG", "NEO", False),
+    ("0", "0|0", "PG", "NEO", False), ("0", "9120|173896", "PG", "NEO", False), ("0", "", "PG", "NEO", False),
+    ("0", BATCH0_COUNTS, "", "NEO", False), ("0", BATCH0_COUNTS, "PG", "", False)],
+    ids=["batch-0", "w1-build", "pg-dropped", "pg-step3-only", "pg-unreadable", "empty-pg-dump", "empty-neo4j-dump"])
+def test_the_backup_keeps_only_complete_dumps_of_a_batch0_staging(tmp_path, sourced, counts, pg, neo, ok):
+    result = _bash(stub(sourced, counts, pg, neo) + "\n".join(_backup()), tmp_path)
     assert (result.returncode == 0) is ok, result
     final = [tmp_path / path.replace("$D", "x") for path in (NEO4J_DUMP, PG_DUMP)]
     assert [p.exists() for p in final] == [ok, ok]
-    if sourced != "0":   # a W1 build is never kept as the batch-0 backup, and staging is never stopped
-        assert not [c for c in _calls(tmp_path) if not c.startswith("docker exec bible_rag_neo4j_staging")]
+    if sourced != "0" or counts != BATCH0_COUNTS:   # never kept as the batch-0 backup, staging never stopped
+        assert not [c for c in _calls(tmp_path) if not c.startswith(("docker exec bible_rag_neo4j_staging",
+                                                                     "docker exec bible_rag_postgres psql"))]
     if ok:
         sums = (tmp_path / "bak" / "x" / "SHA256SUMS").read_text().splitlines()
         assert [line.split("  ")[1] for line in sums] == list(SUMS), sums
-        assert _bash(STUB.format(sourced=0, pg="PG", neo="NEO") + "\n".join(_backup()), tmp_path).returncode != 0
+        assert _bash(stub() + "\n".join(_backup()), tmp_path).returncode != 0
         assert len((tmp_path / "bak" / "x" / "SHA256SUMS").read_text().splitlines()) == 2   # once only
 
 
 @pytest.mark.parametrize("tamper", [None, NEO4J_DUMP, PG_DUMP])
 def test_the_restore_loads_only_the_dumps_the_backup_recorded(tmp_path, tamper):
-    stub = STUB.format(sourced=0, pg="PG", neo="NEO")
-    assert _bash(stub + "\n".join(_backup()), tmp_path).returncode == 0
+    assert _bash(stub() + "\n".join(_backup()), tmp_path).returncode == 0
     if tamper:
         (tmp_path / tamper.replace("$D", "x")).write_text("other")
     (tmp_path / "calls").unlink()
-    result = _bash(stub + "\n".join(_restore()), tmp_path)
+    result = _bash(stub() + "\n".join(_restore()), tmp_path)
     assert (result.returncode == 0) is (tamper is None), result
     words = [c.split()[1] for c in _calls(tmp_path)]
     assert words == ([] if tamper else ["compose", "stop", "run", "start", "exec", "exec", "exec"]), words

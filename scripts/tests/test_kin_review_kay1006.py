@@ -260,3 +260,85 @@ def test_min_spotcheck_extra_is_a_score_flag(tmp_path, capsys):
     assert run(argv) == 2
 
     assert "--mode sample does not take --min-spotcheck-extra" in capsys.readouterr().err
+
+
+# --- before labelling: one coherent context rubric, and merged blocks break the reading order --
+
+CONTEXT_TEXT_CORRECT = (
+    "看 evidence 的經文：經文是否明說 head 與 tail 這兩個人之間有 relation 所指的親屬關係，"
+    "而且方向對（X SON_OF Y：X 是 Y 的兒子；X FATHER_OF Y：X 是 Y 的父親；ANCESTOR_OF／"
+    "DESCENDANT_OF 指隔代；SPOUSE_OF、SIBLING_OF 不分方向）？"
+    "evidence 的經文裡，一個人可以用名字、代名詞或省略的主詞出現，只要他指的是誰能由 evidence 的經文本身，"
+    "或 context 附的前一節與後一節（同一卷，可跨章；沒有可附的那一邊是 null）確定；確定不了就記 false。"
+    "關係本身要由 evidence 的經文說出，只在 context 的經文裡說的不算。"
+    "要生育或婚姻意義上的關係，稱謂或比喻（例如對先知自稱「你兒子」）不算。"
+    "evidence 的經文明說這個關係才記 true；關係沒說或只是推論、方向反了、關係種類不對，都記 false。"
+    "這一欄不管兩端節點實際指的是誰。")
+
+
+def test_anchored_rubric_is_the_registered_one():
+    registered = json.loads(GOLDEN.read_text(encoding="utf-8"))["meta"]["rubric"]
+
+    assert kr.RUBRIC == registered
+    assert kr.RUBRIC["text_correct"].startswith("只看 evidence 的經文：經文是否明說 head 與 tail 這兩個名字之間")
+
+
+def test_context_rubric_is_one_rule_for_names_pronouns_and_omitted_subjects(tmp_path):
+    rubric = sample(tmp_path, "--source", "llm", "--all", "--seed", SEED)["meta"]["rubric"]
+
+    assert rubric == kr.RUBRIC_WITH_CONTEXT == {"text_correct": CONTEXT_TEXT_CORRECT,
+                                                "id_correct": kr.RUBRIC["id_correct"]}
+    # no literal both-names requirement next to the pronoun allowance (the pre-fix text had both)
+    assert "這兩個名字" not in CONTEXT_TEXT_CORRECT and "名字、代名詞或省略的主詞" in CONTEXT_TEXT_CORRECT
+
+
+# RCUV opens six pericopes with a merged block that verses_of drops (psa:135:0, zep:2:0 and luk:1:0
+# with '**1-2**', jer:34:1 '**8-9**', luk:21:5 '**29-30**', col:2:2 '**20-21**'): the verse on the
+# other side of such a block is not a neighbour, so that side is null.
+MERGED_PERICOPES = [
+    {"id": "psa:134:0", "parent_id": "psa:134", "title": "夜間讚美", "content": "**3** 願造天地的耶和華從錫安賜福給你們！\n\n"},
+    {"id": "psa:135:0", "parent_id": "psa:135", "title": "讚美的詩",
+     "content": "**1-2** 你們要讚美耶和華！\n\n**3** 你們要讚美耶和華，耶和華本為善；\n\n**4** 耶和華揀選雅各歸自己。\n\n"},
+    {"id": "jer:34:0", "parent_id": "jer:34", "title": "警告西底家", "content": "**6** 先知耶利米將這一切話告訴西底家。\n\n**7** 那時，巴比倫王的軍隊正攻打耶路撒冷。\n\n"},
+    {"id": "jer:34:1", "parent_id": "jer:34", "title": "釋放奴僕",
+     "content": "**8-9** 西底家王與眾民立約。\n\n**10** 眾首領和眾民都順從了。\n\n**11** 後來他們又反悔。\n\n"},
+    *PERICOPES,
+]
+
+
+def _llm_at(i: int, pericope: str, verse: int) -> dict:
+    return {**ROWS[0], "source": "llm", "sources": ["llm"], "relation": "FATHER_OF", "head_id": f"person:fu{i}",
+            "tail_id": f"person:zi{i}", "source_pericope_id": pericope, "verse": verse, "notes": "",
+            "evidence_span": ""}
+
+
+def test_a_pericope_opening_with_a_merged_block_breaks_the_reading_order(tmp_path):
+    rows = [*ROWS, _llm_at(1, "psa:135:0", 3), _llm_at(2, "psa:134:0", 3), _llm_at(3, "jer:34:0", 7),
+            _llm_at(4, "jer:34:1", 10)]
+
+    items = _by_key(sample(tmp_path, "--source", "llm", "--all", "--seed", SEED, rows=rows,
+                           pericopes=MERGED_PERICOPES))
+    context = {i: items[(f"person:fu{i}", "FATHER_OF", f"person:zi{i}")]["context"] for i in range(1, 5)}
+
+    # psa 135:3 is not after psa 134:3 (135:1-2 lie between), nor is 134:3 before 135:3
+    assert context[1]["before"] is None and context[1]["after"]["verse"] == 4
+    assert context[2] == {"before": None, "after": None}
+    # the same mid-chapter: jer 34:7 and 34:10 are no neighbours (34:8-9 lie between)
+    assert context[3]["before"]["verse"] == 6 and context[3]["after"] is None
+    assert context[4]["before"] is None and context[4]["after"]["verse"] == 11
+    assert "你們要讚美耶和華！" not in json.dumps(context, ensure_ascii=False)
+
+
+def test_a_merged_block_inside_a_pericope_stays_in_the_verse_before_it(tmp_path):
+    """verses_of keeps a mid-pericope merged block in the previous verse's text (as the evidence
+    does), so 28 and 31 stay neighbours there."""
+    pericopes = [{"id": "gen:24:2", "parent_id": "gen:24", "title": "利百加",
+                  "content": "**28** 女子跑回去。\n\n**29-30** 利百加有一個哥哥。\n\n**31** 拉班說：「請進來。」\n\n"},
+                 *PERICOPES]
+    rows = [*ROWS, _llm_at(5, "gen:24:2", 31)]
+
+    item = _by_key(sample(tmp_path, "--source", "llm", "--all", "--seed", SEED, rows=rows, pericopes=pericopes))[
+        ("person:fu5", "FATHER_OF", "person:zi5")]
+
+    assert item["context"]["before"] == {"pericope_id": "gen:24:2", "title": "利百加", "verse": 28,
+                                         "verse_text": "女子跑回去。\n\n**29-30** 利百加有一個哥哥。"}

@@ -46,20 +46,28 @@ database:
               W2's control (decision O7, confirmed by Kay 2026-10-06); a v2, any
               other value, an unset variable or a staging.env missing at HEAD is
               INVALID, so the chain stops before Step 3 and never reaches 8a.
+  backups     R0 item 9's batch-0 staging backups under --backup-dir (bak/$D):
+              neo4j_staging/neo4j.dump and postgres/bible_rag_staging.dump each
+              exist, are not empty, and hash to the one sha256 that the
+              directory's SHA256SUMS lists for ./<path> (the line R0 item 9
+              appends). Step 3 rewrites the PG staging and Step 5 empties 7688;
+              without these dumps a rejection at W1 step 4 cannot restore the
+              batch-0 build (decision Q7, Kay 2026-10-06). No --backup-dir is
+              INVALID.
 
 Every check runs and prints one row: OK, MISSING, EMPTY, UNREADABLE,
 UNCOMMITTED (not in HEAD: untracked, or added but not committed), MODIFIED
 (differs from HEAD), MISMATCH or INVALID. W1 only.
 
-Exit codes: 0 everything is registered, the 6.05 output is the registered one and
-the staging entity collection is bible_entities_v3; 1 any row is not OK (STOP; do not
-run Step 3); 2 cannot check (git does not run, or --root is not a git checkout with a
-commit).
+Exit codes: 0 everything is registered, the 6.05 output is the registered one, the
+staging entity collection is bible_entities_v3 and both batch-0 backups are in place;
+1 any row is not OK (STOP; do not run Step 3); 2 cannot check (git does not run, or
+--root is not a git checkout with a commit).
 
 Usage (from the project root, in the W1 chain right after 6.05, in the shell
-that sourced scripts/tools/staging.env):
-    scripts/.venv/bin/python scripts/tools/check_w1_registration.py
-    scripts/.venv/bin/python scripts/tools/check_w1_registration.py --root . \\
+that sourced scripts/tools/staging.env, D set to the W1 R0 date):
+    scripts/.venv/bin/python scripts/tools/check_w1_registration.py --backup-dir bak/$D
+    scripts/.venv/bin/python scripts/tools/check_w1_registration.py --root . --backup-dir bak/$D \\
         --report output/relations_clean.report.json
 """
 
@@ -104,6 +112,12 @@ BATCH0_COLLECTION = "bible_entities_v2"   # the batch-0 staging build, W2's cont
 _ASSIGNMENT = re.compile(rf"^[ \t]*(?:export[ \t]+)?{COLLECTION_VAR}=(\S*)", re.M)
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _SHA_LINE = re.compile(r"([0-9a-f]{64})  (.+)")
+# R0 item 9 (docs/staging_promotion.md): the batch-0 staging dumps, relative to bak/$D, and the sha256sum
+# file it appends their lines to (text or binary mode)
+BATCH0_BACKUPS = ("neo4j_staging/neo4j.dump", "postgres/bible_rag_staging.dump")
+BACKUP_SUMS = "SHA256SUMS"
+_SUMS_LINE = re.compile(r"([0-9a-f]{64}) [ *](.+)")
+_CHUNK = 1 << 20
 
 HAZARD = (
     "Do not run Step 3. Step 5 empties the staging graph (7688), which must still be the batch-0 build "
@@ -118,7 +132,10 @@ HAZARD = (
     "diff (plan §3). A QDRANT_ENTITY_COLLECTION row that is not OK: bump scripts/tools/staging.env to "
     f"{W1_COLLECTION} and commit it (docs/staging_promotion.md R0 item 8), source it again in this shell and "
     f"rerun; {BATCH0_COLLECTION} is the batch-0 staging collection, kept as W2's control, and 8a/8b --recreate "
-    "would rebuild whatever collection this shell names.")
+    "would rebuild whatever collection this shell names. A batch-0 staging backup row that is not OK: R0 item 9 "
+    "has not backed up 7688 and bible_rag_staging into bak/$D, or its SHA256SUMS line is missing or no longer "
+    "matches; a rejection at W1 step 4 restores exactly those dumps, so do R0 item 9 while both are still the "
+    "batch-0 build (it refuses anything else) and pass --backup-dir bak/$D.")
 
 
 class CannotCheck(Exception):
@@ -327,6 +344,49 @@ def check_collection(root: Path, env: Mapping[str, str]) -> str:
             "the batch-0 control")
 
 
+# --- R0 item 9's batch-0 staging backups: Step 3 and Step 5 never start without them --------
+
+def _file_sha(path: Path) -> str:
+    """The streamed sha256 of a non-empty file; Failed MISSING, EMPTY or UNREADABLE otherwise."""
+    if not path.is_file():
+        raise Failed("MISSING", "no such file")
+    digest, size = hashlib.sha256(), 0
+    try:
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(_CHUNK), b""):
+                digest.update(chunk)
+                size += len(chunk)
+    except OSError as e:
+        raise Failed("UNREADABLE", str(e)) from e
+    if not size:
+        raise Failed("EMPTY", "0 bytes")
+    return digest.hexdigest()
+
+
+def listed_sha(backup_dir: Path, rel: str) -> str:
+    """The one sha256 that <backup_dir>/SHA256SUMS lists for ./rel; Failed INVALID for none or several."""
+    try:
+        lines = _read(backup_dir / BACKUP_SUMS).decode("utf-8", "replace").splitlines()
+    except Failed as e:
+        raise Failed("INVALID", f"{BACKUP_SUMS}: {e}") from e
+    shas = {m.group(1) for m in map(_SUMS_LINE.fullmatch, lines)
+            if m and os.path.normpath(m.group(2)) == os.path.normpath(rel)}
+    if len(shas) != 1:
+        raise Failed("INVALID", f"{BACKUP_SUMS} lists no sha256 for ./{rel}" if not shas
+                     else f"{BACKUP_SUMS} lists {len(shas)} different sha256 for ./{rel}")
+    return shas.pop()
+
+
+def check_backup(backup_dir: Path | None, rel: str) -> str:
+    """R0 item 9's dump exists, is not empty and hashes to its SHA256SUMS line."""
+    if backup_dir is None:
+        raise Failed("INVALID", "no --backup-dir: pass bak/$D, where R0 item 9 backed up the batch-0 staging")
+    got, want = _file_sha(backup_dir / rel), listed_sha(backup_dir, rel)
+    if got != want:
+        raise Failed("MISMATCH", f"sha256 {got}, {BACKUP_SUMS} lists {want}")
+    return f"sha256 {got[:12]}… as {BACKUP_SUMS} lists it (R0 item 9, the batch-0 staging)"
+
+
 # --- run -----------------------------------------------------------------------------
 
 def _shown(path: Path, root: Path) -> str:
@@ -336,14 +396,18 @@ def _shown(path: Path, root: Path) -> str:
         return str(path)
 
 
-def run_checks(root: Path, report: Path, env: Mapping[str, str] | None = None) -> list[tuple[str, str, str]]:
+def run_checks(root: Path, report: Path, env: Mapping[str, str] | None = None,
+               backup_dir: Path | None = None) -> list[tuple[str, str, str]]:
     """(status, name, text) per check, in order; CannotCheck when git cannot read the checkout.
-    `env` is the shell's environment (default os.environ), read for QDRANT_ENTITY_COLLECTION."""
+    `env` is the shell's environment (default os.environ), read for QDRANT_ENTITY_COLLECTION;
+    `backup_dir` is bak/$D, where R0 item 9 wrote the batch-0 staging dumps (None: both rows INVALID)."""
     require_checkout(root)
     env = os.environ if env is None else env
     checks = [(rel, lambda rel=rel: check_registered(root, rel)) for rel in REGISTERED]
     checks += [(MERGED, lambda: check_merged(root)), (_shown(report, root), lambda: check_605(root, report)),
                (COLLECTION_VAR, lambda: check_collection(root, env))]
+    checks += [(_shown(backup_dir / rel, root) if backup_dir else f"bak/$D/{rel}",
+                lambda rel=rel: check_backup(backup_dir, rel)) for rel in BATCH0_BACKUPS]
     rows = []
     for name, check in checks:
         try:
@@ -359,10 +423,13 @@ def main(argv: list[str] | None = None) -> int:
                         help=f"the git checkout whose registration is checked (default: {_PROJECT_ROOT})")
     parser.add_argument("--report", type=Path, default=None,
                         help=f"the fresh 6.05 report (default: <root>/{DEFAULT_REPORT.as_posix()})")
+    parser.add_argument("--backup-dir", type=Path, default=None,
+                        help=f"bak/$D of the W1 R0 date, holding R0 item 9's {' and '.join(BATCH0_BACKUPS)} and "
+                             f"the {BACKUP_SUMS} lines for them (without it both backup rows are INVALID)")
     args = parser.parse_args(argv)
     report = args.report or args.root / DEFAULT_REPORT
     try:
-        rows = run_checks(args.root, report)
+        rows = run_checks(args.root, report, backup_dir=args.backup_dir)
     except CannotCheck as e:
         print(f"CANNOT CHECK: {e}")
         return 2
@@ -373,8 +440,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"STOP: not as registered: {', '.join(failed)}.\n{HAZARD}")
         return 1
     print("OK: the W1 expected files (holding what their tools write), fragments and merged allowlist sha256 "
-          "are committed, the merged allowlist and the 6.05 output are the registered ones, and the staging "
-          f"entity collection is {W1_COLLECTION}; continue with Step 3")
+          "are committed, the merged allowlist and the 6.05 output are the registered ones, the staging "
+          f"entity collection is {W1_COLLECTION}, and R0 item 9's batch-0 staging backups match {BACKUP_SUMS}; "
+          "continue with Step 3")
     return 0
 
 

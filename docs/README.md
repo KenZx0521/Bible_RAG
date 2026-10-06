@@ -7,6 +7,7 @@
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 全景架構（樞紐，文檔索引見其 §10） | 隨系統演進更新 |
 | [build_database.md](build_database.md) | 建庫 runbook（Step 1–10，含 curated 重放鏈） | 隨管線演進更新 |
 | [staging_promotion.md](staging_promotion.md) | Staging 重建與 R0–R5 升版 runbook（備份、等價驗證、升版、回滾） | 隨管線演進更新 |
+| [staging_promotion_w1.md](staging_promotion_w1.md) | 第 1 批 W1 的升版 runbook（R3 的 W1 步驟：第 1 步換 backend image、/api/v1/entity 前後比對、第 1、2 步之間的 opt-in A/B、第 2 步載入資料；2026-10-06 從 staging_promotion.md 拆出） | 隨管線演進更新 |
 | [kg_optimization_progress.md](kg_optimization_progress.md) | KG 優化單一入口（P0–P3 狀態、指標演進） | 活文件 |
 | `records/` | 執行／決策／驗證紀錄，檔名帶日期（`YYYY-MM-DD_主題.md`，與 `paper/record/` 同慣例） | **不可變**：只新增、不回改 |
 | `archive/` | 被取代的歷史架構快照 | 不再更新，僅供考古與論文對照 |

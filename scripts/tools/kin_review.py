@@ -25,9 +25,13 @@ Decision Q9 (Kay 2026-10-06, M340): an llm or prior item also has a context
 field, apart from the evidence: the verse right before the first evidence
 verse and the one right after the last, in the book's reading order
 (chapters and verses by number, across a chapter or pericope, never into
-another book; null at a book's edge or when the evidence cannot be placed).
-Their rubric judges text_correct on the evidence verses read with that
-context. anchored_rule samples and their rubric are the pre-registered gate
+another book; null at a book's edge, across a merged block that opens a
+pericope, or when the evidence cannot be placed). Their rubric is one rule:
+text_correct is true when the evidence verses state the relation, in this
+direction, between the two people, where a person may appear in the evidence
+by name, by a pronoun or as an omitted subject whose referent the evidence
+or the shown context fixes; a relation stated only in the context does not
+count. anchored_rule samples and their rubric are the pre-registered gate
 protocol and stay byte for byte what they were.
 
 --mode score reads the sample, two --labels files (one annotator each,
@@ -111,12 +115,13 @@ FIELDS = ("text_correct", "id_correct")
 DEFAULT_GATE_FIELD, DEFAULT_MIN_LB, Z = "text_correct", 0.85, 1.96
 ANNOTATION = "非人工（AI 雙盲＋裁決，Kay 抽查）"
 AI_PREFIX = "ai:"
-_TEXT_RULE = (
-    "是否明說 head 與 tail 這兩個名字之間有 relation 所指的親屬關係，"
-    "而且方向對（X SON_OF Y：X 是 Y 的兒子；X FATHER_OF Y：X 是 Y 的父親；ANCESTOR_OF／"
-    "DESCENDANT_OF 指隔代；SPOUSE_OF、SIBLING_OF 不分方向）？要生育或婚姻意義上的關係，"
-    "稱謂或比喻（例如對先知自稱「你兒子」）不算。明說才記 true；沒說、只是推論、方向反了或"
-    "關係種類不對都記 false。這一欄不管兩端節點實際指的是誰。")
+_DIRECTION = ("而且方向對（X SON_OF Y：X 是 Y 的兒子；X FATHER_OF Y：X 是 Y 的父親；ANCESTOR_OF／"
+              "DESCENDANT_OF 指隔代；SPOUSE_OF、SIBLING_OF 不分方向）？")
+_KINSHIP_ONLY = "要生育或婚姻意義上的關係，稱謂或比喻（例如對先知自稱「你兒子」）不算。"
+_NOT_IDENTITY = "這一欄不管兩端節點實際指的是誰。"
+# The anchored rule, byte for byte as pre-registered (kin_review_sample/v1 meta.rubric).
+_TEXT_RULE = ("是否明說 head 與 tail 這兩個名字之間有 relation 所指的親屬關係，" + _DIRECTION + _KINSHIP_ONLY
+              + "明說才記 true；沒說、只是推論、方向反了或關係種類不對都記 false。" + _NOT_IDENTITY)
 RUBRIC = {
     "text_correct": "只看 evidence 的經文：經文" + _TEXT_RULE,
     "id_correct": (
@@ -125,12 +130,17 @@ RUBRIC = {
         "任一端是同名的另一人，或是合併了多個同名人物、以別人為主的節點，記 false。"
         "text_correct 為 false 時一律記 false。"),
 }
+# Decision Q9, one rule: a person in the evidence may be a pronoun or an omitted subject that the evidence
+# itself or the ±1 context fixes; the relation must still be stated by the evidence.
 RUBRIC_WITH_CONTEXT = {
     **RUBRIC,
     "text_correct": (
-        "看 evidence 的經文，並用 context 附的前一節與後一節（同一卷，可跨章；卷首或卷末沒有的那一邊是 null）"
-        "幫助讀懂它，例如代名詞或省略的人指的是誰。關係仍要由 evidence 的經文說出，只在 context 裡說的不算。"
-        "evidence 的經文" + _TEXT_RULE),
+        "看 evidence 的經文：經文是否明說 head 與 tail 這兩個人之間有 relation 所指的親屬關係，" + _DIRECTION
+        + "evidence 的經文裡，一個人可以用名字、代名詞或省略的主詞出現，只要他指的是誰能由 evidence 的經文本身，"
+          "或 context 附的前一節與後一節（同一卷，可跨章；沒有可附的那一邊是 null）確定；確定不了就記 false。"
+          "關係本身要由 evidence 的經文說出，只在 context 的經文裡說的不算。" + _KINSHIP_ONLY
+        + "evidence 的經文明說這個關係才記 true；關係沒說或只是推論、方向反了、關係種類不對，都記 false。"
+        + _NOT_IDENTITY),
 }
 _CHAPTER = re.compile(r"(.+):(\d+)")
 _CITATION = re.compile(r"(\S+?)\s*(\d+):(\d+)")
@@ -251,19 +261,37 @@ def load_corpus(args: argparse.Namespace, ids: set[str]) -> Corpus:
     pericopes = {row["id"]: row for row in _jsonl(args.pericopes)}
     verse_home = {(p.get("parent_id"), number): pid for pid, p in pericopes.items()
                   for number, _ in verses_of(p.get("content") or "")}
-    return Corpus(entities, descriptions, pericopes, verse_home, reading_order(verse_home),
+    return Corpus(entities, descriptions, pericopes, verse_home, reading_order(verse_home, opening_gaps(pericopes)),
                   *_mention_counts(args.mentions, ids))
 
 
-def reading_order(verse_home: Mapping[tuple[str, int], str]) -> dict[tuple[str, int], tuple]:
+def opening_gaps(pericopes: Mapping[str, Mapping]) -> set[tuple[str, int]]:
+    """(chapter id, first marked verse) of each pericope whose text opens before its first '**N**' mark.
+
+    RCUV opens six pericopes with a merged block such as '**1-2**' (psa:135:0, zep:2:0, luk:1:0, jer:34:1,
+    luk:21:5, col:2:2 in output/pericopes.jsonl, 2026-10-06), which verses_of drops: the text between that
+    verse and the one before it in reading order is not a verse the sample can show.
+    """
+    gaps = set()
+    for p in pericopes.values():
+        parts = VERSE_MARK.split(p.get("content") or "")
+        if len(parts) > 1 and parts[0].strip():
+            gaps.add((p.get("parent_id"), int(parts[1])))
+    return gaps
+
+
+def reading_order(verse_home: Mapping[tuple[str, int], str],
+                  gaps: Iterable[tuple[str, int]] = ()) -> dict[tuple[str, int], tuple]:
     """(chapter id, verse) -> (the verse before it, the verse after it) within its book.
 
     Chapters and verses go by number, across chapters and pericopes; None at
     either end of a book. A verse number the text has no '**N**' mark for is
-    no gap: RCUV's '**29-30**' block of 創 24 (verses_of keeps it in verse 28's
-    text, as the evidence does) makes 28 and 31 neighbours.
+    no gap inside a pericope: RCUV's '**29-30**' block of 創 24 (verses_of keeps
+    it in verse 28's text, as the evidence does) makes 28 and 31 neighbours. A
+    verse in `gaps` (opening_gaps: a merged block opens its pericope and is
+    dropped) has no verse before it, and the verse before it none after it.
     """
-    books = defaultdict(list)
+    books, gaps = defaultdict(list), set(gaps)
     for chapter, verse in verse_home:
         number = _CHAPTER.fullmatch(chapter or "")
         if number:
@@ -272,7 +300,8 @@ def reading_order(verse_home: Mapping[tuple[str, int], str]) -> dict[tuple[str, 
     for verses in books.values():
         keys = [(chapter, verse) for _, verse, chapter in sorted(verses)]
         for i, key in enumerate(keys):
-            links[key] = (keys[i - 1] if i else None, keys[i + 1] if i + 1 < len(keys) else None)
+            after = keys[i + 1] if i + 1 < len(keys) else None
+            links[key] = (keys[i - 1] if i and key not in gaps else None, None if after in gaps else after)
     return links
 
 

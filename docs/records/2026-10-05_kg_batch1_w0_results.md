@@ -21,6 +21,7 @@
   - 根因一：`embed_entities` 挑段落標題時沒有排序。
   - 根因二：backend 的 Cypher 用 `LIMIT` 卻沒有完整排序（graph_person 的查詢連 ORDER BY 都沒有）。
   - 不修的話，W1 的 opt-in A/B 無法歸因。是否納入 W1 待 Kay 決定。
+  - **補記（2026-10-06）：** Kay 2026-10-05 決定納入 W1，成為 W1-0「opt-in 決定性」，排在 1A／1B 之前修，修正為 087ab0d（backend 查詢）與 3a294a0（embed_entities），驗收見 e5fe097 與本檔末的「補記：W1-0 opt-in 決定性（2026-10-05）」。上一行保留原文。
 - **D3 閘門可以用了。** W1、W2 的判準是 `d3_gate.py --route-residual-max 0`；路由殘差的處理方式見「對 W1 的意義」。
 
 ## 各步驟

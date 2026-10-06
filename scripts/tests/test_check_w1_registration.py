@@ -10,7 +10,10 @@ allowlist is the registered one, and the fresh 6.05 output is the one
 relations_expected.json registered. It also refuses to let 8a/8b --recreate the
 batch-0 control: HEAD's scripts/tools/staging.env and the shell's
 QDRANT_ENTITY_COLLECTION must both be bible_entities_v3 (decision O7, confirmed
-2026-10-06). Each test builds a throwaway git checkout:
+2026-10-06). And Step 3 and Step 5 must not start without R0 item 9's batch-0
+staging backups (decision Q7: a rejection at W1 step 4 restores them): both
+dumps under --backup-dir exist, are not empty, and hash to the one line
+SHA256SUMS lists for each. Each test builds a throwaway git checkout:
 the fragments merged by the real diff_kg --merge-out --sha-out, the 6.05 output
 and report written with relation_postprocess's own serialize and
 expected_after_10_2 (test_check_edge_set.write_reference), and
@@ -52,6 +55,9 @@ W1_COLLECTION = "bible_entities_v3"
 RESIDUALS = E + "residuals_expected.json"
 XREF = E + "xref.json"
 SIDES = {"a": ("prod", "bolt://localhost:7687"), "b": ("staging", "bolt://localhost:7688")}
+BACKUP = "bak/x"   # bak/$D of the W1 R0 date
+DUMPS = ("neo4j_staging/neo4j.dump", "postgres/bible_rag_staging.dump")
+BACKUP_ROWS = tuple(f"{BACKUP}/{rel}" for rel in DUMPS)
 # xref_probe expect's document (W1's counts); fingerprint --expect reads version, fingerprint, xref_provenance
 XREF_DOC = {"version": 1, "inputs": {"relationships_sha256": "1" * 64, "embedding_queue_sha256": "2" * 64,
                                      "tsk_sha256": "3" * 64},
@@ -126,6 +132,18 @@ def write_staging_env(root: Path, collection: str) -> None:
     write(root, STAGING_ENV, line.sub(f"export {COLLECTION}={collection}", text))
 
 
+def write_backup(root: Path, contents=(b"NEO4J DUMP", b"PG DUMP")) -> Path:
+    """R0 item 9's two dumps and SHA256SUMS as its block leaves them: `sha256sum ./… >> SHA256SUMS` run in
+    bak/$D, after a line R0 wrote earlier for the prod dump (another path ending in neo4j.dump)."""
+    backup = root / BACKUP
+    lines = [f"{hashlib.sha256(b'prod').hexdigest()}  ./neo4j/neo4j.dump\n"]
+    for rel, data in zip(DUMPS, contents):
+        write(backup, rel, "").write_bytes(data)
+        lines.append(f"{hashlib.sha256(data).hexdigest()}  ./{rel}\n")
+    write(backup, cwr.BACKUP_SUMS, "".join(lines))
+    return backup
+
+
 def write_json(root: Path, rel: str, doc) -> None:
     write(root, rel, json.dumps(doc, ensure_ascii=False, sort_keys=True, indent=2) + "\n")
 
@@ -134,7 +152,7 @@ def write_json(root: Path, rel: str, doc) -> None:
 def checkout(tmp_path, monkeypatch, capsys):
     """A checkout after W1 pre-registration: the six files and the merged sha256 committed, the merged
     allowlist written but not committed (that waits for R4), and a fresh 6.05 output in output/; staging.env
-    bumped to v3 and committed (R0 item 8), and the staging shell holding v3."""
+    bumped to v3 and committed (R0 item 8), the staging shell holding v3, and R0 item 9's backups in bak/x."""
     def no_target(*_, **__):
         raise AssertionError("the registration check must not resolve a database target")
     monkeypatch.setattr(dk, "resolve_target", no_target)
@@ -154,12 +172,13 @@ def checkout(tmp_path, monkeypatch, capsys):
     write_staging_env(root, W1_COLLECTION)
     commit(root, *cwr.REGISTERED, STAGING_ENV)
     monkeypatch.setenv(COLLECTION, W1_COLLECTION)
+    write_backup(root)   # untracked, as bak/ is
     capsys.readouterr()
     return root
 
 
-def run(root: Path, capsys, *extra: str) -> SimpleNamespace:
-    code = cwr.main(["--root", str(root), *extra])
+def run(root: Path, capsys, *extra: str, backup: bool = True) -> SimpleNamespace:
+    code = cwr.main(["--root", str(root), *(["--backup-dir", str(root / BACKUP)] if backup else []), *extra])
     out = capsys.readouterr().out
     found = list(re.finditer(r"^  ([A-Z]+) +(\S+)  (.*)$", out, re.M))
     return SimpleNamespace(code=code, out=out, rows={m[2]: m[1] for m in found}, texts={m[2]: m[3] for m in found})
@@ -169,7 +188,8 @@ def test_registered_checkout_exits_0(checkout, capsys):
     result = run(checkout, capsys)
 
     assert result.code == 0, result.out
-    assert result.rows == {**{rel: "OK" for rel in cwr.REGISTERED}, cwr.MERGED: "OK", REPORT: "OK", COLLECTION: "OK"}
+    assert result.rows == {**{rel: "OK" for rel in cwr.REGISTERED}, cwr.MERGED: "OK", REPORT: "OK", COLLECTION: "OK",
+                           **{name: "OK" for name in BACKUP_ROWS}}
     assert W1_COLLECTION in result.texts[COLLECTION] and "bible_entities_v2" in result.texts[COLLECTION]
     assert "continue with Step 3" in result.out
     digests = residuals_doc()["mentions_props"]["sha256"]
@@ -191,6 +211,7 @@ def test_runbook_names_and_merge_order():
     assert cwr._PROJECT_ROOT / cwr.DEFAULT_REPORT == pp.DEFAULT_REPORT   # where 6.05 writes it
     assert (cwr.STAGING_ENV, cwr.W1_COLLECTION, cwr.BATCH0_COLLECTION) == (
         STAGING_ENV, W1_COLLECTION, "bible_entities_v2")
+    assert (cwr.BATCH0_BACKUPS, cwr.BACKUP_SUMS) == (DUMPS, "SHA256SUMS")   # what R0 item 9 writes
 
 
 @pytest.mark.parametrize("rel", [E + "residuals_expected.json", E + "xref.json", E + "relations_allow.yaml",
@@ -490,3 +511,86 @@ def test_the_collection_is_read_as_bash_assigns_it(text, value):
 def test_the_real_staging_env_names_one_versioned_collection():
     # v2 until R0 item 8 commits the bump, v3 after: either way the parser reads the real file's format
     assert re.fullmatch(r"bible_entities_v\d+", cwr.committed_collection(ROOT) or ""), cwr.committed_collection(ROOT)
+
+
+# --- R0 item 9's batch-0 staging backups: Step 3 and Step 5 never start without them --------
+
+def _only(result, name: str, status: str) -> None:
+    assert result.code == 1 and result.rows[name] == status, result.out
+    assert {n for n, s in result.rows.items() if s != "OK"} == {name}, result.out
+    for needle in ("STOP: not as registered", "Do not run Step 3", "R0 item 9", "batch-0 staging backup"):
+        assert needle in result.out, needle
+
+
+def test_the_backup_rows_name_both_dumps_and_their_sha256(checkout, capsys):
+    result = run(checkout, capsys)
+
+    for name, data in zip(BACKUP_ROWS, (b"NEO4J DUMP", b"PG DUMP")):
+        assert result.rows[name] == "OK" and hashlib.sha256(data).hexdigest()[:12] in result.texts[name]
+        assert cwr.BACKUP_SUMS in result.texts[name]
+
+
+def test_without_a_backup_dir_both_rows_are_invalid(checkout, capsys):
+    result = run(checkout, capsys, backup=False)
+
+    assert result.code == 1
+    names = {f"bak/$D/{rel}" for rel in DUMPS}
+    assert {n for n, s in result.rows.items() if s != "OK"} == names, result.out
+    assert all(result.rows[n] == "INVALID" and "--backup-dir" in result.texts[n] for n in names), result.out
+
+
+def _sums(root: Path) -> Path:
+    return root / BACKUP / cwr.BACKUP_SUMS
+
+
+@pytest.mark.parametrize("dump", [0, 1], ids=DUMPS)
+def test_a_missing_backup_exits_1(checkout, capsys, dump):
+    (checkout / BACKUP_ROWS[dump]).unlink()
+
+    _only(run(checkout, capsys), BACKUP_ROWS[dump], "MISSING")
+
+
+def test_an_empty_backup_exits_1_even_when_listed(checkout, capsys):
+    write_backup(checkout, contents=(b"NEO4J DUMP", b""))   # a 0-byte file and its (valid) sha256 line
+
+    _only(run(checkout, capsys), BACKUP_ROWS[1], "EMPTY")
+
+
+@pytest.mark.parametrize("dump", [0, 1], ids=DUMPS)
+def test_a_backup_sha256sums_does_not_list_exits_1(checkout, capsys, dump):
+    lines = _sums(checkout).read_text(encoding="utf-8").splitlines(keepends=True)
+    _sums(checkout).write_text("".join(line for line in lines if not line.endswith(f"./{DUMPS[dump]}\n")),
+                               encoding="utf-8")
+
+    result = run(checkout, capsys)
+
+    _only(result, BACKUP_ROWS[dump], "INVALID")
+    assert f"lists no sha256 for ./{DUMPS[dump]}" in result.texts[BACKUP_ROWS[dump]]
+
+
+def test_no_sha256sums_at_all_exits_1(checkout, capsys):
+    _sums(checkout).unlink()
+
+    result = run(checkout, capsys)
+
+    assert result.code == 1 and all(result.rows[name] == "INVALID" for name in BACKUP_ROWS), result.out
+
+
+def test_a_backup_changed_after_its_sha256_line_exits_1(checkout, capsys):
+    listed = hashlib.sha256(b"NEO4J DUMP").hexdigest()
+    (checkout / BACKUP_ROWS[0]).write_bytes(b"another dump")
+
+    result = run(checkout, capsys)
+
+    _only(result, BACKUP_ROWS[0], "MISMATCH")
+    assert listed in result.texts[BACKUP_ROWS[0]]
+
+
+def test_two_different_sha256_lines_for_one_backup_exit_1(checkout, capsys):
+    with _sums(checkout).open("a", encoding="utf-8") as sums:
+        sums.write(f"{hashlib.sha256(b'other').hexdigest()}  ./{DUMPS[1]}\n")
+
+    result = run(checkout, capsys)
+
+    _only(result, BACKUP_ROWS[1], "INVALID")
+    assert "2 different sha256" in result.texts[BACKUP_ROWS[1]]
