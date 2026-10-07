@@ -1,0 +1,102 @@
+# S4 errata 覆寫層（DESIGN §2.12、稽核 G11、決策 D-03(b)）
+#
+# PDF 本身印錯 9 種字、共 25 處，全在同一段 Big5 碼位 E041–E050：每個錯字都是
+# 該碼位在標準 Big5 的字（詷=E04A、詵=E04D…），顯示原稿在這段碼位放了自造字。
+# 同一段的 E046「誆」在士14:15、16:5、撒下3:25、王上13:18 都是正確的「誆哄」，不是錯字。
+#
+# 規則：text_pdf 永遠保留印出的字；status=apply 的錯字在 text 的同一位置換成正字
+# （等長、只換這一個字），容器記下 errata id；status=uncertain 只列出、不套用。
+# 建置時逐條驗證（不合就整個建置失敗）：
+#   - 每筆的容器在該 offset 確實是該錯字；
+#   - PDF 文字中每一處錯字都有一筆（不會漏網）；
+#   - 正字在整份 PDF 文字中出現 0 次（G11：凡該印正字處都印成錯字），寫入 evidence。
+# 查證方式：上下文的詞義，加上同一錯字在各處的用法一致；正字取繁體標準字形
+# （本 PDF 用字依台灣標準字形：衛、線、峰、群、為、眾、麵、卻、冊、溫、麼、腳、雞、臺）。
+schema: ragdata.errata.v1
+class: big5_e04x_misglyph
+decided_by: claude
+not_errata:
+  誆: {big5: E046, why: 4 處都是「誆哄」（哄騙），詞義與上下文相符}
+misglyphs:
+  觠:
+    big5: E041
+    status: apply
+    corrected: 兔
+    word: 兔子
+    why: 利11:6「X子－因為倒嚼不分蹄」、申14:7「駱駝、X子、沙番」；不潔淨的倒嚼動物清單，即兔子
+  觢:
+    big5: E042
+    status: apply
+    corrected: 敕
+    word: 敕令
+    why: 徒19:13 趕鬼者說「我奉保羅所傳的耶穌X令你們出來」，即敕令（命令）
+  訿:
+    big5: E049
+    status: apply
+    corrected: 灶
+    word: 爐灶
+    why: 出8:3 青蛙「進你的爐X和你的摶麵盆」，即爐灶
+  詷:
+    big5: E04A
+    status: apply
+    corrected: 秕
+    word: 糠秕
+    why: 7 處都是「糠X」且多與「被風吹散」「碎稭」「麥子」並列（詩1:4、伯21:18、耶23:28），即糠秕
+  誄:
+    big5: E04C
+    status: apply
+    corrected: 蔥
+    word: 蔥
+    why: 民11:5「黃瓜、西瓜、韭菜、X、蒜」，蔬菜清單，即蔥
+  詵:
+    big5: E04D
+    status: apply
+    corrected: 蹚
+    word: 蹚水
+    why: 9 處都是涉水（「X過約旦河」「使我X過水，水到踝子骨」「露腿X河」「X渾之泉」），即蹚
+  誃:
+    big5: E04E
+    status: apply
+    corrected: 鬃
+    word: 鬃
+    why: 伯39:19「牠（馬）頸項上挓挲的X」，即馬鬃
+  誁:
+    big5: E04F
+    status: uncertain
+    candidates: [麅, 狍]
+    word: 麅子／狍子
+    why: >-
+      申14:5「鹿、羚羊、X子、野山羊」、王上4:23「鹿、羚羊、X子，並肥禽」，詞義是麅（狍），
+      但「麅」與「狍」兩種字形 PDF 內都出現 0 次，無從判定版本用哪一個，先不套用
+  詴:
+    big5: E050
+    status: apply
+    corrected: 虻
+    word: 牛虻
+    why: 耶46:20 註腳「或譯：牛X」，經文同節是「出於北方的毀滅」，或譯為牛虻
+entries:   # 依正典序；註解是 PDF 原文上下文
+  - {id: "er:0001", container: "exo.8.3", offset: 51, pdf: 訿, fix: 灶}   # 上，進你的爐訿和你的摶
+  - {id: "er:0002", container: "lev.11.6", offset: 0, pdf: 觠, fix: 兔}   # 觠子－因為
+  - {id: "er:0003", container: "num.11.5", offset: 31, pdf: 誄, fix: 蔥}   # 西瓜、韭菜、誄、蒜。
+  - {id: "er:0004", container: "deu.14.5", offset: 5, pdf: 誁, fix: null}   # 鹿、羚羊、誁子、野山
+  - {id: "er:0005", container: "deu.14.7", offset: 20, pdf: 觠, fix: 兔}   # 的乃是駱駝、觠子、沙番
+  - {id: "er:0006", container: "2sa.19.17", offset: 40, pdf: 詵, fix: 蹚}   # 僕人；他們都詵過約旦河
+  - {id: "er:0007", container: "1ki.4.23", offset: 25, pdf: 誁, fix: null}   # 有鹿、羚羊、誁子，並肥
+  - {id: "er:0008", container: "job.21.18", offset: 18, pdf: 詷, fix: 秕}   # 暴風颳去的糠詷呢？
+  - {id: "er:0009", container: "job.39.19", offset: 18, pdf: 誃, fix: 鬃}   # 頸項上挓挲的誃是你給牠
+  - {id: "er:0010", container: "psa.1.4", offset: 11, pdf: 詷, fix: 秕}   # 這樣，乃像糠詷被風吹散
+  - {id: "er:0011", container: "pro.25.26", offset: 12, pdf: 詵, fix: 蹚}   # 前退縮，好像詵渾之泉，
+  - {id: "er:0012", container: "isa.33.11", offset: 7, pdf: 詷, fix: 秕}   # 們要懷的是糠詷，要生的
+  - {id: "er:0013", container: "isa.41.15", offset: 35, pdf: 詷, fix: 秕}   # 使岡陵如同糠詷。
+  - {id: "er:0014", container: "isa.43.2", offset: 15, pdf: 詵, fix: 蹚}   # 與你同在；你詵過江河，
+  - {id: "er:0015", container: "isa.47.2", offset: 18, pdf: 詵, fix: 蹚}   # 去長衣，露腿詵河。
+  - {id: "er:0016", container: "jer.23.28", offset: 28, pdf: 詷, fix: 秕}   # 說我的話。糠詷怎能與麥
+  - {id: "er:0017", container: "fn:jer.46.20#1", offset: 4, pdf: 詴, fix: 虻}   # 或譯：牛詴
+  - {id: "er:0018", container: "ezk.47.3", offset: 21, pdf: 詵, fix: 蹚}   # 一千肘，使我詵過水，水
+  - {id: "er:0019", container: "ezk.47.4", offset: 10, pdf: 詵, fix: 蹚}   # 一千肘，使我詵過水，水
+  - {id: "er:0020", container: "ezk.47.4", offset: 28, pdf: 詵, fix: 蹚}   # 一千肘，使我詵過水，水
+  - {id: "er:0021", container: "ezk.47.5", offset: 17, pdf: 詵, fix: 蹚}   # 河，使我不能詵過。因為
+  - {id: "er:0022", container: "ezk.47.5", offset: 36, pdf: 詵, fix: 蹚}   # 洑的水，不可詵的河。
+  - {id: "er:0023", container: "dan.2.35", offset: 28, pdf: 詷, fix: 秕}   # 天禾場上的糠詷，被風吹
+  - {id: "er:0024", container: "hos.13.3", offset: 26, pdf: 詷, fix: 秕}   # ，像場上的糠詷被狂風吹
+  - {id: "er:0025", container: "act.19.13", offset: 49, pdf: 觢, fix: 敕}   # 羅所傳的耶穌觢令你們出
