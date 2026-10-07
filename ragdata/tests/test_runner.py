@@ -100,3 +100,8 @@ def test_det_refuses_to_call_different_layers_identical(tmp_path):
     result = check_det(text.path, struct.path)
     assert not result.passed
     assert result.details[-1] == "layers differ: text vs struct"
+
+
+def test_a_report_without_gates_does_not_pass():
+    from ragdata.gates.runner import GateReport
+    assert not GateReport("text", "text@0123456789ab", {}, ()).passed

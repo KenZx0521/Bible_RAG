@@ -36,7 +36,7 @@ class GateReport:
 
     @property
     def passed(self) -> bool:
-        return all(g.passed for g in self.gates if g.hard)
+        return bool(self.gates) and all(g.passed for g in self.gates if g.hard)
 
     def to_json(self) -> dict[str, Any]:
         return {"schema": REPORT_SCHEMA, "layer": self.layer, "layer_version": self.layer_version,

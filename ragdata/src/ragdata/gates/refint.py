@@ -7,7 +7,8 @@ Two kinds of checks:
   and their chapter's verse grid, omitted slots and variant footnotes point at
   each other, stored aggregates equal the records, offsets fall inside their
   container and name/errata slices match its text, passages and pericopes list
-  each other, and prev/next links are mutual.
+  each other (passages carry their pericope's title), and prev/next links are
+  mutual.
 Deleting or redirecting a record therefore turns this gate red (audit G58).
 """
 
@@ -257,10 +258,13 @@ def _passage_links(idx: Index) -> list[str]:
             if ps is not None and got != want:
                 out.append(f"pericopes {pc.pericope_id}: passage {ps_id} has "
                            f"(pericope_id, seg_idx, seg_count) {got}, expected {want}")
-    out += [f"passages {ps.passage_id}: not listed by {ps.pericope_id}"
-            for ps in passages.values()
-            if ps.pericope_id in pericopes
-            and ps.passage_id not in pericopes[ps.pericope_id].passage_ids]
+    for ps in passages.values():
+        pc = pericopes.get(ps.pericope_id)
+        if pc is not None and ps.passage_id not in pc.passage_ids:
+            out.append(f"passages {ps.passage_id}: not listed by {ps.pericope_id}")
+        if pc is not None and ps.title != pc.title:
+            out.append(f"passages {ps.passage_id}: title {ps.title!r} differs from "
+                       f"{pc.pericope_id} title {pc.title!r}")
     return out
 
 

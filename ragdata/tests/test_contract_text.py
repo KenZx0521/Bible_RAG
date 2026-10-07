@@ -144,3 +144,9 @@ def test_error_names_the_offending_field():
     type_name, raw = BROKEN["unknown line break kind"]
     with pytest.raises(ContractError, match="line_breaks"):
         parse_record(type_name, raw)
+
+
+def test_malformed_container_id_is_a_contract_error_not_a_crash():
+    type_name, raw = _with("name_spans", "ns:act.9.1@0", container_id="not an id")
+    with pytest.raises(ContractError):
+        parse_record(type_name, raw)

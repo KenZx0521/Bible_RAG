@@ -135,6 +135,7 @@ def write_layer(root: Path | str, layer: str, files: Mapping[str, bytes],
         for name in shas:
             _write_file(tmp / name, files[name])
         _write_file(tmp / MANIFEST, _manifest_bytes(layer, version, digest, shas, deps))
+        os.chmod(tmp, 0o755)
         _publish(tmp, target)
     except BaseException:
         shutil.rmtree(tmp, ignore_errors=True)

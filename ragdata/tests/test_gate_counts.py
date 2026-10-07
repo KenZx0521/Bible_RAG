@@ -94,3 +94,9 @@ def test_pdf_counts_are_internally_consistent():
     assert kinds <= text["footnotes"]
     assert text["section_ranges"] <= text["parallel_segments"]
     assert struct["passages"] == struct["pericopes"] + struct["passages_continued"]
+
+
+def test_list_expectation_for_a_scalar_count_is_red_not_a_crash():
+    counts = dict(load_counts(MINI_COUNTS)["text"])
+    counts["books"] = counts["books"]._replace(value=("psa",))
+    assert not check_counts(_mini_snapshot(), "text", counts).passed

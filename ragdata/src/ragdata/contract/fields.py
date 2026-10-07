@@ -58,7 +58,10 @@ def parse(cls: type[Record], raw: Any) -> Record:
         except ContractError as exc:
             raise ContractError(f"{_json_key(f)}: {exc}") from None
     record = cls(**values)
-    record.check()
+    try:
+        record.check()
+    except ids.IdError as exc:
+        raise ContractError(f"{cls.__name__}: {exc}") from None
     return record
 
 

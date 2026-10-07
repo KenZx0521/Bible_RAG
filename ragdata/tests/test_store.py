@@ -114,3 +114,13 @@ def test_jsonl_encoding_is_canonical():
 def test_jsonl_decoding_is_strict(data):
     with pytest.raises(StoreError):
         store.decode_jsonl(data, "x.jsonl")
+
+
+def test_nan_is_not_written_as_json():
+    with pytest.raises(StoreError):
+        store.encode_jsonl([{"x": float("nan")}])
+
+
+def test_published_version_is_readable_by_other_users(tmp_path):
+    stored = store.write_layer(tmp_path, "text", FILES)
+    assert stored.path.stat().st_mode & 0o755 == 0o755

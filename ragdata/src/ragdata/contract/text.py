@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from ragcommon import books, ids
 from ragdata.contract.fields import (
-    Record, boolean, check_dual_text, hex64, id_of, integer, json_object, list_of, nested,
+    Check, Record, boolean, check_dual_text, hex64, id_of, integer, json_object, list_of, nested,
     number, one_of, optional, parsed, require, sha256_text, spec, string, verse_order,
 )
 
@@ -27,7 +27,7 @@ ERRATA_CONTAINERS = {
 }
 
 
-def errata_id() -> object:
+def errata_id() -> Check:
     """``er:NNNN``; errata ids are not part of the ragcommon grammar (design §2.12)."""
     def check(value):
         require(isinstance(value, str) and ERRATA_ID_RE.fullmatch(value) is not None,
@@ -36,7 +36,7 @@ def errata_id() -> object:
     return check
 
 
-def _pages() -> object:
+def _pages() -> Check:
     return list_of(integer(1), min_len=1)
 
 

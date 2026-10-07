@@ -91,8 +91,8 @@ COUNTERS: Mapping[str, Mapping[str, Counter]] = {"text": TEXT_COUNTERS, "struct"
 
 def _same(observed: Any, expected: Any) -> bool:
     if isinstance(expected, tuple):
-        return sorted(observed) == sorted(expected)
-    return observed == expected
+        return isinstance(observed, list) and sorted(observed) == sorted(expected)
+    return not isinstance(observed, list) and observed == expected
 
 
 def _show(value: Any) -> Any:

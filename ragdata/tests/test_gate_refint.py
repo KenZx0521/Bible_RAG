@@ -134,6 +134,8 @@ STRUCT_CASES = {
         "act.9.5"),
     "passage superscription missing": (
         lambda f: _drop(f, "chapter_texts", "id", "sp:psa.42"), "sp:psa.42"),
+    "continued passage drops the title": (
+        _set("passages", "passage_id", "ps:act.10.1", title="別的標題"), "title"),
     "next book missing": (_set("pericopes", "pericope_id", "pc:psa.42.1", next_book_id="gen"),
                           "gen"),
 }

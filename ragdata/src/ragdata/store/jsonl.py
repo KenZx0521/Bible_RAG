@@ -11,8 +11,11 @@ class StoreError(ValueError):
 
 
 def encode_jsonl(rows: Iterable[Mapping[str, Any]]) -> bytes:
-    lines = [json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-             for row in rows]
+    try:
+        lines = [json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+                            allow_nan=False) for row in rows]
+    except (TypeError, ValueError) as exc:
+        raise StoreError(f"row is not plain JSON: {exc}") from None
     return "".join(line + "\n" for line in lines).encode("utf-8")
 
 
