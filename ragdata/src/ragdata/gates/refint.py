@@ -11,7 +11,10 @@ Two kinds of checks:
   mutual.
 So a record that is deleted while something still refers to it or counts it,
 or a reference redirected to a record that disagrees, turns this gate red
-(audit G58). It only checks that the records agree with each other: content
+(audit G58). References that cross books (parallel targets, footnote citations)
+are checked only into books the snapshot holds, so a build of some books can be
+gated; that a full build holds all 66 books is G-COUNT's and G-SRC's job.
+It only checks that the records agree with each other: content
 that is consistently wrong or missing everywhere (a truncated verse with a
 recomputed sha, a passage that skips a verse, a pericope that ends early,
 dropped chunks, unset links) is the job of G-COUNT, G-TEXT, G-CONSERVE,
@@ -42,11 +45,13 @@ class ForeignKey:
     label: str
     target: str
     refs: Callable[[Any], Iterable[str | None]]
+    cross_book: bool = False  # only references into books the snapshot holds are checked
 
 
 def fk(source: str, label: str, target: str,
-       refs: Callable[[Any], Iterable[str | None]] | None = None) -> ForeignKey:
-    return ForeignKey(source, label, target, refs or (lambda r: [getattr(r, label)]))
+       refs: Callable[[Any], Iterable[str | None]] | None = None,
+       cross_book: bool = False) -> ForeignKey:
+    return ForeignKey(source, label, target, refs or (lambda r: [getattr(r, label)]), cross_book)
 
 
 def _chapter_of(key: str) -> str:
@@ -75,10 +80,10 @@ TEXT_FKS = (
     fk("headings", "anchor_unit_key", "verse_units"),
     fk("headings", "parent_heading_id", "headings"),
     fk("parallel_refs", "heading_id", "headings"),
-    fk("parallel_refs", "targets", "verse_slots", _range_slots("targets")),
+    fk("parallel_refs", "targets", "verse_slots", _range_slots("targets"), cross_book=True),
     fk("footnotes", "unit_key", "verse_units"),
     fk("footnotes", "variant_slot_key", "verse_slots"),
-    fk("footnotes", "refs", "verse_slots", _range_slots("refs")),
+    fk("footnotes", "refs", "verse_slots", _range_slots("refs"), cross_book=True),
     fk("footnotes", "errata_ids", "errata_applied", lambda f: f.errata_ids),
     fk("speakers", "unit_key", "verse_units"),
     fk("ref_aliases", "target", "verse_slots"),
@@ -103,9 +108,11 @@ STRUCT_FKS = (
 
 def _dangling(idx: Index, key: ForeignKey) -> list[str]:
     pk, target = record_type(key.source).pk, idx[key.target]
+    held = idx["books"]
     return [f"{key.source} {getattr(rec, pk)}: {key.label} {ref} not found in {key.target}"
             for rec in idx[key.source].values() for ref in key.refs(rec)
-            if ref is not None and ref not in target]
+            if ref is not None and ref not in target
+            and not (key.cross_book and ids.parse(ref).book_id not in held)]
 
 
 # ------------------------------------------------------------------ text agreement
@@ -155,13 +162,17 @@ def _chapter_aggregates(idx: Index) -> list[str]:
         else:
             present[_chapter_of(slot.slot_key)] += 1
     supers = {t.chapter_key for t in idx["chapter_texts"].values() if t.kind == "superscription"}
+    divisions = {t.chapter_key: t.id for t in idx["chapter_texts"].values()
+                 if t.kind == "book_division"}
     out = []
     for c in idx["chapters"].values():
         actual = {"unit_count": units[c.chapter_key], "present_slot_count": present[c.chapter_key],
                   "omitted_slots": omitted[c.chapter_key],
-                  "has_superscription": c.chapter_key in supers}
+                  "has_superscription": c.chapter_key in supers,
+                  "book_division_id": divisions.get(c.chapter_key)}
         stored = {"unit_count": c.unit_count, "present_slot_count": c.present_slot_count,
-                  "omitted_slots": set(c.omitted_slots), "has_superscription": c.has_superscription}
+                  "omitted_slots": set(c.omitted_slots), "has_superscription": c.has_superscription,
+                  "book_division_id": c.book_division_id}
         out += [f"chapters {c.chapter_key}: {k} is {stored[k]}, records give {actual[k]}"
                 for k in actual if actual[k] != stored[k]]
     return out

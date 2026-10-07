@@ -64,6 +64,8 @@ TEXT_CASES = {
         _set("chapters", "chapter_key", "mat.18", has_superscription=True), "has_superscription"),
     "chapter division missing": (
         lambda f: _drop(f, "chapter_texts", "id", "dv:psa.42"), "dv:psa.42"),
+    "chapter forgets its division": (
+        _set("chapters", "chapter_key", "psa.42", book_division_id=None), "book_division_id"),
     "book chapter count": (_set("books", "book_id", "act", chapter_count=1), "chapter_count"),
     "book of a chapter missing": (lambda f: _drop(f, "books", "book_id", "sng"), "sng"),
     "unit in a missing chapter": (lambda f: _drop(f, "chapters", "chapter_key", "act.10"), "act.10"),
@@ -111,6 +113,15 @@ def test_broken_text_references_are_red(case):
     result = _refint(files, "text")
     assert not result.passed
     assert any(needle in d for d in result.details), result.details
+
+
+def test_references_into_a_book_the_snapshot_does_not_hold_are_left_to_g_count():
+    files = mini_build.files(*BOTH)
+    _row(files, "parallel_refs", "pr_id", "pr:hd:mat.18.1#1#1")["targets"] = [
+        {"book_id": "luk", "start_slot": "luk.1.1", "end_slot": "luk.1.4"}]
+    _row(files, "footnotes", "fn_id", "fn:eph.6.1#1")["refs"] = [
+        {"book_id": "gen", "start_slot": "gen.1.1", "end_slot": "gen.1.1"}]
+    assert _refint(files, "text").passed
 
 
 STRUCT_CASES = {
