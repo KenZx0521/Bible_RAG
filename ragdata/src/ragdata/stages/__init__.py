@@ -49,7 +49,7 @@ from ragdata.store import StoredLayer, encode_jsonl, write_layer
 
 __all__ = ["BUILDABLE", "REPORT_SCHEMA", "BuildResult", "TextInputs", "build", "gates_pass"]
 
-BUILDABLE = ("text", "struct")
+BUILDABLE = ("text", "struct", "kg0", "events", "route")
 TEXT_TYPES = (*S2_TYPES, "errata_applied", "ref_aliases")
 
 

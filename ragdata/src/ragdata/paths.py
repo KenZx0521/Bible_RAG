@@ -10,3 +10,10 @@ BIBLE_MD = REPO / "bible_md"                  # the converter corpus the layer r
 CANONICAL = Path("/mnt/ollama-data/bible_rag_store/reference/audit_prototypes/"
                  "gap_pdf_canonical/canonical_full.jsonl")  # the audit's verse table
 LEGACY_OUTPUT = REPO / "output"              # the old build's records, read for legacy_ids only
+# KG stages (K1, K4) and the DAG-external tools that write their registries
+EVENTS_REGISTRY = REGISTRIES / "events.yaml"                  # K1, converted from the next line
+LEGACY_EVENT_REGISTRY = REPO / "backend" / "data" / "event_registry.json"
+FROZEN_LEXICON = REGISTRIES / "routing_lexicon.legacy.json"   # K4, frozen from the backend
+GROUND_TRUTH = REPO / "ground_truth.json"                     # G-ROUTE probe questions
+BACKEND = REPO / "backend"
+BACKEND_PYTHON = BACKEND / ".venv" / "bin" / "python"          # imports entity_dicts (G-ROUTE)

@@ -6,16 +6,31 @@
                                  [--report FILE]
     python -m ragdata build struct --text TEXT_LAYER_DIR [--store DIR] [--counts YAML]
                                  [--legacy-dir DIR] [--tokenizer FILE] [--report FILE]
-    python -m ragdata gate {text,struct} LAYER_DIR [--dep DIR ...] [--pdf-dir DIR]
-                                 [--counts YAML] [--source-expect YAML] [--registries DIR]
-                                 [--tokenizer FILE] [--report FILE]
+    python -m ragdata build kg0 --text DIR --struct DIR [--registries DIR] [--kg0-counts YAML]
+    python -m ragdata build events --text DIR --struct DIR [--events-yaml YAML]
+                                 [--legacy-registry JSON] [--counts YAML]
+    python -m ragdata build route --text DIR [--lexicon JSON] [--ground-truth JSON]
+                                 [--backend-python PY] [--backend-dir DIR] [--counts YAML]
+    python -m ragdata gate LAYER LAYER_DIR [--dep DIR ...] [--pdf-dir DIR] [--counts YAML]
+                                 [--source-expect YAML] [--registries DIR] [--tokenizer FILE]
+                                 [--kg0-counts YAML] [--legacy-registry JSON] [--lexicon JSON]
+                                 [--ground-truth JSON] [--backend-python PY] [--backend-dir DIR]
+                                 [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
+
+DAG-external tools that write a registry or an expectation file (never run by a build):
+
+    python -m ragdata expect kg0 --text DIR --struct DIR [--registries DIR] [--out YAML]
+    python -m ragdata convert events --text DIR --struct DIR [--legacy-registry JSON] [--out YAML]
+    python -m ragdata freeze route [--backend-python PY] [--backend-dir DIR] [--out JSON]
 
 A text layer is gated with its src layer as a dependency (G-CONSERVE re-reads
 it) and the PDFs (G-XCHECK re-reads them); without them those gates fail closed.
 A struct layer is built from, and gated with, its text layer; G-STRUCT counts
 tokens with the pinned BGE-M3 tokenizer (the HF cache, or ``--tokenizer``) and
-fails closed when it does not load.
+fails closed when it does not load. kg0 and events are built from, and gated
+with, text and struct; route with text. G-ROUTE runs the backend's live matcher
+with ``--backend-python`` (the backend venv) and fails closed without it.
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
 0 everything passed, 1 a hard gate failed, 2 bad input (including a stage that
@@ -31,35 +46,48 @@ import json
 import sys
 import traceback
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
 
 import yaml
 
 from ragdata import paths, stages
 from ragdata.contract import LAYERS
-from ragdata.contract.counts import PDF_COUNTS_PATH, CountsError
+from ragdata.contract.counts import KG0_COUNTS_PATH, PDF_COUNTS_PATH, CountsError
 from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
+from ragdata.kg import k0_build
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct import build as struct_stage
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.store import DEFAULT_ROOT, StoreError
 
 EXIT_OK, EXIT_GATE_FAILED, EXIT_ERROR, EXIT_INTERNAL = 0, 1, 2, 3
+KG0_COUNTS_HEADER = ("# 由 `python -m ragdata expect kg0` 從定版 text／struct 層與 K0 註冊表算出，"
+                     "G-KG0 逐項比對；不要手改。\n")
 
 
 class CliError(ValueError):
     """Bad command-line input."""
 
 
-def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="ragdata", description="Bible_RAG snapshot pipeline")
-    sub = parser.add_subparsers(dest="command", required=True)
-    build = sub.add_parser("build", help="build a layer from the PDFs into the store")
+def _kg_inputs(parser: argparse.ArgumentParser) -> None:
+    """Options the KG builds and gates share."""
+    parser.add_argument("--kg0-counts", type=Path, default=KG0_COUNTS_PATH)
+    parser.add_argument("--events-yaml", type=Path, default=paths.EVENTS_REGISTRY)
+    parser.add_argument("--legacy-registry", type=Path, default=paths.LEGACY_EVENT_REGISTRY)
+    parser.add_argument("--lexicon", type=Path, default=paths.FROZEN_LEXICON)
+    parser.add_argument("--ground-truth", type=Path, default=paths.GROUND_TRUTH)
+    parser.add_argument("--backend-python", type=Path, default=paths.BACKEND_PYTHON)
+    parser.add_argument("--backend-dir", type=Path, default=paths.BACKEND)
+
+
+def _build_parser(sub: Any) -> None:
+    build = sub.add_parser("build", help="build a layer into the store")
     build.add_argument("layer", choices=stages.BUILDABLE)
     build.add_argument("--pdf-dir", type=Path, help="the PDFs (text)")
-    build.add_argument("--text", type=Path, help="the text layer to build on (struct)")
+    build.add_argument("--text", type=Path, help="the text layer to build on")
+    build.add_argument("--struct", type=Path, help="the struct layer to build on (kg0, events)")
     build.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
                        help="the old output/, read for legacy_ids (struct)")
     build.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct)")
@@ -72,6 +100,10 @@ def _parser() -> argparse.ArgumentParser:
     build.add_argument("--diff-expect", type=Path, default=DIFF_EXPECT_PATH)
     build.add_argument("--workers", type=int, default=8)
     build.add_argument("--report", type=Path)
+    _kg_inputs(build)
+
+
+def _gate_parser(sub: Any) -> None:
     gate = sub.add_parser("gate", help="run the data gates of a stored layer")
     gate.add_argument("layer", choices=LAYERS)
     gate.add_argument("layer_dir", type=Path)
@@ -83,10 +115,39 @@ def _parser() -> argparse.ArgumentParser:
     gate.add_argument("--registries", type=Path, default=paths.REGISTRIES)
     gate.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json, for G-STRUCT")
     gate.add_argument("--report", type=Path)
+    _kg_inputs(gate)
+
+
+def _tool_parsers(sub: Any) -> None:
+    expect = sub.add_parser("expect", help="write the kg0 expectation file (outside the DAG)")
+    expect.add_argument("layer", choices=("kg0",))
+    expect.add_argument("--text", type=Path, required=True)
+    expect.add_argument("--struct", type=Path, required=True)
+    expect.add_argument("--registries", type=Path, default=paths.REGISTRIES)
+    expect.add_argument("--out", type=Path, default=KG0_COUNTS_PATH)
+    convert = sub.add_parser("convert", help="convert the legacy event registry (outside the DAG)")
+    convert.add_argument("what", choices=("events",))
+    convert.add_argument("--text", type=Path, required=True)
+    convert.add_argument("--struct", type=Path, required=True)
+    convert.add_argument("--legacy-registry", type=Path, default=paths.LEGACY_EVENT_REGISTRY)
+    convert.add_argument("--out", type=Path, default=paths.EVENTS_REGISTRY)
+    freeze = sub.add_parser("freeze", help="freeze the backend routing lexicon (outside the DAG)")
+    freeze.add_argument("what", choices=("route",))
+    freeze.add_argument("--backend-python", type=Path, default=paths.BACKEND_PYTHON)
+    freeze.add_argument("--backend-dir", type=Path, default=paths.BACKEND)
+    freeze.add_argument("--out", type=Path, default=paths.FROZEN_LEXICON)
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="ragdata", description="Bible_RAG snapshot pipeline")
+    sub = parser.add_subparsers(dest="command", required=True)
+    _build_parser(sub)
+    _gate_parser(sub)
     det = sub.add_parser("det", help="G-DET: compare two runs of the same layer")
     det.add_argument("first", type=Path)
     det.add_argument("second", type=Path)
     det.add_argument("--report", type=Path)
+    _tool_parsers(sub)
     return parser
 
 
@@ -97,9 +158,14 @@ def _emit(doc: dict[str, Any], report: Path | None) -> None:
     sys.stdout.write(text)
 
 
+def _need_dir(value: Path | None, option: str) -> Path:
+    if value is None or not value.is_dir():
+        raise CliError(f"{option} {value} is not a directory")
+    return value
+
+
 def _build_text(args: argparse.Namespace) -> stages.BuildResult:
-    if args.pdf_dir is None or not args.pdf_dir.is_dir():
-        raise CliError(f"--pdf-dir {args.pdf_dir} is not a directory")
+    _need_dir(args.pdf_dir, "--pdf-dir")
     inputs = stages.TextInputs(registries=args.registries, md_dir=args.md_dir,
                                canonical=args.canonical, diff_expect=args.diff_expect)
     return stages.build(args.layer, args.pdf_dir, args.store, counts_path=args.counts,
@@ -107,22 +173,38 @@ def _build_text(args: argparse.Namespace) -> stages.BuildResult:
 
 
 def _build_struct(args: argparse.Namespace) -> stages.BuildResult:
-    if args.text is None or not args.text.is_dir():
-        raise CliError(f"--text {args.text} is not a layer directory")
     inputs = struct_stage.StructInputs(legacy_dir=args.legacy_dir, tokenizer=args.tokenizer)
-    return struct_stage.build_struct(args.text, args.store, counts_path=args.counts, inputs=inputs)
+    return struct_stage.build_struct(_need_dir(args.text, "--text"), args.store,
+                                     counts_path=args.counts, inputs=inputs)
+
+
+def _build_kg0(args: argparse.Namespace) -> stages.BuildResult:
+    return k0_build.build_kg0(_need_dir(args.text, "--text"), _need_dir(args.struct, "--struct"),
+                              args.store, args.registries, args.kg0_counts)
+
+
+BUILDERS: dict[str, Callable[[argparse.Namespace], stages.BuildResult]] = {
+    "text": _build_text, "struct": _build_struct, "kg0": _build_kg0,
+}
 
 
 def _build(args: argparse.Namespace) -> int:
-    result = {"text": _build_text, "struct": _build_struct}[args.layer](args)
+    if args.layer not in BUILDERS:
+        raise CliError(f"no build for layer {args.layer!r} yet")
+    result = BUILDERS[args.layer](args)
     _emit(result.to_json(), args.report)
     return EXIT_OK if result.passed else EXIT_GATE_FAILED
 
 
+def gate_inputs(args: argparse.Namespace) -> GateInputs:
+    return GateInputs(pdf_dir=args.pdf_dir, registries=args.registries,
+                      source_expect=args.source_expect, tokenizer=args.tokenizer,
+                      kg0_counts=args.kg0_counts)
+
+
 def _gate(args: argparse.Namespace) -> int:
-    inputs = GateInputs(pdf_dir=args.pdf_dir, registries=args.registries,
-                        source_expect=args.source_expect, tokenizer=args.tokenizer)
-    report = gate_layer(args.layer_dir, args.layer, args.dep, args.counts, inputs=inputs)
+    report = gate_layer(args.layer_dir, args.layer, args.dep, args.counts,
+                        inputs=gate_inputs(args))
     _emit(report.to_json(), args.report)
     return EXIT_OK if report.passed else EXIT_GATE_FAILED
 
@@ -133,15 +215,28 @@ def _det(args: argparse.Namespace) -> int:
     return EXIT_OK if result.passed else EXIT_GATE_FAILED
 
 
+def _expect(args: argparse.Namespace) -> int:
+    doc = k0_build.expected_counts(_need_dir(args.text, "--text"),
+                                   _need_dir(args.struct, "--struct"), args.registries)
+    body = yaml.safe_dump(doc, allow_unicode=True, sort_keys=False)
+    args.out.write_text(KG0_COUNTS_HEADER + body, encoding="utf-8")
+    _emit({"written": str(args.out), "names": doc["names"],
+           "parallel_links": doc["parallel_links"],
+           "extra_spans": {k: v["total"] for k, v in doc["extra_spans"].items()}}, None)
+    return EXIT_OK
+
+
 HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
            yaml.YAMLError)
+COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
+    "build": _build, "gate": _gate, "det": _det, "expect": _expect,
+}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    handler = {"build": _build, "gate": _gate, "det": _det}[args.command]
     try:
-        return handler(args)
+        return COMMANDS[args.command](args)
     except HANDLED as exc:
         sys.stderr.write(f"ragdata {args.command}: {exc}\n")
         return EXIT_ERROR

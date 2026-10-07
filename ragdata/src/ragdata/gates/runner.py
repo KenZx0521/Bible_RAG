@@ -30,11 +30,15 @@ from typing import Any, Callable, Mapping, Sequence
 from ragcommon.versification import Versification, default_versification
 from ragdata import paths
 from ragdata.contract import LAYERS, record_type_for_file
-from ragdata.contract.counts import PDF_COUNTS_PATH, load_counts
-from ragdata.contract.registry import LAYER_REPORTS, XCHECK_REPORT
+from ragdata.contract.counts import (
+    KG0_COUNTS_PATH, PDF_COUNTS_PATH, load_counts, load_kg0_counts,
+)
+from ragdata.contract.registry import KG0_REPORT, LAYER_REPORTS, XCHECK_REPORT
 from ragdata.gates import sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
 from ragdata.gates.counts import check_counts
+from ragdata.gates.kg0 import check_kg0
+from ragdata.gates.prov import check_prov
 from ragdata.gates.ref import check_ref
 from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
@@ -47,10 +51,16 @@ from ragdata.stages.s05_struct.tokens import TokenCounter, pinned_counter
 from ragdata.store import DEPENDS_ON, MANIFEST, LayerData, read_layer, verify_layer
 
 REPORT_SCHEMA = "ragdata.gate_report.v1"
-REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {"text": (), "struct": ("text",)}
+REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {
+    "text": (), "struct": ("text",), "kg0": ("text", "struct"), "events": ("text", "struct"),
+    "route": ("text",),
+}
 REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "text": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-CONSERVE", "G-XCHECK", "G-REF"),
     "struct": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-STRUCT"),
+    "kg0": ("G-SCHEMA", "G-REFINT", "G-KG0", "G-PROV"),
+    "events": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-EVENT", "G-PROV"),
+    "route": ("G-SCHEMA", "G-COUNT", "G-ROUTE", "G-PROV"),
 })
 NOT_IMPLEMENTED = "not implemented"
 UNLOADED_DEPS = frozenset({"src"})
@@ -66,6 +76,7 @@ class GateInputs:
     versification: Versification | None = None    # G-REF: None means ragcommon's data
     tokenizer: Path | None = None                 # G-STRUCT: tokenizer.json (None: the HF cache)
     token_counter: TokenCounter | None = None     # G-STRUCT: a stand-in counter (tests only)
+    kg0_counts: Path = KG0_COUNTS_PATH            # G-KG0: the per-surface expectations
 
 
 @dataclass(frozen=True)
@@ -121,6 +132,21 @@ def _struct_gate(ctx: GateContext) -> GateResult:
     return check_struct(ctx.snapshot, counter)
 
 
+def stored_json(ctx: GateContext, name: str) -> Any | None:
+    """A JSON document the layer's build stored beside its records (None if absent)."""
+    if name not in ctx.target.file_shas:
+        return None
+    return json.loads((ctx.target.path / name).read_text(encoding="utf-8"))
+
+
+def _kg0_gate(ctx: GateContext) -> GateResult:
+    report = stored_json(ctx, KG0_REPORT)
+    if report is None:
+        return missing_input("G-KG0", f"the layer's {KG0_REPORT}")
+    return check_kg0(ctx.snapshot, report, load_kg0_counts(ctx.inputs.kg0_counts),
+                     ctx.target.depends_on)
+
+
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-SCHEMA": lambda ctx: ctx.schema,
     "G-COUNT": _count_gate,
@@ -131,6 +157,8 @@ GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-CONSERVE": _conserve_gate,
     "G-XCHECK": _xcheck_gate,
     "G-STRUCT": _struct_gate,
+    "G-KG0": _kg0_gate,
+    "G-PROV": lambda ctx: check_prov(dict(ctx.target.rows)),
 })
 SOURCED = frozenset({"G-CONSERVE", "G-XCHECK"})  # gates that re-read the sources
 
