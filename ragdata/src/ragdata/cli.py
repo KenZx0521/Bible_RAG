@@ -4,13 +4,18 @@
                                  [--source-expect YAML] [--registries DIR] [--md-dir DIR]
                                  [--canonical JSONL] [--diff-expect YAML] [--workers N]
                                  [--report FILE]
+    python -m ragdata build struct --text TEXT_LAYER_DIR [--store DIR] [--counts YAML]
+                                 [--legacy-dir DIR] [--tokenizer FILE] [--report FILE]
     python -m ragdata gate {text,struct} LAYER_DIR [--dep DIR ...] [--pdf-dir DIR]
                                  [--counts YAML] [--source-expect YAML] [--registries DIR]
-                                 [--report FILE]
+                                 [--tokenizer FILE] [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
 
 A text layer is gated with its src layer as a dependency (G-CONSERVE re-reads
 it) and the PDFs (G-XCHECK re-reads them); without them those gates fail closed.
+A struct layer is built from, and gated with, its text layer; G-STRUCT counts
+tokens with the pinned BGE-M3 tokenizer (the HF cache, or ``--tokenizer``) and
+fails closed when it does not load.
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
 0 everything passed, 1 a hard gate failed, 2 bad input (including a stage that
@@ -52,7 +57,11 @@ def _parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     build = sub.add_parser("build", help="build a layer from the PDFs into the store")
     build.add_argument("layer", choices=stages.BUILDABLE)
-    build.add_argument("--pdf-dir", type=Path, required=True)
+    build.add_argument("--pdf-dir", type=Path, help="the PDFs (text)")
+    build.add_argument("--text", type=Path, help="the text layer to build on (struct)")
+    build.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
+                       help="the old output/, read for legacy_ids (struct)")
+    build.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct)")
     build.add_argument("--store", type=Path, default=DEFAULT_ROOT)
     build.add_argument("--counts", type=Path, default=PDF_COUNTS_PATH)
     build.add_argument("--source-expect", type=Path, default=EXPECT_PATH)
@@ -71,6 +80,7 @@ def _parser() -> argparse.ArgumentParser:
     gate.add_argument("--counts", type=Path, default=PDF_COUNTS_PATH)
     gate.add_argument("--source-expect", type=Path, default=EXPECT_PATH)
     gate.add_argument("--registries", type=Path, default=paths.REGISTRIES)
+    gate.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json, for G-STRUCT")
     gate.add_argument("--report", type=Path)
     det = sub.add_parser("det", help="G-DET: compare two runs of the same layer")
     det.add_argument("first", type=Path)
@@ -86,20 +96,31 @@ def _emit(doc: dict[str, Any], report: Path | None) -> None:
     sys.stdout.write(text)
 
 
-def _build(args: argparse.Namespace) -> int:
-    if not args.pdf_dir.is_dir():
+def _build_text(args: argparse.Namespace) -> stages.BuildResult:
+    if args.pdf_dir is None or not args.pdf_dir.is_dir():
         raise CliError(f"--pdf-dir {args.pdf_dir} is not a directory")
     inputs = stages.TextInputs(registries=args.registries, md_dir=args.md_dir,
                                canonical=args.canonical, diff_expect=args.diff_expect)
-    result = stages.build(args.layer, args.pdf_dir, args.store, counts_path=args.counts,
-                          expect_path=args.source_expect, workers=args.workers, inputs=inputs)
+    return stages.build(args.layer, args.pdf_dir, args.store, counts_path=args.counts,
+                        expect_path=args.source_expect, workers=args.workers, inputs=inputs)
+
+
+def _build_struct(args: argparse.Namespace) -> stages.BuildResult:
+    if args.text is None or not args.text.is_dir():
+        raise CliError(f"--text {args.text} is not a layer directory")
+    inputs = stages.StructInputs(legacy_dir=args.legacy_dir, tokenizer=args.tokenizer)
+    return stages.build_struct(args.text, args.store, counts_path=args.counts, inputs=inputs)
+
+
+def _build(args: argparse.Namespace) -> int:
+    result = {"text": _build_text, "struct": _build_struct}[args.layer](args)
     _emit(result.to_json(), args.report)
     return EXIT_OK if result.passed else EXIT_GATE_FAILED
 
 
 def _gate(args: argparse.Namespace) -> int:
     inputs = GateInputs(pdf_dir=args.pdf_dir, registries=args.registries,
-                        source_expect=args.source_expect)
+                        source_expect=args.source_expect, tokenizer=args.tokenizer)
     report = gate_layer(args.layer_dir, args.layer, args.dep, args.counts, inputs=inputs)
     _emit(report.to_json(), args.report)
     return EXIT_OK if report.passed else EXIT_GATE_FAILED

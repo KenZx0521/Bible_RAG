@@ -254,8 +254,3 @@ def mini_build_sha_bytes(data: bytes) -> str:
 def mini_build_sha(text: str) -> str:
     import hashlib
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def test_only_the_text_layer_has_a_stage(tmp_path):
-    with pytest.raises(ValueError, match="struct"):
-        stages.build("struct", tmp_path, tmp_path / "store")

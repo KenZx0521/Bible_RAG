@@ -128,6 +128,34 @@ def test_build_reports_its_layers_and_gates(tmp_path, capsys, monkeypatch, passe
     assert seen["inputs"] == stages.TextInputs()
 
 
+def test_build_struct_needs_its_text_layer(tmp_path, capsys):
+    code, _, err = _run(capsys, "build", "struct", "--store", tmp_path / "store")
+    assert code == 2 and "--text" in err
+
+
+def test_build_struct_hands_its_inputs_to_the_stage(tmp_path, capsys, monkeypatch):
+    seen = {}
+
+    def fake_build_struct(text_dir, store_root, counts_path, inputs):
+        seen.update(text_dir=text_dir, store_root=store_root, inputs=inputs)
+        return stages.BuildResult({}, (GateResult("G-STRUCT", True, False, {}, {}, ()),), {})
+    monkeypatch.setattr(stages, "build_struct", fake_build_struct)
+    code, out, _ = _run(capsys, "build", "struct", "--text", tmp_path, "--store", tmp_path / "s",
+                        "--legacy-dir", tmp_path / "old", "--tokenizer", tmp_path / "tok.json")
+    assert code == 1 and json.loads(out)["pass"] is False
+    assert seen["text_dir"] == tmp_path and seen["store_root"] == tmp_path / "s"
+    assert seen["inputs"] == stages.StructInputs(legacy_dir=tmp_path / "old",
+                                                 tokenizer=tmp_path / "tok.json")
+
+
+def test_gate_struct_fails_closed_without_the_tokenizer(tmp_path, capsys):
+    text, struct = mini_build.write_layers(tmp_path)
+    code, out, _ = _run(capsys, "gate", "struct", struct.path, "--dep", text.path,
+                        "--counts", MINI_COUNTS, "--tokenizer", tmp_path / "missing.json")
+    gate = next(g for g in json.loads(out)["gates"] if g["name"] == "G-STRUCT")
+    assert code == 1 and gate["observed"] == "missing input"
+
+
 def test_gate_passes_the_pdfs_and_registries_to_the_gates(tmp_path, capsys, monkeypatch):
     seen = {}
 

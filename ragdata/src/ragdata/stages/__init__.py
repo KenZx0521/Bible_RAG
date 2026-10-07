@@ -16,16 +16,17 @@ layer). Only a build whose hard gates all pass is stored: a red build writes
 nothing, so no layer in the store was ever built from unpinned PDFs or tools or
 with unexplained differences. To look at a red build, fix the pin or rerun with
 ``--store`` on a scratch directory.
+
+``build_struct`` runs S5 on a stored text layer and stores the struct layer the same
+way, once G-SCHEMA, G-COUNT, G-REFINT and G-STRUCT pass (``s05_struct.build``).
 """
 
 from __future__ import annotations
 
-import time
-from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Iterator, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 from ragdata import paths
 from ragdata.contract import parse_record
@@ -40,10 +41,14 @@ from ragdata.stages import s00_source, s01_extract, s03_xcheck, s04_overlay
 from ragdata.stages.diffs import diff_reports, glyph_chars
 from ragdata.stages.s02_parse import S2_TYPES, ParsedBook, parse_book
 from ragdata.stages.s02_parse.names import with_merge_groups
+from ragdata.stages.result import REPORT_SCHEMA, BuildResult, Clock, gates_pass
+from ragdata.stages.s05_struct.build import StructInputs, build_struct
 from ragdata.store import StoredLayer, encode_jsonl, write_layer
 
-BUILDABLE = ("text",)
-REPORT_SCHEMA = "ragdata.build_report.v1"
+__all__ = ["BUILDABLE", "REPORT_SCHEMA", "BuildResult", "StructInputs", "TextInputs", "build",
+           "build_struct", "gates_pass"]
+
+BUILDABLE = ("text", "struct")
 TEXT_TYPES = (*S2_TYPES, "errata_applied", "ref_aliases")
 
 
@@ -55,40 +60,6 @@ class TextInputs:
     md_dir: Path = paths.BIBLE_MD
     canonical: Path = paths.CANONICAL
     diff_expect: Path = gate_diff.EXPECT_PATH
-
-
-def gates_pass(gates: Sequence[GateResult]) -> bool:
-    """True when gates ran and every hard one passed."""
-    return bool(gates) and all(g.passed for g in gates if g.hard)
-
-
-@dataclass(frozen=True)
-class BuildResult:
-    layers: Mapping[str, StoredLayer]
-    gates: tuple[GateResult, ...]
-    timings: Mapping[str, float]
-
-    @property
-    def passed(self) -> bool:
-        return gates_pass(self.gates)
-
-    def to_json(self) -> dict[str, Any]:
-        return {"schema": REPORT_SCHEMA, "pass": self.passed,
-                "layers": {k: {"version": v.version, "path": str(v.path)}
-                           for k, v in self.layers.items()},
-                "gates": [g.to_json() for g in self.gates],
-                "timings_s": {k: round(v, 2) for k, v in self.timings.items()}}
-
-
-@dataclass
-class _Clock:
-    laps: dict[str, float] = field(default_factory=dict)
-
-    @contextmanager
-    def lap(self, name: str) -> Iterator[None]:
-        start = time.monotonic()
-        yield
-        self.laps[name] = self.laps.get(name, 0.0) + time.monotonic() - start
 
 
 @dataclass(frozen=True)
@@ -154,10 +125,12 @@ def _store(root: Path, source: _Source, rows: Mapping[str, Sequence[Mapping[str,
 def build(layer: str, pdf_dir: Path, store_root: Path, counts_path: Path = PDF_COUNTS_PATH,
           expect_path: Path = s00_source.EXPECT_PATH, workers: int = 8,
           inputs: TextInputs = TextInputs()) -> BuildResult:
-    """Build ``layer`` from the PDFs, gate it, and store it only if every hard gate passed."""
-    if layer not in BUILDABLE:
-        raise ValueError(f"no stage builds layer {layer!r}")
-    clock = _Clock()
+    """Build the text layer (and src) from the PDFs, gate it, and store it only if every
+    hard gate passed. The struct layer is built from a text layer by ``build_struct``."""
+    if layer != "text":
+        raise ValueError(f"build() builds the text layer; layer {layer!r} is built by "
+                         "build_struct" if layer == "struct" else f"no stage builds {layer!r}")
+    clock = Clock()
     expect = s00_source.load_expect(expect_path)
     with clock.lap("s0_s1_extract"):
         source = _extract(pdf_dir, workers)
