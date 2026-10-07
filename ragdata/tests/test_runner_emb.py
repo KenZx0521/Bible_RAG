@@ -82,3 +82,11 @@ def test_an_emb_layer_without_its_report_or_fingerprint_is_refused(tmp_path, nam
     broken = store.write_layer(tmp_path / "broken", "emb", files, depends_on=built.depends_on)
     with pytest.raises(GateInputError, match=name):
         _gate(tmp_path, broken, [struct, text])
+
+
+def test_tampered_vectors_say_why_they_were_not_read(tmp_path):
+    text, struct, emb = _built(tmp_path)
+    path = attach.attachment_dir(emb.path, vectors.NAME) / vectors.VECTORS
+    path.write_bytes(path.read_bytes()[:-4] + b"\0\0\0\0")
+    gate = next(g for g in _gate(tmp_path, emb, [struct, text]).gates if g.name == "G-EMB")
+    assert not gate.passed and "sha256 differs" in gate.details[0]

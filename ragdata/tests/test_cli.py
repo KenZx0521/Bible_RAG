@@ -230,13 +230,12 @@ def test_build_emb_hands_its_inputs_to_the_stage(tmp_path, capsys, monkeypatch):
     code, out, _ = _run(capsys, "build", "emb", "--struct", tmp_path / "st", "--text",
                         tmp_path / "tx", "--store", tmp_path / "s", "--legacy-dir",
                         tmp_path / "old", "--tokenizer", tmp_path / "m3.json",
-                        "--reranker-tokenizer", tmp_path / "rr.json", "--device", "cpu",
-                        "--batch-size", "8")
+                        "--reranker-tokenizer", tmp_path / "rr.json", "--device", "cpu")
     assert code == 1 and json.loads(out)["pass"] is False
     assert (seen["struct_dir"], seen["text_dir"]) == (tmp_path / "st", tmp_path / "tx")
     assert seen["inputs"] == emb_stage.EmbInputs(
         tokenizer=tmp_path / "m3.json", reranker_tokenizer=tmp_path / "rr.json",
-        legacy_dir=tmp_path / "old", device="cpu", batch_size=8)
+        legacy_dir=tmp_path / "old", device="cpu")
 
 
 def test_gate_emb_runs_with_its_dependencies_and_encoder(tmp_path, capsys, monkeypatch):

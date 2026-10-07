@@ -8,8 +8,7 @@
                                  [--legacy-dir DIR] [--tokenizer FILE] [--report FILE]
     python -m ragdata build emb --struct STRUCT_LAYER_DIR --text TEXT_LAYER_DIR [--store DIR]
                                  [--counts YAML] [--legacy-dir DIR] [--tokenizer FILE]
-                                 [--reranker-tokenizer FILE] [--device DEV] [--batch-size N]
-                                 [--report FILE]
+                                 [--reranker-tokenizer FILE] [--device DEV] [--report FILE]
     python -m ragdata gate {text,struct,emb} LAYER_DIR [--dep DIR ...] [--pdf-dir DIR]
                                  [--counts YAML] [--source-expect YAML] [--registries DIR]
                                  [--tokenizer FILE] [--reranker-tokenizer FILE]
@@ -81,7 +80,6 @@ def _parser() -> argparse.ArgumentParser:
                        help="the old output/: legacy_ids (struct), vectors (emb)")
     build.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct, emb)")
     _encoder_arguments(build)
-    build.add_argument("--batch-size", type=int, default=emb_stage.BATCH_SIZE)
     build.add_argument("--store", type=Path, default=DEFAULT_ROOT)
     build.add_argument("--counts", type=Path, default=PDF_COUNTS_PATH)
     build.add_argument("--source-expect", type=Path, default=EXPECT_PATH)
@@ -141,8 +139,7 @@ def _build_emb(args: argparse.Namespace) -> stages.BuildResult:
             raise CliError(f"build emb needs {flag}")
     inputs = emb_stage.EmbInputs(tokenizer=args.tokenizer,
                                  reranker_tokenizer=args.reranker_tokenizer,
-                                 legacy_dir=args.legacy_dir, device=args.device,
-                                 batch_size=args.batch_size)
+                                 legacy_dir=args.legacy_dir, device=args.device)
     return emb_stage.build_emb(args.struct, args.text, args.store, counts_path=args.counts,
                                inputs=inputs)
 

@@ -53,7 +53,7 @@ from ragdata.stages.errors import StageError
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.stages.s04_overlay.normalization import load_normalization
 from ragdata.stages.s05_struct.tokens import TokenCounter, pinned_counter
-from ragdata.stages.s06_emb.encoder import BATCH_SIZE, Encoder, load_encoder
+from ragdata.stages.s06_emb.encoder import Encoder, load_encoder
 from ragdata.store import (
     DEPENDS_ON, MANIFEST, LayerData, StoreError, attach, read_layer, vectors, verify_layer,
 )
@@ -169,16 +169,17 @@ def emb_context(target: LayerData, inputs: GateInputs) -> EmbContext:
     try:
         matrix, index = vectors.decode_vectors(attach.read_attachment(target.path,
                                                                       vectors.NAME)[1])
-    except StoreError:
-        matrix, index = None, ()
+        unread = None
+    except StoreError as exc:
+        matrix, index, unread = None, (), str(exc)
     encoder, error = inputs.encoder, None
     if encoder is None:
         try:
-            encoder = load_encoder(inputs.tokenizer, inputs.reranker_tokenizer, inputs.device,
-                                   BATCH_SIZE)
+            encoder = load_encoder(inputs.tokenizer, inputs.reranker_tokenizer, inputs.device)
         except StageError as exc:
             error = str(exc)
-    return EmbContext(EmbFiles(report, matrix, index, target.depends_on), fp, encoder, error)
+    files = EmbFiles(report, matrix, index, target.depends_on, unread)
+    return EmbContext(files, fp, encoder, error)
 
 
 def _no_encoder(name: str, ctx: GateContext) -> GateResult | None:
@@ -194,7 +195,9 @@ def _emb_gate(ctx: GateContext) -> GateResult:
 
 def _enc_gate(ctx: GateContext) -> GateResult:
     missing = _no_encoder("G-ENC", ctx)
-    return missing or run_enc(ctx.snapshot.of("embedding_records"), ctx.emb.files.vectors,
+    if missing:
+        return missing
+    return run_enc(ctx.snapshot.of("embedding_records"), ctx.emb.files.vectors,
                    ctx.emb.fingerprint, ctx.emb.encoder, Path(ctx.inputs.legacy_dir),
                    ctx.inputs.compat_sample)
 

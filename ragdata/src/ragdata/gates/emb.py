@@ -43,6 +43,7 @@ class EmbFiles:
     vectors: np.ndarray | None                # the attachment's matrix (None: missing)
     index: Sequence[Mapping[str, Any]]        # vector_index.jsonl rows
     depends_on: Mapping[str, str]             # the struct and text versions it was built on
+    vectors_error: str | None = None          # why the attachment could not be read
 
 
 def _set_diff(what: str, want: set[str], got: Sequence[str]) -> list[str]:
@@ -124,7 +125,7 @@ def _index_violations(got: Sequence[Mapping[str, Any]], want: Sequence[Mapping[s
 def _vectors(recs: Sequence[Any], files: EmbFiles) -> tuple[dict[str, Any], list[str]]:
     m = files.vectors
     if m is None:
-        return {"rows": None}, ["the vectors attachment is missing"]
+        return {"rows": None}, [f"no vectors: {files.vectors_error or 'attachment missing'}"]
     if m.ndim != 2 or m.shape[0] != len(recs):
         return {"rows": int(m.shape[0])}, [f"vectors {m.shape} are not one row per record "
                                             f"({len(recs)})"]

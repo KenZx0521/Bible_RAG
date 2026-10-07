@@ -37,7 +37,7 @@ from ragdata.gates.vectors import compare_runs
 from ragdata.stages.errors import StageError
 from ragdata.stages.result import BuildResult, Clock, gates_pass
 from ragdata.stages.s06_emb import fingerprint
-from ragdata.stages.s06_emb.encoder import BATCH_SIZE, Encoder, encode_texts, load_encoder
+from ragdata.stages.s06_emb.encoder import Encoder, encode_texts, load_encoder
 from ragdata.stages.s06_emb.records import emb_records, emb_report
 from ragdata.stages.s06_emb.template import V1C
 from ragdata.store import LayerData, StoredLayer, encode_jsonl, read_layer, write_layer
@@ -55,7 +55,6 @@ class EmbInputs:
     reranker_tokenizer: Path = paths.RERANKER_TOKENIZER
     legacy_dir: Path = paths.LEGACY_OUTPUT             # old embedding_queue / embeddings
     device: str | None = None                          # None: cuda when available
-    batch_size: int = BATCH_SIZE
     compat_sample: int = emb_legacy.SAMPLE
     encoder: Encoder | None = None                     # a stand-in encoder (tests only)
 
@@ -119,7 +118,7 @@ def _store(root: Path, text: LayerData, struct: LayerData, files: Mapping[str, b
 
 def _encoder(inputs: EmbInputs) -> Encoder:
     return inputs.encoder or load_encoder(inputs.tokenizer, inputs.reranker_tokenizer,
-                                          inputs.device, inputs.batch_size)
+                                          inputs.device)
 
 
 def build_emb(struct_dir: Path, text_dir: Path, store_root: Path,
