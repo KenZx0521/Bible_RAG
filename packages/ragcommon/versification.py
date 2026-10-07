@@ -1,8 +1,9 @@
 """Verse grid of the PDF edition plus the external-reference alias table.
 
 ``data/versification.json`` holds every chapter's max verse and the 11 omitted
-slots (``status=omitted_variant``); it is interim data derived from the audit
-prototype (see its ``source`` field) until the text layer overwrites it.
+slots (``status=omitted_variant``), and ``data/ref_aliases.jsonl`` the aliases;
+both are derived from a stored text layer by ``scripts/derive_ragcommon_data.py``
+(its ``source`` field names the layer version) and G-REF checks they still agree.
 ``data/ref_aliases.jsonl`` lists external verse numbers that have no PDF slot
 (design §2.12), e.g. ``jhn.7.53 → contained_in jhn.8.1``. Resolution never
 falls back silently: a verse with neither a slot nor an alias raises.

@@ -104,9 +104,9 @@ def test_max_verse_rejects_missing_chapter(vers):
         vers.chapter_count("xyz")
 
 
-def test_source_is_recorded(vers):
-    assert vers.source["path"].endswith("canonical_full.jsonl")
-    assert len(vers.source["sha256"]) == 64
+def test_source_names_the_text_layer_it_was_derived_from(vers):
+    assert vers.source["kind"] == "text_layer"
+    assert vers.source["layer_version"].startswith("text@")
 
 
 def test_load_ref_aliases_accepts_json_array(tmp_path, vers):
