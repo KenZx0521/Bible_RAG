@@ -3,18 +3,36 @@
 The interface compares two stored layer versions file by file (sha256 from
 their verified manifests). The dependency versions are a layer file
 (``depends_on.json``), so runs built on different inputs differ there. The two
-arguments must be two runs: the same directory twice is refused. Vector files
-will need a cosine comparison instead (design §4); no layer holds them yet.
+arguments must be two runs: the same directory twice is refused.
+
+Vectors are compared with a tolerance instead (design §4, §6): for two emb
+layers the ``vectors`` attachments must hold the same records, every row pair
+with cosine >= 0.99999, and the same top-20 neighbours for 200 sampled rows
+(``gates.vectors``).
 """
 
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from ragdata.gates.base import GateInputError, GateResult, capped
-from ragdata.store import verify_layer
+from ragdata.gates.vectors import compare_runs
+from ragdata.store import StoreError, attach, vectors, verify_layer
 
 NAME = "G-DET"
+
+
+def _vectors(first: Path, second: Path) -> tuple[dict[str, Any], list[str]]:
+    try:
+        runs = [vectors.decode_vectors(attach.read_attachment(p, vectors.NAME)[1])
+                for p in (first, second)]
+    except StoreError as exc:
+        return {"compared": False}, [f"vectors: {exc}"]
+    (a, a_index), (b, b_index) = runs
+    observed, violations = compare_runs([r.get("record_id") for r in a_index], a,
+                                        [r.get("record_id") for r in b_index], b)
+    return observed, [f"vectors: {v}" for v in violations]
 
 
 def check_det(first: Path | str, second: Path | str) -> GateResult:
@@ -27,8 +45,12 @@ def check_det(first: Path | str, second: Path | str) -> GateResult:
     details = [f"{name}: sha256 differs" for name in differing]
     details += [f"{name}: only in the first run" for name in sorted(files_a.keys() - files_b.keys())]
     details += [f"{name}: only in the second run" for name in sorted(files_b.keys() - files_a.keys())]
-    observed = {"first": manifest_a["layer_version"], "second": manifest_b["layer_version"],
-                "differing_files": len(details)}
+    observed: dict[str, Any] = {"first": manifest_a["layer_version"],
+                                "second": manifest_b["layer_version"],
+                                "differing_files": len(details)}
     if manifest_a["layer"] != manifest_b["layer"]:
         details.append(f"layers differ: {manifest_a['layer']} vs {manifest_b['layer']}")
+    elif manifest_a["layer"] == "emb":
+        observed["vectors"], found = _vectors(Path(first), Path(second))
+        details += found
     return GateResult(NAME, True, not details, observed, {"differing_files": 0}, capped(details))
