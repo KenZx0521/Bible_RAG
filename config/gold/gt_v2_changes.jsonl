@@ -34,6 +34,7 @@
 {"after": "將你們所要的告訴上帝", "before": "將你們所要的告訴神", "evidence_slot": "php.4.6", "field": "reference_answer", "offset": 23, "qid": "VERSE_LOOKUP_012", "rule": "mechanical_clause"}
 {"after": "只要凡事藉着禱告", "before": "只要凡事藉著禱告", "evidence_slot": "php.4.6", "field": "reference_answer", "offset": 7, "qid": "VERSE_LOOKUP_012", "rule": "mechanical_clause"}
 {"after": "凡事藉着禱告", "before": "凡事藉著禱告", "evidence_slot": "php.4.6", "field": "expected_answer_points[1]", "offset": 0, "qid": "VERSE_LOOKUP_012", "rule": "mechanical_clause"}
+{"after": "上帝所賜、出人意外", "before": "神所賜、出人意外", "evidence_slot": "php.4.7", "field": "reference_answer", "offset": 34, "qid": "VERSE_LOOKUP_012", "rule": "quote_original"}
 {"after": "將你們所要的告訴上帝", "before": "將所要的告訴神", "evidence_slot": "php.4.6", "field": "expected_answer_points[1]", "offset": 13, "qid": "VERSE_LOOKUP_012", "rule": "quote_original"}
 {"after": "上帝所賜、出人意外的平安必在基督耶穌裏保守你們的心懷意念", "before": "神所賜出人意外的平安必保守你們的心懷意念", "evidence_slot": "php.4.7", "field": "expected_answer_points[2]", "offset": 0, "qid": "VERSE_LOOKUP_012", "rule": "quote_original"}
 {"after": "legacy_head", "before": null, "evidence_slot": null, "field": "family", "offset": null, "qid": "VERSE_LOOKUP_012", "rule": "legacy_family"}

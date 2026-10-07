@@ -42,21 +42,21 @@
     "generator": {
       "script": "ragdata/src/ragdata/gt/build.py",
       "command": "python -m ragdata gt build",
-      "git_sha": "943755722a18e410ccda87ca05dcc11f3926b39d",
+      "git_sha": "d9f133e279f6a948fc8023607623bf435cda6f76",
       "files": {
-        "ragdata/src/ragdata/gt": "c9823a5040f65b6a7f79c12b27c99533baa2f43d",
+        "ragdata/src/ragdata/gt": "224f67664704b8ff68abb6f1699cba56564d3445",
         "packages/ragcommon": "916477b00b63598655b9080170b5d8a55cdc3e78",
-        "config/gold/gt_v2_curated.yaml": "25caf60ee781a4af869832ff3dd33eb05186f1b9"
+        "config/gold/gt_v2_curated.yaml": "da52c6b9f15198c978e4e6704ff886bf1a64c156"
       }
     },
     "curated": {
       "path": "config/gold/gt_v2_curated.yaml",
-      "sha256": "2f0a78a8047c7217a9651df3922dfcb974431b203ad5c9c6dba651f9c2853876"
+      "sha256": "e4474eea6227b6016a2ca0e49de2b9a75da11f95f3c583122cc6b781a3f10359"
     },
     "changes": {
       "path": "config/gold/gt_v2_changes.jsonl",
-      "sha256": "996aac4086a7f16a8522d433d7d7c22e1ab09ce485c65e48c08d74b1fbc12035",
-      "count": 635,
+      "sha256": "c9fe4e59281e9fdc0baee53d14bf38a8e7aedf8a2d82f88a2af96fb8148b4342",
+      "count": 636,
       "by_rule": {
         "corpus_orthography": 170,
         "cunp_gloss": 1,
@@ -65,7 +65,7 @@
         "interpunct": 33,
         "legacy_family": 100,
         "mechanical_clause": 291,
-        "quote_original": 33
+        "quote_original": 34
       }
     },
     "quote_exempt": [
@@ -492,7 +492,7 @@
         "凡事藉着禱告、祈求和感謝，將你們所要的告訴上帝",
         "上帝所賜、出人意外的平安必在基督耶穌裏保守你們的心懷意念"
       ],
-      "reference_answer": "應當一無掛慮，只要凡事藉着禱告、祈求，和感謝，將你們所要的告訴上帝。神所賜、出人意外的平安必在基督耶穌裏保守你們的心懷意念。",
+      "reference_answer": "應當一無掛慮，只要凡事藉着禱告、祈求，和感謝，將你們所要的告訴上帝。上帝所賜、出人意外的平安必在基督耶穌裏保守你們的心懷意念。",
       "family": "legacy_head",
       "refs": [
         {

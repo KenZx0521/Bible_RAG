@@ -1,10 +1,10 @@
 {
   "schema": "ragdata.gt_v2_freeze.v1",
   "gt_path": "ground_truth.v2.json",
-  "sha256": "754a58fb43076e6894288396c1e5ff0526c46651b22420ddfce6bfe2b727a502",
+  "sha256": "495948bb921c955aec31c88c7ff0cf9b035ae0c7e4dd7f8b38a31351a3d79714",
   "slot_universe": "text@ddb48c599861",
   "v1_sha256": "e4336ddd0d8180afda60d7632fd8ff7aa116b4e41221ee85559d84f839173348",
-  "changes_sha256": "996aac4086a7f16a8522d433d7d7c22e1ab09ce485c65e48c08d74b1fbc12035",
-  "generator_git_sha": "943755722a18e410ccda87ca05dcc11f3926b39d",
+  "changes_sha256": "c9fe4e59281e9fdc0baee53d14bf38a8e7aedf8a2d82f88a2af96fb8148b4342",
+  "generator_git_sha": "d9f133e279f6a948fc8023607623bf435cda6f76",
   "note": "GT v2 凍結點：本檔所在的 commit。評估前比對 sha256；slot_universe 是答案對齊與覆蓋計算的節位宇集。"
 }
