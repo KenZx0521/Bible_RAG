@@ -369,3 +369,17 @@ def files(*layers: str) -> dict[str, list[dict]]:
     """The mini snapshot as ``{file name: rows}`` for the given layers."""
     built = build()
     return {f"{name}.jsonl": rows for layer in layers for name, rows in built[layer].items()}
+
+
+def write_layers(root, text: dict | None = None, struct: dict | None = None):
+    """Write the (possibly mutated) mini layers to a store; return (text, struct) StoredLayers."""
+    from ragdata import store
+
+    def encode(layer: dict) -> dict[str, bytes]:
+        return {f"{name}.jsonl": store.encode_jsonl(rows) for name, rows in layer.items()}
+
+    text_layer_ = store.write_layer(root, "text", encode(text_layer() if text is None else text))
+    struct_layer_ = store.write_layer(root, "struct",
+                                      encode(struct_layer() if struct is None else struct),
+                                      depends_on={"text": text_layer_.version})
+    return text_layer_, struct_layer_
