@@ -5,9 +5,10 @@ fixed bak/$D path the chain wrote for R2 read-only (two of them have their
 sha256 in SHA256SUMS) and sends its own outputs, Step 9's log reads included,
 to bak/$D/k8/. The :w1 image is built only when nothing that goes into it
 (Dockerfile, .dockerignore, the compose files, backend/, bible_chunking/,
-scripts/) differs from HEAD; the merged allowlist (committed with the ratchet
-after R4, its sha256 file registered and committed), the W1 record (committed
-alone when W1 ends) and D3's results stay out of the image and out of the way.
+scripts/, packages/) differs from HEAD; the merged allowlist (committed with
+the ratchet after R4, its sha256 file registered and committed), the W1 record
+(committed alone when W1 ends) and D3's results stay out of the image and out
+of the way.
 R0's re-runnable block 2 survives a fix commit after the merge and lets the W1
 record, the merged allowlist and the 2026-07-30 compose backup through. The
 merged allowlist's sha256 check and the diff_kg run are one fail-closed block
@@ -130,13 +131,13 @@ def _image_inputs(command: str) -> set[str]:
 
 
 def test_w1_image_build_checks_only_what_goes_into_the_image():
-    assert _dockerfile_copy_roots() == {"backend", "bible_chunking", "scripts"}
+    assert _dockerfile_copy_roots() == {"backend", "bible_chunking", "scripts", "packages"}
     # O5: only the merged file waits for R4; its sha256 file is registered, so committed before the rebuild
     assert cwr.MERGED == MERGED and MERGED not in cwr.REGISTERED and cwr.MERGED_SHA in cwr.REGISTERED
     xref = section(staging_text(), XREF)
-    for needle in ("Dockerfile 只 COPY `backend/`、`bible_chunking/`、`scripts/`", "image 的輸入", f"`{MERGED}`",
-                   "R4 之後", "`kg_diff_allow_batch1w1.sha256` 已 commit", "W1 紀錄", "`evaluation/results_quick/`",
-                   "`docker-compose.yml.bak-20260730-160725`"):
+    for needle in ("Dockerfile 只 COPY `backend/`、`bible_chunking/`、`scripts/`、`packages/ragcommon/`",
+                   "image 的輸入", f"`{MERGED}`", "R4 之後", "`kg_diff_allow_batch1w1.sha256` 已 commit", "W1 紀錄",
+                   "`evaluation/results_quick/`", "`docker-compose.yml.bak-20260730-160725`"):
         assert needle in xref, needle
     assert "建 image 前工作目錄要乾淨" not in xref and "只可以有兩行未追蹤的檔" not in xref
     build = _block(XREF, "w1_image.yml build backend")
@@ -146,7 +147,8 @@ def test_w1_image_build_checks_only_what_goes_into_the_image():
 
 
 TRACKED = ("Dockerfile", ".dockerignore", "docker-compose.yml", "docker-compose.staging.yml", "backend/a.py",
-           "bible_chunking/b.py", "scripts/c.py", "config/x.yaml", "docs/records/w0.md", "evaluation/e.py")
+           "bible_chunking/b.py", "scripts/c.py", "packages/ragcommon/d.py", "config/x.yaml", "docs/records/w0.md",
+           "evaluation/e.py")
 RECORD = "docs/records/2026-10-07_kg_batch1_w1_results.md"
 LET_THROUGH = f"touch {MERGED} {RECORD} docker-compose.yml.bak-20260730-160725"   # by R0 block 2 too
 CHANGES = {"clean": "", "let_through": LET_THROUGH, "results_quick": "touch evaluation/results_quick/d3_w1.json",
@@ -155,7 +157,8 @@ CHANGES = {"clean": "", "let_through": LET_THROUGH, "results_quick": "touch eval
            "scripts": "echo y >> scripts/c.py", "scripts_new": "mkdir scripts/tools && touch scripts/tools/new.py",
            "backend_staged": "echo y >> backend/a.py && git add backend/a.py", "dockerfile": "echo y >> Dockerfile",
            "dockerignore": "echo y >> .dockerignore", "compose": "echo y >> docker-compose.yml",
-           "bible_chunking_new": "touch bible_chunking/n.py", "no_repo": "rm -rf .git"}
+           "bible_chunking_new": "touch bible_chunking/n.py", "packages": "echo y >> packages/ragcommon/d.py",
+           "packages_new": "touch packages/ragcommon/n.py", "no_repo": "rm -rf .git"}
 
 
 def _tree_check(repo, change: str, lines: list[str]) -> bool:
@@ -178,7 +181,7 @@ def _tree_check(repo, change: str, lines: list[str]) -> bool:
     ("clean", True), ("let_through", True), ("results_quick", True), ("record_committed", True),
     ("other_record", True), ("config", True), ("scripts", False), ("scripts_new", False), ("backend_staged", False),
     ("dockerfile", False), ("dockerignore", False), ("compose", False), ("bible_chunking_new", False),
-    ("no_repo", False)])
+    ("packages", False), ("packages_new", False), ("no_repo", False)])
 def test_w1_image_build_tree_check_stops_only_on_an_image_input(tmp_path, change, ok):
     build = _block(XREF, "w1_image.yml build backend")
     lines = [c for c in build if c.startswith(TREE_W1) or c == 'test -z "$X"']
