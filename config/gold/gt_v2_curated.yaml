@@ -1,0 +1,242 @@
+# GT v2 的人工判斷（ragdata.gt.curated）。其餘修改全由規則產生，見 ragdata/src/ragdata/gt/。
+#
+# quote_fixes：改寫式引文，原文確定者改回服務文字（verse_units.text）。
+#   before 是規則階段（errata、機械替換、CUNP、着/甚麼/裏/鍊、‧）做完後該欄位裏恰好出現一次的字串；
+#   after 的每個子句都必須是服務文字。範圍：「」內引文，以及 VERSE_LOOKUP 逐字背誦的答案要點。
+#   reference_answer 中的間接引語（第三人稱轉述，如 VL_025「律法書不可離開他的口」）是合法轉述，不改。
+# quote_exempt：「」內不是經文引文的子句（術語、節期名、主題標籤、情節概括、詩篇篇題），G-GT 引文檢查只略過這些。
+# kay_review：不自行修改、交 Kay 裁決的題目。
+schema: ragdata.gt_v2_curated.v1
+
+quote_fixes:
+  - qid: TOPIC_QUESTION_032
+    field: reference_answer
+    before: 我們無力抵擋這大軍，也不知道怎樣行
+    after: 我們無力抵擋這來攻擊我們的大軍，我們也不知道怎樣行
+    evidence_slot: 2ch.20.12
+    reason: 代下20:12 原文
+  - qid: TOPIC_QUESTION_073
+    field: reference_answer
+    before: 不是倚靠勢力才能，乃是倚靠我的靈
+    after: 不是倚靠勢力，不是倚靠才能，乃是倚靠我的靈
+    evidence_slot: zec.4.6
+    reason: 亞4:6 原文
+  - qid: TOPIC_QUESTION_085
+    field: reference_answer
+    before: 「他們為我的命將自己的頸項置之度外」
+    after: 他們「也為我的命將自己的頸項置之度外」
+    evidence_slot: rom.16.4
+    reason: 羅16:4 原文以「也為我的命」起句；主詞移到引號外
+  - qid: TOPIC_QUESTION_088
+    field: reference_answer
+    before: 「使大地戰抖，使列國震動的，是這個人嗎」
+    after: 「使大地戰抖，使列國震動，……是這個人嗎」
+    evidence_slot: isa.14.16
+    reason: 賽14:16-17 原文，中間省略處補刪節號
+  - qid: PERSON_QUESTION_034
+    field: reference_answer
+    before: 因他指着我所說的預言不說吉語，單說凶言
+    after: 因為他指着我所說的預言，不說吉語，單說凶言
+    evidence_slot: 1ki.22.8
+    reason: 王上22:8 原文
+  - qid: PERSON_QUESTION_039
+    field: reference_answer
+    before: 將他丟在坑裏，他在那裏必因飢餓而死
+    after: 將他下在牢獄中；他在那裏必因飢餓而死
+    evidence_slot: jer.38.9
+    reason: 耶38:9 原文（修訂版作「牢獄」，非「坑」）
+  - qid: PERSON_QUESTION_050
+    field: reference_answer
+    before: 務要在主裏歡歡樂樂地接待他
+    after: 你們要在主裏歡歡樂樂地接待他
+    evidence_slot: php.2.29
+    reason: 腓2:29 原文（「務要」是和合本舊譯）
+  - qid: PERSON_QUESTION_056
+    field: reference_answer
+    before: 「尼八的兒子耶羅波安的罪」
+    after: 「尼八的兒子耶羅波安使以色列人陷在罪裏的那罪」
+    evidence_slot: 2ki.3.3
+    reason: 列王紀的固定句式，以最常見的「那罪」形式為準（王下3:3 等）
+  - qid: PERSON_QUESTION_060
+    field: reference_answer
+    before: 今年你必死，因為
+    after: 你今年必死，因為
+    evidence_slot: jer.28.16
+    reason: 耶28:16 原文
+  - qid: PERSON_QUESTION_088
+    field: reference_answer
+    before: 「帶你的兒子，
+    after: 「你帶着你的兒子，
+    evidence_slot: gen.22.2
+    reason: 創22:2 原文
+  - qid: PERSON_QUESTION_092
+    field: reference_answer
+    before: 提摩太的明證你們也知道，他興旺福音
+    after: 但你們知道提摩太的明證；他興旺福音
+    evidence_slot: php.2.22
+    reason: 腓2:22 原文
+  - qid: PERSON_QUESTION_093
+    field: reference_answer
+    before: 「你們揀選一人下到我這裏來，他若能與我戰鬥將我殺死
+    after: 「可以從你們中間揀選一人，使他下到我這裏來。他若能與我戰鬥，將我殺死
+    evidence_slot: 1sa.17.8
+    reason: 撒上17:8-9 原文
+  - qid: PERSON_QUESTION_096
+    field: reference_answer
+    before: 「是這人犯了罪，還是他父母犯了罪」
+    after: 「是誰犯了罪？是這人呢？是他父母呢？」
+    evidence_slot: jhn.9.2
+    reason: 約9:2 原文
+  - qid: PERSON_QUESTION_099
+    field: reference_answer
+    before: 「我們把他賣給以實瑪利人
+    after: 「我們不如將他賣給以實瑪利人
+    evidence_slot: gen.37.27
+    reason: 創37:27 原文
+  - qid: EVENT_QUESTION_030
+    field: reference_answer
+    before: 交在非利士人手裏，明日
+    after: 交在非利士人的手裏。明日
+    evidence_slot: 1sa.28.19
+    reason: 撒上28:19 原文
+  - qid: EVENT_QUESTION_062
+    field: reference_answer
+    before: 「以身體為殿」
+    after: 「以他的身體為殿」
+    evidence_slot: jhn.2.21
+    reason: 約2:21 原文
+  - qid: GENERAL_BIBLE_QUESTION_034
+    field: reference_answer
+    before: 耶穌嘗（原文是受）了那醋
+    after: 耶穌嘗了那醋
+    evidence_slot: jhn.19.30
+    reason: 「原文是受」是註腳說明，不在經文內
+  - qid: GENERAL_BIBLE_QUESTION_043
+    field: reference_answer
+    before: 從耶西的本（原文是墩）必發一條
+    after: 從耶西的本必發一條
+    evidence_slot: isa.11.1
+    reason: 「原文是墩」是註腳說明，不在經文內
+  - qid: GENERAL_BIBLE_QUESTION_048
+    field: reference_answer
+    before: 「凡愛人的，就完全了律法。
+    after: 「愛人的就完全了律法。
+    evidence_slot: rom.13.8
+    reason: 羅13:8 原文（「凡愛人的」是和合本舊譯）
+  - qid: GENERAL_BIBLE_QUESTION_065
+    field: reference_answer
+    before: 就越過你們去，這災殃必不臨到
+    after: 就越過你們去。……災殃必不臨到
+    evidence_slot: exo.12.13
+    reason: 出12:13 原文，中間省略處補刪節號
+  - qid: GENERAL_BIBLE_QUESTION_076
+    field: expected_answer_points[4]
+    before: ……我必醫治他們的地」
+    after: ……醫治他們的地」
+    evidence_slot: 2ch.7.14
+    reason: 代下7:14 原文
+  - qid: GENERAL_BIBLE_QUESTION_078
+    field: reference_answer
+    before: 正在我中年（或作晌午）之日
+    after: 正在我中年之日
+    evidence_slot: isa.38.10
+    reason: 「或作晌午」是註腳說明，不在經文內
+  - qid: GENERAL_BIBLE_QUESTION_080
+    field: reference_answer
+    before: 「他的名聲傳到遠方
+    after: 「烏西雅的名聲傳到遠方
+    evidence_slot: 2ch.26.15
+    reason: 代下26:15 原文
+  - qid: GENERAL_BIBLE_QUESTION_088
+    field: reference_answer
+    before: 「耶穌看見許多的人，就憐憫他們
+    after: 「耶穌出來，見有許多的人，就憐憫他們
+    evidence_slot: mrk.6.34
+    reason: 可6:34 原文
+  - qid: GENERAL_BIBLE_QUESTION_089
+    field: reference_answer
+    before: 使他們得以躺臥
+    after: 使牠們得以躺臥
+    evidence_slot: ezk.34.15
+    reason: 結34:15 原文（羊用「牠們」）
+  - qid: GENERAL_BIBLE_QUESTION_097
+    field: reference_answer
+    before: 獻禾捆為搖祭的那日起，數算七個安息日的次日，共計五十天
+    after: 獻禾捆為搖祭的那日算起，要滿了七個安息日。到第七個安息日的次日，共計五十天
+    evidence_slot: lev.23.15
+    reason: 利23:15-16 原文
+  - qid: VERSE_LOOKUP_002
+    field: expected_answer_points[0]
+    before: 神照着自己的形像造人
+    after: 上帝就照着自己的形像造人
+    evidence_slot: gen.1.27
+    reason: 創1:27 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_008
+    field: expected_answer_points[1]
+    before: 若不藉着祂
+    after: 若不藉着我
+    evidence_slot: jhn.14.6
+    reason: 約14:6 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_010
+    field: expected_answer_points[1]
+    before: 在一切所行的事上都要認定祂
+    after: 在你一切所行的事上都要認定他
+    evidence_slot: pro.3.6
+    reason: 箴3:6 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_012
+    field: expected_answer_points[1]
+    before: 將所要的告訴神
+    after: 將你們所要的告訴上帝
+    evidence_slot: php.4.6
+    reason: 腓4:6 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_012
+    field: expected_answer_points[2]
+    before: 神所賜出人意外的平安必保守你們的心懷意念
+    after: 上帝所賜、出人意外的平安必在基督耶穌裏保守你們的心懷意念
+    evidence_slot: php.4.7
+    reason: 腓4:7 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_017
+    field: expected_answer_points[2]
+    before: 與他一同坐席
+    after: 我與他，他與我一同坐席
+    evidence_slot: rev.3.20
+    reason: 啟3:20 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_047
+    field: expected_answer_points[1]
+    before: 其中有十二萬多不能分辨左手右手的人
+    after: 其中不能分辨左手右手的有十二萬多人
+    evidence_slot: jon.4.11
+    reason: 拿4:11 原文（逐字背誦的答案要點）
+
+quote_exempt:
+  - {qid: TOPIC_QUESTION_062, field: reference_answer, quote: 上行之詩, reason: 詩篇篇題（chapter_texts），不在 verse_units}
+  - {qid: EVENT_QUESTION_074, field: reference_answer, quote: 千禧年, reason: 術語}
+  - {qid: EVENT_QUESTION_076, field: reference_answer, quote: 道成肉身, reason: 教義術語}
+  - {qid: EVENT_QUESTION_078, field: reference_answer, quote: 棕枝主日, reason: 節期名稱}
+  - {qid: EVENT_QUESTION_079, field: reference_answer, quote: 十架七言, reason: 傳統名稱}
+  - {qid: EVENT_QUESTION_086, field: reference_answer, quote: 代罪羊, reason: 術語}
+  - {qid: EVENT_QUESTION_098, field: reference_answer, quote: 國民拒絕王, reason: 情節概括（路19:14）}
+  - {qid: EVENT_QUESTION_098, field: reference_answer, quote: 上帝的國還未立刻顯現, reason: 情節概括（路19:11）}
+  - {qid: EVENT_QUESTION_098, field: reference_answer, quote: 王要回來審判, reason: 情節概括（路19:15-27）}
+  - {qid: GENERAL_BIBLE_QUESTION_042, field: reference_answer, quote: 原始福音, reason: 神學術語}
+  - {qid: GENERAL_BIBLE_QUESTION_061, field: reference_answer, quote: 蒙恩得赦, reason: 概括用語}
+  - {qid: GENERAL_BIBLE_QUESTION_095, field: reference_answer, quote: 上帝與人同住, reason: 主題標籤}
+  - {qid: GENERAL_BIBLE_QUESTION_096, field: reference_answer, quote: 上帝同在的榮光, reason: 主題標籤}
+  - {qid: GENERAL_BIBLE_QUESTION_100, field: reference_answer, quote: 聖潔法典, reason: 學術術語}
+
+kay_review:
+  - qid: PERSON_QUESTION_013
+    issue: 評分問題
+    detail: >-
+      題目用 CUNP 拼法「大利烏」（題目不改，日後由 query_aliases 處理）。答案欄已依 cunp_spelling 改為「大流士」（但6:1）。
+      v1 下三組設定都回答「經文沒有描述」，評分卻判為正確（稽核 G04）。請決定這題要不要排除或加評分備註。
+  - qid: VERSE_LOOKUP_001
+    issue: 題目與答案用字不一致
+    detail: >-
+      v1 答案要點用「祂／不至」、reference_answer 用「他／不致」，彼此矛盾。答案欄已依機械替換與 CUNP 規則逐字對齊約3:16
+      （上帝／他／不致），兩者不再矛盾；題目「神如何表達祂對世人的愛」依規定未改。請決定題目是否保留原樣。
+  - qid: VERSE_LOOKUP_020
+    issue: 答案欄自相矛盾（未修改）
+    detail: >-
+      答案要點作「等候耶和華的必重新得力」，reference_answer 作「但那等候耶和華的必從新得力」。服務文字賽40:31 作「重新得力」，
+      「從新」是和合本舊譯。建議 reference_answer 改「重新」；未自行修改。
