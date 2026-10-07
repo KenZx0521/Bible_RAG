@@ -1,0 +1,12 @@
+# 外部分節對照（DESIGN §2.12、G12）：只收外部節號在 PDF 中沒有 slot 的情況。
+# 每章最大節號與 11 個缺號槽一律取自文字層（chapters.jsonl、verse_slots.jsonl），不在這裡。
+# 建置時驗證：external_ref 超出該章在 PDF 的最大節號；target 是有經文的 slot；
+# target 那節以 target_starts_with 開頭（外部節號那句話在 PDF 的位置）。
+# 其他與 KJV 的差異都不需要別名：路17:36 在 PDF 是缺號槽、約三1:15 與啟12:18 在 PDF 都有 slot。
+schema: ragdata.versification.v1
+aliases:
+  - external_ref: jhn.7.53
+    relation: contained_in
+    target: jhn.8.1
+    target_starts_with: 於是各人都回家去了；
+    note: PDF 把 7:53 併進 8:1 開頭（約7 只有 52 節）

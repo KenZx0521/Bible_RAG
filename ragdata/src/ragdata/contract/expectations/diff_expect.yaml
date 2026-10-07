@@ -1,0 +1,29 @@
+# G-DIFF 對帳：文字層對 bible_md 與 canonical_full 的差異，必須重現稽核實測的數字。
+# 鍵是摘要（diff_summary.json）裡的點分路徑；每個值都是 REPORT 的實測數字，不是門檻。
+#   loss = 轉換器真正丟掉的經文（註腳換頁、節中標題、縮排行、細拉夾在節中、頁外裁切）
+schema: ragdata.diff_expect.v1
+bible_md:
+  units_compared: 31021                                        # G12：31,021 個節號標籤
+  loss.units: 268                                              # G01：真正缺的經文 268 節
+  loss.chars: 4446                                             # G01：4,446 字
+  by_class.converter_footnote_pagebreak.containers: 160        # G01：註腳換頁 160 節
+  by_class.converter_footnote_pagebreak.chars: 3266            #      3,266 字
+  by_class.converter_midverse_heading.containers: 18           # G01：節中標題 18 節
+  by_class.converter_midverse_heading.chars: 441               #      441 字
+  by_class.converter_indented_line.containers: 7               # G01：縮排行 7 節
+  by_class.converter_indented_line.chars: 55                   #      55 字
+  by_class.converter_selah_midverse.containers: 2              # G01：細拉夾在節中 2 節（哈3:3、3:9）
+  by_class.converter_selah_midverse.chars: 33                  #      33 字
+  by_class.converter_offpage_clip.containers: 81               # G01：頁外裁切 81 節
+  by_class.converter_offpage_clip.chars: 651                   #      651 字
+  by_class.converter_selah.containers: 67                      # G01：67 節只是少了「（細拉）」
+  by_class.converter_selah.chars: 268                          #      4,714 − 4,446
+  by_class.converter_superscription_lost.containers: 116       # G01：詩篇篇題 116 篇
+  by_class.converter_superscription_lost.chars: 1490           #      1,490 字
+  by_class.converter_speaker_label.containers: 21              # 稽核 final_verse_breakdown：雅歌說話者標記 21 節
+  md_only_verses: 10                                           # G02：10 個幽靈節
+  by_class.hand_edit_ghost_verse.containers: 10                # G02：10 個幽靈節
+  by_class.hand_edit_variant_merged.containers: 10             # G02：10 節併入「有古卷」文字
+  by_class.hand_edit_footnote_removed.containers: 18           # G02：18 則異文註腳被刪
+canonical_full:
+  records_compared: 31032                                      # DESIGN §4：canonical_full 31,032 筆

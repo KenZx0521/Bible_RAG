@@ -1,0 +1,37 @@
+# G-SRC / G-TOOL / G-CONSERVE expectations for the six fixture PDFs of test_build_text.py.
+# PDF shas come from the audit manifest; conserve totals from the audit's own row classifier
+# (corpus s2_pdf_verses.py) run on these PDFs; overflow from the audit (ezr only); pages,
+# strokes, style groups and edition markers were measured on these PDFs.
+schema: ragdata.source_expect.v1
+toolchain: {mutool: 1.23.10, pdftotext: 24.02.0}
+ebible_uuid: c03bb35c-f042-59c2-88d7-1111d9a01842
+pages: 100
+overflow_glyphs: 123
+strokes: 1265
+edition_markers: {呂便: 0, 流便: 0, 塞魯士: 15, 古列: 0, 凱撒: 6, 該撒: 0, 泰爾: 4, 推羅: 0}
+conserve: {body: 39932, navy: 2807, footnote: 537, division: 0}
+style_groups:
+  "BitstreamCyberbit-Roman|11.96|#000000": 16472
+  "BitstreamCyberbit-Roman|11.96|#000080": 1034
+  "BitstreamCyberbit-Roman|8.97|#000080": 133
+  "NotoSansCJKjp-Black|11.96|#000080": 36
+  "NotoSansCJKjp-Black|17.93|#000000": 22
+  "NotoSansCJKjp-Regular|11.96|#000000": 23460
+  "NotoSansCJKjp-Regular|11.96|#000080": 1459
+  "NotoSansCJKjp-Regular|7.97|#000080": 24
+  "NotoSansCJKjp-Regular|7.97|#0000ff": 730
+  "NotoSansCJKjp-Regular|8.97|#000080": 211
+  "NotoSerif-ExtraBold|17.93|#000000": 42
+  "NotoSerif-ExtraBold|8.97|#000080": 189
+  "NotoSerif-ExtraBold|9.96|#000080": 192
+  "NotoSerif-Italic|11.96|#000080": 314
+  "NotoSerif-Regular|7.97|#000080": 1098
+  "NotoSerif-Regular|7.97|#0000ff": 1040
+  "NotoSerif-Regular|8.97|#000080": 2041
+pdfs:
+  路得記.pdf: 1488796c315f353d09465dae1e52f4b501b7b4dd5b7c5355d5130814ee170066
+  以斯拉記.pdf: 62defc562a0e2898d7d6b9c6d0866e4aef1569f1167a80edad2e5883b061bfe8
+  約拿書.pdf: f7afa8506a1f994ab28b2034c67f90fcc1d4dd61da0df788d680c80069bff47f
+  哈巴谷書.pdf: 0e7292fd9d7a0f7f1db1d5d70acf2d20280a16bac7158cf6d03622f018a741c2
+  西番雅書.pdf: aa63f3c8f85d25094fc213f6888cf462c242ab4f050e1513e25d49f4b1261c25
+  馬可福音.pdf: a1d5150e4e07b3525b1b2d75da809b0a74c5c4bd44406364b71ace8c84f61988

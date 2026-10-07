@@ -1,0 +1,31 @@
+# 文字層正規化規則（DESIGN §2.0、G45）。只收必要且可逆的規則，逐條記錄。
+# text 與 text_pdf 只在 errata 位置不同，所以沒有任何規則在 S4 改寫字元：
+# 空白規則在 S2 抽取時執行，可由各層保留的資料還原；NFC 只驗證、不改寫。
+# 建置時把每條規則的套用次數寫進 overlay_report.json。
+schema: ragdata.normalization.v1
+rules:
+  - id: N1
+    stage: S2
+    what: 移除 PDF 換行留下的空白，一節經文接成一行（否則 G45 的空白 id 問題會再現）
+    applies_to: [verse_units]
+    reversible_by: verse_units.line_breaks（每個 PDF 行起點的 offset 與 soft/hard/indent 類別）
+  - id: N2
+    stage: S2
+    what: 移除 CJK 字之間的排版空白（左右對齊撐開的空格）與行首行尾空白；空白不是內容字形
+    applies_to: [verse_units, chapter_texts, headings, footnotes, speakers, parallel_refs]
+    reversible_by: src 層 extract_*.jsonl 的逐字形座標（G-CONSERVE 只計非空白字形，殘差 0）
+  - id: N3
+    stage: S4
+    what: Unicode NFC，只驗證不改寫；出現非 NFC 字串時 G-TEXT 判紅（不存 NFKC）
+    applies_to: [verse_units, chapter_texts, headings, footnotes, speakers, parallel_refs]
+    reversible_by: 不改寫，無需還原
+ascii_allowed:   # G-TEXT：ASCII 只能是 PDF 原樣印出的這些字元
+  verse_units:
+    chars: ".*"
+    why: 出32:32「罪......不然」的刪節號；斯2:20、7:2 印有游離的「*」（REPORT §2.3），依 PDF 保留
+  footnotes:
+    chars: ".0123456789"
+    why: 刪節號（雅2:7「不要叫醒......情願」等）；有古卷註腳內印的節號（「有古卷加：11人子來」）
+  parallel_refs:
+    chars: "0123456789*)"
+    why: 章節數字；代下32:1、32:24 兩行以「*」代替括號，約18:15 行尾是半形「)」，依 PDF 保留

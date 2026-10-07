@@ -1,0 +1,44 @@
+# Expected counts of the hand-built mini snapshot (mini_build.py), tallied by hand.
+# Same format as ragdata/contract/expectations/pdf_counts.yaml; g cites the audit
+# finding this fixture exists for (G58: gates must turn red when data is deleted).
+schema: ragdata.pdf_counts.v1
+text:
+  books: {value: 5, g: [G58]}
+  chapters: {value: 6, g: [G58]}
+  verse_units: {value: 14, g: [G58]}
+  merged_units: {value: 1, g: [G58]}
+  present_slots: {value: 15, g: [G58]}
+  omitted_slots: {value: 1, g: [G58]}
+  omitted_slot_keys: {value: [mat.18.3], g: [G58]}
+  slot_rows: {value: 16, g: [G58]}
+  superscriptions: {value: 1, g: [G58]}
+  superscription_chars: {value: 16, g: [G58]}
+  book_divisions: {value: 1, g: [G58]}
+  selah_markers: {value: 1, g: [G58]}
+  speakers: {value: 1, g: [G58]}
+  headings: {value: 6, g: [G58]}
+  headings_before: {value: 5, g: [G58]}
+  headings_mid: {value: 1, g: [G58]}
+  headings_dash_sub: {value: 1, g: [G58]}
+  headings_stacked: {value: 1, g: [G58]}
+  parallel_lines: {value: 2, g: [G58]}
+  parallel_segments: {value: 3, g: [G58]}
+  section_ranges: {value: 1, g: [G58]}
+  footnotes: {value: 4, g: [G58]}
+  footnotes_alt_rendering: {value: 1, g: [G58]}
+  footnotes_original: {value: 1, g: [G58]}
+  footnotes_name_meaning: {value: 1, g: [G58]}
+  footnotes_variant: {value: 1, g: [G58]}
+  footnote_refs: {value: 0, g: [G58]}
+  name_spans_body: {value: 8, g: [G58]}
+  name_surfaces_body: {value: 6, g: [G58]}
+  name_spans_footnote: {value: 1, g: [G58]}
+  merge_groups: {value: 1, g: [G58]}
+  errata_applied: {value: 2, g: [G58]}
+  ref_aliases: {value: 1, g: [G58]}
+struct:
+  pericopes: {value: 6, g: [G58]}
+  pericopes_cross_chapter: {value: 1, g: [G58]}
+  pericopes_untitled: {value: 1, g: [G58]}
+  passages: {value: 7, g: [G58]}
+  passages_continued: {value: 1, g: [G58]}
