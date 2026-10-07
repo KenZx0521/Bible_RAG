@@ -355,6 +355,19 @@ def _note_cause(note: Mapping[str, Any], status: str, linked: bool) -> str | Non
     return OTHER
 
 
+def _segments(note: Mapping[str, Any], status: str, raw: str) -> tuple[int, str, str]:
+    """(offset, layer side, md side) of what differs: lost text, a misglyph, or whitespace."""
+    if status == "whitespace":
+        return 0, "", raw
+    if status == "missing":
+        return 0, note["text"], ""
+    base, flat = note["text_pdf"] if status == "clip" else note["text"], _WS.sub("", raw)
+    ops = [o for o in difflib.SequenceMatcher(None, base, flat, autojunk=False).get_opcodes()
+           if o[0] != "equal"]
+    return (ops[0][1] if ops else 0, "".join(note["text"][i1:i2] for _, i1, i2, _, _ in ops),
+            "".join(flat[j1:j2] for _, _, _, j1, j2 in ops))
+
+
 def _note_rows(notes: Sequence[Mapping[str, Any]], statuses: Mapping[str, tuple[str, str]],
                merged: set[str], ghosts: set[str]) -> list[DiffRow]:
     out = []
@@ -363,7 +376,8 @@ def _note_rows(notes: Sequence[Mapping[str, Any]], statuses: Mapping[str, tuple[
         linked = note["unit_key"] in merged or note["variant_slot_key"] in ghosts
         cause = _note_cause(note, status, linked)
         if cause is not None:
-            out.append(DiffRow(note["fn_id"], "footnote", status, 0, note["text"], raw, cause))
+            offset, layer, md = _segments(note, status, raw)
+            out.append(DiffRow(note["fn_id"], "footnote", status, offset, layer, md, cause))
     return out
 
 

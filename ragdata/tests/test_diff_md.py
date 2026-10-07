@@ -155,6 +155,10 @@ def test_rows_carry_the_layer_and_md_sides_of_each_difference(diff):
     assert (clip.offset, clip.layer) == (1, "南西")
     errata = next(r for r in diff.rows if r.container == "rut.1.8")
     assert (errata.op, errata.layer, errata.md) == ("replace", "秕", "詷")
+    notes = {r.container: (r.layer, r.md) for r in diff.rows if r.kind == "footnote"}
+    assert notes["fn:rut.1.1#1"] == ("", " 或譯：甲")
+    assert notes["fn:rut.1.2#1"] == ("乙", "")
+    assert notes["fn:rut.1.14-15#1"] == ("原文是丙", "")
 
 
 def test_the_summary_counts_units_and_characters_by_cause(diff):
