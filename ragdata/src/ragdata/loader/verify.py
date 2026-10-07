@@ -93,7 +93,8 @@ class ProjectionReport:
 
 def read_projection(t: Targets, pg: Any, qdrant: Any) -> Projection:
     schema = pg.schema_exists(t.schema)
-    tables = {tb.name: pg.fetch(t.schema, tb) for tb in (*TABLES, BUILD_INFO)} if schema else {}
+    tables = {tb.name: pg.fetch(t.schema, tb) for tb in (*TABLES, BUILD_INFO)
+              if schema and pg.table_exists(t.schema, tb.name)}
     collection = qdrant.exists(t.collection)
     return Projection(tables, pg.build_row(t.build_id),
                       frozenset(pg.constraints(t.schema)) if schema else frozenset(),

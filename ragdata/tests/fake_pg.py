@@ -68,6 +68,9 @@ class FakePg:
     def schema_exists(self, schema: str) -> bool:
         return schema in self.schemas
 
+    def table_exists(self, schema: str, name: str) -> bool:
+        return name in self.schemas.get(schema, {})
+
     def serving(self) -> dict[str, str]:
         return dict(self.serving_rows)
 

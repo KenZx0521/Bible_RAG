@@ -171,6 +171,13 @@ def test_nothing_loaded_is_red_everywhere(tmp_path, mini):
     assert report.to_json()["pass"] is False
 
 
+def test_a_dropped_table_is_red_not_a_crash(loaded):
+    del loaded.pg.schemas[loaded.targets.schema]["speakers"]
+    loaded.pg.constraint_sets[loaded.targets.schema] = {
+        c for c in loaded.pg.constraint_sets[loaded.targets.schema] if c[0] != "speakers"}
+    assert {"G-SCHEMA.pg", "G-PROJ.C2", "G-PROJ.C3"} <= mini_loaded.red(loaded.verify())
+
+
 def test_the_report_is_json(loaded):
     doc = loaded.verify().to_json()
     assert doc["schema"] == "ragdata.projection_report.v1" and doc["pass"] is True
