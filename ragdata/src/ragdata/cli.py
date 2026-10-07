@@ -8,6 +8,7 @@
                                  [--counts YAML] [--source-expect YAML] [--registries DIR]
                                  [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
+    python -m ragdata gt {build,gate} ...   (GT v2; see ragdata.gt.cli)
 
 A text layer is gated with its src layer as a dependency (G-CONSERVE re-reads
 it) and the PDFs (G-XCHECK re-reads them); without them those gates fail closed.
@@ -36,6 +37,8 @@ from ragdata.contract.counts import PDF_COUNTS_PATH, CountsError
 from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
+from ragdata.gt import cli as gt_cli
+from ragdata.gt.errors import GT_ERRORS
 from ragdata.stages.errors import StageError
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.store import DEFAULT_ROOT, StoreError
@@ -76,6 +79,7 @@ def _parser() -> argparse.ArgumentParser:
     det.add_argument("first", type=Path)
     det.add_argument("second", type=Path)
     det.add_argument("--report", type=Path)
+    gt_cli.add_parser(sub)
     return parser
 
 
@@ -111,13 +115,19 @@ def _det(args: argparse.Namespace) -> int:
     return EXIT_OK if result.passed else EXIT_GATE_FAILED
 
 
+def _gt(args: argparse.Namespace) -> int:
+    report = gt_cli.run(args)
+    _emit(report.to_json(), getattr(args, "report", None))
+    return EXIT_OK if report.passed else EXIT_GATE_FAILED
+
+
 HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
-           yaml.YAMLError)
+           yaml.YAMLError, json.JSONDecodeError, *GT_ERRORS)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    handler = {"build": _build, "gate": _gate, "det": _det}[args.command]
+    handler = {"build": _build, "gate": _gate, "det": _det, "gt": _gt}[args.command]
     try:
         return handler(args)
     except HANDLED as exc:
