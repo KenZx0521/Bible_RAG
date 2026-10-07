@@ -2,10 +2,11 @@
 
 Five books, six chapters; it exercises every special case of design §2.23 that
 the contracts cover: a merged unit, an omitted slot with its variant footnote, a
-mid-verse heading, a stacked section heading with a section_range, a
-superscription and a book division, selah, a speaker, errata in a unit and in a
-footnote, underline spans in body and footnote (one merge group), a ref alias,
-a cross-chapter pericope, an untitled book opening and a chunked passage.
+mid-verse heading (and a parallel range ending on the verse it cuts), a stacked
+section heading with a section_range, a superscription and a book division,
+selah, a speaker, errata in a unit and in a footnote, underline spans in body and
+footnote (one merge group), a ref alias, a cross-chapter pericope, an untitled
+book opening and a chunked passage.
 
 The struct layer is written by hand as the oracle S5 must reproduce from the text
 layer: content strings, token counts of the v1c text under ``count_tokens`` (a
@@ -198,6 +199,8 @@ def _parallel_refs() -> list[dict]:
          [_target("eph", "eph.6.1", "eph.6.4")], "abbr+ch‧v－v"),
         ("pr:hd:act.9.1#1#1", "hd:act.9.1#1", "（9‧1－10‧1）", 0, "section_range",
          [_target("act", "act.9.1", "act.10.1")], "ch‧v－ch‧v"),
+        ("pr:hd:eph.6.1#1#1", "hd:eph.6.1#1", "（徒9‧1－3）", 0, "parallel",
+         [_target("act", "act.9.1", "act.9.3")], "abbr+ch‧v－v"),
     ]
     keys = ("pr_id", "heading_id", "raw", "seg_idx", "kind", "targets", "parse_rule")
     return [dict(zip(keys, row), provenance_class="pdf_deterministic") for row in rows]

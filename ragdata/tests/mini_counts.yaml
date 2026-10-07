@@ -21,8 +21,8 @@ text:
   headings_mid: {value: 1, g: [G58]}
   headings_dash_sub: {value: 1, g: [G58]}
   headings_stacked: {value: 1, g: [G58]}
-  parallel_lines: {value: 2, g: [G58]}
-  parallel_segments: {value: 3, g: [G58]}
+  parallel_lines: {value: 3, g: [G58]}
+  parallel_segments: {value: 4, g: [G58]}
   section_ranges: {value: 1, g: [G58]}
   footnotes: {value: 4, g: [G58]}
   footnotes_alt_rendering: {value: 1, g: [G58]}
@@ -51,3 +51,17 @@ emb:
   emb_verses: {value: 14, g: [G12, G58]}
   emb_passages: {value: 6, g: [G15, G58]}
   emb_chunks: {value: 2, g: [G19, G58]}
+events:
+  events: {value: 3, g: [G56]}
+  event_anchors: {value: 4, g: [G56]}
+  event_anchor_passages: {value: 4, g: [G56]}
+  anchors_same: {value: 2, g: [G56]}
+  anchors_narrowed: {value: 1, g: [G56]}
+  anchors_widened: {value: 1, g: [G56]}
+  anchor_changes: {value: 2, g: [G56]}
+  legacy_triggers: {value: 4, g: [G56]}
+route:
+  route_persons: {value: 3, g: [G43]}
+  route_places: {value: 2, g: [G43]}
+  route_events: {value: 3, g: [G56]}
+  route_books: {value: 4, g: [G13]}

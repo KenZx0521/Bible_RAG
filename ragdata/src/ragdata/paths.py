@@ -13,3 +13,10 @@ LEGACY_OUTPUT = REPO / "output"              # the old build's records, read for
 MODELS = Path("/mnt/ollama-data/bible_rag_store/models")
 RERANKER_TOKENIZER = (MODELS / "bge-reranker-v2-m3" / "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
                       / "tokenizer.json")   # the reranker snapshot's tokenizer (no weights here)
+# KG stages (K1, K4) and the DAG-external tools that write their registries
+EVENTS_REGISTRY = REGISTRIES / "events.yaml"                  # K1, converted from the next line
+LEGACY_EVENT_REGISTRY = REPO / "backend" / "data" / "event_registry.json"
+FROZEN_LEXICON = REGISTRIES / "routing_lexicon.legacy.json"   # K4, frozen from the backend
+GROUND_TRUTH = REPO / "ground_truth.json"                     # G-ROUTE probe questions
+BACKEND = REPO / "backend"
+BACKEND_PYTHON = BACKEND / ".venv" / "bin" / "python"          # imports entity_dicts (G-ROUTE)

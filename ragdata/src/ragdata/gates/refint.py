@@ -120,6 +120,23 @@ STRUCT_FKS = (
     fk("legacy_ids", "new_ids", "verse_units", _new_ids("verse_record")),
 )
 
+KG0_FKS = (
+    fk("parallel_links", "pr_id", "parallel_refs"),
+    fk("parallel_links", "from/to", "pericopes", lambda k: [k.from_pericope, k.to_pericope]),
+    fk("parallel_links", "target", "verse_slots",
+       lambda k: [k.target_start_slot, k.target_end_slot]),
+)
+
+EVENTS_FKS = (
+    fk("events", "anchors", "passages", lambda e: [a.passage_id for a in e.anchors]),
+    fk("events", "anchor slots", "verse_slots",
+       lambda e: [s for a in e.anchors for s in (a.start_slot, a.end_slot)]),
+    fk("anchor_changes", "event_id", "events"),
+    fk("anchor_changes", "passage_id", "passages"),
+    fk("anchor_changes", "slots", "verse_slots",
+       lambda c: [c.legacy_start_slot, c.legacy_end_slot, *c.removed_slots]),
+)
+
 
 def _dangling(idx: Index, key: ForeignKey) -> list[str]:
     pk, target = record_type(key.source).pk, idx[key.target]
@@ -315,10 +332,29 @@ def _pericope_chain(idx: Index) -> list[str]:
     return out
 
 
+# ------------------------------------------------------------------ events agreement
+
+
+def _anchor_passages(idx: Index) -> list[str]:
+    """An event anchor spells its passage's key and slot range."""
+    passages, out = idx["passages"], []
+    for event in idx["events"].values():
+        for a in event.anchors:
+            ps = passages.get(a.passage_id)
+            spelled = (a.start_key, a.end_key, a.start_slot, a.end_slot)
+            if ps is not None and spelled != (ps.start_key, ps.end_key, ps.start_slot,
+                                              ps.end_slot):
+                out.append(f"events {event.event_id}: anchor {spelled} is not passage "
+                           f"{ps.passage_id}")
+    return out
+
+
 RULES: Mapping[str, tuple[tuple[ForeignKey, ...], tuple[Callable[[Index], list[str]], ...]]] = {
     "text": (TEXT_FKS, (_slot_tiling, _variant_links, _chapter_aggregates, _book_aggregates,
                         _span_slices, _errata_slices, _offsets, _aliases)),
     "struct": (STRUCT_FKS, (_passage_links, _pericope_chain)),
+    "kg0": (KG0_FKS, ()),
+    "events": (EVENTS_FKS, (_anchor_passages,)),
 }
 
 
