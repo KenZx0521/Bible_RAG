@@ -100,3 +100,15 @@ def test_list_expectation_for_a_scalar_count_is_red_not_a_crash():
     counts = dict(load_counts(MINI_COUNTS)["text"])
     counts["books"] = counts["books"]._replace(value=("psa",))
     assert not check_counts(_mini_snapshot(), "text", counts).passed
+
+
+def test_a_stage_can_check_only_the_counts_of_the_records_it_writes():
+    snap = check_schema(mini_build.files("text"), ("text",))[1]
+    counts = load_counts(MINI_COUNTS)["text"]
+    keys = ("books", "verse_units", "omitted_slot_keys")
+    result = check_counts(snap, "text", counts, keys=keys)
+    assert result.passed and set(result.observed) == set(result.expected) == set(keys)
+    unknown = check_counts(snap, "text", {k: counts[k] for k in keys[:2]}, keys=(*keys, "nope"))
+    assert not unknown.passed
+    assert set(unknown.details) == {"nope: no counter", "nope: no expectation",
+                                    "omitted_slot_keys: no expectation"}

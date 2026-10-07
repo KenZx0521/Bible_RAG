@@ -7,7 +7,7 @@ List-valued counts (e.g. the omitted slot keys) compare as sets.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Collection, Mapping
 
 from ragdata.contract.counts import Expectation
 from ragdata.gates.base import GateResult, Snapshot, capped
@@ -99,11 +99,17 @@ def _show(value: Any) -> Any:
     return list(value) if isinstance(value, tuple) else value
 
 
-def check_counts(snapshot: Snapshot, layer: str,
-                 expectations: Mapping[str, Expectation]) -> GateResult:
+def check_counts(snapshot: Snapshot, layer: str, expectations: Mapping[str, Expectation],
+                 keys: Collection[str] | None = None) -> GateResult:
+    """Compare every count of ``layer`` (or only ``keys``, for a stage that writes part of it)."""
     counters = COUNTERS[layer]
-    details = [f"{key}: no expectation" for key in sorted(set(counters) - set(expectations))]
-    details += [f"{key}: no counter" for key in sorted(set(expectations) - set(counters))]
+    if keys is not None:
+        counters = {k: counters[k] for k in keys if k in counters}
+        expectations = {k: expectations[k] for k in keys if k in expectations}
+    wanted = set(counters) if keys is None else set(keys)
+    details = [f"{key}: no expectation" for key in sorted(wanted - set(expectations))]
+    uncounted = (set(expectations) | wanted) - set(counters)
+    details += [f"{key}: no counter" for key in sorted(uncounted)]
     observed = {key: counters[key](snapshot) for key in sorted(counters)}
     expected = {key: _show(e.value) for key, e in sorted(expectations.items())}
     for key in sorted(set(counters) & set(expectations)):
