@@ -89,3 +89,7 @@ class EntityResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     services: dict[str, bool]
+    # Report-only: the pinned tokenizer fingerprint of the embedder and the
+    # reranker (None before init). A failing contract already stops startup,
+    # so these never change `status`.
+    encoder: dict[str, dict | None] = {}

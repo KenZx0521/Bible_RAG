@@ -31,8 +31,12 @@ WORKDIR /app
 COPY backend/ ./backend/
 COPY bible_chunking/ ./bible_chunking/
 COPY scripts/ ./scripts/
+# Shared contracts (ragcommon.encoder: pinned tokenizers). Imported through
+# PYTHONPATH rather than a pyproject dependency, so uv.lock stays as is.
+COPY packages/ragcommon/ ./packages/ragcommon/
 
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app/packages
 
 EXPOSE 8000
 
