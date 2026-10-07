@@ -19,16 +19,13 @@ from typing import Any, Iterator, Mapping
 
 from ragcommon import books
 from ragdata.contract import primary_key
+from ragdata.contract.text import WORDING
 from ragdata.gates.base import GateResult, Snapshot, capped
 
 NAME = "G-TEXT"
 FIELDS: Mapping[str, tuple[str, ...]] = {
-    "books": ("name",), "verse_units": ("text_pdf", "text"),
-    "chapter_texts": ("text_pdf", "text"), "headings": ("text_pdf", "text", "display_title"),
-    "footnotes": ("text_pdf", "text"), "speakers": ("text_pdf", "text"),
-    "parallel_refs": ("raw",),
-}
-DUAL = ("verse_units", "chapter_texts", "headings", "footnotes", "speakers")
+    "books": ("name",), **{name: (pdf, *derived) for name, (pdf, derived) in WORDING.items()}}
+DUAL = tuple(name for name, (pdf, derived) in WORDING.items() if "text" in derived)
 FORBIDDEN = frozenset({"Cc", "Cf", "Co", "Cs", "Cn"})
 
 
@@ -81,7 +78,7 @@ def _dual(snapshot: Snapshot, at: Mapping[str, Mapping[int, Any]]) -> list[str]:
 
 def _pdf_text(snapshot: Snapshot) -> Iterator[tuple[str, str]]:
     for type_name, key, field, value in _fields(snapshot):
-        if field in ("text_pdf", "raw"):
+        if type_name in WORDING and field == WORDING[type_name][0]:
             yield key, value
 
 

@@ -14,15 +14,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from ragdata.contract.registry import (
+    DIFF_CANONICAL_REPORT, DIFF_MD_REPORT, DIFF_SUMMARY_REPORT,
+)
 from ragdata.gates.base import GateResult
 from ragdata.gates.diff import check_diff, metric
 from ragdata.stages.diffs import canonical, md
 from ragdata.stages.s01_extract import S1Book
 from ragdata.stages.s02_parse.units import number_footnotes, unit_key
 
-MD_FILE = "diff_vs_bible_md.tsv"
-CANONICAL_FILE = "diff_vs_canonical_full.tsv"
-SUMMARY_FILE = "diff_summary.json"
+MD_FILE, CANONICAL_FILE, SUMMARY_FILE = DIFF_MD_REPORT, DIFF_CANONICAL_REPORT, DIFF_SUMMARY_REPORT
 SUMMARY_SCHEMA = "ragdata.diff_summary.v1"
 
 

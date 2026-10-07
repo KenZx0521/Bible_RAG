@@ -31,7 +31,7 @@ from ragcommon.versification import Versification, default_versification
 from ragdata import paths
 from ragdata.contract import LAYERS, record_type_for_file
 from ragdata.contract.counts import PDF_COUNTS_PATH, load_counts
-from ragdata.contract.registry import LAYER_REPORTS
+from ragdata.contract.registry import LAYER_REPORTS, XCHECK_REPORT
 from ragdata.gates import sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
 from ragdata.gates.counts import check_counts
@@ -40,7 +40,6 @@ from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
 from ragdata.gates.text import check_text
 from ragdata.stages.s00_source import EXPECT_PATH
-from ragdata.stages.s03_xcheck import REPORT_FILE as XCHECK_REPORT
 from ragdata.stages.s04_overlay.normalization import load_normalization
 from ragdata.store import DEPENDS_ON, MANIFEST, LayerData, read_layer, verify_layer
 

@@ -15,9 +15,10 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
+from ragdata.contract.registry import OVERLAY_REPORT
 from ragdata.stages.s04_overlay import errata, normalization, versification
 
-REPORT_FILE = "overlay_report.json"
+REPORT_FILE = OVERLAY_REPORT
 REPORT_SCHEMA = "ragdata.overlay_report.v1"
 
 

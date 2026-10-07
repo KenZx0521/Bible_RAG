@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from ragcommon import books, ids
 from ragdata.contract.fields import (
@@ -21,6 +22,13 @@ PDF = one_of("pdf_deterministic")
 SELAH = "（細拉）"
 FOOTNOTE_KINDS = ("alt_rendering", "original", "name_meaning", "variant", "lxx", "gloss", "other")
 ERRATA_ID_RE = re.compile(r"er:[0-9]{4}")
+# record types that carry wording printed in the PDF: (field with the PDF text, fields derived
+# from it). S4 (errata, normalization) and G-TEXT read this one list.
+WORDING = MappingProxyType({
+    "verse_units": ("text_pdf", ("text",)), "chapter_texts": ("text_pdf", ("text",)),
+    "headings": ("text_pdf", ("text", "display_title")), "footnotes": ("text_pdf", ("text",)),
+    "speakers": ("text_pdf", ("text",)), "parallel_refs": ("raw", ()),
+})
 ERRATA_CONTAINERS = {
     "unit": "unit", "footnote": "footnote", "heading": "heading",
     "superscription": "superscription", "speaker": "speaker",

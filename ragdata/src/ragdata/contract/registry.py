@@ -11,8 +11,13 @@ from ragdata.contract.fields import Record, parse
 
 LAYERS = ("text", "struct")
 # non-record files a layer's build writes beside its records (S3, S4 and the diff reports)
-LAYER_REPORTS = {"text": ("xcheck_report.json", "overlay_report.json", "diff_vs_bible_md.tsv",
-                          "diff_vs_canonical_full.tsv", "diff_summary.json"), "struct": ()}
+XCHECK_REPORT = "xcheck_report.json"
+OVERLAY_REPORT = "overlay_report.json"
+DIFF_MD_REPORT = "diff_vs_bible_md.tsv"
+DIFF_CANONICAL_REPORT = "diff_vs_canonical_full.tsv"
+DIFF_SUMMARY_REPORT = "diff_summary.json"
+LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
+                          DIFF_SUMMARY_REPORT), "struct": ()}
 
 
 @dataclass(frozen=True)

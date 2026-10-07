@@ -29,6 +29,8 @@ from typing import Any, Iterator, Mapping, Sequence
 import yaml
 
 from ragcommon import ids
+from ragdata.contract.registry import record_type
+from ragdata.contract.text import WORDING
 from ragdata.paths import REGISTRIES
 from ragdata.stages.errors import StageError
 
@@ -41,8 +43,7 @@ CONTAINERS = {"verse_units": ("unit_key", "unit"), "footnotes": ("fn_id", "footn
               "chapter_texts": ("id", "superscription"), "speakers": ("sk_id", "speaker")}
 _KIND = {"slot": "unit", "unit": "unit", "footnote": "footnote",
          "superscription": "superscription", "speaker": "speaker"}
-PDF_TEXT = (("verse_units", "text_pdf"), ("footnotes", "text_pdf"), ("headings", "text_pdf"),
-            ("chapter_texts", "text_pdf"), ("speakers", "text_pdf"), ("parallel_refs", "raw"))
+PDF_TEXT = tuple((name, pdf) for name, (pdf, _) in WORDING.items())
 
 
 class OverlayError(StageError):
@@ -160,8 +161,7 @@ def load_errata(path: Path | str = DEFAULT_PATH) -> Errata:
 
 # ------------------------------------------------------------------ fit and application
 
-PK = {"verse_units": "unit_key", "footnotes": "fn_id", "headings": "heading_id",
-      "chapter_texts": "id", "speakers": "sk_id", "parallel_refs": "pr_id"}
+PK = {name: record_type(name).pk for name in WORDING}
 Rows = Mapping[str, Sequence[Mapping[str, Any]]]
 
 

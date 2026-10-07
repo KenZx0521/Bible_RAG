@@ -29,11 +29,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
+from ragdata.contract.registry import XCHECK_REPORT
 from ragdata.gates.base import GateResult, capped
 from ragdata.stages.errors import StageError
 
 NAME = "G-XCHECK"
-REPORT_FILE = "xcheck_report.json"
+REPORT_FILE = XCHECK_REPORT
 REPORT_SCHEMA = "ragdata.xcheck_report.v1"
 MODES = ("raw", "layout")
 CROP = ("-x", "0", "-y", "0", "-W", "2000", "-H", "2000")

@@ -18,14 +18,14 @@ from typing import Any, Callable, Mapping, Sequence
 
 import yaml
 
+from ragdata.contract.text import WORDING
 from ragdata.paths import REGISTRIES
 from ragdata.stages.s04_overlay.errata import OverlayError, mapping
 
 DEFAULT_PATH = REGISTRIES / "normalization.yaml"
 SCHEMA = "ragdata.normalization.v1"
 RULE_KEYS = ("id", "stage", "what", "applies_to", "reversible_by")
-TEXT_TYPES = ("verse_units", "chapter_texts", "headings", "footnotes", "speakers",
-              "parallel_refs")
+TEXT_TYPES = tuple(WORDING)
 Rows = Mapping[str, Sequence[Mapping[str, Any]]]
 
 
@@ -37,7 +37,7 @@ def _not_nfc(rows: Rows) -> int:
     """Records with a text field that NFC would change."""
     return sum(1 for name in TEXT_TYPES for row in rows.get(name, ())
                if any(unicodedata.normalize("NFC", row[f]) != row[f]
-                      for f in ("text_pdf", "text", "raw") if f in row))
+                      for f in (WORDING[name][0], *WORDING[name][1]) if f in row))
 
 
 # rule id -> how many times it applied to the built rows (None: counted in the src layer)
