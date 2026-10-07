@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -53,6 +54,31 @@ def test_dependency_version_must_match_the_manifest(tmp_path):
     other_text, _ = mini_build.write_layers(tmp_path / "b", text=rows)
     with pytest.raises(GateInputError):
         gate_layer(struct.path, "struct", deps=[other_text.path], counts_path=MINI_COUNTS)
+
+
+def _other_text_rows():
+    rows = mini_build.text_layer()
+    rows["ref_aliases"] = []
+    return rows
+
+
+def test_identical_struct_bytes_on_a_new_text_version_get_their_own_version(tmp_path):
+    text_a, struct_a = mini_build.write_layers(tmp_path)
+    text_b, struct_b = mini_build.write_layers(tmp_path, text=_other_text_rows())
+    assert struct_a.version != struct_b.version
+    report = gate_layer(struct_b.path, "struct", [text_b.path], MINI_COUNTS)
+    assert report.depends_on == {"text": text_b.version}
+
+
+def test_repointing_the_manifest_at_another_text_version_is_refused(tmp_path):
+    _, struct = mini_build.write_layers(tmp_path / "a")
+    other_text, _ = mini_build.write_layers(tmp_path / "b", text=_other_text_rows())
+    manifest_path = struct.path / store.MANIFEST
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["depends_on"] = {"text": other_text.version}
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(store.IntegrityError):
+        gate_layer(struct.path, "struct", [other_text.path], MINI_COUNTS)
 
 
 def test_layer_dir_must_hold_the_requested_layer(tmp_path):
@@ -144,6 +170,23 @@ def test_det_refuses_to_call_different_layers_identical(tmp_path):
     result = check_det(text.path, struct.path)
     assert not result.passed
     assert result.details[-1] == "layers differ: text vs struct"
+
+
+def test_det_sees_runs_built_on_different_dependencies(tmp_path):
+    _, struct_a = mini_build.write_layers(tmp_path)
+    _, struct_b = mini_build.write_layers(tmp_path, text=_other_text_rows())
+    result = check_det(struct_a.path, struct_b.path)
+    assert not result.passed
+    assert result.details == ("depends_on.json: sha256 differs",)
+
+
+def test_det_refuses_to_compare_a_run_with_itself(tmp_path):
+    text, _ = mini_build.write_layers(tmp_path)
+    alias = tmp_path / "alias"
+    alias.symlink_to(text.path)
+    for second in (text.path, alias, text.path / ".." / text.path.name):
+        with pytest.raises(GateInputError, match="same"):
+            check_det(text.path, second)
 
 
 def test_a_report_without_gates_does_not_pass():

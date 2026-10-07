@@ -124,3 +124,9 @@ def test_a_crash_exits_3_so_it_is_never_read_as_a_gate_result(tmp_path, capsys, 
     code, out, err = _run(capsys, "gate", "text", tmp_path, "--counts", MINI_COUNTS)
     assert code == 3 and out == ""
     assert "internal error" in err and "TypeError: boom" in err
+
+
+def test_det_of_one_directory_against_itself_is_an_input_error(tmp_path, capsys):
+    a, _ = mini_build.write_layers(tmp_path)
+    code, out, err = _run(capsys, "det", a.path, a.path)
+    assert code == 2 and out == "" and "same directory" in err

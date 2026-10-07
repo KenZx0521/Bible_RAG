@@ -1,21 +1,25 @@
 """G-DET: two runs of the same stage on the same inputs must write identical files.
 
 The interface compares two stored layer versions file by file (sha256 from
-their verified manifests). Vector files will need a cosine comparison instead
-(design §4); no layer holds them yet.
+their verified manifests). The dependency versions are a layer file
+(``depends_on.json``), so runs built on different inputs differ there. The two
+arguments must be two runs: the same directory twice is refused. Vector files
+will need a cosine comparison instead (design §4); no layer holds them yet.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from ragdata.gates.base import GateResult, capped
+from ragdata.gates.base import GateInputError, GateResult, capped
 from ragdata.store import verify_layer
 
 NAME = "G-DET"
 
 
 def check_det(first: Path | str, second: Path | str) -> GateResult:
+    if Path(first).resolve() == Path(second).resolve():
+        raise GateInputError(f"G-DET needs two runs; {first} and {second} are the same directory")
     manifest_a, _ = verify_layer(first)
     manifest_b, _ = verify_layer(second)
     files_a, files_b = manifest_a["files"], manifest_b["files"]

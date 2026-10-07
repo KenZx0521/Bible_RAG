@@ -17,7 +17,7 @@ from ragdata.gates.base import GateInputError, GateResult
 from ragdata.gates.counts import check_counts
 from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
-from ragdata.store import LayerData, read_layer
+from ragdata.store import DEPENDS_ON, LayerData, read_layer
 
 REPORT_SCHEMA = "ragdata.gate_report.v1"
 REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {"text": (), "struct": ("text",)}
@@ -57,7 +57,7 @@ def _load_deps(target: LayerData, deps: Sequence[Path | str]) -> list[LayerData]
 
 
 def _check_layer_files(data: LayerData) -> None:
-    for name in data.file_shas:
+    for name in sorted(set(data.file_shas) - {DEPENDS_ON}):
         rtype = record_type_for_file(name)
         if rtype is None or rtype.layer != data.layer:
             owner = "no known layer" if rtype is None else f"the {rtype.layer} layer"

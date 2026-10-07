@@ -3,7 +3,10 @@
 A layer lives at ``{root}/{layer}/{layer_version}/`` with its files and a
 ``layer_manifest.json``. ``layer_version = {layer}@{digest[:12]}`` where
 ``digest`` is the sha256 of the sorted ``"{file name}\\t{file sha256}\\n"``
-lines, so the version depends only on file names and bytes.
+lines, so the version depends only on file names and bytes. The layer versions
+it was built on are one of those files (``depends_on.json``, canonical JSON):
+the same bytes built on another dependency are another version, and the
+dependency cannot be changed without changing the version.
 
 Writes go to a temp directory beside the target and are published with one
 ``rename``; an existing version is never overwritten. Reads verify every file
@@ -28,7 +31,8 @@ from ragdata.store.jsonl import StoreError, decode_jsonl
 
 DEFAULT_ROOT = Path("/mnt/ollama-data/bible_rag_store/layers")
 MANIFEST = "layer_manifest.json"
-MANIFEST_SCHEMA = "ragdata.layer_manifest.v1"
+DEPENDS_ON = "depends_on.json"
+MANIFEST_SCHEMA = "ragdata.layer_manifest.v2"
 _FILE_NAME_RE = re.compile(r"[a-z0-9_]+\.[a-z0-9]+")
 
 
@@ -74,7 +78,8 @@ def _check_layer(layer: str) -> None:
 
 
 def _check_file_name(name: str) -> None:
-    if name == MANIFEST or not isinstance(name, str) or not _FILE_NAME_RE.fullmatch(name):
+    if name in (MANIFEST, DEPENDS_ON) or not isinstance(name, str) \
+            or not _FILE_NAME_RE.fullmatch(name):
         raise StoreError(f"illegal layer file name {name!r}")
 
 
@@ -84,6 +89,24 @@ def _check_depends(depends_on: Mapping[str, str]) -> dict[str, str]:
         if not ids.is_valid(version, "layer_version") or ids.parse(version).text != layer:
             raise StoreError(f"depends_on[{layer!r}] is not a {layer} version: {version!r}")
     return dict(sorted(depends_on.items()))
+
+
+def encode_depends_on(depends_on: Mapping[str, str]) -> bytes:
+    return (json.dumps(dict(sorted(depends_on.items())), sort_keys=True,
+                       separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def _decode_depends_on(path: Path, data: bytes) -> dict[str, str]:
+    try:
+        deps = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise IntegrityError(f"{path / DEPENDS_ON}: unreadable: {exc}") from None
+    if not isinstance(deps, dict) or encode_depends_on(deps) != data:
+        raise IntegrityError(f"{path / DEPENDS_ON}: not a canonical JSON object")
+    try:
+        return _check_depends(deps)
+    except StoreError as exc:
+        raise IntegrityError(f"{path / DEPENDS_ON}: {exc}") from None
 
 
 def _manifest_bytes(layer: str, version: str, digest: str, shas: Mapping[str, str],
@@ -121,10 +144,11 @@ def write_layer(root: Path | str, layer: str, files: Mapping[str, bytes],
         _check_file_name(name)
         if not isinstance(data, bytes):
             raise StoreError(f"{name}: content must be bytes")
-    shas = {name: sha256_bytes(files[name]) for name in sorted(files)}
+    deps = _check_depends(depends_on or {})
+    contents = {**files, DEPENDS_ON: encode_depends_on(deps)}
+    shas = {name: sha256_bytes(contents[name]) for name in sorted(contents)}
     digest = layer_digest(shas)
     version = ids.layer_version(layer, digest)
-    deps = _check_depends(depends_on or {})
     layer_dir = Path(root) / layer
     target = layer_dir / version
     if target.exists():
@@ -133,7 +157,7 @@ def write_layer(root: Path | str, layer: str, files: Mapping[str, bytes],
     tmp = Path(tempfile.mkdtemp(prefix=f".tmp-{version}-", dir=layer_dir))
     try:
         for name in shas:
-            _write_file(tmp / name, files[name])
+            _write_file(tmp / name, contents[name])
         _write_file(tmp / MANIFEST, _manifest_bytes(layer, version, digest, shas, deps))
         os.chmod(tmp, 0o755)
         _publish(tmp, target)
@@ -174,7 +198,16 @@ def verify_layer(path: Path | str) -> tuple[dict[str, Any], dict[str, bytes]]:
         raise IntegrityError(f"{path}: {exc}") from None
     if (manifest["digest"], manifest["layer_version"], path.name) != (digest, version, version):
         raise IntegrityError(f"{path}: version does not match its content ({version})")
+    _check_declared_depends(path, manifest, contents)
     return manifest, contents
+
+
+def _check_declared_depends(path: Path, manifest: Mapping[str, Any],
+                            contents: Mapping[str, bytes]) -> None:
+    if DEPENDS_ON not in contents:
+        raise IntegrityError(f"{path}: {DEPENDS_ON} is missing")
+    if _decode_depends_on(path, contents[DEPENDS_ON]) != manifest["depends_on"]:
+        raise IntegrityError(f"{path}: manifest depends_on differs from {DEPENDS_ON}")
 
 
 def read_layer(path: Path | str) -> LayerData:

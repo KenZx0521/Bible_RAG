@@ -60,8 +60,62 @@ def test_manifest_records_file_shas_and_dependencies(tmp_path):
     stored = store.write_layer(tmp_path, "struct", FILES, depends_on={"text": dep})
     manifest = json.loads((stored.path / "layer_manifest.json").read_text())
     assert manifest["layer_version"] == stored.version
-    assert set(manifest["files"]) == set(FILES)
-    assert store.read_layer(stored.path).depends_on == {"text": dep}
+    assert set(manifest["files"]) == {*FILES, "depends_on.json"}
+    loaded = store.read_layer(stored.path)
+    assert loaded.depends_on == manifest["depends_on"] == {"text": dep}
+    assert "depends_on.json" not in loaded.rows
+
+
+def test_dependencies_are_part_of_the_version(tmp_path):
+    on_a = store.write_layer(tmp_path, "struct", FILES, depends_on={"text": "text@aaaaaaaaaaaa"})
+    on_b = store.write_layer(tmp_path, "struct", FILES, depends_on={"text": "text@bbbbbbbbbbbb"})
+    assert on_a.version != on_b.version
+    with pytest.raises(LayerExistsError):
+        store.write_layer(tmp_path, "struct", FILES, depends_on={"text": "text@bbbbbbbbbbbb"})
+
+
+def test_editing_the_declared_dependency_in_the_manifest_is_detected(tmp_path):
+    stored = store.write_layer(tmp_path, "struct", FILES, depends_on={"text": "text@aaaaaaaaaaaa"})
+    manifest_path = stored.path / "layer_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["depends_on"] = {"text": "text@bbbbbbbbbbbb"}
+    manifest_path.write_text(json.dumps(manifest))
+    with pytest.raises(IntegrityError, match="depends_on"):
+        store.read_layer(stored.path)
+
+
+def _forge(root, depends_bytes: bytes | None, manifest_deps) -> "Path":
+    """A layer directory whose manifest, digest and version are self-consistent."""
+    extra = {} if depends_bytes is None else {"depends_on.json": depends_bytes}
+    files = {**FILES, **extra}
+    shas = {name: store.cas.sha256_bytes(data) for name, data in files.items()}
+    digest = store.layer_digest(shas)
+    version = f"struct@{digest[:12]}"
+    path = root / "struct" / version
+    path.mkdir(parents=True)
+    for name, data in files.items():
+        (path / name).write_bytes(data)
+    (path / "layer_manifest.json").write_text(json.dumps({
+        "schema": store.cas.MANIFEST_SCHEMA, "layer": "struct", "layer_version": version,
+        "digest": digest, "files": shas, "depends_on": manifest_deps}))
+    return path
+
+
+@pytest.mark.parametrize("depends_bytes,manifest_deps", [
+    (b'{"text":"struct@aaaaaaaaaaaa"}\n', {"text": "struct@aaaaaaaaaaaa"}),
+    (b'["text"]\n', ["text"]),
+    (b'{"text": "text@aaaaaaaaaaaa"}\n', {"text": "text@aaaaaaaaaaaa"}),
+    (b"\xff\n", {}),
+], ids=["wrong-layer", "not-an-object", "not-canonical", "not-utf8"])
+def test_a_malformed_dependency_file_is_an_integrity_error(tmp_path, depends_bytes,
+                                                           manifest_deps):
+    with pytest.raises(IntegrityError, match="depends_on"):
+        store.read_layer(_forge(tmp_path, depends_bytes, manifest_deps))
+
+
+def test_a_layer_without_its_dependency_file_is_an_integrity_error(tmp_path):
+    with pytest.raises(IntegrityError, match="depends_on.json"):
+        store.read_layer(_forge(tmp_path, None, {}))
 
 
 @pytest.mark.parametrize("depends_on", [
@@ -72,7 +126,8 @@ def test_bad_dependencies_are_rejected(tmp_path, depends_on):
 
 
 @pytest.mark.parametrize("name", [
-    "../escape.jsonl", "sub/books.jsonl", ".hidden.jsonl", "layer_manifest.json", "Books.JSONL"])
+    "../escape.jsonl", "sub/books.jsonl", ".hidden.jsonl", "layer_manifest.json", "Books.JSONL",
+    "depends_on.json"])
 def test_unsafe_or_reserved_file_names_are_rejected(tmp_path, name):
     with pytest.raises(StoreError):
         store.write_layer(tmp_path, "text", {name: b"{}\n"})
