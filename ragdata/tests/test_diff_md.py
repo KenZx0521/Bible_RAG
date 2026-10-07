@@ -198,3 +198,10 @@ def test_the_tsv_escapes_tabs_and_newlines(diff):
     assert lines[0].split("\t") == list(dmd.TSV_COLUMNS)
     assert all(len(line.split("\t")) == len(dmd.TSV_COLUMNS) for line in lines)
     assert "\\n" in data
+
+
+def test_a_md_footnote_with_an_impossible_caller_is_other(tmp_path):
+    (tmp_path / "路得記.md").write_text(MD + "- 0:3: 註\n", encoding="utf-8")
+    rows = _rows()
+    result = dmd.diff_md(rows, _chars(rows), tmp_path)
+    assert ("rut.1", "other") in _classes(result)

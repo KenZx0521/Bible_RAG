@@ -282,17 +282,24 @@ def _md_notes(book_id: str, chapters: Mapping[int, MdChapter]
         where = ids.chapter_key(book_id, number)
         for line in chapter.notes:
             calls = list(_CALLER.finditer(line))
-            if not calls or calls[0].start() != 0:
+            units = [_caller_unit(book_id, call) for call in calls]
+            if not calls or calls[0].start() != 0 or None in units:
                 rows.append(DiffRow(where, "md_footnote", "md_only", None, "", line, OTHER))
                 continue
             if len(calls) > 1:
                 rows.append(DiffRow(where, "md_footnote", "glued", None, "", line, FN_GLUED))
-            for call, nxt in zip(calls, [*calls[1:], None]):
-                start, _, end = _label(call.group(2)).partition("-")
-                unit = ids.unit_key(book_id, int(call.group(1)), int(start),
-                                    int(end) if end else None)
+            for unit, call, nxt in zip(units, calls, [*calls[1:], None]):
                 notes[unit].append(line[call.end():nxt.start() if nxt else len(line)])
     return notes, rows
+
+
+def _caller_unit(book_id: str, call: re.Match) -> str | None:
+    """The unit a ``c:v:`` caller names, or None when no unit could have that key."""
+    start, _, end = _label(call.group(2)).partition("-")
+    try:
+        return ids.unit_key(book_id, int(call.group(1)), int(start), int(end) if end else None)
+    except ids.IdError:
+        return None
 
 
 def _status(note: Mapping[str, Any], raw: str, ctx: _Ctx) -> str | None:
