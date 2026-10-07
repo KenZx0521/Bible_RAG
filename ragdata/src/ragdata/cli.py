@@ -22,8 +22,10 @@ tokens with the pinned BGE-M3 tokenizer (the HF cache, or ``--tokenizer``) and
 fails closed when it does not load. An emb layer is built from a struct layer and
 the text layer it was built on, and gated with both (``--dep``); its build and
 G-EMB/G-ENC load the pinned BGE-M3 offline (and the reranker tokenizer), and
-G-ENC compares the vectors with the old ``output/`` (``--legacy-dir``). ``det`` on
-two emb layers also compares their vectors within G-DET's tolerance.
+G-ENC compares the vectors with the old ``output/`` (``--legacy-dir``). ``gate emb``
+on cuda encodes every record again (about a minute in all); with ``--device cpu``
+it encodes a sample and reports ``sampled: true``. ``det`` on two emb layers also
+compares their vectors and probe vectors within G-DET's tolerance.
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
 0 everything passed, 1 a hard gate failed, 2 bad input (including a stage that
