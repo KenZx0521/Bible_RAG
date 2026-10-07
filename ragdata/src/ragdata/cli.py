@@ -23,6 +23,10 @@
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
     python -m ragdata gt {build,gate} ...   (GT v2; see ragdata.gt.cli)
     python -m ragdata release VERSION... [--store DIR] [--releases DIR] [--date YYYYMMDD]
+    python -m ragdata load RELEASE_JSON --slot inactive [--store DIR] [--contracts DIR]
+                                 [--env-file F]
+    python -m ragdata verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F]
+                                 [--gt F] [--freeze F] [--device DEV] [--sample N] [--report F]
 
 DAG-external tools that write a registry or an expectation file (never run by a build):
 
@@ -69,6 +73,9 @@ from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
 from ragdata.kg import k0_build, k1_build, k4_build, k4_route
+from ragdata.loader import cli as loader_cli
+from ragdata.loader.config import ConfigError
+from ragdata.loader.plan import LoaderError
 from ragdata.gt import cli as gt_cli
 from ragdata.gt.errors import GT_ERRORS
 from ragdata.release import cli as release_cli
@@ -178,6 +185,7 @@ def _parser() -> argparse.ArgumentParser:
     _tool_parsers(sub)
     gt_cli.add_parser(sub)
     release_cli.add_parser(sub)
+    loader_cli.add_parsers(sub)
     return parser
 
 
@@ -311,11 +319,23 @@ def _release(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _load(args: argparse.Namespace) -> int:
+    _emit(loader_cli.run_load(args), None)
+    return EXIT_OK
+
+
+def _verify(args: argparse.Namespace) -> int:
+    report = loader_cli.run_verify(args)
+    _emit(report.to_json(), args.report)
+    return EXIT_OK if report.passed else EXIT_GATE_FAILED
+
+
 HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
-           yaml.YAMLError, json.JSONDecodeError, ReleaseError, *GT_ERRORS)
+           yaml.YAMLError, json.JSONDecodeError, ReleaseError, LoaderError, ConfigError,
+           *GT_ERRORS)
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
     "build": _build, "gate": _gate, "det": _det, "expect": _expect, "convert": _convert,
-    "freeze": _freeze, "gt": _gt, "release": _release,
+    "freeze": _freeze, "gt": _gt, "release": _release, "load": _load, "verify": _verify,
 }
 
 
