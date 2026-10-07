@@ -21,6 +21,7 @@
                                  [--ground-truth JSON] [--backend-python PY] [--backend-dir DIR]
                                  [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
+    python -m ragdata gt {build,gate} ...   (GT v2; see ragdata.gt.cli)
 
 DAG-external tools that write a registry or an expectation file (never run by a build):
 
@@ -38,8 +39,8 @@ G-EMB/G-ENC load the pinned BGE-M3 offline (and the reranker tokenizer), and
 G-ENC compares the vectors with the old ``output/`` (``--legacy-dir``). ``gate emb``
 on cuda encodes every record again (about a minute in all); with ``--device cpu``
 it encodes a sample and reports ``sampled: true``. ``det`` on two emb layers also
-compares their vectors and probe vectors within G-DET's tolerance. kg0 and events are built from, and gated
-with, text and struct; route with text. G-ROUTE runs the backend's live matcher
+compares their vectors and probe vectors within G-DET's tolerance. kg0 and events
+are built from, and gated with, text and struct; route with text. G-ROUTE runs the backend's live matcher
 with ``--backend-python`` (the backend venv) and fails closed without it.
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
@@ -67,6 +68,8 @@ from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
 from ragdata.kg import k0_build, k1_build, k4_build, k4_route
+from ragdata.gt import cli as gt_cli
+from ragdata.gt.errors import GT_ERRORS
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct import build as struct_stage
 from ragdata.stages.s06_emb import build as emb_stage
@@ -170,6 +173,7 @@ def _parser() -> argparse.ArgumentParser:
     det.add_argument("second", type=Path)
     det.add_argument("--report", type=Path)
     _tool_parsers(sub)
+    gt_cli.add_parser(sub)
     return parser
 
 
@@ -292,11 +296,17 @@ def _freeze(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _gt(args: argparse.Namespace) -> int:
+    report = gt_cli.run(args)
+    _emit(report.to_json(), getattr(args, "report", None))
+    return EXIT_OK if report.passed else EXIT_GATE_FAILED
+
+
 HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
-           yaml.YAMLError)
+           yaml.YAMLError, json.JSONDecodeError, *GT_ERRORS)
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
     "build": _build, "gate": _gate, "det": _det, "expect": _expect, "convert": _convert,
-    "freeze": _freeze,
+    "freeze": _freeze, "gt": _gt,
 }
 
 
