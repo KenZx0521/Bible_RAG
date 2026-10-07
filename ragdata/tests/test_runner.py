@@ -231,3 +231,13 @@ def test_a_report_without_gates_or_requirements_does_not_pass():
     assert not GateReport("text", "text@0123456789ab", {}, (), ("G-SCHEMA",)).passed
     assert not GateReport("text", "text@0123456789ab", {}, (green,), ()).passed
     assert GateReport("text", "text@0123456789ab", {}, (green,), ("G-SCHEMA",)).passed
+
+
+def test_a_text_layer_built_on_a_src_layer_is_gated_on_its_records(tmp_path):
+    files = {f"{name}.jsonl": store.encode_jsonl(rows)
+             for name, rows in mini_build.text_layer().items()}
+    text = store.write_layer(tmp_path, "text", files, depends_on={"src": "src@0123456789ab"})
+    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS,
+                        gates=runner.implemented_gates("text"))
+    assert all(_verdicts(report).values())
+    assert report.to_json()["depends_on"] == {"src": "src@0123456789ab"}

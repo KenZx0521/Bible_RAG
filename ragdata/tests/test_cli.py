@@ -13,6 +13,7 @@ import pytest
 import mini_build
 from ragdata import cli, stages
 from ragdata.gates import runner
+from ragdata.gates.base import GateResult
 from ragdata.store import StoredLayer
 
 MINI_COUNTS = str(Path(__file__).with_name("mini_counts.yaml"))
@@ -93,22 +94,33 @@ def test_build_text_needs_an_existing_pdf_dir(tmp_path, capsys):
     assert code == 2 and "pdf-dir" in err
 
 
-def test_build_text_fails_loudly_until_the_stage_exists(tmp_path, capsys):
+def test_build_text_refuses_a_dir_without_pdfs(tmp_path, capsys):
     (tmp_path / "pdf").mkdir()
     code, _, err = _run(capsys, "build", "text", "--pdf-dir", tmp_path / "pdf",
                         "--store", tmp_path / "store")
-    assert code == 2 and "not implemented" in err
+    assert code == 2 and "no PDF" in err
     assert not (tmp_path / "store").exists()
 
 
-def test_build_reports_the_stored_layer(tmp_path, capsys, monkeypatch):
+@pytest.mark.parametrize("passed, code", [(True, 0), (False, 1)])
+def test_build_reports_its_layers_and_gates(tmp_path, capsys, monkeypatch, passed, code):
     (tmp_path / "pdf").mkdir()
     stored = StoredLayer("text", "text@0123456789ab", tmp_path / "store" / "text")
-    monkeypatch.setattr(stages, "build", lambda layer, pdf_dir, store_root: stored)
-    code, out, _ = _run(capsys, "build", "text", "--pdf-dir", tmp_path / "pdf",
-                        "--store", tmp_path / "store")
-    assert code == 0
-    assert json.loads(out)["layer_version"] == "text@0123456789ab"
+    gate = GateResult("G-COUNT", True, passed, {}, {}, ())
+    seen = {}
+
+    def fake_build(layer, pdf_dir, store_root, **kwargs):
+        seen.update(kwargs)
+        return stages.BuildResult({"text": stored}, (gate,), {"s2_parse": 1.0})
+    monkeypatch.setattr(stages, "build", fake_build)
+    report = tmp_path / "build.json"
+    code_, out, _ = _run(capsys, "build", "text", "--pdf-dir", tmp_path / "pdf", "--store",
+                         tmp_path / "store", "--counts", MINI_COUNTS, "--workers", "3",
+                         "--report", report)
+    doc = json.loads(out)
+    assert code_ == code and doc["pass"] is passed and json.loads(report.read_text()) == doc
+    assert doc["layers"]["text"]["version"] == "text@0123456789ab"
+    assert seen["workers"] == 3 and str(seen["counts_path"]) == MINI_COUNTS
 
 
 def test_module_entry_point_runs_the_cli(tmp_path):

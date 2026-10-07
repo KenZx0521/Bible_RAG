@@ -1,13 +1,15 @@
 """Command line for the snapshot pipeline.
 
-    python -m ragdata build text --pdf-dir bible_pdf [--store DIR]
+    python -m ragdata build text --pdf-dir bible_pdf [--store DIR] [--counts YAML]
+                                 [--source-expect YAML] [--workers N] [--report FILE]
     python -m ragdata gate {text,struct} LAYER_DIR [--dep DIR ...] [--counts YAML] [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
-0 everything passed, 1 a hard gate failed, 2 bad input or a stage that does
-not exist yet, 3 an internal error (a bug: the traceback goes to stderr, and no
-report is written, so a crash is never mistaken for a gate result).
+0 everything passed, 1 a hard gate failed, 2 bad input (including a stage that
+met input it cannot turn into records), 3 an internal error (a bug: the
+traceback goes to stderr, and no report is written, so a crash is never
+mistaken for a gate result).
 """
 
 from __future__ import annotations
@@ -26,6 +28,8 @@ from ragdata.contract import LAYERS
 from ragdata.contract.counts import PDF_COUNTS_PATH, CountsError
 from ragdata.gates import check_det
 from ragdata.gates.runner import GateInputError, gate_layer
+from ragdata.stages.errors import StageError
+from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.store import DEFAULT_ROOT, StoreError
 
 EXIT_OK, EXIT_GATE_FAILED, EXIT_ERROR, EXIT_INTERNAL = 0, 1, 2, 3
@@ -42,6 +46,10 @@ def _parser() -> argparse.ArgumentParser:
     build.add_argument("layer", choices=stages.BUILDABLE)
     build.add_argument("--pdf-dir", type=Path, required=True)
     build.add_argument("--store", type=Path, default=DEFAULT_ROOT)
+    build.add_argument("--counts", type=Path, default=PDF_COUNTS_PATH)
+    build.add_argument("--source-expect", type=Path, default=EXPECT_PATH)
+    build.add_argument("--workers", type=int, default=8)
+    build.add_argument("--report", type=Path)
     gate = sub.add_parser("gate", help="run the data gates of a stored layer")
     gate.add_argument("layer", choices=LAYERS)
     gate.add_argument("layer_dir", type=Path)
@@ -66,9 +74,10 @@ def _emit(doc: dict[str, Any], report: Path | None) -> None:
 def _build(args: argparse.Namespace) -> int:
     if not args.pdf_dir.is_dir():
         raise CliError(f"--pdf-dir {args.pdf_dir} is not a directory")
-    stored = stages.build(args.layer, pdf_dir=args.pdf_dir, store_root=args.store)
-    _emit({"layer": stored.layer, "layer_version": stored.version, "path": str(stored.path)}, None)
-    return EXIT_OK
+    result = stages.build(args.layer, args.pdf_dir, args.store, counts_path=args.counts,
+                          expect_path=args.source_expect, workers=args.workers)
+    _emit(result.to_json(), args.report)
+    return EXIT_OK if result.passed else EXIT_GATE_FAILED
 
 
 def _gate(args: argparse.Namespace) -> int:
@@ -83,8 +92,8 @@ def _det(args: argparse.Namespace) -> int:
     return EXIT_OK if result.passed else EXIT_GATE_FAILED
 
 
-HANDLED = (CliError, CountsError, GateInputError, StoreError, stages.StageNotImplementedError,
-           OSError, yaml.YAMLError)
+HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
+           yaml.YAMLError)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
