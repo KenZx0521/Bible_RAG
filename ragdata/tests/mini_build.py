@@ -540,3 +540,66 @@ def write_layers(root, text: dict | None = None, struct: dict | None = None):
                                       encode(struct_layer() if struct is None else struct),
                                       depends_on={"text": text_layer_.version})
     return text_layer_, struct_layer_
+
+
+# ------------------------------------------------------------------ emb layer (S6 oracle)
+
+# the v1c verse text: {書名} 第{章}章 {標題} 第{n}節：{經文} — the owning passage's title,
+# the whole unit (poetry lines kept, no speaker label), an untitled book opening without title
+VERSE_EMBED = {
+    "vs:psa.42.1": "詩篇 第42章 渴慕上帝 第1節：上帝啊，我的心切慕你，\n如鹿切慕溪水。",
+    "vs:psa.42.2": "詩篇 第42章 渴慕上帝 第2節：我的心渴想上帝，就是永生上帝。\n（細拉）",
+    "vs:psa.42.3": "詩篇 第42章 渴慕上帝 第3節：我晝夜以眼淚當飲食。",
+    "vs:sng.1.1": "雅歌 第1章 第1節：願他用口與我親嘴。",
+    "vs:mat.18.1": "馬太福音 第18章 天國裏誰是最大的 第1節：當時，門徒進前來，問耶穌說：「天國裏誰是最大的？」",
+    "vs:mat.18.2": "馬太福音 第18章 天國裏誰是最大的 第2節：耶穌就叫一個小孩子來，使他站在他們當中。",
+    "vs:mat.18.4": "馬太福音 第18章 天國裏誰是最大的 第4節：所以，凡自己謙卑像這小孩子的，他在天國裏就是最大的。",
+    "vs:act.9.1": f"{_ACT_TITLE} 第1節：掃羅仍然向主的門徒口吐威嚇兇殺的話。",
+    "vs:act.9.2": f"{_ACT_TITLE} 第2節：求文書給大馬士革的各會堂，經過鹽海。",
+    "vs:act.9.3": f"{_ACT_TITLE} 第3節：掃羅將到大馬士革，蹚過小河，忽然有光四面照着他。",
+    "vs:act.10.1": "使徒行傳 第10章 天上的光 第1節：在凱撒利亞有一個人名叫哥尼流。",
+    "vs:eph.6.1": "以弗所書 第6章 兒女和父母 第1節：你們作兒女的，要在主裏聽從父母，這是理所當然的。",
+    "vs:eph.6.2-3": "以弗所書 第6章 兒女和父母 第2-3節：「要孝敬父母，使你得福，在世長壽。」這是第一條帶應許的誡命。",
+    "vs:eph.6.4": "以弗所書 第6章 兒女和父母 第4節：你們作父親的，不要惹兒女的氣。",
+}
+# record ids in file order: verses (canonical), unchunked passages, then chunks
+EMB_RECORD_IDS = (*VERSE_EMBED, "ps:psa.42.1", "ps:sng.1.1", "ps:mat.18.1", "ps:act.9.3b",
+                  "ps:act.10.1", "ps:eph.6.1", "ck:act.9.1~act.9.2", "ck:act.9.2~act.9.3")
+
+
+def emb_text(record_id: str) -> str:
+    return VERSE_EMBED.get(record_id) or EMBED[record_id]
+
+
+def count_unk(text: str) -> int:
+    """Stand-in for BGE-M3's <unk> count: 蹚 is outside the stand-in vocabulary."""
+    return text.count("蹚")
+
+
+# payloads written out by hand: a cut verse, a continued passage, a later chunk
+EMB_PAYLOADS = {
+    "vs:act.9.3": {
+        "record_id": "vs:act.9.3", "kind": "verse", "type": "verse", "book_id": "act",
+        "book_name": "使徒行傳", "chapter_num": 9, "chapter_end": 9, "title": "掃羅歸主－在路上",
+        "verse_range": "3", "start_key": "act.9.3", "end_key": "act.9.3",
+        "passage_id": "ps:act.9.1", "parent_pericope_id": "ps:act.9.1",
+        "split_passage_ids": ["ps:act.9.1", "ps:act.9.3b"], "pericope_id": "pc:act.9.1",
+        "content_preview": "掃羅將到大馬士革，蹚過小河，忽然有光四面照着他。",
+        "text_sha": sha(VERSE_EMBED["vs:act.9.3"]), "template_id": "v1c"},
+    "ps:act.10.1": {
+        "record_id": "ps:act.10.1", "kind": "passage", "type": "pericope", "book_id": "act",
+        "book_name": "使徒行傳", "chapter_num": 10, "chapter_end": 10, "title": "天上的光",
+        "verse_range": "1", "start_key": "act.10.1", "end_key": "act.10.1",
+        "passage_id": "ps:act.10.1", "parent_pericope_id": "ps:act.10.1",
+        "split_passage_ids": [], "pericope_id": "pc:act.9.3b",
+        "content_preview": EMBED["ps:act.10.1"], "text_sha": sha(EMBED["ps:act.10.1"]),
+        "template_id": "v1c"},
+    "ck:act.9.2~act.9.3": {
+        "record_id": "ck:act.9.2~act.9.3", "kind": "chunk", "type": "chunk", "book_id": "act",
+        "book_name": "使徒行傳", "chapter_num": 9, "chapter_end": 9, "title": "掃羅歸主－在路上",
+        "verse_range": "2-3", "start_key": "act.9.2", "end_key": "act.9.3",
+        "passage_id": "ps:act.9.1", "parent_pericope_id": "ps:act.9.1",
+        "split_passage_ids": [], "pericope_id": "pc:act.9.1",
+        "content_preview": EMBED["ck:act.9.2~act.9.3"],
+        "text_sha": sha(EMBED["ck:act.9.2~act.9.3"]), "template_id": "v1c"},
+}

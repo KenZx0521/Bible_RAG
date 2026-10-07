@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
-from ragdata.contract import struct, text
+from ragdata.contract import emb, struct, text
 from ragdata.contract.fields import Record, parse
 
-LAYERS = ("text", "struct")
+LAYERS = ("text", "struct", "emb")
 # non-record files a layer's build writes beside its records (S3, S4 and the diff reports)
 XCHECK_REPORT = "xcheck_report.json"
 OVERLAY_REPORT = "overlay_report.json"
@@ -17,8 +17,11 @@ DIFF_MD_REPORT = "diff_vs_bible_md.tsv"
 DIFF_CANONICAL_REPORT = "diff_vs_canonical_full.tsv"
 DIFF_SUMMARY_REPORT = "diff_summary.json"
 STRUCT_REPORT = "struct_report.json"
+EMB_REPORT = "emb_report.json"                  # template declaration and counts (S6)
+ENCODER_FINGERPRINT = "encoder_fingerprint.json"  # BGE-M3 and reranker fingerprints (S7)
 LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
-                          DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,)}
+                          DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,),
+                 "emb": (EMB_REPORT, ENCODER_FINGERPRINT)}
 
 
 @dataclass(frozen=True)
@@ -51,6 +54,7 @@ RECORD_TYPES = tuple(RecordType(*row) for row in (
     ("chunks", "struct", struct.Chunk, "chunk_id"),
     ("verse_index", "struct", struct.VerseIndex, "unit_key"),
     ("legacy_ids", "struct", struct.LegacyId, "legacy_id"),
+    ("embedding_records", "emb", emb.EmbeddingRecord, "record_id"),
 ))
 _BY_NAME = MappingProxyType({t.name: t for t in RECORD_TYPES})
 _BY_FILE = MappingProxyType({t.file_name: t for t in RECORD_TYPES})
