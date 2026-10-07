@@ -11,9 +11,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from ragdata.contract import LAYERS
+from ragdata.contract import LAYERS, record_type_for_file
 from ragdata.contract.counts import PDF_COUNTS_PATH, load_counts
-from ragdata.gates.base import GateResult
+from ragdata.gates.base import GateInputError, GateResult
 from ragdata.gates.counts import check_counts
 from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
@@ -21,10 +21,6 @@ from ragdata.store import LayerData, read_layer
 
 REPORT_SCHEMA = "ragdata.gate_report.v1"
 REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {"text": (), "struct": ("text",)}
-
-
-class GateInputError(ValueError):
-    """The layers handed to the runner do not fit together."""
 
 
 @dataclass(frozen=True)
@@ -60,6 +56,28 @@ def _load_deps(target: LayerData, deps: Sequence[Path | str]) -> list[LayerData]
     return loaded
 
 
+def _check_layer_files(data: LayerData) -> None:
+    for name in data.file_shas:
+        rtype = record_type_for_file(name)
+        if rtype is None or rtype.layer != data.layer:
+            owner = "no known layer" if rtype is None else f"the {rtype.layer} layer"
+            raise GateInputError(f"{data.path}: {name} does not belong in a {data.layer} layer "
+                                 f"(it belongs to {owner})")
+
+
+def merge_files(layers: Sequence[LayerData]) -> dict[str, tuple[dict[str, Any], ...]]:
+    """The ``.jsonl`` rows of ``layers`` by file name; each file must come from its own layer,
+    so a layer can never stand in for the data of the layer it depends on."""
+    files: dict[str, tuple[dict[str, Any], ...]] = {}
+    for data in layers:
+        _check_layer_files(data)
+        for name, rows in data.rows.items():
+            if name in files:
+                raise GateInputError(f"{name} is given twice (again by {data.path})")
+            files[name] = rows
+    return files
+
+
 def gate_layer(layer_dir: Path | str, layer: str, deps: Sequence[Path | str] = (),
                counts_path: Path | str = PDF_COUNTS_PATH) -> GateReport:
     """Verify, load and gate ``layer_dir``; raise GateInputError on a bad setup."""
@@ -69,7 +87,7 @@ def gate_layer(layer_dir: Path | str, layer: str, deps: Sequence[Path | str] = (
     if target.layer != layer:
         raise GateInputError(f"{layer_dir} holds a {target.layer} layer, not {layer}")
     loaded = [*_load_deps(target, deps), target]
-    files = {name: rows for data in loaded for name, rows in data.rows.items()}
+    files = merge_files(loaded)
     schema, snapshot = check_schema(files, [d.layer for d in loaded])
     counts = check_counts(snapshot, layer, load_counts(counts_path).get(layer, {}))
     refint = check_refint(snapshot, layer)

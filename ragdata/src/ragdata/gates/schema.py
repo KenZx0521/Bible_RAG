@@ -31,11 +31,11 @@ SEQUENCES: Mapping[str, tuple[Callable[[Any], str], Callable[[Any], int], int]] 
 
 
 def _parse_file(file_name: str, rows: Iterable[Mapping], violations: list[str]) -> list[Record]:
-    rtype = record_type_for_file(file_name)
+    type_name = record_type_for_file(file_name).name
     good = []
     for line, raw in enumerate(rows, start=1):
         try:
-            good.append(parse_record(rtype.name, raw))
+            good.append(parse_record(type_name, raw))
         except ContractError as exc:
             violations.append(f"{file_name}:{line}: {exc}")
     return good
@@ -73,11 +73,11 @@ def check_schema(files: Mapping[str, Sequence[Mapping]], layers: Sequence[str],
     violations += [f"{name}: missing file" for name in sorted(required - set(files))]
     parsed: dict[str, list[Record]] = {}
     for file_name in sorted(files):
-        rtype = record_type_for_file(file_name)
-        if rtype is None:
-            violations.append(f"{file_name}: unknown file")
+        if file_name not in required:
+            violations.append(f"{file_name}: not a file of the {'/'.join(layers)} layers")
             continue
-        parsed[rtype.name] = _parse_file(file_name, files[file_name], violations)
+        parsed[record_type_for_file(file_name).name] = _parse_file(file_name, files[file_name],
+                                                                   violations)
     for type_name, records in parsed.items():
         violations += _duplicates(type_name, records)
         violations += _sequence_gaps(type_name, records)

@@ -11,7 +11,7 @@ BOTH = ("text", "struct")
 
 
 def _refint(files, layer):
-    schema, snap = check_schema(files, BOTH if layer == "struct" else ("text",))
+    schema, snap = check_schema(files, BOTH)
     assert schema.passed, schema.details  # each case below breaks references only
     return check_refint(snap, layer)
 

@@ -44,6 +44,12 @@ def test_missing_and_unknown_files_fail():
     assert any("verses.jsonl" in d for d in details)
 
 
+def test_a_file_of_a_layer_not_being_gated_is_a_violation():
+    files = {**mini_build.files("text"), "pericopes.jsonl": mini_build.files("struct")[
+        "pericopes.jsonl"]}
+    assert any(d.startswith("pericopes.jsonl: ") for d in _fails(files, ("text",)))
+
+
 def test_struct_layer_requires_its_text_dependency_files_only_when_gated_together():
     assert check_schema(mini_build.files("struct"), ("struct",))[0].passed
     _fails(mini_build.files("struct"), BOTH)

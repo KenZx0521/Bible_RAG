@@ -16,6 +16,10 @@ from ragdata.contract import Record, primary_key
 MAX_DETAILS = 50
 
 
+class GateInputError(ValueError):
+    """The layers handed to a gate do not fit together; nothing was gated."""
+
+
 @dataclass(frozen=True)
 class GateResult:
     name: str

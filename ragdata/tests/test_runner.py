@@ -9,6 +9,7 @@ import pytest
 import mini_build
 from ragdata import store
 from ragdata.gates import check_det
+from ragdata.gates import runner
 from ragdata.gates.runner import GateInputError, gate_layer
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
@@ -65,6 +66,49 @@ def test_tampered_layer_is_refused_before_gating(tmp_path):
     (text.path / "verse_units.jsonl").write_bytes(b"")
     with pytest.raises(store.IntegrityError):
         gate_layer(text.path, "text", counts_path=MINI_COUNTS)
+
+
+def _struct_carrying_text_file(layer):
+    units = mini_build.text_layer()["verse_units"]
+    next(u for u in units if u["unit_key"] == "act.9.1")["is_poetry"] = True
+    layer["verse_units"] = units
+
+
+def _text_carrying_struct_file(layer):
+    layer["pericopes"] = mini_build.struct_layer()["pericopes"]
+
+
+def _text_carrying_unknown_file(layer):
+    layer["verses"] = [{"unit_key": "act.9.1"}]
+
+
+@pytest.mark.parametrize("smuggle,gated", [
+    (_struct_carrying_text_file, "struct"),
+    (_text_carrying_struct_file, "text"),
+    (_text_carrying_unknown_file, "text"),
+], ids=["struct-has-text-file", "text-has-struct-file", "text-has-unknown-file"])
+def test_a_layer_holding_files_of_another_layer_is_refused(tmp_path, smuggle, gated):
+    text_rows, struct_rows = mini_build.text_layer(), mini_build.struct_layer()
+    smuggle(struct_rows if gated == "struct" else text_rows)
+    text, struct = mini_build.write_layers(tmp_path, text=text_rows, struct=struct_rows)
+    target, deps = (struct.path, [text.path]) if gated == "struct" else (text.path, [])
+    with pytest.raises(GateInputError, match="does not belong"):
+        gate_layer(target, gated, deps, MINI_COUNTS)
+
+
+def test_a_file_outside_every_contract_is_refused_whatever_its_type(tmp_path):
+    files = {f"{name}.jsonl": store.encode_jsonl(rows)
+             for name, rows in mini_build.text_layer().items()}
+    text = store.write_layer(tmp_path, "text", {**files, "notes.txt": b"unchecked\n"})
+    with pytest.raises(GateInputError, match="notes.txt"):
+        gate_layer(text.path, "text", counts_path=MINI_COUNTS)
+
+
+def test_merging_layers_never_lets_one_file_replace_another(tmp_path):
+    text, _ = mini_build.write_layers(tmp_path)
+    loaded = store.read_layer(text.path)
+    with pytest.raises(GateInputError, match="twice"):
+        runner.merge_files([loaded, loaded])
 
 
 def test_det_passes_for_identical_runs(tmp_path):
