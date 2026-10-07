@@ -215,3 +215,36 @@ def test_a_superscription_md_prints_with_its_misglyph_is_not_lost(tmp_path):
     rows["chapter_texts"][1].update(text_pdf="大衛的詷", text="大衛的秕")
     assert ("sp:rut.1", "converter_superscription_lost") not in _classes(
         dmd.diff_md(rows, _chars(rows), tmp_path))
+
+
+def _diff(tmp_path, md=MD, rows=None, chars=None):
+    (tmp_path / "路得記.md").write_text(md, encoding="utf-8")
+    rows = rows or _rows()
+    return dmd.diff_md(rows, chars or _chars(rows), tmp_path)
+
+
+@pytest.mark.parametrize("md, key", [
+    (MD.replace("**14-15** 丁\n", "**14-15** 丁\n\n**16** 多\n"), "rut.1.16"),  # no slot at all
+    (MD + "- 1:9: 有古卷加：10土\n", "rut.1.10"),  # its variant footnote is still in the md
+])
+def test_a_verse_only_the_md_has_is_a_ghost_only_in_an_omitted_slot_whose_note_it_dropped(
+        tmp_path, md, key):
+    assert (key, "other") in _classes(_diff(tmp_path, md))
+
+
+def test_a_verse_cut_short_on_one_page_without_heading_indent_or_selah_is_other(tmp_path):
+    rows = _rows()
+    chars = {**_chars(rows), "rut.1.2": (CharInfo(1, False, 70.0),) * 6}
+    assert ("rut.1.2", "other") in _classes(_diff(tmp_path, rows=rows, chars=chars))
+
+
+def test_a_deletion_inside_a_verse_is_not_a_truncation(tmp_path):
+    result = _diff(tmp_path, MD.replace("**2** 一二三四\n", "**2** 一二三四六\n"))
+    row = next(r for r in result.rows if r.container == "rut.1.2")
+    assert (row.op, row.offset, row.layer, row.cls) == ("delete", 4, "五", "other")
+
+
+def test_a_footnote_only_the_md_has_is_other(tmp_path):
+    result = _diff(tmp_path, MD + "- 1:3: 多出的註\n")
+    stray = [r for r in result.rows if r.kind == "md_footnote" and r.container == "rut.1.3"]
+    assert [(r.op, r.cls) for r in stray] == [("md_only", "other")]

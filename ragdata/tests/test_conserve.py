@@ -73,3 +73,13 @@ def test_an_unclassified_row_turns_the_gate_red():
 def test_category_totals_must_equal_the_expectations():
     result = check_conserve({"psa": _parsed().tally}, {"body": 27})
     assert not result.passed and any("body" in d and "27" in d for d in result.details)
+
+
+def test_gate_time_verse_numbers_are_counted_from_the_stored_labels():
+    book = _book(FULL)
+    rows = parse_book(book, "psa", "詩篇", "0" * 64, 1).rows
+    assert check_conserve({"psa": conserve.stored_tally(book.lines, rows)}, {}).passed
+    relabelled = [{**u, "label": "13"} if u["label"] == "3" else u for u in rows["verse_units"]]
+    tally = conserve.stored_tally(book.lines, {**rows, "verse_units": relabelled})
+    result = check_conserve({"psa": tally}, {})
+    assert not result.passed and any("psa verse_number" in d for d in result.details)
