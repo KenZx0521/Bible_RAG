@@ -241,3 +241,14 @@ def test_a_text_layer_built_on_a_src_layer_is_gated_on_its_records(tmp_path):
                         gates=runner.implemented_gates("text"))
     assert all(_verdicts(report).values())
     assert report.to_json()["depends_on"] == {"src": "src@0123456789ab"}
+
+
+@pytest.mark.parametrize("dep", ["emb", "kg0"])
+def test_a_dependency_other_than_src_that_holds_no_records_is_refused(tmp_path, dep):
+    files = {f"{name}.jsonl": store.encode_jsonl(rows)
+             for name, rows in mini_build.text_layer().items()}
+    text = store.write_layer(tmp_path, "text", files,
+                             depends_on={"src": "src@0123456789ab", dep: f"{dep}@0123456789ab"})
+    with pytest.raises(GateInputError, match=dep):
+        gate_layer(text.path, "text", counts_path=MINI_COUNTS,
+                   gates=runner.implemented_gates("text"))

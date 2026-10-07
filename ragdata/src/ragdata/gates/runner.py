@@ -2,7 +2,10 @@
 
 A layer is gated together with the record layers it depends on (struct needs
 text); each must be the exact version the layer's manifest declares. A ``src``
-dependency (the PDFs as extracted) holds no records and is not loaded.
+dependency (the PDFs as extracted) holds no records and is not loaded; any other
+declared dependency must be a record layer, or the layer is refused. Whether
+src came from the pinned PDFs and tools is G-SRC/G-TOOL's job at build time,
+and ``build`` stores nothing when they fail.
 
 ``REQUIRED_GATES`` lists, per layer, every gate of design §8 whose subject is
 that layer (G-DET compares two runs and has its own command). A gate that is
@@ -34,6 +37,7 @@ REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "struct": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-STRUCT"),
 })
 NOT_IMPLEMENTED = "not implemented"
+UNLOADED_DEPS = frozenset({"src"})
 
 
 @dataclass(frozen=True)
@@ -100,7 +104,10 @@ def _load_deps(target: LayerData, deps: Sequence[Path | str]) -> list[LayerData]
     if len(given) != len(loaded):
         raise GateInputError("each dependency layer may be given once")
     required = set(REQUIRED_DEPS[target.layer])
-    declared = {layer: v for layer, v in target.depends_on.items() if layer in LAYERS}
+    declared = {layer: v for layer, v in target.depends_on.items() if layer not in UNLOADED_DEPS}
+    if not set(declared) <= set(LAYERS):
+        raise GateInputError(f"{target.layer} declares dependencies "
+                             f"{sorted(set(declared) - set(LAYERS))} that hold no records")
     if set(given) != required or set(declared) != required:
         raise GateInputError(f"{target.layer} needs dependencies {sorted(required)}; manifest "
                              f"declares {sorted(declared)}, given {sorted(given)}")
