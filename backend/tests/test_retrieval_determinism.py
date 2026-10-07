@@ -15,6 +15,8 @@ from pathlib import Path
 from utils.retrieval import router
 
 BACKEND = Path(__file__).resolve().parents[1]
+# backend/ plus packages/ (ragcommon), as the image's PYTHONPATH and cwd give them.
+PYTHONPATH = os.pathsep.join([str(BACKEND), str(BACKEND.parent / "packages")])
 
 
 def _cand(cid: str, book: str, chapter: int) -> dict:
@@ -39,7 +41,7 @@ def test_chapter_order_is_identical_across_hash_seeds():
     )
     outputs = set()
     for seed in ("1", "2", "3"):
-        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": str(BACKEND)}
+        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": PYTHONPATH}
         outputs.add(subprocess.run([sys.executable, "-c", code], cwd=BACKEND, env=env,
                                    capture_output=True, text=True, check=True).stdout)
     assert len(outputs) == 1
@@ -56,7 +58,7 @@ def test_detected_signals_are_identical_across_hash_seeds():
     )
     outputs = set()
     for seed in ("1", "2", "3", "4"):
-        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": str(BACKEND)}
+        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": PYTHONPATH}
         outputs.add(subprocess.run([sys.executable, "-c", code], cwd=BACKEND, env=env,
                                    capture_output=True, text=True, check=True).stdout)
     assert len(outputs) == 1, outputs
@@ -77,7 +79,7 @@ def test_chapter_pins_follow_verse_ref_order_across_hash_seeds():
     )
     outputs = set()
     for seed in ("1", "2", "3", "4", "5", "6"):
-        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": str(BACKEND)}
+        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": PYTHONPATH}
         outputs.add(subprocess.run([sys.executable, "-c", code], cwd=BACKEND, env=env,
                                    capture_output=True, text=True, check=True).stdout)
     assert len(outputs) == 1, outputs

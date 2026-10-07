@@ -6,32 +6,47 @@ Uses transformers AutoModelForSequenceClassification directly.
 import logging
 
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForSequenceClassification
 
 from config import settings
+from ragcommon import encoder
 
 logger = logging.getLogger(__name__)
 
 _model = None
 _tokenizer = None
 _device = None
+_fingerprint = None
 
 
 def init_reranker():
-    """Load bge-reranker-v2-m3 at startup."""
-    global _model, _tokenizer, _device
+    """Load bge-reranker-v2-m3 at startup with the pinned tokenizer.json (G28).
 
+    Raises EncoderContractError, failing startup, when the configured model is
+    not the pinned one or its tokenizer fails the contract probes (a pair must
+    be <s> q </s></s> p </s>).
+    """
+    global _model, _tokenizer, _device, _fingerprint
+
+    encoder.check_model_name(encoder.RERANKER, settings.reranker_model)
     _device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"Loading reranker {settings.reranker_model} on {_device}...")
 
-    _tokenizer = AutoTokenizer.from_pretrained(settings.reranker_model)
-    _model = AutoModelForSequenceClassification.from_pretrained(
+    model = AutoModelForSequenceClassification.from_pretrained(
         settings.reranker_model,
         torch_dtype=torch.float16 if _device == "cuda" else torch.float32,
     ).to(_device)
-    _model.eval()
+    model.eval()
+    # After the model: loading it by repo id may move refs/main, which the pin checks.
+    tokenizer, fingerprint = encoder.load_pinned(encoder.RERANKER)
+    _model, _tokenizer, _fingerprint = model, tokenizer, fingerprint
 
-    logger.info("Reranker loaded")
+    logger.info(f"Reranker loaded, tokenizer fingerprint={fingerprint}")
+
+
+def get_fingerprint() -> dict | None:
+    """The pinned tokenizer's fingerprint, or None before init_reranker succeeded."""
+    return dict(_fingerprint) if _fingerprint else None
 
 
 def _compute_scores(pairs: list[list[str]]) -> list[float]:

@@ -20,11 +20,16 @@ backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
+# Add packages/ for ragcommon (the image also sets PYTHONPATH; a local
+# `uv run uvicorn main:app` from backend/ does not)
+packages_dir = project_root / "packages"
+if str(packages_dir) not in sys.path:
+    sys.path.insert(0, str(packages_dir))
+
 from database import postgres, qdrant_db, neo4j_db
 from utils import embedder, reranker
 from utils.llm import get_llm_client
 from routers import health, query, verse, entity
-from config import settings
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,16 +57,7 @@ async def lifespan(app: FastAPI):
     logger.info("Loading reranker (bge-reranker-v2-m3)...")
     reranker.init_reranker()
 
-    # Phase 3: Initialize sparse encoder (if hybrid search enabled)
-    if settings.hybrid_search_enabled:
-        logger.info("Hybrid search enabled, initializing sparse encoder...")
-        from utils import sparse_encoder
-        if sparse_encoder.init_sparse_encoder():
-            logger.info(f"Sparse encoder ready (vocab size: {sparse_encoder.get_vocabulary_size()})")
-        else:
-            logger.warning("Sparse encoder initialization failed, falling back to dense-only")
-
-    # Phase 4: Verify LLM provider
+    # Phase 3: Verify LLM provider
     llm = get_llm_client()
     llm_ok = await llm.health_check()
     if llm_ok:

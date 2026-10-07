@@ -5,6 +5,7 @@ Health check endpoint.
 from fastapi import APIRouter
 
 from database import postgres, qdrant_db, neo4j_db
+from utils import embedder, reranker
 from utils.llm import get_llm_client
 from models.response import HealthResponse
 
@@ -30,4 +31,5 @@ async def health_check():
     return HealthResponse(
         status="ok" if all_ok else "degraded",
         services=services,
+        encoder={"embedder": embedder.get_fingerprint(), "reranker": reranker.get_fingerprint()},
     )

@@ -1,5 +1,5 @@
-.venv/
-backend/.venv/
+# Every virtualenv (scripts/.venv alone is 4.9 GB)
+**/.venv
 __pycache__/
 *.pyc
 *.pyo

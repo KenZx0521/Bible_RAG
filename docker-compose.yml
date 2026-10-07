@@ -32,7 +32,6 @@ services:
         condition: service_healthy
     volumes:
       - model_cache:/root/.cache
-      - ./output/bm25_vocabulary.json:/app/backend/output/bm25_vocabulary.json:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 15s

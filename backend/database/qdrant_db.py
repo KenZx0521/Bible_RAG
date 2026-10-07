@@ -96,3 +96,36 @@ def search_vectors(
         }
         for hit in results
     ]
+
+
+def search_hybrid_dense(query_vector: list[float], top_k: int = 20) -> list[dict]:
+    """Search the "dense" named vector of the hybrid collection.
+
+    This is the exact call the retired sparse+dense arm always fell back to
+    (qdrant-client 1.8.2 has no query_points), kept as-is so results do not
+    change: same collection, named vector, limit and default search params.
+    Hits additionally carry `parent_pericope_id` from the payload.
+    """
+    client = get_client()
+    results = client.search(
+        collection_name=settings.qdrant_hybrid_collection,
+        query_vector=("dense", query_vector),
+        limit=top_k,
+    )
+    return [_hybrid_hit(point) for point in results]
+
+
+def _hybrid_hit(point) -> dict:
+    payload = point.payload or {}
+    return {
+        "record_id": payload.get("record_id", ""),
+        "score": point.score,
+        "type": payload.get("type", ""),
+        "book_id": payload.get("book_id", ""),
+        "book_name": payload.get("book_name", ""),
+        "chapter_num": payload.get("chapter_num"),
+        "title": payload.get("title", ""),
+        "verse_range": payload.get("verse_range", ""),
+        "content_preview": payload.get("content_preview", ""),
+        "parent_pericope_id": payload.get("parent_pericope_id"),
+    }
