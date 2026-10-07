@@ -100,6 +100,10 @@ STRUCT_COUNTERS: Mapping[str, Counter] = {
     "pericopes_untitled": rows("pericopes", lambda p: p.heading_id is None),
     "passages": rows("passages"),
     "passages_continued": rows("passages", lambda p: p.continued),
+    "legacy_pericopes": rows("legacy_ids", lambda r: r.kind == "pericope"),
+    "legacy_chunks": rows("legacy_ids", lambda r: r.kind == "chunk"),
+    "legacy_verses": rows("legacy_ids", lambda r: r.kind == "verse"),
+    "legacy_verses_retired": rows("legacy_ids", lambda r: r.relation == "retired"),
 }
 
 COUNTERS: Mapping[str, Mapping[str, Counter]] = {"text": TEXT_COUNTERS, "struct": STRUCT_COUNTERS}

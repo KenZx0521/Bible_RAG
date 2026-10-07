@@ -16,7 +16,9 @@ Checked against the text records the layer was built on (the snapshot holds both
   by the passage holding its offset 0 and lists both passages;
 - chunks: a passage is chunked iff it is over 768 tokens; its chunks are runs of
   its pieces from first to last, each overlapping the previous by one piece, and
-  their token counts are the tokenizer's.
+  their token counts are the tokenizer's;
+- legacy map: every ``legacy_ids`` row's relation holds between its old verse
+  range and the records it names (``gates.legacy_map``).
 
 Report only (design §8): headings of 8 or more characters that occur word for
 word in a verse are listed in ``observed``; they are real headings, flagged for
@@ -30,6 +32,7 @@ from dataclasses import dataclass
 from typing import Any, Iterator, Mapping, Sequence
 
 from ragcommon import ids
+from ragdata.gates import legacy_map
 from ragdata.gates.base import GateResult, Snapshot, capped
 from ragdata.stages.errors import StageError
 from ragdata.stages.s02_parse.navy import STYLE_CLASS
@@ -291,6 +294,11 @@ def _chunks(ctx: _Ctx) -> Iterator[str]:
                 yield from _chunk_fields(ctx, p, c)
 
 
+def _legacy(ctx: _Ctx) -> Iterator[str]:
+    pools = legacy_map.pools(ctx.view.unit.values(), ctx.passages, ctx.chunks)
+    return legacy_map.violations(ctx.snapshot.of("legacy_ids"), pools, ctx.view.omitted)
+
+
 def _quoted_headings(ctx: _Ctx) -> list[str]:
     body = "\n".join(u.text for b in ctx.view.books for u in ctx.view.units[b.book_id])
     return sorted(h.heading_id for h in ctx.snapshot.of("headings")
@@ -309,7 +317,7 @@ def _observed(ctx: _Ctx, violations: int) -> dict[str, Any]:
 
 
 CHECKS = (_chapter_coverage, _book_coverage, _passage_fields, _pericope_headings, _mid_headings,
-          _heading_form, _chain, _verse_index, _chunks)
+          _heading_form, _chain, _verse_index, _chunks, _legacy)
 
 
 def _context(snapshot: Snapshot, counter: TokenCounter) -> _Ctx:

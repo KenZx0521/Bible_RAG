@@ -42,3 +42,7 @@ struct:
   pericopes_untitled: {value: 1, g: [G58]}
   passages: {value: 7, g: [G58]}
   passages_continued: {value: 1, g: [G58]}
+  legacy_pericopes: {value: 7, g: [G17]}
+  legacy_chunks: {value: 2, g: [G17]}
+  legacy_verses: {value: 15, g: [G17]}
+  legacy_verses_retired: {value: 1, g: [G02]}

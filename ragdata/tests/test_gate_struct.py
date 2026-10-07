@@ -30,6 +30,10 @@ def _set(type_name, pk, key, **changes):
     return lambda f: _row(f, type_name, pk, key).update(changes)
 
 
+def _legacy(legacy_id, **changes):
+    return _set("legacy_ids", "legacy_id", legacy_id, **changes)
+
+
 def _passage_content(passage_id, text):
     def mutate(f):
         _row(f, "passages", "passage_id", passage_id).update(
@@ -114,6 +118,27 @@ CASES = {
     "chunks that do not overlap by one piece": (_swap_chunks, "overlap"),
     "a chunk token count that is not the tokenizer's": (
         _set("chunks", "chunk_id", "ck:act.9.1~act.9.2", token_count=700), "token_count"),
+    "an exact legacy row relabelled contained": (
+        _legacy("psa:42:0", relation="contained"), "psa:42:0"),
+    "a legacy row pointed at a passage of another chapter": (
+        _legacy("psa:42:0", new_ids=["ps:eph.6.1"]), "psa:42:0"),
+    "a legacy row pointed at another passage of its chapter": (
+        _legacy("act:9:1", new_ids=["ps:act.9.1"]), "act:9:1"),
+    "a contained legacy row whose passage does not hold it": (
+        _legacy("act:9:0", new_ids=["ps:act.9.3b"]), "act:9:0"),
+    "a contained legacy row although a passage matches exactly": (
+        _legacy("act:9:1", relation="contained", new_ids=["ps:act.9.1"]), "act:9:1"),
+    "a split legacy row missing an overlapping record": (
+        _legacy("act:9:0:1", new_ids=["ck:act.9.1~act.9.2", "ps:act.9.3b"]), "act:9:0:1"),
+    "a split legacy row that one record holds": (
+        _legacy("act:9:0:0", relation="split",
+                new_ids=["ck:act.9.1~act.9.2", "ck:act.9.2~act.9.3"]), "act:9:0:0"),
+    "an old chunk mapped to a chunked passage": (
+        _legacy("act:9:0:0", new_ids=["ps:act.9.1"]), "act:9:0:0"),
+    "an old verse mapped to another unit": (
+        _legacy("mat:18:0:v:4", new_ids=["vs:mat.18.2"]), "mat:18:0:v:4"),
+    "a retired old verse whose slot the PDF holds": (
+        _legacy("mat:18:0:v:4", relation="retired", new_ids=[]), "mat.18.4"),
 }
 
 
