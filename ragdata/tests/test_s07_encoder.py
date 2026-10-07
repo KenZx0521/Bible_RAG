@@ -14,23 +14,28 @@ from ragdata.stages.errors import StageError
 from ragdata.stages.s06_emb import encoder, fingerprint
 
 
-def test_fingerprint_records_both_tokenizers_the_model_and_the_probe_vectors():
+def test_fingerprint_records_both_tokenizers_the_model_and_the_probe_count():
     fp = fingerprint.encoder_fingerprint(fake_encoder.make())
     m3, rr = fp["bge_m3"], fp["reranker"]
     assert (m3["model"], m3["revision"]) == (pins.BGE_M3.repo_id, pins.BGE_M3.revision)
     assert m3["tokenizer_sha"] == pins.BGE_M3.tokenizer_sha256
+    assert m3["probes"] == len(pins.BGE_M3.probes)
     assert (rr["model"], rr["revision"]) == (pins.RERANKER.repo_id, pins.RERANKER.revision)
     assert rr["probe_ids_sha"] == pins.RERANKER.probe_ids_sha
-    ints = np.array(m3["probe_vectors_e6"])
-    assert ints.shape == (len(pins.BGE_M3.probes), fake_encoder.DIM)
-    expected = np.rint(fake_encoder.embed(pins.BGE_M3.probes).astype(np.float64) * 1e6)
-    assert np.array_equal(ints, expected)
-    assert m3["probe_vectors_sha"] == fingerprint.ints_sha(m3["probe_vectors_e6"])
 
 
-def test_probe_vectors_are_rounded_to_1e_6_as_integers():
-    vec = np.array([[0.1234564, -0.1234566, 0.0]], dtype=np.float32)
-    assert fingerprint.probe_ints(vec) == [[123456, -123457, 0]]
+def test_the_fingerprint_does_not_depend_on_the_vectors_the_device_computes():
+    moved = fake_encoder.make(embed_fn=lambda t: fake_encoder.embed([x + "?" for x in t]),
+                              device="cuda")
+    assert fingerprint.encoder_fingerprint(moved) == fingerprint.encoder_fingerprint(
+        fake_encoder.make())
+    assert not any(k.startswith("probe_vectors")
+                   for k in fingerprint.encoder_fingerprint(moved)["bge_m3"])
+
+
+def test_probe_vectors_are_the_pinned_probes_encoded():
+    assert np.array_equal(fingerprint.probe_vectors(fake_encoder.make()),
+                          fake_encoder.embed(pins.BGE_M3.probes))
 
 
 def test_the_fingerprint_file_is_canonical_json():

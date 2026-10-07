@@ -34,7 +34,8 @@ def tokenizer_fp(spec: encoder.EncoderSpec) -> dict:
             "unk_count": 3, "pair_template_ok": True}
 
 
-def make(embed_fn=embed, dim: int = DIM, max_seq_length: int = 8192, **model) -> Encoder:
+def make(embed_fn=embed, dim: int = DIM, max_seq_length: int = 8192, device: str = "cpu",
+         **model) -> Encoder:
     return Encoder(
         embed=embed_fn,
         stats=TokenStats(lambda t: (mini_build.count_tokens(t), mini_build.count_unk(t))),
@@ -43,5 +44,5 @@ def make(embed_fn=embed, dim: int = DIM, max_seq_length: int = 8192, **model) ->
                "batch_size": 32, **model},
         tokenizers={encoder.BGE_M3.name: tokenizer_fp(encoder.BGE_M3),
                     encoder.RERANKER.name: tokenizer_fp(encoder.RERANKER)},
-        runtime={"device": "cpu", "stand_in": True},
+        runtime={"device": device, "stand_in": True},
     )

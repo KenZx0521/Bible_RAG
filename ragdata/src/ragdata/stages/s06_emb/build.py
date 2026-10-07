@@ -6,11 +6,12 @@ and the old ``output/`` for the legacy compatibility check. The gates are G-SCHE
 G-COUNT, G-EMB and G-ENC; a red build writes nothing.
 
 The layer holds ``embedding_records.jsonl``, ``emb_report.json`` (inputs, the
-declared template, counts) and ``encoder_fingerprint.json``, so its version
-follows from the records, the fingerprint and the template. The vectors are the
-layer's ``vectors`` attachment (``vectors.npy``, ``vector_index.jsonl``) and do not
-enter the version. A rebuild of a stored version keeps the stored vectors, and
-stops if this run's vectors are not within G-DET's tolerance of them.
+declared template, counts) and ``encoder_fingerprint.json`` (nothing in it
+depends on the device), so its version follows from the records, the
+fingerprint and the template. The vectors are the layer's ``vectors`` attachment
+(``vectors.npy``, ``vector_index.jsonl``, ``probe_vectors.json``) and do not enter
+the version. A rebuild of a stored version keeps the stored vectors, and stops
+if this run's rows or probe vectors are not within G-DET's tolerance of them.
 """
 
 from __future__ import annotations
@@ -30,10 +31,10 @@ from ragdata.gates import emb_legacy
 from ragdata.gates.base import GateResult, Snapshot, snapshot
 from ragdata.gates.counts import check_counts
 from ragdata.gates.emb import EmbFiles, check_emb
-from ragdata.gates.enc import run_enc
+from ragdata.gates.enc import EncOptions, StoredEncoding, run_enc
 from ragdata.gates.runner import merge_files
 from ragdata.gates.schema import check_schema
-from ragdata.gates.vectors import compare_runs
+from ragdata.gates.vectors import compare_sets
 from ragdata.stages.errors import StageError
 from ragdata.stages.result import BuildResult, Clock, gates_pass
 from ragdata.stages.s06_emb import fingerprint
@@ -80,12 +81,13 @@ def _gates(base: Snapshot, rows: Sequence[dict], files: Mapping[str, Any],
     """``files``: the report, the fingerprint and the versions the layer is built on."""
     schema, own = check_schema({RECORDS: rows}, ["emb"])
     snap = snapshot({**base.records, **own.records})
-    matrix, index = vector_files.decode_vectors(vfiles)
+    found = vector_files.decode_vectors(vfiles)
     counts = check_counts(snap, "emb", load_counts(counts_path).get("emb", {}))
-    emb_files = EmbFiles(files["report"], matrix, index, files["depends_on"])
+    emb_files = EmbFiles(files["report"], found.matrix, found.index, files["depends_on"])
+    options = EncOptions(inputs.legacy_dir, inputs.compat_sample)
     return [schema, counts, check_emb(snap, emb_files, enc.stats),
-            run_enc(snap.of("embedding_records"), matrix, files["fingerprint"], enc,
-                    inputs.legacy_dir, inputs.compat_sample)]
+            run_enc(snap.of("embedding_records"), StoredEncoding(files["fingerprint"], found),
+                    enc, options)]
 
 
 def _json(doc: Mapping[str, Any]) -> bytes:
@@ -97,10 +99,8 @@ def _keep_stored(layer: StoredLayer, stored: Attachment, vfiles: Mapping[str, by
     _, files = read_attachment(layer.path, vector_files.NAME)
     if files == dict(vfiles):
         return
-    (old, old_index), (new, new_index) = (vector_files.decode_vectors(files),
-                                          vector_files.decode_vectors(vfiles))
-    ids = [[r["record_id"] for r in index] for index in (old_index, new_index)]
-    _, violations = compare_runs(ids[0], old, ids[1], new)
+    _, violations = compare_sets(vector_files.decode_vectors(files),
+                                 vector_files.decode_vectors(vfiles))
     if violations:
         raise StageError(f"{layer.version}: the vectors already stored at {stored.path} "
                          f"differ from this run: {violations[:3]}")
@@ -138,7 +138,7 @@ def build_emb(struct_dir: Path, text_dir: Path, store_root: Path,
         matrix: np.ndarray = encode_texts(enc, [r["text"] for r in rows])
         fp = fingerprint.encoder_fingerprint(enc)
         vfiles = vector_files.encode_vectors([(r["record_id"], r["text_sha"]) for r in rows],
-                                             matrix)
+                                             matrix, fingerprint.probe_vectors(enc))
     with clock.lap("gates"):
         deps = {"struct": struct.version, "text": text.version}
         gates = _gates(snap, rows, {"report": report, "fingerprint": fp, "depends_on": deps},

@@ -9,6 +9,7 @@ import pytest
 
 import fake_encoder
 from ragdata.gates import emb_legacy, vectors
+from ragdata.store import vectors as store_vectors
 
 RNG = np.random.default_rng(7)
 
@@ -50,6 +51,24 @@ def test_runs_over_other_records_or_shapes_are_not_compared():
     a = _unit(5)
     _, violations = vectors.compare_runs(_ids(5), a, _ids(4), a[:4])
     assert violations and "records" in violations[0]
+
+
+def _set(matrix, probes):
+    return store_vectors.decode_vectors(store_vectors.encode_vectors(
+        [(i, "a" * 64) for i in _ids(len(matrix))], matrix, probes))
+
+
+def test_two_vector_sets_compare_their_rows_and_their_probes():
+    a, probes = _unit(30), _unit(4)
+    observed, violations = vectors.compare_sets(_set(a, probes), _set(a, probes * 1.0001))
+    assert violations == [] and observed["probes"]["min_cos"] >= vectors.DET_COS
+    moved = probes.copy()
+    moved[2] = _unit(1)[0]
+    _, violations = vectors.compare_sets(_set(a, probes), _set(a, moved))
+    assert violations == [f"probe 2: cos {vectors.rowwise_cos(probes, moved)[2]:.7f} < "
+                          f"{vectors.DET_COS}"]
+    _, violations = vectors.compare_sets(_set(a, probes), _set(a, probes[:3]))
+    assert violations and "probe vectors" in violations[0]
 
 
 def test_topk_returns_the_k_nearest_rows_by_dot_product():

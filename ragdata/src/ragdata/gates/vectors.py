@@ -3,7 +3,8 @@
 GPU encoding need not be bit for bit reproducible, so two runs agree when every
 row pair has cosine >= 0.99999 and, for 200 rows sampled with a fixed seed used
 as queries, each run's top-20 neighbours (by dot product, over its own rows) are
-the same set.
+the same set. Two ``vectors`` attachments also agree on their probe vectors, each
+pair with cosine >= 0.99999.
 """
 
 from __future__ import annotations
@@ -11,6 +12,8 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 import numpy as np
+
+from ragdata.store.vectors import VectorSet
 
 DET_COS = 0.99999
 TOP_K = 20
@@ -55,3 +58,22 @@ def compare_runs(ids_a: Sequence[str], a: np.ndarray, ids_b: Sequence[str], b: n
     observed = {"rows": len(ids_a), "min_cos": float(cos.min()) if cos.size else None,
                 "below_cos": int(low.size), "queries": int(rows.size), "topk_differ": len(differ)}
     return observed, violations
+
+
+def compare_probes(a: np.ndarray, b: np.ndarray, cos_min: float = DET_COS
+                   ) -> tuple[dict[str, Any], list[str]]:
+    """Observed figures and violations for probe vectors ``a`` against ``b``, row by row."""
+    if a.shape != b.shape:
+        return {"probes": [a.shape[0], b.shape[0]]}, [f"probe vectors {a.shape} and {b.shape} "
+                                                      "are not the same probes"]
+    cos = rowwise_cos(a, b)
+    return ({"probes": int(cos.size), "min_cos": float(cos.min()) if cos.size else None},
+            [f"probe {i}: cos {c:.7f} < {cos_min}" for i, c in enumerate(cos) if c < cos_min])
+
+
+def compare_sets(a: VectorSet, b: VectorSet) -> tuple[dict[str, Any], list[str]]:
+    """Two ``vectors`` attachments: their rows (``compare_runs``) and their probe vectors."""
+    ids = [[row.get("record_id") for row in s.index] for s in (a, b)]
+    observed, violations = compare_runs(ids[0], a.matrix, ids[1], b.matrix)
+    probes, bad = compare_probes(a.probes, b.probes)
+    return {**observed, "probes": probes}, violations + bad

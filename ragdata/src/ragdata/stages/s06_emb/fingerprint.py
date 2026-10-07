@@ -1,46 +1,42 @@
 """``encoder_fingerprint.json`` (design §2.16, §6): what encoded the emb layer.
 
+It holds only what every machine running the pinned encoder computes alike:
+
 - ``bge_m3``: model, revision and encode settings; the pinned tokenizer's
   fingerprint (tokenizer.json sha, probe input_ids sha, <unk> count, pair
-  template); the vectors of ``ragcommon.encoder``'s probes rounded to 1e-6, kept
-  as integers (``probe_vectors_e6``), and their sha. Other environments compare
-  their probe vectors with these by cosine (G-ENC).
+  template); the number of probes;
 - ``reranker``: model, revision and the pinned tokenizer's fingerprint.
+
+The probe vectors themselves (``probe_vectors``) differ in their last digits from
+one GPU, or the CPU, to another, and so would their sha at any rounding. They
+go with the rows into the ``vectors`` attachment (``store.vectors``), which does
+not enter the layer version: rebuilding elsewhere gives the same ``emb@``
+(design §6, C-N13), and G-ENC compares the stored probes by cosine.
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 import numpy as np
 
 from ragcommon import encoder as pins
 from ragdata.stages.s06_emb.encoder import Encoder, encode_texts
 
-SCHEMA = "ragdata.encoder_fingerprint.v1"
-SCALE = 1e6
+SCHEMA = "ragdata.encoder_fingerprint.v2"
 
 
-def probe_ints(vectors: np.ndarray) -> list[list[int]]:
-    return np.rint(np.asarray(vectors, dtype=np.float64) * SCALE).astype(np.int64).tolist()
-
-
-def ints_sha(ints: Sequence[Sequence[int]]) -> str:
-    return hashlib.sha256(json.dumps(ints, separators=(",", ":")).encode()).hexdigest()
-
-
-def probe_section(enc: Encoder) -> dict[str, Any]:
-    ints = probe_ints(encode_texts(enc, pins.BGE_M3.probes))
-    return {"probes": len(pins.BGE_M3.probes), "probe_vectors_e6": ints,
-            "probe_vectors_sha": ints_sha(ints)}
+def probe_vectors(enc: Encoder) -> np.ndarray:
+    """``ragcommon.encoder``'s BGE-M3 probes encoded by ``enc``."""
+    return encode_texts(enc, pins.BGE_M3.probes)
 
 
 def encoder_fingerprint(enc: Encoder) -> dict[str, Any]:
     return {
         "schema": SCHEMA,
-        "bge_m3": {**enc.model, **enc.tokenizers[pins.BGE_M3.name], **probe_section(enc)},
+        "bge_m3": {**enc.model, **enc.tokenizers[pins.BGE_M3.name],
+                   "probes": len(pins.BGE_M3.probes)},
         "reranker": {"model": pins.RERANKER.repo_id, "revision": pins.RERANKER.revision,
                      **enc.tokenizers[pins.RERANKER.name]},
     }

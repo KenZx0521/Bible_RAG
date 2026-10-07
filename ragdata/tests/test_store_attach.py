@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 
 import numpy as np
@@ -69,30 +70,71 @@ def test_bad_names_or_no_files_are_refused(tmp_path, name, files):
         attach.write_attachment(_layer(tmp_path), name, files, META)
 
 
+PROBES = np.array([[0.1234564, -0.1234566, 0.0, 1.0], [0.5, 0.5, 0.5, 0.5]], np.float32)
+
+
+def _files(matrix, rows, probes=PROBES):
+    return vectors.encode_vectors(rows, matrix, probes)
+
+
 def test_vector_files_round_trip_with_a_row_hash_per_record():
     matrix = np.arange(12, dtype=np.float32).reshape(3, 4) / 10
     rows = [("vs:gen.1.1", "a" * 64), ("vs:gen.1.2", "b" * 64), ("ps:gen.1.1", "c" * 64)]
-    files = vectors.encode_vectors(rows, matrix)
-    loaded, index = vectors.decode_vectors(files)
-    assert loaded.dtype == np.dtype("<f4") and np.array_equal(loaded, matrix)
-    assert [(r["record_id"], r["row"], r["text_sha"]) for r in index] == [
+    files = _files(matrix, rows)
+    assert set(files) == {"vectors.npy", "vector_index.jsonl", "probe_vectors.json"}
+    found = vectors.decode_vectors(files)
+    assert found.matrix.dtype == np.dtype("<f4") and np.array_equal(found.matrix, matrix)
+    assert [(r["record_id"], r["row"], r["text_sha"]) for r in found.index] == [
         (rid, i, sha) for i, (rid, sha) in enumerate(rows)]
-    assert [r["vec_sha"] for r in index] == [vectors.row_sha(v) for v in matrix]
-    assert vectors.encode_vectors(rows, matrix.astype(np.float64)) == files
+    assert [r["vec_sha"] for r in found.index] == [vectors.row_sha(v) for v in matrix]
+    assert _files(matrix.astype(np.float64), rows) == files
+    with pytest.raises(ValueError):
+        found.matrix[0, 0] = 1.0                       # what was read stays as read
+
+
+def test_probe_vectors_are_kept_rounded_to_1e_6_with_their_sha():
+    found = vectors.decode_vectors(_files(np.zeros((1, 4), np.float32), [("vs:gen.1.1", "a" * 64)]))
+    assert vectors.probe_ints(PROBES[:1]) == [[123456, -123457, 0, 1000000]]
+    assert np.array_equal(found.probes, np.array(vectors.probe_ints(PROBES)) / 1e6)
+    assert found.probes_sha == vectors.ints_sha(vectors.probe_ints(PROBES))
+
+
+@pytest.mark.parametrize("doc", [
+    {"probe_vectors_e6": [[1, 2]], "probe_vectors_sha": "0" * 64},
+    {"probe_vectors_e6": [[1, 2], [3]], "probe_vectors_sha": vectors.ints_sha([[1, 2], [3]])},
+    {"probe_vectors_e6": [[1.5, 2]], "probe_vectors_sha": vectors.ints_sha([[1.5, 2]])},
+    {"probe_vectors_e6": [1, 2], "probe_vectors_sha": vectors.ints_sha([1, 2])},
+    {"probe_vectors_e6": [[1, 2]]},
+    [],
+], ids=["sha", "ragged", "floats", "flat", "no sha", "not an object"])
+def test_malformed_probe_vectors_are_refused(doc):
+    files = _files(np.zeros((1, 2), np.float32), [("vs:gen.1.1", "a" * 64)], PROBES[:, :2])
+    if isinstance(doc, dict):
+        doc = {"schema": vectors.PROBES_SCHEMA, **doc}
+    with pytest.raises(StoreError, match="probe_vectors.json"):
+        vectors.decode_vectors({**files, "probe_vectors.json": json.dumps(doc).encode()})
+
+
+@pytest.mark.parametrize("probes", [np.zeros((0, 4)), np.zeros(4), np.full((1, 4), np.nan)])
+def test_probe_vectors_must_be_a_finite_matrix(probes):
+    with pytest.raises(StoreError, match="probe"):
+        _files(np.zeros((1, 4), np.float32), [("vs:gen.1.1", "a" * 64)], probes)
 
 
 @pytest.mark.parametrize("matrix", [np.zeros((2, 4), np.float32), np.zeros(3, np.float32)])
 def test_vectors_must_be_one_row_per_record(matrix):
     with pytest.raises(StoreError):
-        vectors.encode_vectors([("vs:gen.1.1", "a" * 64)] * 3, matrix)
+        _files(matrix, [("vs:gen.1.1", "a" * 64)] * 3)
 
 
-def test_decoding_refuses_pickles_and_other_dtypes():
+def test_decoding_refuses_pickles_other_dtypes_and_missing_files():
+    files = _files(np.zeros((1, 2), np.float32), [("vs:gen.1.1", "a" * 64)], PROBES[:, :2])
     with pytest.raises(StoreError):
-        vectors.decode_vectors({"vectors.npy": b"not npy", "vector_index.jsonl": b""})
-    files = vectors.encode_vectors([("vs:gen.1.1", "a" * 64)], np.zeros((1, 2), np.float32))
-    import io
+        vectors.decode_vectors({**files, "vectors.npy": b"not npy"})
     buf = io.BytesIO()
     np.save(buf, np.zeros((1, 2), np.int64))
     with pytest.raises(StoreError, match="float32"):
         vectors.decode_vectors({**files, "vectors.npy": buf.getvalue()})
+    without = {k: v for k, v in files.items() if k != "probe_vectors.json"}
+    with pytest.raises(StoreError, match="probe_vectors.json"):
+        vectors.decode_vectors(without)

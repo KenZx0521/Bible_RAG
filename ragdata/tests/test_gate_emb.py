@@ -34,10 +34,14 @@ def _gate(rows=None, report=None, matrix=None, index=None):
     report = emb_report(*VERSIONS.values(), template.V1C, rows) if report is None else report
     texts = [r["text"] for r in rows]
     matrix = fake_encoder.embed(texts) if matrix is None else matrix
-    stored = vector_files.encode_vectors([(r["record_id"], r["text_sha"]) for r in rows], matrix)
-    decoded, decoded_index = vector_files.decode_vectors(stored)
-    files = EmbFiles(report, decoded, decoded_index if index is None else index, VERSIONS)
+    decoded = _decoded(rows, matrix)
+    files = EmbFiles(report, decoded.matrix, decoded.index if index is None else index, VERSIONS)
     return check_emb(snap, files, STATS)
+
+
+def _decoded(rows, matrix):
+    return vector_files.decode_vectors(vector_files.encode_vectors(
+        [(r["record_id"], r["text_sha"]) for r in rows], matrix, fake_encoder.embed(["探針"])))
 
 
 def _rows():
@@ -114,9 +118,7 @@ def test_vectors_must_be_one_unit_row_per_record_with_matching_hashes():
     rows = _rows()
     m = fake_encoder.embed([r["text"] for r in rows])
     assert not _gate(matrix=m * 2).passed                           # not unit length
-    _, index = vector_files.decode_vectors(vector_files.encode_vectors(
-        [(r["record_id"], r["text_sha"]) for r in rows], m))
-    index = [dict(r) for r in index]
+    index = [dict(r) for r in _decoded(rows, m).index]
     index[0]["vec_sha"] = "0" * 64
     assert not _gate(index=index).passed
     assert not _gate(index=index[1:]).passed

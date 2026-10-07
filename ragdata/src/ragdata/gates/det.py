@@ -7,8 +7,8 @@ arguments must be two runs: the same directory twice is refused.
 
 Vectors are compared with a tolerance instead (design §4, §6): for two emb
 layers the ``vectors`` attachments must hold the same records, every row pair
-with cosine >= 0.99999, and the same top-20 neighbours for 200 sampled rows
-(``gates.vectors``).
+with cosine >= 0.99999, the same top-20 neighbours for 200 sampled rows, and
+probe vectors with cosine >= 0.99999 (``gates.vectors``).
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from ragdata.gates.base import GateInputError, GateResult, capped
-from ragdata.gates.vectors import compare_runs
+from ragdata.gates.vectors import compare_sets
 from ragdata.store import StoreError, attach, vectors, verify_layer
 
 NAME = "G-DET"
@@ -29,9 +29,7 @@ def _vectors(first: Path, second: Path) -> tuple[dict[str, Any], list[str]]:
                 for p in (first, second)]
     except StoreError as exc:
         return {"compared": False}, [f"vectors: {exc}"]
-    (a, a_index), (b, b_index) = runs
-    observed, violations = compare_runs([r.get("record_id") for r in a_index], a,
-                                        [r.get("record_id") for r in b_index], b)
+    observed, violations = compare_sets(*runs)
     return observed, [f"vectors: {v}" for v in violations]
 
 

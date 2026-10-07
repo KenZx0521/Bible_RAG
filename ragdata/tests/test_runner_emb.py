@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import shutil
 
+import numpy as np
 import pytest
 
 import fake_encoder
@@ -61,6 +62,15 @@ def test_another_environment_must_reproduce_the_probes(tmp_path):
     other = fake_encoder.make(embed_fn=lambda t: fake_encoder.embed([x + "?" for x in t]))
     report = _gate(tmp_path, emb, [struct, text], encoder=other)
     assert {g.name for g in report.gates if not g.passed} == {"G-ENC"}
+
+
+def test_another_device_whose_probes_differ_in_the_last_digits_passes(tmp_path):
+    text, struct, emb = _built(tmp_path)
+    near = fake_encoder.make(embed_fn=lambda t: fake_encoder.embed(t) * np.float32(1 + 1e-4))
+    report = _gate(tmp_path, emb, [struct, text], encoder=near)
+    assert report.passed, report.to_json()
+    enc = next(g for g in report.gates if g.name == "G-ENC")
+    assert enc.observed["probes"]["sha_equal"] is False
 
 
 def test_emb_needs_its_struct_and_the_text_layer_struct_was_built_on(tmp_path):

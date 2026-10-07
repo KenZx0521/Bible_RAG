@@ -43,7 +43,7 @@ from ragdata.gates import emb_legacy, sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
 from ragdata.gates.counts import check_counts
 from ragdata.gates.emb import EmbFiles, check_emb
-from ragdata.gates.enc import run_enc
+from ragdata.gates.enc import EncOptions, StoredEncoding, run_enc
 from ragdata.gates.ref import check_ref
 from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
@@ -92,7 +92,7 @@ class EmbContext:
     """What G-EMB and G-ENC read of an emb layer besides its records."""
 
     files: EmbFiles
-    fingerprint: Mapping[str, Any]
+    stored: StoredEncoding
     encoder: Encoder | None
     encoder_error: str | None
 
@@ -167,19 +167,19 @@ def emb_context(target: LayerData, inputs: GateInputs) -> EmbContext:
     """The report, fingerprint and vectors of an emb layer, and the encoder to check them."""
     report, fp = _json_file(target, EMB_REPORT), _json_file(target, ENCODER_FINGERPRINT)
     try:
-        matrix, index = vectors.decode_vectors(attach.read_attachment(target.path,
-                                                                      vectors.NAME)[1])
+        found = vectors.decode_vectors(attach.read_attachment(target.path, vectors.NAME)[1])
         unread = None
     except StoreError as exc:
-        matrix, index, unread = None, (), str(exc)
+        found, unread = None, str(exc)
     encoder, error = inputs.encoder, None
     if encoder is None:
         try:
             encoder = load_encoder(inputs.tokenizer, inputs.reranker_tokenizer, inputs.device)
         except StageError as exc:
             error = str(exc)
-    files = EmbFiles(report, matrix, index, target.depends_on, unread)
-    return EmbContext(files, fp, encoder, error)
+    files = EmbFiles(report, None if found is None else found.matrix,
+                     () if found is None else found.index, target.depends_on, unread)
+    return EmbContext(files, StoredEncoding(fp, found), encoder, error)
 
 
 def _no_encoder(name: str, ctx: GateContext) -> GateResult | None:
@@ -197,9 +197,9 @@ def _enc_gate(ctx: GateContext) -> GateResult:
     missing = _no_encoder("G-ENC", ctx)
     if missing:
         return missing
-    return run_enc(ctx.snapshot.of("embedding_records"), ctx.emb.files.vectors,
-                   ctx.emb.fingerprint, ctx.emb.encoder, Path(ctx.inputs.legacy_dir),
-                   ctx.inputs.compat_sample)
+    options = EncOptions(Path(ctx.inputs.legacy_dir), ctx.inputs.compat_sample)
+    return run_enc(ctx.snapshot.of("embedding_records"), ctx.emb.stored, ctx.emb.encoder,
+                   options)
 
 
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({

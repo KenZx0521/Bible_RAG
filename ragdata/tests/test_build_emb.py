@@ -31,9 +31,10 @@ def test_build_stores_the_emb_layer_and_its_vectors(tmp_path):
     assert report["counts"] == {"verse": 14, "passage": 6, "chunk": 2, "total": 22}
     assert report["struct_layer"] == struct.version and report["template"]["template_id"] == "v1c"
     found, files = attach.read_attachment(built.path, vectors.NAME)
-    matrix, index = vectors.decode_vectors(files)
-    assert np.array_equal(matrix, fake_encoder.embed([r["text"] for r in rows]))
-    assert [r["record_id"] for r in index] == list(mini_build.EMB_RECORD_IDS)
+    stored = vectors.decode_vectors(files)
+    assert np.array_equal(stored.matrix, fake_encoder.embed([r["text"] for r in rows]))
+    assert [r["record_id"] for r in stored.index] == list(mini_build.EMB_RECORD_IDS)
+    assert np.allclose(stored.probes, fake_encoder.embed(pins.BGE_M3.probes), atol=1e-6)
     assert found.meta["runtime"]["stand_in"] is True
     assert result.to_json()["attachments"]["emb"]["path"] == str(found.path)
 
@@ -65,11 +66,15 @@ def test_the_version_ignores_vectors_and_two_builds_agree(tmp_path):
     assert det.observed["vectors"]["min_cos"] > 0.99999
 
 
-def test_probe_vectors_rounded_to_1e_6_are_part_of_the_version(tmp_path):
+def test_probe_vectors_that_differ_in_their_last_digits_keep_the_version(tmp_path):
     _, _, first = mini_emb.build(tmp_path, "a")
     _, _, second = mini_emb.build(tmp_path, "b", given=_same_given(tmp_path),
                                   encoder=_drift(1 + 1e-4, probes=True))
-    assert first.layers["emb"].version != second.layers["emb"].version
+    a, b = first.layers["emb"], second.layers["emb"]
+    probe_files = [attach.read_attachment(x.path, vectors.NAME)[1][vectors.PROBES] for x in (a, b)]
+    assert probe_files[0] != probe_files[1]
+    assert a.version == b.version
+    assert check_det(a.path, b.path).passed
 
 
 def _same_given(tmp_path):
@@ -120,3 +125,14 @@ def test_a_rebuild_into_the_same_store_keeps_the_stored_vectors(tmp_path):
     assert again.layers["emb"] == first.layers["emb"]
     with pytest.raises(StageError, match="already stored"):
         mini_emb.build(tmp_path, given=_same_given(tmp_path), encoder=_moved(), compat_sample=0)
+
+
+def test_a_rebuild_whose_probes_moved_is_refused(tmp_path):
+    mini_emb.build(tmp_path)
+
+    def embed(texts):
+        moved = tuple(texts) == pins.BGE_M3.probes
+        return fake_encoder.embed([t + "!" for t in texts] if moved else texts)
+    with pytest.raises(StageError, match="probe"):
+        mini_emb.build(tmp_path, given=_same_given(tmp_path),
+                       encoder=fake_encoder.make(embed_fn=embed))
