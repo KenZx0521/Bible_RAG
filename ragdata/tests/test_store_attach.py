@@ -105,14 +105,15 @@ def test_probe_vectors_are_kept_rounded_to_1e_6_with_their_sha():
     {"probe_vectors_e6": [[1.5, 2]], "probe_vectors_sha": vectors.ints_sha([[1.5, 2]])},
     {"probe_vectors_e6": [1, 2], "probe_vectors_sha": vectors.ints_sha([1, 2])},
     {"probe_vectors_e6": [[1, 2]]},
-    [],
-], ids=["sha", "ragged", "floats", "flat", "no sha", "not an object"])
+    [], b"{not json",
+], ids=["sha", "ragged", "floats", "flat", "no sha", "not an object", "not json"])
 def test_malformed_probe_vectors_are_refused(doc):
     files = _files(np.zeros((1, 2), np.float32), [("vs:gen.1.1", "a" * 64)], PROBES[:, :2])
     if isinstance(doc, dict):
         doc = {"schema": vectors.PROBES_SCHEMA, **doc}
+    data = doc if isinstance(doc, bytes) else json.dumps(doc).encode()
     with pytest.raises(StoreError, match="probe_vectors.json"):
-        vectors.decode_vectors({**files, "probe_vectors.json": json.dumps(doc).encode()})
+        vectors.decode_vectors({**files, "probe_vectors.json": data})
 
 
 @pytest.mark.parametrize("probes", [np.zeros((0, 4)), np.zeros(4), np.full((1, 4), np.nan)])
