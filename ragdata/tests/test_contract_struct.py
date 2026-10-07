@@ -10,8 +10,9 @@ from ragdata.contract import ContractError, layer_types, parse_record, record_to
 STRUCT = mini_build.struct_layer()
 
 
-def test_struct_layer_declares_pericopes_passages_chunks():
-    assert {t.name for t in layer_types("struct")} == {"pericopes", "passages", "chunks"}
+def test_struct_layer_declares_its_record_types():
+    assert {t.name for t in layer_types("struct")} == {
+        "pericopes", "passages", "chunks", "verse_index", "legacy_ids"}
 
 
 @pytest.mark.parametrize("type_name", sorted(STRUCT))
@@ -62,6 +63,28 @@ BROKEN = {
     "chunk id": _with("chunks", "ck:act.9.1~act.9.2", end_key="act.9.3", verse_range="1-3"),
     "chunk too long": _with("chunks", "ck:act.9.1~act.9.2", token_count=769),
     "chunk verse range": _with("chunks", "ck:act.9.1~act.9.2", verse_range="1"),
+    "split list without its primary first": _with(
+        "verse_index", "act.9.3", split_passage_ids=["ps:act.9.3b", "ps:act.9.1"]),
+    "split list of one passage": _with("verse_index", "act.9.3", split_passage_ids=["ps:act.9.1"]),
+    "split list repeats": _with("verse_index", "act.9.3",
+                                split_passage_ids=["ps:act.9.1", "ps:act.9.1"]),
+    "primary passage starts after the unit": _with("verse_index", "act.9.3",
+                                                   passage_id="ps:act.9.3b", split_passage_ids=[]),
+    "primary passage in another chapter": _with("verse_index", "act.10.1",
+                                                passage_id="ps:act.9.3b"),
+    "exact legacy map to two ids": _with("legacy_ids", "act:9:0", relation="exact",
+                                         new_ids=["ps:act.9.1", "ps:act.9.3b"]),
+    "split legacy map to one id": _with("legacy_ids", "act:9:0", relation="split"),
+    "retired pericope": _with("legacy_ids", "act:9:0", relation="retired", new_ids=[]),
+    "retired verse that still maps": _with("legacy_ids", "mat:18:0:v:3",
+                                           new_ids=["vs:mat.18.4"]),
+    "legacy verse mapped to a passage": _with("legacy_ids", "act:9:0:v:1",
+                                              new_ids=["ps:act.9.1"]),
+    "legacy chunk mapped to a verse": _with("legacy_ids", "act:9:0:0", new_ids=["vs:act.9.1"]),
+    "legacy id with a space": _with("legacy_ids", "act:9:0", legacy_id="act:9: 0"),
+    "legacy range descends": _with("legacy_ids", "act:9:0", start_slot="act.9.2",
+                                   end_slot="act.9.1"),
+    "legacy range crosses chapters": _with("legacy_ids", "act:9:0", end_slot="act.10.1"),
 }
 
 

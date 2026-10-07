@@ -67,6 +67,14 @@ def _unit_refs(r: Any) -> list[str]:
     return [u.unit_key for u in r.unit_refs] + list(getattr(r, "overlap_unit_keys", ()))
 
 
+def _new_ids(kind: str) -> Callable[[Any], list[str]]:
+    """The new ids of a legacy row that are of ``kind`` (verse records as their unit key)."""
+    def refs(r: Any) -> list[str]:
+        found = [ids.parse(i) for i in r.new_ids]
+        return [p.parent.raw if kind == "verse_record" else p.raw for p in found if p.kind == kind]
+    return refs
+
+
 TEXT_FKS = (
     fk("chapters", "book_id", "books"),
     fk("chapters", "omitted_slots", "verse_slots", lambda c: c.omitted_slots),
@@ -103,6 +111,13 @@ STRUCT_FKS = (
     fk("passages", "superscription_id", "chapter_texts"),
     fk("chunks", "passage_id", "passages"),
     fk("chunks", "unit_refs", "verse_units", _unit_refs),
+    fk("verse_index", "unit_key", "verse_units"),
+    fk("verse_index", "passage_id", "passages",
+       lambda v: [v.passage_id, *v.split_passage_ids]),
+    fk("verse_index", "pericope_id", "pericopes"),
+    fk("legacy_ids", "new_ids", "passages", _new_ids("passage")),
+    fk("legacy_ids", "new_ids", "chunks", _new_ids("chunk")),
+    fk("legacy_ids", "new_ids", "verse_units", _new_ids("verse_record")),
 )
 
 

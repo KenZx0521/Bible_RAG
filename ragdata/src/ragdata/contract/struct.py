@@ -1,4 +1,4 @@
-"""Struct-layer record contracts (design §2.13–2.15, decision D-10(a)).
+"""Struct-layer record contracts (design §2.13–2.15, §3.3, decision D-10(a)).
 
 A pericope may cross chapters; its passages are cut at chapter boundaries.
 Keys with a ``b`` suffix mark the second half of a verse split by a mid-verse
@@ -8,11 +8,13 @@ heading: the split verse appears in the integer ``verse_range`` of both sides.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Any
 
 from ragcommon import ids
 from ragdata.contract.fields import (
-    Record, boolean, hex64, id_of, integer, list_of, nested, one_of, optional, parsed,
-    require, sha256_text, spec, string, verse_order,
+    Check, ContractError, Record, boolean, hex64, id_of, integer, list_of, nested, one_of,
+    optional, parsed, require, sha256_text, spec, string, verse_order,
 )
 
 PDF = one_of("pdf_deterministic")
@@ -161,3 +163,90 @@ class Chunk(Record):
         expected = ids.chunk_id(self.start_key, self.end_key)
         require(self.chunk_id == expected, f"chunk_id must be {expected!r}")
         _check_key_range(self.start_key, self.end_key, self.verse_range)
+
+
+@dataclass(frozen=True)
+class VerseIndex(Record):
+    """Which passage owns a unit. A unit cut by a mid-verse heading lies in two passages;
+    the one holding its offset 0 (the earlier) owns it and ``split_passage_ids`` lists both."""
+
+    unit_key: str = spec(id_of("unit"))
+    passage_id: str = spec(id_of("passage"))
+    pericope_id: str = spec(id_of("pericope"))
+    split_passage_ids: tuple = spec(list_of(id_of("passage")))
+    provenance_class: str = spec(PDF)
+
+    def check(self) -> None:
+        split = self.split_passage_ids
+        require(not split or (len(split) >= 2 and split[0] == self.passage_id
+                              and len(set(split)) == len(split)),
+                "split_passage_ids lists the owning passage first and at least one more")
+        unit, owner = parsed(self.unit_key), parsed(self.passage_id)
+        require((unit.book_id, unit.chapter) == (owner.book_id, owner.chapter),
+                "the owning passage must be in the unit's chapter")
+        require((owner.chapter, owner.verse, owner.half) <= (unit.chapter, unit.verse, False),
+                "the owning passage must start at or before offset 0 of the unit")
+
+
+LEGACY_KINDS = MappingProxyType({
+    "pericope": frozenset({"passage"}),
+    "chunk": frozenset({"chunk", "passage"}),   # a passage when the new one is not chunked
+    "verse": frozenset({"verse_record"}),
+})
+LEGACY_RELATIONS = MappingProxyType({
+    "exact": lambda n: n == 1, "contained": lambda n: n == 1,
+    "split": lambda n: n >= 2, "retired": lambda n: n == 0,
+})
+
+
+def _legacy_key() -> Check:
+    """An old id: opaque, but ASCII without whitespace like every id."""
+    def check(value: Any) -> str:
+        require(isinstance(value, str) and value != "" and value.isascii()
+                and not any(ch.isspace() for ch in value),
+                f"expected an ASCII id without whitespace, got {value!r}")
+        return value
+    return check
+
+
+def _any_id() -> Check:
+    def check(value: Any) -> str:
+        try:
+            ids.validate(value)
+        except ids.IdError as exc:
+            raise ContractError(str(exc)) from None
+        return value
+    return check
+
+
+@dataclass(frozen=True)
+class LegacyId(Record):
+    """An id of the legacy build (output/, design §3.3) and the new records it maps to.
+
+    ``start_slot``–``end_slot`` is the verse range the old record covered. Old verse
+    records whose slot is omitted in the PDF are ``retired`` and map to nothing.
+    """
+
+    legacy_id: str = spec(_legacy_key())
+    kind: str = spec(one_of(*LEGACY_KINDS))
+    relation: str = spec(one_of(*LEGACY_RELATIONS))
+    new_ids: tuple = spec(list_of(_any_id()))
+    start_slot: str = spec(id_of("slot"))
+    end_slot: str = spec(id_of("slot"))
+    provenance_class: str = spec(one_of("external_legacy"))
+
+    def check(self) -> None:
+        require(LEGACY_RELATIONS[self.relation](len(self.new_ids)),
+                f"{self.relation} cannot map to {len(self.new_ids)} ids")
+        require(self.relation != "retired" or self.kind == "verse", "only verse records retire")
+        allowed = LEGACY_KINDS[self.kind]
+        require(all(parsed(i).kind in allowed for i in self.new_ids),
+                f"a legacy {self.kind} maps to {'/'.join(sorted(allowed))} ids")
+        require(len(set(self.new_ids)) == len(self.new_ids), "new_ids repeat")
+        _check_range(self.start_slot, self.end_slot)
+
+
+def _check_range(start: str, end: str) -> None:
+    s, e = parsed(start), parsed(end)
+    require((s.book_id, s.chapter) == (e.book_id, e.chapter), "range must stay in one chapter")
+    require(verse_order(start) <= verse_order(end), "range descends")

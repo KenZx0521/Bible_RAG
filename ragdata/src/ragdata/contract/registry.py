@@ -16,8 +16,9 @@ OVERLAY_REPORT = "overlay_report.json"
 DIFF_MD_REPORT = "diff_vs_bible_md.tsv"
 DIFF_CANONICAL_REPORT = "diff_vs_canonical_full.tsv"
 DIFF_SUMMARY_REPORT = "diff_summary.json"
+STRUCT_REPORT = "struct_report.json"
 LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
-                          DIFF_SUMMARY_REPORT), "struct": ()}
+                          DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,)}
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,8 @@ RECORD_TYPES = tuple(RecordType(*row) for row in (
     ("pericopes", "struct", struct.Pericope, "pericope_id"),
     ("passages", "struct", struct.Passage, "passage_id"),
     ("chunks", "struct", struct.Chunk, "chunk_id"),
+    ("verse_index", "struct", struct.VerseIndex, "unit_key"),
+    ("legacy_ids", "struct", struct.LegacyId, "legacy_id"),
 ))
 _BY_NAME = MappingProxyType({t.name: t for t in RECORD_TYPES})
 _BY_FILE = MappingProxyType({t.file_name: t for t in RECORD_TYPES})
