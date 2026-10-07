@@ -106,7 +106,7 @@ INVALID = [
     "ns:act.9.19", "ns:act.9.19@", "ns:act.9.19@-1", "ns:act.9.19@01", "ns:act.9@8",
     "ns:pc:act.9.19@8", "ns:vs:act.9.19@8", "ns:act.9.19b@8", "ns:@8", "ns:xyz.1.1@0",
     "mg:鹽海#1", "mg:#1", "mg:%E9%B9%BD", "mg:%e9%b9%bd#1", "mg:%E9%B9%BD#0", "mg:%ZZ#1",
-    "mg:%E9%B9#1",
+    "mg:%E9%B9#1", "mg:%41#1",
     "pc:1sa.9", "pc:eph.6.2-3", "pc:1sa.9.25#1", "pc:1sa.9.0", "pc:",
     "ps:1sa.10", "ps:eph.6.2-3", "ps:1sa.10.1c",
     "ck:act.9.19b", "ck:act.9.25~act.9.19b", "ck:act.9.19~mat.9.25", "ck:act.9.19~",
@@ -247,6 +247,7 @@ BAD_BUILDS = [
     lambda: ids.layer_version("text", "G" * 12),
     lambda: ids.build_id("20261332", "9" * 8),
     lambda: ids.build_id("20261102", "9c1e"),
+    lambda: ids.build_id("2026-11-02", "9c1e0a7d"),
     lambda: ids.mention_key("act.9.19", "掃/羅", 1),
     lambda: ids.mention_key("act.9.19", "", 1),
     lambda: ids.mention_key("act.9.19", "掃羅", 0),
@@ -283,8 +284,9 @@ def test_mention_id_is_sha1_prefix_of_mention_key():
 
 def test_parse_mention_key_roundtrip():
     assert ids.parse_mention_key("hd:act.9.19b#1/掃羅/3") == ("hd:act.9.19b#1", "掃羅", 3)
-    with pytest.raises(IdError):
-        ids.parse_mention_key("act.9.19/掃羅")
+    for bad in ("act.9.19/掃羅", "act.9.19/掃羅/01", "act.9.19/掃羅/x"):
+        with pytest.raises(IdError):
+            ids.parse_mention_key(bad)
 
 
 def test_relation_id_hashes_fields():

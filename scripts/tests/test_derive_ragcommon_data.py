@@ -49,6 +49,7 @@ def test_versification_counts_merged_and_omitted_slots(tmp_path):
         ([_rec("eph", 1, 2, 2)], "overlap"),
         ([_rec("eph", 3, 1, 1)], "chapter"),
         ([_rec("xyz", 1, 1, 1)], "unknown book"),
+        ([_rec("eph", 2, 1, 1, status="missing")], "unknown status"),
     ],
 )
 def test_versification_rejects_broken_canonical(tmp_path, extra, message):

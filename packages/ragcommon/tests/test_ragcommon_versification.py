@@ -155,6 +155,8 @@ def _with_max(doc, book_id, value):
         (lambda d: {**d, "omitted_slots": [{"slot_key": "mat.18.99", "variant_in_footnote_of": "mat.18.10"}]},
          "mat.18.99"),
         (lambda d: {**d, "omitted_slots": d["omitted_slots"] * 2}, "duplicate"),
+        (lambda d: {**d, "omitted_slots": [{"slot_key": "mat.18", "variant_in_footnote_of": "mat.18.10"}]},
+         "not a slot key"),
         (lambda d: {**d, "omitted_slots": [{"slot_key": "mat.18.11", "variant_in_footnote_of": "x"}]},
          "variant"),
     ],
