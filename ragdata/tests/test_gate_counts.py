@@ -88,7 +88,7 @@ def test_malformed_expectation_files_are_rejected(tmp_path, body):
 
 def test_pdf_counts_cover_exactly_the_counters_and_cite_findings():
     counts = load_counts(PDF_COUNTS_PATH)
-    for layer in ("text", "struct", "events"):
+    for layer in COUNTERS:
         assert set(counts[layer]) == set(COUNTERS[layer])
         assert all(e.g and e.definition for e in counts[layer].values())
 

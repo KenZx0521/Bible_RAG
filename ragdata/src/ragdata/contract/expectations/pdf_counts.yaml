@@ -271,3 +271,26 @@ events:
     g: [G56]
     evidence: G56（39 個觸發詞，37 種）
     definition: 所有事件 legacy_triggers 的條數
+
+# route（K4 R1 凍結版）：現行 backend 路由實際使用的詞表，凍結自 entity_dicts（D-12(a)）。
+route:
+  route_persons:
+    value: 126
+    g: [G43]
+    evidence: scripts/entity_extraction/entity_dict.py PERSON_DICT 126 個 canonical（G43 的 270 個含 PLACE 84、GROUP 60）
+    definition: category=persons 的 routing_terms 數
+  route_places:
+    value: 84
+    g: [G43]
+    evidence: PLACE_DICT 84 個 canonical
+    definition: category=places 的 routing_terms 數
+  route_events:
+    value: 55
+    g: [G56]
+    evidence: backend/utils/entity_dicts.py EVENT_KEYWORDS 55 個關鍵詞（REPORT 附表「55 個關鍵詞」）
+    definition: category=events 的 routing_terms 數
+  route_books:
+    value: 83
+    g: [G13]
+    evidence: verse_parser._ALL_NAMES 132 個書名與縮寫中，match_books_in_text 實際使用的長度 ≥2 者 83 個
+    definition: category=books 的 routing_terms 數

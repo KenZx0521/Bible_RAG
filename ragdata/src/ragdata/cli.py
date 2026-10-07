@@ -56,7 +56,7 @@ from ragdata.contract.counts import KG0_COUNTS_PATH, PDF_COUNTS_PATH, CountsErro
 from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
-from ragdata.kg import k0_build, k1_build
+from ragdata.kg import k0_build, k1_build, k4_build, k4_route
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct import build as struct_stage
 from ragdata.stages.s00_source import EXPECT_PATH
@@ -188,8 +188,15 @@ def _build_events(args: argparse.Namespace) -> stages.BuildResult:
                                  args.store, args.events_yaml, args.legacy_registry, args.counts)
 
 
+def _build_route(args: argparse.Namespace) -> stages.BuildResult:
+    live = k4_route.subprocess_probe(args.backend_python, args.backend_dir)
+    return k4_build.build_route(_need_dir(args.text, "--text"), args.store, live, args.lexicon,
+                                args.ground_truth, args.counts)
+
+
 BUILDERS: dict[str, Callable[[argparse.Namespace], stages.BuildResult]] = {
     "text": _build_text, "struct": _build_struct, "kg0": _build_kg0, "events": _build_events,
+    "route": _build_route,
 }
 
 
@@ -204,7 +211,9 @@ def _build(args: argparse.Namespace) -> int:
 def gate_inputs(args: argparse.Namespace) -> GateInputs:
     return GateInputs(pdf_dir=args.pdf_dir, registries=args.registries,
                       source_expect=args.source_expect, tokenizer=args.tokenizer,
-                      kg0_counts=args.kg0_counts, legacy_registry=args.legacy_registry)
+                      kg0_counts=args.kg0_counts, legacy_registry=args.legacy_registry,
+                      frozen_lexicon=args.lexicon, ground_truth=args.ground_truth,
+                      backend_python=args.backend_python, backend_dir=args.backend_dir)
 
 
 def _gate(args: argparse.Namespace) -> int:
@@ -239,10 +248,21 @@ def _convert(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _freeze(args: argparse.Namespace) -> int:
+    """Run ragdata.legacy.route_live freeze in the backend venv (it imports entity_dicts)."""
+    if not args.backend_python.is_file():
+        raise CliError(f"--backend-python {args.backend_python} is not a file")
+    k4_route.run_live(args.backend_python, ["freeze", "--backend-dir", str(args.backend_dir),
+                                            "--out", str(args.out)])
+    _emit({"written": str(args.out), "backend": str(args.backend_dir)}, None)
+    return EXIT_OK
+
+
 HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
            yaml.YAMLError)
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
     "build": _build, "gate": _gate, "det": _det, "expect": _expect, "convert": _convert,
+    "freeze": _freeze,
 }
 
 

@@ -55,3 +55,8 @@ events:
   anchors_widened: {value: 1, g: [G56]}
   anchor_changes: {value: 2, g: [G56]}
   legacy_triggers: {value: 4, g: [G56]}
+route:
+  route_persons: {value: 3, g: [G43]}
+  route_places: {value: 2, g: [G43]}
+  route_events: {value: 3, g: [G56]}
+  route_books: {value: 4, g: [G13]}
