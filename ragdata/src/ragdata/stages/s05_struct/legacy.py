@@ -61,15 +61,15 @@ class OldRange(NamedTuple):
         return frozenset(range(self.first, self.last + 1))
 
 
-def _decode(path: Path) -> tuple[dict[str, Any], ...]:
+def _decode(name: str, data: bytes) -> tuple[dict[str, Any], ...]:
     rows = []
-    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for n, line in enumerate(data.decode("utf-8").splitlines(), start=1):
         try:
             row = json.loads(line)
         except json.JSONDecodeError as exc:
-            raise StageError(f"{path.name}:{n}: {exc.msg}") from None
+            raise StageError(f"{name}:{n}: {exc.msg}") from None
         if not isinstance(row, dict):
-            raise StageError(f"{path.name}:{n}: not a JSON object")
+            raise StageError(f"{name}:{n}: not a JSON object")
         rows.append(row)
     return tuple(rows)
 
@@ -79,8 +79,10 @@ def load_legacy(directory: Path) -> LegacyInputs:
     missing = [name for name, path in paths.items() if not path.is_file()]
     if missing:
         raise StageError(f"legacy directory {directory} lacks {', '.join(missing)}")
-    shas = {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in paths.items()}
-    return LegacyInputs(_decode(paths["pericopes.jsonl"]), _decode(paths["chunks.jsonl"]), shas)
+    data = {name: path.read_bytes() for name, path in paths.items()}
+    return LegacyInputs(_decode("pericopes.jsonl", data["pericopes.jsonl"]),
+                        _decode("chunks.jsonl", data["chunks.jsonl"]),
+                        {name: hashlib.sha256(b).hexdigest() for name, b in data.items()})
 
 
 def _label(text: Any, where: str) -> tuple[int, int]:
