@@ -1,0 +1,113 @@
+"""Every mini layer a release names, built into one store, plus a mini GT v2 and its freeze.
+
+``build(root)`` writes text and struct (mini_build), emb (stand-in encoder), kg0, events and
+route (mini_kg registries, a fake backend) into ``root/store`` and returns them by layer.
+The mini text layer has no src layer under it, so a mini release names no src.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Mapping
+
+import fake_backend
+import fake_encoder
+import mini_build
+import mini_emb
+import mini_kg
+from ragcommon import routing
+from ragdata.kg import k0_build, k1_build, k4_build
+from ragdata.legacy import route_live
+from ragdata.stages.s06_emb.build import build_emb
+from ragdata.store import StoredLayer
+
+MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
+TOP = ("emb", "kg0", "events", "route")
+GT_GOLD = {"Q1": ["mat.18.1", "mat.18.2", "mat.18.4"], "Q2": ["eph.6.2", "eph.6.3"]}
+GT_OMITTED = {"Q1": ["mat.18.3"], "Q2": []}
+
+
+@dataclass(frozen=True)
+class MiniRelease:
+    root: Path
+    store: Path
+    layers: Mapping[str, StoredLayer]
+    gt: Path
+    freeze: Path
+
+    @property
+    def top(self) -> list[str]:
+        return [self.layers[name].version for name in TOP]
+
+
+def _built(result, layer: str) -> StoredLayer:
+    if not result.passed:
+        raise AssertionError([g.to_json() for g in result.gates if not g.passed])
+    return result.layers[layer]
+
+
+def _kg0(root: Path, store: Path, text: StoredLayer, struct: StoredLayer) -> StoredLayer:
+    versions = mini_kg.write_registries(root / "registries")
+    counts = root / "kg0_counts.yaml"
+    counts.write_bytes(mini_kg.dump(mini_kg.kg0_counts(versions, text.version, struct.version)))
+    return _built(k0_build.build_kg0(text.path, struct.path, store, root / "registries",
+                                     counts), "kg0")
+
+
+def _events(root: Path, store: Path, text: StoredLayer, struct: StoredLayer) -> StoredLayer:
+    legacy = root / "event_registry.json"
+    legacy.write_text(json.dumps(mini_kg.legacy_registry(), ensure_ascii=False), encoding="utf-8")
+    events_yaml = root / "events.yaml"
+    events_yaml.write_text(k1_build.convert(text.path, struct.path, legacy), encoding="utf-8")
+    return _built(k1_build.build_events(text.path, struct.path, store, events_yaml, legacy,
+                                        MINI_COUNTS), "events")
+
+
+def _route(root: Path, store: Path, text: StoredLayer) -> StoredLayer:
+    backend = fake_backend.write(root / "repo")
+    lexicon = root / "routing_lexicon.legacy.json"
+    lexicon.write_bytes(routing.render_lexicon(route_live.freeze(backend)))
+    gt = root / "gt_v1.json"
+    gt.write_text(json.dumps({"questions": [{"question": q} for q in mini_kg.GT_QUESTIONS]},
+                             ensure_ascii=False), encoding="utf-8")
+    return _built(k4_build.build_route(text.path, store,
+                                       lambda texts: route_live.probe(backend, texts),
+                                       lexicon, gt, MINI_COUNTS), "route")
+
+
+def write_gt(root: Path, slot_universe: str, gold=GT_GOLD, omitted=GT_OMITTED) -> tuple[Path, Path]:
+    """A GT v2 shaped file over the mini slots and the freeze record naming its sha256."""
+    questions = [{"question_id": qid, "gold_slots": gold[qid], "omitted_slots": omitted[qid]}
+                 for qid in gold]
+    data = json.dumps({"metadata": {"gt_version": "v2", "slot_universe": slot_universe},
+                       "questions": questions}, ensure_ascii=False).encode("utf-8")
+    gt, freeze = root / "ground_truth.v2.json", root / "gt_v2_freeze.json"
+    gt.write_bytes(data)
+    freeze.write_text(json.dumps({"sha256": hashlib.sha256(data).hexdigest(),
+                                  "slot_universe": slot_universe}), encoding="utf-8")
+    return gt, freeze
+
+
+def build(root: Path) -> MiniRelease:
+    root.mkdir(parents=True, exist_ok=True)
+    store = root / "store"
+    text, struct = mini_build.write_layers(store)
+    emb = _built(build_emb(struct.path, text.path, store, counts_path=MINI_COUNTS,
+                           inputs=mini_emb.inputs(root)), "emb")
+    layers = {"text": text, "struct": struct, "emb": emb,
+              "kg0": _kg0(root, store, text, struct), "events": _events(root, store, text, struct),
+              "route": _route(root, store, text)}
+    gt, freeze = write_gt(root, text.version)
+    return MiniRelease(root, store, layers, gt, freeze)
+
+
+def encoder():
+    """The stand-in encoder the mini emb layer was encoded with."""
+    return fake_encoder.make()
+
+
+PYTHON = Path(sys.executable)

@@ -20,3 +20,10 @@ FROZEN_LEXICON = REGISTRIES / "routing_lexicon.legacy.json"   # K4, frozen from 
 GROUND_TRUTH = REPO / "ground_truth.json"                     # G-ROUTE probe questions
 BACKEND = REPO / "backend"
 BACKEND_PYTHON = BACKEND / ".venv" / "bin" / "python"          # imports entity_dicts (G-ROUTE)
+# releases and what the loader writes beside the layers (design §2.22, §7.5)
+STORE = Path("/mnt/ollama-data/bible_rag_store")
+RELEASES = STORE / "releases"                                  # releases/{build_id}.json
+CONTRACTS = STORE / "contracts"                                # contracts/{build_id}/
+GOLD = REPO / "config" / "gold"
+GT_V2 = REPO / "ground_truth.v2.json"                          # G-PROJ C6
+GT_V2_FREEZE = GOLD / "gt_v2_freeze.json"

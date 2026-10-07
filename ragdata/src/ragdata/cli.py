@@ -22,6 +22,7 @@
                                  [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
     python -m ragdata gt {build,gate} ...   (GT v2; see ragdata.gt.cli)
+    python -m ragdata release VERSION... [--store DIR] [--releases DIR] [--date YYYYMMDD]
 
 DAG-external tools that write a registry or an expectation file (never run by a build):
 
@@ -70,6 +71,8 @@ from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
 from ragdata.kg import k0_build, k1_build, k4_build, k4_route
 from ragdata.gt import cli as gt_cli
 from ragdata.gt.errors import GT_ERRORS
+from ragdata.release import cli as release_cli
+from ragdata.release.assemble import ReleaseError
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct import build as struct_stage
 from ragdata.stages.s06_emb import build as emb_stage
@@ -174,6 +177,7 @@ def _parser() -> argparse.ArgumentParser:
     det.add_argument("--report", type=Path)
     _tool_parsers(sub)
     gt_cli.add_parser(sub)
+    release_cli.add_parser(sub)
     return parser
 
 
@@ -302,11 +306,16 @@ def _gt(args: argparse.Namespace) -> int:
     return EXIT_OK if report.passed else EXIT_GATE_FAILED
 
 
+def _release(args: argparse.Namespace) -> int:
+    _emit(release_cli.run(args), None)
+    return EXIT_OK
+
+
 HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
-           yaml.YAMLError, json.JSONDecodeError, *GT_ERRORS)
+           yaml.YAMLError, json.JSONDecodeError, ReleaseError, *GT_ERRORS)
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
     "build": _build, "gate": _gate, "det": _det, "expect": _expect, "convert": _convert,
-    "freeze": _freeze, "gt": _gt,
+    "freeze": _freeze, "gt": _gt, "release": _release,
 }
 
 
