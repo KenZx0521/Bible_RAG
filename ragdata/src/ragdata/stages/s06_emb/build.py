@@ -75,16 +75,18 @@ def load_inputs(struct_dir: Path, text_dir: Path) -> tuple[LayerData, LayerData,
     return text, struct, snap
 
 
-def _gates(base: Snapshot, rows: Sequence[dict], report: Mapping[str, Any],
-           fp: Mapping[str, Any], vfiles: Mapping[str, bytes], enc: Encoder,
-           counts_path: Path, inputs: EmbInputs) -> list[GateResult]:
+def _gates(base: Snapshot, rows: Sequence[dict], files: Mapping[str, Any],
+           vfiles: Mapping[str, bytes], enc: Encoder, counts_path: Path, inputs: EmbInputs
+           ) -> list[GateResult]:
+    """``files``: the report, the fingerprint and the versions the layer is built on."""
     schema, own = check_schema({RECORDS: rows}, ["emb"])
     snap = snapshot({**base.records, **own.records})
     matrix, index = vector_files.decode_vectors(vfiles)
     counts = check_counts(snap, "emb", load_counts(counts_path).get("emb", {}))
-    return [schema, counts, check_emb(snap, EmbFiles(report, matrix, index), enc.stats),
-            run_enc(snap.of("embedding_records"), matrix, fp, enc, inputs.legacy_dir,
-                    inputs.compat_sample)]
+    emb_files = EmbFiles(files["report"], matrix, index, files["depends_on"])
+    return [schema, counts, check_emb(snap, emb_files, enc.stats),
+            run_enc(snap.of("embedding_records"), matrix, files["fingerprint"], enc,
+                    inputs.legacy_dir, inputs.compat_sample)]
 
 
 def _json(doc: Mapping[str, Any]) -> bytes:
@@ -139,7 +141,9 @@ def build_emb(struct_dir: Path, text_dir: Path, store_root: Path,
         vfiles = vector_files.encode_vectors([(r["record_id"], r["text_sha"]) for r in rows],
                                              matrix)
     with clock.lap("gates"):
-        gates = _gates(snap, rows, report, fp, vfiles, enc, Path(counts_path), inputs)
+        deps = {"struct": struct.version, "text": text.version}
+        gates = _gates(snap, rows, {"report": report, "fingerprint": fp, "depends_on": deps},
+                       vfiles, enc, Path(counts_path), inputs)
     layers: dict[str, StoredLayer] = {}
     attachments: dict[str, Mapping[str, Any]] = {}
     if gates_pass(gates):

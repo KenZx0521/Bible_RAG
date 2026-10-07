@@ -8,7 +8,8 @@ holds all three layers):
   one passage record per unchunked passage, one chunk record per chunk — no
   more, no fewer; passage and chunk token counts are those S5 counted;
 - template: ``emb_report.json`` declares a known template exactly as built, and
-  every record names it; its counts are the records';
+  every record names it; the whole report is what S6 writes for these records
+  and the layers the emb layer was built on;
 - records: every record is what S6 derives from the layers (text, hashes, token
   and <unk> counts under the pinned tokenizer, point id, payload), in file order;
 - vectors (the attachment): one finite unit row per record, and the index names
@@ -41,6 +42,7 @@ class EmbFiles:
     report: Mapping[str, Any]                 # emb_report.json
     vectors: np.ndarray | None                # the attachment's matrix (None: missing)
     index: Sequence[Mapping[str, Any]]        # vector_index.jsonl rows
+    depends_on: Mapping[str, str]             # the struct and text versions it was built on
 
 
 def _set_diff(what: str, want: set[str], got: Sequence[str]) -> list[str]:
@@ -77,6 +79,14 @@ def _template(report: Mapping[str, Any], recs: Sequence[Any]) -> tuple[Template 
     out += [f"{r.record_id}: template {r.template_id}, declared {tid}"
             for r in recs if r.template_id != tid]
     return TEMPLATES[tid], out
+
+
+def _report(files: EmbFiles, template: Template, recs: Sequence[Any]) -> list[str]:
+    want = s6.emb_report(files.depends_on.get("struct"), files.depends_on.get("text"), template,
+                         [record_to_dict(r) for r in recs])
+    got = dict(files.report)
+    return [f"emb_report.json {k}: {got.get(k)!r}, expected {want.get(k)!r}"
+            for k in sorted(set(want) | set(got)) if got.get(k) != want.get(k)]
 
 
 def _field_diff(want: Mapping[str, Any], got: Mapping[str, Any]) -> list[str]:
@@ -133,10 +143,8 @@ def check_emb(snapshot: Snapshot, files: EmbFiles, stats: s6.TokenStats) -> Gate
     formula, violations = _formula(snapshot, recs)
     template, bad = _template(files.report, recs)
     violations += bad
-    if files.report.get("counts") != observed_counts:
-        violations.append(f"emb_report counts {files.report.get('counts')} are not the "
-                          f"records' {observed_counts}")
     if template is not None:
+        violations += _report(files, template, recs)
         violations += _derived(snapshot, template, stats, recs)
     vec, bad = _vectors(recs, files)
     violations += bad

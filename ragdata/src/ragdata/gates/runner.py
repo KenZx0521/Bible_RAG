@@ -178,7 +178,7 @@ def emb_context(target: LayerData, inputs: GateInputs) -> EmbContext:
                                    BATCH_SIZE)
         except StageError as exc:
             error = str(exc)
-    return EmbContext(EmbFiles(report, matrix, index), fp, encoder, error)
+    return EmbContext(EmbFiles(report, matrix, index, target.depends_on), fp, encoder, error)
 
 
 def _no_encoder(name: str, ctx: GateContext) -> GateResult | None:

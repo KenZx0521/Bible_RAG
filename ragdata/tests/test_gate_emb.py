@@ -17,6 +17,7 @@ from ragdata.stages.s06_emb.records import emb_report
 from ragdata.store import vectors as vector_files
 
 STATS = fake_encoder.make().stats
+VERSIONS = {"struct": "struct@000000000000", "text": "text@000000000000"}
 
 
 def _base():
@@ -30,13 +31,12 @@ def _gate(rows=None, report=None, matrix=None, index=None):
     rows = records.emb_records(base, template.V1C, STATS) if rows is None else rows
     _, own = check_schema({"embedding_records.jsonl": rows}, ("emb",))
     snap = snapshot({**base.records, **own.records})
-    report = emb_report("struct@000000000000", "text@000000000000", template.V1C, rows) \
-        if report is None else report
+    report = emb_report(*VERSIONS.values(), template.V1C, rows) if report is None else report
     texts = [r["text"] for r in rows]
     matrix = fake_encoder.embed(texts) if matrix is None else matrix
     stored = vector_files.encode_vectors([(r["record_id"], r["text_sha"]) for r in rows], matrix)
     decoded, decoded_index = vector_files.decode_vectors(stored)
-    files = EmbFiles(report, decoded, decoded_index if index is None else index)
+    files = EmbFiles(report, decoded, decoded_index if index is None else index, VERSIONS)
     return check_emb(snap, files, STATS)
 
 
@@ -98,12 +98,15 @@ def test_records_that_are_not_s6_of_their_layers_fail(mutate):
 
 def test_an_undeclared_or_altered_template_fails():
     rows = _rows()
-    report = emb_report("struct@000000000000", "text@000000000000", template.V1C, rows)
+    report = emb_report(*VERSIONS.values(), template.V1C, rows)
     altered = copy.deepcopy(report)
     altered["template"]["formats"]["verse"] = "{書名}{章}{n}：{經文}"
     unknown = copy.deepcopy(report)
     unknown["template"]["template_id"] = "v9"
-    for bad in (altered, unknown, {**report, "counts": {**report["counts"], "verse": 13}}):
+    others = ({**report, "counts": {**report["counts"], "verse": 13}},
+              {**report, "struct_layer": "struct@111111111111"},
+              {**report, "tokens": {**report["tokens"], "max": 1}})
+    for bad in (altered, unknown, *others):
         assert not _gate(rows=rows, report=bad).passed
 
 
@@ -124,7 +127,7 @@ def test_missing_vectors_fail_closed():
     base = _base()
     _, own = check_schema({"embedding_records.jsonl": rows}, ("emb",))
     snap = snapshot({**base.records, **own.records})
-    report = emb_report("struct@000000000000", "text@000000000000", template.V1C, rows)
-    files = EmbFiles(report, None, ())
+    report = emb_report(*VERSIONS.values(), template.V1C, rows)
+    files = EmbFiles(report, None, (), VERSIONS)
     result = check_emb(snap, files, STATS)
     assert not result.passed and any("vectors" in d for d in result.details)
