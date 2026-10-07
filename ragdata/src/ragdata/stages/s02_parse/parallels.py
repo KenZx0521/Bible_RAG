@@ -52,7 +52,8 @@ def _resolve(segments: Sequence[str], book_id: str, where: str) -> list[tuple[Ve
     return out
 
 
-def _target(ref: VerseRef) -> dict[str, str]:
+def slot_range(ref: VerseRef) -> dict[str, str]:
+    """The ``SlotRange`` of a validated reference: its first and last PDF slot."""
     slots = refs.expand_slots(ref)
     return {"book_id": ref.book_id, "start_slot": slots[0], "end_slot": slots[-1]}
 
@@ -87,7 +88,7 @@ def parse_line(heading_id: str, raw: str, book_id: str, anchor_slot: str) -> tup
         rows.append({
             "pr_id": ids.parallel_ref_id(heading_id, idx + 1), "heading_id": heading_id,
             "raw": raw, "seg_idx": idx, "kind": _kind(segment, found, book_id, anchor_slot),
-            "targets": [_target(r) for r in found], "parse_rule": parse_rule(segment),
+            "targets": [slot_range(r) for r in found], "parse_rule": parse_rule(segment),
             "provenance_class": PDF,
         })
     return tuple(rows)
