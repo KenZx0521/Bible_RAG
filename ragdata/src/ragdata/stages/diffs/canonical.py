@@ -74,9 +74,9 @@ class _Layer:
                 self.by_unit[n["container_id"]]["name"].append(n)
         for f in rows["footnotes"]:
             self.by_unit[f["unit_key"]]["footnote"].append(f)
-        self.errata: dict[str, dict[int, str]] = defaultdict(dict)
+        self.errata: dict[str, dict[int, tuple[str, str]]] = defaultdict(dict)
         for e in rows["errata_applied"]:
-            self.errata[e["container_id"]][e["offset"]] = e["pdf_char"]
+            self.errata[e["container_id"]][e["offset"]] = (e["pdf_char"], e["corrected_char"])
 
 
 def _annotations(record: Mapping[str, Any], kind: str) -> list[Mapping[str, Any]]:
@@ -124,11 +124,12 @@ def _theirs(record: Mapping[str, Any]) -> dict[str, Any]:
 
 def _serving(record: str, field: str, container: str, mine: str, theirs: str,
              layer: _Layer) -> list[FieldDiff]:
-    """Position by position: a difference is errata when the container has one there."""
+    """Position by position: a difference is errata when an errata record of the container
+    turns canonical's (PDF) character into the layer's there."""
     if len(mine) != len(theirs):
         return [FieldDiff(record, field, mine, theirs, OTHER)]
-    misglyphs = layer.errata.get(container, {})
-    return [FieldDiff(record, f"{field}[{i}]", a, b, ERRATA if misglyphs.get(i) == b else OTHER)
+    fixes = layer.errata.get(container, {})
+    return [FieldDiff(record, f"{field}[{i}]", a, b, ERRATA if fixes.get(i) == (b, a) else OTHER)
             for i, (a, b) in enumerate(zip(mine, theirs)) if a != b]
 
 

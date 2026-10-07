@@ -58,9 +58,10 @@ def _rows():
         "speakers": [{"sk_id": "sk:rut.1.12#1", "unit_key": "rut.1.12", "offset": 0,
                       "text": "〔新娘〕"}],
         "chapter_texts": [
-            {"id": "dv:rut.1", "kind": "book_division", "chapter_key": "rut.1", "text": "卷一"},
+            {"id": "dv:rut.1", "kind": "book_division", "chapter_key": "rut.1", "text": "卷一",
+             "text_pdf": "卷一"},
             {"id": "sp:rut.1", "kind": "superscription", "chapter_key": "rut.1",
-             "text": "大衛的詩"}],
+             "text": "大衛的詩", "text_pdf": "大衛的詩"}],
         "errata_applied": [{"errata_id": "er:0001", "container_id": "rut.1.8", "offset": 1,
                             "pdf_char": "詷", "corrected_char": "秕"}],
     }
@@ -205,3 +206,12 @@ def test_a_md_footnote_with_an_impossible_caller_is_other(tmp_path):
     rows = _rows()
     result = dmd.diff_md(rows, _chars(rows), tmp_path)
     assert ("rut.1", "other") in _classes(result)
+
+
+def test_a_superscription_md_prints_with_its_misglyph_is_not_lost(tmp_path):
+    (tmp_path / "路得記.md").write_text(MD.replace("## 第 1 章\n", "## 第 1 章\n\n大衛的詷\n"),
+                                        encoding="utf-8")
+    rows = _rows()
+    rows["chapter_texts"][1].update(text_pdf="大衛的詷", text="大衛的秕")
+    assert ("sp:rut.1", "converter_superscription_lost") not in _classes(
+        dmd.diff_md(rows, _chars(rows), tmp_path))

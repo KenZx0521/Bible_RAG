@@ -338,9 +338,12 @@ def _match_notes(notes: Sequence[Mapping[str, Any]], md_notes: Mapping[str, list
     found: dict[str, tuple[str, str]] = {}
     for note in notes:
         pool = left.get(note["unit_key"], [])
-        raw = _take(pool, lambda r, n=note: _status(n, r, ctx) is not None)
-        if raw is not None:
-            found[note["fn_id"]] = (_status(note, raw, ctx), raw)
+        for raw in pool:
+            status = _status(note, raw, ctx)
+            if status is not None:
+                found[note["fn_id"]] = (status, raw)
+                pool.remove(raw)
+                break
     for note in (n for n in notes if n["fn_id"] not in found):
         pool = left.get(note["unit_key"], [])
         raw = _take(pool, lambda r, n=note: n["text"].startswith(_WS.sub("", r)))
@@ -436,8 +439,8 @@ def _chapter_text_rows(rows: Rows, md: Mapping[str, Mapping[int, MdChapter]]) ->
         superscription = t["kind"] == "superscription"
         hay = _flat_chapter(chapters.get(key.chapter)) if superscription \
             else "".join(_flat_chapter(c) for c in chapters.values())
-        if t["text"] not in hay:
-            out.append(DiffRow(t["id"], t["kind"], "missing", None, t["text"], "",
+        if t["text_pdf"] not in hay:  # md prints the PDF wording, misglyphs included
+            out.append(DiffRow(t["id"], t["kind"], "missing", None, t["text_pdf"], "",
                                SUPERSCRIPTION if superscription else DIVISION))
     return out
 

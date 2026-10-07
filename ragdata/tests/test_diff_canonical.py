@@ -116,3 +116,9 @@ def test_a_missing_reference_file_is_an_error(tmp_path):
 def test_the_tsv_has_a_header_and_one_line_per_row(tmp_path):
     lines = dc.encode_tsv(_diff(tmp_path).rows).decode("utf-8").splitlines()
     assert lines[0].split("\t") == list(dc.TSV_COLUMNS) and len(lines) == 3
+
+
+def test_a_wrong_correction_at_an_errata_offset_is_other(tmp_path):
+    rows = _rows()
+    rows["verse_units"][0]["text"] = "乃像糠粃被風吹散"
+    assert [r.cls for r in _diff(tmp_path, rows=rows).rows] == ["other", "errata"]
