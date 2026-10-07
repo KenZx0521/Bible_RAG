@@ -121,12 +121,15 @@ def extra_spans(versions: dict[str, str]) -> list[dict]:
 
 
 def parallel_links() -> list[dict]:
-    def link(pr_id, to, start, end):
-        return {"link_key": f"{pr_id}|{to}", "pr_id": pr_id, "from_pericope": "pc:mat.18.1",
+    """徒9‧1－3 ends on act.9.3, which the heading 天上的光 cuts: only pc:act.9.1 holds
+    the half it reaches, so pc:act.9.3b is no parallel."""
+    def link(pr_id, source, to, start, end):
+        return {"link_key": f"{pr_id}|{to}", "pr_id": pr_id, "from_pericope": source,
                 "to_pericope": to, "target_start_slot": start, "target_end_slot": end,
                 "provenance_class": "pdf_deterministic"}
-    return [link("pr:hd:mat.18.1#1#1", "pc:act.9.1", "act.9.1", "act.9.2"),
-            link("pr:hd:mat.18.1#1#2", "pc:eph.6.1", "eph.6.1", "eph.6.4")]
+    return [link("pr:hd:mat.18.1#1#1", "pc:mat.18.1", "pc:act.9.1", "act.9.1", "act.9.2"),
+            link("pr:hd:mat.18.1#1#2", "pc:mat.18.1", "pc:eph.6.1", "eph.6.1", "eph.6.4"),
+            link("pr:hd:eph.6.1#1#1", "pc:eph.6.1", "pc:act.9.1", "act.9.1", "act.9.3")]
 
 
 def kg0_layer(versions: dict[str, str]) -> dict[str, list[dict]]:
@@ -137,7 +140,7 @@ def kg0_layer(versions: dict[str, str]) -> dict[str, list[dict]]:
 def kg0_counts(versions: dict[str, str], text: str, struct: str) -> dict:
     return {
         "schema": "ragdata.kg0_counts.v1", "registries": dict(sorted(versions.items())),
-        "inputs": {"struct": struct, "text": text}, "names": 5, "parallel_links": 2,
+        "inputs": {"struct": struct, "text": text}, "names": 5, "parallel_links": 3,
         "extra_spans": {
             "divine_rule": {"total": 7, "by_region": {"body": 7},
                             "by_surface": {"上帝": 3, "主": 2, "耶穌": 2}},

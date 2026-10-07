@@ -8,7 +8,8 @@
   merge groups as one) plus the curated underlines, with their body occurrence counts,
   no stray interpunct and a real evidence span;
 - every parallel link comes from a ``kind=parallel`` reference, leaves the pericope that
-  carries its heading and reaches a pericope its target overlaps (never a section_range);
+  carries its heading and reaches a pericope its target overlaps (never a section_range),
+  never only the far half of a verse a mid-verse heading cuts (``k0_parallel.reaches``);
 - the counts per source, region and surface, the name and link counts, the registry
   versions and the input layers equal the expectation file.
 """
@@ -20,7 +21,7 @@ from collections import Counter, defaultdict
 from typing import Any, Mapping
 
 from ragdata.gates.base import GateResult, Snapshot, violations_result
-from ragdata.kg.k0_parallel import slot_order
+from ragdata.kg.k0_parallel import reaches, slot_order
 
 NAME = "G-KG0"
 INTERPUNCT = "‧"
@@ -116,9 +117,8 @@ def _link_checks(snapshot: Snapshot) -> list[str]:
         if pr.heading_id not in (src.heading_id, src.section_heading_id):
             out.append(f"{link.link_key}: {src.pericope_id} does not carry {pr.heading_id}")
         target = (link.target_start_slot, link.target_end_slot)
-        lo, hi = (order.get(s) for s in target)
-        if target not in {(t.start_slot, t.end_slot) for t in pr.targets} or None in (lo, hi) \
-                or not (order[dst.start_slot] <= hi and lo <= order[dst.end_slot]):
+        if target not in {(t.start_slot, t.end_slot) for t in pr.targets} \
+                or not set(target) <= set(order) or not reaches(order, dst, *target):
             out.append(f"{link.link_key}: {dst.pericope_id} is not inside target {target}")
     return out
 

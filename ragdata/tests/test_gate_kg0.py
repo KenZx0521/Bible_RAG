@@ -83,6 +83,8 @@ MUTATIONS = {
         from_pericope="pc:psa.42.1"),
     "link to a pericope the target misses": lambda r: r["parallel_links"][1].update(
         to_pericope="pc:act.9.1", link_key="pr:hd:mat.18.1#1#2|pc:act.9.1"),
+    "link to the far half of a cut verse": lambda r: r["parallel_links"][2].update(
+        to_pericope="pc:act.9.3b", link_key="pr:hd:eph.6.1#1#1|pc:act.9.3b"),
 }
 
 
@@ -105,6 +107,20 @@ def test_mutations_turn_g_kg0_red(case):
 ])
 def test_counts_and_bindings_are_checked(report, expected):
     assert not _gate(report=report, expected=expected).passed
+
+
+def test_a_lone_cut_verse_may_link_both_halves():
+    files = _files()
+    ref = next(r for r in files["parallel_refs.jsonl"] if r["pr_id"] == "pr:hd:eph.6.1#1#1")
+    ref["targets"] = [{"book_id": "act", "start_slot": "act.9.3", "end_slot": "act.9.3"}]
+    links = files["parallel_links.jsonl"]
+    links[2].update(target_end_slot="act.9.3", target_start_slot="act.9.3")
+    links.append({**links[2], "to_pericope": "pc:act.9.3b",
+                  "link_key": "pr:hd:eph.6.1#1#1|pc:act.9.3b"})
+    schema, snap = check_schema(files, LAYERS)
+    assert schema.passed, schema.details
+    result = check_kg0(snap, _report(), _expected(parallel_links=4), DEPENDS)
+    assert result.passed, result.details
 
 
 def test_not_entity_spans_count_as_absent_names():

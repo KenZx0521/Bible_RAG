@@ -3,8 +3,13 @@
 Only ``kind=parallel`` segments count; a ``section_range`` (結1‧1－7‧27 under a book
 section heading) never becomes a link (§2.8, G-REF). The link runs from the
 pericope that carries the reference's heading (as its heading or as its stacked
-section heading) to every pericope its target range overlaps, by verse slot; a
-target that ends on a verse cut by a mid-verse heading overlaps both halves.
+section heading) to every pericope its target range reaches (``reaches``).
+
+A printed range carries no a/b half-verse mark, so a verse cut by a mid-verse
+heading counts as one slot in both pericopes. A range whose last verse is cut
+means the half before the cut, one whose first verse is cut the half after it:
+路9‧37－43 is 治好被污鬼附身的孩子, not also 耶穌第二次預言他的死 (pc:luk.9.43b).
+A target of the cut verse alone keeps both halves.
 """
 
 from __future__ import annotations
@@ -37,17 +42,42 @@ def _pericope_of_heading(snapshot: Snapshot) -> dict[str, str]:
     return owner
 
 
-def _at(order: Order, slot: str, where: str) -> tuple[int, int, int]:
-    if slot not in order:
-        raise StageError(f"{where}: slot {slot} is not in the text layer")
-    return order[slot]
+def _require_slots(order: Order, where: str, *slots: str) -> None:
+    for slot in slots:
+        if slot not in order:
+            raise StageError(f"{where}: slot {slot} is not in the text layer")
+
+
+def far_half(pericope: Any, start_slot: str, end_slot: str) -> bool:
+    """The range of several verses touches ``pericope`` only past a mid-verse cut: its
+    last verse is where the pericope starts mid-verse, or its first verse is where the
+    pericope ends mid-verse."""
+    if start_slot == end_slot:
+        return False
+    return (end_slot == pericope.start_slot and pericope.start.offset > 0) or \
+        (start_slot == pericope.end_slot and pericope.end.offset is not None)
+
+
+def reaches(order: Order, pericope: Any, start_slot: str, end_slot: str) -> bool:
+    """The target range ``start_slot``..``end_slot`` overlaps ``pericope`` by verse slot,
+    beyond the far half of a cut verse."""
+    overlaps = order[pericope.start_slot] <= order[end_slot] and \
+        order[start_slot] <= order[pericope.end_slot]
+    return overlaps and not far_half(pericope, start_slot, end_slot)
+
+
+def _link(pr: Any, source: str, target: Any, to: str) -> dict[str, Any]:
+    return {"link_key": f"{pr.pr_id}|{to}", "pr_id": pr.pr_id, "from_pericope": source,
+            "to_pericope": to, "target_start_slot": target.start_slot,
+            "target_end_slot": target.end_slot, "provenance_class": "pdf_deterministic"}
 
 
 def parallel_links(snapshot: Snapshot) -> list[dict[str, Any]]:
     order = slot_order(snapshot)
     owner = _pericope_of_heading(snapshot)
-    spans = [(_at(order, pc.start_slot, pc.pericope_id), _at(order, pc.end_slot, pc.pericope_id),
-              pc.pericope_id) for pc in snapshot.of("pericopes")]
+    pericopes = snapshot.of("pericopes")
+    for pc in pericopes:
+        _require_slots(order, pc.pericope_id, pc.start_slot, pc.end_slot)
     rows, seen = [], set()
     for pr in snapshot.of("parallel_refs"):
         if pr.kind != "parallel":
@@ -56,13 +86,11 @@ def parallel_links(snapshot: Snapshot) -> list[dict[str, Any]]:
         if source is None:
             raise StageError(f"{pr.pr_id}: no pericope carries heading {pr.heading_id}")
         for target in pr.targets:
-            lo, hi = _at(order, target.start_slot, pr.pr_id), _at(order, target.end_slot, pr.pr_id)
-            for start, end, pericope in spans:
-                key = f"{pr.pr_id}|{pericope}"
-                if start <= hi and lo <= end and pericope != source and key not in seen:
+            _require_slots(order, pr.pr_id, target.start_slot, target.end_slot)
+            for pc in pericopes:
+                key = f"{pr.pr_id}|{pc.pericope_id}"
+                if pc.pericope_id != source and key not in seen and \
+                        reaches(order, pc, target.start_slot, target.end_slot):
                     seen.add(key)
-                    rows.append({"link_key": key, "pr_id": pr.pr_id, "from_pericope": source,
-                                 "to_pericope": pericope, "target_start_slot": target.start_slot,
-                                 "target_end_slot": target.end_slot,
-                                 "provenance_class": "pdf_deterministic"})
+                    rows.append(_link(pr, source, target, pc.pericope_id))
     return rows

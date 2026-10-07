@@ -21,8 +21,8 @@ text:
   headings_mid: {value: 1, g: [G58]}
   headings_dash_sub: {value: 1, g: [G58]}
   headings_stacked: {value: 1, g: [G58]}
-  parallel_lines: {value: 2, g: [G58]}
-  parallel_segments: {value: 3, g: [G58]}
+  parallel_lines: {value: 3, g: [G58]}
+  parallel_segments: {value: 4, g: [G58]}
   section_ranges: {value: 1, g: [G58]}
   footnotes: {value: 4, g: [G58]}
   footnotes_alt_rendering: {value: 1, g: [G58]}

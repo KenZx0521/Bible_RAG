@@ -191,6 +191,23 @@ def test_parallel_links_skip_section_ranges(regs):
     assert section["pr_id"] not in {link["pr_id"] for link in links}
 
 
+@pytest.mark.parametrize("start, end, reached", [
+    ("act.9.1", "act.9.3", {"pc:act.9.1"}),
+    ("act.9.3", "act.10.1", {"pc:act.9.3b"}),
+    ("act.9.3", "act.9.3", {"pc:act.9.1", "pc:act.9.3b"}),
+    ("act.9.2", "act.10.1", {"pc:act.9.1", "pc:act.9.3b"}),
+], ids=["ends on the cut", "starts on the cut", "only the cut verse", "spans the cut"])
+def test_a_range_reaches_a_cut_verse_only_on_its_near_half(regs, start, end, reached):
+    """The printed reference has no a/b half-verse mark: a range whose first or last
+    verse is cut reaches only the half inside it; a lone cut verse reaches both."""
+    loaded, _ = regs()
+    text = mini_build.text_layer()
+    ref = next(r for r in text["parallel_refs"] if r["pr_id"] == "pr:hd:eph.6.1#1#1")
+    ref["targets"] = [{"book_id": "act", "start_slot": start, "end_slot": end}]
+    links = k0.kg0_rows(_snapshot(text), loaded).rows["parallel_links"]
+    assert {link["to_pericope"] for link in links if link["pr_id"] == ref["pr_id"]} == reached
+
+
 
 def test_a_name_opening_a_book_title_is_a_citation(regs):
     rules = regs()[0].normalization.lexicon
