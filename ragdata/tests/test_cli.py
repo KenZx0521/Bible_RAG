@@ -41,7 +41,9 @@ def test_gate_prints_a_passing_report(tmp_path, capsys, only_built_gates_require
     assert json.loads(out)["pass"] is True
 
 
-def test_gate_exits_1_while_a_required_gate_is_not_built(tmp_path, capsys):
+def test_gate_exits_1_while_a_required_gate_is_not_built(tmp_path, capsys, monkeypatch):
+    monkeypatch.setattr(runner, "REQUIRED_GATES", {"text": ("G-SCHEMA",),
+                                                   "struct": ("G-SCHEMA", "G-FUTURE")})
     text, struct = mini_build.write_layers(tmp_path)
     code, out, _ = _run(capsys, "gate", "struct", struct.path, "--dep", text.path,
                         "--counts", MINI_COUNTS)

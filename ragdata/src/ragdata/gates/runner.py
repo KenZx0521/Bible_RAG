@@ -38,9 +38,12 @@ from ragdata.gates.counts import check_counts
 from ragdata.gates.ref import check_ref
 from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
+from ragdata.gates.struct import check_struct
 from ragdata.gates.text import check_text
+from ragdata.stages.errors import StageError
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.stages.s04_overlay.normalization import load_normalization
+from ragdata.stages.s05_struct.tokens import TokenCounter, pinned_counter
 from ragdata.store import DEPENDS_ON, MANIFEST, LayerData, read_layer, verify_layer
 
 REPORT_SCHEMA = "ragdata.gate_report.v1"
@@ -61,6 +64,8 @@ class GateInputs:
     registries: Path = paths.REGISTRIES           # G-TEXT: normalization.yaml (ASCII allow-list)
     source_expect: Path = EXPECT_PATH             # G-CONSERVE: the corpus totals
     versification: Versification | None = None    # G-REF: None means ragcommon's data
+    tokenizer: Path | None = None                 # G-STRUCT: tokenizer.json (None: the HF cache)
+    token_counter: TokenCounter | None = None     # G-STRUCT: a stand-in counter (tests only)
 
 
 @dataclass(frozen=True)
@@ -106,6 +111,16 @@ def _xcheck_gate(ctx: GateContext) -> GateResult:
     return sourced.xcheck_from_pdfs(ctx.snapshot, Path(ctx.inputs.pdf_dir), stored)
 
 
+def _struct_gate(ctx: GateContext) -> GateResult:
+    counter = ctx.inputs.token_counter
+    if counter is None:
+        try:
+            counter = pinned_counter(ctx.inputs.tokenizer)
+        except StageError as exc:
+            return missing_input("G-STRUCT", f"the pinned BGE-M3 tokenizer ({exc})")
+    return check_struct(ctx.snapshot, counter)
+
+
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-SCHEMA": lambda ctx: ctx.schema,
     "G-COUNT": _count_gate,
@@ -115,6 +130,7 @@ GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
                                    ctx.inputs.versification or default_versification()),
     "G-CONSERVE": _conserve_gate,
     "G-XCHECK": _xcheck_gate,
+    "G-STRUCT": _struct_gate,
 })
 SOURCED = frozenset({"G-CONSERVE", "G-XCHECK"})  # gates that re-read the sources
 

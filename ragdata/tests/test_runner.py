@@ -12,11 +12,13 @@ from ragdata import store
 from ragdata.gates import check_det
 from ragdata.gates import runner
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
+from ragdata.stages.s05_struct.tokens import TokenCounter
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
 BUILT = {"G-SCHEMA", "G-COUNT", "G-REFINT"}
 RECORD = {"G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-REF"}
-MINI = GateInputs(versification=mini_build.versification())
+MINI = GateInputs(versification=mini_build.versification(),
+                  token_counter=TokenCounter(mini_build.count_tokens, {}))
 
 
 def _verdicts(report) -> dict[str, bool]:
@@ -33,13 +35,29 @@ def test_every_gate_design_section_8_requires_is_in_the_report(tmp_path):
     assert "G-STRUCT" in runner.REQUIRED_GATES["struct"]
 
 
-def test_a_gate_not_built_yet_fails_closed(tmp_path):
+def test_a_gate_not_built_yet_fails_closed(tmp_path, monkeypatch):
+    required = (*runner.REQUIRED_GATES["struct"], "G-FUTURE")
+    monkeypatch.setattr(runner, "REQUIRED_GATES", {**runner.REQUIRED_GATES, "struct": required})
     text, struct = mini_build.write_layers(tmp_path)
-    report = gate_layer(struct.path, "struct", [text.path], MINI_COUNTS)
-    unbuilt = [g for g in report.gates if g.name not in BUILT]
-    assert [g.name for g in unbuilt] == ["G-STRUCT"] and not report.passed
-    assert all(g.hard and not g.passed and g.observed == "not implemented" for g in unbuilt)
-    assert all(_verdicts(report)[name] for name in BUILT)
+    report = gate_layer(struct.path, "struct", [text.path], MINI_COUNTS, inputs=MINI)
+    unbuilt = [g for g in report.gates if g.observed == "not implemented"]
+    assert [g.name for g in unbuilt] == ["G-FUTURE"] and not report.passed
+    assert all(g.hard and not g.passed for g in unbuilt)
+    assert all(_verdicts(report)[name] for name in runner.implemented_gates("struct"))
+
+
+def test_the_struct_layer_passes_every_required_gate(tmp_path):
+    text, struct = mini_build.write_layers(tmp_path)
+    report = gate_layer(struct.path, "struct", [text.path], MINI_COUNTS, inputs=MINI)
+    assert report.passed, report.to_json()
+
+
+def test_g_struct_without_its_tokenizer_fails_closed(tmp_path):
+    text, struct = mini_build.write_layers(tmp_path)
+    report = gate_layer(struct.path, "struct", [text.path], MINI_COUNTS, gates=["G-STRUCT"],
+                        inputs=GateInputs(tokenizer=tmp_path / "tokenizer.json"))
+    (gate,) = report.gates
+    assert (gate.passed, gate.observed) == (False, "missing input")
 
 
 def test_a_gate_whose_input_is_not_given_fails_closed(tmp_path):
@@ -117,7 +135,7 @@ def test_identical_struct_bytes_on_a_new_text_version_get_their_own_version(tmp_
     text_b, struct_b = mini_build.write_layers(tmp_path, text=_other_text_rows())
     assert struct_a.version != struct_b.version
     report = gate_layer(struct_b.path, "struct", [text_b.path], MINI_COUNTS,
-                        gates=runner.implemented_gates("struct"))
+                        gates=runner.implemented_gates("struct"), inputs=MINI)
     assert report.depends_on == {"text": text_b.version}
     assert all(_verdicts(report).values())
 
