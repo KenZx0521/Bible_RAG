@@ -58,7 +58,7 @@ def _keys(placed: Placed) -> tuple[str, str]:
 def _drafts(placed: Sequence[Placed], where: str) -> list[_Draft]:
     drafts: list[_Draft] = []
     counts: dict[str, int] = {}
-    last_kind = None
+    last_kind = None  # kind of the last heading or speaker; reference lines do not count
     for item in placed:
         kind = item.line.kind
         if kind == HEADING:
@@ -73,7 +73,8 @@ def _drafts(placed: Sequence[Placed], where: str) -> list[_Draft]:
                 raise ParseError(f"{where} p{item.line.page}: {drafts[-1].heading_id} has a "
                                  f"second reference line {item.line.text!r}")
             drafts[-1] = replace(drafts[-1], reference=item.line.text)
-        last_kind = kind if kind != PARALLEL else last_kind
+            continue
+        last_kind = kind
     return drafts
 
 

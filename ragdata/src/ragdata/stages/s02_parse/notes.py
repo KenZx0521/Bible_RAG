@@ -59,7 +59,7 @@ def lemma_anchor(text: str, verse: str) -> dict[str, int] | None:
     return None if end < 0 else _span(start, end + len(tail))
 
 
-def _citation(text: str, match: re.Match[str], book_id: str,
+def _citation(match: re.Match[str], book_id: str,
               found: refs.FindResult) -> tuple[refs.VerseRef, ...]:
     if any(r.end == match.end() for r in found.rejected):
         raise refs.RefParseError("names no verse", match.group())
@@ -75,7 +75,7 @@ def note_refs(text: str, book_id: str, where: str) -> list[dict[str, str]]:
     out: list[dict[str, str]] = []
     for match in CHAPTER_VERSE.finditer(text):
         try:
-            cited = _citation(text, match, book_id, found)
+            cited = _citation(match, book_id, found)
         except refs.RefParseError as exc:
             raise ParseError(f"{where}: citation {match.group()!r} in {text!r} does not "
                              f"resolve: {exc.reason}") from None
