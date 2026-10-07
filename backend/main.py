@@ -20,6 +20,12 @@ backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
+# Add packages/ for ragcommon (the image also sets PYTHONPATH; a local
+# `uv run uvicorn main:app` from backend/ does not)
+packages_dir = project_root / "packages"
+if str(packages_dir) not in sys.path:
+    sys.path.insert(0, str(packages_dir))
+
 from database import postgres, qdrant_db, neo4j_db
 from utils import embedder, reranker
 from utils.llm import get_llm_client
