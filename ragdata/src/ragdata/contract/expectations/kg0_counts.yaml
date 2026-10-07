@@ -8,7 +8,7 @@ inputs:
   struct: struct@47a0f26501f3
   text: text@ddb48c599861
 names: 2926
-parallel_links: 1081
+parallel_links: 1072
 extra_spans:
   divine_rule:
     total: 15275
