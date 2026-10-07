@@ -1,9 +1,13 @@
-"""S14: G-PROJ turns red when the projection drifts from the release in any checked way."""
+"""S14: G-PROJ turns red when the projection drifts from the release in any checked way.
+
+Each case names the reason its gate must give, so one check of a gate cannot hide another.
+"""
 
 from __future__ import annotations
 
 import json
 import os
+import uuid
 
 import numpy as np
 import pytest
@@ -76,49 +80,157 @@ def _unsourced_term(doc):
     doc["persons"].append({"name": "無名", "aliases": ["無名"]})
 
 
+def _reformat_contract(name):
+    """Other bytes, the same JSON: only the per-file sha256 can tell."""
+    def mutate(loaded):
+        path = loaded.targets.contracts_dir / name
+        raw = path.read_bytes()
+        os.chmod(path, 0o644)
+        path.write_text(json.dumps(json.loads(raw), ensure_ascii=False, indent=1),
+                        encoding="utf-8")
+        assert path.read_bytes() != raw
+    return mutate
+
+
+def _drop_points(passage_id):
+    """The passage and chunk points of ``passage_id`` (PG and the contracts untouched)."""
+    def mutate(loaded):
+        name = loaded.targets.collection
+        gone = [p.id for p in loaded.qdrant.points(name)
+                if p.payload["kind"] in ("passage", "chunk")
+                and p.payload.get("passage_id") == passage_id]
+        assert gone
+        loaded.qdrant._client.delete(name, points_selector=models.PointIdsList(points=gone),
+                                     wait=True)
+    return mutate
+
+
+def _rekey_point(record_id):
+    """The record's point stored again under a random id instead of uuid5(record_id)."""
+    def mutate(loaded):
+        name = loaded.targets.collection
+        point = next(p for p in loaded.qdrant.points(name) if p.payload["record_id"] == record_id)
+        loaded.qdrant._client.delete(name, points_selector=models.PointIdsList(
+            points=[point.id]), wait=True)
+        loaded.qdrant.upsert(name, [Point(str(uuid.uuid4()), point.vector, point.payload)])
+    return mutate
+
+
+def _drop_unique(loaded):
+    constraints = loaded.pg.constraint_sets[loaded.targets.schema]
+    constraints.discard(("embedding_records", "uq_embedding_records_point_id", "u"))
+
+
+def _builds_row(**changes):
+    return lambda loaded: loaded.pg.builds[loaded.release.build_id].update(changes)
+
+
+OTHER = "b20000101_00000000"
 MUTATIONS = {
     "build_info names another build": (
-        lambda l: _rows(l, "build_info")[0].update(build_id="b20000101_00000000"), "G-PROJ.C1"),
+        lambda l: _rows(l, "build_info")[0].update(build_id=OTHER), "G-PROJ.C1",
+        f"build_info holds ['{OTHER}']"),
+    "rag_meta.builds names another release file": (
+        _builds_row(manifest_sha="0" * 64), "G-PROJ.C1", "rag_meta.builds manifest_sha"),
+    "rag_meta.builds names another collection": (
+        _builds_row(qdrant_collection="passages__other"), "G-PROJ.C1",
+        "rag_meta.builds qdrant_collection"),
     "a point names another build": (
-        lambda l: _set_payload(l, "vs:eph.6.4", build_id="b20000101_00000000"), "G-PROJ.C1"),
+        lambda l: _set_payload(l, "vs:eph.6.4", build_id=OTHER), "G-PROJ.C1",
+        "payload build_id of vs:eph.6.4"),
     "the contract manifest names another build": (lambda l: _rewrite_contract(
-        l, "manifest.json", lambda d: d.update(build_id="b20000101_00000000")), "G-PROJ.C1"),
-    "a verse is missing in PG": (_drop_row("verse_units", "unit_key", "eph.6.4"), "G-PROJ.C2"),
+        l, "manifest.json", lambda d: d.update(build_id=OTHER)), "G-PROJ.C1",
+        f"contracts manifest.json names '{OTHER}'"),
+    "a verse is missing in PG": (_drop_row("verse_units", "unit_key", "eph.6.4"), "G-PROJ.C2",
+                                 "verse_units: missing eph.6.4"),
     "an event anchor is missing in PG": (
-        _drop_row("event_anchors", "passage_id", "ps:act.9.3b"), "G-PROJ.C2"),
+        _drop_row("event_anchors", "passage_id", "ps:act.9.3b"), "G-PROJ.C2",
+        "event_anchors: missing ev0003|1"),
     "a point is missing": (lambda l: l.qdrant._client.delete(
         l.targets.collection, points_selector=models.PointIdsList(points=[
-            ids.point_id("vs:eph.6.4")]), wait=True), "G-PROJ.C2"),
+            ids.point_id("vs:eph.6.4")]), wait=True), "G-PROJ.C2", "qdrant: missing vs:eph.6.4"),
+    "a point is stored under a random id": (
+        _rekey_point("vs:eph.6.4"), "G-PROJ.C2", "is not uuid5 of vs:eph.6.4"),
     "a PG field differs": (_edit_row("headings", "heading_id", "hd:psa.42.1#1", text="改了"),
-                           "G-PROJ.C3"),
+                           "G-PROJ.C3", "headings hd:psa.42.1#1: differs in ['text']"),
     "a jsonb field differs": (_edit_row("passages", "passage_id", "ps:eph.6.1", unit_refs=[]),
-                              "G-PROJ.C3"),
+                              "G-PROJ.C3", "passages ps:eph.6.1: differs in ['unit_refs']"),
     "a payload field differs": (lambda l: _set_payload(l, "vs:act.9.3", title="(無標題)"),
-                                "G-PROJ.C3"),
+                                "G-PROJ.C3", "qdrant payload vs:act.9.3: differs in ['title']"),
     "PG text_sha differs from the payload": (
-        _edit_row("embedding_records", "record_id", "vs:eph.6.4", text_sha="0" * 64), "G-PROJ.C3"),
+        _edit_row("embedding_records", "record_id", "vs:eph.6.4", text_sha="0" * 64), "G-PROJ.C4",
+        "vs:eph.6.4: payload text_sha is not PG's"),
     "a point vector is another record's": (
         lambda l: _set_vector(l, "vs:eph.6.4", fake_encoder.vector("別的")),
-        "G-PROJ.C4"),
+        "G-PROJ.C4", "vs:eph.6.4: point vector is not the layer's"),
     "an anchor moves to a slot that does not exist": (
-        lambda l: _rewrite_contract(l, "event_registry.json", _move_anchor), "G-PROJ.C5"),
+        lambda l: _rewrite_contract(l, "event_registry.json", _move_anchor), "G-PROJ.C5",
+        "anchor ps:psa.42.1: slot psa.42.9 not in PG"),
+    "an anchor's passage is gone from PG": (
+        _drop_row("passages", "passage_id", "ps:act.9.3b"), "G-PROJ.C5",
+        "anchor ps:act.9.3b: passage not in PG"),
+    "an anchor's passage is gone from Qdrant": (
+        _drop_points("ps:act.9.1"), "G-PROJ.C5", "anchor ps:act.9.1: passage not in Qdrant"),
     "a routing term without provenance": (
-        lambda l: _rewrite_contract(l, "routing_lexicon.json", _unsourced_term), "G-PROJ.C5"),
+        lambda l: _rewrite_contract(l, "routing_lexicon.json", _unsourced_term), "G-PROJ.C5",
+        "persons[3]: no provenance_class/source"),
+    "a contract file's bytes change, not its content": (
+        _reformat_contract("books.json"), "G-PROJ.C5", "books.json: sha256 is not the release's"),
+    "the contract manifest lists another sha": (lambda l: _rewrite_contract(
+        l, "manifest.json", lambda d: d["files"].update({"books.json": "0" * 64})), "G-PROJ.C5",
+        "manifest.json files are not the release's contract shas"),
     "a contract file goes missing": (
-        lambda l: (l.targets.contracts_dir / "books.json").unlink(), "G-PROJ.C5"),
+        lambda l: (l.targets.contracts_dir / "books.json").unlink(), "G-PROJ.C5",
+        "contract files ['books.json'] differ from the release"),
     "a gold slot is no longer present": (
-        _edit_row("verse_slots", "slot_key", "mat.18.4", status="omitted_variant"), "G-PROJ.C6"),
+        _edit_row("verse_slots", "slot_key", "mat.18.4", status="omitted_variant"), "G-PROJ.C6",
+        "Q1: gold slot mat.18.4 is omitted_variant"),
     "a foreign key is missing": (
         lambda l: l.pg.constraint_sets[l.targets.schema].discard(
-            ("verse_slots", "fk_verse_slots_unit_key", "f")), "G-SCHEMA.pg"),
+            ("verse_slots", "fk_verse_slots_unit_key", "f")), "G-SCHEMA.pg",
+        "verse_slots: no constraint fk_verse_slots_unit_key (f)"),
+    "a unique constraint is missing": (
+        _drop_unique, "G-SCHEMA.pg",
+        "embedding_records: no constraint uq_embedding_records_point_id (u)"),
 }
 
 
 @pytest.mark.parametrize("case", sorted(MUTATIONS))
 def test_a_drifted_projection_turns_its_check_red(loaded, case):
-    mutate, gate = MUTATIONS[case]
+    mutate, gate, reason = MUTATIONS[case]
     mutate(loaded)
-    assert gate in mini_loaded.red(loaded.verify())
+    found = mini_loaded.red_details(loaded.verify())
+    assert mini_loaded.turned_red(found, gate, reason), found
+
+
+def _drift(vector, cos):
+    """A unit vector at cosine ``cos`` from ``vector``."""
+    v = np.asarray(vector, dtype=np.float64)
+    v = v / np.linalg.norm(v)
+    other = np.roll(v, 1) - np.dot(np.roll(v, 1), v) * v
+    other /= np.linalg.norm(other)
+    return v * cos + other * np.sqrt(1 - cos * cos)
+
+
+def test_a_point_vector_a_hair_off_the_layer_turns_c4_red(loaded):
+    """cos 0.9999 is below 0.99999: both the stored-row and the re-encode comparisons see it."""
+    point = next(p for p in loaded.qdrant.points(loaded.targets.collection)
+                 if p.payload["record_id"] == "vs:eph.6.4")
+    _set_vector(loaded, "vs:eph.6.4", _drift(point.vector, 0.9999))
+    found = mini_loaded.red_details(loaded.verify(sample=100))
+    assert mini_loaded.turned_red(found, "G-PROJ.C4", "vs:eph.6.4: point vector is not the layer's")
+    assert mini_loaded.turned_red(found, "G-PROJ.C4", "re-encoded vs:eph.6.4: cos 0.9999")
+
+
+def test_lexicon_terms_without_provenance_or_source_are_named():
+    doc = {"persons": [{"term": "甲", "provenance_class": "pdf_text", "source": "x"},
+                       {"term": "乙", "source": "x"}],
+           "places": [{"term": "丙", "provenance_class": "pdf_text"}], "books": ["丁"]}
+    found = verifier._lexicon_violations(doc)
+    assert [v.split(":")[0] for v in found] == [
+        "routing_lexicon.json persons[1]", "routing_lexicon.json places[0]",
+        "routing_lexicon.json books[0]"]
+    assert verifier._lexicon_violations({"persons": doc["persons"][:1]}) == []
 
 
 def test_the_text_sha_check_compares_payload_with_pg(loaded):

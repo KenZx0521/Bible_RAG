@@ -2,7 +2,8 @@
 
 Every class is injected where it can happen: into a layer (gated by the runner with the
 gates that read only records) and/or into the loaded projection (gated by S14). Each
-injection must turn at least the named hard gate red.
+injection must turn at least the named hard gate red, for the reason its detail names (so
+another check of the same gate cannot stand in for the one meant).
 """
 
 from __future__ import annotations
@@ -25,8 +26,8 @@ MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
 COUNTER = TokenCounter(mini_build.count_tokens, {})
 
 
-def _red(report) -> set[str]:
-    return {g.name for g in report.gates if g.hard and not g.passed}
+def _red(report) -> dict[str, tuple[str, ...]]:
+    return mini_loaded.red_details(report)
 
 
 def _inputs(loaded) -> runner.GateInputs:
@@ -94,7 +95,7 @@ def _term_without_provenance(rows):
 
 def _projected(loaded, mutate):
     mutate(loaded)
-    return mini_loaded.red(loaded.verify())
+    return mini_loaded.red_details(loaded.verify())
 
 
 def _pg(table, field, key, drop=False, **changes):
@@ -134,38 +135,47 @@ def _lexicon_term(doc):
 OTHER_BUILD = "b20000101_00000000"
 CLASSES = {
     "delete a verse": [
-        (lambda l: _text(l, _drop("verse_units", "unit_key", "eph.6.4"), "struct"), "G-STRUCT"),
+        (lambda l: _text(l, _drop("verse_units", "unit_key", "eph.6.4"), "struct"), "G-STRUCT",
+         "ps:eph.6.1: refers to a unit the text layer does not hold"),
         (lambda l: _projected(l, _pg("verse_units", "unit_key", "eph.6.4", drop=True)),
-         "G-PROJ.C2")],
+         "G-PROJ.C2", "verse_units: missing eph.6.4")],
     "delete a heading": [
-        (lambda l: _text(l, _drop("headings", "heading_id", "hd:psa.42.1#1")), "G-COUNT"),
+        (lambda l: _text(l, _drop("headings", "heading_id", "hd:psa.42.1#1")), "G-COUNT",
+         "headings: observed 5, expected 6"),
         (lambda l: _projected(l, _pg("headings", "heading_id", "hd:psa.42.1#1", drop=True)),
-         "G-PROJ.C2")],
+         "G-PROJ.C2", "headings: missing hd:psa.42.1#1")],
     "delete an underline": [
-        (lambda l: _text(l, _drop("name_spans", "span_id", "ns:act.10.1@1")), "G-COUNT")],
+        (lambda l: _text(l, _drop("name_spans", "span_id", "ns:act.10.1@1")), "G-COUNT",
+         "name_spans_body: observed 7, expected 8")],
     "mark a verse fragment as a heading (style mismatch)": [
-        (lambda l: _text(l, _fragment_heading, "struct"), "G-STRUCT")],
+        (lambda l: _text(l, _fragment_heading, "struct"), "G-STRUCT",
+         "hd:eph.6.4#1: style class body is not a heading style")],
     "change a payload field": [
-        (lambda l: _projected(l, _payload("vs:act.10.1", chapter_num=11)), "G-PROJ.C3")],
+        (lambda l: _projected(l, _payload("vs:act.10.1", chapter_num=11)), "G-PROJ.C3",
+         "qdrant payload vs:act.10.1: differs in ['chapter_num']")],
     "change a build_id": [
-        (lambda l: _projected(l, _payload("vs:act.10.1", build_id=OTHER_BUILD)), "G-PROJ.C1"),
+        (lambda l: _projected(l, _payload("vs:act.10.1", build_id=OTHER_BUILD)), "G-PROJ.C1",
+         "payload build_id of vs:act.10.1 is not"),
         (lambda l: _projected(l, _pg("build_info", "build_id", l.release.build_id,
-                                     build_id=OTHER_BUILD)), "G-PROJ.C1")],
+                                     build_id=OTHER_BUILD)), "G-PROJ.C1",
+         f"build_info holds ['{OTHER_BUILD}']")],
     "treat a section_range as parallel": [
         (lambda l: _text(l, _set("parallel_refs", "pr_id", "pr:hd:act.9.1#1#1", kind="parallel")),
-         "G-COUNT"),
+         "G-COUNT", "section_ranges: observed 0, expected 1"),
         (lambda l: _projected(l, _pg("parallel_refs", "pr_id", "pr:hd:act.9.1#1#1",
-                                     kind="parallel")), "G-PROJ.C3")],
+                                     kind="parallel")), "G-PROJ.C3",
+         "parallel_refs pr:hd:act.9.1#1#1: differs in ['kind']")],
     "move an event anchor to a slot that does not exist": [
         (lambda l: _layer(l, "events", "events.jsonl", _anchor_off_the_page,
-                          ("G-SCHEMA", "G-REFINT", "G-EVENT")), "G-REFINT"),
+                          ("G-SCHEMA", "G-REFINT", "G-EVENT")), "G-REFINT",
+         "anchor slots psa.42.9 not found in verse_slots"),
         (lambda l: _projected(l, _contract("event_registry.json", _registry_anchor)),
-         "G-PROJ.C5")],
+         "G-PROJ.C5", "anchor ps:psa.42.1: slot psa.42.9 not in PG")],
     "add a routing term without provenance": [
         (lambda l: _layer(l, "route", "routing_terms.jsonl", _term_without_provenance,
-                          ("G-SCHEMA", "G-PROV")), "G-PROV"),
+                          ("G-SCHEMA", "G-PROV")), "G-PROV", "no provenance_class"),
         (lambda l: _projected(l, _contract("routing_lexicon.json", _lexicon_term)),
-         "G-PROJ.C5")],
+         "G-PROJ.C5", "persons[3]: no provenance_class/source")],
 }
 
 
@@ -182,7 +192,8 @@ def mini(tmp_path_factory):
                                   for i in range(len(levels))], ids=lambda c: f"{c[0]}#{c[1]}")
 def test_each_mutation_turns_a_hard_gate_red(tmp_path, mini, case):
     name, i = case
-    inject, gate = CLASSES[name][i]
+    inject, gate, reason = CLASSES[name][i]
     loaded = mini_loaded.load(tmp_path, mini)
     assert mini_loaded.red(loaded.verify()) == set()
-    assert gate in inject(loaded)
+    found = inject(loaded)
+    assert mini_loaded.turned_red(found, gate, reason), found

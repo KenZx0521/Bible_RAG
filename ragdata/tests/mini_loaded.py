@@ -56,3 +56,13 @@ def load(root: Path, mini: mini_release.MiniRelease | None = None) -> Loaded:
 
 def red(report) -> set[str]:
     return {g.name for g in report.gates if g.hard and not g.passed}
+
+
+def red_details(report) -> dict[str, tuple[str, ...]]:
+    """The details of every red hard gate, by gate."""
+    return {g.name: tuple(g.details) for g in report.gates if g.hard and not g.passed}
+
+
+def turned_red(found: dict[str, tuple[str, ...]], gate: str, detail: str) -> bool:
+    """``gate`` is red for the reason ``detail`` names, not merely red."""
+    return any(detail in d for d in found.get(gate, ()))
