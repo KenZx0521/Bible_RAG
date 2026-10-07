@@ -95,9 +95,14 @@ def unit_row(book_id: str, verse: Verse, pdf_sha256: str, ord_: int) -> dict[str
     }
 
 
+def unit_keys(book_id: str, stream: BookStream) -> dict[tuple[int, str], str]:
+    """``(chapter, label)`` of every printed verse number -> its unit key."""
+    return {(v.chapter, v.label): unit_key(book_id, v) for v in stream.verses}
+
+
 def number_footnotes(book_id: str, stream: BookStream) -> tuple[tuple[str, Footnote], ...]:
     """Give each footnote its id: the unit its caller names, numbered in page order."""
-    keys = {(v.chapter, v.label): unit_key(book_id, v) for v in stream.verses}
+    keys = unit_keys(book_id, stream)
     counts: dict[str, int] = defaultdict(int)
     out = []
     for note in stream.footnotes:
