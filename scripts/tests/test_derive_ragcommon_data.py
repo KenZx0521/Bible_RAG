@@ -89,3 +89,13 @@ def test_main_writes_both_data_files(tmp_path):
 def test_main_check_abbreviations_fails_when_missing(tmp_path, capsys):
     assert derive.main(["check-abbreviations", "--text-layer", str(_layer(tmp_path))]) == 1
     assert "missing" in capsys.readouterr().err
+
+
+def test_nothing_is_written_when_the_layer_lacks_its_aliases(tmp_path):
+    files = {"chapters.jsonl": store.encode_jsonl(_chapters()),
+             "verse_slots.jsonl": store.encode_jsonl([])}
+    layer = store.write_layer(tmp_path / "store", "text", files).path
+    out, aliases = tmp_path / "v.json", tmp_path / "a.jsonl"
+    assert derive.main(["versification", "--text-layer", str(layer), "--out", str(out),
+                        "--aliases-out", str(aliases)]) == 2
+    assert not out.exists() and not aliases.exists()

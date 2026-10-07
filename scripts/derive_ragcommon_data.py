@@ -66,7 +66,10 @@ def _grid(chapters: tuple[dict[str, Any], ...]) -> dict[str, list[int]]:
 
 
 def derive_versification(layer_dir: Path | str) -> dict[str, Any]:
-    layer = read_layer(layer_dir)
+    return _versification(read_layer(layer_dir))
+
+
+def _versification(layer: LayerData) -> dict[str, Any]:
     order = {b: i for i, b in enumerate(books.book_ids())}
     omitted = [{"slot_key": s["slot_key"],
                 "variant_in_footnote_of": ids.parse(s["variant_footnote_id"]).parent.raw}
@@ -83,7 +86,11 @@ def derive_versification(layer_dir: Path | str) -> dict[str, Any]:
 
 
 def derive_aliases(layer_dir: Path | str) -> list[dict[str, Any]]:
-    rows = _rows(read_layer(layer_dir), "ref_aliases")
+    return _aliases(read_layer(layer_dir))
+
+
+def _aliases(layer: LayerData) -> list[dict[str, Any]]:
+    rows = _rows(layer, "ref_aliases")
     return sorted(({k: r[k] for k in ALIAS_KEYS} for r in rows), key=lambda r: r["external_ref"])
 
 
@@ -133,10 +140,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "versification":
-            args.out.write_text(dump_versification(derive_versification(args.text_layer)),
-                                encoding="utf-8")
-            args.aliases_out.write_text(dump_aliases(derive_aliases(args.text_layer)),
-                                        encoding="utf-8")
+            layer = read_layer(args.text_layer)  # read and verified once; both derived first
+            grid, aliases = dump_versification(_versification(layer)), dump_aliases(_aliases(layer))
+            args.out.write_text(grid, encoding="utf-8")
+            args.aliases_out.write_text(aliases, encoding="utf-8")
             return 0
         missing = missing_pdf_abbreviations(count_abbreviations(args.text_layer))
     except (DeriveError, StoreError) as exc:
