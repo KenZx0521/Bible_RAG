@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
-from ragdata.contract import text
+from ragdata.contract import struct, text
 from ragdata.contract.fields import Record, parse
 
-LAYERS = ("text",)
+LAYERS = ("text", "struct")
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,9 @@ RECORD_TYPES = tuple(RecordType(*row) for row in (
     ("name_spans", "text", text.NameSpan, "span_id"),
     ("errata_applied", "text", text.ErrataApplied, "errata_id"),
     ("ref_aliases", "text", text.RefAlias, "external_ref"),
+    ("pericopes", "struct", struct.Pericope, "pericope_id"),
+    ("passages", "struct", struct.Passage, "passage_id"),
+    ("chunks", "struct", struct.Chunk, "chunk_id"),
 ))
 _BY_NAME = MappingProxyType({t.name: t for t in RECORD_TYPES})
 _BY_FILE = MappingProxyType({t.file_name: t for t in RECORD_TYPES})

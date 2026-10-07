@@ -334,7 +334,7 @@ def _passages() -> list[dict]:
         _passage("ps:act.9.1", "pc:act.9.1", (0, 1), "掃羅在路上", "1-3", "act.9.3",
                  [_ref("act.9.1"), _ref("act.9.2"), _ref("act.9.3", 0, ACT_MID)],
                  end_partial=True, tokens=900),
-        _passage("ps:act.9.3b", "pc:act.9.3b", (0, 2), "天上的光", "3", "act.9.3",
+        _passage("ps:act.9.3b", "pc:act.9.3b", (0, 2), "天上的光", "3", "act.9.3b",
                  [_ref("act.9.3", ACT_MID)]),
         _passage("ps:act.10.1", "pc:act.9.3b", (1, 2), "天上的光", "1", "act.10.1",
                  [_ref("act.10.1")]),
