@@ -42,6 +42,7 @@ from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
 from ragdata.stages.errors import StageError
+from ragdata.stages.s05_struct import build as struct_stage
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.store import DEFAULT_ROOT, StoreError
 
@@ -108,8 +109,8 @@ def _build_text(args: argparse.Namespace) -> stages.BuildResult:
 def _build_struct(args: argparse.Namespace) -> stages.BuildResult:
     if args.text is None or not args.text.is_dir():
         raise CliError(f"--text {args.text} is not a layer directory")
-    inputs = stages.StructInputs(legacy_dir=args.legacy_dir, tokenizer=args.tokenizer)
-    return stages.build_struct(args.text, args.store, counts_path=args.counts, inputs=inputs)
+    inputs = struct_stage.StructInputs(legacy_dir=args.legacy_dir, tokenizer=args.tokenizer)
+    return struct_stage.build_struct(args.text, args.store, counts_path=args.counts, inputs=inputs)
 
 
 def _build(args: argparse.Namespace) -> int:

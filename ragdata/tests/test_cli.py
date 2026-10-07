@@ -14,6 +14,7 @@ import mini_build
 from ragdata import cli, stages
 from ragdata.gates import runner
 from ragdata.gates.base import GateResult
+from ragdata.stages.s05_struct import build as struct_stage
 from ragdata.store import StoredLayer
 
 MINI_COUNTS = str(Path(__file__).with_name("mini_counts.yaml"))
@@ -139,13 +140,13 @@ def test_build_struct_hands_its_inputs_to_the_stage(tmp_path, capsys, monkeypatc
     def fake_build_struct(text_dir, store_root, counts_path, inputs):
         seen.update(text_dir=text_dir, store_root=store_root, inputs=inputs)
         return stages.BuildResult({}, (GateResult("G-STRUCT", True, False, {}, {}, ()),), {})
-    monkeypatch.setattr(stages, "build_struct", fake_build_struct)
+    monkeypatch.setattr(struct_stage, "build_struct", fake_build_struct)
     code, out, _ = _run(capsys, "build", "struct", "--text", tmp_path, "--store", tmp_path / "s",
                         "--legacy-dir", tmp_path / "old", "--tokenizer", tmp_path / "tok.json")
     assert code == 1 and json.loads(out)["pass"] is False
     assert seen["text_dir"] == tmp_path and seen["store_root"] == tmp_path / "s"
-    assert seen["inputs"] == stages.StructInputs(legacy_dir=tmp_path / "old",
-                                                 tokenizer=tmp_path / "tok.json")
+    assert seen["inputs"] == struct_stage.StructInputs(legacy_dir=tmp_path / "old",
+                                                       tokenizer=tmp_path / "tok.json")
 
 
 def test_gate_struct_fails_closed_without_the_tokenizer(tmp_path, capsys):

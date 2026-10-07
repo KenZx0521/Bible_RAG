@@ -1,4 +1,4 @@
-"""``stages.build_struct``: S5 over a stored text layer, its gates, the store, and G-DET."""
+"""``build_struct``: S5 over a stored text layer, its gates, the store, and G-DET."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import mini_build
 from ragdata import stages, store
 from ragdata.gates import check_det
 from ragdata.stages.errors import StageError
+from ragdata.stages.s05_struct.build import StructInputs, build_struct
 from ragdata.stages.s05_struct.tokens import TokenCounter
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
@@ -27,8 +28,8 @@ def _legacy(directory: Path) -> Path:
 
 
 def _build(tmp: Path, text_dir: Path, store_dir: str = "store", counts: Path = MINI_COUNTS):
-    inputs = stages.StructInputs(legacy_dir=_legacy(tmp / "legacy"), counter=MINI)
-    return stages.build_struct(text_dir, tmp / store_dir, counts_path=counts, inputs=inputs)
+    inputs = StructInputs(legacy_dir=_legacy(tmp / "legacy"), counter=MINI)
+    return build_struct(text_dir, tmp / store_dir, counts_path=counts, inputs=inputs)
 
 
 def test_build_stores_the_hand_built_struct_layer_on_its_text_layer(tmp_path):

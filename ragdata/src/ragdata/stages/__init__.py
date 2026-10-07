@@ -17,8 +17,11 @@ nothing, so no layer in the store was ever built from unpinned PDFs or tools or
 with unexplained differences. To look at a red build, fix the pin or rerun with
 ``--store`` on a scratch directory.
 
-``build_struct`` runs S5 on a stored text layer and stores the struct layer the same
-way, once G-SCHEMA, G-COUNT, G-REFINT and G-STRUCT pass (``s05_struct.build``).
+The struct layer is built from a stored text layer by
+``ragdata.stages.s05_struct.build.build_struct`` (S5), stored the same way once
+G-SCHEMA, G-COUNT, G-REFINT and G-STRUCT pass. It is not re-exported here: S5
+runs gates whose modules import ``ragdata.stages``, so loading it from this
+package would make ``import ragdata.gates.runner`` a cycle.
 """
 
 from __future__ import annotations
@@ -42,11 +45,9 @@ from ragdata.stages.diffs import diff_reports, glyph_chars
 from ragdata.stages.s02_parse import S2_TYPES, ParsedBook, parse_book
 from ragdata.stages.s02_parse.names import with_merge_groups
 from ragdata.stages.result import REPORT_SCHEMA, BuildResult, Clock, gates_pass
-from ragdata.stages.s05_struct.build import StructInputs, build_struct
 from ragdata.store import StoredLayer, encode_jsonl, write_layer
 
-__all__ = ["BUILDABLE", "REPORT_SCHEMA", "BuildResult", "StructInputs", "TextInputs", "build",
-           "build_struct", "gates_pass"]
+__all__ = ["BUILDABLE", "REPORT_SCHEMA", "BuildResult", "TextInputs", "build", "gates_pass"]
 
 BUILDABLE = ("text", "struct")
 TEXT_TYPES = (*S2_TYPES, "errata_applied", "ref_aliases")
