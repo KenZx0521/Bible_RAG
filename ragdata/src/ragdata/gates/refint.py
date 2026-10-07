@@ -9,7 +9,13 @@ Two kinds of checks:
   container and name/errata slices match its text, passages and pericopes list
   each other (passages carry their pericope's title), and prev/next links are
   mutual.
-Deleting or redirecting a record therefore turns this gate red (audit G58).
+So a record that is deleted while something still refers to it or counts it,
+or a reference redirected to a record that disagrees, turns this gate red
+(audit G58). It only checks that the records agree with each other: content
+that is consistently wrong or missing everywhere (a truncated verse with a
+recomputed sha, a passage that skips a verse, a pericope that ends early,
+dropped chunks, unset links) is the job of G-COUNT, G-TEXT, G-CONSERVE,
+G-XCHECK and G-STRUCT.
 """
 
 from __future__ import annotations

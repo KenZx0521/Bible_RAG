@@ -1,7 +1,9 @@
 """Mutation tests for audit G58: the old gates went green after data was deleted.
 
 Each mutation is applied to the mini snapshot, written to a fresh store, gated
-end to end, and must turn the named hard gates red.
+end to end with the gates built so far, and must turn the named hard gates red.
+(The full run also lists the gates not built yet, which are red by
+construction; leaving them out here shows what the built gates catch.)
 """
 
 from __future__ import annotations
@@ -11,7 +13,7 @@ from pathlib import Path
 import pytest
 
 import mini_build
-from ragdata.gates.runner import gate_layer
+from ragdata.gates import runner
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
 
@@ -86,10 +88,15 @@ def _red(report) -> set[str]:
     return {g.name for g in report.gates if g.hard and not g.passed}
 
 
+def _gate(path, layer, deps=()):
+    return runner.gate_layer(path, layer, deps, MINI_COUNTS,
+                             gates=runner.implemented_gates(layer))
+
+
 def test_unmutated_mini_layers_are_green(tmp_path):
     text, struct = mini_build.write_layers(tmp_path)
-    assert _red(gate_layer(text.path, "text", counts_path=MINI_COUNTS)) == set()
-    assert _red(gate_layer(struct.path, "struct", [text.path], MINI_COUNTS)) == set()
+    assert _red(_gate(text.path, "text")) == set()
+    assert _red(_gate(struct.path, "struct", [text.path])) == set()
 
 
 @pytest.mark.parametrize("case", sorted(TEXT_MUTATIONS))
@@ -98,9 +105,7 @@ def test_text_mutation_turns_hard_gates_red(tmp_path, case):
     layer = mini_build.text_layer()
     mutate(layer)
     text, _ = mini_build.write_layers(tmp_path, text=layer)
-    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS)
-    assert not report.passed
-    assert expected_red <= _red(report)
+    assert expected_red <= _red(_gate(text.path, "text"))
 
 
 @pytest.mark.parametrize("case", sorted(STRUCT_MUTATIONS))
@@ -109,6 +114,4 @@ def test_struct_mutation_turns_hard_gates_red(tmp_path, case):
     layer = mini_build.struct_layer()
     mutate(layer)
     text, struct = mini_build.write_layers(tmp_path, struct=layer)
-    report = gate_layer(struct.path, "struct", [text.path], MINI_COUNTS)
-    assert not report.passed
-    assert expected_red <= _red(report)
+    assert expected_red <= _red(_gate(struct.path, "struct", [text.path]))

@@ -12,6 +12,7 @@ import pytest
 
 import mini_build
 from ragdata import cli, stages
+from ragdata.gates import runner
 from ragdata.store import StoredLayer
 
 MINI_COUNTS = str(Path(__file__).with_name("mini_counts.yaml"))
@@ -24,11 +25,26 @@ def _run(capsys, *argv):
     return code, captured.out, captured.err
 
 
-def test_gate_prints_a_passing_report(tmp_path, capsys):
+@pytest.fixture
+def only_built_gates_required(monkeypatch):
+    """Pretend every required gate exists, to reach the passing path of the CLI."""
+    monkeypatch.setattr(runner, "REQUIRED_GATES",
+                        {layer: runner.implemented_gates(layer) for layer in ("text", "struct")})
+
+
+def test_gate_prints_a_passing_report(tmp_path, capsys, only_built_gates_required):
     text, _ = mini_build.write_layers(tmp_path)
     code, out, _ = _run(capsys, "gate", "text", text.path, "--counts", MINI_COUNTS)
     assert code == 0
     assert json.loads(out)["pass"] is True
+
+
+def test_gate_exits_1_while_a_required_gate_is_not_built(tmp_path, capsys):
+    text, _ = mini_build.write_layers(tmp_path)
+    code, out, _ = _run(capsys, "gate", "text", text.path, "--counts", MINI_COUNTS)
+    doc = json.loads(out)
+    assert code == 1 and doc["pass"] is False
+    assert any(g["observed"] == "not implemented" and not g["pass"] for g in doc["gates"])
 
 
 def test_gate_exits_1_and_still_reports_when_a_hard_gate_fails(tmp_path, capsys):
@@ -40,7 +56,8 @@ def test_gate_exits_1_and_still_reports_when_a_hard_gate_fails(tmp_path, capsys)
     assert not json.loads(out)["pass"]
 
 
-def test_gate_struct_takes_its_text_layer_as_a_dependency(tmp_path, capsys):
+def test_gate_struct_takes_its_text_layer_as_a_dependency(tmp_path, capsys,
+                                                         only_built_gates_required):
     text, struct = mini_build.write_layers(tmp_path)
     code, _, _ = _run(capsys, "gate", "struct", struct.path, "--dep", text.path,
                       "--counts", MINI_COUNTS)
@@ -100,7 +117,7 @@ def test_module_entry_point_runs_the_cli(tmp_path):
     done = subprocess.run([sys.executable, "-m", "ragdata", "gate", "text", str(text.path),
                            "--counts", MINI_COUNTS], env=env, capture_output=True, text=True,
                           check=False)
-    assert done.returncode == 0, done.stderr
+    assert done.returncode == 1, done.stderr  # red until every required gate is built
     assert json.loads(done.stdout)["layer_version"] == text.version
 
 

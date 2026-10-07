@@ -14,31 +14,64 @@ from ragdata.gates import runner
 from ragdata.gates.runner import GateInputError, gate_layer
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
-GATES = ["G-SCHEMA", "G-COUNT", "G-REFINT"]
+BUILT = {"G-SCHEMA", "G-COUNT", "G-REFINT"}
 
 
-def test_text_layer_report_lists_every_gate_and_passes(tmp_path):
+def _verdicts(report) -> dict[str, bool]:
+    return {g.name: g.passed for g in report.gates}
+
+
+def test_every_gate_design_section_8_requires_is_in_the_report(tmp_path):
+    text, struct = mini_build.write_layers(tmp_path)
+    for path, layer, deps in ((text.path, "text", []), (struct.path, "struct", [text.path])):
+        doc = gate_layer(path, layer, deps, MINI_COUNTS).to_json()
+        assert [g["name"] for g in doc["gates"]] == list(runner.REQUIRED_GATES[layer])
+        assert doc["required_gates"] == list(runner.REQUIRED_GATES[layer])
+    assert {"G-TEXT", "G-CONSERVE", "G-XCHECK", "G-REF"} <= set(runner.REQUIRED_GATES["text"])
+    assert "G-STRUCT" in runner.REQUIRED_GATES["struct"]
+
+
+def test_a_gate_not_built_yet_fails_closed(tmp_path):
     text, _ = mini_build.write_layers(tmp_path)
     report = gate_layer(text.path, "text", counts_path=MINI_COUNTS)
-    doc = report.to_json()
-    assert report.passed and doc["pass"]
-    assert [g["name"] for g in doc["gates"]] == GATES
-    assert (doc["layer"], doc["layer_version"]) == ("text", text.version)
+    unbuilt = [g for g in report.gates if g.name not in BUILT]
+    assert unbuilt and not report.passed and not report.to_json()["pass"]
+    assert all(g.hard and not g.passed and g.observed == "not implemented" for g in unbuilt)
+    assert all(_verdicts(report)[name] for name in BUILT)
 
 
-def test_struct_layer_is_gated_with_its_declared_text_layer(tmp_path):
+def test_built_gates_alone_never_make_a_passing_report(tmp_path):
+    text, _ = mini_build.write_layers(tmp_path)
+    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS,
+                        gates=runner.implemented_gates("text"))
+    assert set(_verdicts(report)) == BUILT and all(_verdicts(report).values())
+    assert not report.passed
+    assert set(report.to_json()["missing_gates"]) == set(runner.REQUIRED_GATES["text"]) - BUILT
+
+
+def test_report_passes_once_every_required_gate_runs_and_passes(tmp_path, monkeypatch):
+    monkeypatch.setattr(runner, "REQUIRED_GATES", {"text": tuple(sorted(BUILT)),
+                                                   "struct": tuple(sorted(BUILT))})
     text, struct = mini_build.write_layers(tmp_path)
-    report = gate_layer(struct.path, "struct", deps=[text.path], counts_path=MINI_COUNTS)
-    assert report.passed, report.to_json()
+    assert gate_layer(text.path, "text", counts_path=MINI_COUNTS).passed
+    report = gate_layer(struct.path, "struct", [text.path], MINI_COUNTS)
+    assert report.passed and report.to_json()["missing_gates"] == []
+    assert (report.layer, report.layer_version) == ("struct", struct.version)
     assert report.to_json()["depends_on"] == {"text": text.version}
+
+
+@pytest.mark.parametrize("gates", [(), ("G-NOPE",), ("G-SCHEMA", "G-SCHEMA"), ("G-STRUCT",)],
+                         ids=["none", "unknown", "twice", "other-layer"])
+def test_asking_for_gates_the_layer_does_not_have_is_an_input_error(tmp_path, gates):
+    text, _ = mini_build.write_layers(tmp_path)
+    with pytest.raises(GateInputError):
+        gate_layer(text.path, "text", counts_path=MINI_COUNTS, gates=gates)
 
 
 def test_real_pdf_counts_turn_the_mini_layer_red_on_g_count_only(tmp_path):
     text, _ = mini_build.write_layers(tmp_path)
-    doc = gate_layer(text.path, "text").to_json()
-    assert not doc["pass"]
-    assert {g["name"]: g["pass"] for g in doc["gates"]} == {
-        "G-SCHEMA": True, "G-COUNT": False, "G-REFINT": True}
+    report = gate_layer(text.path, "text", gates=runner.implemented_gates("text"))
+    assert _verdicts(report) == {"G-SCHEMA": True, "G-COUNT": False, "G-REFINT": True}
 
 
 def test_struct_without_its_dependency_is_an_input_error(tmp_path):
@@ -66,8 +99,10 @@ def test_identical_struct_bytes_on_a_new_text_version_get_their_own_version(tmp_
     text_a, struct_a = mini_build.write_layers(tmp_path)
     text_b, struct_b = mini_build.write_layers(tmp_path, text=_other_text_rows())
     assert struct_a.version != struct_b.version
-    report = gate_layer(struct_b.path, "struct", [text_b.path], MINI_COUNTS)
+    report = gate_layer(struct_b.path, "struct", [text_b.path], MINI_COUNTS,
+                        gates=runner.implemented_gates("struct"))
     assert report.depends_on == {"text": text_b.version}
+    assert all(_verdicts(report).values())
 
 
 def test_repointing_the_manifest_at_another_text_version_is_refused(tmp_path):
@@ -189,6 +224,10 @@ def test_det_refuses_to_compare_a_run_with_itself(tmp_path):
             check_det(text.path, second)
 
 
-def test_a_report_without_gates_does_not_pass():
+def test_a_report_without_gates_or_requirements_does_not_pass():
+    from ragdata.gates.base import GateResult
     from ragdata.gates.runner import GateReport
-    assert not GateReport("text", "text@0123456789ab", {}, ()).passed
+    green = GateResult("G-SCHEMA", True, True, 0, 0, ())
+    assert not GateReport("text", "text@0123456789ab", {}, (), ("G-SCHEMA",)).passed
+    assert not GateReport("text", "text@0123456789ab", {}, (green,), ()).passed
+    assert GateReport("text", "text@0123456789ab", {}, (green,), ("G-SCHEMA",)).passed
