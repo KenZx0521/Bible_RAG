@@ -44,7 +44,6 @@ from ragdata.loader.plan import Point
 from ragdata.loader.sql import unique_name
 from ragdata.loader.tables import BUILD_INFO, TABLES, Table
 from ragdata.release.assemble import Release
-from ragdata.release.contracts import CONTRACT_FILES
 from ragdata.stages.errors import StageError
 from ragdata.stages.s06_emb.encoder import Encoder, encode_texts, load_encoder
 from ragdata.store.cas import sha256_bytes
@@ -197,6 +196,18 @@ def _reencode(records: Sequence[Mapping[str, Any]], pg_text: Mapping[str, str],
     return out, {"reencoded": len(present), "min_cos": float(cos.min())}
 
 
+def _stored_vector_violations(records: Sequence[Mapping[str, Any]],
+                               by_record: Mapping[str, Point], matrix: np.ndarray) -> list[str]:
+    """Each point's vector is its record's row of the vectors attachment."""
+    rows = [(i, r["record_id"]) for i, r in enumerate(records) if r["record_id"] in by_record]
+    if not rows:
+        return []
+    stored = matrix[[i for i, _ in rows]]
+    cos = rowwise_cos(stored, np.stack([by_record[r].vector for _, r in rows]))
+    return [f"{r}: point vector is not the layer's (cos {c:.7f})"
+            for (_, r), c in zip(rows, cos) if c < DET_COS]
+
+
 def check_c4(files: Files, proj: Projection, matrix: np.ndarray, inputs: VerifyInputs
              ) -> GateResult:
     records = files["embedding_records.jsonl"]
@@ -204,11 +215,7 @@ def check_c4(files: Files, proj: Projection, matrix: np.ndarray, inputs: VerifyI
     by_record = {str(p.payload.get("record_id")): p for p in proj.points}
     out = [f"{r}: payload text_sha is not PG's" for r, p in sorted(by_record.items())
            if pg_rows.get(r, {}).get("text_sha") != p.payload.get("text_sha")]
-    rows = [(i, r["record_id"]) for i, r in enumerate(records) if r["record_id"] in by_record]
-    cos = rowwise_cos(matrix[[i for i, _ in rows]], np.stack([by_record[r].vector for _, r in rows])) \
-        if rows else np.ones(0)
-    out += [f"{r}: point vector is not the layer's (cos {c:.7f})"
-            for (_, r), c in zip(rows, cos) if c < DET_COS]
+    out += _stored_vector_violations(records, by_record, matrix)
     encoder, error = _encoder(inputs)
     if encoder is None:
         return _gate("G-PROJ.C4", [*out, f"no pinned encoder: {error}"], {"reencoded": 0})

@@ -19,6 +19,8 @@ from ragdata.loader.qdrant import QdrantDb
 from ragdata.release.contracts import CONTRACT_FILES
 from ragdata.store import StoredLayer, attach, encode_jsonl, vectors
 
+pytestmark = pytest.mark.filterwarnings("ignore:Payload indexes")
+
 
 @pytest.fixture(scope="module")
 def mini(tmp_path_factory):
@@ -159,6 +161,15 @@ def test_a_row_that_does_not_hash_to_its_vec_sha_is_refused(tmp_path, mini):
         return {**files, vectors.INDEX: encode_jsonl(index)}
     release = _with_vectors(tmp_path, mini, drift)
     with pytest.raises(loader.LoadError, match="vec_sha"):
+        loader.load(release, FakePg(), QdrantDb(QdrantClient(location=":memory:")), tmp_path)
+
+
+def test_vectors_narrower_than_the_fingerprint_are_refused(tmp_path, mini):
+    def narrow(found):
+        rows = [(r["record_id"], r["text_sha"]) for r in found.index]
+        return vectors.encode_vectors(rows, np.array(found.matrix)[:, :4], found.probes)
+    release = _with_vectors(tmp_path, mini, narrow)
+    with pytest.raises(loader.LoadError, match="4 wide, the encoder fingerprint says 8"):
         loader.load(release, FakePg(), QdrantDb(QdrantClient(location=":memory:")), tmp_path)
 
 

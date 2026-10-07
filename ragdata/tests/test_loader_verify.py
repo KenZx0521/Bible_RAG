@@ -81,9 +81,8 @@ MUTATIONS = {
         lambda l: _rows(l, "build_info")[0].update(build_id="b20000101_00000000"), "G-PROJ.C1"),
     "a point names another build": (
         lambda l: _set_payload(l, "vs:eph.6.4", build_id="b20000101_00000000"), "G-PROJ.C1"),
-    "the contract manifest names another build": (
-        lambda l: _rewrite_contract(l, "manifest.json",
-                                    lambda d: d.update(build_id="b20000101_00000000")), "G-PROJ.C1"),
+    "the contract manifest names another build": (lambda l: _rewrite_contract(
+        l, "manifest.json", lambda d: d.update(build_id="b20000101_00000000")), "G-PROJ.C1"),
     "a verse is missing in PG": (_drop_row("verse_units", "unit_key", "eph.6.4"), "G-PROJ.C2"),
     "an event anchor is missing in PG": (
         _drop_row("event_anchors", "passage_id", "ps:act.9.3b"), "G-PROJ.C2"),

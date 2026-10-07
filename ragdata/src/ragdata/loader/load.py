@@ -18,6 +18,7 @@ the operator: the loader deletes nothing else.
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -89,13 +90,24 @@ def _misaligned(found: VectorSet, records: Sequence[Mapping[str, Any]]) -> str |
     return None
 
 
+def _fingerprint_dim(release: Release) -> Any:
+    try:
+        return json.loads(release.contracts["encoder_fingerprint.json"])["bge_m3"]["dim"]
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
 def read_vectors(release: Release, files: Files) -> Vectors:
+    """The emb layer's vectors, row for row its records, as wide as its fingerprint says."""
     try:
         meta, contents = attach.read_attachment(release.layers["emb"].path, vectors.NAME)
         found = vectors.decode_vectors(contents)
     except StoreError as exc:
         raise LoadError(f"vectors of {release.layers['emb'].version}: {exc}") from None
     bad = _misaligned(found, files["embedding_records.jsonl"])
+    dim = _fingerprint_dim(release)
+    if not bad and found.matrix.shape[1] != dim:
+        bad = f"rows are {found.matrix.shape[1]} wide, the encoder fingerprint says {dim}"
     if bad:
         raise LoadError(f"vectors of {release.layers['emb'].version}: {bad}")
     return Vectors(found, dict(meta.file_shas))
