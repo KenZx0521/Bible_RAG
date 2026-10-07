@@ -5,8 +5,9 @@ character: nine misglyphs from one Big5 run (E041–E050), 25 places in verse
 text and one footnote. ``text_pdf`` always keeps the printed character. When a
 misglyph's correction is decided (``status: apply``), ``text`` gets the
 corrected character at the same offset — equal length, nothing else changes —
-and the container lists the errata id; an ``uncertain`` correction is listed
-but not applied. Characters of the same run that are right where they stand
+and the container lists the errata id; an ``uncertain`` correction (the word
+is clear but its character has two or more forms the PDF cannot decide between)
+is listed with its candidates but not applied. Characters of the same run that are right where they stand
 (E046 誆) are declared ``not_errata``.
 
 The registry must fit the PDF text exactly, or the stage raises OverlayError:
@@ -116,7 +117,9 @@ def _misglyph(char: str, raw: Any) -> Misglyph:
         return Misglyph(char, big5, status, _char(raw.get("corrected"), f"{where} corrected"),
                         (), word)
     candidates = tuple(_char(c, f"{where} candidate") for c in raw.get("candidates") or [])
-    _require(bool(candidates), f"{where}: an uncertain correction lists its candidates")
+    _require(len(set(candidates)) >= 2,
+             f"{where}: an uncertain correction lists the two or more candidates it is torn "
+             "between (one candidate is an apply)")
     return Misglyph(char, big5, status, None, candidates, word)
 
 

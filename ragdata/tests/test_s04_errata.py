@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from ragdata.contract import parse_record
+from ragdata.contract.counts import load_counts
 from ragdata.stages.s04_overlay import errata as er
 
 REGISTRY = {
@@ -128,13 +129,14 @@ def _with(**changes):
     (_with(misglyphs__詷__status="maybe"), "status"),
     (_with(misglyphs__詷__corrected="秕秕"), "one character"),
     (_with(misglyphs__誁__candidates=[]), "candidates"),
+    (_with(misglyphs__誁__candidates=["麅"]), "candidates"),
     (_with(entries__0__id="E1"), "er:"),
     (_with(misglyphs__詷={"status": "apply", "corrected": "秕", "word": "糠秕"}), "big5"),
     (_with(misglyphs__詷=["apply"]), "mapping"),
     (_with(entries=[["er:0001"]]), "mapping"),
     (_with(not_errata={"誆": "E046"}), "mapping"),
 ], ids=["schema", "fix differs", "uncertain fixed", "correct char", "dup id", "offset",
-        "status", "long fix", "no candidates", "id shape", "no big5", "glyph not a mapping",
+        "status", "long fix", "no candidates", "one candidate", "id shape", "no big5", "glyph not a mapping",
         "entry not a mapping", "not_errata not a mapping"])
 def test_a_malformed_registry_is_refused(tmp_path, doc, message):
     with pytest.raises(er.OverlayError, match=message):
@@ -155,3 +157,9 @@ def test_errata_in_headings_are_refused(tmp_path):
 def test_the_registry_in_config_loads():
     errata = er.load_errata(er.DEFAULT_PATH)
     assert errata.entries and set(errata.correct).isdisjoint(errata.misglyphs)
+
+
+def test_the_registry_in_config_applies_as_many_errata_as_the_counts_expect():
+    errata = er.load_errata(er.DEFAULT_PATH)
+    applied = sum(e.corrected_char is not None for e in errata.entries)
+    assert applied == load_counts()["text"]["errata_applied"].value

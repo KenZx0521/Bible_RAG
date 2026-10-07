@@ -166,9 +166,11 @@ text:
     evidence: G07（4 組名字與通名被拆開：鹽＋海、毗珥＋山、何烈＋山、加利利＋海）
     definition: name_spans 中相異的非空 merge_group 數
   errata_applied:
-    value: 23
+    value: 19
     g: [G11]
-    evidence: G11（9 種錯字 25 處）；誁×2 的正字（麅／狍）無法由 PDF 判定，標 uncertain 不套用，故 23
+    evidence: >-
+      G11（9 種錯字 25 處）；誁×2、訿、誄、觢、詴 的正字各有兩種通行字形（麅／狍、灶／竈、
+      蔥／葱、敕／勅、虻／蝱），PDF 內都無從判定，標 uncertain 不套用，故 25 − 6 = 19
     definition: errata_applied.jsonl 列數（config/registries/errata.yaml 中 status=apply 的筆數）
   ref_aliases:
     value: 1
