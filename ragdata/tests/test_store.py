@@ -46,6 +46,16 @@ def test_existing_version_is_never_overwritten(tmp_path):
     assert sorted(p.name for p in (tmp_path / "text").iterdir()) == [first.version]
 
 
+def test_rewriting_the_same_content_can_reuse_the_verified_version(tmp_path):
+    first = store.write_layer(tmp_path, "text", FILES)
+    again = store.write_layer(tmp_path, "text", FILES, exist_ok=True)
+    assert again == first
+    (first.path / "books.jsonl").chmod(0o644)
+    (first.path / "books.jsonl").write_bytes(b"{}\n")
+    with pytest.raises(IntegrityError):
+        store.write_layer(tmp_path, "text", FILES, exist_ok=True)
+
+
 def test_failed_publish_leaves_no_version_and_no_temp_dir(tmp_path, monkeypatch):
     def boom(src, dst):
         raise OSError("disk full")

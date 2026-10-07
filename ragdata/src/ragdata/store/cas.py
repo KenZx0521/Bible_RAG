@@ -135,8 +135,12 @@ def _publish(tmp: Path, target: Path) -> None:
 
 
 def write_layer(root: Path | str, layer: str, files: Mapping[str, bytes],
-                depends_on: Mapping[str, str] | None = None) -> StoredLayer:
-    """Write a new immutable layer version; raise LayerExistsError if it exists."""
+                depends_on: Mapping[str, str] | None = None, exist_ok: bool = False) -> StoredLayer:
+    """Write a new immutable layer version; raise LayerExistsError if it exists.
+
+    With ``exist_ok`` an existing version (same content, hence same version) is
+    verified against its manifest and returned instead; it is never rewritten.
+    """
     _check_layer(layer)
     if not files:
         raise StoreError("a layer needs at least one file")
@@ -151,6 +155,9 @@ def write_layer(root: Path | str, layer: str, files: Mapping[str, bytes],
     version = ids.layer_version(layer, digest)
     layer_dir = Path(root) / layer
     target = layer_dir / version
+    if target.exists() and exist_ok:
+        verify_layer(target)
+        return StoredLayer(layer, version, target)
     if target.exists():
         raise LayerExistsError(f"{target} already exists")
     layer_dir.mkdir(parents=True, exist_ok=True)
