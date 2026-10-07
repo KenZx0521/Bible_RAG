@@ -88,7 +88,8 @@ def _stray(text: str) -> bool:
 def _name_checks(snapshot: Snapshot, not_entity: set[str]) -> list[str]:
     expected, out = _expected_names(snapshot, not_entity), []
     names = {n.norm_key: n for n in snapshot.of("names")}
-    out += [f"names: {k!r} is underlined but has no name" for k in sorted(set(expected) - set(names))]
+    out += [f"names: {k!r} is underlined but has no name"
+            for k in sorted(set(expected) - set(names))]
     out += [f"names: {k!r} is no underline" for k in sorted(set(names) - set(expected))]
     spans = {s.span_id for s in snapshot.of("name_spans")} | \
         {s.span_id for s in snapshot.of("extra_spans")}
@@ -127,7 +128,8 @@ def _tally(snapshot: Snapshot) -> dict[str, Any]:
     spans: dict[str, list[Any]] = defaultdict(list)
     for span in snapshot.of("extra_spans"):
         spans[span.source].append(span)
-    return {"names": len(snapshot.of("names")), "parallel_links": len(snapshot.of("parallel_links")),
+    return {"names": len(snapshot.of("names")),
+            "parallel_links": len(snapshot.of("parallel_links")),
             "extra_spans": {source: {"total": len(rows),
                                      "by_region": dict(Counter(r.region for r in rows)),
                                      "by_surface": dict(Counter(r.surface for r in rows))}

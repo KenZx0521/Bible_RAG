@@ -161,9 +161,10 @@ def load_normalization(directory: Path) -> Normalization:
     doc, version = _read(directory, NORMALIZATION)
     rules = _rules(doc)
     generic, trunc = rules["generic_inside"], rules["truncation"]
-    truncations = tuple((_text(e.get("truncated"), "truncation"), _text(e.get("full"), "truncation"))
-                        for e in (_mapping(x, "truncation.examples")
-                                  for x in _list(trunc.get("examples"), "truncation.examples")))
+    examples = [_mapping(x, "truncation.examples")
+                for x in _list(trunc.get("examples"), "truncation.examples")]
+    truncations = tuple((_text(e.get("truncated"), "truncation"),
+                         _text(e.get("full"), "truncation")) for e in examples)
     return Normalization(
         version=version, rule_ids=MappingProxyType({n: r["id"] for n, r in rules.items()}),
         suffixes=_chars(rules["suffix_outside"].get("suffixes"), "suffix_outside.suffixes"),

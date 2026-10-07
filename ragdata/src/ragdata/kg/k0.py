@@ -21,8 +21,8 @@ from ragdata.kg.registries import K0Registries, Normalization
 
 COUNTS_SCHEMA = "ragdata.kg0_counts.v1"
 REPORT_SCHEMA = "ragdata.kg0_report.v1"
-CONTAINER_SOURCES = {"superscription": ("chapter_texts", "id"), "heading": ("headings", "heading_id"),
-                     "footnote": ("footnotes", "fn_id")}
+CONTAINER_SOURCES = {"superscription": ("chapter_texts", "id"),
+                     "heading": ("headings", "heading_id"), "footnote": ("footnotes", "fn_id")}
 
 
 @dataclass(frozen=True)

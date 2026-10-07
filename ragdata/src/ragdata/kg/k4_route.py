@@ -86,7 +86,8 @@ def probes_sha(texts: Sequence[str]) -> str:
 
 
 def _pythonpath() -> str:
-    roots = (Path(ragdata.__file__).resolve().parents[1], Path(ragcommon.__file__).resolve().parents[1])
+    roots = (Path(ragdata.__file__).resolve().parents[1],
+             Path(ragcommon.__file__).resolve().parents[1])
     return os.pathsep.join(str(p) for p in roots)
 
 

@@ -78,7 +78,8 @@ def _change(old: tuple[str, int, int], new: tuple[str, int, int], ps: Any,
     """(change, removed slots, added keys) of a legacy range against its passage."""
     chapter, lo, hi = old
     if new == old:
-        removed = [s for s in retired if _verses(s, s)[0] == chapter and lo <= _verses(s, s)[1] <= hi]
+        removed = [s for s in retired
+                   if _verses(s, s)[0] == chapter and lo <= _verses(s, s)[1] <= hi]
         return ("narrowed" if removed else "same"), removed, []
     if new[0] == chapter and new[1] <= lo and hi <= new[2]:
         book = ids.parse(ps.start_slot).book_id
@@ -115,7 +116,8 @@ def _legacy_doc(data: bytes) -> dict[str, Any]:
         doc = json.loads(data.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise EventRegistryError(f"legacy registry is not JSON: {exc}") from None
-    if not isinstance(doc, dict) or doc.get("version") != 1 or not isinstance(doc.get("events"), list):
+    if not isinstance(doc, dict) or doc.get("version") != 1 \
+            or not isinstance(doc.get("events"), list):
         raise EventRegistryError("legacy registry must be version 1 with a list of events")
     return doc
 
@@ -217,7 +219,8 @@ def compile_events(doc: Mapping[str, Any], snapshot: Snapshot,
     for event in doc["events"]:
         anchors = _anchors(event, lmap)
         converted.append(anchors)
-        events.append(_event_row(event, anchors, defaults["trigger"], defaults["anchor_provenance"]))
+        events.append(_event_row(event, anchors, defaults["trigger"],
+                                 defaults["anchor_provenance"]))
         changes += [_change_row(event["event_id"], a, change_source)
                     for a in anchors if a["change"] != "same"]
     half = [{"event_id": e["event_id"], "legacy_anchor": a["legacy"], "passage_id": a["passage_id"]}

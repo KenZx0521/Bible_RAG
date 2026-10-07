@@ -28,7 +28,8 @@ def load_inputs(text_dir: Path, struct_dir: Path | None = None
     if struct_dir is not None:
         layers["struct"] = _layer(Path(struct_dir), "struct")
         if layers["struct"].depends_on.get("text") != layers["text"].version:
-            raise StageError(f"{struct_dir} was built on {layers['struct'].depends_on.get('text')}, "
+            built_on = layers["struct"].depends_on.get("text")
+            raise StageError(f"{struct_dir} was built on {built_on}, "
                              f"not on {layers['text'].version}")
     schema, snap = check_schema(merge_files(list(layers.values())), list(layers))
     if not schema.passed:

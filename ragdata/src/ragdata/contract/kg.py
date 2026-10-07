@@ -133,10 +133,12 @@ class Anchor(Record):
     provenance_class: str = spec(one_of("legacy_tuned", "curated_human"))
 
     def check(self) -> None:
-        require(self.passage_id == ids.passage_id(self.start_key), "passage_id must be ps:{start_key}")
+        require(self.passage_id == ids.passage_id(self.start_key),
+                "passage_id must be ps:{start_key}")
         for key, slot in ((self.start_key, self.start_slot), (self.end_key, self.end_slot)):
             p = parsed(key)
-            require(slot == ids.slot_key(p.book_id, p.chapter, p.verse), f"{slot} is not {key}'s slot")
+            require(slot == ids.slot_key(p.book_id, p.chapter, p.verse),
+                    f"{slot} is not {key}'s slot")
         s, e = parsed(self.start_key), parsed(self.end_key)
         require((s.book_id, s.chapter) == (e.book_id, e.chapter), "an anchor stays in one chapter")
         require(verse_order(self.start_key) <= verse_order(self.end_key), "anchor range descends")

@@ -88,8 +88,8 @@ def test_the_gate_fails_closed_without_its_inputs(given, change):
     layer = _build(given).layers["route"].path
     inputs = {"frozen_lexicon": given["lexicon"], "ground_truth": given["gt"],
               "backend_python": Path(sys.executable), "backend_dir": given["backend"]}
-    inputs[{"frozen": "frozen_lexicon", "python": "backend_python", "gt": "ground_truth"}[change]] = \
-        given["root"] / "missing"
+    key = {"frozen": "frozen_lexicon", "python": "backend_python", "gt": "ground_truth"}[change]
+    inputs[key] = given["root"] / "missing"
     report = gate_layer(layer, "route", [given["text"].path], MINI_COUNTS,
                         inputs=GateInputs(**inputs))
     assert not report.passed
