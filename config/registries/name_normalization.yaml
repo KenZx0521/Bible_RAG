@@ -1,0 +1,53 @@
+# PDF 專名線 → 名稱（norm_key）的正規化規則與非正文區的詞表比對（DESIGN §2.17、§5.2；REPORT G05–G08）。
+# norm_key 一律以 PDF 底線為準：規則只決定「哪幾筆底線合成一個名稱」與「名稱帶哪些規則標記」，
+# 不刪字、不補字。各規則的套用次數寫在 kg0 層的 kg0_report.json。
+schema: ragdata.name_normalization.v1
+rules:
+  suffix_outside:
+    id: nn.suffix_outside
+    what: 後綴畫在線外（以色列|人、埃及|王、迦南|地），不屬於名稱；norm_key 不吸收後綴。下列後綴只做統計
+    suffixes: [人, 王, 地, 家, 族, 城, 眾]
+  generic_inside:
+    id: nn.generic_inside
+    what: 通名畫在線內（橄欖山、約旦河、鹽谷、魚門）時通名屬於名稱，norm_key 保留通名，型別候選 Place
+    nouns: [山, 河, 海, 谷, 城, 門, 園, 泉, 井, 池, 湖]
+    # 尾字只是音譯、不是通名的名稱（人名或音譯地名）；逐一核對過 PDF 用法
+    exceptions: [所羅門, 西門, 臨門, 撒門, 黑門, 迦特‧臨門, 黑實門, 利門, 示門, 音‧臨門, 哈門,
+                 哈達臨門, 提門, 腓利門, 哈巴谷, 亞谷, 阿谷]
+    exception_why: 所羅門、西門、撒門、提門、腓利門、示門、亞谷（拉2:42）、阿谷（代上3:24）、哈巴谷是人名；黑門、臨門、利門、哈門、黑實門及其複合地名是音譯地名，「門」「谷」不是通名
+    type_candidate: Place
+  merge:
+    id: nn.merge
+    what: 名字與通名被畫成相鄰兩段底線的 4 組（text 層以 merge_group 記錄），合成一個名稱
+    groups: [鹽海, 毗珥山, 何烈山, 加利利海]
+  interpunct:
+    id: nn.interpunct
+    what: 帶「‧」（U+2027）的名字整體是一個名稱，不拆成組成部分；其他間隔號（U+00B7、U+30FB）一律報錯
+    char: "‧"
+  truncation:
+    id: nn.truncation
+    what: 截斷名以底線為準：norm_key 一定是完整的底線字串（或合併字串），舊 KG 的截斷形不得取代全名
+    examples:
+      - {truncated: 西底, full: 西底家}
+      - {truncated: 希勒, full: 希勒家}
+lexicon:
+  id: lx.longest
+  what: 篇題、標題、註腳沒有專名線；用正文底線正規化後的名稱（names 的 norm_key）做最長、不重疊、不碰底線的比對，不用 entity_dict
+  regions: [superscription, heading, footnote]
+  min_len: 2
+  min_len_why: 單字名（但、安、愛、善、訓、尋、鹽、閃、含…）在非正文區幾乎都是普通字（「平安」「慈愛」「遺訓」），寧缺勿錯
+  book_citation:
+    id: lx.book_citation
+    what: 名稱後面接「（上／下）幾章」，或名稱是書名的開頭（路加福音、撒母耳記上），都是書卷引用，不是人名
+    pattern: "[上下]?[一二三四五六七八九十百]+章"
+    book_titles: true   # 書名取自 ragcommon.books（名稱與異寫）
+  exclude_contexts:
+    - {surface: 哈拉, context: 麻哈拉, why: 詩篇篇題的調名「麻哈拉」（詩53、88），不是地名哈拉}
+    - {surface: 多加, context: 多加一肘, why: 「使身量多加一肘」的動詞「多加」，不是人名多加}
+    - {surface: 以弗, context: 以弗倫, why: 註腳「或譯：以弗倫」是另一個名字，只比到前兩字會截斷}
+    - {surface: 基羅, context: 基羅特金罕, why: 註腳「或譯：基羅特金罕」，「基羅特」不是名稱基羅}
+    - {surface: 烏法, context: 烏法珥新, why: 「烏法珥新」（但5:25 的字）不是地名烏法}
+    - {surface: 哈利, context: 哈利路亞, why: 「哈利路亞」不是人名哈利}
+    - {surface: 拿約, context: 彌拿約, why: 「一彌拿約銀十兩」是「彌拿」＋「約」}
+    - {surface: 以得, context: 所以得, why: 「所以得着」不是名稱以得}
+    - {surface: 拉法, context: 阿拉法, why: 希臘字母「阿拉法」不是名稱拉法}

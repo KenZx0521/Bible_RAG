@@ -13,8 +13,8 @@ from typing import Any
 
 from ragcommon import ids
 from ragdata.contract.fields import (
-    Check, ContractError, Record, boolean, hex64, id_of, integer, list_of, nested, one_of,
-    optional, parsed, require, sha256_text, spec, string, verse_order,
+    Check, ContractError, Record, boolean, hex64, id_of, integer, legacy_key, list_of, nested,
+    one_of, optional, parsed, require, sha256_text, spec, string, verse_order,
 )
 
 PDF = one_of("pdf_deterministic")
@@ -199,16 +199,6 @@ LEGACY_RELATIONS = MappingProxyType({
 })
 
 
-def _legacy_key() -> Check:
-    """An old id: opaque, but ASCII without whitespace like every id."""
-    def check(value: Any) -> str:
-        require(isinstance(value, str) and value != "" and value.isascii()
-                and not any(ch.isspace() for ch in value),
-                f"expected an ASCII id without whitespace, got {value!r}")
-        return value
-    return check
-
-
 def _any_id() -> Check:
     def check(value: Any) -> str:
         try:
@@ -227,7 +217,7 @@ class LegacyId(Record):
     records whose slot is omitted in the PDF are ``retired`` and map to nothing.
     """
 
-    legacy_id: str = spec(_legacy_key())
+    legacy_id: str = spec(legacy_key())
     kind: str = spec(one_of(*LEGACY_KINDS))
     relation: str = spec(one_of(*LEGACY_RELATIONS))
     new_ids: tuple = spec(list_of(_any_id()))

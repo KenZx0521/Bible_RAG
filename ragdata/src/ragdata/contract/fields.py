@@ -154,6 +154,16 @@ def id_of(kind: str) -> Check:
     return check
 
 
+def legacy_key() -> Check:
+    """An id of the legacy build: opaque, but ASCII without whitespace like every id."""
+    def check(value: Any) -> str:
+        require(isinstance(value, str) and value != "" and value.isascii()
+                and not any(ch.isspace() for ch in value),
+                f"expected an ASCII id without whitespace, got {value!r}")
+        return value
+    return check
+
+
 def optional(inner: Check) -> Check:
     def check(value: Any) -> Any:
         return None if value is None else inner(value)
