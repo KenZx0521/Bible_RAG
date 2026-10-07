@@ -33,10 +33,13 @@ from ragdata.contract import LAYERS, record_type_for_file
 from ragdata.contract.counts import (
     KG0_COUNTS_PATH, PDF_COUNTS_PATH, load_counts, load_kg0_counts,
 )
-from ragdata.contract.registry import KG0_REPORT, LAYER_REPORTS, XCHECK_REPORT
+from ragdata.contract.registry import (
+    EVENT_REGISTRY_V1, EVENT_REGISTRY_V2, KG0_REPORT, LAYER_REPORTS, XCHECK_REPORT,
+)
 from ragdata.gates import sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
 from ragdata.gates.counts import check_counts
+from ragdata.gates.events import check_event
 from ragdata.gates.kg0 import check_kg0
 from ragdata.gates.prov import check_prov
 from ragdata.gates.ref import check_ref
@@ -77,6 +80,7 @@ class GateInputs:
     tokenizer: Path | None = None                 # G-STRUCT: tokenizer.json (None: the HF cache)
     token_counter: TokenCounter | None = None     # G-STRUCT: a stand-in counter (tests only)
     kg0_counts: Path = KG0_COUNTS_PATH            # G-KG0: the per-surface expectations
+    legacy_registry: Path = paths.LEGACY_EVENT_REGISTRY  # G-EVENT: what R1 froze
 
 
 @dataclass(frozen=True)
@@ -147,6 +151,15 @@ def _kg0_gate(ctx: GateContext) -> GateResult:
                      ctx.target.depends_on)
 
 
+def _event_gate(ctx: GateContext) -> GateResult:
+    v1, v2 = stored_json(ctx, EVENT_REGISTRY_V1), stored_json(ctx, EVENT_REGISTRY_V2)
+    if v1 is None or v2 is None:
+        return missing_input("G-EVENT", f"the layer's {EVENT_REGISTRY_V1} and {EVENT_REGISTRY_V2}")
+    path = Path(ctx.inputs.legacy_registry)
+    legacy = path.read_bytes() if path.is_file() else None
+    return check_event(ctx.snapshot, v1, v2, legacy, ctx.target.depends_on.get("struct", ""))
+
+
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-SCHEMA": lambda ctx: ctx.schema,
     "G-COUNT": _count_gate,
@@ -158,6 +171,7 @@ GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-XCHECK": _xcheck_gate,
     "G-STRUCT": _struct_gate,
     "G-KG0": _kg0_gate,
+    "G-EVENT": _event_gate,
     "G-PROV": lambda ctx: check_prov(dict(ctx.target.rows)),
 })
 SOURCED = frozenset({"G-CONSERVE", "G-XCHECK"})  # gates that re-read the sources

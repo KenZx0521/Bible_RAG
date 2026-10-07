@@ -56,7 +56,7 @@ from ragdata.contract.counts import KG0_COUNTS_PATH, PDF_COUNTS_PATH, CountsErro
 from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
-from ragdata.kg import k0_build
+from ragdata.kg import k0_build, k1_build
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct import build as struct_stage
 from ragdata.stages.s00_source import EXPECT_PATH
@@ -183,8 +183,13 @@ def _build_kg0(args: argparse.Namespace) -> stages.BuildResult:
                               args.store, args.registries, args.kg0_counts)
 
 
+def _build_events(args: argparse.Namespace) -> stages.BuildResult:
+    return k1_build.build_events(_need_dir(args.text, "--text"), _need_dir(args.struct, "--struct"),
+                                 args.store, args.events_yaml, args.legacy_registry, args.counts)
+
+
 BUILDERS: dict[str, Callable[[argparse.Namespace], stages.BuildResult]] = {
-    "text": _build_text, "struct": _build_struct, "kg0": _build_kg0,
+    "text": _build_text, "struct": _build_struct, "kg0": _build_kg0, "events": _build_events,
 }
 
 
@@ -199,7 +204,7 @@ def _build(args: argparse.Namespace) -> int:
 def gate_inputs(args: argparse.Namespace) -> GateInputs:
     return GateInputs(pdf_dir=args.pdf_dir, registries=args.registries,
                       source_expect=args.source_expect, tokenizer=args.tokenizer,
-                      kg0_counts=args.kg0_counts)
+                      kg0_counts=args.kg0_counts, legacy_registry=args.legacy_registry)
 
 
 def _gate(args: argparse.Namespace) -> int:
@@ -226,10 +231,18 @@ def _expect(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _convert(args: argparse.Namespace) -> int:
+    text = k1_build.convert(_need_dir(args.text, "--text"), _need_dir(args.struct, "--struct"),
+                            args.legacy_registry)
+    args.out.write_text(text, encoding="utf-8")
+    _emit({"written": str(args.out), "from": str(args.legacy_registry)}, None)
+    return EXIT_OK
+
+
 HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSError,
            yaml.YAMLError)
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
-    "build": _build, "gate": _gate, "det": _det, "expect": _expect,
+    "build": _build, "gate": _gate, "det": _det, "expect": _expect, "convert": _convert,
 }
 
 

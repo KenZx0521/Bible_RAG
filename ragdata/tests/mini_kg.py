@@ -165,3 +165,61 @@ def legacy_registry() -> dict:
         ],
         "dropped": [{"id": "event:none", "name": "無", "reason": "test"}],
     }
+
+
+LEGACY_SOURCE = "backend/data/event_registry.json"
+TRIGGER_NOTE = "R1 凍結的 legacy 觸發詞，依同一份 GT 調出（D3 報告須註明）"
+
+
+def legacy_sha() -> str:
+    import json
+    return hashlib.sha256(json.dumps(legacy_registry(), ensure_ascii=False).encode()).hexdigest()
+
+
+def _anchor(legacy, passage, start_key, end_key, change):
+    return {"passage_id": passage, "start_key": start_key, "end_key": end_key,
+            "start_slot": start_key.rstrip("b"), "end_slot": end_key.rstrip("b"),
+            "change": change, "legacy_anchor": legacy, "provenance_class": "legacy_tuned"}
+
+
+def _trigger(text):
+    return {"text": text, "provenance_class": "external_legacy", "source": LEGACY_SOURCE,
+            "note": TRIGGER_NOTE, "retire_by": "R2"}
+
+
+def events() -> list[dict]:
+    def event(n, legacy, name, prov, anchors, triggers):
+        return {"event_id": f"ev{n:04d}", "legacy_id": legacy, "name": name,
+                "legacy_provenance": prov, "anchors": anchors,
+                "legacy_triggers": [_trigger(t) for t in triggers], "pdf_terms": [],
+                "external_aliases": [], "provenance_class": "legacy_tuned"}
+    return [
+        event(1, "event:kemu", "渴慕上帝", "alias_injection",
+              [_anchor("psa:42:0", "ps:psa.42.1", "psa.42.1", "psa.42.3", "same")], ["渴慕"]),
+        event(2, "event:tianguo", "天國裏誰是最大的", "head_event_backfill",
+              [_anchor("mat:18:0", "ps:mat.18.1", "mat.18.1", "mat.18.4", "narrowed")],
+              ["天國", "最大的"]),
+        event(3, "event:saoluo", "掃羅歸主", "manual_edges",
+              [_anchor("act:9:0", "ps:act.9.1", "act.9.1", "act.9.3", "widened"),
+               _anchor("act:9:1", "ps:act.9.3b", "act.9.3b", "act.9.3b", "same")], ["保羅歸主"]),
+    ]
+
+
+def anchor_changes(struct_version: str) -> list[dict]:
+    def change(event_id, legacy, passage, kind, old, keys, removed, added):
+        return {"change_key": f"{event_id}|{legacy}", "event_id": event_id,
+                "legacy_anchor": legacy, "passage_id": passage, "change": kind,
+                "legacy_start_slot": old[0], "legacy_end_slot": old[1], "start_key": keys[0],
+                "end_key": keys[1], "removed_slots": removed, "added_keys": added,
+                "provenance_class": "external_legacy",
+                "source": f"{LEGACY_SOURCE} → {struct_version} legacy_ids",
+                "note": ("去掉幽靈節 " + "、".join(removed)) if removed
+                else ("補回 " + "、".join(added)), "retire_by": "R2"}
+    return [change("ev0002", "mat:18:0", "ps:mat.18.1", "narrowed", ("mat.18.1", "mat.18.4"),
+                   ("mat.18.1", "mat.18.4"), ["mat.18.3"], []),
+            change("ev0003", "act:9:0", "ps:act.9.1", "widened", ("act.9.1", "act.9.2"),
+                   ("act.9.1", "act.9.3"), [], ["act.9.3"])]
+
+
+def events_layer(struct_version: str) -> dict[str, list[dict]]:
+    return {"events": events(), "anchor_changes": anchor_changes(struct_version)}
