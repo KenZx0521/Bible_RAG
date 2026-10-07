@@ -7,6 +7,11 @@ superscription and a book division, selah, a speaker, errata in a unit and in a
 footnote, underline spans in body and footnote (one merge group), a ref alias,
 a cross-chapter pericope, an untitled book opening and a chunked passage.
 
+The struct layer is written by hand as the oracle S5 must reproduce from the text
+layer: content strings, token counts of the v1c text under ``count_tokens`` (a
+stand-in for BGE-M3), chunks, verse_index, and the legacy map of the old rows in
+``legacy_pericopes()`` / ``legacy_chunks()``.
+
 ``build()`` returns fresh dicts every call, so tests may mutate the result.
 The expected counts live in ``mini_counts.yaml`` and were tallied by hand.
 """
