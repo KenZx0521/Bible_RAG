@@ -1,0 +1,184 @@
+# PDF count contract for G-COUNT (design §8). Every value is an absolute count
+# verified against the 66 PDFs during the audit; it is never ratcheted.
+#   value       expected count (or, for *_keys, the exact set of ids)
+#   g           audit findings (REPORT.md) behind the number
+#   evidence    where the number was measured
+#   definition  how G-COUNT counts it (gates/counts.py implements each key)
+# The G24 parallel-reference figures (608 headings / 995 refs / 1,073 pairs) are
+# not checked until their conversion rules are written down (design §2.8).
+schema: ragdata.pdf_counts.v1
+
+text:
+  books:
+    value: 66
+    g: [G04, G13]
+    evidence: REPORT §2.1（bible_pdf/ 66 卷、66 份版權頁）
+    definition: books.jsonl 列數
+  chapters:
+    value: 1189
+    g: [G12]
+    evidence: REPORT §2.3 PDF 計數契約
+    definition: chapters.jsonl 列數
+  verse_units:
+    value: 31021
+    g: [G12]
+    evidence: REPORT §2.3、G12（節號標籤 31,021）
+    definition: verse_units.jsonl 列數（合併節算 1 筆）
+  merged_units:
+    value: 70
+    g: [G12]
+    evidence: REPORT §2.3（其中 70 個是合併節）
+    definition: v_end > v_start 的 unit 數
+  present_slots:
+    value: 31092
+    g: [G12]
+    evidence: G12（展開成 31,092 個節位）
+    definition: status 為 present 或 merged 的 slot 數
+  omitted_slots:
+    value: 11
+    g: [G02, G12]
+    evidence: G12（另有 11 個缺號，全部在前一節的「有古卷加」註腳）
+    definition: status 為 omitted_variant 的 slot 數
+  omitted_slot_keys:
+    value: [mat.18.11, mat.23.14, mrk.7.16, mrk.15.28, luk.17.36, luk.23.17,
+            jhn.5.4, act.8.37, act.15.34, act.24.7, act.28.29]
+    g: [G02, G12]
+    evidence: G02（10 個幽靈節）＋ G12（路17:36 只在註腳）；canonical_full.jsonl 實測
+    definition: status 為 omitted_variant 的 slot_key 集合（不計順序）
+  slot_rows:
+    value: 31103
+    g: [G12]
+    evidence: G12；31,092 + 11
+    definition: verse_slots.jsonl 列數
+  superscriptions:
+    value: 116
+    g: [G01, G10]
+    evidence: G01（詩篇篇題 116 篇）、G10
+    definition: kind=superscription 的 chapter_texts 數
+  superscription_chars:
+    value: 1490
+    g: [G01, G10]
+    evidence: G01（116 篇／1,490 字）
+    definition: 篇題 text_pdf 字元數總和
+  book_divisions:
+    value: 5
+    g: [G10]
+    evidence: gap_pdf_canonical/g6_headings_markers.json psalm_book_divisions=5；與 G10 同類的章層非經文文字
+    definition: kind=book_division 的 chapter_texts 數
+  selah_markers:
+    value: 70
+    g: [G09, G10]
+    evidence: G10（細拉 70 個）、g7_invariants ann_selah=70
+    definition: verse_units 中 type=selah 的 marker 總數
+  speakers:
+    value: 33
+    g: [G09, G10, G69]
+    evidence: G09（雅歌說話者 PDF 有 33 個）
+    definition: speakers.jsonl 列數
+  headings:
+    value: 2603
+    g: [G09]
+    evidence: G09（真標題 2,603）
+    definition: headings.jsonl 列數
+  headings_before:
+    value: 2585
+    g: [G09, G15]
+    evidence: g7_invariants ann_heading_before=2585
+    definition: pos=before 的標題數
+  headings_mid:
+    value: 18
+    g: [G01, G15]
+    evidence: G15（節中標題 18 處）
+    definition: pos=mid 的標題數
+  headings_dash_sub:
+    value: 15
+    g: [G09]
+    evidence: DESIGN §2.7（15 個「－」子標題）
+    definition: text_pdf 以「－」開頭的標題數
+  parallel_lines:
+    value: 619
+    g: [G09, G24, G69]
+    evidence: G69（619 條平行經文）、DESIGN §2.8（每個標題 1 行）
+    definition: parallel_refs 中相異 heading_id 數
+  parallel_segments:
+    value: 987
+    g: [G24]
+    evidence: DESIGN §2.8（依「；」切開共 987 段，c3_parallel 實測）
+    definition: parallel_refs.jsonl 列數
+  section_ranges:
+    value: 9
+    g: [G09, G24]
+    evidence: DESIGN §2.8（結1:1、8:1、40:1；但1:1、7:1；伯4:1、15:1、22:1、32:1）
+    definition: kind=section_range 的 parallel_refs 數
+  footnotes:
+    value: 1013
+    g: [G10, G69]
+    evidence: G10（PDF 1,013 條）
+    definition: footnotes.jsonl 列數
+  footnotes_alt_rendering:
+    value: 416
+    g: [G10]
+    evidence: REPORT §5.2（或譯 416）
+    definition: kind=alt_rendering（或譯）的註腳數
+  footnotes_original:
+    value: 379
+    g: [G10]
+    evidence: REPORT §5.2（原文 379）
+    definition: kind=original（原文）的註腳數
+  footnotes_name_meaning:
+    value: 73
+    g: [G10]
+    evidence: REPORT §5.2（名字的意思 73）
+    definition: kind=name_meaning（名字的意思）的註腳數
+  footnotes_variant:
+    value: 70
+    g: [G02, G10]
+    evidence: REPORT §5.2（古卷 70）
+    definition: kind=variant（有古卷）的註腳數
+  name_spans_body:
+    value: 32757
+    g: [G05]
+    evidence: G05（正文專名 32,757 條 0.3985pt 筆畫）
+    definition: region=body 的 name_spans 數（一筆筆畫一列）
+  name_surfaces_body:
+    value: 2929
+    g: [G05]
+    evidence: G05（專名共 2,929 種）；canonical_full.jsonl 實測
+    definition: region=body 的 name_spans 相異 surface 數
+  name_spans_footnote:
+    value: 6
+    g: [G05]
+    evidence: G05（6 條註腳內的專名）
+    definition: region=footnote 的 name_spans 數
+  merge_groups:
+    value: 4
+    g: [G07]
+    evidence: G07（4 組名字與通名被拆開：鹽＋海、毗珥＋山、何烈＋山、加利利＋海）
+    definition: name_spans 中相異的非空 merge_group 數
+
+struct:
+  pericopes:
+    value: 2610
+    g: [G09, G15]
+    evidence: DESIGN §2.13（2,603 標題 − 6 疊標題 + 13 個書卷開頭無標題）
+    definition: pericopes.jsonl 列數
+  pericopes_cross_chapter:
+    value: 120
+    g: [G15]
+    evidence: DESIGN §2.13（120 個跨章，e1_pericope_model 實測）
+    definition: chapters 多於 1 章的 pericope 數
+  pericopes_untitled:
+    value: 13
+    g: [G15]
+    evidence: G15（176 段無標題中 13 段是書卷開頭）
+    definition: heading_id 為 null 的 pericope 數
+  passages:
+    value: 2773
+    g: [G15]
+    evidence: DESIGN §2.14（2,610 + 163 個續段）
+    definition: passages.jsonl 列數
+  passages_continued:
+    value: 163
+    g: [G15]
+    evidence: G15（163 段是跨章續段）
+    definition: continued=true 的 passage 數
