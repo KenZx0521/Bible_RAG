@@ -19,7 +19,6 @@ import unicodedata
 from collections import Counter, defaultdict
 from typing import Any, Mapping
 
-from ragcommon import ids
 from ragdata.gates.base import GateResult, Snapshot, violations_result
 from ragdata.kg.k0_parallel import slot_order
 
