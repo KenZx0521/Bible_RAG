@@ -43,7 +43,7 @@ from ragdata.gates import emb_legacy, sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
 from ragdata.gates.counts import check_counts
 from ragdata.gates.emb import EmbFiles, check_emb
-from ragdata.gates.enc import EncOptions, StoredEncoding, run_enc
+from ragdata.gates.enc import REENCODE, EncOptions, StoredEncoding, run_enc
 from ragdata.gates.ref import check_ref
 from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
@@ -83,6 +83,7 @@ class GateInputs:
     reranker_tokenizer: Path = paths.RERANKER_TOKENIZER   # G-ENC
     legacy_dir: Path = paths.LEGACY_OUTPUT        # G-ENC: the old embedding_queue / embeddings
     compat_sample: int = emb_legacy.SAMPLE        # G-ENC: records checked against the old index
+    reencode_sample: int = REENCODE               # G-ENC: records encoded again away from cuda
     device: str | None = None                     # G-EMB/G-ENC: where BGE-M3 runs
     encoder: Encoder | None = None                # G-EMB/G-ENC: a stand-in encoder (tests only)
 
@@ -197,7 +198,8 @@ def _enc_gate(ctx: GateContext) -> GateResult:
     missing = _no_encoder("G-ENC", ctx)
     if missing:
         return missing
-    options = EncOptions(Path(ctx.inputs.legacy_dir), ctx.inputs.compat_sample)
+    options = EncOptions(Path(ctx.inputs.legacy_dir), ctx.inputs.compat_sample,
+                         ctx.inputs.reencode_sample)
     return run_enc(ctx.snapshot.of("embedding_records"), ctx.emb.stored, ctx.emb.encoder,
                    options)
 

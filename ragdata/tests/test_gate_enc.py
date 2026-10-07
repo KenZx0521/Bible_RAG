@@ -9,7 +9,7 @@ import pytest
 
 import fake_encoder
 from ragcommon import encoder as pins
-from ragdata.gates import enc
+from ragdata.gates import enc, vectors
 from ragdata.stages.s06_emb import fingerprint
 from ragdata.store import vectors as vector_files
 
@@ -110,16 +110,47 @@ def test_sub_check_violations_fail_the_gate():
         assert result.details[0].startswith(f"{name}: ")
 
 
+def _reencoded(matrix, rows):
+    return enc.check_reencoded(fake_encoder.embed, IDS, TEXTS, matrix, np.asarray(rows))
+
+
 def test_stored_rows_reencode_to_themselves():
-    matrix = fake_encoder.embed(TEXTS)
-    observed, violations = enc.check_reencoded(fake_encoder.embed, IDS, TEXTS, matrix, 10)
-    assert violations == [] and observed["sampled"] == 10 and observed["min_cos"] > 0.9999
+    observed, violations = _reencoded(fake_encoder.embed(TEXTS), range(30))
+    assert violations == [] and observed["min_cos"] > enc.DET_COS
+    assert (observed["rows"], observed["records"], observed["sampled"]) == (30, 30, False)
 
 
-def test_rows_stored_for_other_texts_are_caught():
+def test_rows_stored_for_other_texts_are_caught_and_counted():
     shifted = np.roll(fake_encoder.embed(TEXTS), 1, axis=0)
-    _, violations = enc.check_reencoded(fake_encoder.embed, IDS, TEXTS, shifted, 10)
-    assert len(violations) == 10
+    observed, violations = _reencoded(shifted, range(30))
+    assert observed["below_cos"] == 30 and len(violations) == vectors.MAX_LISTED
+
+
+def test_rows_off_by_less_than_the_probe_tolerance_but_more_than_det_cos_are_caught():
+    matrix = fake_encoder.embed(TEXTS)
+    other = matrix[1] - matrix[1].dot(matrix[0]) * matrix[0]
+    cos = 0.99995
+    matrix[0] = cos * matrix[0] + np.sqrt(1 - cos ** 2) * other / np.linalg.norm(other)
+    observed, violations = _reencoded(matrix, [0, 5])
+    assert violations == [f"{IDS[0]}: stored row has cos 0.9999500 < {enc.DET_COS} with its "
+                          "text encoded here"]
+    assert observed["sampled"] is True and observed["below_cos"] == 1
+
+
+def test_an_encoder_that_returns_the_wrong_shape_fails():
+    _, violations = enc.check_reencoded(lambda texts: np.zeros((1, 8), np.float32), IDS, TEXTS,
+                                        fake_encoder.embed(TEXTS), np.arange(3))
+    assert violations and "re-encoding gave" in violations[0]
+
+
+@pytest.mark.parametrize("device, full, rows", [
+    ("cuda", None, 30), ("cuda:1", None, 30), ("cpu", None, 7), (None, None, 7),
+    ("cpu", True, 30), ("cuda", False, 7),
+])
+def test_every_record_is_reencoded_on_cuda_and_a_sample_elsewhere(device, full, rows):
+    options = enc.EncOptions(legacy_dir=None, reencode_sample=7, full_reencode=full)
+    picked = enc.reencode_rows(30, device, options)
+    assert picked.size == rows and list(picked) == sorted(set(picked.tolist()))
 
 
 class _Rec:

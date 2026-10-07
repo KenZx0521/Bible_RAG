@@ -84,7 +84,7 @@ def _gates(base: Snapshot, rows: Sequence[dict], files: Mapping[str, Any],
     found = vector_files.decode_vectors(vfiles)
     counts = check_counts(snap, "emb", load_counts(counts_path).get("emb", {}))
     emb_files = EmbFiles(files["report"], found.matrix, found.index, files["depends_on"])
-    options = EncOptions(inputs.legacy_dir, inputs.compat_sample)
+    options = EncOptions(inputs.legacy_dir, inputs.compat_sample, full_reencode=False)
     return [schema, counts, check_emb(snap, emb_files, enc.stats),
             run_enc(snap.of("embedding_records"), StoredEncoding(files["fingerprint"], found),
                     enc, options)]

@@ -14,9 +14,12 @@ environment (at build time they are the same), the gate requires:
   reported: it differs between devices);
 - no record is longer than the model reads (``max_seq_length``, two special
   tokens included);
-- ``reencoded``: 200 records sampled with a fixed seed, encoded again here, give
-  their stored rows back (cos >= 0.9999): the rows are the encodings of their
-  own texts;
+- ``reencoded``: the records encoded again here give their stored rows back, each
+  with cos >= 0.99999 (G-DET's tolerance): every row is the encoding of its own
+  text. On cuda every record is encoded again (about 40 s for the 34,058); on
+  any other device only 200 sampled with a fixed seed, and ``sampled`` says so.
+  The build passes ``full_reencode=False``: it encoded the rows moments before
+  in the same process, so a sample is enough there;
 - ``legacy``: the legacy check (``gates.emb_legacy``) found no violation.
 """
 
@@ -31,7 +34,7 @@ import numpy as np
 from ragcommon import encoder as pins
 from ragdata.gates import emb_legacy
 from ragdata.gates.base import GateResult, capped
-from ragdata.gates.vectors import compare_probes, query_rows, rowwise_cos
+from ragdata.gates.vectors import DET_COS, MAX_LISTED, compare_probes, query_rows, rowwise_cos
 from ragdata.stages.s06_emb.encoder import Encoder
 from ragdata.stages.s06_emb.fingerprint import encoder_fingerprint, probe_vectors
 from ragdata.store.vectors import VectorSet, ints_sha, probe_ints
@@ -40,7 +43,7 @@ NAME = "G-ENC"
 PROBE_COS = 0.9999
 SPECIAL_TOKENS = 2           # <s> … </s>
 SECTIONS = {"bge_m3": pins.BGE_M3, "reranker": pins.RERANKER}
-REENCODE = 200
+REENCODE = 200               # records encoded again away from cuda
 SUB_CHECKS = ("probes", "reencoded", "legacy")
 Check = tuple[Mapping[str, Any], Sequence[str]]   # (observed, violations) of a sub-check
 
@@ -57,6 +60,8 @@ class StoredEncoding:
 class EncOptions:
     legacy_dir: Path                          # the old output/ (gates.emb_legacy)
     legacy_sample: int = emb_legacy.SAMPLE
+    reencode_sample: int = REENCODE
+    full_reencode: bool | None = None         # None: every record on cuda, a sample elsewhere
 
 
 def _section(doc: Mapping[str, Any], name: str) -> Mapping[str, Any]:
@@ -96,19 +101,27 @@ def check_probes(stored: VectorSet, here: np.ndarray) -> Check:
             violations)
 
 
+def reencode_rows(records: int, device: str | None, options: EncOptions) -> np.ndarray:
+    """The rows G-ENC encodes again: all of them on cuda (or when asked), else a sample."""
+    full = options.full_reencode
+    if full is None:
+        full = str(device).startswith("cuda")
+    return np.arange(records) if full else query_rows(records, options.reencode_sample)
+
+
 def check_reencoded(embed: Callable[[Sequence[str]], np.ndarray], ids: Sequence[str],
-                    texts: Sequence[str], vectors: np.ndarray, sample: int = REENCODE) -> Check:
-    """Encode a fixed sample of records again and compare with their stored rows."""
-    rows = query_rows(len(ids), sample)
+                    texts: Sequence[str], vectors: np.ndarray, rows: np.ndarray) -> Check:
+    """Encode the records at ``rows`` again and compare each with its stored row."""
+    seen = {"rows": int(rows.size), "records": len(ids), "sampled": bool(rows.size < len(ids))}
     fresh = np.asarray(embed([texts[i] for i in rows]), dtype=np.float32)
-    if fresh.shape != (len(rows), vectors.shape[1]):
-        return {"sampled": int(rows.size)}, [f"re-encoding gave {fresh.shape} for {rows.size} "
-                                             "records"]
+    if fresh.shape != (rows.size, vectors.shape[1]):
+        return seen, [f"re-encoding gave {fresh.shape} for {rows.size} records"]
     cos = rowwise_cos(vectors[rows], fresh)
-    violations = [f"{ids[i]}: stored row has cos {c:.7f} < {PROBE_COS} with its text encoded "
-                  "here" for i, c in zip(rows, cos) if c < PROBE_COS]
-    return {"sampled": int(rows.size), "min_cos": float(cos.min()) if cos.size else None}, \
-        violations
+    low = np.flatnonzero(cos < DET_COS)
+    violations = [f"{ids[rows[k]]}: stored row has cos {cos[k]:.7f} < {DET_COS} with its text "
+                  "encoded here" for k in low[:MAX_LISTED]]
+    return {**seen, "min_cos": float(cos.min()) if cos.size else None,
+            "below_cos": int(low.size)}, violations
 
 
 def check_enc(stored: Mapping[str, Any], observed: Mapping[str, Any], max_tokens: int,
@@ -124,9 +137,18 @@ def check_enc(stored: Mapping[str, Any], observed: Mapping[str, Any], max_tokens
         violations += [f"{name}: {v}" for v in found]
     observed_doc = {"max_tokens": max_tokens, "max_seq_length": limit,
                     **{name: dict(seen) for name, (seen, _) in checks.items()}}
-    expected = {"pins": "ragcommon.encoder", "probe_cos": PROBE_COS, "reencoded": REENCODE,
+    expected = {"pins": "ragcommon.encoder", "probe_cos": PROBE_COS, "reencode_cos": DET_COS,
+                "reencoded": f"every record on cuda, else {REENCODE} sampled",
                 "legacy_cos": emb_legacy.MIN_COS, "legacy_sample": emb_legacy.SAMPLE}
     return GateResult(NAME, True, not violations, observed_doc, expected, capped(violations))
+
+
+def _reencoded(enc: Encoder, ids: Sequence[str], texts: Sequence[str], matrix: np.ndarray,
+               options: EncOptions) -> Check:
+    device = enc.runtime.get("device")
+    seen, violations = check_reencoded(enc.embed, ids, texts, matrix,
+                                       reencode_rows(len(ids), device, options))
+    return {"device": device, **seen}, violations
 
 
 def run_enc(recs: Sequence[Any], stored: StoredEncoding, enc: Encoder, options: EncOptions
@@ -137,11 +159,11 @@ def run_enc(recs: Sequence[Any], stored: StoredEncoding, enc: Encoder, options: 
     found = stored.vectors
     if found is None or found.matrix.shape[0] != len(recs):
         shape = None if found is None else found.matrix.shape
-        missing = ({"sampled": 0}, [f"no vectors with one row per record ({shape})"])
+        missing = ({"rows": 0}, [f"no vectors with one row per record ({shape})"])
         checks = dict.fromkeys(SUB_CHECKS, missing)
     else:
         checks = {"probes": check_probes(found, probe_vectors(enc)),
-                  "reencoded": check_reencoded(enc.embed, ids, texts, found.matrix),
+                  "reencoded": _reencoded(enc, ids, texts, found.matrix, options),
                   "legacy": emb_legacy.check_compat(list(zip(ids, texts)), found.matrix,
                                                     options.legacy_dir, options.legacy_sample)}
     max_tokens = max((r.token_count for r in recs), default=0)
