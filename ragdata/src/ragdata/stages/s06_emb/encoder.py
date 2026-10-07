@@ -63,17 +63,21 @@ def _model(device: str | None) -> tuple[Any, dict[str, Any]]:
     return model, runtime
 
 
+def _token_stats(m3: Any) -> TokenStats:
+    unk = m3.unk_token_id
+
+    def stats(text: str) -> tuple[int, int]:
+        ids = m3(text, add_special_tokens=False)["input_ids"]
+        return len(ids), ids.count(unk)
+    return TokenStats(stats)
+
+
 def load_encoder(tokenizer: Path | None = None, reranker_tokenizer: Path = RERANKER_TOKENIZER,
                  device: str | None = None) -> Encoder:
     """The pinned BGE-M3 (``tokenizer``: its tokenizer.json, None for the HF cache)."""
     m3, m3_fp, rr_fp = _pinned_tokenizers(tokenizer, Path(reranker_tokenizer))
     model, runtime = _model(device)
     model.tokenizer = m3
-    unk = m3.unk_token_id
-
-    def stats(text: str) -> tuple[int, int]:
-        ids = m3(text, add_special_tokens=False)["input_ids"]
-        return len(ids), ids.count(unk)
 
     def embed(texts: Sequence[str]) -> np.ndarray:
         return model.encode(list(texts), batch_size=BATCH_SIZE, normalize_embeddings=True,
@@ -82,8 +86,22 @@ def load_encoder(tokenizer: Path | None = None, reranker_tokenizer: Path = RERAN
     info = {"model": pins.BGE_M3.repo_id, "revision": pins.BGE_M3.revision,
             "dim": model.get_sentence_embedding_dimension(),
             "max_seq_length": model.max_seq_length, "normalize": True, "batch_size": BATCH_SIZE}
-    return Encoder(embed, TokenStats(stats), info,
+    return Encoder(embed, _token_stats(m3), info,
                    {pins.BGE_M3.name: m3_fp, pins.RERANKER.name: rr_fp}, runtime)
+
+
+def _no_model(texts: Sequence[str]) -> np.ndarray:
+    raise StageError("the token encoder holds the pinned tokenizers only: it does not embed")
+
+
+def load_token_encoder(tokenizer: Path | None = None,
+                       reranker_tokenizer: Path = RERANKER_TOKENIZER) -> Encoder:
+    """The pinned tokenizers without BGE-M3's weights: token stats (all G-EMB reads), no
+    embedding; the same pins and failures as ``load_encoder``."""
+    m3, m3_fp, rr_fp = _pinned_tokenizers(tokenizer, Path(reranker_tokenizer))
+    info = {"model": pins.BGE_M3.repo_id, "revision": pins.BGE_M3.revision}
+    return Encoder(_no_model, _token_stats(m3), info,
+                   {pins.BGE_M3.name: m3_fp, pins.RERANKER.name: rr_fp}, {"device": None})
 
 
 def encode_texts(enc: Encoder, texts: Sequence[str]) -> np.ndarray:

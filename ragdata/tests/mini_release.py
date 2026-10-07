@@ -3,6 +3,8 @@
 ``build(root)`` writes text and struct (mini_build), emb (stand-in encoder), kg0, events and
 route (mini_kg registries, a fake backend) into ``root/store`` and returns them by layer.
 The mini text layer has no src layer under it, so a mini release names no src.
+``MiniRelease.checks`` gates the mini layers when a release is assembled: the mini counts,
+grid, token counts, registries and the stand-in encoder.
 """
 
 from __future__ import annotations
@@ -21,7 +23,10 @@ import mini_emb
 import mini_kg
 from ragcommon import routing
 from ragdata.kg import k0_build, k1_build, k4_build
+from ragdata.gates.runner import GateInputs
 from ragdata.legacy import route_live
+from ragdata.release.gating import ReleaseChecks
+from ragdata.stages.s05_struct.tokens import TokenCounter
 from ragdata.stages.s06_emb.build import build_emb
 from ragdata.store import StoredLayer
 
@@ -42,6 +47,14 @@ class MiniRelease:
     @property
     def top(self) -> list[str]:
         return [self.layers[name].version for name in TOP]
+
+    @property
+    def checks(self) -> ReleaseChecks:
+        inputs = GateInputs(versification=mini_build.versification(),
+                            token_counter=TokenCounter(mini_build.count_tokens, {}),
+                            legacy_registry=self.root / "event_registry.json",
+                            kg0_counts=self.root / "kg0_counts.yaml", encoder=encoder())
+        return ReleaseChecks(MINI_COUNTS, inputs)
 
 
 def _built(result, layer: str) -> StoredLayer:

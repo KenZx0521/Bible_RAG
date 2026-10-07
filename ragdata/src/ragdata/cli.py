@@ -23,10 +23,12 @@
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
     python -m ragdata gt {build,gate} ...   (GT v2; see ragdata.gt.cli)
     python -m ragdata release VERSION... [--store DIR] [--releases DIR] [--date YYYYMMDD]
+                                 [--tokenizer F]
     python -m ragdata load RELEASE_JSON --slot inactive [--store DIR] [--contracts DIR]
-                                 [--env-file F]
+                                 [--env-file F] [--tokenizer F]
     python -m ragdata verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F]
-                                 [--gt F] [--freeze F] [--device DEV] [--sample N] [--report F]
+                                 [--tokenizer F] [--gt F] [--freeze F] [--device DEV]
+                                 [--sample N] [--report F]
 
 DAG-external tools that write a registry or an expectation file (never run by a build):
 
@@ -47,6 +49,8 @@ it encodes a sample and reports ``sampled: true``. ``det`` on two emb layers als
 compares their vectors and probe vectors within G-DET's tolerance. kg0 and events
 are built from, and gated with, text and struct; route with text. G-ROUTE runs the backend's live matcher
 with ``--backend-python`` (the backend venv) and fails closed without it.
+``release``, ``load`` and ``verify`` gate every layer of the release again (all but
+G-ENC, G-ROUTE, G-CONSERVE and G-XCHECK) and refuse it (status 2) when one is red.
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
 0 everything passed, 1 a hard gate failed, 2 bad input (including a stage that

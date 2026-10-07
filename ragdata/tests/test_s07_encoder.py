@@ -62,6 +62,29 @@ def test_encode_refuses_rows_that_are_missing_not_finite_or_not_unit_length(bad)
 def test_a_missing_tokenizer_file_stops_loading(tmp_path):
     with pytest.raises(StageError, match="tokenizer"):
         encoder.load_encoder(tokenizer=tmp_path / "missing.json")
+    with pytest.raises(StageError, match="tokenizer"):
+        encoder.load_token_encoder(tokenizer=tmp_path / "missing.json")
+
+
+class _Tokenizer:
+    """Splits on spaces; ``?`` is the unknown token."""
+
+    unk_token_id = 0
+
+    def __call__(self, text, add_special_tokens=False):
+        return {"input_ids": [0 if w == "?" else 1 for w in text.split()]}
+
+
+def test_the_token_encoder_counts_tokens_without_loading_the_model(monkeypatch):
+    fps = {"m3": {"tokenizer_sha": "a"}, "rr": {"tokenizer_sha": "b"}}
+    monkeypatch.setattr(encoder, "_pinned_tokenizers",
+                        lambda tok, rr: (_Tokenizer(), fps["m3"], fps["rr"]))
+    monkeypatch.setattr(encoder, "_model", lambda device: pytest.fail("the model was loaded"))
+    enc = encoder.load_token_encoder()
+    assert enc.stats.of("起初 ? 上帝 ?") == (4, 2)
+    assert enc.tokenizers == {pins.BGE_M3.name: fps["m3"], pins.RERANKER.name: fps["rr"]}
+    with pytest.raises(StageError, match="does not embed"):
+        encoder.encode_texts(enc, ["起初"])
 
 
 HF_HUB = pins.hub_cache_dir()
@@ -82,3 +105,4 @@ def test_the_real_encoder_is_the_pinned_bge_m3_with_its_pinned_tokenizer():
     assert tokens >= 4 and unk >= 1
     vecs = encoder.encode_texts(enc, ["起初，上帝創造天地。", "起初，上帝創造天地。"])
     assert vecs.shape == (2, 1024) and np.allclose(np.linalg.norm(vecs, axis=1), 1, atol=1e-5)
+    assert encoder.load_token_encoder().stats.of("騾子，稗子。") == (tokens, unk)

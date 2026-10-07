@@ -6,7 +6,9 @@ need not be all of them: the rest follow from each layer's ``depends_on``, and t
 closure must agree, by content hash, everywhere: a layer built on another version
 of a layer the release names is refused. Every layer is read through the store,
 so each of its files is checked against its manifest and its version against the
-digest.
+digest. Then every core layer passes its hard gates again under the current policy
+(``gating``: all but G-ENC, G-ROUTE and the gates that re-read the PDFs), or the
+release is refused; the verdicts are not part of the document.
 
 The release document pins the versions and full digests, the declared
 dependencies, the record counts, the encoder fingerprint and the sha256 of every
@@ -32,12 +34,16 @@ from typing import Any, Mapping, Sequence
 
 from ragcommon import ids
 from ragdata.contract.registry import EMB_REPORT, ENCODER_FINGERPRINT, record_type_for_file
+from ragdata.gates.base import GateInputError
+from ragdata.release import gating
 from ragdata.release.contracts import ContractFileError, contract_files, encode
+from ragdata.release.gating import ReleaseChecks
+from ragdata.stages.errors import StageError
 from ragdata.store import LayerData, StoreError, layer_digest, read_layer
 from ragdata.store.cas import sha256_bytes
 
-__all__ = ["CORE", "NAMING", "Release", "ReleaseError", "assemble", "encode", "git_date",
-           "read_release", "resolve_layers", "sha256_bytes", "write_release"]
+__all__ = ["CORE", "NAMING", "Release", "ReleaseChecks", "ReleaseError", "assemble", "encode",
+           "git_date", "read_release", "resolve_layers", "sha256_bytes", "write_release"]
 
 RELEASE_SCHEMA = "ragdata.release.v1"
 CONTRACT_VERSION = "1.1.0"
@@ -146,10 +152,23 @@ def _body(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> di
     }
 
 
-def assemble(store_root: Path, versions: Sequence[str], date: str) -> Release:
+def check_gates(layers: Mapping[str, LayerData], checks: ReleaseChecks) -> None:
+    """Refuse layers a hard gate turns red now, or that cannot be gated."""
+    try:
+        red = gating.red_gates(layers, CORE, checks)
+    except (GateInputError, StageError, StoreError) as exc:
+        raise ReleaseError(f"the layers cannot be gated: {exc}") from None
+    if red:
+        raise ReleaseError("a release holds only layers that pass their hard gates now; "
+                           f"red: {'; '.join(red)}")
+
+
+def assemble(store_root: Path, versions: Sequence[str], date: str,
+             checks: ReleaseChecks = ReleaseChecks()) -> Release:
     """The release of ``versions`` (and their closure) built on ``date`` (YYYYMMDD)."""
     _check_date(date)
     layers = resolve_layers(Path(store_root), versions)
+    check_gates(layers, checks)
     try:
         contracts = contract_files(layers)
     except ContractFileError as exc:
@@ -184,8 +203,9 @@ def write_release(release: Release, directory: Path) -> Path:
     return path
 
 
-def read_release(path: Path, store_root: Path) -> Release:
-    """The release in ``path``, verified by assembling it again from the store."""
+def read_release(path: Path, store_root: Path,
+                 checks: ReleaseChecks = ReleaseChecks()) -> Release:
+    """The release in ``path``, verified by assembling (and gating) it again from the store."""
     try:
         data = Path(path).read_bytes()
         doc = json.loads(data.decode("utf-8"))
@@ -195,7 +215,7 @@ def read_release(path: Path, store_root: Path) -> Release:
             or not isinstance(doc.get("layers"), dict):
         raise ReleaseError(f"{path}: not a release ({RELEASE_SCHEMA})")
     versions = [v for v in doc["layers"].values() if v]
-    again = assemble(store_root, versions, doc.get("build_date"))
+    again = assemble(store_root, versions, doc.get("build_date"), checks)
     if again.data != data:
         raise ReleaseError(f"{path} does not match the release assembled from the store "
                            f"({again.build_id})")

@@ -15,6 +15,7 @@ from ragdata.loader import cli as loader_cli
 from ragdata.loader import pg as pgmod, qdrant as qmod
 from ragdata.loader.qdrant import QdrantDb
 from ragdata.loader.verify import VerifyInputs
+from ragdata.release import gating
 
 pytestmark = pytest.mark.filterwarnings("ignore:Payload indexes")
 
@@ -26,6 +27,7 @@ def setup(tmp_path, monkeypatch):
     pg, qdrant = FakePg(), QdrantDb(QdrantClient(location=":memory:"))
     pg.close = qdrant.close = lambda: None
     monkeypatch.setattr(loader_cli, "connect", lambda env: (pg, qdrant))
+    monkeypatch.setattr(gating, "default_checks", lambda tokenizer: mini.checks)
     real = loader_cli.VerifyInputs
     monkeypatch.setattr(loader_cli, "VerifyInputs", lambda **kw: real(
         **{**kw, "encoder": mini_release.encoder()}))
@@ -48,6 +50,20 @@ def test_load_then_verify(setup, capsys, tmp_path):
     assert json.loads(report.read_text(encoding="utf-8"))["pass"] is True
     assert cli.main(argv) == 2
     assert "refusing" in capsys.readouterr().err
+
+
+def test_load_refuses_a_release_whose_layer_the_gates_now_turn_red(setup, capsys, monkeypatch):
+    """The release file is unchanged, but G-COUNT no longer holds for its text layer."""
+    mini = setup["mini"]
+    counts = mini.root / "red_counts.yaml"
+    counts.write_text(mini_release.MINI_COUNTS.read_text(encoding="utf-8").replace(
+        "headings: {value: 6,", "headings: {value: 7,"), encoding="utf-8")
+    monkeypatch.setattr(gating, "default_checks",
+                        lambda tokenizer: gating.ReleaseChecks(counts, mini.checks.inputs))
+    argv = ["load", str(setup["path"]), "--slot", "inactive", *setup["common"]]
+    assert cli.main(argv) == 2
+    assert f"{mini.layers['text'].version} G-COUNT" in capsys.readouterr().err
+    assert setup["pg"].applied == 0 and not setup["pg"].builds
 
 
 def test_verify_before_load_is_a_failed_gate(setup, capsys):

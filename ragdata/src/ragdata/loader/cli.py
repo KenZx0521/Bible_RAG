@@ -1,11 +1,13 @@
 """``python -m ragdata load|verify`` (S13, S14).
 
     load RELEASE_JSON --slot inactive [--store DIR] [--contracts DIR] [--env-file F]
-    verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F] [--gt F] [--freeze F]
-                        [--device DEV] [--tokenizer F] [--sample N] [--report F]
+                      [--tokenizer F]
+    verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F] [--tokenizer F]
+                        [--gt F] [--freeze F] [--device DEV] [--sample N] [--report F]
 
-Both read the release through the store (``read_release``: every layer verified,
-the file assembled again byte for byte). Connections come from POSTGRES_* and
+Both read the release through the store (``read_release``: every layer verified and
+gated again, the file assembled again byte for byte; ``--tokenizer`` is BGE-M3's
+tokenizer.json, default the HF cache). Connections come from POSTGRES_* and
 QDRANT_* in the environment, or else from ``--env-file`` (the repository's
 ``.env``). ``load`` writes only a new schema, ``rag_meta.builds``, a new collection
 and a new contract directory; ``--slot inactive`` is the only slot it accepts.
@@ -23,7 +25,8 @@ from ragdata import paths
 from ragdata.loader import config
 from ragdata.loader.load import load
 from ragdata.loader.verify import ProjectionReport, VerifyInputs, verify
-from ragdata.release.assemble import read_release
+from ragdata.release import gating
+from ragdata.release.assemble import Release, read_release
 from ragdata.store import DEFAULT_ROOT
 
 
@@ -32,6 +35,7 @@ def _common(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--store", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--contracts", type=Path, default=paths.CONTRACTS)
     parser.add_argument("--env-file", type=Path, default=paths.REPO / ".env")
+    parser.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (default HF cache)")
 
 
 def add_parsers(sub: argparse._SubParsersAction) -> None:
@@ -43,7 +47,6 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     check.add_argument("--gt", type=Path, default=paths.GT_V2)
     check.add_argument("--freeze", type=Path, default=paths.GT_V2_FREEZE)
     check.add_argument("--device", help="where BGE-M3 re-encodes (default cuda if available)")
-    check.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (default HF cache)")
     check.add_argument("--sample", type=int, default=200)
     check.add_argument("--report", type=Path)
 
@@ -67,8 +70,13 @@ def connect(env: Mapping[str, str]) -> tuple[Any, Any]:
         raise
 
 
+def release_of(args: argparse.Namespace) -> Release:
+    """The release file, verified against the store and its layers gated again."""
+    return read_release(args.release, args.store, gating.default_checks(args.tokenizer))
+
+
 def run_load(args: argparse.Namespace) -> dict[str, Any]:
-    release = read_release(args.release, args.store)
+    release = release_of(args)
     pg, qdrant = connect(environment(args.env_file))
     try:
         return load(release, pg, qdrant, args.contracts)
@@ -78,7 +86,7 @@ def run_load(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def run_verify(args: argparse.Namespace) -> ProjectionReport:
-    release = read_release(args.release, args.store)
+    release = release_of(args)
     inputs = VerifyInputs(gt=args.gt, freeze=args.freeze, sample=args.sample,
                           device=args.device, tokenizer=args.tokenizer)
     pg, qdrant = connect(environment(args.env_file))

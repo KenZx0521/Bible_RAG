@@ -1,6 +1,7 @@
 """S13: load a release into a slot nothing serves (design §7.1–7.3, §7.5).
 
-The only input is a verified release (``release.read_release``). Before anything
+The only input is a verified release (``release.read_release``: every layer read
+through the store and its hard gates run again, ``release.gating``). Before anything
 is written: the records pass G-SCHEMA again, the vectors attachment is read and
 checked row by row against the embedding records (record id, text sha, row sha),
 and the targets are checked: the build must not be serving, not be registered in

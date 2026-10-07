@@ -40,8 +40,9 @@ class Loaded:
 
 
 def assembled(mini: mini_release.MiniRelease) -> rel.Release:
-    path = rel.write_release(rel.assemble(mini.store, mini.top, DATE), mini.root / "releases")
-    return rel.read_release(path, mini.store)
+    path = rel.write_release(rel.assemble(mini.store, mini.top, DATE, mini.checks),
+                             mini.root / "releases")
+    return rel.read_release(path, mini.store, mini.checks)
 
 
 def load(root: Path, mini: mini_release.MiniRelease | None = None) -> Loaded:
