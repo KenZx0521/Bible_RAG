@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT / "packages") not in sys.path:
     sys.path.insert(0, str(ROOT / "packages"))
 
-from ragcommon import books  # noqa: E402
+from ragcommon import books, ids  # noqa: E402
 
 CANONICAL = Path("/mnt/ollama-data/bible_rag_store/reference/audit_prototypes/"
                  "gap_pdf_canonical/canonical_full.jsonl")
@@ -80,8 +80,12 @@ def derive_versification(path: Path | str) -> dict:
         if rec["status"] == "omitted_variant":
             omitted.append({"slot_key": rec["id"], "variant_in_footnote_of": rec["variant_in_footnote_of"]})
     order = {b: i for i, b in enumerate(books.book_ids())}
-    omitted.sort(key=lambda o: (order[o["slot_key"].split(".")[0]],
-                                *map(int, o["slot_key"].split(".")[1:])))
+
+    def canonical(o: dict) -> tuple[int, int, int]:
+        slot = ids.parse(o["slot_key"])
+        return order[slot.book_id], slot.chapter, slot.verse
+
+    omitted.sort(key=canonical)
     return {
         "schema": "ragcommon.versification.v1",
         "source": {"kind": "audit_prototype", "path": str(path),

@@ -20,6 +20,7 @@ import re
 import unicodedata
 import uuid
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Callable
 from urllib.parse import quote, unquote
 
@@ -36,7 +37,7 @@ KINDS = frozenset({
     "passage", "chunk", "verse_record", "name", "mention", "entity", "event",
     "relation", "decision", "layer_version", "build",
 })
-ROLES = {"unit": frozenset({"slot", "unit"}), "key": frozenset({"slot", "key"})}
+ROLES = MappingProxyType({"unit": frozenset({"slot", "unit"}), "key": frozenset({"slot", "key"})})
 CONTAINER_KINDS = frozenset({
     "slot", "unit", "superscription", "division", "heading", "footnote", "speaker",
 })

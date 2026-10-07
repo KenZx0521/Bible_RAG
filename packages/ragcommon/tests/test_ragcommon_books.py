@@ -89,7 +89,7 @@ def test_lookup_name_returns_none_for_unknown(text):
     assert books.lookup_name(text) is None
 
 
-def test_pdf_has_twenty_four_parallel_reference_abbreviations_plus_footnote_forms():
+def test_pdf_abbreviations_are_unique_and_cover_parallel_reference_forms():
     pdf = [a for b in books.all_books() for a in b.pdf_abbreviations]
     assert len(pdf) == len(set(pdf))
     assert {"太", "可", "路", "約", "代下", "林前", "撒上", "士"} <= set(pdf)
