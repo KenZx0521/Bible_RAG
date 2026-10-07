@@ -1,0 +1,112 @@
+# Expectations of S0/S1 (G-SRC, G-TOOL) and of the S2 row classes (G-CONSERVE).
+# Every value is a fact of the 66 PDFs measured during the audit (REPORT §2.1–2.3,
+# DESIGN §8); none is a tolerance. A change here needs a new PDF set or toolchain.
+schema: ragdata.source_expect.v1
+toolchain:            # G-TOOL (DESIGN §8)
+  mutool: 1.23.10
+  pdftotext: 24.02.0
+ebible_uuid: c03bb35c-f042-59c2-88d7-1111d9a01842   # REPORT §2.1: 66 identical colophons
+pages: 2543           # REPORT §2.1
+overflow_glyphs: 852  # REPORT §2.3 / GAP3-10: glyphs past the right page edge (745 body + 107 footnote)
+strokes: 33599        # G05: 0.3985pt strokes (32,757 names, 770 footnote rules, 66 colophon, 6 in footnotes)
+edition_markers:      # G04, DESIGN §8 G-SRC: RCUV spelling / CUNP spelling
+  呂便: 93
+  流便: 0
+  塞魯士: 27
+  古列: 0
+  凱撒: 50
+  該撒: 0
+  泰爾: 70
+  推羅: 0
+conserve:             # G-CONSERVE totals by row class (DESIGN §8; audit g7_invariants conserve_*)
+  body: 1059384       # verse text and Psalm superscriptions
+  navy: 27568         # headings, parallel references, speaker labels
+  footnote: 13463     # callers and note text
+  division: 32        # Psalms book divisions
+style_groups:         # G03: 19 (font|size|colour) groups with their non-space glyph counts
+  "BitstreamCyberbit-Roman|11.96|#000000": 413432
+  "BitstreamCyberbit-Roman|11.96|#000080": 5815
+  "BitstreamCyberbit-Roman|15.94|#000080": 12
+  "BitstreamCyberbit-Roman|8.97|#000080": 3192
+  "NotoSansCJKjp-Black|11.96|#000080": 396
+  "NotoSansCJKjp-Black|15.94|#000080": 20
+  "NotoSansCJKjp-Black|17.93|#000000": 255
+  "NotoSansCJKjp-Regular|11.96|#000000": 645952
+  "NotoSansCJKjp-Regular|11.96|#000080": 20112
+  "NotoSansCJKjp-Regular|7.97|#000080": 264
+  "NotoSansCJKjp-Regular|7.97|#0000ff": 18028
+  "NotoSansCJKjp-Regular|8.97|#000080": 4920
+  "NotoSerif-ExtraBold|17.93|#000000": 1922
+  "NotoSerif-ExtraBold|8.97|#000080": 5329
+  "NotoSerif-ExtraBold|9.96|#000080": 2112
+  "NotoSerif-Italic|11.96|#000080": 1641
+  "NotoSerif-Regular|7.97|#000080": 12078
+  "NotoSerif-Regular|7.97|#0000ff": 30545
+  "NotoSerif-Regular|8.97|#000080": 51798
+pdfs:                 # file -> sha256 (audit gap_pdf_canonical/pdf_sha256_manifest.txt)
+  創世記.pdf: 37af74202532d9a6b03e1c09e48b200da569d887b20e91fb3bb01d73f92a615b
+  出埃及記.pdf: 7165d21eeeca58d4ff4e8f6b8fd7db6a480c2a891c03f6e14cbcecc9c0b8e036
+  利未記.pdf: 46caa14e5206245b64e25159926a5d207421b5f275c298d1304e205c29feed96
+  民數記.pdf: b4919434b04e5e04ffb5bf3e37ab56cde3cca480b41a1cbbe4a3f021ed5f5de4
+  申命記.pdf: 527386556f61273e10bc0263a56bc94678f44f0a2549a325ba14a14b244f7320
+  約書亞記.pdf: 718cec3c4acb5a82ec9258f2b1a367ddd25dcb83f3aa9eb8b5e5a3e6b08c652c
+  士師記.pdf: 07d5163d494294721a2cb156f1bb18d946652f612ca16911a74d1e2e4de7fa4a
+  路得記.pdf: 1488796c315f353d09465dae1e52f4b501b7b4dd5b7c5355d5130814ee170066
+  撒母耳記上.pdf: 7141116939aeef3f24df82336b249e5961307ed958ceb07aea29bda50729aa5f
+  撒母耳記下.pdf: c63c457adc6dd666a0479f1d81c6b9e4d66262824bcf9dd4c645a5bd6835bc61
+  列王紀上.pdf: 3a00b3c8ae7850a119526549a3eac6329506f5a30963d8f408f3d517be5448b1
+  列王紀下.pdf: 467fd6b8fd9e5f22f5ba963a095d84fc82cc858fcfe27181e4eb4d594821ea7f
+  歷代志上.pdf: 70b72653bf89ebce2ed5175cc53c1391f044161e9571b0d0df50e9bec752f3b7
+  歷代志下.pdf: 5421cd5721cdc8f29b55743eb7ebdd4d008491134d6031497a07509ca96c14c4
+  以斯拉記.pdf: 62defc562a0e2898d7d6b9c6d0866e4aef1569f1167a80edad2e5883b061bfe8
+  尼西米記.pdf: 5c1ca79882d96986533da8cf56a6c5ec69e5be2c541536a954002ae0435587c3
+  以斯帖記.pdf: c9e3e0835c46b976290843a7549bbaec4a4386971e65d52aa4b72140fa195433
+  約伯記.pdf: 468635b56003c869d241a7100c7736dc223422ce9dd146b65256f1a1bc185dc1
+  詩篇.pdf: fbd2aea238192d9363d60b463bbd0c197376c7709a8db6c44b4714c1b6f94030
+  箴言.pdf: 143822d8140365750b9f725626f484a06dfcd021836ba2580fb9d9159071b872
+  傳道書.pdf: 4992e3623bb9dcb087c9b930704520fe0664716fd0600e17a0172f3e976c3ea0
+  雅歌.pdf: 4cf7876a5e5e3fbc866784d465ce19bedae3d78cdb8fc9d6d5606cf8b9b037c1
+  以賽亞書.pdf: 532f8907c23f986b4d3096dbf979eadc273a543a8bf6583aec62fd55c4b5633c
+  耶利米書.pdf: e7df57847aaadbaa2aa83b8ef8376030d1137e7c898a7a375334053d8c7ea3fc
+  耶利米哀歌.pdf: b0ba348212642da4afb2fd11732119218e1d74b1376d7e691101bf698b91b7cc
+  以西結書.pdf: 239605c3a1a0b319fee9a2c2849c7d1b8e79b2d725825c2ac58c2e26f900e298
+  但以理書.pdf: 332d30bc4365e2b2974874e70295ffbd68cf667fec373561b29db3ed9a4a1e46
+  何西阿書.pdf: ddc4749ec01ee8d3a421927fb37309132c2aa6e607444930c5b509a5d6fbe234
+  約珥書.pdf: e17bcb1d3c40aa8eac4fffafd7af9eb7c341221b25dfc2cf8bb7b044171b2236
+  阿摩司書.pdf: 065911a1dc5b304dabfb9043216b76d5ef58e3170fc4b7323a771578ccc18b37
+  俄巴底亞書.pdf: cf536636c64f39a6e0d4e3d96688ea56c6f0ff83c3cec52c33afca8d9eca9c45
+  約拿書.pdf: f7afa8506a1f994ab28b2034c67f90fcc1d4dd61da0df788d680c80069bff47f
+  彌迦書.pdf: b85366cb369b6c4d60ede14b0a39cd041f610fc8a9a0c75e1dd13e0c65a7a395
+  那鴻書.pdf: 1a59588cfb6661d2583933b84ee05fa764f85f909d647c8320a2d21bd9c16ca9
+  哈巴谷書.pdf: 0e7292fd9d7a0f7f1db1d5d70acf2d20280a16bac7158cf6d03622f018a741c2
+  西番雅書.pdf: aa63f3c8f85d25094fc213f6888cf462c242ab4f050e1513e25d49f4b1261c25
+  哈該書.pdf: 29e2a1729c85b3a6fac0c455adca6ffcfcc2bd69edf45f4cd9728f48246d9e77
+  撒迦利亞書.pdf: 460b66afca93d12223125b970836f2b2fba89b244f22ea057ea5fb172e2b855b
+  瑪拉基書.pdf: 5f7c1c9d7cf489d2972b880444a2a5c9569b11932acd0cab8006fbf1f20f93f8
+  馬太福音.pdf: 03c79d67d231a9684a5adb323c03e793191697da3870739e5bb1afa500af2093
+  馬可福音.pdf: a1d5150e4e07b3525b1b2d75da809b0a74c5c4bd44406364b71ace8c84f61988
+  路加福音.pdf: 1fb0f461fdd33588de176699cd26216800097d86afbe2eb9168cd5fd633563ed
+  約翰福音.pdf: cc528b8b9407db0ab3cc5eb131a60faef98a89438a856cf764bc6a9c5113b742
+  使徒行傳.pdf: 00e08878a2d1f430834b4d1781e3e9fb1d565210e7b9a4a8b473c382d7021a4e
+  羅馬書.pdf: 7674781d8365ae89ea4e5a8a6eb66de6b6ab1fdae79153e95f267aee47711e05
+  哥林多前書.pdf: eae073d3eb06ac2db2bbb9bd2417c9b190f0ce2f3ff4beaa10bb95c3b77bf32b
+  哥林多後書.pdf: 2248fda96bd29906b75aef3ca9e421b39f78f21ad45df9b7b67f0cd21245b453
+  加拉太書.pdf: 5960a522f34ac9ef2d8f8ad4b5993098aca0c66d59aa6be31aee6ac2570a8467
+  以弗所書.pdf: 6f119556509cff9827da28159f6550fd50b2b05c9c79d07c7c78c661e69e4083
+  腓立比書.pdf: f3447478de8484e6b801c9dacb0c400f0b8e722b486b3c0ad8dd1a4d73640588
+  歌羅西書.pdf: 310e7719bd606d54d6cf8b2c6ed57bd3ec16337a20e1a365bfef8677ee6650e8
+  帖撒羅尼迦前書.pdf: f1075192c964625de29587acfed21f17e0a2f541e2200e7d44a0f6629bc67c9f
+  帖撒羅尼迦後書.pdf: 1e7524c6c04d344b82abcd1647e76cf8c6971186a111539277be19c12da5d73f
+  提摩太前書.pdf: f8fc8d693d7f253bad1e0d0d20c3671722757bb46cdb86c936584775e4ffd4c0
+  提摩太後書.pdf: c3e5e9760d03886f38c2835594068ef185ce88ec295045c25bf011ce23ddd1c1
+  提多書.pdf: f11cd748eeb5d4b9b83248f23f3bc641319e99887329e80f15ba2e09995bd73a
+  腓利門書.pdf: 71d2ff0167257073ac9e682e863c025f9be08da63fc939f5495c9a72c91d2992
+  希伯來書.pdf: bea567d319773cfd866bcd1934114719ec41916b69f51e7f5624d11901a75e45
+  雅各書.pdf: 47100b3077d0af5b566a65ce91ca24a4317ddc9e63b6ddb7aabdb884489e6696
+  彼得前書.pdf: c0b4fffeefffcfee870adb56fb1b852981f6f68ce22d99710eb9553175fc9b7f
+  彼得後書.pdf: 53bd46c636df5c5705f569c3b7f4d499742573d7c95c028454a58a2ed1d9d92a
+  約翰一書.pdf: 0dfbdadd4b0dde29aebcb8e34fd5195fd6d4f78aa2598208faabdcbf7440951a
+  約翰二書.pdf: e8701517341460ec4cc3a9e37b0c41086ae672a96b3fdedae1e20df986acb3ee
+  約翰三書.pdf: 12d0a83c3d52084b74475928361818ad8860f05df8c79026dbe6477bd5f10900
+  猶大書.pdf: 430e9ad473682ea5c2f98e3fea830102a42aa54ba464349fc689699a48915723
+  啟示錄.pdf: 0c7daff654017370b7f7d2f2fcb2b48186a20d1f35a02fcb2c47ef5de55fc31b
