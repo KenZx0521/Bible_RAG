@@ -102,3 +102,25 @@ def test_module_entry_point_runs_the_cli(tmp_path):
                           check=False)
     assert done.returncode == 0, done.stderr
     assert json.loads(done.stdout)["layer_version"] == text.version
+
+
+def test_gate_reports_a_malformed_row_instead_of_crashing(tmp_path, capsys):
+    rows = mini_build.text_layer()
+    rows["verse_slots"][0]["status"] = ["present"]
+    text, _ = mini_build.write_layers(tmp_path, text=rows)
+    report = tmp_path / "report.json"
+    code, out, _ = _run(capsys, "gate", "text", text.path, "--counts", MINI_COUNTS,
+                        "--report", report)
+    schema = next(g for g in json.loads(report.read_text(encoding="utf-8"))["gates"]
+                  if g["name"] == "G-SCHEMA")
+    assert code == 1 and not schema["pass"]
+    assert schema["details"][0].startswith("verse_slots.jsonl:1: status:")
+
+
+def test_a_crash_exits_3_so_it_is_never_read_as_a_gate_result(tmp_path, capsys, monkeypatch):
+    def crash(*args, **kwargs):
+        raise TypeError("boom")
+    monkeypatch.setattr(cli, "gate_layer", crash)
+    code, out, err = _run(capsys, "gate", "text", tmp_path, "--counts", MINI_COUNTS)
+    assert code == 3 and out == ""
+    assert "internal error" in err and "TypeError: boom" in err

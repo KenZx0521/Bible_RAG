@@ -6,7 +6,8 @@
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
 0 everything passed, 1 a hard gate failed, 2 bad input or a stage that does
-not exist yet.
+not exist yet, 3 an internal error (a bug: the traceback goes to stderr, and no
+report is written, so a crash is never mistaken for a gate result).
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import traceback
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -26,7 +28,7 @@ from ragdata.gates import check_det
 from ragdata.gates.runner import GateInputError, gate_layer
 from ragdata.store import DEFAULT_ROOT, StoreError
 
-EXIT_OK, EXIT_GATE_FAILED, EXIT_ERROR = 0, 1, 2
+EXIT_OK, EXIT_GATE_FAILED, EXIT_ERROR, EXIT_INTERNAL = 0, 1, 2, 3
 
 
 class CliError(ValueError):
@@ -93,3 +95,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     except HANDLED as exc:
         sys.stderr.write(f"ragdata {args.command}: {exc}\n")
         return EXIT_ERROR
+    except Exception:  # noqa: BLE001 - any other exception is a bug, reported as such
+        sys.stderr.write(f"ragdata {args.command}: internal error\n{traceback.format_exc()}")
+        return EXIT_INTERNAL

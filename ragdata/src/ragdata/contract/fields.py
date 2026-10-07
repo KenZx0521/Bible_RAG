@@ -129,10 +129,15 @@ def hex64() -> Check:
     return check
 
 
+SCALARS = (str, int, float, bool)
+
+
 def one_of(*allowed: Any) -> Check:
     choices = frozenset(allowed)
 
     def check(value: Any) -> Any:
+        require(value is None or isinstance(value, SCALARS),
+                f"expected one of {sorted(map(str, choices))}, got a {type(value).__name__}")
         require(value in choices, f"{value!r} not in {sorted(map(str, choices))}")
         return value
     return check
