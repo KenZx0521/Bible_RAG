@@ -12,6 +12,8 @@ VNUM = ("NotoSerif-Regular", 8.97, NAVY)
 BODY = ("NotoSansCJKjp-Regular", 11.96, BLACK)
 BODY2 = ("BitstreamCyberbit-Roman", 11.96, BLACK)
 HEAD = ("NotoSansCJKjp-Regular", 11.96, NAVY)
+HEAD2 = ("BitstreamCyberbit-Roman", 11.96, NAVY)
+ITALIC = ("NotoSerif-Italic", 11.96, NAVY)
 NOTE = ("NotoSansCJKjp-Regular", 8.97, NAVY)
 NOTE_REF = ("NotoSerif-ExtraBold", 8.97, NAVY)
 CHAPTER = ("NotoSerif-ExtraBold", 17.93, BLACK)
@@ -38,6 +40,17 @@ def glyphs(style, text: str, x0: float, y: float) -> list[list]:
 def line(page: int, y: float, *runs) -> dict:
     chars = [g for style, text, x0 in runs for g in glyphs(style, text, x0, y)]
     return {"k": "line", "p": page, "chars": chars}
+
+
+def s1_lines(rows) -> list:
+    """S1 lines of ``line`` rows, glyphs numbered in order as ``s01_extract`` numbers them."""
+    from ragdata.stages import layout
+    lines, seq = [], 0
+    for r in rows:
+        if r["k"] == "line":
+            lines.append(layout.to_line(r["p"], r["chars"], seq))
+            seq += len(r["chars"])
+    return lines
 
 
 def page(p: int) -> dict:

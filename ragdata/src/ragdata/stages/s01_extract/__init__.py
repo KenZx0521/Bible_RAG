@@ -46,7 +46,11 @@ class Stroke:
 
 @dataclass(frozen=True)
 class S1Book:
-    """One PDF as S1 extracted it: page bounds, structured-text lines, stroked paths."""
+    """One PDF as S1 extracted it: page bounds, structured-text lines, stroked paths.
+
+    Glyphs are numbered (``Glyph.seq``) in the order of the extract's line rows, so a
+    record can point back at the glyphs it came from (design §2.7 ``glyph_range``).
+    """
 
     pages: Mapping[int, tuple[float, ...]]
     lines: tuple[Line, ...]
@@ -106,6 +110,7 @@ def _page_row(row: dict, expected: int, where: str) -> tuple[float, ...]:
 def _typed(rows: Sequence[dict], where: str) -> S1Book:
     pages: dict[int, tuple[float, ...]] = {}
     lines, strokes = [], []
+    seq = 0
     for i, row in enumerate(rows, start=1):
         at = f"{where}:{i}"
         kind = row.get("k")
@@ -120,7 +125,8 @@ def _typed(rows: Sequence[dict], where: str) -> S1Book:
             _check(isinstance(row["chars"], list) and bool(row["chars"]), at, "empty chars")
             for ch in row["chars"]:
                 _check_char(ch, at)
-            lines.append(to_line(row["p"], row["chars"]))
+            lines.append(to_line(row["p"], row["chars"], seq))
+            seq += len(row["chars"])
         else:
             _check(_number(row["lw"]) and row["lw"] > 0, at, f"bad lw {row['lw']!r}")
             strokes.append(Stroke(row["p"], row["lw"], _check_path(row["path"], at)))

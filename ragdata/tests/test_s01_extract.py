@@ -29,6 +29,13 @@ def test_load_types_pages_lines_and_strokes():
     assert book.strokes[0].path == (("m", 106.7, 204.6), ("l", 130.6, 204.6))
 
 
+def test_glyphs_are_numbered_in_file_order_across_lines_and_pages():
+    book = s1.load_s1(encode_jsonl(_rows()), "mini")
+    seqs = [g.seq for ln in book.lines for g in ln.glyphs]
+    assert seqs == list(range(len(seqs)))
+    assert book.lines[1].glyphs[0].seq == len(book.lines[0].glyphs)
+
+
 @pytest.mark.parametrize("mutate, message", [
     (lambda rows: rows.pop(0), "page row"),
     (lambda rows: rows[3].update(p=3), "page 3"),

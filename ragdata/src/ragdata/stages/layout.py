@@ -49,6 +49,7 @@ class Glyph(NamedTuple):
     size: float
     color: str
     page: int
+    seq: int = 0  # position among all glyphs of the book's S1 lines, in file order
 
     @property
     def style(self) -> tuple[str, float, str]:
@@ -129,9 +130,10 @@ def _baseline(glyphs: Sequence[Glyph]) -> float:
     return best
 
 
-def to_line(page: int, chars: Sequence[Sequence]) -> Line:
-    """A line from S1 ``chars`` rows ``[c, x0, x1, y, font, size, color]``."""
-    glyphs = tuple(Glyph(*ch, page) for ch in chars)
+def to_line(page: int, chars: Sequence[Sequence], first_seq: int = 0) -> Line:
+    """A line from S1 ``chars`` rows ``[c, x0, x1, y, font, size, color]``; its glyphs are
+    numbered from ``first_seq``."""
+    glyphs = tuple(Glyph(*ch, page, first_seq + i) for i, ch in enumerate(chars))
     return Line(page, _baseline(glyphs), _runs(glyphs))
 
 

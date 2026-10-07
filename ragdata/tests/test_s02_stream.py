@@ -64,6 +64,16 @@ def test_footnotes_split_on_each_caller_and_keep_inline_verse_numbers():
         ("8:36", "有古卷加：37腓利說你若是一心相信", (37,), 1), ("8:39", "或譯：靈", (), 1)]
 
 
+def test_navy_rows_and_footnotes_keep_their_cleaned_glyphs():
+    s = _parse(pl.line(1, 120.0, (pl.HEAD, "大 衛 的 詩", 88.8)), pl.verse(1, 140.0, "1", "甲"),
+               pl.line(1, 500.0, (pl.NOTE_REF, "1:1:", 70.0), (pl.NOTE, " 原文是 甲", 95.0)))
+    heading = s.events[0]
+    assert "".join(g.c for g in heading.glyphs) == heading.text == "大衛的詩"
+    assert heading.glyphs[0].x0 == 88.8 and heading.glyphs[0].style == pl.HEAD
+    (note,) = s.footnotes
+    assert "".join(g.c for g in note.glyphs) == note.text == "原文是甲"
+
+
 def test_a_division_belongs_to_the_chapter_that_follows_it():
     s = _parse(pl.line(1, 120.0, (pl.DIVISION, "詩篇卷一", 150.0)), pl.verse(1, 140.0, "1", "甲"),
                pl.line(1, 150.0, (pl.CHAPTER, "2", 70.0)), pl.verse(1, 160.0, "1", "乙"),

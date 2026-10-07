@@ -60,7 +60,8 @@ class Verse:
 class Event:
     """A row in reading order: chapter, division, heading, paral, verse, cont or title.
 
-    ``verse``/``offset`` locate it in the open verse (None before the chapter's first).
+    ``verse``/``offset`` locate it in the open verse (None before the chapter's first);
+    ``glyphs`` are the row's glyphs as cleaned for ``text`` (navy rows, titles, divisions).
     """
 
     kind: str
@@ -70,6 +71,7 @@ class Event:
     text: str
     page: int
     right: float
+    glyphs: tuple[Glyph, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -79,6 +81,7 @@ class Footnote:
     chapter_ctx: int
     text: str
     numbers: tuple[int, ...]  # verse numbers typeset inside the note (有古卷加：37…)
+    glyphs: tuple[Glyph, ...] = ()  # the glyphs of ``text``, one per character
 
 
 @dataclass(frozen=True)
@@ -122,12 +125,13 @@ class _NoteDraft:
     page: int
     ref: str
     chapter_ctx: int
-    raw: list[str] = field(default_factory=list)
+    raw: list[Glyph] = field(default_factory=list)
     numbers: list[int] = field(default_factory=list)
 
     def freeze(self) -> Footnote:
-        return Footnote(self.page, self.ref, self.chapter_ctx,
-                        layout.clean_text("".join(self.raw)), tuple(self.numbers))
+        glyphs = layout.clean(self.raw)
+        return Footnote(self.page, self.ref, self.chapter_ctx, "".join(g.c for g in glyphs),
+                        tuple(self.numbers), glyphs)
 
 
 def _text_runs_only(runs: Sequence[layout.Run], where: str) -> None:
@@ -157,10 +161,11 @@ class _Stream:
     def at(self, row: Row) -> str:
         return f"{self.where} p{row.page}"
 
-    def event(self, kind: str, row: Row, text: str, offset: int | None = None) -> None:
+    def event(self, kind: str, row: Row, text: str, offset: int | None = None,
+              glyphs: tuple[Glyph, ...] = ()) -> None:
         verse = self.cur.label if self.cur is not None else None
         right = max(r.x1 for r in row.runs)
-        self.events.append(Event(kind, self.chapter, verse, offset, text, row.page, right))
+        self.events.append(Event(kind, self.chapter, verse, offset, text, row.page, right, glyphs))
 
     def feed(self, row: Row) -> None:
         kind = layout.classify(row)
@@ -184,9 +189,10 @@ class _Stream:
 
     def on_division(self, row: Row, kind: str) -> None:
         self.division = self.chapter + 1
+        glyphs = layout.clean(row.glyphs)
         self.events.append(Event("division", self.division, None, None,
-                                 layout.clean_text(row.text), row.page,
-                                 max(r.x1 for r in row.runs)))
+                                 "".join(g.c for g in glyphs), row.page,
+                                 max(r.x1 for r in row.runs), glyphs))
 
     def on_chapter(self, row: Row, kind: str) -> None:
         numeral = layout.clean_text(row.runs[0].text)
@@ -207,14 +213,15 @@ class _Stream:
             elif not self.notes:
                 raise ParseError(f"{self.at(row)}: footnote text {text!r} before any c:v: caller")
             else:
-                self.notes[-1].raw.append(run.text)
+                self.notes[-1].raw.extend(run.glyphs)
                 if run.style == layout.VERSE_NUMBER_STYLE and text.isdigit():
                     self.notes[-1].numbers.append(int(text))
 
     def on_navy(self, row: Row, kind: str) -> None:
         self.chapter = self.chapter or 1
         offset = len(self.cur.glyphs) if self.cur is not None else None
-        self.event(kind, row, layout.clean_text(row.text), offset)
+        glyphs = layout.clean(row.glyphs)
+        self.event(kind, row, "".join(g.c for g in glyphs), offset, glyphs)
 
     def _open_verse(self, row: Row) -> _VerseDraft:
         number = layout.clean(row.runs[0].glyphs)
@@ -252,7 +259,7 @@ class _Stream:
             if self.chapter == 0:
                 raise ParseError(f"{self.at(row)}: text {text!r} before the first chapter")
             self.titles.setdefault(self.chapter, []).extend(kept)
-            self.event("title", row, text)
+            self.event("title", row, text, glyphs=kept)
             return
         offset = self.cur.add_line(kept)
         if text == SELAH:
