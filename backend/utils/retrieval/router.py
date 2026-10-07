@@ -26,6 +26,7 @@ from utils.verse_parser import VerseRef
 from utils.signal_detector import detect_signals, QuerySignals
 from utils.retrieval.verse_retriever import retrieve_by_verse_refs
 from utils.retrieval.semantic_retriever import retrieve_semantic
+from utils.retrieval.hybrid_retriever import retrieve_hybrid
 from utils.retrieval.graph_retriever import (
     retrieve_by_entities,
     retrieve_by_events,
@@ -45,19 +46,6 @@ from database import neo4j_db, postgres
 from config import GraphStrategyName, settings
 
 logger = logging.getLogger(__name__)
-
-# Lazy import for hybrid retriever
-_hybrid_retriever = None
-
-
-def _get_hybrid_retriever():
-    """Lazy load hybrid retriever module."""
-    global _hybrid_retriever
-    if _hybrid_retriever is None:
-        from utils.retrieval import hybrid_retriever
-        _hybrid_retriever = hybrid_retriever
-    return _hybrid_retriever
-
 
 # Graph contributions that never enter the candidate pool: they append after
 # the finished top-k (see _append_event_registry).
@@ -323,10 +311,10 @@ async def retrieve_and_rerank(
 # ---------------------------------------------------------------------------
 
 async def _get_semantic(query: str) -> list[dict]:
-    """Get semantic/hybrid results based on configuration."""
+    """Dense retrieval: the hybrid collection's dense arm when
+    hybrid_search_enabled (prod), else the semantic collection."""
     if settings.hybrid_search_enabled:
-        hybrid_mod = _get_hybrid_retriever()
-        return await hybrid_mod.retrieve_hybrid(query)
+        return await retrieve_hybrid(query)
     return await retrieve_semantic(query)
 
 

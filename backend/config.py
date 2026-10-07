@@ -92,12 +92,12 @@ class Settings(BaseSettings):
         "R6": {"graph": 0.85, "semantic": 0.7, "entity_query": 0.6, "sql": 0.5},
     }
 
-    # Hybrid Search settings
+    # Dense collection switch (legacy name). True (prod .env) = the dense arm of
+    # the hybrid collection, labelled "hybrid"; False = qdrant_collection,
+    # labelled "semantic". The sparse/BM25 side never ran (qdrant-client 1.8.2
+    # has no query_points) and was retired in E0a.
     hybrid_search_enabled: bool = False
     qdrant_hybrid_collection: str = "bible_embeddings_hybrid"
-    bm25_vocabulary_path: str = "output/bm25_vocabulary.json"
-    hybrid_prefetch_limit: int = 50
-    hybrid_fusion_method: str = "rrf"
 
     # Graph retrieval toggle (gates Neo4j-backed graph_retriever + cross_ref_retriever).
     # Can be overridden per-request via the `use_graph` payload field.

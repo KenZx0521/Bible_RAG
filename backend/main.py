@@ -24,7 +24,6 @@ from database import postgres, qdrant_db, neo4j_db
 from utils import embedder, reranker
 from utils.llm import get_llm_client
 from routers import health, query, verse, entity
-from config import settings
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,16 +51,7 @@ async def lifespan(app: FastAPI):
     logger.info("Loading reranker (bge-reranker-v2-m3)...")
     reranker.init_reranker()
 
-    # Phase 3: Initialize sparse encoder (if hybrid search enabled)
-    if settings.hybrid_search_enabled:
-        logger.info("Hybrid search enabled, initializing sparse encoder...")
-        from utils import sparse_encoder
-        if sparse_encoder.init_sparse_encoder():
-            logger.info(f"Sparse encoder ready (vocab size: {sparse_encoder.get_vocabulary_size()})")
-        else:
-            logger.warning("Sparse encoder initialization failed, falling back to dense-only")
-
-    # Phase 4: Verify LLM provider
+    # Phase 3: Verify LLM provider
     llm = get_llm_client()
     llm_ok = await llm.health_check()
     if llm_ok:
