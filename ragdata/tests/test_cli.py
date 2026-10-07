@@ -30,7 +30,8 @@ def _run(capsys, *argv):
 def only_built_gates_required(monkeypatch):
     """Pretend every required gate exists, to reach the passing path of the CLI."""
     monkeypatch.setattr(runner, "REQUIRED_GATES",
-                        {layer: runner.implemented_gates(layer) for layer in ("text", "struct")})
+                        {layer: ("G-SCHEMA", "G-COUNT", "G-REFINT")
+                         for layer in ("text", "struct")})
 
 
 def test_gate_prints_a_passing_report(tmp_path, capsys, only_built_gates_required):
@@ -41,8 +42,9 @@ def test_gate_prints_a_passing_report(tmp_path, capsys, only_built_gates_require
 
 
 def test_gate_exits_1_while_a_required_gate_is_not_built(tmp_path, capsys):
-    text, _ = mini_build.write_layers(tmp_path)
-    code, out, _ = _run(capsys, "gate", "text", text.path, "--counts", MINI_COUNTS)
+    text, struct = mini_build.write_layers(tmp_path)
+    code, out, _ = _run(capsys, "gate", "struct", struct.path, "--dep", text.path,
+                        "--counts", MINI_COUNTS)
     doc = json.loads(out)
     assert code == 1 and doc["pass"] is False
     assert any(g["observed"] == "not implemented" and not g["pass"] for g in doc["gates"])
@@ -121,6 +123,21 @@ def test_build_reports_its_layers_and_gates(tmp_path, capsys, monkeypatch, passe
     assert code_ == code and doc["pass"] is passed and json.loads(report.read_text()) == doc
     assert [v["version"] for v in doc["layers"].values()] == ["text@0123456789ab"] * passed
     assert seen["workers"] == 3 and str(seen["counts_path"]) == MINI_COUNTS
+    assert seen["inputs"] == stages.TextInputs()
+
+
+def test_gate_passes_the_pdfs_and_registries_to_the_gates(tmp_path, capsys, monkeypatch):
+    seen = {}
+
+    def fake_gate(layer_dir, layer, deps, counts, inputs):
+        seen.update(deps=deps, inputs=inputs)
+        raise runner.GateInputError("stop here")
+    monkeypatch.setattr(cli, "gate_layer", fake_gate)
+    code, _, _ = _run(capsys, "gate", "text", tmp_path / "t", "--dep", tmp_path / "src",
+                      "--pdf-dir", tmp_path / "pdf", "--registries", tmp_path / "reg")
+    assert code == 2 and seen["deps"] == [tmp_path / "src"]
+    assert (seen["inputs"].pdf_dir, seen["inputs"].registries) == (tmp_path / "pdf",
+                                                                   tmp_path / "reg")
 
 
 def test_module_entry_point_runs_the_cli(tmp_path):
@@ -129,7 +146,7 @@ def test_module_entry_point_runs_the_cli(tmp_path):
     done = subprocess.run([sys.executable, "-m", "ragdata", "gate", "text", str(text.path),
                            "--counts", MINI_COUNTS], env=env, capture_output=True, text=True,
                           check=False)
-    assert done.returncode == 1, done.stderr  # red until every required gate is built
+    assert done.returncode == 1, done.stderr  # red: no src layer, no PDFs given
     assert json.loads(done.stdout)["layer_version"] == text.version
 
 

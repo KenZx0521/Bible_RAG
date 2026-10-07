@@ -11,10 +11,12 @@ import mini_build
 from ragdata import store
 from ragdata.gates import check_det
 from ragdata.gates import runner
-from ragdata.gates.runner import GateInputError, gate_layer
+from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
 BUILT = {"G-SCHEMA", "G-COUNT", "G-REFINT"}
+RECORD = {"G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-REF"}
+MINI = GateInputs(versification=mini_build.versification())
 
 
 def _verdicts(report) -> dict[str, bool]:
@@ -32,21 +34,36 @@ def test_every_gate_design_section_8_requires_is_in_the_report(tmp_path):
 
 
 def test_a_gate_not_built_yet_fails_closed(tmp_path):
-    text, _ = mini_build.write_layers(tmp_path)
-    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS)
+    text, struct = mini_build.write_layers(tmp_path)
+    report = gate_layer(struct.path, "struct", [text.path], MINI_COUNTS)
     unbuilt = [g for g in report.gates if g.name not in BUILT]
-    assert unbuilt and not report.passed and not report.to_json()["pass"]
+    assert [g.name for g in unbuilt] == ["G-STRUCT"] and not report.passed
     assert all(g.hard and not g.passed and g.observed == "not implemented" for g in unbuilt)
     assert all(_verdicts(report)[name] for name in BUILT)
 
 
-def test_built_gates_alone_never_make_a_passing_report(tmp_path):
+def test_a_gate_whose_input_is_not_given_fails_closed(tmp_path):
     text, _ = mini_build.write_layers(tmp_path)
-    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS,
-                        gates=runner.implemented_gates("text"))
-    assert set(_verdicts(report)) == BUILT and all(_verdicts(report).values())
+    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS, inputs=MINI)
+    red = {g.name: g for g in report.gates if not g.passed}
+    assert set(red) == {"G-CONSERVE", "G-XCHECK"} and not report.passed
+    assert all(g.hard and g.observed == "missing input" for g in red.values())
+    assert all(_verdicts(report)[name] for name in RECORD)
+
+
+def test_record_gates_alone_never_make_a_passing_report(tmp_path):
+    text, _ = mini_build.write_layers(tmp_path)
+    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS, inputs=MINI,
+                        gates=runner.record_gates("text"))
+    assert set(_verdicts(report)) == RECORD and all(_verdicts(report).values())
     assert not report.passed
-    assert set(report.to_json()["missing_gates"]) == set(runner.REQUIRED_GATES["text"]) - BUILT
+    assert set(report.to_json()["missing_gates"]) == set(runner.REQUIRED_GATES["text"]) - RECORD
+
+
+def test_g_ref_uses_ragcommon_unless_told_otherwise(tmp_path):
+    text, _ = mini_build.write_layers(tmp_path)
+    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS, gates=["G-REF"])
+    assert _verdicts(report) == {"G-REF": False}  # the mini grid is not the PDF's
 
 
 def test_report_passes_once_every_required_gate_runs_and_passes(tmp_path, monkeypatch):
@@ -70,7 +87,7 @@ def test_asking_for_gates_the_layer_does_not_have_is_an_input_error(tmp_path, ga
 
 def test_real_pdf_counts_turn_the_mini_layer_red_on_g_count_only(tmp_path):
     text, _ = mini_build.write_layers(tmp_path)
-    report = gate_layer(text.path, "text", gates=runner.implemented_gates("text"))
+    report = gate_layer(text.path, "text", gates=sorted(BUILT))
     assert _verdicts(report) == {"G-SCHEMA": True, "G-COUNT": False, "G-REFINT": True}
 
 
@@ -237,8 +254,8 @@ def test_a_text_layer_built_on_a_src_layer_is_gated_on_its_records(tmp_path):
     files = {f"{name}.jsonl": store.encode_jsonl(rows)
              for name, rows in mini_build.text_layer().items()}
     text = store.write_layer(tmp_path, "text", files, depends_on={"src": "src@0123456789ab"})
-    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS,
-                        gates=runner.implemented_gates("text"))
+    report = gate_layer(text.path, "text", counts_path=MINI_COUNTS, inputs=MINI,
+                        gates=runner.record_gates("text"))
     assert all(_verdicts(report).values())
     assert report.to_json()["depends_on"] == {"src": "src@0123456789ab"}
 
@@ -251,4 +268,49 @@ def test_a_dependency_other_than_src_that_holds_no_records_is_refused(tmp_path, 
                              depends_on={"src": "src@0123456789ab", dep: f"{dep}@0123456789ab"})
     with pytest.raises(GateInputError, match=dep):
         gate_layer(text.path, "text", counts_path=MINI_COUNTS,
-                   gates=runner.implemented_gates("text"))
+                   gates=runner.record_gates("text"))
+
+
+def _src(root, extra=b""):
+    return store.write_layer(root, "src", {"source_manifest.json": b"{}\n" + extra})
+
+
+def _text_on(root, src_version):
+    files = {f"{name}.jsonl": store.encode_jsonl(rows)
+             for name, rows in mini_build.text_layer().items()}
+    return store.write_layer(root, "text", files, depends_on={"src": src_version})
+
+
+def test_the_src_layer_is_a_verified_input_not_a_record_layer(tmp_path):
+    src = _src(tmp_path)
+    text = _text_on(tmp_path, src.version)
+    report = gate_layer(text.path, "text", [src.path], MINI_COUNTS, inputs=MINI,
+                        gates=runner.record_gates("text"))
+    assert all(_verdicts(report).values())
+
+
+def test_a_src_layer_other_than_the_one_built_on_is_refused(tmp_path):
+    text = _text_on(tmp_path, _src(tmp_path).version)
+    other = _src(tmp_path, b"\n")
+    with pytest.raises(GateInputError, match="built on"):
+        gate_layer(text.path, "text", [other.path], MINI_COUNTS, gates=["G-SCHEMA"])
+
+
+def test_src_given_twice_or_to_struct_is_refused(tmp_path):
+    src = _src(tmp_path)
+    text = _text_on(tmp_path, src.version)
+    with pytest.raises(GateInputError, match="once"):
+        gate_layer(text.path, "text", [src.path, src.path], MINI_COUNTS, gates=["G-SCHEMA"])
+    _, struct = mini_build.write_layers(tmp_path / "s")
+    plain_text = store.read_layer(struct.path).depends_on["text"]
+    with pytest.raises(GateInputError, match="built on"):
+        gate_layer(struct.path, "struct", [tmp_path / "s" / "text" / plain_text, src.path],
+                   MINI_COUNTS, gates=["G-SCHEMA"])
+
+
+def test_a_text_layer_may_hold_its_build_reports(tmp_path):
+    files = {f"{name}.jsonl": store.encode_jsonl(rows)
+             for name, rows in mini_build.text_layer().items()}
+    reports = {name: b"{}\n" for name in ("xcheck_report.json", "diff_summary.json")}
+    text = store.write_layer(tmp_path, "text", {**files, **reports})
+    assert gate_layer(text.path, "text", counts_path=MINI_COUNTS, gates=["G-SCHEMA"]).gates

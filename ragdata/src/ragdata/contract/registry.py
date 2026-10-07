@@ -10,6 +10,9 @@ from ragdata.contract import struct, text
 from ragdata.contract.fields import Record, parse
 
 LAYERS = ("text", "struct")
+# non-record files a layer's build writes beside its records (S3, S4 and the diff reports)
+LAYER_REPORTS = {"text": ("xcheck_report.json", "overlay_report.json", "diff_vs_bible_md.tsv",
+                          "diff_vs_canonical_full.tsv", "diff_summary.json"), "struct": ()}
 
 
 @dataclass(frozen=True)

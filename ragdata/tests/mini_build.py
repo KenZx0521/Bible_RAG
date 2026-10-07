@@ -257,6 +257,27 @@ def _ref_aliases() -> list[dict]:
              "note": "測試用：外部節號 18:5 併入 18:4", "provenance_class": "external_reference"}]
 
 
+# the verse grid the mini text layer implies, as ragcommon.versification would hold it
+GRID = {"psa": (1,) * 41 + (3,), "sng": (1,), "mat": (1,) * 17 + (4,), "act": (1,) * 8 + (3, 1),
+        "eph": (1,) * 5 + (4,)}
+
+
+def versification(grid=None, omitted=None, aliases=None):
+    """A ragcommon Versification that agrees with the mini text layer (G-REF)."""
+    from types import MappingProxyType
+
+    from ragcommon.versification import OmittedSlot, RefAlias, Versification
+
+    if omitted is None:
+        omitted = {"mat.18.3": OmittedSlot("mat.18.3", "mat.18.2")}
+    if aliases is None:
+        alias = _ref_aliases()[0]
+        aliases = {alias["external_ref"]: RefAlias(**alias)}
+    return Versification(MappingProxyType(dict(GRID if grid is None else grid)),
+                         MappingProxyType(dict(omitted)), MappingProxyType(dict(aliases)),
+                         MappingProxyType({}))
+
+
 def text_layer() -> dict[str, list[dict]]:
     return {
         "books": _books(), "chapters": _chapters(), "verse_units": _units(),

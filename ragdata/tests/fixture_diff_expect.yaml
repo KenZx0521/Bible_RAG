@@ -1,0 +1,22 @@
+# G-DIFF expectations for the six fixture PDFs that test_build_text.py builds (rut, jon,
+# hab, zep, ezr, mrk), tallied from the audit's own per-verse breakdown
+# (corpus_results/final_verse_breakdown.tsv and hand_edits.tsv), not from ragdata's output.
+# The audit counts hab 3:3 and 3:9 (cut at a mid-verse （細拉）) as indented lines;
+# ragdata names that mechanism converter_selah_midverse.
+schema: ragdata.diff_expect.v1
+bible_md:
+  units_compared: 1197
+  loss.units: 18
+  loss.chars: 226
+  by_class.converter_offpage_clip.containers: 12
+  by_class.converter_offpage_clip.chars: 110
+  by_class.converter_footnote_pagebreak.containers: 4
+  by_class.converter_footnote_pagebreak.chars: 83
+  by_class.converter_selah_midverse.containers: 2
+  by_class.converter_selah_midverse.chars: 33
+  by_class.converter_selah.containers: 1
+  md_only_verses: 2
+  by_class.hand_edit_ghost_verse.containers: 2
+  by_class.hand_edit_footnote_removed.containers: 2
+canonical_full:
+  records_compared: 1199

@@ -434,7 +434,8 @@ def summarize(rows: Sequence[DiffRow], **counts: int) -> dict[str, Any]:
         entry["chars"] += len(r.layer)
     loss = [r for r in rows if r.cls in LOSS]
     return {**counts, "rows": len(rows),
-            "by_class": {c: {**v, "containers": len(v["containers"])} for c, v in sorted(by.items())},
+            "by_class": {c: {**v, "containers": len(v["containers"])}
+                         for c, v in sorted(by.items())},
             "groups": dict(sorted(Counter(GROUPS[r.cls] for r in rows).items())),
             "loss": {"units": len({r.container for r in loss}),
                      "chars": sum(len(r.layer) for r in loss)}}

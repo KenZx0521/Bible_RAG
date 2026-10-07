@@ -90,6 +90,8 @@ TEXT_COUNTERS: Mapping[str, Counter] = {
     "name_spans_footnote": rows("name_spans", lambda n: n.region == "footnote"),
     "merge_groups": distinct("name_spans", lambda n: n.merge_group,
                              lambda n: n.merge_group is not None),
+    "errata_applied": rows("errata_applied"),
+    "ref_aliases": rows("ref_aliases"),
 }
 
 STRUCT_COUNTERS: Mapping[str, Counter] = {

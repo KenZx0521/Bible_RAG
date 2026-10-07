@@ -15,8 +15,8 @@ from typing import Any, Mapping
 
 import yaml
 
+from ragdata.contract.counts import CountsError
 from ragdata.gates.base import GateResult, capped
-from ragdata.stages.diffs.md import DiffError
 
 NAME = "G-DIFF"
 SCHEMA = "ragdata.diff_expect.v1"
@@ -26,28 +26,34 @@ EXPECT_PATH = Path(__file__).resolve().parents[1] / "contract" / "expectations" 
 _MISSING = object()
 
 
+class DiffExpectError(CountsError):
+    """The diff expectation file is malformed."""
+
+
 def load_expect(path: Path | str = EXPECT_PATH) -> dict[str, dict[str, int]]:
     try:
         doc = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
-        raise DiffError(f"{path}: unreadable: {exc}") from None
+        raise DiffExpectError(f"{path}: unreadable: {exc}") from None
     if not isinstance(doc, dict) or doc.get("schema") != SCHEMA:
-        raise DiffError(f"{path}: schema must be {SCHEMA}")
+        raise DiffExpectError(f"{path}: schema must be {SCHEMA}")
     sections = {k: v for k, v in doc.items() if k != "schema"}
     if not set(sections) <= set(REFERENCES):
-        raise DiffError(f"{path}: unknown references {sorted(set(sections) - set(REFERENCES))}")
+        unknown = sorted(set(sections) - set(REFERENCES))
+        raise DiffExpectError(f"{path}: unknown references {unknown}")
     for ref, values in sections.items():
         if not isinstance(values, dict) or not all(
                 isinstance(v, int) and not isinstance(v, bool) for v in values.values()):
-            raise DiffError(f"{path}: {ref} must map metric paths to integers")
+            raise DiffExpectError(f"{path}: {ref} must map metric paths to integers")
     return {ref: dict(values) for ref, values in sections.items()}
 
 
-def metric(summary: Mapping[str, Any], path: str) -> Any:
+def metric(summary: Mapping[str, Any], path: str, default: Any = _MISSING) -> Any:
+    """The value at a dotted ``path`` of a summary, or ``default`` when there is none."""
     node: Any = summary
     for step in path.split("."):
         if not isinstance(node, Mapping) or step not in node:
-            return _MISSING
+            return default
         node = node[step]
     return node
 

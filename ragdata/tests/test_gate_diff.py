@@ -6,7 +6,6 @@ import pytest
 import yaml
 
 from ragdata.gates import diff as gd
-from ragdata.stages.diffs.md import DiffError
 
 
 def _summaries(md_other=0, canonical_other=0, compared=3):
@@ -66,7 +65,7 @@ def test_expectations_load_per_reference(tmp_path):
     {"schema": gd.SCHEMA, "elsewhere": {}},
 ], ids=["schema", "value", "reference"])
 def test_malformed_expectations_are_refused(tmp_path, doc):
-    with pytest.raises(DiffError):
+    with pytest.raises(gd.DiffExpectError):
         gd.load_expect(_write(tmp_path, doc))
 
 

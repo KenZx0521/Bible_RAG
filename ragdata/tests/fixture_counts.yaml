@@ -37,3 +37,5 @@ text:
   name_surfaces_body: {value: 394, g: [G05]}
   name_spans_footnote: {value: 0, g: [G05]}
   merge_groups: {value: 1, g: [G07]}
+  errata_applied: {value: 0, g: [G11]}
+  ref_aliases: {value: 0, g: [G12]}

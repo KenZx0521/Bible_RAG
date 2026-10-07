@@ -2,8 +2,8 @@
 
 Each mutation is applied to the mini snapshot, written to a fresh store, gated
 end to end with the gates built so far, and must turn the named hard gates red.
-(The full run also lists the gates not built yet, which are red by
-construction; leaving them out here shows what the built gates catch.)
+(G-CONSERVE and G-XCHECK re-read the PDFs and are exercised by the build tests;
+G-STRUCT is not built yet. Leaving them out here shows what the record gates catch.)
 """
 
 from __future__ import annotations
@@ -52,6 +52,12 @@ def _edit_text(layer):
     unit["text"] = unit["text_pdf"] = unit["text"].replace("掃羅", "大衛")
 
 
+def _edit_serving_text(layer):
+    unit = next(r for r in layer["verse_units"] if r["unit_key"] == "act.9.3")
+    unit["text"] = unit["text"].replace("小河", "大河")
+    unit["text_sha256"] = mini_build.sha(unit["text"])
+
+
 TEXT_MUTATIONS = {
     "delete a unit": (_drop("verse_units", "unit_key", "act.9.2"), {"G-COUNT", "G-REFINT"}),
     "redirect a slot to another unit": (
@@ -73,6 +79,9 @@ TEXT_MUTATIONS = {
     "duplicate a unit": (_duplicate_first("verse_units"), {"G-SCHEMA"}),
     "drop the footnotes file": (_remove_file("footnotes"), {"G-SCHEMA", "G-COUNT"}),
     "empty every file": (_empty_all, {"G-COUNT"}),
+    "change serving text outside errata": (_edit_serving_text, {"G-TEXT"}),
+    "redirect a ref alias": (
+        _set("ref_aliases", "external_ref", "mat.18.5", target="mat.18.2"), {"G-REF"}),
 }
 
 STRUCT_MUTATIONS = {
@@ -89,8 +98,8 @@ def _red(report) -> set[str]:
 
 
 def _gate(path, layer, deps=()):
-    return runner.gate_layer(path, layer, deps, MINI_COUNTS,
-                             gates=runner.implemented_gates(layer))
+    return runner.gate_layer(path, layer, deps, MINI_COUNTS, gates=runner.record_gates(layer),
+                             inputs=runner.GateInputs(versification=mini_build.versification()))
 
 
 def test_unmutated_mini_layers_are_green(tmp_path):

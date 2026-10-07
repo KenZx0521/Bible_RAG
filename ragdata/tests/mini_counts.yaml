@@ -34,6 +34,8 @@ text:
   name_surfaces_body: {value: 6, g: [G58]}
   name_spans_footnote: {value: 1, g: [G58]}
   merge_groups: {value: 1, g: [G58]}
+  errata_applied: {value: 2, g: [G58]}
+  ref_aliases: {value: 1, g: [G58]}
 struct:
   pericopes: {value: 6, g: [G58]}
   pericopes_cross_chapter: {value: 1, g: [G58]}

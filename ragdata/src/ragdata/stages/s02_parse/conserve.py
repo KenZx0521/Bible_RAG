@@ -98,3 +98,25 @@ def book_tally(lines: Sequence[Line], rows: Sequence[Row], stream: BookStream,
     glyphs = sum(layout.nonspace(ln.glyphs) for ln in lines)
     return Tally(glyphs, _frozen(source_counts(rows, "conserve"), CATEGORIES),
                  _frozen(output_counts(stream, records), CATEGORIES))
+
+
+# no stored record holds these: running heads, title and colophon are dropped by design, and
+# chapter numerals are structure (only 詩篇 and 俄巴底亞書 print one for chapter 1)
+NOT_STORED = ("page_header", "book_title", "colophon", "chapter_number", "unclassified")
+
+
+def stored_tally(lines: Sequence[Line], records: Records) -> Tally:
+    """Tally one book against its *stored* text-layer records (G-CONSERVE at gate time).
+
+    The four text categories (body, navy, footnote, division) are counted from
+    the records and the verse numbers from the unit labels. Glyphs no record
+    holds (``NOT_STORED``) count as their source; an unclassified glyph still
+    fails the gate on the source side. The build-time tally checks the chapter
+    numerals against the parse.
+    """
+    source = source_counts(layout.rows_of(lines), "conserve")
+    output = {**{k: source[k] for k in NOT_STORED},
+              "verse_number": sum(len(u["label"]) for u in records["verse_units"]),
+              **record_counts(records)}
+    glyphs = sum(layout.nonspace(ln.glyphs) for ln in lines)
+    return Tally(glyphs, _frozen(source, CATEGORIES), _frozen(output, CATEGORIES))

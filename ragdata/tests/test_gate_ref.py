@@ -2,25 +2,15 @@
 
 from __future__ import annotations
 
-from types import MappingProxyType
-
 import pytest
 
 import mini_build
-from ragcommon.versification import OmittedSlot, RefAlias, Versification
+from ragcommon.versification import OmittedSlot, RefAlias
 from ragdata.gates import check_schema
 from ragdata.gates.ref import check_ref
 
-GRID = {"psa": (1,) * 41 + (3,), "sng": (1,), "mat": (1,) * 17 + (4,), "act": (1,) * 8 + (3, 1),
-        "eph": (1,) * 5 + (4,)}
-OMITTED = {"mat.18.3": OmittedSlot("mat.18.3", "mat.18.2")}
-ALIASES = {"mat.18.5": RefAlias("mat.18.5", "contained_in", "mat.18.4", "測試",
-                                "external_reference")}
-
-
-def _vers(grid=GRID, omitted=OMITTED, aliases=ALIASES):
-    return Versification(MappingProxyType(dict(grid)), MappingProxyType(dict(omitted)),
-                         MappingProxyType(dict(aliases)), MappingProxyType({}))
+GRID = mini_build.GRID
+_vers = mini_build.versification
 
 
 def _gate(change=None, vers=None):

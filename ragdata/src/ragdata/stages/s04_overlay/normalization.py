@@ -18,9 +18,10 @@ from typing import Any, Callable, Mapping, Sequence
 
 import yaml
 
-from ragdata.stages.s04_overlay.errata import REPO, OverlayError
+from ragdata.paths import REGISTRIES
+from ragdata.stages.s04_overlay.errata import OverlayError
 
-DEFAULT_PATH = REPO / "config" / "registries" / "normalization.yaml"
+DEFAULT_PATH = REGISTRIES / "normalization.yaml"
 SCHEMA = "ragdata.normalization.v1"
 RULE_KEYS = ("id", "stage", "what", "applies_to", "reversible_by")
 TEXT_TYPES = ("verse_units", "chapter_texts", "headings", "footnotes", "speakers",

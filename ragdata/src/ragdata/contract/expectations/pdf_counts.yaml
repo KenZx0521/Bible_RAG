@@ -165,6 +165,16 @@ text:
     g: [G07]
     evidence: G07（4 組名字與通名被拆開：鹽＋海、毗珥＋山、何烈＋山、加利利＋海）
     definition: name_spans 中相異的非空 merge_group 數
+  errata_applied:
+    value: 23
+    g: [G11]
+    evidence: G11（9 種錯字 25 處）；誁×2 的正字（麅／狍）無法由 PDF 判定，標 uncertain 不套用，故 23
+    definition: errata_applied.jsonl 列數（config/registries/errata.yaml 中 status=apply 的筆數）
+  ref_aliases:
+    value: 1
+    g: [G12]
+    evidence: G12（外部節號在 PDF 沒有 slot 的只有 jhn.7.53；路17:36 是缺號槽）
+    definition: ref_aliases.jsonl 列數
 
 struct:
   pericopes:

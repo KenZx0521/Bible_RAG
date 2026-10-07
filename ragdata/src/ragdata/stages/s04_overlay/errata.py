@@ -29,10 +29,10 @@ from typing import Any, Iterator, Mapping, Sequence
 import yaml
 
 from ragcommon import ids
+from ragdata.paths import REGISTRIES
 from ragdata.stages.errors import StageError
 
-REPO = Path(__file__).resolve().parents[5]
-DEFAULT_PATH = REPO / "config" / "registries" / "errata.yaml"
+DEFAULT_PATH = REGISTRIES / "errata.yaml"
 SCHEMA = "ragdata.errata.v1"
 STATUSES = ("apply", "uncertain")
 _ID_RE = re.compile(r"er:[0-9]{4}")

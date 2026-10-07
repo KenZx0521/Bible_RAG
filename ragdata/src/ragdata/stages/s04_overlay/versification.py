@@ -19,9 +19,10 @@ from typing import Any, Mapping, Sequence
 import yaml
 
 from ragcommon import ids
-from ragdata.stages.s04_overlay.errata import REPO, OverlayError
+from ragdata.paths import REGISTRIES
+from ragdata.stages.s04_overlay.errata import OverlayError
 
-DEFAULT_PATH = REPO / "config" / "registries" / "versification.yaml"
+DEFAULT_PATH = REGISTRIES / "versification.yaml"
 SCHEMA = "ragdata.versification.v1"
 RELATIONS = ("contained_in",)
 Rows = Mapping[str, Sequence[Mapping[str, Any]]]
