@@ -2,7 +2,8 @@
 #
 # quote_fixes：改寫式引文，原文確定者改回服務文字（verse_units.text）。
 #   before 是規則階段（errata、機械替換、CUNP、着/甚麼/裏/鍊、‧）做完後該欄位裏恰好出現一次的字串；
-#   after 的每個子句都必須是服務文字。範圍：「」內引文，以及 VERSE_LOOKUP 逐字背誦的答案要點。
+#   after 的每個子句都必須是服務文字。範圍：「」內引文，以及 VERSE_LOOKUP 逐字背誦的答案要點與
+#   reference_answer（機械替換門檻 4 字以下的短子句不會自動改，逐字背誦時要人工補齊）。
 #   reference_answer 中的間接引語（第三人稱轉述，如 VL_025「律法書不可離開他的口」）是合法轉述，不改。
 # quote_exempt：「」內不是經文引文的子句（術語、節期名、主題標籤、情節概括、詩篇篇題），G-GT 引文檢查只略過這些。
 # kay_review：不自行修改、交 Kay 裁決的題目。
@@ -183,6 +184,12 @@ quote_fixes:
     after: 在你一切所行的事上都要認定他
     evidence_slot: pro.3.6
     reason: 箴3:6 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_012
+    field: reference_answer
+    before: 神所賜、出人意外
+    after: 上帝所賜、出人意外
+    evidence_slot: php.4.7
+    reason: 腓4:7 原文（逐字背誦；「神所賜」只有 3 字，低於機械替換門檻，與同欄已改的「告訴上帝」矛盾）
   - qid: VERSE_LOOKUP_012
     field: expected_answer_points[1]
     before: 將所要的告訴神
