@@ -88,7 +88,7 @@ def test_malformed_expectation_files_are_rejected(tmp_path, body):
 
 def test_pdf_counts_cover_exactly_the_counters_and_cite_findings():
     counts = load_counts(PDF_COUNTS_PATH)
-    for layer in BOTH:
+    for layer in (*BOTH, "emb"):
         assert set(counts[layer]) == set(COUNTERS[layer])
         assert all(e.g and e.definition for e in counts[layer].values())
 
@@ -105,6 +105,10 @@ def test_pdf_counts_are_internally_consistent():
     assert struct["passages"] == struct["pericopes"] + struct["passages_continued"]
     assert struct["legacy_verses"] == text["verse_units"] + struct["legacy_verses_retired"]
     assert struct["legacy_verses_retired"] < text["omitted_slots"]
+    emb = {k: e.value for k, e in load_counts(PDF_COUNTS_PATH)["emb"].items()}
+    assert emb["emb_verses"] == text["verse_units"]
+    assert emb["embedding_records"] == emb["emb_verses"] + emb["emb_passages"] + emb["emb_chunks"]
+    assert emb["emb_passages"] < struct["passages"]
 
 
 def test_list_expectation_for_a_scalar_count_is_red_not_a_crash():

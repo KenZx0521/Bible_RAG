@@ -46,3 +46,8 @@ struct:
   legacy_chunks: {value: 2, g: [G17]}
   legacy_verses: {value: 15, g: [G17]}
   legacy_verses_retired: {value: 1, g: [G02]}
+emb:
+  embedding_records: {value: 22, g: [G33, G58]}
+  emb_verses: {value: 14, g: [G12, G58]}
+  emb_passages: {value: 6, g: [G15, G58]}
+  emb_chunks: {value: 2, g: [G19, G58]}

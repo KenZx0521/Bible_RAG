@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Any, Iterator, Mapping, Sequence
 
 from ragdata.gates.base import GateResult
@@ -23,17 +24,21 @@ class BuildResult:
     layers: Mapping[str, StoredLayer]
     gates: tuple[GateResult, ...]
     timings: Mapping[str, float]
+    attachments: Mapping[str, Mapping[str, Any]] = MappingProxyType({})   # by layer
 
     @property
     def passed(self) -> bool:
         return gates_pass(self.gates)
 
     def to_json(self) -> dict[str, Any]:
-        return {"schema": REPORT_SCHEMA, "pass": self.passed,
-                "layers": {k: {"version": v.version, "path": str(v.path)}
-                           for k, v in self.layers.items()},
-                "gates": [g.to_json() for g in self.gates],
-                "timings_s": {k: round(v, 2) for k, v in self.timings.items()}}
+        doc = {"schema": REPORT_SCHEMA, "pass": self.passed,
+               "layers": {k: {"version": v.version, "path": str(v.path)}
+                          for k, v in self.layers.items()},
+               "gates": [g.to_json() for g in self.gates],
+               "timings_s": {k: round(v, 2) for k, v in self.timings.items()}}
+        if self.attachments:
+            doc["attachments"] = {k: dict(v) for k, v in self.attachments.items()}
+        return doc
 
 
 @dataclass

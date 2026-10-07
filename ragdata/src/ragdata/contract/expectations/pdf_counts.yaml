@@ -227,3 +227,27 @@ struct:
     g: [G02, G12]
     evidence: G02（10 個幽靈節）；路17:36 舊資料本來就沒有，故比 omitted_slots 少 1
     definition: relation=retired 的 legacy_ids 數
+
+emb:
+  embedding_records:
+    value: 34058
+    g: [G33]
+    evidence: >-
+      S6 首跑（struct@47a0f26501f3）：31,021 + 2,604 + 433；舊 queue 34,072 = 3,041 + 31,031。
+      差 14 = 10 個幽靈節不再嵌入 + 舊 2,610 pericope／431 chunk 改為 2,604 passage／433 chunk
+    definition: embedding_records.jsonl 列數；G-EMB 另驗公式 = unit 數 + 未切塊 passage 數 + chunk 數
+  emb_verses:
+    value: 31021
+    g: [G12]
+    evidence: G12（節單位 31,021，合併節只嵌一次，11 個缺號槽不嵌）
+    definition: kind=verse 的 embedding_records 數
+  emb_passages:
+    value: 2604
+    g: [G15, G31]
+    evidence: struct@47a0f26501f3 的 2,773 段中 169 段超過 768 tokens 要切塊，餘 2,604 段
+    definition: kind=passage 的 embedding_records 數（未切塊的 passage）
+  emb_chunks:
+    value: 433
+    g: [G19]
+    evidence: struct@47a0f26501f3 chunks.jsonl 433 列（169 段切出）
+    definition: kind=chunk 的 embedding_records 數
