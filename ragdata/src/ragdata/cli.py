@@ -6,16 +6,25 @@
                                  [--report FILE]
     python -m ragdata build struct --text TEXT_LAYER_DIR [--store DIR] [--counts YAML]
                                  [--legacy-dir DIR] [--tokenizer FILE] [--report FILE]
-    python -m ragdata gate {text,struct} LAYER_DIR [--dep DIR ...] [--pdf-dir DIR]
+    python -m ragdata build emb --struct STRUCT_LAYER_DIR --text TEXT_LAYER_DIR [--store DIR]
+                                 [--counts YAML] [--legacy-dir DIR] [--tokenizer FILE]
+                                 [--reranker-tokenizer FILE] [--device DEV] [--batch-size N]
+                                 [--report FILE]
+    python -m ragdata gate {text,struct,emb} LAYER_DIR [--dep DIR ...] [--pdf-dir DIR]
                                  [--counts YAML] [--source-expect YAML] [--registries DIR]
-                                 [--tokenizer FILE] [--report FILE]
+                                 [--tokenizer FILE] [--reranker-tokenizer FILE]
+                                 [--legacy-dir DIR] [--device DEV] [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
 
 A text layer is gated with its src layer as a dependency (G-CONSERVE re-reads
 it) and the PDFs (G-XCHECK re-reads them); without them those gates fail closed.
 A struct layer is built from, and gated with, its text layer; G-STRUCT counts
 tokens with the pinned BGE-M3 tokenizer (the HF cache, or ``--tokenizer``) and
-fails closed when it does not load.
+fails closed when it does not load. An emb layer is built from a struct layer and
+the text layer it was built on, and gated with both (``--dep``); its build and
+G-EMB/G-ENC load the pinned BGE-M3 offline (and the reranker tokenizer), and
+G-ENC compares the vectors with the old ``output/`` (``--legacy-dir``). ``det`` on
+two emb layers also compares their vectors within G-DET's tolerance.
 
 Reports are JSON on stdout (and in ``--report`` when given). Exit status:
 0 everything passed, 1 a hard gate failed, 2 bad input (including a stage that
@@ -43,6 +52,7 @@ from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct import build as struct_stage
+from ragdata.stages.s06_emb import build as emb_stage
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.store import DEFAULT_ROOT, StoreError
 
@@ -53,16 +63,25 @@ class CliError(ValueError):
     """Bad command-line input."""
 
 
+def _encoder_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--reranker-tokenizer", type=Path, default=paths.RERANKER_TOKENIZER,
+                        help="bge-reranker-v2-m3 tokenizer.json (emb)")
+    parser.add_argument("--device", help="where BGE-M3 runs (emb; default cuda if available)")
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ragdata", description="Bible_RAG snapshot pipeline")
     sub = parser.add_subparsers(dest="command", required=True)
     build = sub.add_parser("build", help="build a layer from the PDFs into the store")
     build.add_argument("layer", choices=stages.BUILDABLE)
     build.add_argument("--pdf-dir", type=Path, help="the PDFs (text)")
-    build.add_argument("--text", type=Path, help="the text layer to build on (struct)")
+    build.add_argument("--text", type=Path, help="the text layer to build on (struct, emb)")
+    build.add_argument("--struct", type=Path, help="the struct layer to build on (emb)")
     build.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
-                       help="the old output/, read for legacy_ids (struct)")
-    build.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct)")
+                       help="the old output/: legacy_ids (struct), vectors (emb)")
+    build.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct, emb)")
+    _encoder_arguments(build)
+    build.add_argument("--batch-size", type=int, default=emb_stage.BATCH_SIZE)
     build.add_argument("--store", type=Path, default=DEFAULT_ROOT)
     build.add_argument("--counts", type=Path, default=PDF_COUNTS_PATH)
     build.add_argument("--source-expect", type=Path, default=EXPECT_PATH)
@@ -81,7 +100,10 @@ def _parser() -> argparse.ArgumentParser:
     gate.add_argument("--counts", type=Path, default=PDF_COUNTS_PATH)
     gate.add_argument("--source-expect", type=Path, default=EXPECT_PATH)
     gate.add_argument("--registries", type=Path, default=paths.REGISTRIES)
-    gate.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json, for G-STRUCT")
+    gate.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct, emb)")
+    gate.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
+                      help="the old output/, for G-ENC")
+    _encoder_arguments(gate)
     gate.add_argument("--report", type=Path)
     det = sub.add_parser("det", help="G-DET: compare two runs of the same layer")
     det.add_argument("first", type=Path)
@@ -113,15 +135,30 @@ def _build_struct(args: argparse.Namespace) -> stages.BuildResult:
     return struct_stage.build_struct(args.text, args.store, counts_path=args.counts, inputs=inputs)
 
 
+def _build_emb(args: argparse.Namespace) -> stages.BuildResult:
+    for flag, value in (("--struct", args.struct), ("--text", args.text)):
+        if value is None:
+            raise CliError(f"build emb needs {flag}")
+    inputs = emb_stage.EmbInputs(tokenizer=args.tokenizer,
+                                 reranker_tokenizer=args.reranker_tokenizer,
+                                 legacy_dir=args.legacy_dir, device=args.device,
+                                 batch_size=args.batch_size)
+    return emb_stage.build_emb(args.struct, args.text, args.store, counts_path=args.counts,
+                               inputs=inputs)
+
+
 def _build(args: argparse.Namespace) -> int:
-    result = {"text": _build_text, "struct": _build_struct}[args.layer](args)
+    builders = {"text": _build_text, "struct": _build_struct, "emb": _build_emb}
+    result = builders[args.layer](args)
     _emit(result.to_json(), args.report)
     return EXIT_OK if result.passed else EXIT_GATE_FAILED
 
 
 def _gate(args: argparse.Namespace) -> int:
     inputs = GateInputs(pdf_dir=args.pdf_dir, registries=args.registries,
-                        source_expect=args.source_expect, tokenizer=args.tokenizer)
+                        source_expect=args.source_expect, tokenizer=args.tokenizer,
+                        reranker_tokenizer=args.reranker_tokenizer, legacy_dir=args.legacy_dir,
+                        device=args.device)
     report = gate_layer(args.layer_dir, args.layer, args.dep, args.counts, inputs=inputs)
     _emit(report.to_json(), args.report)
     return EXIT_OK if report.passed else EXIT_GATE_FAILED

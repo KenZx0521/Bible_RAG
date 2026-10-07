@@ -9,12 +9,18 @@ the mini stand-in counter.)
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 
 import pytest
 
+import fake_encoder
 import mini_build
+import mini_emb
+from ragcommon import ids
+from ragdata import store
 from ragdata.gates import runner
+from ragdata.store import attach
 from ragdata.stages.s05_struct.tokens import TokenCounter
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
@@ -171,3 +177,58 @@ def test_text_mutation_turns_the_struct_gates_red(tmp_path, case):
     mutate(layer)
     text, struct = mini_build.write_layers(tmp_path, text=layer)
     assert expected_red <= _red(_gate(struct.path, "struct", [text.path]))
+
+
+def _embed_omitted_slot(layer):
+    row = copy.deepcopy(next(r for r in layer["embedding_records"]
+                             if r["record_id"] == "vs:mat.18.2"))
+    row.update(record_id="vs:mat.18.3", source_id="mat.18.3",
+               point_id=ids.point_id("vs:mat.18.3"))
+    row["payload"].update(record_id="vs:mat.18.3", verse_range="3", start_key="mat.18.3",
+                          end_key="mat.18.3")
+    layer["embedding_records"].insert(6, row)
+
+
+def _edit_record_text(layer):
+    row = next(r for r in layer["embedding_records"] if r["record_id"] == "vs:eph.6.4")
+    row["text"] = row["text"].replace("父親", "母親")
+
+
+EMB_MUTATIONS = {
+    "change a payload field": (
+        _set("embedding_records", "record_id", "vs:act.10.1", payload={
+            **mini_build.EMB_PAYLOADS["ps:act.10.1"], "record_id": "vs:act.10.1",
+            "kind": "verse", "type": "verse"}), {"G-SCHEMA", "G-EMB"}),
+    "change the payload title": (lambda layer: next(
+        r for r in layer["embedding_records"] if r["record_id"] == "vs:act.10.1"
+    )["payload"].update(title="(無標題)"), {"G-EMB"}),
+    "delete a verse record": (_drop("embedding_records", "record_id", "vs:psa.42.3"),
+                              {"G-COUNT", "G-EMB"}),
+    "embed an omitted slot": (_embed_omitted_slot, {"G-COUNT", "G-EMB"}),
+    "edit record text, keep its sha": (_edit_record_text, {"G-SCHEMA"}),
+}
+
+
+def _write_emb(tmp_path, emb, mutate):
+    built = store.read_layer(emb.path)
+    layer = {"embedding_records": [dict(r) for r in built.rows["embedding_records.jsonl"]]}
+    mutate(layer)
+    files = {name: (emb.path / name).read_bytes() for name in built.file_shas
+             if name != store.DEPENDS_ON}
+    files["embedding_records.jsonl"] = store.encode_jsonl(layer["embedding_records"])
+    mutated = store.write_layer(tmp_path / "mutated", "emb", files, depends_on=built.depends_on)
+    _, vector_files = attach.read_attachment(emb.path, "vectors")
+    attach.write_attachment(mutated, "vectors", vector_files, {})
+    return mutated
+
+
+@pytest.mark.parametrize("case", sorted(EMB_MUTATIONS))
+def test_emb_mutation_turns_hard_gates_red(tmp_path, case):
+    mutate, expected_red = EMB_MUTATIONS[case]
+    text, struct, result = mini_emb.build(tmp_path)
+    mutated = _write_emb(tmp_path, result.layers["emb"], mutate)
+    inputs = runner.GateInputs(encoder=fake_encoder.make(), compat_sample=mini_emb.SAMPLE,
+                               legacy_dir=mini_emb.legacy_dir(tmp_path / "old"))
+    report = runner.gate_layer(mutated.path, "emb", [struct.path, text.path], MINI_COUNTS,
+                               inputs=inputs)
+    assert expected_red <= _red(report)

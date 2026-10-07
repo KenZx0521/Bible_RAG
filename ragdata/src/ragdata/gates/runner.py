@@ -17,6 +17,11 @@ not built yet still appears in the report as a failing hard gate, so the
 report fails closed: it passes only when every required gate ran and every
 hard gate passed. Tests may run a subset (``gates=``) to see what the built
 gates catch; such a report never passes.
+
+An emb layer is gated with its struct and text layers. G-EMB and G-ENC also read
+its report, fingerprint and ``vectors`` attachment, and the pinned encoder
+(``GateInputs``: tokenizer files, device, the old ``output/`` for the legacy
+check); an encoder that does not load fails both closed.
 """
 
 from __future__ import annotations
@@ -31,10 +36,14 @@ from ragcommon.versification import Versification, default_versification
 from ragdata import paths
 from ragdata.contract import LAYERS, record_type_for_file
 from ragdata.contract.counts import PDF_COUNTS_PATH, load_counts
-from ragdata.contract.registry import LAYER_REPORTS, XCHECK_REPORT
-from ragdata.gates import sourced
+from ragdata.contract.registry import (
+    EMB_REPORT, ENCODER_FINGERPRINT, LAYER_REPORTS, XCHECK_REPORT,
+)
+from ragdata.gates import emb_legacy, sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
 from ragdata.gates.counts import check_counts
+from ragdata.gates.emb import EmbFiles, check_emb
+from ragdata.gates.enc import run_enc
 from ragdata.gates.ref import check_ref
 from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
@@ -44,13 +53,18 @@ from ragdata.stages.errors import StageError
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.stages.s04_overlay.normalization import load_normalization
 from ragdata.stages.s05_struct.tokens import TokenCounter, pinned_counter
-from ragdata.store import DEPENDS_ON, MANIFEST, LayerData, read_layer, verify_layer
+from ragdata.stages.s06_emb.encoder import BATCH_SIZE, Encoder, load_encoder
+from ragdata.store import (
+    DEPENDS_ON, MANIFEST, LayerData, StoreError, attach, read_layer, vectors, verify_layer,
+)
 
 REPORT_SCHEMA = "ragdata.gate_report.v1"
-REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {"text": (), "struct": ("text",)}
+REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {"text": (), "struct": ("text",),
+                                                 "emb": ("struct", "text")}
 REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "text": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-CONSERVE", "G-XCHECK", "G-REF"),
     "struct": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-STRUCT"),
+    "emb": ("G-SCHEMA", "G-COUNT", "G-EMB", "G-ENC"),
 })
 NOT_IMPLEMENTED = "not implemented"
 UNLOADED_DEPS = frozenset({"src"})
@@ -64,8 +78,23 @@ class GateInputs:
     registries: Path = paths.REGISTRIES           # G-TEXT: normalization.yaml (ASCII allow-list)
     source_expect: Path = EXPECT_PATH             # G-CONSERVE: the corpus totals
     versification: Versification | None = None    # G-REF: None means ragcommon's data
-    tokenizer: Path | None = None                 # G-STRUCT: tokenizer.json (None: the HF cache)
+    tokenizer: Path | None = None                 # G-STRUCT/emb: tokenizer.json (None: HF cache)
     token_counter: TokenCounter | None = None     # G-STRUCT: a stand-in counter (tests only)
+    reranker_tokenizer: Path = paths.RERANKER_TOKENIZER   # G-ENC
+    legacy_dir: Path = paths.LEGACY_OUTPUT        # G-ENC: the old embedding_queue / embeddings
+    compat_sample: int = emb_legacy.SAMPLE        # G-ENC: records checked against the old index
+    device: str | None = None                     # G-EMB/G-ENC: where BGE-M3 runs
+    encoder: Encoder | None = None                # G-EMB/G-ENC: a stand-in encoder (tests only)
+
+
+@dataclass(frozen=True)
+class EmbContext:
+    """What G-EMB and G-ENC read of an emb layer besides its records."""
+
+    files: EmbFiles
+    fingerprint: Mapping[str, Any]
+    encoder: Encoder | None
+    encoder_error: str | None
 
 
 @dataclass(frozen=True)
@@ -79,6 +108,7 @@ class GateContext:
     target: LayerData
     src: Mapping[str, bytes] | None
     inputs: GateInputs
+    emb: EmbContext | None = None
 
 
 def missing_input(name: str, what: str) -> GateResult:
@@ -121,6 +151,54 @@ def _struct_gate(ctx: GateContext) -> GateResult:
     return check_struct(ctx.snapshot, counter)
 
 
+def _json_file(target: LayerData, name: str) -> Mapping[str, Any]:
+    if name not in target.file_shas:
+        raise GateInputError(f"{target.path}: an emb layer holds {name}")
+    try:
+        doc = json.loads((target.path / name).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise GateInputError(f"{target.path / name}: unreadable: {exc}") from None
+    if not isinstance(doc, dict):
+        raise GateInputError(f"{target.path / name}: not a JSON object")
+    return MappingProxyType(doc)
+
+
+def emb_context(target: LayerData, inputs: GateInputs) -> EmbContext:
+    """The report, fingerprint and vectors of an emb layer, and the encoder to check them."""
+    report, fp = _json_file(target, EMB_REPORT), _json_file(target, ENCODER_FINGERPRINT)
+    try:
+        matrix, index = vectors.decode_vectors(attach.read_attachment(target.path,
+                                                                      vectors.NAME)[1])
+    except StoreError:
+        matrix, index = None, ()
+    encoder, error = inputs.encoder, None
+    if encoder is None:
+        try:
+            encoder = load_encoder(inputs.tokenizer, inputs.reranker_tokenizer, inputs.device,
+                                   BATCH_SIZE)
+        except StageError as exc:
+            error = str(exc)
+    return EmbContext(EmbFiles(report, matrix, index), fp, encoder, error)
+
+
+def _no_encoder(name: str, ctx: GateContext) -> GateResult | None:
+    if ctx.emb is not None and ctx.emb.encoder is not None:
+        return None
+    return missing_input(name, f"the pinned encoder ({ctx.emb.encoder_error if ctx.emb else ''})")
+
+
+def _emb_gate(ctx: GateContext) -> GateResult:
+    missing = _no_encoder("G-EMB", ctx)
+    return missing or check_emb(ctx.snapshot, ctx.emb.files, ctx.emb.encoder.stats)
+
+
+def _enc_gate(ctx: GateContext) -> GateResult:
+    missing = _no_encoder("G-ENC", ctx)
+    return missing or run_enc(ctx.snapshot.of("embedding_records"), ctx.emb.files.vectors,
+                   ctx.emb.fingerprint, ctx.emb.encoder, Path(ctx.inputs.legacy_dir),
+                   ctx.inputs.compat_sample)
+
+
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-SCHEMA": lambda ctx: ctx.schema,
     "G-COUNT": _count_gate,
@@ -131,6 +209,8 @@ GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-CONSERVE": _conserve_gate,
     "G-XCHECK": _xcheck_gate,
     "G-STRUCT": _struct_gate,
+    "G-EMB": _emb_gate,
+    "G-ENC": _enc_gate,
 })
 SOURCED = frozenset({"G-CONSERVE", "G-XCHECK"})  # gates that re-read the sources
 
@@ -214,6 +294,10 @@ def _load_deps(target: LayerData, deps: Sequence[Path | str]
     for layer, version in given.items():
         if declared[layer] != version:
             raise GateInputError(f"{target.layer} was built on {declared[layer]}, given {version}")
+    for dep in loaded:
+        for layer, version in dep.depends_on.items():
+            if layer in given and given[layer] != version:
+                raise GateInputError(f"{dep.version} was built on {version}, given {given[layer]}")
     return loaded, _load_src(target, src)
 
 
@@ -263,6 +347,7 @@ def gate_layer(layer_dir: Path | str, layer: str, deps: Sequence[Path | str] = (
     record_deps, src = _load_deps(target, deps)
     loaded = [*record_deps, target]
     schema, snapshot = check_schema(merge_files(loaded), [d.layer for d in loaded])
-    ctx = GateContext(layer, schema, snapshot, counts_path, target, src, inputs)
+    emb = emb_context(target, inputs) if layer == "emb" else None
+    ctx = GateContext(layer, schema, snapshot, counts_path, target, src, inputs, emb)
     results = tuple(GATES[n](ctx) if n in GATES else not_implemented(n) for n in names)
     return GateReport(layer, target.version, target.depends_on, results, REQUIRED_GATES[layer])

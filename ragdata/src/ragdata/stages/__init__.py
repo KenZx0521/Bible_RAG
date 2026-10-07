@@ -21,7 +21,9 @@ The struct layer is built from a stored text layer by
 ``ragdata.stages.s05_struct.build.build_struct`` (S5), stored the same way once
 G-SCHEMA, G-COUNT, G-REFINT and G-STRUCT pass. It is not re-exported here: S5
 runs gates whose modules import ``ragdata.stages``, so loading it from this
-package would make ``import ragdata.gates.runner`` a cycle.
+package would make ``import ragdata.gates.runner`` a cycle. The emb layer (S6
+records, S7 vectors) is built the same way by
+``ragdata.stages.s06_emb.build.build_emb`` from a struct layer and its text layer.
 """
 
 from __future__ import annotations
@@ -49,7 +51,7 @@ from ragdata.store import StoredLayer, encode_jsonl, write_layer
 
 __all__ = ["BUILDABLE", "REPORT_SCHEMA", "BuildResult", "TextInputs", "build", "gates_pass"]
 
-BUILDABLE = ("text", "struct")
+BUILDABLE = ("text", "struct", "emb")
 TEXT_TYPES = (*S2_TYPES, "errata_applied", "ref_aliases")
 
 

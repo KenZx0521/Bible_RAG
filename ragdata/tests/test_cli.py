@@ -10,11 +10,14 @@ from pathlib import Path
 
 import pytest
 
+import fake_encoder
 import mini_build
+import mini_emb
 from ragdata import cli, stages
 from ragdata.gates import runner
 from ragdata.gates.base import GateResult
 from ragdata.stages.s05_struct import build as struct_stage
+from ragdata.stages.s06_emb import build as emb_stage
 from ragdata.store import StoredLayer
 
 MINI_COUNTS = str(Path(__file__).with_name("mini_counts.yaml"))
@@ -207,3 +210,50 @@ def test_det_of_one_directory_against_itself_is_an_input_error(tmp_path, capsys)
     a, _ = mini_build.write_layers(tmp_path)
     code, out, err = _run(capsys, "det", a.path, a.path)
     assert code == 2 and out == "" and "same directory" in err
+
+
+def test_build_emb_needs_its_struct_and_text_layers(tmp_path, capsys):
+    code, _, err = _run(capsys, "build", "emb", "--text", tmp_path, "--store", tmp_path / "s")
+    assert code == 2 and "--struct" in err
+    code, _, err = _run(capsys, "build", "emb", "--struct", tmp_path, "--store", tmp_path / "s")
+    assert code == 2 and "--text" in err
+
+
+def test_build_emb_hands_its_inputs_to_the_stage(tmp_path, capsys, monkeypatch):
+    seen = {}
+
+    def fake_build_emb(struct_dir, text_dir, store_root, counts_path, inputs):
+        seen.update(struct_dir=struct_dir, text_dir=text_dir, store_root=store_root,
+                    inputs=inputs)
+        return stages.BuildResult({}, (GateResult("G-EMB", True, False, {}, {}, ()),), {})
+    monkeypatch.setattr(emb_stage, "build_emb", fake_build_emb)
+    code, out, _ = _run(capsys, "build", "emb", "--struct", tmp_path / "st", "--text",
+                        tmp_path / "tx", "--store", tmp_path / "s", "--legacy-dir",
+                        tmp_path / "old", "--tokenizer", tmp_path / "m3.json",
+                        "--reranker-tokenizer", tmp_path / "rr.json", "--device", "cpu",
+                        "--batch-size", "8")
+    assert code == 1 and json.loads(out)["pass"] is False
+    assert (seen["struct_dir"], seen["text_dir"]) == (tmp_path / "st", tmp_path / "tx")
+    assert seen["inputs"] == emb_stage.EmbInputs(
+        tokenizer=tmp_path / "m3.json", reranker_tokenizer=tmp_path / "rr.json",
+        legacy_dir=tmp_path / "old", device="cpu", batch_size=8)
+
+
+def test_gate_emb_runs_with_its_dependencies_and_encoder(tmp_path, capsys, monkeypatch):
+    text, struct, result = mini_emb.build(tmp_path)
+    monkeypatch.setattr(runner, "load_encoder", lambda *args: fake_encoder.make())
+    code, out, _ = _run(capsys, "gate", "emb", result.layers["emb"].path, "--dep", struct.path,
+                        "--dep", text.path, "--counts", MINI_COUNTS, "--legacy-dir",
+                        mini_emb.legacy_dir(tmp_path / "old"))
+    gates = {g["name"]: g for g in json.loads(out)["gates"]}
+    assert all(gates[n]["pass"] for n in ("G-SCHEMA", "G-COUNT", "G-EMB"))
+    # the CLI checks the full legacy sample of 500, which the mini layer cannot reach
+    assert code == 1 and gates["G-ENC"]["details"] == [
+        "legacy: only 3 record(s) have an old twin, fewer than the sample of 500"]
+
+
+def test_det_compares_the_vectors_of_two_emb_builds(tmp_path, capsys):
+    _, _, a = mini_emb.build(tmp_path, "a")
+    _, _, b = mini_emb.build(tmp_path / "again", "b")
+    code, out, _ = _run(capsys, "det", a.layers["emb"].path, b.layers["emb"].path)
+    assert code == 0 and json.loads(out)["observed"]["vectors"]["topk_differ"] == 0

@@ -106,7 +106,15 @@ STRUCT_COUNTERS: Mapping[str, Counter] = {
     "legacy_verses_retired": rows("legacy_ids", lambda r: r.relation == "retired"),
 }
 
-COUNTERS: Mapping[str, Mapping[str, Counter]] = {"text": TEXT_COUNTERS, "struct": STRUCT_COUNTERS}
+EMB_COUNTERS: Mapping[str, Counter] = {
+    "embedding_records": rows("embedding_records"),
+    "emb_verses": rows("embedding_records", lambda r: r.kind == "verse"),
+    "emb_passages": rows("embedding_records", lambda r: r.kind == "passage"),
+    "emb_chunks": rows("embedding_records", lambda r: r.kind == "chunk"),
+}
+
+COUNTERS: Mapping[str, Mapping[str, Counter]] = {"text": TEXT_COUNTERS, "struct": STRUCT_COUNTERS,
+                                                 "emb": EMB_COUNTERS}
 
 
 def _same(observed: Any, expected: Any) -> bool:
