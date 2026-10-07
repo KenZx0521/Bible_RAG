@@ -1,6 +1,6 @@
 """G-GT (design §8): GT v2 against its slot universe, v1, its change log and its freeze.
 
-Every check is hard and fails closed when its input is missing:
+Every check but ``G-GT.locality`` is hard and fails closed when its input is missing:
 
 ``G-GT.refs``     every ``reference`` parses in strict mode, and ``refs`` is that
                   parse in structured form ({book_id, ch, v_start, v_end, ch_end}).
@@ -18,6 +18,13 @@ Every check is hard and fails closed when its input is missing:
 ``G-GT.changes``  the change log is the header's (sha256, count), uses known rules,
                   turns v1 into v2 and v2 back into v1.
 ``G-GT.freeze``   the freeze record names this exact file and slot universe.
+
+``G-GT.locality`` (report only; audit G75, design §15 "GT lint 報告") lists every
+                  quoted clause of ≥ ``LOCALITY_MIN`` Han characters that is service
+                  text but not in the question's gold verses (text or text_pdf), with
+                  the slot where the service text has it, so evaluation knows which
+                  answers quote outside their reference. Fields it cannot read
+                  (unpaired quotes, unknown gold slots) are listed as unchecked.
 """
 
 from __future__ import annotations
@@ -32,7 +39,7 @@ from ragcommon.versification import Versification
 from ragdata.gates.base import GateResult, violations_result
 from ragdata.gt.build import DERIVED_FIELDS, FIXED_FIELDS, RULES, answer_fields, sha256
 from ragdata.gt.changes import Change, ChangeError, apply_changes, get_field, revert_changes
-from ragdata.gt.corpus import GOLD_STATUSES, OMITTED_STATUS, ServiceText
+from ragdata.gt.corpus import GOLD_STATUSES, OMITTED_STATUS, CorpusError, ServiceText
 from ragdata.gt.forms import FORMS, find_forms
 from ragdata.gt.goldrefs import REF_KEYS, GoldError, derive_gold
 from ragdata.gt.textnorm import QuoteError, norm, quote_clause_spans
@@ -40,6 +47,7 @@ from ragdata.gt.textnorm import QuoteError, norm, quote_clause_spans
 REPORT_SCHEMA = "ragdata.gt_gate_report.v1"
 FREEZE_SCHEMA = "ragdata.gt_v2_freeze.v1"
 GT_PATH = "ground_truth.v2.json"
+LOCALITY_MIN = 4    # Han characters, as the audit counted G75; 「看哪」 is everywhere
 
 
 @dataclass(frozen=True)
@@ -251,8 +259,44 @@ def check_freeze(inputs: GtInputs) -> GateResult:
     return violations_result("G-GT.freeze", bad)
 
 
+def _outside_gold(q: Mapping[str, Any], corpus: ServiceText) -> tuple[list[str], list[str]]:
+    """(quoted clauses of ``q`` from outside its gold verses, fields that could not be read)."""
+    qid = q["question_id"]
+    try:
+        gold_text = (corpus.local(q.get("gold_slots") or []),
+                     corpus.local(q.get("gold_slots") or [], pdf=True))
+    except CorpusError as exc:
+        return [], [f"{qid}: unchecked, {exc}"]
+    found, unchecked = [], []
+    for name in answer_fields(q):
+        try:
+            spans = quote_clause_spans(get_field(q, name))
+        except QuoteError as exc:
+            unchecked.append(f"{qid} {name}: unchecked, {exc}")
+            continue
+        for span in spans:
+            clause = norm(span.text)
+            if (len(clause) >= LOCALITY_MIN and corpus.contains(clause)
+                    and not any(clause in text for text in gold_text)):
+                found.append(f"{qid} {name}: 「{span.text}」 → {corpus.locate(clause)}")
+    return found, unchecked
+
+
+def check_locality(inputs: GtInputs) -> GateResult:
+    per_question = [_outside_gold(q, inputs.corpus) for q in _questions(inputs)]
+    found = [row for rows, _ in per_question for row in rows]
+    unchecked = [row for _, bad in per_question for row in bad]
+    return GateResult("G-GT.locality", hard=False, passed=not (found or unchecked),
+                      observed={"clauses": len(found),
+                                "questions": sum(1 for rows, _ in per_question if rows),
+                                "unchecked": len(unchecked)},
+                      expected="report only: quoted clauses outside the gold verses",
+                      details=(*unchecked, *found))
+
+
 CHECKS: tuple[Callable[[GtInputs], GateResult], ...] = (
-    check_refs, check_gold, check_quotes, check_spelling, check_v1, check_changes, check_freeze)
+    check_refs, check_gold, check_quotes, check_spelling, check_v1, check_changes, check_freeze,
+    check_locality)
 
 
 def check_gt(inputs: GtInputs) -> GtReport:

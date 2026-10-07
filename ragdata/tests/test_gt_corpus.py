@@ -93,3 +93,10 @@ def test_local_text_runs_on_across_verses_of_one_chapter(corpus):
 def test_contains_can_insist_on_the_service_text(corpus):
     assert corpus.contains("詵過小河")
     assert not corpus.contains("詵過小河", accept_pdf=False)
+
+
+def test_local_pdf_text_has_the_pdf_glyphs_at_errata_positions(corpus):
+    slots = ("act.9.2", "act.9.3")
+    assert "蹚過小河" in corpus.local(slots) and "詵過小河" not in corpus.local(slots)
+    assert "詵過小河" in corpus.local(slots, pdf=True)
+    assert len(corpus.local(slots, pdf=True)) == len(corpus.local(slots))

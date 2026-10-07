@@ -46,6 +46,7 @@ class ServiceText:
     dotted_names: tuple[str, ...]    # ‧ names whose bare form is never written; longest first
     _index: _Index
     _unit_norm: Mapping[str, str]
+    _unit_norm_pdf: Mapping[str, str]
     _unit_chapter: Mapping[str, tuple[str, int]]
 
     @classmethod
@@ -76,6 +77,7 @@ class ServiceText:
             dotted_names=_dotted_names(rows["name_spans.jsonl"], raw),
             _index=_build_index(units),
             _unit_norm=MappingProxyType({u["unit_key"]: norm(u["text"]) for u in units}),
+            _unit_norm_pdf=MappingProxyType({u["unit_key"]: norm(u["text_pdf"]) for u in units}),
             _unit_chapter=MappingProxyType({u["unit_key"]: (u["book_id"], u["chapter"])
                                             for u in units}),
         )
@@ -101,9 +103,12 @@ class ServiceText:
                 return self._slot_at(at)
         return None
 
-    def local(self, slot_keys: Iterable[str]) -> str:
-        """Normalised text of the units behind ``slot_keys`` (omitted slots have none)."""
-        return self._joined(self._units_of(slot_keys))[0]
+    def local(self, slot_keys: Iterable[str], pdf: bool = False) -> str:
+        """Normalised text of the units behind ``slot_keys`` (omitted slots have none).
+
+        With ``pdf`` it is their text_pdf: the PDF glyphs at errata positions.
+        """
+        return self._joined(self._units_of(slot_keys), pdf)[0]
 
     def _units_of(self, slot_keys: Iterable[str]) -> list[str]:
         seen: dict[str, None] = {}
@@ -115,8 +120,9 @@ class ServiceText:
                 seen.setdefault(unit, None)
         return list(seen)
 
-    def _joined(self, units: Sequence[str]) -> tuple[str, list[int]]:
+    def _joined(self, units: Sequence[str], pdf: bool = False) -> tuple[str, list[int]]:
         """Unit texts joined as in the layer index: CHAPTER_SEP only between chapters."""
+        texts = self._unit_norm_pdf if pdf else self._unit_norm
         parts, ends, pos, chapter = [], [], 0, None
         for unit in units:
             here = self._unit_chapter[unit]
@@ -124,8 +130,8 @@ class ServiceText:
                 parts.append(CHAPTER_SEP)
                 pos += len(CHAPTER_SEP)
             chapter = here
-            parts.append(self._unit_norm[unit])
-            pos += len(self._unit_norm[unit])
+            parts.append(texts[unit])
+            pos += len(texts[unit])
             ends.append(pos)
         return "".join(parts), ends
 

@@ -20,3 +20,5 @@ def test_committed_gt_v2_passes_g_gt():
                         DEFAULTS["freeze"])
     assert report.passed, [g.to_json() for g in report.gates if not g.passed]
     assert {g.name for g in report.gates if g.passed} >= {"G-GT.refs", "G-GT.freeze"}
+    locality = next(g for g in report.gates if g.name == "G-GT.locality")
+    assert not locality.hard and locality.observed["unchecked"] == 0

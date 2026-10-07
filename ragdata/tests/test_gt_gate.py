@@ -38,7 +38,11 @@ def _inputs(corpus, built, doc=None, changes=None, freeze=None, v1=None) -> GtIn
 
 
 def _failed(report) -> set[str]:
-    return {g.name for g in report.gates if not g.passed}
+    return {g.name for g in report.gates if g.hard and not g.passed}
+
+
+def _gate(report, name):
+    return next(g for g in report.gates if g.name == name)
 
 
 def test_the_built_gt_passes_every_check(corpus, built):
@@ -46,8 +50,9 @@ def test_the_built_gt_passes_every_check(corpus, built):
     assert report.passed, [g.to_json() for g in report.gates if not g.passed]
     assert {g.name for g in report.gates} == {
         "G-GT.refs", "G-GT.gold", "G-GT.quote", "G-GT.spelling", "G-GT.v1", "G-GT.changes",
-        "G-GT.freeze"}
-    assert all(g.hard for g in report.gates)
+        "G-GT.freeze", "G-GT.locality"}
+    assert {g.name for g in report.gates if not g.hard} == {"G-GT.locality"}
+    assert all(g.passed for g in report.gates)
 
 
 def _mutated(built, change):
@@ -138,3 +143,33 @@ def test_a_layer_that_writes_a_listed_form_breaks_the_spelling_table(tmp_path, b
     spelling = next(g for g in report.gates if g.name == "G-GT.spelling")
     assert not spelling.passed
     assert any("該撒" in d for d in spelling.details)
+
+
+def test_locality_lists_quotes_from_outside_the_gold_verses_without_failing_the_gt(corpus, built):
+    doc = copy.deepcopy(built.doc)
+    doc["questions"][2]["reference_answer"] += "又說：「你們作父親的，不要惹兒女的氣」，「飲食」。"
+    report = check_gt(_inputs(corpus, built, doc=doc))
+    locality = _gate(report, "G-GT.locality")
+    assert not locality.hard and not locality.passed
+    assert locality.details == (
+        "TOPIC_QUESTION_021 reference_answer: 「你們作父親的」 → eph.6.4",
+        "TOPIC_QUESTION_021 reference_answer: 「不要惹兒女的氣」 → eph.6.4")
+    assert locality.observed == {"clauses": 2, "questions": 1, "unchecked": 0}
+    assert _failed(report) == {"G-GT.changes", "G-GT.freeze"}
+
+
+def test_locality_accepts_the_pdf_glyph_of_an_errata_position_inside_gold(corpus, built):
+    answer = built.doc["questions"][1]["reference_answer"]
+    assert "詵過小河" in answer
+    assert _gate(check_gt(_inputs(corpus, built)), "G-GT.locality").observed["clauses"] == 0
+
+
+@pytest.mark.parametrize("change", [
+    _set(2, "reference_answer", "保羅說：「你們作兒女的"),
+    _set(2, "gold_slots", ["eph.9.9"]),
+])
+def test_locality_reports_what_it_could_not_check(corpus, built, change):
+    report = check_gt(_inputs(corpus, built, doc=_mutated(built, change)))
+    locality = _gate(report, "G-GT.locality")
+    assert locality.observed["unchecked"] == 1 and not locality.passed
+    assert locality.details[0].startswith("TOPIC_QUESTION_021")
