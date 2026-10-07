@@ -9,6 +9,7 @@ reads the PDFs again; a registry that does not fit the rows raises OverlayError.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,7 +30,11 @@ class OverlayResult:
     report: Mapping[str, Any]
 
 
+REGISTRY_FILES = ("errata.yaml", "normalization.yaml", "versification.yaml")
+
+
 def overlay(rows: Mapping[str, Sequence[Mapping[str, Any]]], registries: Path) -> OverlayResult:
+    """Apply the registries in ``registries`` to the S2 rows; the report records their sha256."""
     books = {b["book_id"] for b in rows["books"]}
     fixed = errata.apply_errata(rows, errata.load_errata(Path(registries) / "errata.yaml"),
                                 books)
@@ -38,7 +43,10 @@ def overlay(rows: Mapping[str, Sequence[Mapping[str, Any]]], registries: Path) -
     aliases = versification.alias_rows(merged, decls, books)
     norm = normalization.load_normalization(Path(registries) / "normalization.yaml")
     out = {**merged, "errata_applied": fixed.applied, "ref_aliases": aliases}
-    report = {"schema": REPORT_SCHEMA, "errata": fixed.report,
+    report = {"schema": REPORT_SCHEMA,
+              "registries": {name: hashlib.sha256((Path(registries) / name).read_bytes())
+                             .hexdigest() for name in REGISTRY_FILES},
+              "errata": fixed.report,
               "normalization": normalization.report(norm, out),
               "ref_aliases": {"declared": len(decls), "emitted": len(aliases)}}
     return OverlayResult(MappingProxyType(out), norm.ascii_allowed, report)

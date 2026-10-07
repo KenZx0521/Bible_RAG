@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,7 +19,7 @@ from ragdata.contract.registry import (
     DIFF_CANONICAL_REPORT, DIFF_MD_REPORT, DIFF_SUMMARY_REPORT,
 )
 from ragdata.gates.base import GateResult
-from ragdata.gates.diff import check_diff, metric
+from ragdata.gates.diff import check_diff, load_expect, metric
 from ragdata.stages.diffs import canonical, md
 from ragdata.stages.s01_extract import S1Book
 from ragdata.stages.s02_parse.units import number_footnotes, unit_key
@@ -47,10 +48,24 @@ def glyph_chars(parsed: Sequence[Any], s1_books: Mapping[str, S1Book]
     return chars
 
 
+def _sha(path: Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _inputs(rows: Mapping[str, Sequence[Mapping[str, Any]]], md_dir: Path,
+            canonical_path: Path, expect_path: Path) -> dict[str, str]:
+    """sha256 of what the diffs read (bible_md: of its ``name\tsha`` lines, book order)."""
+    md_lines = "".join(f"{b['file_name']}.md\t{_sha(Path(md_dir) / (b['file_name'] + '.md'))}\n"
+                       for b in rows["books"])
+    return {"bible_md": hashlib.sha256(md_lines.encode("utf-8")).hexdigest(),
+            "canonical_full": _sha(canonical_path), "diff_expect": _sha(expect_path)}
+
+
 def diff_reports(rows: Mapping[str, Sequence[Mapping[str, Any]]],
                  chars: Mapping[str, Sequence[md.CharInfo]], md_dir: Path,
-                 canonical_path: Path, expect: Mapping[str, Mapping[str, int]]) -> DiffReports:
+                 canonical_path: Path, expect_path: Path) -> DiffReports:
     """Both diffs of the final text rows, their summary and the G-DIFF verdict."""
+    expect = load_expect(expect_path)
     md_diff = md.diff_md(rows, chars, md_dir)
     can_diff = canonical.diff_canonical(rows, canonical_path)
     summaries = {"bible_md": md_diff.summary, "canonical_full": can_diff.summary}
@@ -58,7 +73,9 @@ def diff_reports(rows: Mapping[str, Sequence[Mapping[str, Any]]],
                        "observed": metric(summaries[ref], path, None),
                        "match": metric(summaries[ref], path, None) == value}
                       for ref, values in expect.items() for path, value in values.items()]
-    summary = {"schema": SUMMARY_SCHEMA, **summaries, "groups": md.GROUPS,
+    summary = {"schema": SUMMARY_SCHEMA,
+               "inputs": _inputs(rows, md_dir, canonical_path, expect_path), **summaries,
+               "groups": md.GROUPS,
                "reconciliation": reconciliation}
     files = {MD_FILE: md.encode_tsv(md_diff.rows),
              CANONICAL_FILE: canonical.encode_tsv(can_diff.rows),

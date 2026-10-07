@@ -229,6 +229,25 @@ def test_the_layer_stores_its_reports(built):
     assert overlay["errata"]["applied"] == 0 and overlay["ref_aliases"]["emitted"] == 0
 
 
+
+def test_the_reports_name_the_inputs_that_shaped_the_layer(built):
+    _, result = built
+    text = result.layers["text"].path
+    overlay = json.loads((text / "overlay_report.json").read_text(encoding="utf-8"))
+    registry = REPO / "config" / "registries" / "errata.yaml"
+    assert overlay["registries"]["errata.yaml"] == mini_build_sha_bytes(registry.read_bytes())
+    assert set(overlay["registries"]) == {"errata.yaml", "normalization.yaml",
+                                          "versification.yaml"}
+    inputs = json.loads((text / "diff_summary.json").read_text(encoding="utf-8"))["inputs"]
+    assert inputs["diff_expect"] == mini_build_sha_bytes(DIFF_EXPECT.read_bytes())
+    assert set(inputs) == {"bible_md", "canonical_full", "diff_expect"}
+
+
+def mini_build_sha_bytes(data: bytes) -> str:
+    import hashlib
+    return hashlib.sha256(data).hexdigest()
+
+
 def mini_build_sha(text: str) -> str:
     import hashlib
     return hashlib.sha256(text.encode("utf-8")).hexdigest()

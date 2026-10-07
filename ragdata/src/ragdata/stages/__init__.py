@@ -170,7 +170,7 @@ def build(layer: str, pdf_dir: Path, store_root: Path, counts_path: Path = PDF_C
                                    overlay.rows["verse_units"], workers=workers)
     with clock.lap("diffs"):
         diffs = diff_reports(overlay.rows, glyph_chars(parsed, source.books), inputs.md_dir,
-                             inputs.canonical, gate_diff.load_expect(inputs.diff_expect))
+                             inputs.canonical, inputs.diff_expect)
     with clock.lap("gates"):
         gates = [s00_source.check_tools(source.tools, expect),
                  s00_source.check_source(source.manifest, expect),

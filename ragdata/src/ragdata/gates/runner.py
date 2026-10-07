@@ -86,6 +86,8 @@ def _count_gate(ctx: GateContext) -> GateResult:
 
 
 def _text_gate(ctx: GateContext) -> GateResult:
+    """G-TEXT under the current text policy (a stricter ASCII allow-list flags older layers);
+    the registries a layer was built with are recorded by sha256 in its overlay report."""
     norm = load_normalization(Path(ctx.inputs.registries) / "normalization.yaml")
     return check_text(ctx.snapshot, norm.ascii_allowed)
 
