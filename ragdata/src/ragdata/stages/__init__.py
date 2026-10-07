@@ -166,8 +166,7 @@ def build(layer: str, pdf_dir: Path, store_root: Path, counts_path: Path = PDF_C
     with clock.lap("s4_overlay"):
         overlay = s04_overlay.overlay(_s2_rows(parsed), inputs.registries)
     with clock.lap("s3_xcheck"):
-        xcheck = s03_xcheck.xcheck(Path(pdf_dir), overlay.rows["books"],
-                                   overlay.rows["verse_units"], workers=workers)
+        xcheck = s03_xcheck.xcheck(Path(pdf_dir), overlay.rows, workers=workers)
     with clock.lap("diffs"):
         diffs = diff_reports(overlay.rows, glyph_chars(parsed, source.books), inputs.md_dir,
                              inputs.canonical, inputs.diff_expect)

@@ -222,6 +222,9 @@ def test_the_layer_stores_its_reports(built):
     text = result.layers["text"].path
     xcheck = json.loads((text / "xcheck_report.json").read_text(encoding="utf-8"))
     assert xcheck["units"] == xcheck["containment"]["raw"]["contained"] == 1197
+    assert xcheck["gaps"]["unexplained"] == [] and xcheck["gaps"]["explained"] > 0
+    assert all(c["poppler"] == c["layer"] and not c["books_off"]
+               for c in xcheck["characters"].values())
     summary = json.loads((text / "diff_summary.json").read_text(encoding="utf-8"))
     assert summary["bible_md"]["by_class"]["other"]["rows"] == 0
     assert all(r["match"] for r in summary["reconciliation"])
