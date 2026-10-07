@@ -12,7 +12,10 @@ Two entry points:
     Scan free text (a user question) for embedded references. Abbreviations
     count only when a number follows immediately and is itself followed by
     ``:`` or ``章``/``篇`` (single-character ones need Arabic digits), so
-    「約3天」「拿5個餅」「提前」「王上」 are not references. An item written
+    「約3天」「拿5個餅」「提前」「王上」 are not references. Before ``N章``/``N篇``
+    a single-character abbreviation must also not end a word: the character
+    before it is absent, non-Han or a lead such as 見、參、在, so
+    「後來3章」「列出3章」「全書約3章」 are not references. An item written
     with Chinese numerals must end in ``章``/``篇``/``節``, and a bare trailing
     number followed by a measure word (天、個、歲…) is a quantity. Ambiguous
     names (提摩太) and words such as 大約、本書 never start a reference.
@@ -34,6 +37,7 @@ go through ref_aliases (``jhn.7.53`` → ``jhn.8.1``) and anything else raises.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, replace
 from functools import lru_cache
 
@@ -43,6 +47,8 @@ from ragcommon.versification import Versification, VersificationError, default_v
 
 # Common words that end in a book abbreviation (大約 → 約, 本書 → 書).
 FALSE_FRIENDS = ("大約", "共約", "本書", "該書", "此書", "全書", "卷書")
+# Han characters allowed right before a single-character abbreviation + N章 (見約3章).
+LEAD_CHARS = frozenset("見參在和與及或")
 # A bare trailing number followed by one of these is a quantity, not a verse.
 GUARD_CHARS = frozenset("天年月日歲個次人位名隻頭匹條張本卷首元塊分秒點時斤里尺倍萬千號週周代層段句.%")
 _OPEN, _CLOSE = "（(［[【〔", "）)］]】〕"
@@ -408,15 +414,31 @@ def _find_regex() -> re.Pattern[str]:
     return re.compile(_alternation(list(table.names) + list(table.ambiguous) + list(FALSE_FRIENDS)))
 
 
-def _lead_ok(toks: tuple[lx.Token, ...], name: books.BookName, book_end: int) -> bool:
-    """Abbreviations need ``N:`` or ``N章`` right after them."""
+def _is_han(ch: str) -> bool:
+    return unicodedata.name(ch, "").startswith(("CJK UNIFIED IDEOGRAPH", "CJK COMPATIBILITY IDEOGRAPH"))
+
+
+def _starts_word(before: str) -> bool:
+    """True unless ``before`` is a Han character that may end a word with the abbreviation."""
+    return not before or before in LEAD_CHARS or not _is_han(before)
+
+
+def _lead_ok(toks: tuple[lx.Token, ...], name: books.BookName, book_end: int, before: str) -> bool:
+    """Abbreviations need ``N:`` or ``N章`` right after them.
+
+    Single-character ones also need Arabic digits, and before ``N章``/``N篇``
+    they must not be the tail of a word (後來3章, 列出3章, 全書約3章): the
+    character ``before`` them must be absent, non-Han or one of LEAD_CHARS.
+    """
     if not name.is_abbreviation:
         return True
     if len(toks) < 2 or toks[0].kind != lx.NUM or toks[0].start != book_end:
         return False
-    if len(name.text) == 1 and not toks[0].arabic:
+    if toks[1].kind not in (lx.COLON, lx.CHAP):
         return False
-    return toks[1].kind in (lx.COLON, lx.CHAP)
+    if len(name.text) > 1:
+        return True
+    return toks[0].arabic and (toks[1].kind == lx.COLON or _starts_word(before))
 
 
 def _plausible(norm: str, toks: tuple[lx.Token, ...], i: int, j: int) -> bool:
@@ -453,7 +475,7 @@ def _scan_at(norm: str, m: re.Match[str], vers: Versification) -> tuple[list[Ver
     if name is None:   # ambiguous name or false friend
         return None
     toks, _ = lx.tokenize(norm, m.end())
-    if not _lead_ok(toks, name, m.end()):
+    if not _lead_ok(toks, name, m.end(), norm[max(m.start() - 1, 0):m.start()]):
         return None
     return _scan_items(norm, toks, _book_ctx(name.book_id, vers))
 
