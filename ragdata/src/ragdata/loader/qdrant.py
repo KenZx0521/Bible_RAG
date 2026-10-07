@@ -32,9 +32,11 @@ class QdrantDb:
 
     @classmethod
     def connect(cls, settings: QdrantSettings) -> "QdrantDb":
+        # the client (1.17) is newer than the server (1.13) by more than its version check
+        # allows; what it writes is counted and read back by the loader and G-PROJ instead
         return cls(QdrantClient(host=settings.host, port=settings.http_port,
                                 grpc_port=settings.grpc_port, prefer_grpc=True,
-                                timeout=TIMEOUT_S))
+                                timeout=TIMEOUT_S, check_compatibility=False))
 
     def close(self) -> None:
         self._client.close()
