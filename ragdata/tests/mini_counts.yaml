@@ -20,6 +20,7 @@ text:
   headings_before: {value: 5, g: [G58]}
   headings_mid: {value: 1, g: [G58]}
   headings_dash_sub: {value: 1, g: [G58]}
+  headings_stacked: {value: 1, g: [G58]}
   parallel_lines: {value: 2, g: [G58]}
   parallel_segments: {value: 3, g: [G58]}
   section_ranges: {value: 1, g: [G58]}
@@ -28,6 +29,7 @@ text:
   footnotes_original: {value: 1, g: [G58]}
   footnotes_name_meaning: {value: 1, g: [G58]}
   footnotes_variant: {value: 1, g: [G58]}
+  footnote_refs: {value: 0, g: [G58]}
   name_spans_body: {value: 8, g: [G58]}
   name_surfaces_body: {value: 6, g: [G58]}
   name_spans_footnote: {value: 1, g: [G58]}

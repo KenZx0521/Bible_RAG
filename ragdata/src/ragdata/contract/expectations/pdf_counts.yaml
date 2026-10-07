@@ -95,6 +95,11 @@ text:
     g: [G09]
     evidence: DESIGN §2.7（15 個「－」子標題）
     definition: text_pdf 以「－」開頭的標題數
+  headings_stacked:
+    value: 6
+    g: [G09, G15]
+    evidence: DESIGN §2.7、§2.13（6 處疊標題：結1:1、8:1、40:1；但1:1、7:1；摩1:3）
+    definition: 同一起點（heading_id 去掉 #n）上第 2 個以後的標題數
   parallel_lines:
     value: 619
     g: [G09, G24, G69]
@@ -135,6 +140,11 @@ text:
     g: [G02, G10]
     evidence: REPORT §5.2（古卷 70）
     definition: kind=variant（有古卷）的註腳數
+  footnote_refs:
+    value: 24
+    g: [G10, G27]
+    evidence: DESIGN §2.9（註腳中 24 處「X章Y節」引用）；REPORT §5.1
+    definition: 所有 footnotes 的 refs 項數總和
   name_spans_body:
     value: 32757
     g: [G05]

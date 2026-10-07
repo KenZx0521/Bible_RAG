@@ -7,8 +7,10 @@ List-valued counts (e.g. the omitted slot keys) compare as sets.
 
 from __future__ import annotations
 
+from collections import Counter as Tally
 from typing import Any, Callable, Collection, Mapping
 
+from ragcommon import ids
 from ragdata.contract.counts import Expectation
 from ragdata.gates.base import GateResult, Snapshot, capped
 
@@ -41,6 +43,16 @@ def _omitted_keys(s: Snapshot) -> list[str]:
     return sorted(slot.slot_key for slot in s.of("verse_slots") if _omitted(slot))
 
 
+def _stacked(s: Snapshot) -> int:
+    """Headings beyond the first at one start key (``hd:{key}#2`` and later)."""
+    starts = Tally(ids.parse(h.heading_id).parent.raw for h in s.of("headings"))
+    return sum(n - 1 for n in starts.values())
+
+
+def _footnote_refs(s: Snapshot) -> int:
+    return sum(len(f.refs) for f in s.of("footnotes"))
+
+
 def _footnote_kind(kind: str) -> Counter:
     return rows("footnotes", lambda f: f.kind == kind)
 
@@ -63,6 +75,7 @@ TEXT_COUNTERS: Mapping[str, Counter] = {
     "headings_before": rows("headings", lambda h: h.pos == "before"),
     "headings_mid": rows("headings", lambda h: h.pos == "mid"),
     "headings_dash_sub": rows("headings", lambda h: h.text_pdf.startswith("－")),
+    "headings_stacked": _stacked,
     "parallel_lines": distinct("parallel_refs", lambda p: p.heading_id),
     "parallel_segments": rows("parallel_refs"),
     "section_ranges": rows("parallel_refs", lambda p: p.kind == "section_range"),
@@ -71,6 +84,7 @@ TEXT_COUNTERS: Mapping[str, Counter] = {
     "footnotes_original": _footnote_kind("original"),
     "footnotes_name_meaning": _footnote_kind("name_meaning"),
     "footnotes_variant": _footnote_kind("variant"),
+    "footnote_refs": _footnote_refs,
     "name_spans_body": rows("name_spans", lambda n: n.region == "body"),
     "name_surfaces_body": distinct("name_spans", lambda n: n.surface, lambda n: n.region == "body"),
     "name_spans_footnote": rows("name_spans", lambda n: n.region == "footnote"),
