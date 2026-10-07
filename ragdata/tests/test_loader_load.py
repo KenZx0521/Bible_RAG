@@ -152,6 +152,19 @@ def test_vectors_that_do_not_line_up_with_the_records_are_refused(tmp_path, mini
         loader.load(release, FakePg(), QdrantDb(QdrantClient(location=":memory:")), tmp_path)
 
 
+def test_a_vector_row_encoded_from_another_text_is_refused(tmp_path, mini):
+    """The index row's text_sha is not its record's: the vector is stale for that text."""
+    def stale(found):
+        rows = [(r["record_id"], r["text_sha"]) for r in found.index]
+        rows[2] = (rows[2][0], "0" * 64)
+        return vectors.encode_vectors(rows, np.array(found.matrix), found.probes)
+    release = _with_vectors(tmp_path, mini, stale)
+    pg = FakePg()
+    with pytest.raises(loader.LoadError, match=r"row 2 \(.*\) was encoded from text_sha 000000"):
+        loader.load(release, pg, QdrantDb(QdrantClient(location=":memory:")), tmp_path)
+    assert pg.applied == 0
+
+
 def test_a_row_that_does_not_hash_to_its_vec_sha_is_refused(tmp_path, mini):
     def drift(found):
         files = vectors.encode_vectors([(r["record_id"], r["text_sha"]) for r in found.index],

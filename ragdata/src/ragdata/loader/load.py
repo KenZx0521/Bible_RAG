@@ -83,9 +83,11 @@ def _misaligned(found: VectorSet, records: Sequence[Mapping[str, Any]]) -> str |
     if found.matrix.shape[0] != len(records) or len(found.index) != len(records):
         return f"{found.matrix.shape[0]} rows for {len(records)} records"
     for i, (row, record) in enumerate(zip(found.index, records)):
-        if (row["record_id"], row["text_sha"], row["row"]) != \
-                (record["record_id"], record["text_sha"], i):
+        if (row["record_id"], row["row"]) != (record["record_id"], i):
             return f"row {i} is {row['record_id']}, the records have {record['record_id']}"
+        if row["text_sha"] != record["text_sha"]:
+            return (f"row {i} ({row['record_id']}) was encoded from text_sha "
+                    f"{row['text_sha'][:12]}, the record's text_sha is {record['text_sha'][:12]}")
         if row["vec_sha"] != row_sha(found.matrix[i]):
             return f"row {i} ({row['record_id']}) does not hash to its vec_sha"
     return None
