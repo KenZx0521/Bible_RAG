@@ -6,9 +6,13 @@
 - ``anchor``: the PDF prints no caller inside the verse, so a note is anchored to its
   verse only — unless it starts with a lemma (得：或譯成) that occurs exactly once in the
   verse text; a lemma written 甲……乙 spans from 甲 to the 乙 after it.
-- ``refs``: every 「X章Y節」 the note cites, in the book named right before it or, with
-  none, the note's own book, resolved to PDF slots by ``ragcommon.refs``; a citation
-  that names no verse is a ParseError.
+- ``refs``: every 「X章Y節」 the note cites, with the verse ranges and lists that continue
+  it (九至十節, 九節，十節), resolved to PDF slots by ``ragcommon.refs``. The book is the
+  one ``find_refs`` reads around the citation (one reference holding several citations
+  counts once); a citation with no book name falls back to the note's own book only at
+  the start of the note or after 見/在/看/，/；/、, and only when no book-named reference
+  precedes it. Anything else — a book name ``find_refs`` does not know, a named book
+  without that verse, a citation that names no verse — is a ParseError, never a guess.
 - ``variant_slot_key``: the omitted slot that points at this 有古卷 note (D-04(a)).
 """
 
@@ -27,8 +31,13 @@ KIND_MARKERS = (("variant", "古卷"), ("alt_rendering", "或譯"), ("original",
                 ("name_meaning", "的意思"))
 LEMMA = re.compile(r"([^：]+)：(?:或譯|原文|有古卷|有些古卷|又作|七十士譯本|或作)")
 ELLIPSIS = re.compile(r"\.{3,}|…+")
-_NUMERAL = "[〇零一二三四五六七八九十百]+"
-CHAPTER_VERSE = re.compile(f"第?{_NUMERAL}章第?{_NUMERAL}節")
+_NUMERAL = "(?:[〇零一二三四五六七八九十百]+|[0-9０-９]+)"
+_JOIN = "[至到~～\\-－–—，、；,]"
+# 「X章Y節」 and the ranges and lists that continue it: 九至十節, 九節，十節, 九節；十章一節.
+CITATION = re.compile(f"第?{_NUMERAL}章第?{_NUMERAL}"
+                      f"(?:節?{_JOIN}第?{_NUMERAL}(?:章第?{_NUMERAL})?)*節")
+# What may stand right before a citation that names no book, for it to be the note's own.
+OWN_BOOK_LEADS = frozenset("見在看，；、")
 
 
 def note_kind(text: str, where: str) -> str:
@@ -59,28 +68,47 @@ def lemma_anchor(text: str, verse: str) -> dict[str, int] | None:
     return None if end < 0 else _span(start, end + len(tail))
 
 
-def _citation(match: re.Match[str], book_id: str,
-              found: refs.FindResult) -> tuple[refs.VerseRef, ...]:
-    if any(r.end == match.end() for r in found.rejected):
+def _overlaps(start: int, end: int, match: re.Match[str]) -> bool:
+    return start < match.end() and match.start() < end
+
+
+def _own_book(match: re.Match[str], text: str, book_id: str,
+              found: refs.FindResult) -> refs.RefMatch:
+    """A citation with no book name before it: the note's own book, when unambiguous."""
+    at = match.start()
+    if at and text[at - 1] not in OWN_BOOK_LEADS:
+        raise refs.RefParseError(f"follows {text[at - 1]!r}, neither a known book nor a lead",
+                                 match.group())
+    if any(m.start < at for m in (*found.matches, *found.rejected)):
+        raise refs.RefParseError("names no book but follows one that does", match.group())
+    parsed = refs.parse_refs(match.group(), strict=True, default_book=book_id)
+    return refs.RefMatch(at, match.end(), match.group(), parsed.refs)
+
+
+def _citation(match: re.Match[str], text: str, book_id: str,
+              found: refs.FindResult) -> refs.RefMatch:
+    """The whole reference a citation belongs to."""
+    if any(_overlaps(r.start, r.end, match) for r in found.rejected):
         raise refs.RefParseError("names no verse", match.group())
-    named = [m for m in found.matches if m.end == match.end() and m.start <= match.start()]
-    if named:
-        return named[0].refs
-    return refs.parse_refs(match.group(), strict=True, default_book=book_id).refs
+    named = [m for m in found.matches if m.start <= match.start() and match.end() <= m.end]
+    return named[0] if named else _own_book(match, text, book_id, found)
+
+
+def _resolved(match: re.Match[str], text: str, book_id: str, found: refs.FindResult,
+              where: str) -> refs.RefMatch:
+    try:
+        return _citation(match, text, book_id, found)
+    except refs.RefParseError as exc:
+        raise ParseError(f"{where}: citation {match.group()!r} in {text!r} does not "
+                         f"resolve: {exc.reason}") from None
 
 
 def note_refs(text: str, book_id: str, where: str) -> list[dict[str, str]]:
     """Slot ranges of the 「X章Y節」 citations in ``text``, in order."""
     found = refs.find_refs(text)
-    out: list[dict[str, str]] = []
-    for match in CHAPTER_VERSE.finditer(text):
-        try:
-            cited = _citation(match, book_id, found)
-        except refs.RefParseError as exc:
-            raise ParseError(f"{where}: citation {match.group()!r} in {text!r} does not "
-                             f"resolve: {exc.reason}") from None
-        out.extend(slot_range(r) for r in cited)
-    return out
+    cited = dict.fromkeys(_resolved(m, text, book_id, found, where)
+                          for m in CITATION.finditer(text))
+    return [slot_range(r) for hit in cited for r in hit.refs]
 
 
 def footnote_rows(book_id: str, notes: Sequence[tuple[str, Footnote]],

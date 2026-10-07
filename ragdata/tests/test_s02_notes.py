@@ -52,9 +52,40 @@ def test_chapter_and_verse_references_resolve_to_slot_ranges(text, book, refs):
     assert [(r["start_slot"], r["end_slot"]) for r in found] == refs
 
 
+@pytest.mark.parametrize("text, book, refs", [
+    ("見撒母耳上十六章九節，十節", "2sa", [("1sa.16.9", "1sa.16.9"), ("1sa.16.10", "1sa.16.10")]),
+    ("見撒母耳上十六章九節至十節", "2sa", [("1sa.16.9", "1sa.16.10")]),
+    ("見撒母耳上十六章九節；十七章一節", "2sa", [("1sa.16.9", "1sa.16.9"), ("1sa.17.1", "1sa.17.1")]),
+    ("見撒母耳上十六章九節，十七章，十八章一節", "2sa",
+     [("1sa.16.9", "1sa.16.9"), ("1sa.17.1", "1sa.17.58"), ("1sa.18.1", "1sa.18.1")]),
+    ("見十六章九至十節", "1sa", [("1sa.16.9", "1sa.16.10")]),
+    ("就是基善，見二章十九節，二十節", "neh", [("neh.2.19", "neh.2.19"), ("neh.2.20", "neh.2.20")]),
+    ("見2章19節", "neh", [("neh.2.19", "neh.2.19")]),
+], ids=["named-list", "named-range", "named-next-chapter", "one-match-many-citations",
+        "own-range", "own-list", "arabic"])
+def test_a_citation_keeps_the_book_and_verses_of_its_whole_reference(text, book, refs):
+    found = notes.note_refs(text, book, "t")
+    assert [(r["start_slot"], r["end_slot"]) for r in found] == refs
+
+
 def test_a_reference_to_no_verse_is_a_parse_error():
     with pytest.raises(ParseError, match="fn:ezk.30.6#1"):
         notes.note_refs("見九十九章十節", "ezk", "fn:ezk.30.6#1")
+
+
+def test_a_named_book_without_that_chapter_is_a_parse_error_not_the_own_book():
+    with pytest.raises(ParseError, match="names no verse"):
+        notes.note_refs("見撒母耳記下二十五章一節", "1sa", "t")
+
+
+@pytest.mark.parametrize("text, book", [
+    ("見西拉書十章一節", "gen"),
+    ("見撒母耳上十六章九節，又二章一節", "2sa"),
+    ("在創世記十章三節是利法，二章一節是哈大", "1ch"),
+], ids=["unknown-book", "unknown-lead", "after-another-book"])
+def test_a_citation_whose_book_is_unclear_is_a_parse_error(text, book):
+    with pytest.raises(ParseError, match="does not resolve"):
+        notes.note_refs(text, book, "t")
 
 
 def _book(*lines):
