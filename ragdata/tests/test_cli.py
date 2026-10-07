@@ -111,7 +111,7 @@ def test_build_reports_its_layers_and_gates(tmp_path, capsys, monkeypatch, passe
 
     def fake_build(layer, pdf_dir, store_root, **kwargs):
         seen.update(kwargs)
-        return stages.BuildResult({"text": stored}, (gate,), {"s2_parse": 1.0})
+        return stages.BuildResult({"text": stored} if passed else {}, (gate,), {"s2_parse": 1.0})
     monkeypatch.setattr(stages, "build", fake_build)
     report = tmp_path / "build.json"
     code_, out, _ = _run(capsys, "build", "text", "--pdf-dir", tmp_path / "pdf", "--store",
@@ -119,7 +119,7 @@ def test_build_reports_its_layers_and_gates(tmp_path, capsys, monkeypatch, passe
                          "--report", report)
     doc = json.loads(out)
     assert code_ == code and doc["pass"] is passed and json.loads(report.read_text()) == doc
-    assert doc["layers"]["text"]["version"] == "text@0123456789ab"
+    assert [v["version"] for v in doc["layers"].values()] == ["text@0123456789ab"] * passed
     assert seen["workers"] == 3 and str(seen["counts_path"]) == MINI_COUNTS
 
 

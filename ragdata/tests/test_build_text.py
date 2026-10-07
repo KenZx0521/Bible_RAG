@@ -112,16 +112,22 @@ def test_rebuilding_into_the_same_store_reuses_the_versions(built):
         {k: v.version for k, v in first.layers.items()}
 
 
-def test_a_count_that_differs_turns_the_build_red_but_keeps_the_layers(built, tmp_path):
+@pytest.mark.parametrize("pinned, old, new, gate", [
+    (COUNTS, "value: 1197", "value: 1196", "G-COUNT"),
+    (EXPECT, "路得記.pdf: 1", "路得記.pdf: 0", "G-SRC"),
+    (EXPECT, "mutool: 1.23.10", "mutool: 1.23.9", "G-TOOL"),
+])
+def test_a_red_build_stores_no_layer(built, tmp_path, pinned, old, new, gate):
     tmp, _ = built
-    counts = tmp_path / "counts.yaml"
-    counts.write_text(COUNTS.read_text(encoding="utf-8").replace("value: 1197", "value: 1196"),
-                      encoding="utf-8")
-    result = stages.build("text", tmp / "pdf", tmp_path / "store", counts_path=counts,
-                          expect_path=EXPECT)
-    count = next(g for g in result.gates if g.name == "G-COUNT")
-    assert not result.passed and not count.passed and "verse_units" in count.details[0]
-    assert result.layers["text"].path.is_dir()
+    edited = tmp_path / pinned.name
+    edited.write_text(pinned.read_text(encoding="utf-8").replace(old, new, 1), encoding="utf-8")
+    paths = {"counts_path": COUNTS, "expect_path": EXPECT}
+    paths["counts_path" if pinned == COUNTS else "expect_path"] = edited
+    result = stages.build("text", tmp / "pdf", tmp_path / "store", **paths)
+    assert not result.passed
+    assert [g.name for g in result.gates if g.hard and not g.passed] == [gate]
+    assert result.layers == {} and result.to_json()["layers"] == {}
+    assert not (tmp_path / "store").exists()
 
 
 def test_only_the_text_layer_has_a_stage(tmp_path):

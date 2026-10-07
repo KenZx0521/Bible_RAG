@@ -6,10 +6,12 @@
 The text layer is not complete yet: headings, parallel references, footnotes,
 speakers, superscriptions, divisions and name spans come with S2b, errata with
 S4, so ``ragdata gate text`` still fails it. The build runs the gates over
-what it writes — G-TOOL, G-SRC, G-CONSERVE and G-COUNT on the S2a counts — and
-reports them; G-DET compares two builds (``ragdata det``). A failing gate does
-not stop the layers from being stored: versions are content addressed, so a
-red build can be inspected but never mistaken for a green one.
+what it is about to write — G-TOOL, G-SRC, G-CONSERVE and G-COUNT on the S2a
+counts — and reports them; G-DET compares two builds (``ragdata det``). Only a
+build whose hard gates all pass is stored: a red build writes nothing, so no
+layer in the store was ever built from unpinned PDFs or tools (a stored layer
+carries no verdict of its own). To look at a red build, fix the pin or rerun
+with ``--store`` on a scratch directory.
 """
 
 from __future__ import annotations
@@ -37,6 +39,11 @@ S2A_COUNT_KEYS = ("books", "chapters", "verse_units", "merged_units", "present_s
                   "omitted_slots", "omitted_slot_keys", "slot_rows", "selah_markers")
 
 
+def gates_pass(gates: Sequence[GateResult]) -> bool:
+    """True when gates ran and every hard one passed."""
+    return bool(gates) and all(g.passed for g in gates if g.hard)
+
+
 @dataclass(frozen=True)
 class BuildResult:
     layers: Mapping[str, StoredLayer]
@@ -45,7 +52,7 @@ class BuildResult:
 
     @property
     def passed(self) -> bool:
-        return bool(self.gates) and all(g.passed for g in self.gates if g.hard)
+        return gates_pass(self.gates)
 
     def to_json(self) -> dict[str, Any]:
         return {"schema": REPORT_SCHEMA, "pass": self.passed,
@@ -105,7 +112,7 @@ def _store(root: Path, manifest: Mapping[str, Any], s1: Mapping[str, tuple[bytes
 
 def build(layer: str, pdf_dir: Path, store_root: Path, counts_path: Path = PDF_COUNTS_PATH,
           expect_path: Path = s00_source.EXPECT_PATH, workers: int = 8) -> BuildResult:
-    """Build ``layer`` from the PDFs into the store, gate it, and report."""
+    """Build ``layer`` from the PDFs, gate it, and store it only if every hard gate passed."""
     if layer not in BUILDABLE:
         raise ValueError(f"no stage builds layer {layer!r}")
     clock = _Clock()
@@ -122,6 +129,8 @@ def build(layer: str, pdf_dir: Path, store_root: Path, counts_path: Path = PDF_C
     with clock.lap("gates"):
         gates = [s00_source.check_tools(tools, expect), s00_source.check_source(manifest, expect),
                  *_text_gates(parsed, rows, Path(counts_path), expect)]
-    with clock.lap("store"):
-        layers = _store(Path(store_root), manifest, s1, rows)
+    layers: dict[str, StoredLayer] = {}
+    if gates_pass(gates):
+        with clock.lap("store"):
+            layers = _store(Path(store_root), manifest, s1, rows)
     return BuildResult(MappingProxyType(layers), tuple(gates), MappingProxyType(clock.laps))
