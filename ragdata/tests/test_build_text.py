@@ -1,8 +1,9 @@
-"""``stages.build("text")``: S0–S2a on six real PDFs, its gates, and G-DET over two runs.
+"""``stages.build("text")``: S0–S2 on six real PDFs, its gates, and G-DET over two runs.
 
 The fixture books cover the special cases of the text body: rut and jon (plain
 prose and poetry), hab (selah, twice in mid-verse), zep (a merged verse), ezr
-(123 glyphs typeset past the page edge) and mrk (two omitted variant slots).
+(123 glyphs typeset past the page edge) and mrk (two omitted variant slots, 90
+parallel-reference lines, a merge group); ezr and mrk cite verses in footnotes.
 Records are diffed against the audit's canonical_full.jsonl when it is present.
 """
 
@@ -49,22 +50,23 @@ def built(tmp_path_factory):
 def test_the_build_passes_its_gates_and_writes_src_and_text(built):
     _, result = built
     assert result.passed, [g.details for g in result.gates if not g.passed]
-    assert [g.name for g in result.gates] == ["G-TOOL", "G-SRC", "G-CONSERVE", "G-COUNT"]
+    assert [g.name for g in result.gates] == ["G-TOOL", "G-SRC", "G-CONSERVE", "G-COUNT",
+                                              "G-REFINT"]
     src, text = read_layer(result.layers["src"].path), read_layer(result.layers["text"].path)
     assert set(src.file_shas) == {"source_manifest.json", "depends_on.json",
                                   *(f"extract_{b}.jsonl" for b in BOOKS)}
-    assert set(text.file_shas) == {"books.jsonl", "chapters.jsonl", "verse_units.jsonl",
-                                   "verse_slots.jsonl", "depends_on.json"}
+    assert set(text.file_shas) == {"depends_on.json", *(f"{t}.jsonl" for t in stages.TEXT_TYPES)}
     assert text.depends_on == {"src": src.version}
     assert [r["book_id"] for r in text.rows["books.jsonl"]] == list(BOOKS)
 
 
-def test_the_report_names_what_s2b_still_owes(built):
+def test_the_report_accounts_for_every_glyph_with_a_record(built):
     _, result = built
     doc = json.loads(json.dumps(result.to_json()))
     assert doc["pass"] is True and doc["layers"]["text"]["version"].startswith("text@")
     conserve = next(g for g in doc["gates"] if g["name"] == "G-CONSERVE")
-    assert conserve["observed"]["pending_s2b"]["navy"] == 2807
+    assert conserve["observed"]["output"] == conserve["observed"]["source"]
+    assert conserve["observed"]["output"]["navy"] == 2807
     assert set(doc["timings_s"]) == {"s0_s1_extract", "s2_parse", "gates", "store"}
 
 
@@ -96,6 +98,38 @@ def test_units_agree_with_the_audit_reference(built):
         assert [b["offset"] for b in u["line_breaks"]] == ref["line_starts"][1:]
 
 
+def _reference_annotations() -> dict[str, set]:
+    keys = {"heading": ("offset", "text"), "parallel_ref": ("text",), "footnote": ("n", "text"),
+            "name": ("start", "surface"), "speaker": ("offset", "text")}
+    found: dict[str, set] = {kind: set() for kind in keys}
+    with CANONICAL.open(encoding="utf-8") as handle:
+        for line in handle:
+            row = json.loads(line)
+            if row["book"] not in BOOKS or row["status"] != "present":
+                continue
+            for a in row["annotations"]:
+                if a["type"] in keys:
+                    found[a["type"]].add((row["id"], *(a[k] for k in keys[a["type"]])))
+    return found
+
+
+@pytest.mark.skipif(not CANONICAL.exists(), reason="audit reference not available")
+def test_headings_references_footnotes_and_names_agree_with_the_audit_reference(built):
+    _, result = built
+    rows = read_layer(result.layers["text"].path).rows
+    anchor = {h["heading_id"]: h["anchor_unit_key"] for h in rows["headings.jsonl"]}
+    mine = {
+        "heading": {(h["anchor_unit_key"], h["anchor_offset"], h["text_pdf"])
+                    for h in rows["headings.jsonl"]},
+        "parallel_ref": {(anchor[p["heading_id"]], p["raw"]) for p in rows["parallel_refs.jsonl"]},
+        "footnote": {(f["unit_key"], f["n"], f["text_pdf"]) for f in rows["footnotes.jsonl"]},
+        "name": {(n["container_id"], n["start"], n["surface"]) for n in rows["name_spans.jsonl"]
+                 if n["region"] == "body"},
+        "speaker": {(s["unit_key"], s["offset"], s["text_pdf"]) for s in rows["speakers.jsonl"]},
+    }
+    assert mine == _reference_annotations()
+
+
 def test_two_builds_are_identical_file_by_file(built, tmp_path):
     first_tmp, first = built
     (tmp_path / "pdf").symlink_to(first_tmp / "pdf", target_is_directory=True)
@@ -113,7 +147,7 @@ def test_rebuilding_into_the_same_store_reuses_the_versions(built):
 
 
 @pytest.mark.parametrize("pinned, old, new, gate", [
-    (COUNTS, "value: 1197", "value: 1196", "G-COUNT"),
+    (COUNTS, "headings: {value: 138", "headings: {value: 137", "G-COUNT"),
     (EXPECT, "路得記.pdf: 1", "路得記.pdf: 0", "G-SRC"),
     (EXPECT, "mutool: 1.23.10", "mutool: 1.23.9", "G-TOOL"),
 ])

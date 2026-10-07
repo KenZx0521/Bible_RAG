@@ -1,11 +1,11 @@
 """G-CONSERVE: glyph conservation from the PDF rows to the parse output (design §8).
 
 Per book and category the style-classified source count must equal what the
-parse produced (residual 0); the categories must add up to every non-space
-glyph S1 extracted; nothing may stay unclassified; and the corpus totals of
-the categories named in the expectations (body 1,059,384, navy 27,568,
-footnote 13,463, division 32 for the 66 PDFs) must be met exactly. Text parsed
-but not yet turned into records is reported as ``pending_s2b``.
+parse produced, counted from the records it wrote (residual 0); the categories
+must add up to every non-space glyph S1 extracted; nothing may stay
+unclassified; and the corpus totals of the categories named in the
+expectations (body 1,059,384, navy 27,568, footnote 13,463, division 32 for the
+66 PDFs) must be met exactly.
 """
 
 from __future__ import annotations
@@ -27,8 +27,7 @@ class Tally:
 
     glyphs: int                    # non-space glyphs in the S1 lines
     source: Mapping[str, int]      # by row style
-    output: Mapping[str, int]      # by what the parse produced
-    pending: Mapping[str, int]     # produced but left for S2b to turn into records
+    output: Mapping[str, int]      # by the records (and dropped categories) the parse produced
 
 
 def _total(tallies: Mapping[str, Tally], side: str) -> dict[str, int]:
@@ -57,6 +56,6 @@ def check_conserve(tallies: Mapping[str, Tally], expected_totals: Mapping[str, i
     if not tallies:
         details.append("no book was tallied")
     observed = {"glyphs": sum(t.glyphs for t in tallies.values()), "source": source,
-                "output": _total(tallies, "output"), "pending_s2b": _total(tallies, "pending")}
+                "output": _total(tallies, "output")}
     expected = {"residual": 0, "unclassified": 0, "totals": dict(sorted(expected_totals.items()))}
     return GateResult(NAME, True, not details, observed, expected, capped(details))

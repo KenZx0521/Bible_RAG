@@ -1,6 +1,9 @@
-# G-COUNT expectations of the S2a records for the six fixture PDFs that
+# G-COUNT expectations of the text records for the six fixture PDFs that
 # test_build_text.py builds (rut, jon, hab, zep, ezr, mrk). Tallied from the audit's
-# canonical_full.jsonl (an independent parser), not from ragdata's own output.
+# canonical_full.jsonl (an independent parser), not from ragdata's own output; the
+# footnote name spans from the audit's underline alignment (g4c: none in these books).
+# Psalms and Song of Songs are not among them, so superscriptions, divisions and
+# speakers are 0 here; the 66-book build checks them against pdf_counts.yaml.
 schema: ragdata.pdf_counts.v1
 text:
   books: {value: 6, g: [G12]}
@@ -11,4 +14,26 @@ text:
   omitted_slots: {value: 2, g: [G02, G12]}
   omitted_slot_keys: {value: [mrk.7.16, mrk.15.28], g: [G02, G12]}
   slot_rows: {value: 1200, g: [G12]}
+  superscriptions: {value: 0, g: [G10]}
+  superscription_chars: {value: 0, g: [G10]}
+  book_divisions: {value: 0, g: [G10]}
   selah_markers: {value: 3, g: [G10]}
+  speakers: {value: 0, g: [G10]}
+  headings: {value: 138, g: [G09]}
+  headings_before: {value: 138, g: [G09]}
+  headings_mid: {value: 0, g: [G15]}
+  headings_dash_sub: {value: 0, g: [G09]}
+  headings_stacked: {value: 0, g: [G09]}
+  parallel_lines: {value: 90, g: [G24]}
+  parallel_segments: {value: 183, g: [G24]}
+  section_ranges: {value: 0, g: [G24]}
+  footnotes: {value: 38, g: [G10]}
+  footnotes_alt_rendering: {value: 11, g: [G10]}
+  footnotes_original: {value: 9, g: [G10]}
+  footnotes_name_meaning: {value: 3, g: [G10]}
+  footnotes_variant: {value: 10, g: [G02, G10]}
+  footnote_refs: {value: 2, g: [G10]}
+  name_spans_body: {value: 1227, g: [G05]}
+  name_surfaces_body: {value: 394, g: [G05]}
+  name_spans_footnote: {value: 0, g: [G05]}
+  merge_groups: {value: 1, g: [G07]}

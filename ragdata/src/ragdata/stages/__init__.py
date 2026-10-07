@@ -1,17 +1,17 @@
-"""Build stages (design §4). ``build("text")`` runs S0, S1 and S2a and stores two layers:
+"""Build stages (design §4). ``build("text")`` runs S0, S1 and S2 and stores two layers:
 
 - ``src`` — ``source_manifest.json`` (S0) and ``extract_{book_id}.jsonl`` per PDF (S1);
-- ``text`` — books, chapters, verse_units and verse_slots (S2a), built on that src.
+- ``text`` — every record type the PDFs determine (S2): books, chapters, verse_units,
+  verse_slots, chapter_texts, headings, parallel_refs, footnotes, speakers and
+  name_spans, built on that src.
 
-The text layer is not complete yet: headings, parallel references, footnotes,
-speakers, superscriptions, divisions and name spans come with S2b, errata with
-S4, so ``ragdata gate text`` still fails it. The build runs the gates over
-what it is about to write — G-TOOL, G-SRC, G-CONSERVE and G-COUNT on the S2a
-counts — and reports them; G-DET compares two builds (``ragdata det``). Only a
-build whose hard gates all pass is stored: a red build writes nothing, so no
-layer in the store was ever built from unpinned PDFs or tools (a stored layer
-carries no verdict of its own). To look at a red build, fix the pin or rerun
-with ``--store`` on a scratch directory.
+Errata and reference aliases come with S4, so ``ragdata gate text`` does not pass
+the layer yet. The build runs the gates over what it is about to write — G-TOOL,
+G-SRC, G-CONSERVE, G-COUNT (every text count) and G-REFINT — and reports them;
+G-DET compares two builds (``ragdata det``). Only a build whose hard gates all
+pass is stored: a red build writes nothing, so no layer in the store was ever
+built from unpinned PDFs or tools (a stored layer carries no verdict of its own).
+To look at a red build, fix the pin or rerun with ``--store`` on a scratch directory.
 """
 
 from __future__ import annotations
@@ -28,15 +28,15 @@ from ragdata.contract.counts import PDF_COUNTS_PATH, load_counts
 from ragdata.gates.base import GateResult, snapshot
 from ragdata.gates.conserve import check_conserve
 from ragdata.gates.counts import check_counts
+from ragdata.gates.refint import check_refint
 from ragdata.stages import s00_source, s01_extract
-from ragdata.stages.s02_parse import ParsedBook, parse_book
+from ragdata.stages.s02_parse import S2_TYPES, ParsedBook, parse_book
+from ragdata.stages.s02_parse.names import with_merge_groups
 from ragdata.store import StoredLayer, encode_jsonl, write_layer
 
 BUILDABLE = ("text",)
 REPORT_SCHEMA = "ragdata.build_report.v1"
-TEXT_TYPES = ("books", "chapters", "verse_units", "verse_slots")
-S2A_COUNT_KEYS = ("books", "chapters", "verse_units", "merged_units", "present_slots",
-                  "omitted_slots", "omitted_slot_keys", "slot_rows", "selah_markers")
+TEXT_TYPES = S2_TYPES
 
 
 def gates_pass(gates: Sequence[GateResult]) -> bool:
@@ -75,29 +75,30 @@ class _Clock:
 
 def _parse_all(pdfs: Sequence[s00_source.SourcePdf],
                s1_books: Mapping[str, s01_extract.S1Book]) -> list[ParsedBook]:
-    parsed, ord_start = [], 1
+    """Parse every book; unit and heading ``ord`` run in canonical order over all books."""
+    parsed, unit_ord, heading_ord = [], 1, 1
     for pdf in pdfs:
-        book = parse_book(s1_books[pdf.book_id], pdf.book_id, pdf.path.stem, pdf.sha256, ord_start)
-        ord_start += len(book.records.units)
+        book = parse_book(s1_books[pdf.book_id], pdf.book_id, pdf.path.stem, pdf.sha256,
+                          unit_ord, heading_ord)
+        unit_ord += len(book.rows["verse_units"])
+        heading_ord += len(book.rows["headings"])
         parsed.append(book)
     return parsed
 
 
 def _text_rows(parsed: Sequence[ParsedBook]) -> dict[str, list[dict[str, Any]]]:
-    return {"books": [p.records.book for p in parsed],
-            "chapters": [c for p in parsed for c in p.records.chapters],
-            "verse_units": [u for p in parsed for u in p.records.units],
-            "verse_slots": [s for p in parsed for s in p.records.slots]}
+    rows = {name: [row for p in parsed for row in p.rows[name]] for name in TEXT_TYPES}
+    return {**rows, "name_spans": list(with_merge_groups(rows["name_spans"]))}
 
 
 def _text_gates(parsed: Sequence[ParsedBook], rows: Mapping[str, list[dict[str, Any]]],
                 counts_path: Path, expect: Mapping[str, Any]) -> list[GateResult]:
-    records = {name: [parse_record(name, row) for row in rows[name]] for name in TEXT_TYPES}
-    conserve = check_conserve({p.records.book["book_id"]: p.tally for p in parsed},
+    records = snapshot({name: [parse_record(name, row) for row in rows[name]]
+                        for name in TEXT_TYPES})
+    conserve = check_conserve({p.rows["books"][0]["book_id"]: p.tally for p in parsed},
                               expect["conserve"])
-    count = check_counts(snapshot(records), "text", load_counts(counts_path).get("text", {}),
-                         keys=S2A_COUNT_KEYS)
-    return [conserve, count]
+    count = check_counts(records, "text", load_counts(counts_path).get("text", {}))
+    return [conserve, count, check_refint(records, "text")]
 
 
 def _store(root: Path, manifest: Mapping[str, Any], s1: Mapping[str, tuple[bytes, Any]],
