@@ -362,3 +362,9 @@ def struct_layer() -> dict[str, list[dict]]:
 
 def build() -> dict[str, dict[str, list[dict]]]:
     return {"text": text_layer(), "struct": struct_layer()}
+
+
+def files(*layers: str) -> dict[str, list[dict]]:
+    """The mini snapshot as ``{file name: rows}`` for the given layers."""
+    built = build()
+    return {f"{name}.jsonl": rows for layer in layers for name, rows in built[layer].items()}
