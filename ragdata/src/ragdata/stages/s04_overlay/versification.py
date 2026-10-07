@@ -20,7 +20,7 @@ import yaml
 
 from ragcommon import ids
 from ragdata.paths import REGISTRIES
-from ragdata.stages.s04_overlay.errata import OverlayError
+from ragdata.stages.s04_overlay.errata import OverlayError, mapping
 
 DEFAULT_PATH = REGISTRIES / "versification.yaml"
 SCHEMA = "ragdata.versification.v1"
@@ -37,7 +37,8 @@ class AliasDecl:
     note: str
 
 
-def _decl(raw: Mapping[str, Any]) -> AliasDecl:
+def _decl(raw: Any) -> AliasDecl:
+    raw = mapping(raw, "alias")
     for field in ("external_ref", "target"):
         if not ids.is_valid(raw.get(field), "slot"):
             raise OverlayError(f"alias {field} must be a slot key, got {raw.get(field)!r}")
@@ -75,7 +76,9 @@ def _check(decl: AliasDecl, rows: Rows) -> None:
     slot = next((s for s in rows["verse_slots"] if s["slot_key"] == decl.target), None)
     if slot is None or slot["status"] == "omitted_variant":
         raise OverlayError(f"{decl.external_ref}: target {decl.target} is not a present slot")
-    unit = next(u for u in rows["verse_units"] if u["unit_key"] == slot["unit_key"])
+    unit = next((u for u in rows["verse_units"] if u["unit_key"] == slot["unit_key"]), None)
+    if unit is None:
+        raise OverlayError(f"{decl.external_ref}: no unit {slot['unit_key']} in the text layer")
     if not unit["text_pdf"].startswith(decl.target_starts_with):
         raise OverlayError(f"{decl.external_ref}: {unit['unit_key']} does not start with "
                            f"{decl.target_starts_with!r}")

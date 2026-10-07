@@ -46,7 +46,8 @@ def test_aliases_of_books_outside_the_build_are_skipped(tmp_path):
     (_rows(status="omitted_variant"), "not a present slot"),
     ({**_rows(), "verse_slots": []}, "not a present slot"),
     ({**_rows(), "chapters": []}, "no chapter"),
-], ids=["slot exists", "text", "omitted", "missing slot", "missing chapter"])
+    ({**_rows(), "verse_units": []}, "no unit"),
+], ids=["slot exists", "text", "omitted", "missing slot", "missing chapter", "missing unit"])
 def test_an_alias_the_text_layer_contradicts_is_refused(tmp_path, rows, message):
     with pytest.raises(OverlayError, match=message):
         vs.alias_rows(rows, _load(tmp_path), {"jhn"})
@@ -69,3 +70,8 @@ def test_a_duplicate_alias_is_refused(tmp_path):
 
 def test_the_registry_in_config_loads():
     assert vs.load_aliases()
+
+
+def test_an_alias_that_is_not_a_mapping_is_refused(tmp_path):
+    with pytest.raises(OverlayError, match="mapping"):
+        _load(tmp_path, ["jhn.7.53"])

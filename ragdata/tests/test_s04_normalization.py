@@ -61,7 +61,9 @@ def _bad(**changes):
     (_bad(ascii_allowed={"verse_units": {"chars": "。", "why": "x"}}), "ASCII"),
     (_bad(ascii_allowed={"nope": {"chars": ".", "why": "x"}}), "nope"),
     (_bad(ascii_allowed={"verse_units": {"chars": "."}}), "why"),
-], ids=["schema", "unknown rule", "duplicate", "incomplete", "non-ascii", "type", "no why"])
+    (_bad(rules=["N1"]), "mapping"),
+], ids=["schema", "unknown rule", "duplicate", "incomplete", "non-ascii", "type", "no why",
+        "rule not a mapping"])
 def test_a_malformed_registry_is_refused(tmp_path, doc, message):
     with pytest.raises(OverlayError, match=message):
         _load(tmp_path, doc)

@@ -94,19 +94,33 @@ def _char(value: Any, what: str) -> str:
     return value
 
 
-def _misglyph(char: str, raw: Mapping[str, Any]) -> Misglyph:
+def mapping(value: Any, what: str) -> Mapping[str, Any]:
+    """``value`` when it is a mapping; OverlayError otherwise (registries are YAML)."""
+    _require(isinstance(value, Mapping), f"{what} must be a mapping, got {value!r}")
+    return value
+
+
+def _text(raw: Mapping[str, Any], key: str, what: str) -> str:
+    _require(isinstance(raw.get(key), str) and raw[key] != "", f"{what}: {key} must be text")
+    return raw[key]
+
+
+def _misglyph(char: str, raw: Any) -> Misglyph:
+    where = f"misglyph {char}"
+    raw = mapping(raw, where)
     status = raw.get("status")
-    _require(status in STATUSES, f"misglyph {char}: status must be one of {STATUSES}")
+    _require(status in STATUSES, f"{where}: status must be one of {STATUSES}")
+    big5, word = _text(raw, "big5", where), _text(raw, "word", where)
     if status == "apply":
-        return Misglyph(char, str(raw["big5"]), status, _char(raw.get("corrected"),
-                        f"misglyph {char} corrected"), (), str(raw["word"]))
-    candidates = tuple(_char(c, f"misglyph {char} candidate") for c in raw.get("candidates", []))
-    _require(bool(candidates), f"misglyph {char}: an uncertain correction lists its candidates")
-    return Misglyph(char, str(raw["big5"]), status, None, candidates, str(raw["word"]))
+        return Misglyph(char, big5, status, _char(raw.get("corrected"), f"{where} corrected"),
+                        (), word)
+    candidates = tuple(_char(c, f"{where} candidate") for c in raw.get("candidates") or [])
+    _require(bool(candidates), f"{where}: an uncertain correction lists its candidates")
+    return Misglyph(char, big5, status, None, candidates, word)
 
 
-def _entry(raw: Mapping[str, Any], misglyphs: Mapping[str, Misglyph],
-           correct: Mapping[str, str]) -> Entry:
+def _entry(raw: Any, misglyphs: Mapping[str, Misglyph], correct: Mapping[str, str]) -> Entry:
+    raw = mapping(raw, "errata entry")
     eid, container, offset, pdf = (raw.get(k) for k in ("id", "container", "offset", "pdf"))
     _require(isinstance(eid, str) and _ID_RE.fullmatch(eid) is not None,
              f"entry id must look like er:0001, got {eid!r}")
@@ -131,10 +145,10 @@ def load_errata(path: Path | str = DEFAULT_PATH) -> Errata:
         raise OverlayError(f"{path}: unreadable: {exc}") from None
     _require(isinstance(doc, dict) and doc.get("schema") == SCHEMA,
              f"{path}: schema must be {SCHEMA}")
-    correct = {_char(c, "not_errata key"): str(v.get("big5", "")) for c, v in
-               (doc.get("not_errata") or {}).items()}
+    correct = {_char(c, "not_errata key"): str(mapping(v, f"not_errata {c}").get("big5", ""))
+               for c, v in mapping(doc.get("not_errata") or {}, "not_errata").items()}
     misglyphs = {_char(c, "misglyph key"): _misglyph(c, raw)
-                 for c, raw in (doc.get("misglyphs") or {}).items()}
+                 for c, raw in mapping(doc.get("misglyphs") or {}, "misglyphs").items()}
     entries = tuple(_entry(raw, misglyphs, correct) for raw in doc.get("entries") or [])
     dup = [k for k, n in Counter(e.errata_id for e in entries).items() if n > 1]
     dup += [f"{c}@{o}" for (c, o), n in Counter((e.container, e.offset) for e in entries).items()

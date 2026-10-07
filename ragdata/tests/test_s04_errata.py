@@ -129,8 +129,13 @@ def _with(**changes):
     (_with(misglyphs__詷__corrected="秕秕"), "one character"),
     (_with(misglyphs__誁__candidates=[]), "candidates"),
     (_with(entries__0__id="E1"), "er:"),
+    (_with(misglyphs__詷={"status": "apply", "corrected": "秕", "word": "糠秕"}), "big5"),
+    (_with(misglyphs__詷=["apply"]), "mapping"),
+    (_with(entries=[["er:0001"]]), "mapping"),
+    (_with(not_errata={"誆": "E046"}), "mapping"),
 ], ids=["schema", "fix differs", "uncertain fixed", "correct char", "dup id", "offset",
-        "status", "long fix", "no candidates", "id shape"])
+        "status", "long fix", "no candidates", "id shape", "no big5", "glyph not a mapping",
+        "entry not a mapping", "not_errata not a mapping"])
 def test_a_malformed_registry_is_refused(tmp_path, doc, message):
     with pytest.raises(er.OverlayError, match=message):
         _load(tmp_path, doc)

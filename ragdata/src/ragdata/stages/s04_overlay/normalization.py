@@ -19,7 +19,7 @@ from typing import Any, Callable, Mapping, Sequence
 import yaml
 
 from ragdata.paths import REGISTRIES
-from ragdata.stages.s04_overlay.errata import OverlayError
+from ragdata.stages.s04_overlay.errata import OverlayError, mapping
 
 DEFAULT_PATH = REGISTRIES / "normalization.yaml"
 SCHEMA = "ragdata.normalization.v1"
@@ -62,7 +62,8 @@ class Normalization:
     why: Mapping[str, str]
 
 
-def _rule(raw: Mapping[str, Any]) -> Rule:
+def _rule(raw: Any) -> Rule:
+    raw = mapping(raw, "rule")
     missing = [k for k in RULE_KEYS if not raw.get(k)]
     if missing:
         raise OverlayError(f"rule {raw.get('id')!r} lacks {missing}")
@@ -98,7 +99,7 @@ def load_normalization(path: Path | str = DEFAULT_PATH) -> Normalization:
     ids = [r.id for r in rules]
     if len(set(ids)) != len(ids):
         raise OverlayError(f"{path}: a rule is listed twice: {ids}")
-    chars, why = _allowed(doc.get("ascii_allowed") or {})
+    chars, why = _allowed(mapping(doc.get("ascii_allowed") or {}, "ascii_allowed"))
     return Normalization(rules, MappingProxyType(chars), MappingProxyType(why))
 
 
