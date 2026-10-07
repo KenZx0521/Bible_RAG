@@ -68,7 +68,7 @@ def test_a_layer_built_on_another_version_breaks_the_closure(mini, tmp_path):
     other_struct = write_layer(mini.store, "struct", files,
                                depends_on={"text": other_text.version})
     versions = [*mini.top, other_struct.version]
-    with pytest.raises(rel.ReleaseError, match="was built on"):
+    with pytest.raises(rel.ReleaseError, match="was built on .*but the release has text"):
         rel.assemble(mini.store, versions, DATE, mini.checks)
 
 
@@ -130,6 +130,12 @@ def test_the_release_gates_are_the_layer_gates_but_the_model_and_backend_ones():
     assert gating.release_gates("emb") == ("G-SCHEMA", "G-COUNT", "G-EMB")
     assert gating.release_gates("route") == ("G-SCHEMA", "G-COUNT", "G-PROV")
     assert gating.release_gates("text") == ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-REF")
+
+
+def test_by_default_the_release_gates_read_the_repository_expectations(tmp_path):
+    checks = gating.default_checks(tmp_path / "tokenizer.json")
+    assert checks.counts_path == gating.PDF_COUNTS_PATH and checks.inputs.encoder is None
+    assert checks.inputs.tokenizer == tmp_path / "tokenizer.json"
 
 
 def test_layers_that_cannot_be_gated_are_not_released(mini, tmp_path):
