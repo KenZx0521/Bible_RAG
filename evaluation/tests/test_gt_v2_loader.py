@@ -68,3 +68,10 @@ def test_an_item_without_gold_slots_is_refused(tmp_path):
     bad = {k: v for k, v in QUESTION.items() if k != "gold_slots"}
     with pytest.raises(GtV2Error, match="gold_slots"):
         load_ground_truth_v2(*_write(tmp_path, doc={"metadata": META, "questions": [bad]}))
+
+
+def test_the_committed_gt_v2_loads_as_frozen():
+    gt = load_ground_truth_v2()
+    assert len(gt.items) == 500
+    assert all(item.gold_slots and item.refs for item in gt.items)
+    assert gt.slot_universe.startswith("text@")
