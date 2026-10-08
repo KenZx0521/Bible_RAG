@@ -8,10 +8,11 @@
 
 | 臂 | 位置 | 映像 | 資料 |
 |---|---|---|---|
-| 對照 R1 | :8002 `bible_rag_backend_r1` | `bible_rag-backend:r1` | `b20261008_6daa4f31` |
-| 處理 R2 | staging 非服務槽（埠於開跑前寫入本表） | `bible_rag-backend:r2`（開跑前記下 digest） | R2 build（id 於開跑前寫入本表） |
+| 對照 R1 | :8000 `bible_rag_backend`（prod） | `bible_rag-backend:r1`，digest `sha256:8171859be176…` | `b20261008_6daa4f31` |
+| 處理 R2 | :8002 `bible_rag_backend_stg`（staging） | `bible_rag-backend:r2`，digest `sha256:c79266296cb0…` | `b20261008_e05d3e55` |
 
-- 上表的 R2 埠、映像 digest 與 build id 由整合階段在建置後、任何 R2 結果之前填入；填入不改變任何定義。
+- 上表的 R2 埠、映像 digest 與 build id 由整合階段在建置後、任何 R2 結果之前填入（2026-10-08 23:2x）；填入不改變任何定義。
+- 對照臂的位置：L1、A1 是在 :8002 的 `bible_rag_backend_r1`（R1 staging）上跑的。R1 於 2026-10-08 22:40 上 prod 後該容器已移除，L2、A2 改在 prod :8000 上跑；兩者映像 digest、build、契約與設定相同，只有 `RAG_ENV` 不同（prod／staging），不影響檢索與生成。
 - GT v2（`ground_truth.v2.json`，sha `7280bb42…`，slot_universe `text@247eafe44b02`）。兩臂都用 GT v2 凍結的節位宇集計分。
 - backend 預設設定（不覆寫 graph 策略、α），`retrieval_only`，top-k 5，metric-k 6，concurrency 3。
 - 兩臂共用同一個 Ollama（intent 與生成），各臂依序跑，不並行。
