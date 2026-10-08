@@ -101,6 +101,15 @@ def test_a_source_the_ruler_cannot_map_raises(legacy, source, message):
         legacy.source_slots([source])
 
 
+@pytest.mark.parametrize("fields", [
+    {"id": "ps:jhn.5.1"}, {"id": "jhn:5:0", "kind": "passage"},
+    {"id": "jhn:5:0", "start_key": "jhn.5.1", "end_key": "jhn.5.18"},
+])
+def test_a_new_build_source_under_the_legacy_label_raises(legacy, fields):
+    with pytest.raises(SlotCoverageError, match="--contracts-dir"):
+        legacy.source_slots([_src("約翰福音", 5, "1-18", **fields)])
+
+
 def test_no_sources_cover_nothing(legacy):
     assert legacy.verse_metrics(JHN5, []) == (0.0, 0.0)
 
@@ -202,3 +211,38 @@ def test_every_frozen_gt_v2_item_is_fully_covered_by_its_own_chapters(legacy):
             short.append(item.question_id)
 
     assert gt.slot_universe == UNIVERSE and short == []
+
+
+# --- relevance under GT v2: a source is relevant when it holds a gold slot ----------
+
+def _sample(item, sources):
+    from src.models import EvalSample
+    return EvalSample(question_id="Q", question="q", question_type="EVENT_QUESTION",
+                      ground_truth=item, sources=sources)
+
+
+def test_v2_relevance_is_a_gold_slot_not_a_reference_overlap(legacy):
+    from src.metrics.retrieval import compute_retrieval_metrics, gold_flags
+    from src.models import GroundTruthItem
+
+    item = JHN5.model_copy(update={"reference": "約翰福音 5:1-18"})
+    ghost, real = _src("約翰福音", 5, "4"), _src("約翰福音", 5, "1-3")
+    v1 = GroundTruthItem(**item.model_dump(include=set(GroundTruthItem.model_fields)))
+
+    assert gold_flags(_sample(item, [ghost, real]), [ghost, real], legacy) == [False, True]
+    assert gold_flags(_sample(v1, [ghost, real]), [ghost, real]) == [True, True]
+    metrics = {m.name: m.value for m in compute_retrieval_metrics(
+        [_sample(item, [ghost, real])], k=5, ruler=legacy)["Q"]}
+    assert (metrics["mrr"], metrics["hit_rate"]) == (0.5, 1.0)
+
+
+def test_a_v2_item_without_a_ruler_and_a_v1_item_with_one_are_refused(legacy):
+    from src.metrics.retrieval import gold_flags
+    from src.models import GroundTruthItem
+
+    v1 = GroundTruthItem(question_id="Q", question="q", question_type="T", book_name="b",
+                         reference="約翰福音 5:1")
+    with pytest.raises(ValueError, match="slot ruler"):
+        gold_flags(_sample(JHN5, []), [], None)
+    with pytest.raises(ValueError, match="slot ruler"):
+        gold_flags(_sample(v1, []), [], legacy)

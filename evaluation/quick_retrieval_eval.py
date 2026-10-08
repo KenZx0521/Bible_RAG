@@ -63,13 +63,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from src.config import settings  # noqa: E402
 from src.data_loader import GT_VERSIONS, load_gt  # noqa: E402
 from src.models import EvalSample, GroundTruthItem, SourceInfo  # noqa: E402
-from src.metrics.retrieval import compute_retrieval_metrics  # noqa: E402
+from src.metrics.retrieval import compute_retrieval_metrics, gold_flags  # noqa: E402
 from src.provenance import (  # noqa: E402
     RunContext, fetch_health, from_health, make_context, read_run_meta,
 )
 from src.slot_coverage import SlotRuler  # noqa: E402
-from src.reference_parser import parse_reference  # noqa: E402
-from src.relevance_judge import binary_relevance  # noqa: E402
 from src.validity import is_infra_failure  # noqa: E402
 
 _OUT_DIR = Path(__file__).resolve().parent / "results_quick"
@@ -166,6 +164,7 @@ async def _query_one(
     top_k: int,
     graph_strategies: list[str] | None = None,
     include_context: bool = False,
+    ruler: SlotRuler | None = None,
 ) -> tuple[EvalSample, list[dict], list[str] | None, dict]:
     payload: dict = {
         "question": gt.question,
@@ -218,23 +217,24 @@ async def _query_one(
     extra = {"event_registry_events": stats.get("event_registry_events")}
     if include_context:
         extra["context_sha"] = context_digest(data.get("sources", []))
-    return sample, source_detail(sample, data.get("sources", [])), applied, extra
+    return sample, source_detail(sample, data.get("sources", []), ruler), applied, extra
 
 
-def source_detail(sample: EvalSample, api_sources: list[dict]) -> list[dict]:
-    """Per-passage record: position-aligned API provenance + gold overlap."""
-    gt_refs = parse_reference(sample.ground_truth.reference)
+def source_detail(sample: EvalSample, api_sources: list[dict],
+                  ruler: SlotRuler | None = None) -> list[dict]:
+    """Per-passage record: position-aligned API provenance + gold overlap (GT v2: on ``ruler``)."""
+    golds = gold_flags(sample, sample.sources, ruler)
     return [
         {
             "id": src.id, "book": src.book, "chapter": src.chapter, "title": src.title,
             "verse_range": src.verse_range, "strategy": api.get("strategy"),
             "found_by": api.get("found_by"), "score": api.get("score"),
             "rerank_score": api.get("rerank_score"),
-            "gold": bool(gt_refs) and binary_relevance(src, gt_refs),
+            "gold": gold,
             "context_sha256": (context_sha256(api["context"])
                                if isinstance(api.get("context"), str) else None),
         }
-        for src, api in zip(sample.sources, api_sources)
+        for src, api, gold in zip(sample.sources, api_sources, golds)
     ]
 
 
@@ -247,7 +247,7 @@ def load_ids(path: Path) -> set[str]:
 
 async def collect(gts: list[GroundTruthItem], use_graph, alpha, top_k, concurrency, only_prefix,
                   graph_strategies=None, ids: set[str] | None = None,
-                  include_context: bool = False,
+                  include_context: bool = False, ruler: SlotRuler | None = None,
                   ) -> tuple[list[EvalSample], dict, dict, dict]:
     if only_prefix:
         gts = [g for g in gts if g.question_id.startswith(tuple(only_prefix))]
@@ -262,7 +262,7 @@ async def collect(gts: list[GroundTruthItem], use_graph, alpha, top_k, concurren
     extra_by_q: dict[str, dict] = {}
     async with httpx.AsyncClient(timeout=180.0) as client:
         tasks = [_query_one(client, sem, gt, use_graph, alpha, top_k, graph_strategies,
-                            include_context)
+                            include_context, ruler)
                  for gt in gts]
         out = []
         done = 0
@@ -453,7 +453,7 @@ def _samples(args: argparse.Namespace, ctx: RunContext) -> tuple[list[EvalSample
     ids = load_ids(args.ids_file) if args.ids_file else None
     return asyncio.run(collect(list(ctx.gt.items), args.use_graph, args.alpha, args.top_k,
                                args.concurrency, args.only, args.graph_strategies, ids,
-                               include_context=args.include_context))
+                               include_context=args.include_context, ruler=ctx.ruler))
 
 
 def _config(args: argparse.Namespace, metric_k: int, applied_by_q: dict) -> dict:

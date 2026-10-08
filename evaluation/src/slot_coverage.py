@@ -195,8 +195,18 @@ def keyed_slots(grid: SlotGrid, source: SourceInfo) -> frozenset[str]:
 
 
 def legacy_mapper(universe_grid: SlotGrid, universe: Versification) -> SourceMapper:
-    """legacy-20261004: verse numbers straight onto the universe's slots."""
-    return lambda source: numbered_slots(universe_grid, universe, source)
+    """legacy-20261004: verse numbers straight onto the universe's slots.
+
+    A source that carries a new build's fields or id means the backend serves
+    a new build without naming it in /health; scoring it as legacy would
+    mislabel the run, so it raises.
+    """
+    def mapped(source: SourceInfo) -> frozenset[str]:
+        if source.kind or source.start_key or source.end_key or ids.is_valid(source.id):
+            raise SlotCoverageError(f"{source.id} is a new build's source, but the run is "
+                                    "labelled legacy-20261004; pass --contracts-dir")
+        return numbered_slots(universe_grid, universe, source)
+    return mapped
 
 
 def build_mapper(grid: SlotGrid, universe: Versification) -> SourceMapper:
