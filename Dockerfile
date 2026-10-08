@@ -26,13 +26,13 @@ WORKDIR /app/backend
 RUN --mount=type=bind,from=uvcache,target=/root/.cache/uv,rw=true \
     UV_LINK_MODE=copy uv sync --frozen --no-dev
 
-# Copy application source
+# Copy application source. R1: the backend imports neither scripts/ nor
+# bible_chunking/ (routing words and the event registry come from the build's
+# contract files, mounted read-only at run time), so neither is in the image.
 WORKDIR /app
 COPY backend/ ./backend/
-COPY bible_chunking/ ./bible_chunking/
-COPY scripts/ ./scripts/
-# Shared contracts (ragcommon.encoder: pinned tokenizers). Imported through
-# PYTHONPATH rather than a pyproject dependency, so uv.lock stays as is.
+# Shared code (ragcommon: ids, books, refs, routing, pinned tokenizers). Imported
+# through PYTHONPATH rather than a pyproject dependency, so uv.lock stays as is.
 COPY packages/ragcommon/ ./packages/ragcommon/
 
 ENV PYTHONUNBUFFERED=1

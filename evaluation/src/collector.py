@@ -22,6 +22,7 @@ from .context_blocks import (
     contexts_from_raw_item,
 )
 from .models import EvalSample, GroundTruthItem, MetricResult, SourceInfo
+from .provenance import Provenance, write_run_meta
 from .rag_client import query_rag, parse_sources
 from .content_fetcher import get_pool, fetch_context_blocks
 
@@ -71,6 +72,7 @@ async def collect_responses(
     use_graph: bool | None = None,
     semantic_only: bool = False,
     graph_strategies: list[str] | None = None,
+    provenance: Provenance | None = None,
 ) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
     For each ground truth question:
@@ -89,11 +91,15 @@ async def collect_responses(
         graph_strategies: Per-request override for which graph strategies run
             (["all"] = every one, the pre-2026-10 behaviour). None = backend
             RAG_GRAPH_STRATEGIES default.
+        provenance: The backend's build and encoder (from /health), written
+            to run_meta.json beside the checkpoint for --eval-only reruns.
 
     Returns: (samples, inline_metrics)
       - inline_metrics: kept as empty dict for run_evaluation() signature compat.
     """
     _clear_previous_results()
+    if provenance is not None:
+        write_run_meta(settings.results_dir, provenance)
 
     pool = await get_pool()
     samples: list[EvalSample] = []

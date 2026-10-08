@@ -65,12 +65,12 @@ def test_cross_chapter_verse_range_with_middle_chapters():
 
 
 def test_cross_chapter_same_chapter_guard():
-    """"3:16-3:18" collapses to a plain in-chapter range."""
-    refs = parse_reference("馬太福音 3:16-3:18")
+    """"3:13-3:17" collapses to a plain in-chapter range."""
+    refs = parse_reference("馬太福音 3:13-3:17")
 
     assert len(refs) == 1
     assert refs[0].chapters == [3]
-    assert (refs[0].verse_start, refs[0].verse_end) == (16, 18)
+    assert (refs[0].verse_start, refs[0].verse_end) == (13, 17)
     assert not refs[0].to_chapter_end
 
 
@@ -131,3 +131,53 @@ def test_bare_number_after_cross_book_part_follows_that_book():
     assert [(r.book_id, r.chapters, r.verse_start) for r in refs] == [
         ("isa", [11], 1), ("rom", [15], 8), ("rom", [15], 10),
     ]
+
+
+# --- ragcommon.refs (strict) ---------------------------------------------------
+
+import pytest  # noqa: E402
+
+from src.reference_parser import RefParseError  # noqa: E402
+
+
+def test_nehemiah_resolves_by_pdf_name_and_old_variant():
+    """尼希米記 is the PDF name; 尼西米記 (the old file name) stays a recorded variant."""
+    for name in ("尼希米記", "尼西米記"):
+        refs = parse_reference(f"{name} 8章")
+        assert [(r.book_id, r.chapters) for r in refs] == [("neh", [8])]
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("約翰福音３：１６", [("jhn", [3], 16, 16)]),
+    ("約翰福音 第3章16節", [("jhn", [3], 16, 16)]),
+    ("羅馬書 3:23；6:23", [("rom", [3], 23, 23), ("rom", [6], 23, 23)]),
+    ("約 3:16a", [("jhn", [3], 16, 16)]),
+])
+def test_strict_forms_the_old_parser_did_not_read(text, expected):
+    refs = parse_reference(text)
+
+    assert [(r.book_id, r.chapters, r.verse_start, r.verse_end) for r in refs] == expected
+
+
+@pytest.mark.parametrize("text", ["創世記 51章", "約翰福音 3:99", "不存在的書 1:1", "創世記 1:1 外加文字"])
+def test_references_that_do_not_fully_parse_raise(text):
+    with pytest.raises(RefParseError):
+        parse_reference(text)
+
+
+def test_blank_reference_has_no_units():
+    assert parse_reference("  ") == []
+
+
+def test_every_chapter_of_a_book_is_the_whole_book():
+    refs = parse_reference("路得記 1-4章")
+
+    assert len(refs) == 1 and refs[0].is_whole_book and refs[0].book_id == "rut"
+
+
+def test_the_500_gt_references_all_parse():
+    from src.data_loader import load_ground_truth
+
+    unparsed = [q.question_id for q in load_ground_truth() if not parse_reference(q.reference)]
+
+    assert unparsed == []

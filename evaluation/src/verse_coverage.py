@@ -29,7 +29,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from .models import ParsedReference, SourceInfo
-from .relevance_judge import _chinese_name_to_book_id
+from .book_names import book_id_of
 
 _CHAPTERS_PATH = Path(__file__).resolve().parent.parent.parent / "output" / "chapters.jsonl"
 
@@ -140,7 +140,7 @@ def _anchor_verses(anchor: Anchor) -> set[Verse]:
 
 def expand_source_to_verses(source: SourceInfo) -> set[Verse]:
     """Expand one retrieved source into the set of verses it actually contains."""
-    book_id = _chinese_name_to_book_id(source.book)
+    book_id = book_id_of(source.book)
     if book_id is None or source.chapter is None:
         return set()
     vr = (source.verse_range or "").strip()

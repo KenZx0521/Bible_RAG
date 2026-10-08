@@ -8,7 +8,12 @@ run, or to re-judge a run of record after a judge fix.
 
 Usage:
     uv run python quick_faithfulness_eval.py --results-dir results_graph \
-        --out results_quick/faith_metric_validation.json [--limit N] [--ids A,B]
+        --out results_quick/faith_metric_validation.json [--limit N] [--ids A,B] \
+        [--gt v1|v2] [--contracts-dir DIR]
+
+The build comes from run_meta.json beside the checkpoint (none = legacy-20261004);
+a new build's checkpoint is judged only with --gt v2. The output meta records
+data_build_id, gt_version, gt_sha and encoder_fingerprint.
 
 Contexts: backend-provided blocks when the checkpoint has them; otherwise
 rebuilt from PostgreSQL (header + text). The per-statement verdicts of both
@@ -78,7 +83,7 @@ def _load_stored_faithfulness(results_dir: Path) -> dict[str, float]:
     return out
 
 
-def main() -> None:
+def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Faithfulness-only re-judge over a raw_responses checkpoint")
     parser.add_argument("--results-dir", default="results_graph", help="directory holding raw_responses.json")
     parser.add_argument("--out", required=True, help="output JSON path (relative to evaluation/)")
@@ -86,20 +91,33 @@ def main() -> None:
     parser.add_argument("--ids", default="", help="comma-separated question_ids to judge")
     parser.add_argument("--no-rebuild", action="store_true",
                         help="do not rebuild legacy headerless contexts from PostgreSQL")
-    args = parser.parse_args()
-    _setup_logging()
+    parser.add_argument("--gt", choices=("v1", "v2"), default=None,
+                        help="ground truth version (default: EVAL_GT_VERSION setting); a new "
+                             "build's checkpoint is judged only with v2")
+    parser.add_argument("--contracts-dir", type=Path, default=None,
+                        help="the build's contracts directory (default: "
+                             "$RAG_STORE/contracts/<build_id>)")
+    return parser
 
-    from src.config import settings
-    from src.evaluator import _judge_model_name, context_format_summary, load_samples_from_checkpoint
-    from src.metrics.ragas_eval import compute_faithfulness_only
 
-    results_dir = (EVAL_ROOT / args.results_dir).resolve()
+def _run_context(args: argparse.Namespace, results_dir: Path):
+    """The GT plus the build the checkpoint recorded beside it (run_meta.json)."""
+    from src.data_loader import load_gt
+    from src.provenance import make_context, read_run_meta
+
+    return make_context(load_gt(args.gt), read_run_meta(results_dir), args.contracts_dir)
+
+
+def _load(parser: argparse.ArgumentParser, args: argparse.Namespace, results_dir: Path, gt) -> list:
+    from src.evaluator import load_samples_from_checkpoint
+
     only_ids = parse_ids(args.ids)
     samples = load_samples_from_checkpoint(
         rebuild_contexts=not args.no_rebuild,
         raw_path=results_dir / "raw_responses.json",
         only_ids=only_ids,
         limit=args.limit or None,
+        gt=gt,
     )
     if only_ids and not args.limit:  # with --limit the loader already warned about ids it cut
         missing = only_ids - {s.question_id for s in samples}
@@ -108,73 +126,111 @@ def main() -> None:
     if not samples:
         console.print("[red]No samples to judge (check --results-dir / --ids / --limit).[/red]")
         sys.exit(1)
-    console.print(f"[bold]Judging faithfulness for {len(samples)} samples from {results_dir.name}[/bold]")
+    return samples
 
-    metrics, rationales = compute_faithfulness_only(samples)
-    stored = _load_stored_faithfulness(results_dir)
 
+def _judge(samples: list) -> tuple[dict, dict]:
+    from src.metrics.ragas_eval import compute_faithfulness_only
+
+    return compute_faithfulness_only(samples)
+
+
+def _tally(samples: list, metrics: dict, rationales: dict, stored: dict[str, float]) -> dict:
+    """Per-sample rows plus overall / by-type / by-family means (stored scores paired)."""
     rows = []
-    by_type: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-    by_family: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-    overall: dict[str, list[float]] = defaultdict(list)
+    groups: dict[str, dict[str, dict[str, list[float]]]] = {
+        "overall": defaultdict(lambda: defaultdict(list)),
+        "by_type": defaultdict(lambda: defaultdict(list)),
+        "by_family": defaultdict(lambda: defaultdict(list)),
+    }
     n_scored = n_paired = 0
     for s in samples:
         vals = {m.name: m.value for m in metrics.get(s.question_id, []) if m.valid}
         family = s.ground_truth.family or "legacy_head"
-        rationale = rationales.get(s.question_id)
-        rows.append({
-            "question_id": s.question_id,
-            "question_type": s.question_type,
-            "family": family,
-            "route_used": s.route_used,
-            "context_source": s.context_source,
-            "stored_faithfulness": stored.get(s.question_id),
-            "ragas_faithfulness": vals.get("ragas_faithfulness"),
-            "ragas_faithfulness_strict": vals.get("ragas_faithfulness_strict"),
-            "n_statements": n_decomposed(rationale.faithfulness_statements) if rationale else 0,
-            "statements": rationale.faithfulness_statements if rationale else [],
-        })
+        rows.append(_row(s, family, vals, rationales.get(s.question_id), stored))
         if not vals:
             continue
         n_scored += 1
-        for name, v in vals.items():
-            overall[name].append(v)
-            by_type[s.question_type][name].append(v)
-            by_family[family][name].append(v)
         # Paired before/after: the stored score only counts for samples the new judge scored.
         if s.question_id in stored:
             n_paired += 1
-            overall["stored_faithfulness"].append(stored[s.question_id])
-            by_type[s.question_type]["stored_faithfulness"].append(stored[s.question_id])
-            by_family[family]["stored_faithfulness"].append(stored[s.question_id])
+            vals = {**vals, "stored_faithfulness": stored[s.question_id]}
+        for group, key in (("overall", ""), ("by_type", s.question_type), ("by_family", family)):
+            for name, v in vals.items():
+                groups[group][key][name].append(v)
+    means = {g: {k: {n: _mean(v) for n, v in d.items()} for k, d in by.items()}
+             for g, by in groups.items()}
+    return {"rows": rows, "n_scored": n_scored, "n_paired": n_paired,
+            "overall": means["overall"].get("", {}), "by_type": means["by_type"],
+            "by_family": means["by_family"]}
 
-    report = {
+
+def _row(s, family: str, vals: dict, rationale, stored: dict[str, float]) -> dict:
+    return {
+        "question_id": s.question_id,
+        "question_type": s.question_type,
+        "family": family,
+        "route_used": s.route_used,
+        "context_source": s.context_source,
+        "stored_faithfulness": stored.get(s.question_id),
+        "ragas_faithfulness": vals.get("ragas_faithfulness"),
+        "ragas_faithfulness_strict": vals.get("ragas_faithfulness_strict"),
+        "n_statements": n_decomposed(rationale.faithfulness_statements) if rationale else 0,
+        "statements": rationale.faithfulness_statements if rationale else [],
+    }
+
+
+def _report(results_dir: Path, samples: list, tally: dict, run_meta: dict) -> dict:
+    from src.config import settings
+    from src.evaluator import _judge_model_name, context_format_summary
+
+    return {
         "meta": {
             "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
             "source_results_dir": results_dir.name,
+            **run_meta,
             "n_samples": len(samples),
-            "n_scored": n_scored,
-            "n_paired_with_stored": n_paired,
+            "n_scored": tally["n_scored"],
+            "n_paired_with_stored": tally["n_paired"],
             "judge_provider": settings.eval_llm_provider,
             "judge_model": _judge_model_name(),
             "strict_enabled": settings.eval_faithfulness_strict,
             **context_format_summary(samples),
         },
-        "overall": {k: _mean(v) for k, v in overall.items()},
-        "by_type": {t: {k: _mean(v) for k, v in d.items()} for t, d in by_type.items()},
-        "by_family": {f: {k: _mean(v) for k, v in d.items()} for f, d in by_family.items()},
-        "samples": rows,
+        "overall": tally["overall"],
+        "by_type": tally["by_type"],
+        "by_family": tally["by_family"],
+        "samples": tally["rows"],
     }
-    out_path = (EVAL_ROOT / args.out).resolve()
+
+
+def _save(report: dict, out: str) -> Path:
+    out_path = (EVAL_ROOT / out).resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
-
     table = Table(title="Faithfulness re-judge (overall)")
     table.add_column("metric", style="cyan")
     table.add_column("mean", justify="right", style="green")
     for k, v in report["overall"].items():
         table.add_row(k, "-" if v is None else f"{v:.4f}")
     console.print(table)
+    return out_path
+
+
+def main() -> None:
+    parser = _parser()
+    args = parser.parse_args()
+    _setup_logging()
+
+    results_dir = (EVAL_ROOT / args.results_dir).resolve()
+    ctx = _run_context(args, results_dir)
+    console.print(f"[dim]Run meta: {ctx.meta()}[/dim]")
+    samples = _load(parser, args, results_dir, ctx.gt)
+    console.print(f"[bold]Judging faithfulness for {len(samples)} samples from {results_dir.name}[/bold]")
+
+    metrics, rationales = _judge(samples)
+    tally = _tally(samples, metrics, rationales, _load_stored_faithfulness(results_dir))
+    out_path = _save(_report(results_dir, samples, tally, ctx.meta()), args.out)
     console.print(f"[bold green]Saved {out_path}[/bold green]")
 
 

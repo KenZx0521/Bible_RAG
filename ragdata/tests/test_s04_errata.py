@@ -12,7 +12,7 @@ from ragdata.contract.counts import load_counts
 from ragdata.stages.s04_overlay import errata as er
 
 REGISTRY = {
-    "schema": "ragdata.errata.v1", "class": "big5_e04x_misglyph", "decided_by": "claude",
+    "schema": "ragdata.errata.v1", "class": "big5_e04x_misglyph", "decided_by": "kay",
     "not_errata": {"誆": {"big5": "E046", "why": "誆哄是正確用字"}},
     "misglyphs": {
         "詷": {"big5": "E04A", "status": "apply", "corrected": "秕", "word": "糠秕", "why": "糠秕"},
@@ -135,9 +135,10 @@ def _with(**changes):
     (_with(misglyphs__詷=["apply"]), "mapping"),
     (_with(entries=[["er:0001"]]), "mapping"),
     (_with(not_errata={"誆": "E046"}), "mapping"),
+    (_with(decided_by="claude"), "decided_by must be kay"),
 ], ids=["schema", "fix differs", "uncertain fixed", "correct char", "dup id", "offset",
         "status", "long fix", "no candidates", "one candidate", "id shape", "no big5", "glyph not a mapping",
-        "entry not a mapping", "not_errata not a mapping"])
+        "entry not a mapping", "not_errata not a mapping", "not decided by kay"])
 def test_a_malformed_registry_is_refused(tmp_path, doc, message):
     with pytest.raises(er.OverlayError, match=message):
         _load(tmp_path, doc)
@@ -152,6 +153,14 @@ def test_errata_in_headings_are_refused(tmp_path):
     doc = _with(entries__0__container="hd:psa.1.4#1")
     with pytest.raises(er.OverlayError, match="heading"):
         _load(tmp_path, doc)
+
+
+def test_a_registry_that_applies_nothing_needs_no_decision(tmp_path):
+    doc = _with(decided_by="claude", misglyphs__詷__status="uncertain",
+                misglyphs__詷__candidates=["秕", "粃"], misglyphs__詴__status="uncertain",
+                misglyphs__詴__candidates=["虻", "蝱"], entries__0__fix=None,
+                entries__2__fix=None)
+    assert all(e.corrected_char is None for e in _load(tmp_path, doc).entries)
 
 
 def test_the_registry_in_config_loads():

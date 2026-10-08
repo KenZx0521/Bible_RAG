@@ -40,11 +40,16 @@ class SourceInfo(BaseModel):
     verse_range: str = ""
     score: float | None = None
     # Retrieval strategy that surfaced the source (verse_direct / semantic / ...).
-    # Disambiguates verse ids from pericope ids (see context_blocks.resolve_fetch_kind).
+    # Diagnostics only; legacy fetches are resolved from book/chapter/verse_range.
     strategy: str | None = None
     # The exact context block the generator saw (header + text), when the
     # backend was asked for it (include_context). None on legacy checkpoints.
     context: str | None = None
+    # New builds (R1 API): the record kind and the first/last verse keys the
+    # passage spans (ragcommon.ids grammar). None on legacy sources.
+    kind: str | None = None
+    start_key: str | None = None
+    end_key: str | None = None
 
 
 class EvalSample(BaseModel):

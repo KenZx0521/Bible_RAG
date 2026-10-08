@@ -16,7 +16,7 @@ def _sha(text):
 def _registries(tmp_path):
     docs = {
         "errata.yaml": {"schema": "ragdata.errata.v1", "class": "big5_e04x_misglyph",
-                        "decided_by": "claude", "not_errata": {},
+                        "decided_by": "kay", "not_errata": {},
                         "misglyphs": {"詵": {"big5": "E04D", "status": "apply", "corrected": "蹚",
                                              "word": "蹚水", "why": "涉水"}},
                         "entries": [{"id": "er:0001", "container": "jhn.8.2", "offset": 0,

@@ -5,7 +5,7 @@
                  when the rule-based stages are done; ``after`` must be service text.
 ``quote_exempt`` text in 「」 that is not a scripture quotation (a term, a title,
                  a summary in quote marks); G-GT skips exactly these.
-``kay_review``   questions left unchanged for Kay to decide.
+``kay_review``   questions sent to Kay, with his ruling at the end of ``detail``.
 """
 
 from __future__ import annotations

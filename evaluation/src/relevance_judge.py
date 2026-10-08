@@ -7,29 +7,9 @@ Provides binary relevance (for Precision/Recall/MRR) and graded relevance (for N
 from __future__ import annotations
 
 import re
-import sys
-from pathlib import Path
 
+from .book_names import book_id_of
 from .models import ParsedReference, SourceInfo
-from .reference_parser import parse_reference
-
-# Import BOOK_CONFIG
-_BIBLE_CHUNKING = Path(__file__).resolve().parent.parent.parent / "bible_chunking"
-if str(_BIBLE_CHUNKING) not in sys.path:
-    sys.path.insert(0, str(_BIBLE_CHUNKING))
-
-from config import BOOK_CONFIG  # type: ignore
-
-_BOOK_ALIASES: dict[str, str] = {
-    "尼希米記": "尼西米記",
-}
-
-
-def _chinese_name_to_book_id(chinese_name: str) -> str | None:
-    """Convert Chinese book name to book_id."""
-    normalized = _BOOK_ALIASES.get(chinese_name, chinese_name)
-    cfg = BOOK_CONFIG.get(normalized)
-    return cfg["id"] if cfg else None
 
 
 def _parse_verse_range(vr: str) -> tuple[int | None, int | None]:
@@ -60,7 +40,7 @@ def binary_relevance(source: SourceInfo, gt_refs: list[ParsedReference]) -> bool
 
     Relevant = same book + same chapter + verse range overlap.
     """
-    src_book_id = _chinese_name_to_book_id(source.book)
+    src_book_id = book_id_of(source.book)
     if src_book_id is None:
         return False
 
@@ -102,7 +82,7 @@ def graded_relevance(source: SourceInfo, gt_refs: list[ParsedReference]) -> int:
       2 = same book + same chapter
       3 = same book + same chapter + verse overlap (exact)
     """
-    src_book_id = _chinese_name_to_book_id(source.book)
+    src_book_id = book_id_of(source.book)
     if src_book_id is None:
         return 0
 

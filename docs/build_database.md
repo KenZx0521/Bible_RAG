@@ -1,3 +1,4 @@
+> **已被取代**：從 66 卷 PDF 重建到 release 並載入的新管線，唯一入口文件是 [rebuild_pipeline.md](rebuild_pipeline.md)；本文件（舊 Step 0–10）只供回顧。
 # Bible RAG 建庫管線（Step 0–10）
 
 ## 環境設定

@@ -8,7 +8,8 @@ corrected character at the same offset — equal length, nothing else changes �
 and the container lists the errata id; an ``uncertain`` correction (the word
 is clear but its character has two or more forms the PDF cannot decide between)
 is listed with its candidates but not applied. Characters of the same run that are right where they stand
-(E046 誆) are declared ``not_errata``.
+(E046 誆) are declared ``not_errata``. An applied correction is ``curated_human`` (Kay's
+decision on PDF evidence, design §9.1), so a registry that applies one says ``decided_by: kay``.
 
 The registry must fit the PDF text exactly, or the stage raises OverlayError:
 each entry's container holds the misglyph at its offset; every occurrence of a
@@ -158,6 +159,9 @@ def load_errata(path: Path | str = DEFAULT_PATH) -> Errata:
     dup += [f"{c}@{o}" for (c, o), n in Counter((e.container, e.offset) for e in entries).items()
             if n > 1]
     _require(not dup, f"{path}: duplicate entries {dup}")
+    _require(doc.get("decided_by") == "kay" or not any(e.corrected_char for e in entries),
+             f"{path}: decided_by must be kay: an applied erratum is curated_human "
+             f"(Kay's decision on PDF evidence), got {doc.get('decided_by')!r}")
     return Errata(str(doc.get("class")), str(doc.get("decided_by")),
                   MappingProxyType(misglyphs), MappingProxyType(correct), entries)
 

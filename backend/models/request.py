@@ -2,7 +2,7 @@
 Pydantic v2 request models.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from config import GraphStrategyName
 
@@ -17,15 +17,15 @@ class QueryRequest(BaseModel):
     )
     use_graph: bool | None = Field(
         default=None,
-        description="覆寫 RAG_USE_GRAPH 預設值;None 表示沿用 backend 設定",
+        description="覆寫 RAG_USE_GRAPH 預設值(只控制 event_registry 附加槽);None 表示沿用 backend 設定",
     )
     graph_strategies: list[GraphStrategyName] | None = Field(
         default=None,
-        description="覆寫 RAG_GRAPH_STRATEGIES:允許注入候選的圖譜策略(['all'] = 全開,[] = 全關);None 沿用 backend 設定。供 A/B 使用",
+        description="覆寫 RAG_GRAPH_STRATEGIES:只接受 ['event_registry'] 或 [];None 沿用 backend 設定",
     )
     semantic_only: bool = Field(
         default=False,
-        description="僅用 semantic search,bypass R1-R6 routing、SQL、graph、cross-ref",
+        description="僅用 dense 檢索,bypass R1-R6 routing、SQL 與 event_registry",
     )
     retrieval_only: bool = Field(
         default=False,
@@ -37,3 +37,10 @@ class QueryRequest(BaseModel):
         le=1.0,
         description="覆寫排序融合 alpha(0=純 reranker 排序);None 沿用 backend 設定。供 A/B sweep 使用",
     )
+
+    @field_validator("graph_strategies")
+    @classmethod
+    def _one_lane_at_most(cls, value: list[str] | None) -> list[str] | None:
+        if value is not None and len(value) > 1:
+            raise ValueError("graph_strategies must be ['event_registry'] or []")
+        return value

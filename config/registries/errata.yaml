@@ -10,14 +10,15 @@
 #   - 每筆的容器在該 offset 確實是該錯字；
 #   - PDF 文字中每一處錯字都有一筆（不會漏網）；
 #   - 正字在整份 PDF 文字中出現 0 次（G11：凡該印正字處都印成錯字），寫入 evidence。
-# 查證方式：上下文的詞義，加上同一錯字在各處的用法一致。詞確定、正字也只有一種
-# 通行字形的才 apply；詞確定但正字有兩種通行字形（灶／竈、蔥／葱、敕／勅、虻／蝱、
-# 麅／狍），PDF 他處又都沒出現可對照，就標 uncertain、列出候選、不套用。不能拿某個
-# 字形標準來選：本 PDF 用字不依台灣標準字形（着 2,649 對著 5、裏 4,796 對裡 0、
-# 污 269 對汙 0）。uncertain 的字要由 Kay 定字形後改成 apply。
+# 查證方式：上下文的詞義，加上同一錯字在各處的用法一致。
+# 套用的錯字是 curated_human（Kay 依 PDF 證據裁決），所以 decided_by 必須是 kay。
+# 2026-10-08 Kay 裁決：原本 4 種、19 處的建議整體採納；詞確定但正字有兩種通行字形、
+# PDF 他處又無從對照的 5 種（6 處）由 Kay 定字形：訿→灶、誄→蔥、誁→麅、詴→虻、觢→敕。
+# 25 處全部 apply。本 PDF 用字不依台灣標準字形（着 2,649 對著 5、裏 4,796 對裡 0、
+# 污 269 對汙 0），字形是 Kay 的裁決，不是由某個字形標準推出。
 schema: ragdata.errata.v1
 class: big5_e04x_misglyph
-decided_by: claude
+decided_by: kay
 not_errata:
   誆: {big5: E046, why: 4 處都是「誆哄」（哄騙），詞義與上下文相符}
 misglyphs:
@@ -29,20 +30,20 @@ misglyphs:
     why: 利11:6「X子－因為倒嚼不分蹄」、申14:7「駱駝、X子、沙番」；不潔淨的倒嚼動物清單，即兔子
   觢:
     big5: E042
-    status: uncertain
-    candidates: [敕, 勅]
-    word: 敕令／勅令
+    status: apply
+    corrected: 敕
+    word: 敕令
     why: >-
-      徒19:13 趕鬼者說「我奉保羅所傳的耶穌X令你們出來」，詞是敕令（命令），
-      但「敕」「勅」PDF 內都出現 0 次，無從判定版本用哪一個字形，先不套用
+      徒19:13 趕鬼者說「我奉保羅所傳的耶穌X令你們出來」，詞是敕令（命令）；
+      「敕」「勅」PDF 內都出現 0 次，Kay 2026-10-08 定為「敕」
   訿:
     big5: E049
-    status: uncertain
-    candidates: [灶, 竈]
-    word: 爐灶／爐竈
+    status: apply
+    corrected: 灶
+    word: 爐灶
     why: >-
-      出8:3 青蛙「進你的爐X和你的摶麵盆」，詞是爐灶，
-      但「灶」「竈」PDF 內都出現 0 次，無從判定版本用哪一個字形，先不套用
+      出8:3 青蛙「進你的爐X和你的摶麵盆」，詞是爐灶；
+      「灶」「竈」PDF 內都出現 0 次，Kay 2026-10-08 定為「灶」
   詷:
     big5: E04A
     status: apply
@@ -51,12 +52,12 @@ misglyphs:
     why: 7 處都是「糠X」且多與「被風吹散」「碎稭」「麥子」並列（詩1:4、伯21:18、耶23:28），即糠秕
   誄:
     big5: E04C
-    status: uncertain
-    candidates: [蔥, 葱]
-    word: 蔥／葱
+    status: apply
+    corrected: 蔥
+    word: 蔥
     why: >-
-      民11:5「黃瓜、西瓜、韭菜、X、蒜」，蔬菜清單，詞是蔥，
-      但「蔥」「葱」PDF 內都出現 0 次，無從判定版本用哪一個字形，先不套用
+      民11:5「黃瓜、西瓜、韭菜、X、蒜」，蔬菜清單，詞是蔥；
+      「蔥」「葱」PDF 內都出現 0 次，Kay 2026-10-08 定為「蔥」
   詵:
     big5: E04D
     status: apply
@@ -71,28 +72,28 @@ misglyphs:
     why: 伯39:19「牠（馬）頸項上挓挲的X」，即馬鬃
   誁:
     big5: E04F
-    status: uncertain
-    candidates: [麅, 狍]
-    word: 麅子／狍子
+    status: apply
+    corrected: 麅
+    word: 麅子
     why: >-
-      申14:5「鹿、羚羊、X子、野山羊」、王上4:23「鹿、羚羊、X子，並肥禽」，詞義是麅（狍），
-      但「麅」與「狍」兩種字形 PDF 內都出現 0 次，無從判定版本用哪一個，先不套用
+      申14:5「鹿、羚羊、X子、野山羊」、王上4:23「鹿、羚羊、X子，並肥禽」，詞義是麅（狍）；
+      「麅」「狍」PDF 內都出現 0 次，Kay 2026-10-08 定為「麅」
   詴:
     big5: E050
-    status: uncertain
-    candidates: [虻, 蝱]
-    word: 牛虻／牛蝱
+    status: apply
+    corrected: 虻
+    word: 牛虻
     why: >-
-      耶46:20 註腳「或譯：牛X」，經文同節是「出於北方的毀滅」，詞是牛虻，
-      但「虻」「蝱」PDF 內都出現 0 次，無從判定版本用哪一個字形，先不套用
+      耶46:20 註腳「或譯：牛X」，經文同節是「出於北方的毀滅」，詞是牛虻；
+      「虻」「蝱」PDF 內都出現 0 次，Kay 2026-10-08 定為「虻」
 entries:   # 依正典序；註解是 PDF 原文上下文
-  - {id: "er:0001", container: "exo.8.3", offset: 51, pdf: 訿, fix: null}   # 上，進你的爐訿和你的摶
+  - {id: "er:0001", container: "exo.8.3", offset: 51, pdf: 訿, fix: 灶}   # 上，進你的爐訿和你的摶
   - {id: "er:0002", container: "lev.11.6", offset: 0, pdf: 觠, fix: 兔}   # 觠子－因為
-  - {id: "er:0003", container: "num.11.5", offset: 31, pdf: 誄, fix: null}   # 西瓜、韭菜、誄、蒜。
-  - {id: "er:0004", container: "deu.14.5", offset: 5, pdf: 誁, fix: null}   # 鹿、羚羊、誁子、野山
+  - {id: "er:0003", container: "num.11.5", offset: 31, pdf: 誄, fix: 蔥}   # 西瓜、韭菜、誄、蒜。
+  - {id: "er:0004", container: "deu.14.5", offset: 5, pdf: 誁, fix: 麅}   # 鹿、羚羊、誁子、野山
   - {id: "er:0005", container: "deu.14.7", offset: 20, pdf: 觠, fix: 兔}   # 的乃是駱駝、觠子、沙番
   - {id: "er:0006", container: "2sa.19.17", offset: 40, pdf: 詵, fix: 蹚}   # 僕人；他們都詵過約旦河
-  - {id: "er:0007", container: "1ki.4.23", offset: 25, pdf: 誁, fix: null}   # 有鹿、羚羊、誁子，並肥
+  - {id: "er:0007", container: "1ki.4.23", offset: 25, pdf: 誁, fix: 麅}   # 有鹿、羚羊、誁子，並肥
   - {id: "er:0008", container: "job.21.18", offset: 18, pdf: 詷, fix: 秕}   # 暴風颳去的糠詷呢？
   - {id: "er:0009", container: "job.39.19", offset: 18, pdf: 誃, fix: 鬃}   # 頸項上挓挲的誃是你給牠
   - {id: "er:0010", container: "psa.1.4", offset: 11, pdf: 詷, fix: 秕}   # 這樣，乃像糠詷被風吹散
@@ -102,7 +103,7 @@ entries:   # 依正典序；註解是 PDF 原文上下文
   - {id: "er:0014", container: "isa.43.2", offset: 15, pdf: 詵, fix: 蹚}   # 與你同在；你詵過江河，
   - {id: "er:0015", container: "isa.47.2", offset: 18, pdf: 詵, fix: 蹚}   # 去長衣，露腿詵河。
   - {id: "er:0016", container: "jer.23.28", offset: 28, pdf: 詷, fix: 秕}   # 說我的話。糠詷怎能與麥
-  - {id: "er:0017", container: "fn:jer.46.20#1", offset: 4, pdf: 詴, fix: null}   # 或譯：牛詴
+  - {id: "er:0017", container: "fn:jer.46.20#1", offset: 4, pdf: 詴, fix: 虻}   # 或譯：牛詴
   - {id: "er:0018", container: "ezk.47.3", offset: 21, pdf: 詵, fix: 蹚}   # 一千肘，使我詵過水，水
   - {id: "er:0019", container: "ezk.47.4", offset: 10, pdf: 詵, fix: 蹚}   # 一千肘，使我詵過水，水
   - {id: "er:0020", container: "ezk.47.4", offset: 28, pdf: 詵, fix: 蹚}   # 一千肘，使我詵過水，水
@@ -110,4 +111,4 @@ entries:   # 依正典序；註解是 PDF 原文上下文
   - {id: "er:0022", container: "ezk.47.5", offset: 36, pdf: 詵, fix: 蹚}   # 洑的水，不可詵的河。
   - {id: "er:0023", container: "dan.2.35", offset: 28, pdf: 詷, fix: 秕}   # 天禾場上的糠詷，被風吹
   - {id: "er:0024", container: "hos.13.3", offset: 26, pdf: 詷, fix: 秕}   # ，像場上的糠詷被狂風吹
-  - {id: "er:0025", container: "act.19.13", offset: 49, pdf: 觢, fix: null}   # 羅所傳的耶穌觢令你們出
+  - {id: "er:0025", container: "act.19.13", offset: 49, pdf: 觢, fix: 敕}   # 羅所傳的耶穌觢令你們出

@@ -1,221 +1,50 @@
-"""
-Parse Chinese Bible reference strings into structured ParsedReference objects.
+"""GT reference strings to ParsedReference units, through ragcommon.refs (strict).
 
-Supported formats:
-  - "約翰福音 3:16"           → single verse
-  - "詩篇 23:1-3"             → verse range
-  - "創世記 6-9章"             → chapter range
-  - "路加福音 10章; 約翰福音 11-12章"  → semicolon / comma separated
-  - "出埃及記 2-4章, 18章"     → comma within same book
-  - "以斯拉記; 尼希米記"       → whole books
-  - "詩篇 22篇; 馬太福音 27:35-46" → mixed
+The whole string must parse: full names and abbreviations, full-width forms,
+「；」 and 「，」 lists, 「第3章3節」, 3:16a, chapter ranges, cross-chapter
+ranges, and verse numbers the PDF lacks through ref_aliases. Anything else,
+including a chapter or verse the PDF verse grid does not have, raises
+``RefParseError``. A blank reference names no gold and yields no units.
+
+Units keep the shape relevance_judge and verse_coverage score with: one per
+in-chapter verse range or chapter range; a cross-chapter verse range becomes
+its head (to the chapter end), the whole middle chapters and its tail; a
+reference to every chapter of a book is that whole book.
 """
 
 from __future__ import annotations
 
-import re
-import sys
-from pathlib import Path
+from ragcommon import books
+from ragcommon.refs import RefParseError, VerseRef, parse_refs
+from ragcommon.versification import default_versification
 
 from .models import ParsedReference
 
-# Import BOOK_CONFIG from bible_chunking
-_BIBLE_CHUNKING = Path(__file__).resolve().parent.parent.parent / "bible_chunking"
-if str(_BIBLE_CHUNKING) not in sys.path:
-    sys.path.insert(0, str(_BIBLE_CHUNKING))
-
-from config import BOOK_CONFIG  # type: ignore
-
-# Alias mapping for variant Chinese names
-_BOOK_ALIASES: dict[str, str] = {
-    "尼希米記": "尼西米記",
-}
+__all__ = ["RefParseError", "parse_reference"]
 
 
-def _normalize_book_name(name: str) -> str:
-    return _BOOK_ALIASES.get(name, name)
+def _whole_book(ref: VerseRef) -> bool:
+    return ref.ch == 1 and ref.ch_end == default_versification().chapter_count(ref.book_id)
 
 
-def _get_book_id(book_name: str) -> str | None:
-    normalized = _normalize_book_name(book_name)
-    cfg = BOOK_CONFIG.get(normalized)
-    return cfg["id"] if cfg else None
-
-
-def _extract_book_and_rest(text: str) -> tuple[str | None, str]:
-    """Match the longest known book name at the start of *text* and return (name, rest)."""
-    text = text.strip()
-    # Try aliases first (longest match)
-    all_names = list(BOOK_CONFIG.keys()) + list(_BOOK_ALIASES.keys())
-    candidates = sorted(set(all_names), key=len, reverse=True)
-    for name in candidates:
-        if text.startswith(name):
-            return name, text[len(name):].strip()
-    return None, text
-
-
-# Regex pieces
-_CHAP_RANGE = re.compile(r"^(\d+)\s*[-–]\s*(\d+)\s*[章篇]?$")
-_SINGLE_CHAP = re.compile(r"^(\d+)\s*[章篇]$")
-_CROSS_CHAP_VERSE_RANGE = re.compile(r"^(\d+)\s*:\s*(\d+)\s*[-–]\s*(\d+)\s*:\s*(\d+)$")
-_CHAP_VERSE_RANGE = re.compile(r"^(\d+)\s*:\s*(\d+)\s*[-–]\s*(\d+)$")
-_CHAP_VERSE = re.compile(r"^(\d+)\s*:\s*(\d+)$")
-_CHAPTER_ONLY = re.compile(r"^(\d+)$")
-_BARE_VERSES = re.compile(r"^\d+(\s*[-–]\s*\d+)?$")
-
-
-def _parse_single_ref(book_name: str, spec: str) -> list[ParsedReference]:
-    """Parse a reference spec (everything after the book name) for one book.
-
-    Returns a list because a cross-chapter verse range ("1:17-2:10") expands
-    into multiple ParsedReference units (head partial chapter, whole middle
-    chapters, tail partial chapter).
-    """
-    book_id = _get_book_id(book_name) or book_name
-    spec = spec.strip().lstrip("第").strip()
-
-    if not spec:
-        return [ParsedReference(book_name=book_name, book_id=book_id, is_whole_book=True)]
-
-    # "6-9章" / "120-134篇" → chapter range
-    m = _CHAP_RANGE.match(spec)
-    if m:
-        start, end = int(m.group(1)), int(m.group(2))
-        return [ParsedReference(
-            book_name=book_name, book_id=book_id,
-            chapters=list(range(start, end + 1)),
-        )]
-
-    # "10章" → single chapter
-    m = _SINGLE_CHAP.match(spec)
-    if m:
-        return [ParsedReference(
-            book_name=book_name, book_id=book_id,
-            chapters=[int(m.group(1))],
-        )]
-
-    # "1:17-2:10" → cross-chapter verse range
-    m = _CROSS_CHAP_VERSE_RANGE.match(spec)
-    if m:
-        c1, v1, c2, v2 = (int(g) for g in m.groups())
-        if c1 == c2:
-            return [ParsedReference(
-                book_name=book_name, book_id=book_id,
-                chapters=[c1], verse_start=v1, verse_end=v2,
-            )]
-        refs = [ParsedReference(
-            book_name=book_name, book_id=book_id,
-            chapters=[c1], verse_start=v1, to_chapter_end=True,
-        )]
-        if c2 - c1 > 1:
-            refs.append(ParsedReference(
-                book_name=book_name, book_id=book_id,
-                chapters=list(range(c1 + 1, c2)),
-            ))
-        refs.append(ParsedReference(
-            book_name=book_name, book_id=book_id,
-            chapters=[c2], verse_start=1, verse_end=v2,
-        ))
-        return refs
-
-    # "3:16-18" → chapter + verse range
-    m = _CHAP_VERSE_RANGE.match(spec)
-    if m:
-        return [ParsedReference(
-            book_name=book_name, book_id=book_id,
-            chapters=[int(m.group(1))],
-            verse_start=int(m.group(2)),
-            verse_end=int(m.group(3)),
-        )]
-
-    # "3:16" → single verse
-    m = _CHAP_VERSE.match(spec)
-    if m:
-        return [ParsedReference(
-            book_name=book_name, book_id=book_id,
-            chapters=[int(m.group(1))],
-            verse_start=int(m.group(2)),
-            verse_end=int(m.group(2)),
-        )]
-
-    # "3" → chapter only (no 章 suffix)
-    m = _CHAPTER_ONLY.match(spec)
-    if m:
-        return [ParsedReference(
-            book_name=book_name, book_id=book_id,
-            chapters=[int(m.group(1))],
-        )]
-
-    # Fallback: whole book
-    return [ParsedReference(book_name=book_name, book_id=book_id, is_whole_book=True)]
-
-
-def _parse_book_segment(segment: str) -> list[ParsedReference]:
-    """Parse a segment that starts with a book name, possibly with comma-separated specs."""
-    book_name, rest = _extract_book_and_rest(segment)
-    if book_name is None:
-        return []
-
-    if not rest:
-        return [ParsedReference(
-            book_name=book_name,
-            book_id=_get_book_id(book_name) or book_name,
-            is_whole_book=True,
-        )]
-
-    # Split by comma for multi-spec within same book: "2-4章, 18章"
-    parts = [p.strip() for p in rest.split(",") if p.strip()]
-    refs: list[ParsedReference] = []
-    # Chapter of the previous part when it was a chapter:verse spec — a bare
-    # number right after one continues that chapter's verses ("11:1, 10" is
-    # 11:10, not chapter 10; GENERAL_043).
-    verse_chapter: int | None = None
-    current_book = book_name
-    for part in parts:
-        # Check if part starts with a new book name
-        inner_book, inner_rest = _extract_book_and_rest(part)
-        if inner_book and inner_book != current_book:
-            parsed = _parse_book_segment(part)
-            current_book = inner_book
-        elif verse_chapter is not None and _BARE_VERSES.match(part):
-            parsed = _parse_single_ref(current_book, f"{verse_chapter}:{part}")
-        else:
-            parsed = _parse_single_ref(current_book, part)
-        refs.extend(parsed)
-        last = parsed[-1] if parsed else None
-        verse_chapter = (
-            last.chapters[-1]
-            if last is not None and last.verse_start is not None and last.chapters
-            else None
-        )
-    return refs
+def _units(ref: VerseRef) -> list[ParsedReference]:
+    base = {"book_name": books.get_book(ref.book_id).name, "book_id": ref.book_id}
+    if ref.v_start is None:
+        if _whole_book(ref):
+            return [ParsedReference(**base, is_whole_book=True)]
+        return [ParsedReference(**base, chapters=list(range(ref.ch, ref.ch_end + 1)))]
+    if ref.ch == ref.ch_end:
+        return [ParsedReference(**base, chapters=[ref.ch],
+                                verse_start=ref.v_start, verse_end=ref.v_end)]
+    head = ParsedReference(**base, chapters=[ref.ch], verse_start=ref.v_start, to_chapter_end=True)
+    middle = ([ParsedReference(**base, chapters=list(range(ref.ch + 1, ref.ch_end)))]
+              if ref.ch_end - ref.ch > 1 else [])
+    tail = ParsedReference(**base, chapters=[ref.ch_end], verse_start=1, verse_end=ref.v_end)
+    return [head, *middle, tail]
 
 
 def parse_reference(reference: str) -> list[ParsedReference]:
-    """
-    Parse a ground truth reference string into a list of ParsedReference.
-
-    Handles semicolon-separated multi-references and various Chinese Bible formats.
-    When a segment doesn't start with a book name, it inherits the previous book.
-    """
+    """Parse a GT ``reference`` field; raise RefParseError unless all of it parses."""
     if not reference or not reference.strip():
         return []
-
-    # Split by semicolon first (top-level separator)
-    segments = [s.strip() for s in reference.split(";") if s.strip()]
-    results: list[ParsedReference] = []
-    last_book: str | None = None
-
-    for segment in segments:
-        book_name, _ = _extract_book_and_rest(segment)
-        if book_name is not None:
-            refs = _parse_book_segment(segment)
-            if refs:
-                last_book = refs[0].book_name
-                results.extend(refs)
-        elif last_book is not None:
-            # No book name found — inherit from previous segment
-            results.extend(_parse_single_ref(last_book, segment))
-        # else: skip unparseable segment with no prior book context
-
-    return results
+    return [unit for ref in parse_refs(reference, strict=True).refs for unit in _units(ref)]

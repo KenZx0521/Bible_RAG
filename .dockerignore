@@ -1,9 +1,9 @@
-# Every virtualenv (scripts/.venv alone is 4.9 GB)
+# Every virtualenv (scripts/.venv alone is 4.9 GB) and every Python/pytest cache:
+# patterns without **/ match only the context root, not backend/ or packages/.
 **/.venv
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+**/.pytest_cache
+**/__pycache__
+**/*.py[cod]
 
 # Data files
 output/

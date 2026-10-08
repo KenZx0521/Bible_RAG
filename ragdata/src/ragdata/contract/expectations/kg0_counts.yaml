@@ -5,8 +5,8 @@ registries:
   name_normalization: name_normalization@523e9330b8e1
   underline_fixes: underline_fixes@3138948060d0
 inputs:
-  struct: struct@47a0f26501f3
-  text: text@ddb48c599861
+  struct: struct@d8d432b4df15
+  text: text@247eafe44b02
 names: 2926
 parallel_links: 1072
 extra_spans:

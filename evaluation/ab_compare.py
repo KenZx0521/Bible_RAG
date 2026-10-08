@@ -13,6 +13,10 @@ Reports, for treatment − control on same-route questions:
   * the change ledger: identical / order_only / nongold_swap / gold_in /
     gold_out / gold_swap per question.
 
+Both runs must have been scored against one ground truth (gt_version and
+gt_sha in their meta); otherwise nothing is compared. Their data builds may
+differ (an R1 comparison) and are printed with the report.
+
 --require-identical replaces the report with the D3 identity check: every
 same-route question must keep its core top-k, its appended passages and its
 context digest (runs need quick_retrieval_eval.py --include-context), and both
@@ -47,9 +51,16 @@ def _fmt_p(p: float) -> str:
     return f"{p:.3f}" if p >= 0.001 else "<.001"
 
 
+def print_provenance(report: dict) -> None:
+    gt = report["gt"]
+    builds = "  ".join(f"{arm}={build or 'unknown'}" for arm, build in report["builds"].items())
+    print(f"\nGT {gt['gt_version'] or 'unknown'} ({(gt['gt_sha'] or '-')[:12]})  builds: {builds}")
+
+
 def print_report(report: dict) -> None:
     inv = report["invariants"]
-    print(f"\nmetric k={report['metric_k']}  top_k={report['top_k']}  same-route n={report['n']}")
+    print_provenance(report)
+    print(f"metric k={report['metric_k']}  top_k={report['top_k']}  same-route n={report['n']}")
     print(f"excluded (invalid): {report['excluded_invalid'] or '-'}")
     print(f"route mismatch ({len(report['route_mismatch'])}): {report['route_mismatch'] or '-'}")
     print(f"with strategy errors: {report['with_strategy_errors'] or '-'}")
@@ -73,7 +84,8 @@ def print_report(report: dict) -> None:
 def print_identity(report: dict) -> None:
     """Identity check summary, then every difference in full."""
     strat = report["strategies"]
-    print(f"\nidentity check (top_k={report['top_k']}): paired n={report['n_paired']}  "
+    print_provenance(report)
+    print(f"identity check (top_k={report['top_k']}): paired n={report['n_paired']}  "
           f"same-route {report['identical']}/{report['same_route']} identical")
     print(f"unpaired: control-only {report['unpaired']['control_only'] or '-'}  "
           f"treatment-only {report['unpaired']['treatment_only'] or '-'}")
