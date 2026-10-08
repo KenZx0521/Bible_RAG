@@ -55,6 +55,7 @@
 {"after": "叫屬上帝的人得以完全", "before": "叫屬神的人得以完全", "evidence_slot": "2ti.3.17", "field": "expected_answer_points[2]", "offset": 0, "qid": "VERSE_LOOKUP_018", "rule": "mechanical_clause"}
 {"after": "legacy_head", "before": null, "evidence_slot": null, "field": "family", "offset": null, "qid": "VERSE_LOOKUP_018", "rule": "legacy_family"}
 {"after": "legacy_head", "before": null, "evidence_slot": null, "field": "family", "offset": null, "qid": "VERSE_LOOKUP_019", "rule": "legacy_family"}
+{"after": "但那等候耶和華的必重新得力", "before": "但那等候耶和華的必從新得力", "evidence_slot": "isa.40.31", "field": "reference_answer", "offset": 0, "qid": "VERSE_LOOKUP_020", "rule": "quote_original"}
 {"after": "legacy_head", "before": null, "evidence_slot": null, "field": "family", "offset": null, "qid": "VERSE_LOOKUP_020", "rule": "legacy_family"}
 {"after": "其中不能分辨左手右手的有十二萬多人", "before": "其中有十二萬多不能分辨左手右手的人", "evidence_slot": "jon.4.11", "field": "expected_answer_points[1]", "offset": 6, "qid": "VERSE_LOOKUP_047", "rule": "quote_original"}
 {"after": "着", "before": "著", "evidence_slot": null, "field": "reference_answer", "offset": 55, "qid": "TOPIC_QUESTION_001", "rule": "corpus_orthography"}
