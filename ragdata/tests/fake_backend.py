@@ -1,18 +1,38 @@
 """A stand-in backend tree with the entity_dicts interface, for the K4 freezer and live probe.
 
 ``write(root)`` lays out ``root/backend/utils/{entity_dicts,verse_parser}.py`` with the same
-matching code as the real backend over a tiny vocabulary, and the source files the
-freezer fingerprints. ``LEXICON`` is what freezing it must give (one byte form).
+matching code as the real backend over a tiny vocabulary, importing it, as the real one
+does, from ``root/scripts/entity_extraction/entity_dict.py`` and
+``root/bible_chunking/config.py`` (the four files the freezer fingerprints).
+``freeze_live`` stores its matches on a text layer's probe texts as ``ragdata freeze
+probe`` does, in process.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-ENTITY_DICTS = '''
+from ragdata.kg import k4_live, k4_route
+from ragdata.kg.layers import load_inputs
+from ragdata.legacy import route_live
+
+ON_PATH = '''
+import sys
+from pathlib import Path
+
+_project_root = Path(__file__).resolve().parent.parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+'''
+
+ENTITY_DICT = '''
 PERSON_DICT = {"保羅": {"保羅", "掃羅"}, "掃羅": {"掃羅"}, "哥尼流": {"哥尼流"}}
 PLACE_DICT = {"大馬士革": {"大馬士革"}, "鹽海": {"鹽海", "死海"}}
 GROUP_DICT = {"門徒": {"門徒"}}
+'''
+
+ENTITY_DICTS = ON_PATH + '''
+from scripts.entity_extraction.entity_dict import PERSON_DICT, PLACE_DICT, GROUP_DICT
 EVENT_KEYWORDS = {"保羅歸主", "天國", "渴慕"}
 from utils.verse_parser import _ALL_NAMES as _BOOK_NAMES
 
@@ -53,8 +73,12 @@ def match_books_in_text(text):
     return names
 '''
 
-VERSE_PARSER = '''
-_FULL = {"使徒行傳": "act", "以弗所書": "eph", "詩篇": "psa"}
+CONFIG = '''
+BOOKS = {"使徒行傳": "act", "以弗所書": "eph", "詩篇": "psa"}
+'''
+
+VERSE_PARSER = ON_PATH + '''
+from bible_chunking.config import BOOKS as _FULL
 _ABBREV = {"徒": "act", "弗": "eph", "詩": "psa", "使徒": "act"}
 _ALL_NAMES = sorted(list(_FULL) + list(_ABBREV), key=len, reverse=True)
 
@@ -66,19 +90,28 @@ def _resolve_book(name):
     return book_id, {v: k for k, v in _FULL.items()}[book_id]
 '''
 
-SOURCES = ("backend/utils/entity_dicts.py", "scripts/entity_extraction/entity_dict.py",
-           "backend/utils/verse_parser.py", "bible_chunking/config.py")
+FILES = {"backend/utils/entity_dicts.py": ENTITY_DICTS,
+         "scripts/entity_extraction/entity_dict.py": ENTITY_DICT,
+         "backend/utils/verse_parser.py": VERSE_PARSER, "bible_chunking/config.py": CONFIG}
+SOURCES = tuple(FILES)
 
 
 def write(root: Path) -> Path:
-    """Write the fake tree under ``root``; return its backend directory."""
-    backend = root / "backend"
-    (backend / "utils").mkdir(parents=True)
-    (backend / "utils" / "__init__.py").write_text("", encoding="utf-8")
-    (backend / "utils" / "entity_dicts.py").write_text(ENTITY_DICTS, encoding="utf-8")
-    (backend / "utils" / "verse_parser.py").write_text(VERSE_PARSER, encoding="utf-8")
-    for source in SOURCES:
-        if not (root / source).exists():
-            (root / source).parent.mkdir(parents=True, exist_ok=True)
-            (root / source).write_text("# fake\n", encoding="utf-8")
-    return backend
+    """Write the fake tree under ``root`` (regular packages, as in the repo); return its
+    backend directory."""
+    for source, text in FILES.items():
+        (root / source).parent.mkdir(parents=True, exist_ok=True)
+        (root / source).write_text(text, encoding="utf-8")
+    for package in ("backend/utils", "scripts", "scripts/entity_extraction", "bible_chunking"):
+        (root / package / "__init__.py").write_text("", encoding="utf-8")
+    return root / "backend"
+
+
+def freeze_live(backend: Path, text_dir: Path, lexicon: Path, ground_truth: Path,
+                root: Path) -> Path:
+    """Store what ``ragdata freeze probe`` stores for this backend, in process (no venv);
+    returns the ``live.json`` written."""
+    _, snapshot = load_inputs(text_dir)
+    probes = k4_route.probe_texts(snapshot, ground_truth)
+    live = route_live.sourced_probe(backend, k4_route.flatten(probes))
+    return Path(k4_live.store_live(probes, live, k4_live.frozen_from(lexicon), root)["written"])

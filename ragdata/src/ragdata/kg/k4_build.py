@@ -1,11 +1,12 @@
 """Build the route layer (K4, R1) from the text layer and the frozen lexicon.
 
 Inputs: the text layer (for the probe verses and headings), the frozen
-``routing_lexicon.legacy.json``, the GT questions and a live probe (the backend venv
-running entity_dicts). Gates: G-SCHEMA, G-COUNT, G-ROUTE and G-PROV; a red build
-writes nothing. The layer holds ``routing_terms``, ``routing_lexicon.json`` (the
-contract file, the frozen bytes) and ``route_report.json`` (the lexicon header, the
-probe set and the words the PDF verses never print).
+``routing_lexicon.legacy.json``, the GT questions and the old backend's matches on
+those probe texts, frozen in the store (``k4_live``; no backend runs). Gates:
+G-SCHEMA, G-COUNT, G-ROUTE and G-PROV; a red build writes nothing. The layer holds
+``routing_terms``, ``routing_lexicon.json`` (the contract file, the frozen bytes) and
+``route_report.json`` (the lexicon header, the probe set and the words the PDF verses
+never print).
 """
 
 from __future__ import annotations
@@ -44,10 +45,8 @@ def read_frozen(path: Path) -> tuple[bytes, dict[str, Any]]:
 
 def route_report(rest: Mapping[str, Any], probes: Mapping[str, Sequence[str]],
                  rows: Sequence[Mapping[str, Any]], snapshot: Snapshot) -> dict[str, Any]:
-    texts = k4_route.flatten(probes)
     return {"schema": REPORT_SCHEMA, "lexicon_rest": dict(rest),
-            "probes": {**{k: len(v) for k, v in probes.items()}, "total": len(texts),
-                       "sha256": k4_route.probes_sha(texts)},
+            "probes": k4_route.probe_summary(probes),
             "zero_in_verses": k4_route.zero_in_verses(rows, snapshot)}
 
 

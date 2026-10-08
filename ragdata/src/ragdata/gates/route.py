@@ -6,8 +6,9 @@
 - behaviour: the matcher rebuilt from the file gives, text for text, the live
   entity_dicts results on the probe texts (GT questions, verses, headings).
 
-The live results come from the backend venv; without them, the frozen file or the
-probe texts the gate fails closed. R2 replaces these rules (§5.2 union, no external_legacy).
+The live results are the old backend's, frozen in the store for exactly these probe
+texts (``kg.k4_live``); without them, the frozen file or the probe texts the gate
+fails closed. R2 replaces these rules (§5.2 union, no external_legacy).
 """
 
 from __future__ import annotations

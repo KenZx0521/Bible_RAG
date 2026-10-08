@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 import fake_encoder
+import ref_dirs
 from ragdata.gates import emb_legacy, vectors
 from ragdata.store import vectors as store_vectors
 
@@ -87,7 +88,7 @@ def _legacy(tmp_path, rows):
     (tmp_path / "embeddings.jsonl").write_text("".join(
         json.dumps({"id": i, "type": "verse", "embedding": v}) + "\n" for i, _, v in rows),
         encoding="utf-8")
-    return tmp_path
+    return ref_dirs.sign(tmp_path)
 
 
 TEXTS = ["甲 第1節：一", "甲 第2節：二", "甲 第3節：三", "乙 第1節：四"]
@@ -138,5 +139,18 @@ def test_the_sample_is_fixed_by_its_seed(tmp_path):
 def test_a_malformed_legacy_queue_fails_closed(tmp_path, bad_line):
     tmp_path.joinpath("embedding_queue.jsonl").write_text(bad_line + "\n", encoding="utf-8")
     tmp_path.joinpath("embeddings.jsonl").write_text("", encoding="utf-8")
-    _, violations = emb_legacy.check_compat(_records(), fake_encoder.embed(TEXTS), tmp_path, 1)
-    assert violations
+    _, violations = emb_legacy.check_compat(_records(), fake_encoder.embed(TEXTS),
+                                            ref_dirs.sign(tmp_path), 1)
+    assert violations and "embedding_queue.jsonl:1" in violations[0]
+
+
+def test_changed_legacy_files_fail_closed(tmp_path):
+    old = [(f"gen:1:0:v:{i}", t, fake_encoder.vector(t).tolist()) for i, t in enumerate(TEXTS)]
+    legacy = _legacy(tmp_path, old)
+    with open(legacy / "embeddings.jsonl", "a", encoding="utf-8") as handle:
+        handle.write("\n")
+    _, violations = emb_legacy.check_compat(_records(), fake_encoder.embed(TEXTS), legacy, 2)
+    assert violations and "embeddings.jsonl: sha256" in violations[0]
+    (legacy / "SHA256SUMS").unlink()
+    _, violations = emb_legacy.check_compat(_records(), fake_encoder.embed(TEXTS), legacy, 2)
+    assert violations and "SHA256SUMS" in violations[0]

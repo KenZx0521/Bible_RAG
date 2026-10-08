@@ -7,6 +7,7 @@ import json
 import pytest
 
 import mini_build
+import ref_dirs
 from ragdata.gates import check_schema
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct import legacy
@@ -71,7 +72,7 @@ def test_load_reads_both_files_and_records_their_sha256(tmp_path):
                        ("chunks.jsonl", mini_build.legacy_chunks())):
         (tmp_path / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
                                      encoding="utf-8")
-    loaded = legacy.load_legacy(tmp_path)
+    loaded = legacy.load_legacy(ref_dirs.sign(tmp_path))
     assert loaded == _inputs()._replace(sha256=loaded.sha256)
     assert set(loaded.sha256) == {"pericopes.jsonl", "chunks.jsonl"}
 
@@ -81,5 +82,19 @@ def test_load_refuses_a_missing_or_broken_file(tmp_path):
         legacy.load_legacy(tmp_path)
     (tmp_path / "pericopes.jsonl").write_text("{}\n", encoding="utf-8")
     (tmp_path / "chunks.jsonl").write_text("[1]\n", encoding="utf-8")
+    with pytest.raises(StageError, match="SHA256SUMS"):
+        legacy.load_legacy(tmp_path)
     with pytest.raises(StageError, match="chunks.jsonl:1"):
+        legacy.load_legacy(ref_dirs.sign(tmp_path))
+
+
+def test_load_refuses_a_file_its_sha256sums_does_not_list(tmp_path):
+    for name, rows in (("pericopes.jsonl", mini_build.legacy_pericopes()),
+                       ("chunks.jsonl", mini_build.legacy_chunks())):
+        (tmp_path / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
+                                     encoding="utf-8")
+    ref_dirs.sign(tmp_path)
+    with open(tmp_path / "chunks.jsonl", "a", encoding="utf-8") as handle:
+        handle.write("{}\n")
+    with pytest.raises(StageError, match="chunks.jsonl: sha256 .* the reference copy changed"):
         legacy.load_legacy(tmp_path)

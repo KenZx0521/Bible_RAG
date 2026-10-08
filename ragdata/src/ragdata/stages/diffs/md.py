@@ -1,7 +1,8 @@
-"""Diff of the text layer against ``bible_md/`` — the corpus the services load today.
+"""Diff of the text layer against bible_md — the corpus the legacy services were built from.
 
 bible_md is the output of ``scripts/convert_bible_pdf.py`` plus 39 hand-edited
-lines (audit G01–G03). Every difference to the text layer gets one cause:
+lines (audit G01–G03); the build reads its copy in the store (``paths.BIBLE_MD``,
+checked against its SHA256SUMS). Every difference to the text layer gets one cause:
 
 - whitespace: md keeps the PDF line breaks the layer removed (rule N1), or a
   space after a footnote caller;

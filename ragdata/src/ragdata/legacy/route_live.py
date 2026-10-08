@@ -11,8 +11,14 @@ Runs in the backend venv, with the backend directory on ``sys.path`` (it imports
 ``PERSON_DICT``, ``PLACE_DICT``, ``EVENT_KEYWORDS`` and the book names of length ≥ 2 with
 their resolution — every word ``external_legacy``, retired by R2, in the canonical byte
 form of ``ragcommon.routing``. ``GROUP_DICT`` is imported by entity_dicts but matched by
-nothing, so it is not frozen. ``probe`` returns the live matches of each text, the
-reference G-ROUTE compares the frozen matcher with.
+nothing, so it is not frozen. ``probe`` returns the live matches of each text, which
+``ragdata freeze probe`` stores (``kg.k4_live``) as the reference G-ROUTE compares the
+frozen matcher with.
+
+Both record the sha256 of the files the four ``SOURCES`` modules were actually imported
+from (``module.__file__``), not of files at the paths ``SOURCES`` names: a backend
+directory not named ``backend``, or a module found elsewhere on ``sys.path``, cannot pass
+for the sources the lexicon names. A source module not imported from a file is an error.
 """
 
 from __future__ import annotations
@@ -29,8 +35,12 @@ from typing import Any, Iterator, Sequence
 
 from ragcommon import routing
 
-SOURCES = ("backend/utils/entity_dicts.py", "scripts/entity_extraction/entity_dict.py",
-           "backend/utils/verse_parser.py", "bible_chunking/config.py")
+MODULES = {"backend/utils/entity_dicts.py": "utils.entity_dicts",
+           "scripts/entity_extraction/entity_dict.py": "scripts.entity_extraction.entity_dict",
+           "backend/utils/verse_parser.py": "utils.verse_parser",
+           "bible_chunking/config.py": "bible_chunking.config"}
+SOURCES = tuple(MODULES)
+PACKAGES = frozenset(name.split(".")[0] for name in MODULES.values())
 NOTE = "R1 凍結的 legacy 路由詞（{fn}）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代"
 MATCHERS = {
     "persons": "match_persons_in_text：依別名最長長度遞減（同長依檔案順序）逐一比對，任一別名是子字串即回傳 canonical",
@@ -48,9 +58,10 @@ class LiveError(RuntimeError):
 
 @contextmanager
 def _backend(backend_dir: Path) -> Iterator[tuple[ModuleType, ModuleType]]:
-    """entity_dicts and verse_parser imported fresh from ``backend_dir``."""
+    """entity_dicts and verse_parser imported fresh from ``backend_dir`` (with the modules
+    they import from ``scripts`` and ``bible_chunking``)."""
     def drop() -> None:
-        for name in [n for n in sys.modules if n == "utils" or n.startswith("utils.")]:
+        for name in [n for n in sys.modules if n.split(".")[0] in PACKAGES]:
             del sys.modules[name]
     drop()
     sys.path.insert(0, str(backend_dir))
@@ -87,10 +98,15 @@ def _books(dicts: ModuleType, parser: ModuleType) -> list[dict[str, Any]]:
     return rows
 
 
-def _fingerprints(backend_dir: Path) -> dict[str, str]:
-    root = Path(backend_dir).resolve().parent
-    return {source: hashlib.sha256((root / source).read_bytes()).hexdigest()
-            for source in SOURCES if (root / source).is_file()}
+def _imported() -> dict[str, str]:
+    """sha256 of the file each of ``SOURCES`` was imported from (inside ``_backend``)."""
+    found = {}
+    for source, name in MODULES.items():
+        path = getattr(sys.modules.get(name), "__file__", None)
+        if not path:
+            raise LiveError(f"the backend did not import {name} ({source}) from a file")
+        found[source] = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    return found
 
 
 def freeze(backend_dir: Path | str) -> dict[str, Any]:
@@ -105,8 +121,9 @@ def freeze(backend_dir: Path | str) -> dict[str, Any]:
                                        FUNCTIONS["events"])}
                   for kw in sorted(dicts.EVENT_KEYWORDS, key=lambda k: (-len(k), k))]
         books = _books(dicts, parser)
+        sources = _imported()
     header = {"provenance_class": "external_legacy", "retire_by": "R2",
-              "frozen_from": _fingerprints(backend_dir), "matchers": MATCHERS,
+              "frozen_from": sources, "matchers": MATCHERS,
               "not_frozen": "GROUP_DICT：entity_dicts 有 import，但沒有任何 match 函式使用"}
     return {"schema": routing.SCHEMA, "variant": "legacy", "header": header,
             "persons": persons, "places": places, "events": events, "books": books}
@@ -117,11 +134,18 @@ def match_all(lexicon: routing.RoutingLexicon, text: str) -> dict[str, list[str]
             "events": lexicon.match_events(text), "books": lexicon.match_books(text)}
 
 
-def probe(backend_dir: Path | str, texts: Sequence[str]) -> list[dict[str, list[str]]]:
-    """The live backend's matches of each text."""
+def sourced_probe(backend_dir: Path | str, texts: Sequence[str]) -> dict[str, Any]:
+    """The live backend's matches of each text (``results``) and the sha256 of the source
+    files that made them (``sources``, keyed like ``SOURCES``)."""
     with _backend(Path(backend_dir)) as (dicts, _):
         fns = {key: getattr(dicts, name) for key, name in FUNCTIONS.items()}
-        return [{key: list(fn(text)) for key, fn in fns.items()} for text in texts]
+        results = [{key: list(fn(text)) for key, fn in fns.items()} for text in texts]
+        return {"sources": _imported(), "results": results}
+
+
+def probe(backend_dir: Path | str, texts: Sequence[str]) -> list[dict[str, list[str]]]:
+    """The live backend's matches of each text."""
+    return sourced_probe(backend_dir, texts)["results"]
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -136,8 +160,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.out.write_bytes(routing.render_lexicon(freeze(args.backend_dir)))
             return 0
         texts = json.loads(args.texts.read_text(encoding="utf-8"))
-        args.out.write_text(json.dumps(probe(args.backend_dir, texts), ensure_ascii=False),
-                            encoding="utf-8")
+        args.out.write_text(json.dumps(sourced_probe(args.backend_dir, texts),
+                                       ensure_ascii=False), encoding="utf-8")
         return 0
     except (LiveError, OSError, ValueError, AttributeError) as exc:
         sys.stderr.write(f"route_live {args.command}: {exc}\n")

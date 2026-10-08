@@ -4,7 +4,8 @@ The mini snapshot has no PDFs, so its text step writes the hand-built text layer
 gated with the gates a stored layer can run without them. Every later step is the real
 ``steps.layer_steps`` with the mini inputs: the legacy output/ (struct's old pericopes and
 chunks, emb's old vectors), the stand-in token counter and encoder, the mini registries,
-event registry, frozen lexicon and fake backend (``mini_release.build`` lays those out).
+event registry, frozen lexicon and the fake backend's matches frozen on the mini probe
+texts (``mini_release.build`` lays those out; ``fake_backend.freeze_live``).
 The derived files are mini ones naming the mini text and struct layers; G-GT is a
 stand-in (the mini GT v2 holds only slots). Load and verify go to a FakePg, an in-memory
 Qdrant and a contract directory under ``root``.
@@ -21,17 +22,18 @@ from typing import Any, Callable
 
 from qdrant_client import QdrantClient
 
+import fake_backend
 import fake_encoder
 import mini_build
 import mini_emb
 import mini_kg
 import mini_release
+import ref_dirs
 from fake_pg import FakePg
 from ragdata import paths
 from ragdata.gates.base import GateResult
 from ragdata.gates.runner import GateInputs, gate_layer
 from ragdata.gt.gate import GtReport
-from ragdata.legacy import route_live
 from ragdata.loader.qdrant import QdrantDb
 from ragdata.loader.verify import VerifyInputs, verify
 from ragdata.pipeline import derived
@@ -55,7 +57,7 @@ def _legacy(root: Path) -> Path:
                        ("chunks.jsonl", mini_build.legacy_chunks())):
         (directory / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n"
                                               for r in rows), encoding="utf-8")
-    return directory
+    return ref_dirs.sign(directory)
 
 
 def text_files() -> dict[str, bytes]:
@@ -143,14 +145,15 @@ def make(root: Path) -> Mini:
     legacy = _legacy(root / "legacy")
     text, struct = _struct_version(root, legacy)
     files = _files(root, ref, text, struct)
-    backend = ref / "repo" / "backend"
+    lexicon, gt_v1, live = (ref / "routing_lexicon.legacy.json", ref / "gt_v1.json",
+                            ref / "route_live")
+    fake_backend.freeze_live(ref / "repo" / "backend", root / "scratch" / "text" / text, lexicon,
+                             gt_v1, live)
     gate = GateInputs(versification=mini_build.versification(), token_counter=COUNTER,
                       legacy_dir=legacy, compat_sample=mini_emb.SAMPLE, encoder=fake_encoder.make(),
                       registries=root / "registries", kg0_counts=files.kg0_counts,
                       legacy_registry=ref / "event_registry.json",
-                      frozen_lexicon=ref / "routing_lexicon.legacy.json",
-                      ground_truth=ref / "gt_v1.json",
-                      live_probe=lambda texts: route_live.probe(backend, texts))
+                      frozen_lexicon=lexicon, ground_truth=gt_v1, route_live=live)
     sources = Sources(gate=gate, counts=mini_release.MINI_COUNTS, events_yaml=ref / "events.yaml")
     pg, qdrant = FakePg(), QdrantDb(QdrantClient(location=":memory:"))
     pg.close = qdrant.close = lambda: None

@@ -12,6 +12,7 @@ from pathlib import Path
 
 import fake_encoder
 import mini_build
+import ref_dirs
 from ragdata.stages.s06_emb.build import EmbInputs, build_emb
 
 MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
@@ -32,7 +33,7 @@ def legacy_dir(root: Path, texts: dict[str, str] = LEGACY) -> Path:
     for name, rows in (("embedding_queue.jsonl", queue), ("embeddings.jsonl", vecs)):
         (root / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
                                  encoding="utf-8")
-    return root
+    return ref_dirs.sign(root)
 
 
 def inputs(root: Path, **changes) -> EmbInputs:

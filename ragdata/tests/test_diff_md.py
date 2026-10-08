@@ -6,8 +6,11 @@ from collections import Counter
 
 import pytest
 
+import ref_dirs
+from ragdata.stages import diffs
 from ragdata.stages.diffs import md as dmd
 from ragdata.stages.diffs.md import CharInfo
+from ragdata.stages.errors import StageError
 
 SELAH = "（細拉）"
 
@@ -248,3 +251,19 @@ def test_a_footnote_only_the_md_has_is_other(tmp_path):
     result = _diff(tmp_path, MD + "- 1:3: 多出的註\n")
     stray = [r for r in result.rows if r.kind == "md_footnote" and r.container == "rut.1.3"]
     assert [(r.op, r.cls) for r in stray] == [("md_only", "other")]
+
+
+def test_the_summary_reads_only_md_files_its_sha256sums_lists(tmp_path):
+    md_dir, other = tmp_path / "md", tmp_path / "other.txt"
+    md_dir.mkdir()
+    (md_dir / "路得記.md").write_text(MD, encoding="utf-8")
+    other.write_text("x", encoding="utf-8")
+    rows = {"books": [{"file_name": "路得記"}]}
+    with pytest.raises(StageError, match="SHA256SUMS"):
+        diffs._inputs(rows, md_dir, other, other)
+    ref_dirs.sign(md_dir)
+    assert set(diffs._inputs(rows, md_dir, other, other)) == {"bible_md", "canonical_full",
+                                                              "diff_expect"}
+    (md_dir / "路得記.md").write_text(MD + "\n", encoding="utf-8")
+    with pytest.raises(StageError, match="路得記.md: sha256 .* reference copy changed"):
+        diffs._inputs(rows, md_dir, other, other)

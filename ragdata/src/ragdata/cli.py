@@ -19,13 +19,12 @@
     python -m ragdata build events --text DIR --struct DIR [--events-yaml YAML]
                                  [--legacy-registry JSON] [--counts YAML]
     python -m ragdata build route --text DIR [--lexicon JSON] [--ground-truth JSON]
-                                 [--backend-python PY] [--backend-dir DIR] [--counts YAML]
+                                 [--route-live DIR] [--counts YAML]
     python -m ragdata gate LAYER LAYER_DIR [--dep DIR ...] [--pdf-dir DIR] [--counts YAML]
                                  [--source-expect YAML] [--registries DIR] [--tokenizer FILE]
                                  [--reranker-tokenizer FILE] [--legacy-dir DIR] [--device DEV]
                                  [--kg0-counts YAML] [--legacy-registry JSON] [--lexicon JSON]
-                                 [--ground-truth JSON] [--backend-python PY] [--backend-dir DIR]
-                                 [--report FILE]
+                                 [--ground-truth JSON] [--route-live DIR] [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
     python -m ragdata gt {build,gate} ...   (GT v2; see ragdata.gt.cli)
     python -m ragdata release VERSION... [--store DIR] [--releases DIR] [--date YYYYMMDD]
@@ -40,11 +39,20 @@
                                  [--yes-prod] [--env-file F]
     python -m ragdata promote --env staging|prod --rollback [--yes-prod] [--env-file F]
 
-DAG-external tools that write a registry or an expectation file (never run by a build):
+DAG-external tools that write a registry, an expectation file or a reference (never run
+by a build):
 
     python -m ragdata expect kg0 --text DIR --struct DIR [--registries DIR] [--out YAML]
     python -m ragdata convert events --text DIR --struct DIR [--legacy-registry JSON] [--out YAML]
-    python -m ragdata freeze route [--backend-python PY] [--backend-dir DIR] [--out JSON]
+    python -m ragdata freeze route --backend-python PY --backend-dir DIR [--out JSON]
+    python -m ragdata freeze probe --text DIR --backend-python PY --backend-dir DIR
+                                 [--lexicon JSON] [--ground-truth JSON] [--route-live DIR]
+
+``freeze`` runs the old backend (``ragdata.legacy.route_live`` in its venv, from a checkout
+that still has ``backend/utils/entity_dicts.py``): ``route`` writes the frozen lexicon,
+``probe`` stores the old matchers' results on the text layer's probe texts under
+``--route-live`` (``{probes sha256}/live.json`` and ``SHA256SUMS``), which K4 and G-ROUTE read,
+only when the four source files the backend imported are the lexicon's ``header.frozen_from``.
 
 A text layer is gated with its src layer as a dependency (G-CONSERVE re-reads
 it) and the PDFs (G-XCHECK re-reads them); without them those gates fail closed.
@@ -53,12 +61,14 @@ tokens with the pinned BGE-M3 tokenizer (the HF cache, or ``--tokenizer``) and
 fails closed when it does not load. An emb layer is built from a struct layer and
 the text layer it was built on, and gated with both (``--dep``); its build and
 G-EMB/G-ENC load the pinned BGE-M3 offline (and the reranker tokenizer), and
-G-ENC compares the vectors with the old ``output/`` (``--legacy-dir``). ``gate emb``
-on cuda encodes every record again (about a minute in all); with ``--device cpu``
-it encodes a sample and reports ``sampled: true``. ``det`` on two emb layers also
+G-ENC compares the vectors with the old ``output/`` (``--legacy-dir``: the store's
+copy, checked against its SHA256SUMS). ``gate emb`` on cuda encodes every record
+again (about a minute in all); with ``--device cpu`` it encodes a sample and
+reports ``sampled: true``. ``det`` on two emb layers also
 compares their vectors and probe vectors within G-DET's tolerance. kg0 and events
-are built from, and gated with, text and struct; route with text. G-ROUTE runs the backend's live matcher
-with ``--backend-python`` (the backend venv) and fails closed without it.
+are built from, and gated with, text and struct; route with text. K4 and G-ROUTE read
+the old backend's matches on the probe texts from ``--route-live`` (``freeze probe``) and
+fail closed when none are stored for these texts or they changed.
 ``release``, ``load`` and ``verify`` gate every layer of the release again (all but
 G-ENC, G-ROUTE, G-CONSERVE and G-XCHECK) and refuse it (status 2) when one is red.
 
@@ -86,7 +96,8 @@ from ragdata.contract.counts import KG0_COUNTS_PATH, PDF_COUNTS_PATH, CountsErro
 from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
-from ragdata.kg import k0_build, k1_build, k4_build, k4_route
+from ragdata.kg import k0_build, k1_build, k4_build, k4_live, k4_route
+from ragdata.kg.layers import load_inputs
 from ragdata.loader import cli as loader_cli
 from ragdata.loader.config import ConfigError
 from ragdata.loader.plan import LoaderError
@@ -122,10 +133,15 @@ def _kg_inputs(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--kg0-counts", type=Path, default=KG0_COUNTS_PATH)
     parser.add_argument("--events-yaml", type=Path, default=paths.EVENTS_REGISTRY)
     parser.add_argument("--legacy-registry", type=Path, default=paths.LEGACY_EVENT_REGISTRY)
+    _route_inputs(parser)
+
+
+def _route_inputs(parser: argparse.ArgumentParser) -> None:
+    """What K4 and G-ROUTE read (and ``freeze probe`` writes to)."""
     parser.add_argument("--lexicon", type=Path, default=paths.FROZEN_LEXICON)
     parser.add_argument("--ground-truth", type=Path, default=paths.GROUND_TRUTH)
-    parser.add_argument("--backend-python", type=Path, default=paths.BACKEND_PYTHON)
-    parser.add_argument("--backend-dir", type=Path, default=paths.BACKEND)
+    parser.add_argument("--route-live", type=Path, default=paths.ROUTE_LIVE,
+                        help="the old backend's frozen matches ({probes sha256}/live.json)")
 
 
 def _build_parser(sub: Any) -> None:
@@ -136,7 +152,7 @@ def _build_parser(sub: Any) -> None:
     build.add_argument("--struct", type=Path,
                        help="the struct layer to build on (emb, kg0, events)")
     build.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
-                       help="the old output/: legacy_ids (struct), vectors (emb)")
+                       help="copy of the old output/: legacy_ids (struct), vectors (emb)")
     build.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct, emb)")
     _encoder_arguments(build)
     build.add_argument("--store", type=Path, default=DEFAULT_ROOT)
@@ -163,7 +179,7 @@ def _gate_parser(sub: Any) -> None:
     gate.add_argument("--registries", type=Path, default=paths.REGISTRIES)
     gate.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct, emb)")
     gate.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
-                      help="the old output/, for G-ENC")
+                      help="copy of the old output/, for G-ENC")
     _encoder_arguments(gate)
     gate.add_argument("--report", type=Path)
     _kg_inputs(gate)
@@ -182,11 +198,16 @@ def _tool_parsers(sub: Any) -> None:
     convert.add_argument("--struct", type=Path, required=True)
     convert.add_argument("--legacy-registry", type=Path, default=paths.LEGACY_EVENT_REGISTRY)
     convert.add_argument("--out", type=Path, default=paths.EVENTS_REGISTRY)
-    freeze = sub.add_parser("freeze", help="freeze the backend routing lexicon (outside the DAG)")
-    freeze.add_argument("what", choices=("route",))
-    freeze.add_argument("--backend-python", type=Path, default=paths.BACKEND_PYTHON)
-    freeze.add_argument("--backend-dir", type=Path, default=paths.BACKEND)
-    freeze.add_argument("--out", type=Path, default=paths.FROZEN_LEXICON)
+    freeze = sub.add_parser("freeze", help="freeze the old backend's routing lexicon (route) "
+                            "or its matches on the probe texts (probe), outside the DAG")
+    freeze.add_argument("what", choices=("route", "probe"))
+    freeze.add_argument("--backend-python", type=Path, required=True,
+                        help="python of a venv that imports the old backend")
+    freeze.add_argument("--backend-dir", type=Path, required=True,
+                        help="a backend/ that still has utils/entity_dicts.py")
+    freeze.add_argument("--out", type=Path, default=paths.FROZEN_LEXICON, help="route")
+    freeze.add_argument("--text", type=Path, help="probe: the text layer to probe")
+    _route_inputs(freeze)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -255,7 +276,7 @@ def _build_events(args: argparse.Namespace) -> stages.BuildResult:
 
 
 def _build_route(args: argparse.Namespace) -> stages.BuildResult:
-    live = k4_route.subprocess_probe(args.backend_python, args.backend_dir)
+    live = k4_live.stored_probe(args.route_live, args.lexicon)
     return k4_build.build_route(_need_dir(args.text, "--text"), args.store, live, args.lexicon,
                                 args.ground_truth, args.counts)
 
@@ -280,7 +301,7 @@ def gate_inputs(args: argparse.Namespace) -> GateInputs:
                       reranker_tokenizer=args.reranker_tokenizer, legacy_dir=args.legacy_dir,
                       device=args.device, kg0_counts=args.kg0_counts, legacy_registry=args.legacy_registry,
                       frozen_lexicon=args.lexicon, ground_truth=args.ground_truth,
-                      backend_python=args.backend_python, backend_dir=args.backend_dir)
+                      route_live=args.route_live)
 
 
 def _gate(args: argparse.Namespace) -> int:
@@ -316,9 +337,14 @@ def _convert(args: argparse.Namespace) -> int:
 
 
 def _freeze(args: argparse.Namespace) -> int:
-    """Run ragdata.legacy.route_live freeze in the backend venv (it imports entity_dicts)."""
+    """Run ragdata.legacy.route_live in the old backend's venv (it imports entity_dicts)."""
     if not args.backend_python.is_file():
         raise CliError(f"--backend-python {args.backend_python} is not a file")
+    if args.what == "probe":
+        _, snapshot = load_inputs(_need_dir(args.text, "--text"))
+        _emit(k4_live.freeze_live(snapshot, args.backend_python, args.backend_dir, args.lexicon,
+                                  args.ground_truth, args.route_live), None)
+        return EXIT_OK
     k4_route.run_live(args.backend_python, ["freeze", "--backend-dir", str(args.backend_dir),
                                             "--out", str(args.out)])
     _emit({"written": str(args.out), "backend": str(args.backend_dir)}, None)

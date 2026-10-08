@@ -1,9 +1,10 @@
 """Legacy id map (design §3.3): the old build's ids to the new struct records.
 
-Read from the old ``output/`` (a reference only, never an input of the new
-records): ``pericopes.jsonl`` and ``chunks.jsonl``. Old verse records were
-``{pericope id}:v:{label}`` (scripts/process_bible.py:374), one per verse of
-each old pericope. Ranges compare as sets of integer verse numbers within a
+Read from the old build's ``output/`` (a reference only, never an input of the new
+records): ``pericopes.jsonl`` and ``chunks.jsonl``, in the store's copy
+(``paths.LEGACY_OUTPUT``), which must be the bytes its SHA256SUMS lists. Old
+verse records were ``{pericope id}:v:{label}`` (scripts/process_bible.py:374),
+one per verse of each old pericope. Ranges compare as sets of integer verse numbers within a
 chapter, as passages and chunks spell them (a verse cut by a mid-verse heading
 counts in both halves):
 
@@ -32,6 +33,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, NamedTuple, Sequence
 
 from ragcommon import ids
+from ragdata import reference
 from ragdata.stages.errors import StageError
 from ragdata.stages.s05_struct.view import TextView
 
@@ -80,9 +82,10 @@ def load_legacy(directory: Path) -> LegacyInputs:
     if missing:
         raise StageError(f"legacy directory {directory} lacks {', '.join(missing)}")
     data = {name: path.read_bytes() for name, path in paths.items()}
+    shas = {name: hashlib.sha256(b).hexdigest() for name, b in data.items()}
+    reference.check(Path(directory), shas)
     return LegacyInputs(_decode("pericopes.jsonl", data["pericopes.jsonl"]),
-                        _decode("chunks.jsonl", data["chunks.jsonl"]),
-                        {name: hashlib.sha256(b).hexdigest() for name, b in data.items()})
+                        _decode("chunks.jsonl", data["chunks.jsonl"]), shas)
 
 
 def _label(text: Any, where: str) -> tuple[int, int]:

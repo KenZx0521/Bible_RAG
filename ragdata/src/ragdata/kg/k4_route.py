@@ -1,12 +1,14 @@
 """K4, R1: the routing contract is the legacy lexicon, frozen (design §5.2, D-12(a)).
 
 The frozen file ``config/registries/routing_lexicon.legacy.json`` (written by
-``ragdata freeze route`` from the backend venv) is split into one ``routing_terms``
+``ragdata freeze route`` from the old backend's venv) is split into one ``routing_terms``
 record per word — each ``external_legacy``, retired by R2 — and joined back into the
 layer's ``routing_lexicon.json``; G-ROUTE requires the join to reproduce the frozen
 file bit for bit, and the matcher rebuilt from it (``ragcommon.routing``) to give,
-text for text, what the live ``entity_dicts`` gives on the probe texts: the 500 GT
-questions, every verse and every heading.
+text for text, what the old ``entity_dicts`` gives on the probe texts: the 500 GT
+questions, every verse and every heading. Those live matches are frozen too
+(``k4_live``); ``subprocess_probe`` runs the old backend only for the DAG-external
+``ragdata freeze`` commands.
 """
 
 from __future__ import annotations
@@ -85,6 +87,13 @@ def probes_sha(texts: Sequence[str]) -> str:
     return hashlib.sha256(json.dumps(list(texts), ensure_ascii=False).encode("utf-8")).hexdigest()
 
 
+def probe_summary(probes: Mapping[str, Sequence[str]]) -> dict[str, Any]:
+    """Texts per group, their total and the sha256 that names the set (``probes_sha``)."""
+    texts = flatten(probes)
+    return {**{k: len(v) for k, v in probes.items()}, "total": len(texts),
+            "sha256": probes_sha(texts)}
+
+
 def _pythonpath() -> str:
     roots = (Path(ragdata.__file__).resolve().parents[1],
              Path(ragcommon.__file__).resolve().parents[1])
@@ -104,16 +113,16 @@ def run_live(backend_python: Path, argv: Sequence[str]) -> None:
         raise StageError(f"route_live {argv[0]} failed: {done.stderr.strip()[-500:]}")
 
 
-def subprocess_probe(backend_python: Path, backend_dir: Path) -> LiveProbe:
-    """Run the live matchers in the backend venv (``ragdata.legacy.route_live probe``)."""
-    def probe(texts: Sequence[str]) -> list[dict[str, list[str]]]:
-        with tempfile.TemporaryDirectory(prefix="route_live_") as tmp:
-            given, out = Path(tmp) / "texts.json", Path(tmp) / "live.json"
-            given.write_text(json.dumps(list(texts), ensure_ascii=False), encoding="utf-8")
-            run_live(backend_python, ["probe", "--backend-dir", str(backend_dir),
-                                      "--texts", str(given), "--out", str(out)])
-            return json.loads(out.read_text(encoding="utf-8"))
-    return probe
+def subprocess_probe(backend_python: Path, backend_dir: Path, texts: Sequence[str]
+                     ) -> dict[str, Any]:
+    """The live matches of ``texts`` (``results``) and the sha256 of the source files the
+    backend imported (``sources``): ``ragdata.legacy.route_live probe`` in its venv."""
+    with tempfile.TemporaryDirectory(prefix="route_live_") as tmp:
+        given, out = Path(tmp) / "texts.json", Path(tmp) / "live.json"
+        given.write_text(json.dumps(list(texts), ensure_ascii=False), encoding="utf-8")
+        run_live(backend_python, ["probe", "--backend-dir", str(backend_dir),
+                                  "--texts", str(given), "--out", str(out)])
+        return json.loads(out.read_text(encoding="utf-8"))
 
 
 def rebuilt_matches(lexicon: routing.RoutingLexicon, texts: Sequence[str]

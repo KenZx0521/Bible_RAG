@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from ragdata import reference
 from ragdata.contract.registry import (
     DIFF_CANONICAL_REPORT, DIFF_MD_REPORT, DIFF_SUMMARY_REPORT,
 )
@@ -54,9 +55,11 @@ def _sha(path: Path) -> str:
 
 def _inputs(rows: Mapping[str, Sequence[Mapping[str, Any]]], md_dir: Path,
             canonical_path: Path, expect_path: Path) -> dict[str, str]:
-    """sha256 of what the diffs read (bible_md: of its ``name\tsha`` lines, book order)."""
-    md_lines = "".join(f"{b['file_name']}.md\t{_sha(Path(md_dir) / (b['file_name'] + '.md'))}\n"
-                       for b in rows["books"])
+    """sha256 of what the diffs read (bible_md: of its ``name\tsha`` lines, book order; each
+    md file must be the bytes the reference copy's SHA256SUMS lists)."""
+    names = [f"{b['file_name']}.md" for b in rows["books"]]
+    shas = reference.verified(Path(md_dir), names)
+    md_lines = "".join(f"{name}\t{shas[name]}\n" for name in names)
     return {"bible_md": hashlib.sha256(md_lines.encode("utf-8")).hexdigest(),
             "canonical_full": _sha(canonical_path), "diff_expect": _sha(expect_path)}
 

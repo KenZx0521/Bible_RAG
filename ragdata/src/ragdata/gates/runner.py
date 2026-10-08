@@ -20,8 +20,9 @@ gates catch; such a report never passes.
 
 An emb layer is gated with its struct and text layers. G-EMB and G-ENC also read
 its report, fingerprint and ``vectors`` attachment, and the pinned encoder
-(``GateInputs``: tokenizer files, device, the old ``output/`` for the legacy
-check); an encoder that does not load fails both closed.
+(``GateInputs``: tokenizer files, device, the store's copy of the old ``output/``
+for the legacy check); an encoder that does not load fails both closed. G-ROUTE
+reads the old backend's matches frozen in the store (``kg.k4_live``).
 """
 
 from __future__ import annotations
@@ -56,7 +57,7 @@ from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
 from ragdata.gates.struct import check_struct
 from ragdata.gates.text import check_text
-from ragdata.kg import k4_route
+from ragdata.kg import k4_live, k4_route
 from ragdata.kg.k4_route import LiveProbe
 from ragdata.stages.errors import StageError
 from ragdata.stages.s00_source import EXPECT_PATH
@@ -104,8 +105,7 @@ class GateInputs:
     legacy_registry: Path = paths.LEGACY_EVENT_REGISTRY  # G-EVENT: what R1 froze
     frozen_lexicon: Path = paths.FROZEN_LEXICON   # G-ROUTE: the frozen routing lexicon
     ground_truth: Path = paths.GROUND_TRUTH       # G-ROUTE: probe questions
-    backend_python: Path = paths.BACKEND_PYTHON   # G-ROUTE: runs the live entity_dicts
-    backend_dir: Path = paths.BACKEND
+    route_live: Path = paths.ROUTE_LIVE           # G-ROUTE: the old backend's matches, frozen
     live_probe: LiveProbe | None = None           # G-ROUTE: a stand-in live matcher (tests only)
 
 
@@ -249,12 +249,9 @@ def _event_gate(ctx: GateContext) -> GateResult:
     return check_event(ctx.snapshot, v1, v2, legacy, ctx.target.depends_on.get("struct", ""))
 
 
-def _live(inputs: GateInputs, texts: list[str]) -> list[dict[str, Any]] | None:
-    if inputs.live_probe is not None:
-        return inputs.live_probe(texts)
-    if not Path(inputs.backend_python).is_file():
-        return None
-    return k4_route.subprocess_probe(inputs.backend_python, inputs.backend_dir)(texts)
+def _live(inputs: GateInputs, texts: list[str]) -> list[dict[str, Any]]:
+    probe = inputs.live_probe or k4_live.stored_probe(inputs.route_live, inputs.frozen_lexicon)
+    return probe(texts)
 
 
 def _route_gate(ctx: GateContext) -> GateResult:

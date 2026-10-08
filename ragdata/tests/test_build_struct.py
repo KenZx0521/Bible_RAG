@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 import mini_build
+import ref_dirs
 from ragdata import stages, store
 from ragdata.gates import check_det
 from ragdata.stages.errors import StageError
@@ -24,7 +25,7 @@ def _legacy(directory: Path) -> Path:
                        ("chunks.jsonl", mini_build.legacy_chunks())):
         (directory / name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n"
                                               for r in rows), encoding="utf-8")
-    return directory
+    return ref_dirs.sign(directory)
 
 
 def _build(tmp: Path, text_dir: Path, store_dir: str = "store", counts: Path = MINI_COUNTS):

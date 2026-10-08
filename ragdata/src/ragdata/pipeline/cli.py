@@ -1,13 +1,13 @@
 """``python -m ragdata pipeline run [--date YYYYMMDD] [--load] [--verify] [--device DEV]
 [--store DIR] [--releases DIR] [--report F]``.
 
-Runs ``pipeline.run`` over the repository's inputs: the PDFs in bible_pdf/, the
-registries and expectations, the old output/, the pinned models (offline), the backend
-venv for G-ROUTE. ``--load`` writes the release to PG, Qdrant and ``contracts/`` (a new
-namespace; a build already registered with this release is not loaded again) and
-``--verify`` runs G-PROJ over it; both connect with the repository's ``.env``. Without
-``--date`` the build date is the commit date of HEAD, so a rerun on the same commit names
-the same build.
+Runs ``pipeline.run`` over the default inputs (``ragdata.paths``): the PDFs in bible_pdf/,
+the registries and expectations, the store's reference copies (bible_md, the old output/,
+the old backend's frozen route matches) and the pinned models (offline). ``--load``
+writes the release to PG, Qdrant and ``contracts/`` (a new namespace; a build already
+registered with this release is not loaded again) and ``--verify`` runs G-PROJ over it;
+both connect with the repository's ``.env``. Without ``--date`` the build date is the
+commit date of HEAD, so a rerun on the same commit names the same build.
 """
 
 from __future__ import annotations

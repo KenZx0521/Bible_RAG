@@ -1,11 +1,12 @@
 """The new encoder against the old index: records whose text is word for word an old
 embedding text must get the old vector back (cos >= 0.9999 on 500 sampled records).
 
-The old texts are ``output/embedding_queue.jsonl`` (``{id, type, text}``) and the
-old vectors ``output/embeddings.jsonl`` (``{id, type, embedding}``); both are read
-only. The sample is drawn with a fixed seed from the records, in file order, whose
-text has an old twin. Missing or malformed old files, or fewer twins than the
-sample, fail closed.
+The old texts are ``embedding_queue.jsonl`` (``{id, type, text}``) and the old
+vectors ``embeddings.jsonl`` (``{id, type, embedding}``) of the old build's ``output/``,
+read from the store's copy (``paths.LEGACY_OUTPUT``). The sample is drawn with a
+fixed seed from the records, in file order, whose text has an old twin. Missing,
+malformed or changed old files (not the bytes the copy's SHA256SUMS lists), or fewer
+twins than the sample, fail closed.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from typing import Any, Sequence
 
 import numpy as np
 
+from ragdata import reference
 from ragdata.gates.vectors import MAX_LISTED, rowwise_cos
 
 QUEUE = "embedding_queue.jsonl"
@@ -71,9 +73,10 @@ def check_compat(records: Sequence[tuple[str, str]], vectors: np.ndarray, legacy
     if not (queue.is_file() and embeddings.is_file()):
         return {"legacy_dir": str(legacy_dir)}, [f"missing input: {queue} and {embeddings}"]
     try:
+        reference.verified(Path(legacy_dir), (QUEUE, EMBEDDINGS))
         twins = _old_texts(queue)
         rows = _sample(records, twins, sample)
-    except LegacyError as exc:
+    except (LegacyError, reference.ReferenceError) as exc:
         return {"legacy_dir": str(legacy_dir)}, [str(exc)]
     old_ids = [twins[records[i][1]] for i in rows]
     old = _old_vectors(embeddings, set(old_ids))
