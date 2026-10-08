@@ -50,7 +50,8 @@ class FakeRunner:
         self.script = {url: list(runs) for url, runs in script.items()}
         self.calls = []
 
-    def __call__(self, url, label, ids):
+    def __call__(self, url, label, ids, gt=None):
+        self.gt = gt
         self.calls.append((url, label, None if ids is None else list(ids)))
         run = self.script[url].pop(0)
         if ids is None:

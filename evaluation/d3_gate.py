@@ -15,7 +15,9 @@ all ground-truth questions with the default configuration, and
   * no question is invalid.
 
 Each arm is a quick_retrieval_eval.py run (--top-k 5 --metric-k 6
---include-context) pointed at its backend through BACKEND_URL; re-asks use
+--include-context, and --gt when given) pointed at its backend through
+BACKEND_URL. Both arms must score against one ground truth; their data builds
+may differ and the report shows both; re-asks use
 --ids-file and are merged into the run they patch only when still pairable.
 The final runs, re-asked answers merged in, are saved as
 results_quick/d3_<arm>_<label>_merged.json: file mode on them reproduces the
@@ -40,6 +42,7 @@ Usage (from evaluation/):
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import os
 import subprocess
@@ -66,6 +69,8 @@ MAX_ROUNDS = 2
 # merged run would mix requests or scoring and stop being pairable.
 _MERGE_KEYS = ("top_k", "metric_k", "metric_version", "include_context", "use_graph",
                "fusion_alpha", "graph_strategies_requested")
+# The build and GT a re-ask must share with the run it patches.
+_MERGE_META_KEYS = ("data_build_id", "gt_version", "gt_sha", "encoder_fingerprint")
 
 
 class Arm(NamedTuple):
@@ -78,21 +83,24 @@ class Arm(NamedTuple):
 Runner = Callable[[str, str, list[str] | None], dict]
 
 
-def quick_eval_command(label: str, ids_file: Path | None = None) -> list[str]:
+def quick_eval_command(label: str, ids_file: Path | None = None,
+                       gt: str | None = None) -> list[str]:
     cmd = [sys.executable, str(_QUICK_EVAL), *QUICK_EVAL_ARGS, "--label", label]
+    if gt is not None:
+        cmd += ["--gt", gt]
     if ids_file is not None:
         cmd += ["--ids-file", str(ids_file)]
     return cmd
 
 
-def subprocess_runner(url: str, label: str, ids: list[str] | None) -> dict:
+def subprocess_runner(url: str, label: str, ids: list[str] | None, gt: str | None = None) -> dict:
     """Run quick_retrieval_eval.py against one backend and load what it saved."""
     with tempfile.TemporaryDirectory() as tmp:
         ids_file = None
         if ids is not None:
             ids_file = Path(tmp) / "ids.txt"
             ids_file.write_text("\n".join(ids) + "\n", encoding="utf-8")
-        subprocess.run(quick_eval_command(label, ids_file),
+        subprocess.run(quick_eval_command(label, ids_file, gt),
                        env={**os.environ, "BACKEND_URL": url}, cwd=_EVAL_DIR, check=True)
     return json.loads((_OUT_DIR / f"{label}.json").read_text(encoding="utf-8"))
 
@@ -101,9 +109,9 @@ def merge_rerun(base: dict, rerun: dict, ids: list[str]) -> dict:
     """A copy of ``base`` whose ``ids`` entries come from ``rerun``.
 
     Raises unless the re-ask answered exactly the asked questions, all of
-    which ``base`` holds, with the same request and scoring settings. Run-level
-    aggregates (overall / by_type) are dropped: they no longer describe the
-    merged entries.
+    which ``base`` holds, with the same request and scoring settings, build
+    and ground truth. Run-level aggregates (overall / by_type) are dropped:
+    they no longer describe the merged entries.
     """
     asked, got = set(ids), set(rerun["per_question"])
     if got != asked:
@@ -115,6 +123,10 @@ def merge_rerun(base: dict, rerun: dict, ids: list[str]) -> dict:
     differing = [k for k in _MERGE_KEYS if cb.get(k) != cr.get(k)]
     if differing:
         raise ValueError(f"re-ask ran with different {differing} than the run it patches")
+    mb, mr = base.get("meta") or {}, rerun.get("meta") or {}
+    differing = [k for k in _MERGE_META_KEYS if mb.get(k) != mr.get(k)]
+    if differing:
+        raise ValueError(f"re-ask ran against a different {differing} than the run it patches")
 
     per_question = {**base["per_question"], **{q: rerun["per_question"][q] for q in ids}}
     config = {
@@ -124,6 +136,7 @@ def merge_rerun(base: dict, rerun: dict, ids: list[str]) -> dict:
         "reasked": [*cb.get("reasked", []), sorted(ids)],
     }
     return {
+        **({"meta": base["meta"]} if "meta" in base else {}),
         "config": config,
         "n": len(per_question),
         "n_invalid": sum(bool(e.get("invalid")) for e in per_question.values()),
@@ -263,6 +276,9 @@ def _parse_args() -> argparse.Namespace:
                     help="most questions allowed to stay routed differently after re-asks")
     r0.add_argument("--calibrate", action="store_true",
                     help="W0 AA: measure the route residual as r0 instead of judging it")
+    parser.add_argument("--gt", choices=("v1", "v2"), default=None,
+                        help="live mode: ground truth both arms score with "
+                             "(default: EVAL_GT_VERSION setting)")
     parser.add_argument("--overwrite", action="store_true",
                         help="allow replacing earlier outputs of this label (never an input file)")
     args = parser.parse_args()
@@ -279,7 +295,8 @@ def _gate_live(args: argparse.Namespace, residual_max: int | None,
     arms = (Arm(args.control_name, args.control_url, f"d3_{args.control_name}_{args.label}"),
             Arm(args.treatment_name, args.treatment_url, f"d3_{args.treatment_name}_{args.label}"))
     _refuse_existing(_planned_outputs(arms, report_path), args.overwrite)
-    report = run_live(subprocess_runner, *arms, residual_max, save=_save_merged)
+    runner = functools.partial(subprocess_runner, gt=args.gt)
+    report = run_live(runner, *arms, residual_max, save=_save_merged)
     merged = {"control": str(_merged_path(arms[0])), "treatment": str(_merged_path(arms[1]))}
     return ({**report, "merged_runs": merged},
             {"control": arms[0]._asdict(), "treatment": arms[1]._asdict()})
