@@ -268,9 +268,9 @@ async def run_collection(
             (recorded beside the checkpoint).
         use_graph: Per-request override for backend graph retrieval.
             None = use backend RAG_USE_GRAPH env default.
-        semantic_only: When True, bypass backend routing / SQL / graph /
-            cross-ref and run pure semantic retrieval only.
-        graph_strategies: Which graph strategies run (["all"] = every one).
+        semantic_only: When True, bypass backend routing / SQL / the
+            event_registry lane and run pure semantic retrieval only.
+        graph_strategies: Which graph strategies run: ["event_registry"] or [].
             None = backend RAG_GRAPH_STRATEGIES default.
         question_ids: Ask only these questions, in GT order (--ids-file).
             None = every GT question; an id the GT lacks raises IdsFileError

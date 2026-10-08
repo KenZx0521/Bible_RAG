@@ -207,7 +207,7 @@ def test_quick_compare_skips_invalid_questions(tmp_path, capsys):
     assert "excluded (invalid in either run): ['Q1']" in out
 
 
-# --- quick eval: context digests (D3 gate, --include-context) -----------------
+# --- quick eval: context digests (identity check, --include-context) ----------
 
 def _sha(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -234,7 +234,7 @@ def test_context_digest_hashes_blocks_as_the_generator_joins_them():
 
 
 def test_context_digest_refuses_sources_without_context():
-    """An image without include_context drops the field; equal empty digests would pass D3."""
+    """An image without include_context drops the field; equal empty digests would pass."""
     with pytest.raises(RuntimeError, match="context"):
         qre.context_digest([{"id": "act:9:0", "context": "[1] x"}, {"id": "gen:1:0"}])
 
@@ -311,7 +311,7 @@ def test_quick_eval_records_include_context_in_config(tmp_path, monkeypatch):
     assert out["per_question"]["Q"]["context_sha"] == "c1"
 
 
-# --- ab_compare --require-identical (D3 gate) ---------------------------------
+# --- ab_compare --require-identical (identity check) --------------------------
 
 CORE5 = [f"a:{i}:0" for i in range(5)]
 
@@ -530,7 +530,7 @@ def test_ab_compare_cli_pass_says_route_mismatches_were_not_judged(tmp_path, mon
                         "Q2": _ident_entry(CORE5)})
 
     assert _cli(tmp_path, monkeypatch, control, treat) == 0
-    assert "identity: PASS (1 route mismatch not judged; run d3_gate.py)" in capsys.readouterr().out
+    assert "identity: PASS (1 route mismatch not judged; re-ask them)" in capsys.readouterr().out
 
     assert _cli(tmp_path, monkeypatch, control, copy.deepcopy(control)) == 0
     assert capsys.readouterr().out.rstrip().endswith("identity: PASS")

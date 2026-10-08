@@ -9,12 +9,11 @@ evaluation/
 ├── run_eval.py                  # CLI 入口(完整管線:收集 → 評估 → 視覺化)
 ├── quick_retrieval_eval.py      # 快速檢索評估迴圈(retrieval-only,無生成/RAGAS)
 ├── ab_compare.py                # 兩個 quick eval 結果的配對 A/B / --require-identical 一致性檢查
-├── d3_gate.py                   # D3 非劣閘門(兩個 backend 跑 500 題 → 一致性 + 路由殘差判定)
-├── xref_ab_slice.py             # opt-in xref A/B 的 touched 題數與 kg_xref 切片(W1,只報告;見 docs/staging_promotion.md)
 ├── quick_faithfulness_eval.py   # 快速 faithfulness 重判迴圈(只跑兩個 faithfulness judge)
 ├── experiments/                 # 各實驗的事前登記、題號檔與腳本
 │   ├── 2026-10-03_event_registry/   # event_registry 附加槽的檢索 A/B、AA 校準與答案端探針
-│   └── 2026-10-05_kg_w1/        # W1 升版的題號檔:第 1 步的 20 題煙霧測試、第 1、2 步之間的 graph_event 抽查(K10)
+│   ├── 2026-10-08_r1/           # R1 評估的事前登記與凍結(freeze_r1.py、frozen_r1.json)
+│   └── 2026-10-09_r2/           # R2 評估的事前登記與凍結(freeze_r2.py)
 ├── src/
 │   ├── config.py                # 讀取 ../.env(共用)+ ./.env(eval 專屬,優先)
 │   ├── models.py                # Pydantic 資料模型
@@ -97,8 +96,7 @@ uv run python run_eval.py
 ```
 
 > **2026-10 起 `--graph` 不再等於「全部圖譜策略」**:backend 預設 `RAG_GRAPH_STRATEGIES=["event_registry"]`(2026-10-04 起;只在 top-k 後附加 curated 事件錨點,之前是 `["graph_event"]`)。附加軌會讓部分題的 sources 多一段,檢索指標要用 `--metric-k 6` 並以 `ab_compare.py --control-ext` 對 k 對齊的 dense 比較。
-> 要重現 Round 3 的 `results_graph/`(全開),加 `--graph-strategies all`;
-> `--graph-strategies graph_event graph_person` 指定子集,只寫 `--graph-strategies` 不帶值 = 全關。
+> R1/R2 的 backend 只有 `event_registry` 這一條圖譜策略:`--graph-strategies event_registry` 指定它,只寫 `--graph-strategies` 不帶值 = 全關;`all`、`graph_event` 等舊策略會被拒絕。Round 3 的 `results_graph/`(全開)只能用 legacy 映像重現。
 > 輸出目錄裡若有 2026-10 前的存檔(記錄沒有 `graph_strategies` 欄位),collector 會拒絕覆寫,請先移走或 commit。
 > 每筆 `raw_responses.json` 記錄另帶 `graph_strategies`(backend 實際生效的策略;缺欄位 = 舊版全開)。
 
@@ -173,31 +171,11 @@ uv run python quick_retrieval_eval.py --no-use-graph --top-k 6 --metric-k 6 --id
 uv run python ab_compare.py results_quick/dense5.json results_quick/aux.json --control-ext results_quick/dense6.json --label aux_vs_dense
 ```
 
-`--require-identical` 改跑一致性檢查(不出統計報告):同路由題的 core(前 top_k 段)、附加段落(超過 top_k 的段落)與 `context_sha` 必須全部相同,兩邊逐題與整體的 `graph_strategies_applied` 也必須相同;invalid 題、只出現在一邊的題同樣算失敗。任何不同都列出明細並以結束碼 1 結束。路由不同的題另外列出,不判失敗:這時 PASS 會註明有幾題沒判(`identity: PASS (N route mismatches not judged; run d3_gate.py)`),重問與路由殘差 ≤ r0 的判定只有 `d3_gate.py` 會做,所以 D3 閘門一律跑 `d3_gate.py`,`--require-identical` 只當診斷用。沒有 `context_sha` 的舊檔(沒用 `--include-context` 跑的)直接拒絕。
+`--require-identical` 改跑一致性檢查(不出統計報告):同路由題的 core(前 top_k 段)、附加段落(超過 top_k 的段落)與 `context_sha` 必須全部相同,兩邊逐題與整體的 `graph_strategies_applied` 也必須相同;invalid 題、只出現在一邊的題同樣算失敗。任何不同都列出明細並以結束碼 1 結束。路由不同的題另外列出,不判失敗:這時 PASS 會註明有幾題沒判(`identity: PASS (N route mismatches not judged; re-ask them)`),要先用 `--ids-file` 重問這些題,才能把 PASS 當成「完全相同」。沒有 `context_sha` 的舊檔(沒用 `--include-context` 跑的)直接拒絕。
 
 ```bash
-uv run python ab_compare.py results_quick/d3_prod_w1.json results_quick/d3_stg_w1.json --require-identical
+uv run python ab_compare.py results_quick/control.json results_quick/treatment.json --require-identical
 ```
-
-#### D3 非劣閘門（d3_gate.py）
-
-KG 資料層修復第 1 批的硬門檻(`docs/records/2026-10-04_kg_batch1_plan.md` §5.1):prod 與 backend-staging 各跑一次 500 題(`quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context`,以 `BACKEND_URL` 指向各自的 backend),再做 `--require-identical` 比對。路由不同的題兩邊各重問(`--ids-file`),最多 2 輪,重問結果要和原檔的 top_k / metric_k / metric_version / include_context 等設定、meta 的 build / GT / 編碼指紋相同、題號完全對上才併回去。`--gt` 會傳給兩臂的 quick eval;兩臂 GT 不同直接拒絕,build 不同照比並在報告列出。判定:
-
-- 兩邊的 `graph_strategies_applied` 相同;
-- 同路由題 100% 相同;
-- invalid 為 0;
-- 重問後仍路由不同的題數(路由殘差)≤ r0(`--route-residual-max`)。r0 由 W0 的 AA 演練用 `--calibrate` 量出,這時只記錄殘差、不判這一條。
-
-```bash
-# W0 AA:量 r0
-.venv/bin/python d3_gate.py --label w0_aa --control-url http://localhost:8000 --treatment-url http://localhost:8001 --calibrate
-# W1 / W2 閘門
-.venv/bin/python d3_gate.py --label w1 --control-url http://localhost:8000 --treatment-url http://localhost:8001 --route-residual-max <r0>
-# 只重判 live 閘門存下的合併結果檔(不重跑查詢、不重問)
-.venv/bin/python d3_gate.py --label w1_files --control-file results_quick/d3_prod_w1_merged.json --treatment-file results_quick/d3_stg_w1_merged.json --route-residual-max <r0>
-```
-
-兩邊的結果檔是 `results_quick/d3_prod_<label>.json`、`d3_stg_<label>.json`(重問為 `..._retry1/2.json`,名稱可用 `--control-name` / `--treatment-name` 改);這兩個原始檔保留第一次的回答,併入重問結果後的最終版另存為 `d3_prod_<label>_merged.json`、`d3_stg_<label>_merged.json`,對它們跑檔案模式才會重現 live 的判定(對原始檔跑,有重問過的題仍會算成路由殘差)。完整報告(各輪重問、判定項、所有差異明細、`merged_runs` 路徑)寫到 `results_quick/d3_<label>.json`;通過結束碼 0,否則 1。這些檔案已存在時拒絕執行,要覆寫請加 `--overwrite`(檔案模式只檢查報告檔);報告路徑若就是 `--control-file` / `--treatment-file` 之一(例如 `--label prod_s1` 配 `d3_prod_s1.json`),加 `--overwrite` 也一律拒絕。staging 端必須跑「由該波 HEAD 建出的 image」。
 
 ### 快速 faithfulness 重判迴圈（quick_faithfulness_eval.py）
 

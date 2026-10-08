@@ -35,13 +35,14 @@ async def query_rag(
     Args:
         use_graph: Per-request override for backend RAG_USE_GRAPH. None = use
             backend default; True/False explicitly forces graph on/off.
-        semantic_only: When True, bypass backend routing / SQL / graph /
-            cross-ref and run pure semantic retrieval only.
+        semantic_only: When True, bypass backend routing / SQL / the
+            event_registry lane and run pure semantic retrieval only.
         include_context: Ask the backend for the exact context block it fed
             the generator per source (header + text), so the judge sees the
             same text. Older backends ignore the field.
-        graph_strategies: Per-request override for which graph strategies run
-            (["all"] = every one). None = backend default.
+        graph_strategies: Per-request override for which graph strategies run:
+            ["event_registry"] (the only one the R1/R2 backend has) or [] for
+            none. None = backend default.
 
     Returns dict with keys: answer, sources, intent, retrieval_stats
     """

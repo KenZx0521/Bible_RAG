@@ -4,10 +4,11 @@
 Collects top-k sources for all ground-truth questions via the backend's
 ``retrieval_only`` mode and computes the same 7 retrieval metrics as the full
 pipeline (src.metrics.retrieval — identical reference parsing and relevance
-judging, so numbers are directly comparable with results_graph/ runs). Round 3's
-results_graph/ ran every graph strategy; since 2026-10 the backend default is
-graph_event only, so compare against it with --graph-strategies all. Each run
-records the strategies the backend actually applied under "config".
+judging, so numbers are directly comparable with results_graph/ runs). The
+R1/R2 backend has one graph strategy, the event_registry auxiliary lane
+(--graph-strategies event_registry, or none); the legacy strategies Round 3's
+results_graph/ ran (graph_event, 'all', ...) no longer exist and are rejected.
+Each run records the strategies the backend actually applied under "config".
 
 Also recomputes metrics from an existing raw_responses.json for baseline
 comparison (--from-raw), so P0-era runs can be scored with byte-identical
@@ -16,8 +17,6 @@ metric code.
 Usage (from evaluation/):
     uv run python quick_retrieval_eval.py --label fixes_a03            # live run
     uv run python quick_retrieval_eval.py --alpha 0.0 --label alpha0   # sweep point
-    uv run python quick_retrieval_eval.py --graph-strategies all --label all_graph  # strategy A/B
-    uv run python quick_retrieval_eval.py --graph-strategies graph_event graph_person --label ev_person
     uv run python quick_retrieval_eval.py --graph-strategies --label none  # no graph strategy
     uv run python quick_retrieval_eval.py --from-raw results_graph/raw_responses.json --label p0_baseline
     uv run python quick_retrieval_eval.py --compare out_a.json out_b.json
@@ -26,8 +25,8 @@ Usage (from evaluation/):
     uv run python quick_retrieval_eval.py --no-use-graph --metric-k 6 --label dense5
     uv run python quick_retrieval_eval.py --no-use-graph --top-k 6 --metric-k 6 \
         --ids-file touched.txt --label dense6        # then: ab_compare.py
-    # D3 gate arm: also hash the generator's context blocks (see d3_gate.py)
-    uv run python quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context --label d3_prod_w1
+    # identity-check arm: also hash the generator's context blocks
+    uv run python quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context --label ident_a
 
 --gt v1|v2 picks the ground truth (default: EVAL_GT_VERSION). The backend's
 /api/v1/health names the build (none = legacy-20261004) and its encoder
@@ -406,8 +405,9 @@ def _parse_args() -> argparse.Namespace:
                         help="fusion_alpha override (omit = backend default)")
     parser.add_argument("--use-graph", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--graph-strategies", nargs="*", default=None,
-                        help="graph strategies allowed to run (e.g. graph_event, or 'all'; "
-                             "no values = none); omit = backend default")
+                        help="graph strategies allowed to run: event_registry (the only "
+                             "one the R1/R2 backend has) or no values = none; "
+                             "omit = backend default")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--metric-k", type=int, default=None,
                         help="score the first N sources (default: --top-k); runs compared "
@@ -417,7 +417,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--include-context", action="store_true",
                         help="ask for the generator's context blocks and record their sha256 "
                              "(per passage and per question); needed by ab_compare.py "
-                             "--require-identical and d3_gate.py")
+                             "--require-identical")
     parser.add_argument("--gt", choices=GT_VERSIONS, default=None,
                         help="ground truth version (default: EVAL_GT_VERSION setting)")
     parser.add_argument("--contracts-dir", type=Path, default=None,

@@ -15,9 +15,10 @@ Usage:
         uv run python run_eval.py --no-graph    # results_no_graph/
         uv run python run_eval.py --semantic    # results_semantic/ (pure semantic baseline)
 
-    Since 2026-10 --graph runs only the backend's RAG_GRAPH_STRATEGIES (default:
-    graph_event). Round 3's results_graph/ was every strategy; reproduce it with
-        uv run python run_eval.py --graph --graph-strategies all
+    --graph runs only the backend's RAG_GRAPH_STRATEGIES; the R1/R2 backend has
+    one graph strategy, the event_registry auxiliary lane (default). Round 3's
+    results_graph/ ran the legacy strategies (graph_event, 'all', ...), which
+    that backend rejects; the legacy image alone reproduces them.
     A pre-2026-10 archive in the output dir is never overwritten: move it first.
 
     Ground truth: --gt v1|v2 (default EVAL_GT_VERSION). The backend's /health
@@ -82,15 +83,16 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--semantic",
         action="store_true",
-        help="Semantic-only mode: bypass R1-R6 routing + SQL + graph + cross-ref; "
+        help="Semantic-only mode: bypass R1-R6 routing + SQL + the event_registry lane; "
              "run pure semantic retrieval + rerank. Outputs to results_semantic/.",
     )
     parser.add_argument(
         "--graph-strategies",
         nargs="*",
         default=None,
-        help="Graph strategies the backend may run (e.g. graph_event, or 'all'; "
-             "no values = none). Omit = backend RAG_GRAPH_STRATEGIES default.",
+        help="Graph strategies the backend may run: event_registry (the only one "
+             "the R1/R2 backend has) or no values = none. "
+             "Omit = backend RAG_GRAPH_STRATEGIES default.",
     )
     parser.add_argument(
         "--rebuild-contexts",

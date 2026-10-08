@@ -1,6 +1,6 @@
 """
 k-aligned paired comparison of two quick_retrieval_eval runs, and the identity
-check behind ab_compare.py --require-identical / d3_gate.py.
+check behind ab_compare.py --require-identical.
 
 Inputs are quick_retrieval_eval output files (per_question metrics computed at
 config.metric_k, with source_detail carrying per-passage gold flags). Every
@@ -226,7 +226,7 @@ def compare(
     }
 
 
-# --- identity gate (D3: a data or image change must not move default retrieval) --
+# --- identity check (a data or image change must not move default retrieval) ----
 
 # Request settings two runs must share for their passages to be comparable.
 _REQUEST_KEYS = ("top_k", "use_graph", "fusion_alpha", "graph_strategies_requested")
@@ -295,11 +295,11 @@ def _require_same_request(control: dict, treatment: dict) -> None:
 
 
 def identity_report(control: dict, treatment: dict) -> dict:
-    """Do two runs retrieve identically? (ab_compare --require-identical, d3_gate).
+    """Do two runs retrieve identically? (ab_compare --require-identical).
 
     Same-route questions must agree on the top_k core passages, the passages
     appended after it, and the context digest. Route mismatches (the intent
-    classifier samples at temperature 0.1) are listed apart for d3_gate to
+    classifier samples at temperature 0.1) are listed apart for the caller to
     re-ask. Invalid or unpaired questions and differing applied graph
     strategies also fail. Runs without context digests are refused.
     """
@@ -335,7 +335,7 @@ def identity_report(control: dict, treatment: dict) -> dict:
         "identical": len(same) - len(mismatches),
         "mismatches": mismatches,
         "strategies": strategies,
-        # Route mismatches do not fail here; d3_gate re-asks them.
+        # Route mismatches do not fail here; the caller re-asks them.
         "passed": (not mismatches and not invalid and strategies["identical"]
                    and not unpaired["control_only"] and not unpaired["treatment_only"]),
     }

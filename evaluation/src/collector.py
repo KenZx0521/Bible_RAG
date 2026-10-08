@@ -86,11 +86,11 @@ async def collect_responses(
         use_graph: Per-request override for backend graph retrieval.
             None = use backend RAG_USE_GRAPH env default.
             True/False = force graph on/off for every request in this run.
-        semantic_only: When True, bypass backend routing / SQL / graph /
-            cross-ref and run pure semantic retrieval only.
-        graph_strategies: Per-request override for which graph strategies run
-            (["all"] = every one, the pre-2026-10 behaviour). None = backend
-            RAG_GRAPH_STRATEGIES default.
+        semantic_only: When True, bypass backend routing / SQL / the
+            event_registry lane and run pure semantic retrieval only.
+        graph_strategies: Per-request override for which graph strategies run:
+            ["event_registry"] (the only one the R1/R2 backend has) or [].
+            None = backend RAG_GRAPH_STRATEGIES default.
         provenance: The backend's build and encoder (from /health), written
             to run_meta.json beside the checkpoint for --eval-only reruns.
 

@@ -17,18 +17,18 @@ Both runs must have been scored against one ground truth (gt_version and
 gt_sha in their meta); otherwise nothing is compared. Their data builds may
 differ (an R1 comparison) and are printed with the report.
 
---require-identical replaces the report with the D3 identity check: every
+--require-identical replaces the report with an identity check: every
 same-route question must keep its core top-k, its appended passages and its
 context digest (runs need quick_retrieval_eval.py --include-context), and both
 runs must apply the same graph strategies. Differences are listed and the exit
 code is 1. Route mismatches are listed apart and not judged: PASS (exit 0)
-names how many there were, and only d3_gate.py re-asks them and holds the
-residual to r0.
+names how many there were; re-ask them (quick_retrieval_eval.py --ids-file)
+before reading the PASS as "identical".
 
 Usage (from evaluation/):
     uv run python ab_compare.py results_quick/dense5.json results_quick/aux.json \\
         --control-ext results_quick/dense6.json --label aux_vs_dense
-    uv run python ab_compare.py results_quick/d3_prod_w1.json results_quick/d3_stg_w1.json \\
+    uv run python ab_compare.py results_quick/control.json results_quick/treatment.json \\
         --require-identical
 """
 
@@ -112,7 +112,7 @@ def _identity_verdict(report: dict) -> str:
     n = len(report["route_mismatch"])
     if not n:
         return "PASS"
-    return f"PASS ({n} route mismatch{'es' if n > 1 else ''} not judged; run d3_gate.py)"
+    return f"PASS ({n} route mismatch{'es' if n > 1 else ''} not judged; re-ask them)"
 
 
 def _save(report: dict, label: str | None) -> None:
@@ -130,7 +130,7 @@ def main() -> int:
                         help="independent control run at top_k+1 for questions the treatment appended to")
     parser.add_argument("--label", default=None, help="save the full report to results_quick/ab_<label>.json")
     parser.add_argument("--require-identical", action="store_true",
-                        help="D3 identity check instead of the A/B report; exit 1 on any "
+                        help="identity check instead of the A/B report; exit 1 on any "
                              "same-route difference (needs --include-context runs)")
     args = parser.parse_args()
     if args.require_identical and args.control_ext:
