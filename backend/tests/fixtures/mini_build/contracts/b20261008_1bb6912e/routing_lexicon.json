@@ -1,0 +1,138 @@
+{
+ "books": [
+  {
+   "book_id": "act",
+   "full_name": "使徒行傳",
+   "name": "使徒行傳",
+   "note": "R1 凍結的 legacy 路由詞（match_books_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "backend/utils/verse_parser.py:_ALL_NAMES"
+  },
+  {
+   "book_id": "eph",
+   "full_name": "以弗所書",
+   "name": "以弗所書",
+   "note": "R1 凍結的 legacy 路由詞（match_books_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "backend/utils/verse_parser.py:_ALL_NAMES"
+  },
+  {
+   "book_id": "psa",
+   "full_name": "詩篇",
+   "name": "詩篇",
+   "note": "R1 凍結的 legacy 路由詞（match_books_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "backend/utils/verse_parser.py:_ALL_NAMES"
+  },
+  {
+   "book_id": "act",
+   "full_name": "使徒行傳",
+   "name": "使徒",
+   "note": "R1 凍結的 legacy 路由詞（match_books_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "backend/utils/verse_parser.py:_ALL_NAMES"
+  }
+ ],
+ "events": [
+  {
+   "note": "R1 凍結的 legacy 路由詞（match_events_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "backend/utils/entity_dicts.py:EVENT_KEYWORDS",
+   "term": "保羅歸主"
+  },
+  {
+   "note": "R1 凍結的 legacy 路由詞（match_events_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "backend/utils/entity_dicts.py:EVENT_KEYWORDS",
+   "term": "天國"
+  },
+  {
+   "note": "R1 凍結的 legacy 路由詞（match_events_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "backend/utils/entity_dicts.py:EVENT_KEYWORDS",
+   "term": "渴慕"
+  }
+ ],
+ "header": {
+  "frozen_from": {
+   "backend/utils/entity_dicts.py": "47cb663c60712f9dce389c188a0e395c299490a3ec42b108c1759cb418d78500",
+   "backend/utils/verse_parser.py": "5acf3f88006bb1acdac0e658e5d2b26c823e9affcb6473bf0ba8ee01f39d2097",
+   "bible_chunking/config.py": "d13e881e48bd9e1ad183fc305e313139bb4609c1a44f6fe654010d5363b22a30",
+   "scripts/entity_extraction/entity_dict.py": "d13e881e48bd9e1ad183fc305e313139bb4609c1a44f6fe654010d5363b22a30"
+  },
+  "matchers": {
+   "books": "match_books_in_text：依名稱長度遞減，略過單字名，回傳尚未出現過的書卷全名",
+   "events": "match_events_in_text：依（長度遞減、碼位）排序，回傳是子字串的關鍵詞",
+   "persons": "match_persons_in_text：依別名最長長度遞減（同長依檔案順序）逐一比對，任一別名是子字串即回傳 canonical",
+   "places": "match_places_in_text：同 persons"
+  },
+  "not_frozen": "GROUP_DICT：entity_dicts 有 import，但沒有任何 match 函式使用",
+  "provenance_class": "external_legacy",
+  "retire_by": "R2"
+ },
+ "persons": [
+  {
+   "aliases": [
+    "保羅",
+    "掃羅"
+   ],
+   "canonical": "保羅",
+   "note": "R1 凍結的 legacy 路由詞（match_persons_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "scripts/entity_extraction/entity_dict.py:PERSON_DICT"
+  },
+  {
+   "aliases": [
+    "掃羅"
+   ],
+   "canonical": "掃羅",
+   "note": "R1 凍結的 legacy 路由詞（match_persons_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "scripts/entity_extraction/entity_dict.py:PERSON_DICT"
+  },
+  {
+   "aliases": [
+    "哥尼流"
+   ],
+   "canonical": "哥尼流",
+   "note": "R1 凍結的 legacy 路由詞（match_persons_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "scripts/entity_extraction/entity_dict.py:PERSON_DICT"
+  }
+ ],
+ "places": [
+  {
+   "aliases": [
+    "大馬士革"
+   ],
+   "canonical": "大馬士革",
+   "note": "R1 凍結的 legacy 路由詞（match_places_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "scripts/entity_extraction/entity_dict.py:PLACE_DICT"
+  },
+  {
+   "aliases": [
+    "死海",
+    "鹽海"
+   ],
+   "canonical": "鹽海",
+   "note": "R1 凍結的 legacy 路由詞（match_places_in_text）；行為與現行 entity_dicts 逐一相同，R2 由 PDF 版詞表取代",
+   "provenance_class": "external_legacy",
+   "retire_by": "R2",
+   "source": "scripts/entity_extraction/entity_dict.py:PLACE_DICT"
+  }
+ ],
+ "schema": "ragdata.routing_lexicon.v1",
+ "variant": "legacy"
+}

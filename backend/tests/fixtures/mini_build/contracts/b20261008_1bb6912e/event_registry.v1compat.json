@@ -1,0 +1,51 @@
+{
+  "anchor_order": "legacy order (book, chapter, pericope index); each anchor is now its passage_id",
+  "dropped": [
+    {
+      "id": "event:none",
+      "name": "無",
+      "reason": "test"
+    }
+  ],
+  "events": [
+    {
+      "anchors": [
+        "ps:psa.42.1"
+      ],
+      "id": "event:kemu",
+      "name": "渴慕上帝",
+      "provenance": "alias_injection",
+      "triggers": [
+        "渴慕"
+      ]
+    },
+    {
+      "anchors": [
+        "ps:mat.18.1"
+      ],
+      "id": "event:tianguo",
+      "name": "天國裏誰是最大的",
+      "provenance": "head_event_backfill",
+      "triggers": [
+        "天國",
+        "最大的"
+      ]
+    },
+    {
+      "anchors": [
+        "ps:act.9.1",
+        "ps:act.9.3b"
+      ],
+      "id": "event:saoluo",
+      "name": "掃羅歸主",
+      "provenance": "manual_edges",
+      "triggers": [
+        "保羅歸主"
+      ]
+    }
+  ],
+  "generated_at": "2026-10-03T20:21:29",
+  "generator": "ragdata build events（R1，由 backend/data/event_registry.json 經 legacy_ids 機械轉換）",
+  "trigger_rule": "exact keyword",
+  "version": 1
+}

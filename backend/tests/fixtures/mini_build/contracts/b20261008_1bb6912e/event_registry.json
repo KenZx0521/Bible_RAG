@@ -1,0 +1,103 @@
+{
+  "events": [
+    {
+      "anchors": [
+        {
+          "end_key": "psa.42.3",
+          "end_slot": "psa.42.3",
+          "passage_id": "ps:psa.42.1",
+          "provenance_class": "legacy_tuned",
+          "start_key": "psa.42.1",
+          "start_slot": "psa.42.1"
+        }
+      ],
+      "event_id": "ev0001",
+      "external_aliases": [],
+      "legacy_id": "event:kemu",
+      "legacy_provenance": "alias_injection",
+      "legacy_triggers": [
+        {
+          "note": "R1 凍結的 legacy 觸發詞，依同一份 GT 調出（D3 報告須註明）",
+          "provenance_class": "external_legacy",
+          "retire_by": "R2",
+          "source": "event_registry.json",
+          "text": "渴慕"
+        }
+      ],
+      "name": "渴慕上帝",
+      "pdf_terms": []
+    },
+    {
+      "anchors": [
+        {
+          "end_key": "mat.18.4",
+          "end_slot": "mat.18.4",
+          "passage_id": "ps:mat.18.1",
+          "provenance_class": "legacy_tuned",
+          "start_key": "mat.18.1",
+          "start_slot": "mat.18.1"
+        }
+      ],
+      "event_id": "ev0002",
+      "external_aliases": [],
+      "legacy_id": "event:tianguo",
+      "legacy_provenance": "head_event_backfill",
+      "legacy_triggers": [
+        {
+          "note": "R1 凍結的 legacy 觸發詞，依同一份 GT 調出（D3 報告須註明）",
+          "provenance_class": "external_legacy",
+          "retire_by": "R2",
+          "source": "event_registry.json",
+          "text": "天國"
+        },
+        {
+          "note": "R1 凍結的 legacy 觸發詞，依同一份 GT 調出（D3 報告須註明）",
+          "provenance_class": "external_legacy",
+          "retire_by": "R2",
+          "source": "event_registry.json",
+          "text": "最大的"
+        }
+      ],
+      "name": "天國裏誰是最大的",
+      "pdf_terms": []
+    },
+    {
+      "anchors": [
+        {
+          "end_key": "act.9.3",
+          "end_slot": "act.9.3",
+          "passage_id": "ps:act.9.1",
+          "provenance_class": "legacy_tuned",
+          "start_key": "act.9.1",
+          "start_slot": "act.9.1"
+        },
+        {
+          "end_key": "act.9.3b",
+          "end_slot": "act.9.3",
+          "passage_id": "ps:act.9.3b",
+          "provenance_class": "legacy_tuned",
+          "start_key": "act.9.3b",
+          "start_slot": "act.9.3"
+        }
+      ],
+      "event_id": "ev0003",
+      "external_aliases": [],
+      "legacy_id": "event:saoluo",
+      "legacy_provenance": "manual_edges",
+      "legacy_triggers": [
+        {
+          "note": "R1 凍結的 legacy 觸發詞，依同一份 GT 調出（D3 報告須註明）",
+          "provenance_class": "external_legacy",
+          "retire_by": "R2",
+          "source": "event_registry.json",
+          "text": "保羅歸主"
+        }
+      ],
+      "name": "掃羅歸主",
+      "pdf_terms": []
+    }
+  ],
+  "schema": "ragdata.event_registry.v2",
+  "struct": "struct@2555195b0166",
+  "variant": "R1"
+}
