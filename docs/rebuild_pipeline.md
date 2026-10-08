@@ -92,17 +92,25 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 
 - 每次 promote 在同一交易內附加一筆到 `rag_meta.serving_history`（第一次 promote 時建表）；配對與目前相同時什麼都不寫。
 - `--rollback`：把該 env 最新一筆未回滾的紀錄標為已回滾，serving 改回它的前一筆；再跑一次就再退一筆。最新一筆和 serving 不一致時拒絕，不做任何修改。
-- 第一次 promote 的回滾（沒有前一筆）會刪掉該 env 的 serving 列，回到「沒有 build 在服務」；之後即可 unload 該 build。prod 另要把 backend 容器切回舊映像 `bible_rag-backend:latest`（讀 `public` 與舊 collection，不看 `rag_meta.serving`），切回時不要重建這個映像。
+- 第一次 promote 的回滾（沒有前一筆）會刪掉該 env 的 serving 列，回到「沒有 build 在服務」；之後即可 unload 該 build。
 - `--env prod` 一律要加 `--yes-prod`，否則拒絕（promote 與 `--rollback` 都是）。
-- 目前 prod 沒有 serving 列，線上 backend 仍讀 `public` schema 與舊 collection。`public`、`bible_embeddings*`、`bible_entities` 是 R1 上線前的回滾基準，**不可刪**。
-- R1 staging backend（:8002）的啟動與驗證見 `docker-compose.staging.yml` 的 `backend-r1`。它的 restart 是 `"no"`：握手不符就停在 exited，不會反覆重載模型；主機重開機後要重跑該檔開頭的 `up` 指令。
+- 2026-10-08 起 prod 服務 R1（`b20261008_6daa4f31`，映像 `bible_rag-backend:r1`）。legacy 已刪除，回滾只能翻回前一個 serving 配對。
+- **換 prod 容器**（promote 之後；只動 backend，不碰 postgres、qdrant、ollama）：先把 `docker-compose.yml` 的 `image` 改成要服務的 tag，再
+  ```bash
+  docker compose -p bible_rag -f docker-compose.yml up -d --no-deps --no-build --pull never --wait --wait-timeout 300 backend
+  curl -s localhost:8000/api/v1/health      # build_id 與 handshake.ok
+  PYTHONPATH=packages scripts/.venv/bin/python evaluation/experiments/2026-10-08_r1/smoke20.py \
+    http://localhost:8000 <build_id> ground_truth.v2.json <報告.json>
+  ```
+  回滾：`$RAGDATA promote --env prod --rollback --yes-prod`，把 `image` 改回前一個 tag，再跑同一個 `up`。不要 `docker compose build backend`、不要 `down`、不要 `--remove-orphans`。
+- staging backend（:8002）見 `docker-compose.staging.yml` 的 `backend-stg`，映像由 `STG_IMAGE` 指定。它的 restart 是 `"no"`：握手不符就停在 exited，不會反覆重載模型；主機重開機後要重跑該檔開頭的 `up` 指令。
 
 ## 7. 清理被取代的 build
 
 1. 確認它不在 `rag_meta.serving`，也不是回滾或比較的基準。
 2. `$RAGDATA unload <build_id>`：只刪該 build 的 schema、`rag_meta.builds` 列、Qdrant collection 與 `contracts/<build_id>/`；serving 中的 build 一律拒絕，重跑可完成中斷的 unload。
 3. 刪 `releases/<build_id>.json`，再刪 store 裡沒有任何剩餘 release 引用的層版本（連同 `.vectors` 附件目錄）。
-4. 永不刪：`reference/`、`models/`、`tools/`、`/mnt/ollama-data/bible_rag_bak/`，以及上述 legacy 資料。
+4. 永不刪：`reference/`、`models/`、`tools/`、`/mnt/ollama-data/bible_rag_bak/`，以及 serving 中的 build 與它前一個配對（回滾用）。
 
 ## 8. 測試
 
@@ -115,7 +123,7 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 env HF_HOME=/mnt/ollama-data/huggingface HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
   scripts/.venv/bin/python -m pytest ragdata/tests packages/ragcommon/tests -q
-# backend：217 passed、1 skipped（R2 路由 golden 尚未凍結）
+# backend：219 passed（含 test_integration：暫時 PG 容器、資料目錄用 tmpfs）
 PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
   backend/.venv/bin/python -m pytest backend/tests -q
 # scripts：12 passed（只剩 derive_ragcommon_data 與 harness）

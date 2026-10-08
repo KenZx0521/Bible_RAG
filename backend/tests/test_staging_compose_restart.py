@@ -24,5 +24,5 @@ def _backends() -> dict[str, dict]:
 def test_no_staging_backend_restarts_after_a_refused_handshake():
     policies = {name: s.get("restart") for name, s in _backends().items()}
 
-    assert "backend-r1" in policies
+    assert "backend-stg" in policies
     assert policies == dict.fromkeys(policies, "no")

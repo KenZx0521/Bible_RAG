@@ -121,7 +121,7 @@ docker compose up -d
 | qdrant | 6333／6334 | 向量資料庫 |
 | ollama | 11434 | 本地 LLM（GPU） |
 
-compose 裡的 `neo4j` 只在 `--profile kg` 時啟動，只供回滾到 legacy；backend 不讀 Neo4j。
+compose 已沒有 Neo4j；legacy 資料與 Neo4j 在 R1 上線後（2026-10-08）刪除，備份在 `/mnt/ollama-data/bible_rag_bak/20261007/`。
 
 **backend 怎麼選 build**：
 - 啟動時依 `RAG_ENV`（prod／staging）讀一次 `rag_meta.serving`。`RAG_BUILD_ID` 只能核對，不能改選。
@@ -182,7 +182,7 @@ Bible_RAG/
 ├── figures/                    # 論文圖
 ├── ground_truth.json           # GT v1：500 題（5 類型 × 100）
 ├── ground_truth.v2.json        # GT v2：同 500 題，引用對齊重建後的文字層
-├── docker-compose.yml          # backend、postgres、qdrant、ollama（neo4j 只在 --profile kg）
+├── docker-compose.yml          # backend（prod，已建好的映像）、postgres、qdrant、ollama
 ├── docker-compose.staging.yml  # staging backend（R1：:8002）
 ├── Dockerfile                  # backend 映像
 └── .env.example                # 環境變數範例

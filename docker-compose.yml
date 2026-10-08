@@ -21,9 +21,6 @@ services:
       # Override hosts to use Docker service names
       POSTGRES_HOST: postgres
       QDRANT_HOST: qdrant
-      # Read only by a legacy (pre-R1) image started for a rollback with
-      # --profile kg; the R1 backend has no Neo4j driver.
-      NEO4J_URI: bolt://neo4j:7687
       OLLAMA_BASE_URL: http://ollama:11434
       # The build comes from rag_meta.serving's row for RAG_ENV (design §7.8);
       # its contract files from the read-only mount below.
@@ -37,10 +34,6 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_healthy
-      # Only with --profile kg (a legacy rollback); R1 starts without Neo4j.
-      neo4j:
-        condition: service_healthy
-        required: false
       ollama:
         condition: service_healthy
     volumes:
@@ -66,8 +59,9 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
+      # Schemas are created by the ragdata loader (b{build_id}, rag_meta), never
+      # by an init script.
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bible} -d ${POSTGRES_DB:-bible_rag}"]
       interval: 10s
@@ -92,34 +86,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # Neo4j for knowledge graph. Profile kg: R1 serves no KG (D-09), so it starts
-  # only when asked for (`--profile kg`, e.g. a rollback to the legacy build).
-  neo4j:
-    image: neo4j:5.15-community
-    profiles: ["kg"]
-    container_name: bible_rag_neo4j
-    restart: unless-stopped
-    entrypoint: ["bash", "-c", "rm -f /var/lib/neo4j/run/neo4j.pid && exec /startup/docker-entrypoint.sh neo4j"]
-    environment:
-      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4j_password}
-      NEO4J_PLUGINS: '["apoc"]'
-      NEO4J_dbms_security_procedures_unrestricted: apoc.*
-      NEO4J_dbms_memory_heap_initial__size: 512m
-      NEO4J_dbms_memory_heap_max__size: 1G
-    ports:
-      - "${NEO4J_HTTP_PORT:-7474}:7474"
-      - "${NEO4J_BOLT_PORT:-7687}:7687"
-    volumes:
-      - neo4j_data:/data
-      - neo4j_logs:/logs
-    stop_grace_period: 30s
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
 
   # Ollama LLM inference server
   ollama:
@@ -151,7 +117,4 @@ services:
 volumes:
   postgres_data:
   qdrant_data:
-  neo4j_data:
-  neo4j_logs:
   model_cache:
-  ollama_data:

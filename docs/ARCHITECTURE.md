@@ -319,7 +319,7 @@ Kay 2026-10-08 決定：**P5 取消**，KG 只到 L0 與 L1。舊的身分層與
 
 **現況**：
 - 服務端不讀 Neo4j（D-09），`/api/v1/entity` 回 410（D-08）。
-- compose 的 `neo4j` 服務只在 `--profile kg` 時啟動，只供 legacy 回滾使用；legacy 退役時一併移除。
+- Neo4j 容器、volume 與 compose 服務已在 R1 上線後刪除（2026-10-08）。
 
 ---
 
@@ -343,15 +343,14 @@ flowchart TB
 | 改程式 | 映像內含程式，改 `backend/` 後要重建映像。只 restart 會跑舊映像 |
 | 建置快取 | `uv sync` 掛主機 `~/.cache/uv-bible-rag-backend`（`BACKEND_UV_CACHE_DIR`），uv 釘 0.12.0；主機頻寬約 50 KB/s，沒有快取建不起來 |
 | 三套環境 | `backend/`（容器）、`scripts/`（ragdata 的執行環境）、`evaluation/` 各有 pyproject.toml |
-| staging | `docker-compose.staging.yml` 的 `backend-r1`：:8002，restart `"no"`，握手不符就停在 exited |
+| staging | `docker-compose.staging.yml` 的 `backend-stg`：:8002，映像由 `STG_IMAGE` 指定（預設 r2），restart `"no"`，握手不符就停在 exited |
 
-2026-10-08 的容器：
+2026-10-08 晚間起的容器：
 
-- :8000 是線上 prod，仍是 legacy 映像 `bible_rag-backend:latest`，讀 `public` schema、`bible_embeddings*` 與 Neo4j；
-- :8001 是 legacy 加 E0b 的對照臂；
-- :8002 是 R1 staging。
+- :8000 是線上 prod：映像 `bible_rag-backend:r1`，服務 R1 build；
+- :8002 是 staging（`backend-stg`），給 R2 評估用。
 
-Kay 的決定：R1 上線後 legacy 退役。容器、映像與回滾步驟見 [交接文件](records/2026-10-08_rebuild_handoff.md) §2 與 §4。
+legacy 的容器、映像、`public` 舊表、舊 Qdrant collection 與 Neo4j 已在 R1 上線、20 題 smoke 通過後刪除（Kay 的決定）。要回到 legacy 只能從 `/mnt/ollama-data/bible_rag_bak/20261007/` 還原。
 
 ---
 
@@ -406,8 +405,8 @@ E0b 修正了 embedder 查詢端與 reranker 的 tokenizer。500 題配對比較
 
 | 版本 | 內容 | 狀態（2026-10-08） |
 |---|---|---|
-| legacy（`legacy-20261004`） | 舊轉換器語料、`public` schema、`bible_embeddings*`、`bible_entities`、Neo4j | 仍是線上 prod（:8000）；R1 上線後退役 |
-| R1 `b20261008_6daa4f31` | 全部資料從 PDF 重建；路由詞表是 legacy 凍結版；事件註冊表是機械轉換版（33 事件）；sparse 退役；embedder 查詢端與 reranker 的 tokenizer 已修正；不讀 Neo4j | staging（:8002）；評估完成（見下），C2 經 Kay 依揭露值接受；prod serving 列已寫入（store `reports/promote_prod_r1.json`） |
+| legacy（`legacy-20261004`） | 舊轉換器語料、`public` schema、`bible_embeddings*`、`bible_entities`、Neo4j | 2026-10-08 R1 上線後刪除；備份在 bak/20261007 |
+| R1 `b20261008_6daa4f31` | 全部資料從 PDF 重建；路由詞表是 legacy 凍結版；事件註冊表是機械轉換版（33 事件）；sparse 退役；embedder 查詢端與 reranker 的 tokenizer 已修正；不讀 Neo4j | **線上 prod（:8000），2026-10-08 22:40 起**；評估完成（見下），C2 經 Kay 依揭露值接受；prod 20 題 smoke 20/20（store `reports/prod_r1_smoke20.json`） |
 | R2 `b20261008_e05d3e55`（本分支） | 事件註冊表修正版（31 事件）；路由詞表改為 PDF 版加查詢別名（契約 v2）；其餘五層與 R1 相同 | 已建置、載入並通過 verify；尚未 promote；評估依 R2 預登記進行 |
 
 R1 評估結果（2026-10-08，store `reports/r1eval/`）：
