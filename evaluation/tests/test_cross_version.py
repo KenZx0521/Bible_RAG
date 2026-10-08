@@ -125,3 +125,16 @@ def test_the_gt_choice_reaches_every_quick_eval_run(tmp_path, monkeypatch):
     assert calls == ["v2", "v2"]
     assert report["identity"]["builds"] == {"control": LEGACY, "treatment": NEW}
     assert gate.quick_eval_command("x", gt="v2")[-2:] == ["--gt", "v2"]
+
+
+def test_the_ab_report_prints_gt_and_builds(tmp_path, monkeypatch, capsys):
+    paths = []
+    for name, build in (("c", LEGACY), ("t", NEW)):
+        path = tmp_path / f"{name}.json"
+        path.write_text(json.dumps(_run(build=build)))
+        paths.append(str(path))
+    monkeypatch.setattr(sys, "argv", ["ab_compare.py", *paths])
+
+    assert cli.main() == 0
+    out = capsys.readouterr().out
+    assert f"control={LEGACY}" in out and f"treatment={NEW}" in out

@@ -19,8 +19,12 @@ evaluation/
 ├── src/
 │   ├── config.py                # 讀取 ../.env(共用)+ ./.env(eval 專屬,優先)
 │   ├── models.py                # Pydantic 資料模型
-│   ├── data_loader.py           # 載入 ground_truth.json
-│   ├── reference_parser.py      # 解析中文經文引用
+│   ├── data_loader.py           # 依 --gt v1|v2 載入 GT(v2 經 gt_v2 雜湊與凍結檢查)
+│   ├── gt_v2.py                 # 只載入凍結的 ground_truth.v2.json(refs、gold_slots)
+│   ├── reference_parser.py      # 解析中文經文引用(ragcommon.refs strict)
+│   ├── book_names.py            # 來源書名 → book_id(ragcommon.books)
+│   ├── slot_coverage.py         # GT v2 節位覆蓋量尺(slot_universe、兩臂來源 → slot)
+│   ├── provenance.py            # 結果 meta:data_build_id、gt_version、gt_sha、編碼指紋
 │   ├── relevance_judge.py       # 檢索相關性判斷
 │   ├── rag_client.py            # httpx 呼叫 RAG API
 │   ├── context_blocks.py        # 生成器同款 context 區塊格式 + 經節/pericope id 判別
@@ -145,13 +149,20 @@ uv run python quick_retrieval_eval.py --from-raw results_graph/raw_responses.jso
 uv run python quick_retrieval_eval.py --compare results_quick/a.json results_quick/b.json
 ```
 
+**GT 版本與 build。** `--gt v1|v2` 選 GT(預設讀設定 `EVAL_GT_VERSION`,未設為 v1);v2 一律經 `gt_v2.py` 的 sha256 與 `config/gold/gt_v2_freeze.json` 檢查。backend 的 `/api/v1/health` 決定受測 build:沒回 `build_id` 的就是 `legacy-20261004`,編碼指紋取 health 的 `encoder`(沒有記 null)。legacy 以外的 build 只能用 `--gt v2`。GT v2 下 `verse_recall_at_k` / `anchor_coverage_at_k` 改在 GT 檔頭的 `slot_universe` 上算:gold 直接讀 `gold_slots`(缺號槽不算 gold),兩臂都以實際節位集合計算;legacy 來源依舊編號對到節位(幽靈節落在缺號槽),新 build 的來源讀 `$RAG_STORE/contracts/<build_id>/verse_index.json`(`--contracts-dir` 可指定,manifest 的 build_id 與 sha256 須相符),有 `start_key`/`end_key` 就依序取區間,合併節整個 unit 計入。每份輸出的 `meta` 記 `data_build_id`、`gt_version`、`gt_sha`、`encoder_fingerprint`;`--from-raw` 從 checkpoint 旁的 `run_meta.json` 讀 build(沒有此檔即 legacy)。完整管線 `run_eval.py` 也有 `--gt` / `--contracts-dir`,收集時寫 `run_meta.json`,`evaluation_results.json` 的 meta 記同樣四個欄位。
+
+```bash
+# legacy 在 GT v2 量尺下的基線
+uv run python quick_retrieval_eval.py --gt v2 --top-k 5 --metric-k 6 --label legacy_gtv2
+```
+
 輸出存至 `results_quick/<label>.json`，含 overall / by_type 聚合與逐題明細（route、strategies、sources、rerank/fused 分數）。每段 `source_detail` 另記 `found_by`(所有找到它的策略)與 `gold`(是否與 reference 經文重疊);基礎設施失敗(0 source 且有 strategy_errors)標 `invalid`,不進平均。`--metric-k N` 以前 N 段計分(預設 = `--top-k`),`--ids-file` 只跑指定題號。
 
 `--include-context` 會在請求帶 `include_context=true`,把生成器實際讀到的 context 區塊(標頭 + 經文)做 sha256:每段 `source_detail` 記 `context_sha256`,每題記 `context_sha`(全部區塊依序以空行串接,即生成器看到的整段文字)。`config.include_context` 記錄有沒有開。backend 若沒回 context(舊 image)會直接報錯,不會記成空字串的雜湊。
 
 #### 配對 A/B 比較（ab_compare.py）
 
-逐題配對比較兩個 quick eval 結果(同路由題):主檢定 sign-flip permutation,並列精確符號檢定(勝負題數)、95% bootstrap CI、指標族 Holm 校正;分全體 / 被改動題 / 原 100 / 擴充 400 報告;列出每個指標變差的題與改動帳本(identical / order_only / nongold_swap / gold_in / gold_out / gold_swap)。所有比較的檔案必須以同一個 metric k 計分,否則直接拒絕。
+逐題配對比較兩個 quick eval 結果(同路由題):主檢定 sign-flip permutation,並列精確符號檢定(勝負題數)、95% bootstrap CI、指標族 Holm 校正;分全體 / 被改動題 / 原 100 / 擴充 400 報告;列出每個指標變差的題與改動帳本(identical / order_only / nongold_swap / gold_in / gold_out / gold_swap)。所有比較的檔案必須以同一個 metric k、同一個 metric_version 計分,且 meta 的 `gt_version`、`gt_sha` 相同(沒有 meta 的舊檔只能和同樣沒有 meta 的檔比),否則直接拒絕;`data_build_id` 不同是允許的(R1 就是比不同 build),報告的 `builds` 與輸出第一行列出兩臂的 build。
 
 附加軌(`event_registry`)會在 top-5 後多附加一段,被附加的題必須和**獨立的 top_k=6 請求**比(chapter-pin 依 top_k 運作,k=7 結果的前綴不等於 k=6):
 
@@ -171,7 +182,7 @@ uv run python ab_compare.py results_quick/d3_prod_w1.json results_quick/d3_stg_w
 
 #### D3 非劣閘門（d3_gate.py）
 
-KG 資料層修復第 1 批的硬門檻(`docs/records/2026-10-04_kg_batch1_plan.md` §5.1):prod 與 backend-staging 各跑一次 500 題(`quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context`,以 `BACKEND_URL` 指向各自的 backend),再做 `--require-identical` 比對。路由不同的題兩邊各重問(`--ids-file`),最多 2 輪,重問結果要和原檔的 top_k / metric_k / metric_version / include_context 等設定相同、題號完全對上才併回去。判定:
+KG 資料層修復第 1 批的硬門檻(`docs/records/2026-10-04_kg_batch1_plan.md` §5.1):prod 與 backend-staging 各跑一次 500 題(`quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context`,以 `BACKEND_URL` 指向各自的 backend),再做 `--require-identical` 比對。路由不同的題兩邊各重問(`--ids-file`),最多 2 輪,重問結果要和原檔的 top_k / metric_k / metric_version / include_context 等設定、meta 的 build / GT / 編碼指紋相同、題號完全對上才併回去。`--gt` 會傳給兩臂的 quick eval;兩臂 GT 不同直接拒絕,build 不同照比並在報告列出。判定:
 
 - 兩邊的 `graph_strategies_applied` 相同;
 - 同路由題 100% 相同;
@@ -295,6 +306,8 @@ uv run python quick_faithfulness_eval.py --results-dir results_graph --out resul
 | MAP@k | 平均精確率 |
 | NDCG@k | 歸一化折損累積增益（分級相關性） |
 | Hit Rate | 是否至少有一個相關結果 |
+| verse_recall_at_k | gold 經節(GT v2:gold_slots)被前 k 段覆蓋的比例 |
+| anchor_coverage_at_k | 逐章 anchor 至少中一節的比例 |
 
 ### LLM 評估指標
 | 指標 | 框架 | 說明 |

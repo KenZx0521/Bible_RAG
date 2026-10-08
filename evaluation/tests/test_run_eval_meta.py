@@ -82,3 +82,51 @@ def test_eval_only_reads_the_checkpoint_build_and_the_chosen_gt(monkeypatch, tmp
 
     assert ctx.meta()["gt_version"] == "v2" and ctx.ruler is not None
     assert isinstance(samples[0].ground_truth, GroundTruthItemV2)
+
+
+def _stub_pipeline(monkeypatch, tmp_path):
+    """run_eval.main without a backend, judge or dashboard: record what each step received."""
+    import src.provenance
+    import src.visualizer
+
+    seen = {}
+
+    async def collection(ctx, **kwargs):
+        seen["collected_with"] = ctx
+        return [], {}
+
+    def evaluation(samples, ctx, inline_metrics=None):
+        seen["evaluated_with"] = ctx
+        return evaluator.AggregatedReport()
+
+    monkeypatch.setattr(run_eval, "_setup_logging", lambda: None)
+    monkeypatch.setattr(type(evaluator.settings), "results_dir", property(lambda self: tmp_path))
+    monkeypatch.setattr(src.provenance, "fetch_health", lambda url: {"encoder": FINGERPRINT})
+    monkeypatch.setattr(evaluator, "run_collection", collection)
+    monkeypatch.setattr(evaluator, "run_evaluation", evaluation)
+    monkeypatch.setattr(evaluator, "export_csv", lambda report: tmp_path / "r.csv")
+    monkeypatch.setattr(src.visualizer, "generate_dashboard", lambda report: seen.setdefault("dash", 1))
+    return seen
+
+
+def test_cli_full_pipeline_binds_gt_and_live_build(monkeypatch, tmp_path):
+    seen = _stub_pipeline(monkeypatch, tmp_path)
+    monkeypatch.setattr(sys, "argv", ["run_eval.py", "--gt", "v2"])
+
+    run_eval.main()
+
+    assert seen["collected_with"] is seen["evaluated_with"] and seen["dash"] == 1
+    assert seen["evaluated_with"].meta()["encoder_fingerprint"] == FINGERPRINT
+    assert seen["evaluated_with"].meta()["gt_version"] == "v2"
+
+
+def test_cli_collect_only_and_eval_only(monkeypatch, tmp_path):
+    seen = _stub_pipeline(monkeypatch, tmp_path)
+    (tmp_path / "raw_responses.json").write_text("[]")
+    monkeypatch.setattr(sys, "argv", ["run_eval.py", "--collect-only", "--gt", "v1"])
+    run_eval.main()
+    monkeypatch.setattr(sys, "argv", ["run_eval.py", "--eval-only", "--gt", "v1"])
+    run_eval.main()
+
+    assert seen["collected_with"].gt.version == "v1"
+    assert seen["evaluated_with"].meta()["data_build_id"] == "legacy-20261004"
