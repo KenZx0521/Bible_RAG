@@ -5,10 +5,11 @@
 \section{Corpus and Data Preprocessing}
 \label{sec:preprocessing}
 
-The offline pipeline (Fig.~\ref{fig:offline}) turns 66 books of the CUV
+The offline pipeline (Fig.~\ref{fig:offline}) turns 66 books of the RCUV
 from PDF into (i) a hierarchical structured corpus, (ii) a multi-granular
 embedding queue, and (iii) the inputs of knowledge-graph construction. All
-build steps run on the host from a dedicated \code{scripts/} environment;
+build steps after the PDF conversion run on the host from a dedicated
+\code{scripts/} environment;
 every intermediate artifact is materialized as JSONL before database
 import, so each stage is independently inspectable and re-runnable.
 
@@ -27,7 +28,7 @@ import, so each stage is independently inspectable and re-runnable.
   flow/.style={->, draw=black!62, line width=0.7pt},
 ]
 % Row 1: source to chunking
-\node[data] (pdf) {66-book PDF\\(CUV)};
+\node[data] (pdf) {66-book PDF\\(RCUV)};
 \node[box, right=0.55cm of pdf] (md) {Layout-geometry\\PDF$\to$Markdown};
 \node[box, right=0.55cm of md] (parse) {Hierarchical parsing\\+ chunking};
 \node[data, right=0.55cm of parse, text width=2.9cm] (queue)
@@ -43,7 +44,7 @@ import, so each stage is independently inspectable and re-runnable.
 \node[box, left=0.5cm of ee, text width=2.6cm] (emb)
   {BGE-M3 dense\\+ BM25/CKIP sparse\\+ entity vectors};
 \node[data, right=0.5cm of re, text width=2.2cm] (tsk)
-  {TSK cross-refs\\(public domain)};
+  {TSK cross-refs\\(CC~BY)};
 
 % Row 3: databases
 \node[db, below=0.9cm of emb, minimum width=2.3cm, minimum height=1.05cm] (qd)
@@ -80,19 +81,23 @@ Section~\ref{sec:audit} (mechanism M1).}
 
 \subsection{Source Corpus}
 
-The source is the Chinese Union Version with new punctuation, obtained as
-66 per-book PDFs (one per biblical book). The CUV is the de facto standard
-Protestant translation in the Traditional Chinese world; its vocabulary is
-early-20th-century literary Chinese, which creates a systematic lexical
+The source is 66 per-book PDFs (one per biblical book). Their copyright
+pages label the text the Chinese Union Version (CUV) with new
+punctuation, but the label is wrong: the proper-name spellings (\eg for
+Reuben, Cyrus, Caesar, and Darius) identify the text as the Revised
+Chinese Union Version (RCUV, \emph{Shangti} edition). The CUV is the de
+facto standard Protestant translation in the Traditional Chinese world,
+and its revision, the RCUV, keeps much of its early-20th-century literary
+vocabulary, which creates a systematic lexical
 gap between modern user phrasing and corpus surface forms --- a gap that
 recurs throughout this paper (\eg the modern phrase ``the Last Supper''
-never occurs in the CUV text, which narrates a ``Passover meal'').
+never occurs in the RCUV text, which narrates a ``Passover meal'').
 
 \subsection{PDF-to-Markdown by Layout Geometry}
 
 Conversion (\code{convert\_bible\_pdf.py}, PyMuPDF) uses \emph{pure layout
 geometry} over character-level spans --- no OCR and no LLM --- so the step
-is deterministic, free, and auditable:
+is free and, for a fixed PyMuPDF version, deterministic:
 
 \begin{itemize}
 \item font size $\le 8.5$\,pt: running headers/footers, dropped;
@@ -104,9 +109,26 @@ is deterministic, free, and auditable:
 \item bold \code{N:N} tokens: footnotes, aggregated per chapter.
 \end{itemize}
 
+\textbf{Limitation of the legacy conversion.} An October 2026 audit
+(Appendix~\ref{app:rebuild}) found this converter lossy. Footnotes that
+cross a page break, headings or a ``Selah'' inside a verse, indented
+lines, and glyphs set beyond the right page edge (which the default
+extraction clips)
+removed text from 268 verses (4{,}446 characters); 67 further verses lost
+only their ``Selah''; all 116 psalm superscriptions (1{,}490 characters)
+were dropped; and 61 genuine headings were lost while seven verse
+fragments became headings. The step ran outside the build pipeline, with
+no PyMuPDF version pinned in any of the repository's environments, and
+its Markdown output carries 39 lines of undocumented manual edits that
+merged 17 textual-variant readings into the text, creating 10
+\emph{ghost verses} that the PDF does not print and altering 10 others.
+All corpus counts in this paper, and every index, graph, and experiment
+of Rounds~0--3, were built from this legacy corpus; we report them as
+run.
+
 The resulting Markdown uses \code{\#} for book, \code{\#\#} for chapter,
 \code{\#\#\#} for pericope headings, and bold verse numbers. Under each
-pericope heading, the CUV's printed parallel-passage annotations (\eg
+pericope heading, the RCUV's printed parallel-passage annotations (\eg
 ``(Mark 1:9--11; Luke 3:21--22)'' under the baptism pericope) are retained
 --- they become the first source of the cross-reference network
 (Section~\ref{sec:crossrefs}).
@@ -116,7 +138,7 @@ pericope heading, the CUV's printed parallel-passage annotations (\eg
 
 A \emph{pericope} is the established interpretive unit of biblical
 scholarship: a self-contained narrative episode, discourse, or psalm. The
-CUV's editorial pericope headings give us this segmentation for free, and
+RCUV's editorial pericope headings give us this segmentation for free, and
 the system adopts the pericope as the core unit for embedding, entity
 anchoring, and cross-referencing, for three reasons:
 
@@ -167,10 +189,13 @@ split pericopes concentrate in Old Testament narrative books (Leviticus
 unit's embedded text carries a locating prefix ---
 ``\emph{Book, Chapter $N$, pericope title (verses $X$--$Y$):}'' --- so
 vectors encode provenance context. Table~\ref{tab:corpus} summarizes the
-corpus.
+corpus. Its tokenizer row refers to the build side; in Rounds~0--3 the
+online query encoder ran an older tokenizer-library version that encoded
+queries inconsistently with the build side (Section~\ref{sec:evalinfra}).
 
 \begin{table}[!t]
-\caption{Corpus and Chunking Statistics (CUV, New Punctuation)}
+\caption{Corpus and Chunking Statistics (Legacy Conversion of the RCUV
+PDFs, Used in Rounds~0--3)}
 \label{tab:corpus}
 \centering
 \begin{tabular}{lr}
@@ -206,7 +231,8 @@ the pipeline emits an embedding queue that is the union of three levels,
 \item \textbf{pericope level} (2{,}610): every pericope that was
 \emph{not} split;
 \item \textbf{chunk level} (431): split pericopes enter only as chunks;
-\item \textbf{verse level} (31{,}031): every verse individually, for
+\item \textbf{verse level} (31{,}031 verse labels, 10 of them ghost
+verses): every verse individually, for
 fine-grained exact retrieval (printed verse ranges such as ``1--2'' are
 kept as single units).
 \end{itemize}

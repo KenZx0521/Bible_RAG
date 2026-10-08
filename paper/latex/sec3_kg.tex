@@ -103,7 +103,7 @@ collide across homophones.
 \subsection{Grounded Relation Extraction with a Closed 37-Type Ontology}
 \label{sec:relation}
 
-Entity--entity fact edges are extracted by a five-stage pipeline against a
+Entity--entity relation edges are extracted by a five-stage pipeline against a
 closed ontology of 37 relation types (Table~\ref{tab:ontology}), each
 declaring domain/range types, direction, inverse, textual trigger
 signals, few-shot examples, and per-stage confidence priors. Closing the
@@ -179,11 +179,17 @@ without pericope anchors cannot be described this way --- which is why
 the audit of Section~\ref{sec:audit} still finds 46\% of NER-type
 entities description-less.
 
-Every fact edge carries \code{confidence}, \code{evidence\_span},
-\code{source\_pericope\_id}, and \code{extraction\_phase}, so all graph
-facts are source-traceable and confidence-filterable --- the property
-that later allowed co-occurrence backfill edges (confidence 0.35) to
-coexist distinguishably with LLM-extracted edges.
+Relation edges have \code{confidence}, \code{evidence\_span},
+\code{source\_pericope\_id}, and \code{extraction\_phase} fields --- the
+property that later allowed co-occurrence backfill edges (confidence
+0.35) to coexist distinguishably with LLM-extracted edges. The fields
+record provenance, not correctness, and are not uniformly filled: the
+October 2026 audit (Appendix~\ref{app:rebuild}) found no source pericope
+on the 64 prior edges and no evidence on the 9{,}060 co-occurrence
+backfill edges of Section~\ref{sec:p0}, and two independent samples put
+the strict precision of all 15{,}926 semantic edges
+(Table~\ref{tab:kgscale}) at about 0.23--0.28 (lenient 0.34--0.45).
+They are therefore candidate relations, not verified facts.
 
 \subsection{Cross-Reference Network}
 \label{sec:crossrefs}
@@ -193,18 +199,21 @@ Cross-references (``chain references'') connect pericopes across books
 network merges three sources of decreasing editorial cost:
 
 \begin{enumerate}
-\item \textbf{Printed parallel-passage annotations} parsed from the CUV
+\item \textbf{Printed parallel-passage annotations} parsed from the RCUV
 Markdown: 774 edges (synoptic parallels and psalm titles);
 \item \textbf{A curated list of famous New-Testament-to-Old-Testament
 (NT$\to$OT) citations}: 142 edges typed as \emph{quotation} or
 \emph{allusion};
 \item \textbf{The Treasury of Scripture Knowledge (TSK)}~\cite{tsk}, a
-public-domain cross-reference compendium with community vote counts:
+cross-reference compendium, used in its OpenBible.info edition with
+community vote counts (licensed CC~BY, not public domain):
 344{,}799 raw rows are filtered (1{,}166 negative-vote rows, 9{,}811
 self-loops) and mapped verse$\to$pericope through a reverse index built
-from the embedding queue (covering 31{,}102 verses, with printed verse
-ranges expanded); only 7 rows fail to map, yielding 250{,}358 unique
-pericope pairs.
+from the embedding queue (covering 31{,}102 verse positions, with printed
+verse ranges expanded --- a figure that includes the 10 ghost verses of
+Section~\ref{sec:preprocessing} and equals the KJV verse total only by
+coincidence; the PDF has 31{,}092 verse positions); only 7 rows fail to
+map, yielding 250{,}358 unique pericope pairs.
 \end{enumerate}
 
 After idempotent merge the live graph holds \textbf{250{,}418}
@@ -256,7 +265,7 @@ denoising in~\cite{zheng2025lessismore}.
 
 \draw[dedge] (person.north) to[out=115,in=65,looseness=5,
   min distance=9mm] node[elbl,above]
-  {37-type fact edges (15{,}926)} (person.north);
+  {37-type semantic edges (15{,}926)} (person.north);
 
 \draw[dedge] (per.west) to[out=150,in=210,looseness=5,
   min distance=11mm] node[elbl,left,align=center,xshift=-1mm]
@@ -286,8 +295,8 @@ time --- and the direct precondition of the silent mention-loss defect
 (Section~\ref{sec:audit}, M2).
 \item \textbf{Entity properties.} \code{canonical\_name},
 \code{aliases} (a native list), \code{description}, \code{mention\_count}.
-\item \textbf{Provenance-first edges.} Fact edges keep confidence and
-evidence; cross-reference edges keep votes and source; backfilled edges
+\item \textbf{Provenance-first edges.} Semantic edges keep confidence and
+evidence fields; cross-reference edges keep votes and source; backfilled edges
 are flagged --- all imports are idempotent \textsc{merge} operations, so
 the graph can be rebuilt or rolled back deterministically.
 \end{itemize}
@@ -306,7 +315,7 @@ Nodes, total & 13{,}589 \\
 Relationships, total & 319{,}988 \\
 \quad \textsc{mentions} & 46{,}205 \\
 \quad \textsc{cross\_references} & 250{,}418 \\
-\quad semantic fact edges (37 types) & 15{,}926 \\
+\quad semantic edges (37 types) & 15{,}926 \\
 \qquad \textsc{participated\_in} / \textsc{occurred\_in} & 7{,}130 / 4{,}313 \\
 \qquad \textsc{son\_of} / \textsc{father\_of} / \textsc{possessed} & 659 / 647 / 551 \\
 \quad structural: \textsc{contains} / \textsc{next} / \textsc{next\_book} & 4{,}399 / 2{,}975 / 65 \\
@@ -324,7 +333,8 @@ Three vector families are produced:
 normalized, for all 34{,}072 queue units;
 \item \textbf{Sparse}: BM25~\cite{robertson2009bm25} ($k_1{=}1.5$,
 $b{=}0.75$) over CKIP-segmented~\cite{ckip} text, with the query-side IDF
-vocabulary exported for the online service;
+vocabulary exported for the online service (indexed, but never used for
+online scoring; Section~\ref{sec:strategies});
 \item \textbf{Entity vectors}: each entity is embedded from the recipe
 ``\emph{name (aliases). description. commonly appears in: pericope
 titles}'' truncated to 200 characters, upserted idempotently (UUID5 keys)
@@ -334,7 +344,7 @@ into a dedicated collection (9{,}122 points).
 Imports populate PostgreSQL (6 tables; the authoritative store),
 Qdrant (\code{bible\_embeddings}, dense-only;
 \code{bible\_embeddings\_hybrid} with named dense$+$sparse vectors;
-\code{bible\_entities}), and Neo4j (structure, mentions, fact edges,
+\code{bible\_entities}), and Neo4j (structure, mentions, semantic edges,
 cross-references). The import layer is where the audit later found the
 single most damaging defect of the whole pipeline --- verse-level
 mentions silently dropped because their target nodes do not exist

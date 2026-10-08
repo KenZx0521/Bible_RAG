@@ -77,7 +77,7 @@ homonymous persons; \emph{trajectory} and \emph{multi\_chapter} require
 cross-chapter aggregation (the PERSON\_004 family); \emph{split\_pericope}
 targets persons in chunk-split pericopes (mechanism M3); \emph{temporal}
 asks for event ordering and \emph{surface\_form} uses modern labels
-absent from the CUV text. Five cross-book multi-anchor families populate
+absent from the RCUV text. Five cross-book multi-anchor families populate
 the GENERAL\_006/008 family of Section~\ref{sec:discussion}. All 400
 references were machine-validated against the corpus, every question
 was content-checked against the corpus text in an LLM-assisted review
@@ -184,3 +184,25 @@ from archives, and a comparison tool emits per-question deltas and
 hit-flip lists --- the instrument behind every forensic table in
 Sections~\ref{sec:p0}, \ref{sec:fusion}, and~\ref{sec:round3}.
 \end{itemize}
+
+\textbf{Retriever and encoder caveat.} Two defects found by the
+October 2026 audit (Appendix~\ref{app:rebuild}) apply to every round and
+remain in the reported numbers. First, retrieval was dense-only
+throughout, because the hybrid dense$+$sparse mode never executed
+(Section~\ref{sec:strategies}). Second, the serving environment
+tokenized with transformers~5.0.0, which skips the NFKC normalization of
+the BGE-M3 and reranker tokenizers, whereas the index was built with
+version~5.3.0: full-width punctuation became the unknown token, and 499
+of the 500 benchmark questions were encoded with input IDs that differ
+from the build-side encoding of the same text. The reranker was affected
+on both sides of its input --- the query and the passage, whose RCUV
+text is punctuated in full width --- and its query--passage pairs also
+used a non-standard separator (one end-of-sequence token where the model
+expects two). Correcting the serving-side tokenization (the embedder's
+query encoding and the reranker's query--passage input), measured in
+October 2026 on the 500 questions under that month's serving
+configuration (top-5 plus at most one appended passage), changed paired
+verse recall@6 by $-0.003$ (95\% CI $[-0.013,+0.006]$) and MRR by
+$+0.005$ ($[-0.012,+0.023]$): a correctness fix without measurable
+retrieval effect. Since all arms within a round shared the same
+encoders, the Round~0--3 comparisons are reported as run.

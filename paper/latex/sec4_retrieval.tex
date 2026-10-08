@@ -5,9 +5,11 @@
 \section{Online Retrieval Architecture}
 \label{sec:retrieval}
 
-The online service is a FastAPI application exposing
-\code{POST /api/v1/query}. Figure~\ref{fig:online} shows the query
-pipeline; this section walks through it stage by stage.
+The online service evaluated in Rounds~0--3 is a FastAPI application
+exposing \code{POST /api/v1/query}. Figure~\ref{fig:online} shows the
+query pipeline; this section walks through it stage by stage. (The
+service rebuilt in October 2026 no longer queries Neo4j;
+Appendix~\ref{app:rebuild}.)
 
 \begin{figure*}[!t]
 \centering
@@ -50,7 +52,7 @@ pipeline; this section walks through it stage by stage.
 \node[db, minimum width=2.7cm, minimum height=1.15cm] (pg) at (3.35,3.42)
   {\footnotesize\textbf{PostgreSQL}\\[1pt]{\scriptsize authoritative text}};
 \node[db, minimum width=2.7cm, minimum height=1.15cm] (qd) at (7.6,3.42)
-  {\footnotesize\textbf{Qdrant}\\[1pt]\scriptsize BGE-M3 dense+sparse\\entity vectors};
+  {\footnotesize\textbf{Qdrant}\\[1pt]\scriptsize BGE-M3 dense\\entity vectors};
 \node[db, minimum width=2.7cm, minimum height=1.15cm] (n4) at (11.85,3.42)
   {\footnotesize\textbf{Neo4j}\\[1pt]{\scriptsize KG traversal / x-refs}};
 \node[font=\footnotesize\sffamily, text=teal!45!black] at (7.6,4.3)
@@ -107,8 +109,9 @@ lookup (\code{get\_content\_by\_id()}), which resolves 3-segment IDs to
 pericopes, 4-segment IDs to chunks, and verse IDs to their parent
 pericope. This guarantees that no matter which index proposed a
 candidate, the generator always sees identical, authoritative text.
-\item \textbf{Qdrant} is the semantic entry point: dense, hybrid, and
-entity-vector search.
+\item \textbf{Qdrant} is the semantic entry point: dense and
+entity-vector search (the configured hybrid mode never executed;
+Section~\ref{sec:strategies}).
 \item \textbf{Neo4j} is the relational entry point: hierarchy traversal,
 entity networks, and cross-reference expansion.
 \end{itemize}
@@ -170,8 +173,8 @@ Six boolean signals result: \emph{has-book-chapter-verse},
 \emph{event-keyword}, \emph{has-place}. There is deliberately \emph{no
 query rewriting}: the raw user query reaches both the embedder and the
 reranker verbatim, so the lexical gap between modern phrasing and the
-century-old CUV vocabulary must be bridged by graph anchors and the
-fusion layer --- a recurring causal thread in
+CUV-derived vocabulary of the RCUV text must be bridged by graph anchors
+and the fusion layer --- a recurring causal thread in
 Sections~\ref{sec:p0}--\ref{sec:fusion}.
 
 \subsection{Six-Route Decision Tree}
@@ -233,10 +236,11 @@ FB & \code{semantic}/\code{hybrid} $+$ \code{book\_anchor} (if a book is
 \code{cross\_reference} is R5's dedicated cross-reference retrieval,
 sharing the seed-support$+$votes machinery of \code{cross\_ref\_expand};
 \code{sql} is a low-prior supplementary SQL lookup distinct from
-\code{sql\_chapter}; \code{hybrid} is the dense$+$sparse mode of
-\code{semantic}. With \code{use\_graph=false}, all Neo4j-backed
-strategies are gated off. Observed route distribution on the original
-100 questions: R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10, R6$=$4,
+\code{sql\_chapter}; \code{hybrid} is the configured dense$+$sparse mode
+of \code{semantic}, which fell back to dense-only in every reported run
+(Section~\ref{sec:strategies}). With \code{use\_graph=false}, all
+Neo4j-backed strategies are gated off. Observed route distribution on
+the original 100 questions: R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10, R6$=$4,
 fallback$=$2 in the Gemma runs of Rounds~0--1 (R4$=$19, R6$=$3 in
 Round~2, after the event keyword ``Gethsemane prayer'' was added);
 R1$=$20, R2$=$25, R3$=$19, R4$=$21, R5$=$14, R6$=$1, fallback$=$0 in
@@ -264,10 +268,13 @@ Section~\ref{sec:tripledb}:
 
 \begin{itemize}
 \item \textbf{\code{semantic}} --- BGE-M3 query embedding against the
-passage collection, top-20; when hybrid search is enabled, dense and
-BM25-sparse branches are prefetched (50 each) and merged by
-RRF~\cite{cormack2009rrf} inside Qdrant, degrading automatically to
-dense-only if the sparse vocabulary is unavailable.
+passage collection, top-20. A hybrid mode was designed to prefetch dense
+and BM25-sparse branches (50 each) and merge them by
+RRF~\cite{cormack2009rrf} inside Qdrant, but it never executed: the
+installed Qdrant client (1.8.2) lacks the \code{query\_points} call it
+relies on, so every hybrid request fell back to dense-only (541 of 541
+logged calls) while still being labeled hybrid. All results in this
+paper are therefore dense-only.
 \item \textbf{\code{verse\_direct}} --- exact SQL lookup of a verse,
 verse range, or whole chapter.
 \item \textbf{\code{sql\_chapter} / \code{sql\_supplement}} --- direct
@@ -294,7 +301,7 @@ de-noising episode of Section~\ref{sec:fusion}; expansion is capped at
 10 candidates and seeds are chosen round-robin across strategies to
 prevent single-strategy monopoly.
 \item \textbf{\code{entity\_path}} --- multi-hop reasoning ($\le 2$ hops)
-over the 37-type fact edges only (structural edges excluded), then
+over the 37-type semantic edges only (structural edges excluded), then
 \textsc{mentions} to pericopes.
 \item \textbf{\code{entity\_query}} (EQ) --- the query embedding matched
 against \emph{entity} vectors (top-8, cosine $\ge 0.4$), then
@@ -363,7 +370,7 @@ two pins. The bonuses are spaced so pins never override one another.
 \end{table}
 
 \textbf{Why fusion is necessary.} The cross-encoder is a surface-form
-matcher. When modern question vocabulary does not occur in the CUV text,
+matcher. When modern question vocabulary does not occur in the RCUV text,
 the ground-truth anchor's reranker score can be as low as $0.001$ ---
 \eg ``the Last Supper'' against a corpus that says ``Passover meal'' ---
 and no amount of candidate-pool engineering makes it visible under pure
@@ -408,7 +415,8 @@ The system ships as five Docker Compose services --- backend (FastAPI),
 PostgreSQL 15 with pgvector, Qdrant v1.13.2, Neo4j 5.15 Community with
 APOC, and Ollama with GPU access --- with health-checked startup
 ordering. The backend image is baked (no code volume); the only
-code-relevant mounts are the read-only BM25 vocabulary and the
+code-relevant mounts are the read-only BM25 vocabulary (loaded, but
+unused for scoring; Section~\ref{sec:strategies}) and the
 HuggingFace model cache. Build (\code{scripts/}), serving
 (\code{backend/}), and evaluation (\code{evaluation/}) each pin their own
 dependency manifest, isolating environment drift. All models --- embedder,

@@ -190,7 +190,7 @@ generation) that chunk boundaries then amplify.
 
 \textbf{M1 --- Extraction feed $=$ embedding queue (structural root
 cause).} The NER track consumed \code{embedding\_queue.jsonl} directly:
-2{,}610 pericopes $+$ 431 chunks $+$ 31{,}031 verses. This queue's
+2{,}610 pericopes $+$ 431 chunks $+$ 31{,}031 verse labels (10 of them ghost verses). This queue's
 granularity was designed for retrieval (split pericopes appear only as
 chunks; every verse appears individually); extraction inherited it
 unconditionally, so most NER mentions were emitted at verse granularity.

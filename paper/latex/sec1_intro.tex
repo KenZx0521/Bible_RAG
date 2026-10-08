@@ -32,8 +32,8 @@ system in which exactly that question was forced into the open, four
 times, by concrete engineering incidents.
 
 We design, build, deploy, and iteratively optimize a GraphRAG system for
-question answering over the Traditional Chinese Bible (Chinese Union
-Version, new punctuation edition; CUV). The system converts 66 books from
+question answering over the Traditional Chinese Bible (Revised Chinese
+Union Version; RCUV). The system converts 66 books from
 PDF into a pericope-centric hierarchical corpus, constructs a knowledge
 graph with grounded entity and relation extraction, indexes three
 complementary databases (PostgreSQL, Qdrant, Neo4j), and serves queries
@@ -47,20 +47,24 @@ the actual bottlenecks (the ranking and vocabulary layers) in one day
 of engineering, surpassing all previous results. A September 2026
 re-evaluation on an expanded 500-question benchmark, with a no-graph
 control, then replicated that head result while showing that most of it
-belongs to signal routing rather than to the graph.
+belongs to signal routing rather than to the graph. An October 2026 audit
+of the data pipeline later found defects in the corpus conversion and the
+retrieval stack that qualify these results, which we report as run; the
+system has since been rebuilt and no longer serves the graph from Neo4j
+(Appendix~\ref{app:rebuild}).
 
 This paper makes seven contributions:
 
 \begin{enumerate}
-\item \textbf{A complete, reproducible pipeline from raw PDF to GraphRAG
+\item \textbf{A complete pipeline from raw PDF to GraphRAG
 for Traditional Chinese biblical text} (Sections~\ref{sec:preprocessing}
 and~\ref{sec:kg}): layout-geometry PDF parsing without OCR or LLMs,
 pericope-centric hierarchical chunking with the embedding model's own
 tokenizer, grounded dual-track entity extraction (six types, 9{,}120
 entities, 173{,}896 mentions), closed-schema grounded relation extraction
 (37 relation types with evidence-span verification), and a three-source
-cross-reference network of 250{,}418 edges integrating the public-domain
-Treasury of Scripture Knowledge (TSK)~\cite{tsk}.
+cross-reference network of 250{,}418 edges integrating the Treasury of
+Scripture Knowledge (TSK) in its OpenBible.info edition (CC~BY)~\cite{tsk}.
 
 \item \textbf{A signal-adaptive six-route retrieval architecture over a
 triple-database backend, terminated by a rank-fusion layer}
@@ -160,9 +164,11 @@ scoring~\cite{robertson2009bm25} remain the two complementary retrieval
 substrates, commonly combined by reciprocal rank fusion
 (RRF)~\cite{cormack2009rrf}. Our system uses BGE-M3~\cite{chen2024bgem3}
 for dense embeddings (and its companion cross-encoder,
-BGE-reranker-v2-m3, for reranking), BM25 with Chinese-specific CKIP
-tokenization~\cite{ckip} for sparse vectors, and RRF for dense--sparse
-hybrid search. Distinct from standard hybrid search, the final ranking in
+BGE-reranker-v2-m3, for reranking); it also indexes BM25 sparse vectors
+over Chinese-specific CKIP tokenization~\cite{ckip} for RRF dense--sparse
+hybrid search, but that path never executed
+(Section~\ref{sec:strategies}), so every reported run is dense-only.
+Distinct from standard hybrid search, the final ranking in
 our system linearly fuses the cross-encoder score with a
 \emph{strategy-prior} weight that encodes which retrieval strategy
 proposed the candidate --- a channel by which graph evidence survives into

@@ -31,7 +31,7 @@ Three configurations ran on one deployment and one code version
 \item \textbf{Graph} --- the full system of Section~\ref{sec:retrieval}
 (rank fusion, $\alpha=0.3$).
 \item \textbf{No-graph} --- identical signal routing, SQL strategies,
-book anchors, semantic/hybrid search, reranking, fusion, and pins, but
+book anchors, semantic (dense) search, reranking, fusion, and pins, but
 \code{use\_graph=false} gates every Neo4j-backed strategy: the typed
 graph traversals, cross-reference retrieval and expansion, entity paths,
 and the entity query.
@@ -308,7 +308,7 @@ fill all five slots at fused scores 0.48--0.57. The correctly titled
 Luke~15 pericope scores 0.38 in the no-graph run, and the reranker alone
 already ranks the intruders higher (0.32--0.44 against 0.24; the prior
 adds only 0.045). Under the silent classifier of Round~2 the same
-question had fallen back to hybrid search and hit. GENERAL\_048 (``love
+question had fallen back to semantic search and hit. GENERAL\_048 (``love
 your neighbor as yourself'': Leviticus~19, Matthew~22, Romans~13) is the
 same injection case: R5's entity traversal, newly fed by the classifier,
 injects Pauline Acts pericopes that out-score Romans~13 on the reranker

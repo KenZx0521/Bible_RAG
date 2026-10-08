@@ -50,8 +50,8 @@ context-divorced triples \\
 \addlinespace
 Cross-references / TSK (\S\ref{sec:crossrefs}) &
 \cite{tsk,zheng2025lessismore} &
-public-domain cross-reference data; repair-by-reweighting rather than
-deletion \\
+cross-reference data (OpenBible.info, CC~BY); repair-by-reweighting
+rather than deletion \\
 \addlinespace
 KG-quality remediation roadmap (\S\ref{sec:audit}, \S\ref{sec:future}) &
 \cite{meher2025linkkg,zhang2024edc,loconte2026betterlater,zhang2025rakg,zhang2026crossaug,neo4jbuilder,nanographrag,guo2024lightrag} &
@@ -62,7 +62,8 @@ descriptions \\
 \addlinespace
 Retrieval substrate (\S\ref{sec:strategies}) &
 \cite{karpukhin2020dpr,robertson2009bm25,cormack2009rrf,chen2024bgem3} &
-dense retrieval; BM25; RRF hybrid; embedder and cross-encoder \\
+dense retrieval; BM25 and RRF hybrid (designed, never executed online);
+embedder and cross-encoder \\
 \addlinespace
 Rank fusion (\S\ref{sec:fusionlayer}, \S\ref{sec:ablation}) &
 \cite{bacellar2026calibrated} &
@@ -159,3 +160,44 @@ retrieval-only loop takes $\approx 15$ minutes and was used for the
 $\alpha$ sweep and regression forensics. On the 500-question benchmark,
 LLM judging alone took roughly 10--12 hours per Round~3 configuration
 (two faithfulness judges, three further RAGAS metrics, and coverage).
+
+\section{Post-Audit Corrections and the October 2026 Rebuild}
+\label{app:rebuild}
+
+An October 2026 audit of the data pipeline contradicted several
+statements of earlier versions of this paper. This revision corrects
+them in place and leaves every experimental number of Rounds~0--3, which
+remain the run of record, unchanged: the corpus is the RCUV, not the
+new-punctuation CUV named on its PDFs, and its legacy conversion lost
+text and added ghost verses (Section~\ref{sec:preprocessing}), so the
+legacy store's 31{,}102 verse positions are not the PDF's 31{,}092
+(Section~\ref{sec:crossrefs}); the OpenBible.info TSK data are CC~BY, not
+public domain (Section~\ref{sec:crossrefs}); hybrid retrieval never ran,
+so every round is dense-only (Section~\ref{sec:strategies}); and the
+serving-side tokenization of Rounds~0--3 (the embedder's query encoding
+and the reranker's query--passage input) was inconsistent with the build
+side, a defect whose correction had no measurable retrieval effect
+(Section~\ref{sec:evalinfra}). The audit also measured the knowledge
+graph of Section~\ref{sec:kg}: it has no entity-identity layer --- an
+\code{entity\_id} is the type plus toneless pinyin, so homonyms and
+homophones share one node (of the 175 edges on the apostle John's node,
+29 concern the apostle) --- and the strict precision of its 15{,}926
+semantic edges, called fact edges in earlier versions, is only about
+0.23--0.28 (lenient 0.34--0.45), with most wrong edges in the
+co-occurrence backfill (Section~\ref{sec:relation}). The system has
+since been rebuilt from the
+66 PDFs in versioned layers. The rebuilt text matches the PDFs with zero
+character-conservation residual: 31{,}021 verse labels (70 of them merged
+verses such as ``29--30'') over 31{,}092 verse positions, 11 verse numbers
+that the RCUV gives only in footnotes (the legacy ghost verses among
+them), all 116 psalm superscriptions, and 1{,}013 footnotes. Sparse
+retrieval is retired and the serving-side tokenization corrected. The
+rebuilt service
+no longer uses Neo4j: the knowledge layer is reduced to entity names and
+an event registry; the entity, relation, and cross-reference graph of
+Section~\ref{sec:kg} was retired rather than rebuilt; TSK is not loaded;
+and in the first rebuilt release the only graph-derived online signal is
+the static event registry, which appends at most one passage after the
+top-$k$ on the event and cross-book routes (R4, R5). The graph-centric
+serving architecture of Sections~\ref{sec:kg}--\ref{sec:retrieval} is
+therefore historical; the rebuilt system is not evaluated here.
