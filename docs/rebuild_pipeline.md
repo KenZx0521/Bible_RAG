@@ -78,7 +78,7 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 - 第一次 promote 的回滾（沒有前一筆）會刪掉該 env 的 serving 列，回到「沒有 build 在服務」；之後即可 unload 該 build。prod 另要把 backend 容器切回舊映像 `bible_rag-backend:latest`（讀 `public` 與舊 collection，不看 `rag_meta.serving`），切回時不要重建這個映像。
 - `--env prod` 一律要加 `--yes-prod`，否則拒絕（promote 與 `--rollback` 都是）。
 - 目前 prod 沒有 serving 列，線上 backend 仍讀 `public` schema 與舊 collection。`public`、`bible_embeddings*`、`bible_entities` 是 R1 上線前的回滾基準，**不可刪**。
-- R1 staging backend（:8002）的啟動與驗證見 `docker-compose.staging.yml` 的 `backend-r1`。
+- R1 staging backend（:8002）的啟動與驗證見 `docker-compose.staging.yml` 的 `backend-r1`。它的 restart 是 `"no"`：握手不符就停在 exited，不會反覆重載模型；主機重開機後要重跑該檔開頭的 `up` 指令。
 
 ## 7. 清理被取代的 build
 

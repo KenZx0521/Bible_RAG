@@ -116,13 +116,15 @@ services:
   # models and the contract directories read-only. No depends_on: postgres,
   # qdrant and ollama are the running production services, and naming them would
   # let `up` converge (recreate) them. A failed handshake exits the process
-  # (STRICT_BUILD_CHECK defaults to true), so `--wait` fails instead of serving.
+  # (STRICT_BUILD_CHECK defaults to true), so `--wait` fails instead of serving,
+  # and restart "no" keeps it exited: any other policy would reload the models
+  # after every back-off. After a host reboot, run the `up` command above again.
   backend-r1:
     image: bible_rag-backend:r1
     pull_policy: never
     profiles: ["r1"]
     container_name: bible_rag_backend_r1
-    restart: unless-stopped
+    restart: "no"
     ports:
       - "${BACKEND_R1_PORT:-8002}:8000"
     env_file:
