@@ -1,14 +1,16 @@
+# Pinned project name: a worktree checkout (e.g. ~/Bible_RAG-rb) joins the running
+# bible_rag project, its network and its bible_rag_* volumes instead of starting a
+# second stack under its directory name.
+name: bible_rag
+
 services:
-  # FastAPI backend
+  # FastAPI backend. Runs a prebuilt, tagged image and never builds on `up`: the
+  # tag is the one `ragdata promote` recorded (docs/rebuild_pipeline.md §6). Build
+  # a new tag with `docker build --build-context uvcache=$HOME/.cache/uv-bible-rag-backend
+  # -t bible_rag-backend:<tag> .`, promote it, then point `image` at it.
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      # Host uv cache reused by `uv sync` during the image build (overrides the
-      # empty `uvcache` stage in the Dockerfile). The directory must exist; an
-      # empty one works (uv downloads). Seeding it: see README「Docker 建置快取」.
-      additional_contexts:
-        uvcache: ${BACKEND_UV_CACHE_DIR:-${HOME}/.cache/uv-bible-rag-backend}
+    image: bible_rag-backend:r1
+    pull_policy: never
     container_name: bible_rag_backend
     restart: unless-stopped
     ports:
@@ -25,8 +27,11 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       # The build comes from rag_meta.serving's row for RAG_ENV (design §7.8);
       # its contract files from the read-only mount below.
-      RAG_ENV: ${RAG_ENV:-prod}
+      RAG_ENV: prod
+      STRICT_BUILD_CHECK: "true"
       CONTRACTS_ROOT: /contracts
+      # Models load from the model_cache volume only (host link ~50 KB/s).
+      HF_HUB_OFFLINE: "1"
     depends_on:
       postgres:
         condition: service_healthy
