@@ -45,6 +45,11 @@ class SourceInfo(BaseModel):
     # The exact context block the generator saw (header + text), when the
     # backend was asked for it (include_context). None on legacy checkpoints.
     context: str | None = None
+    # New builds (R1 API): the record kind and the first/last verse keys the
+    # passage spans (ragcommon.ids grammar). None on legacy sources.
+    kind: str | None = None
+    start_key: str | None = None
+    end_key: str | None = None
 
 
 class EvalSample(BaseModel):
