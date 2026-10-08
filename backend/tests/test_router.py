@@ -9,78 +9,20 @@ import asyncio
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 
 from config import settings
-from ragcommon import routing
+from router_fakes import BACKEND
+from router_fakes import cand as _c
+from router_fakes import fake_dense as _dense
+from router_fakes import no_supplement as _no_supplement
+from router_fakes import run as _run
 from serving import context
-from serving.build import Build
-from serving.handshake import Handshake
 from utils import reranker
 from utils.retrieval import candidates as cands
-from utils.retrieval import event_registry as reg
 from utils.retrieval import pins, router, routes
 from utils.verse_parser import VerseRef
-
-BACKEND = Path(__file__).resolve().parents[1]
-FROZEN = BACKEND.parent / "config" / "registries" / "routing_lexicon.legacy.json"
-EVENT = reg.RegistryEvent("event:saoluo", "ev0003", "掃羅歸主", ("保羅歸主",),
-                          ("ps:act.9.1", "ps:act.9.3b"))
-
-
-def _c(cid, strategy="hybrid_hybrid", weight=0.7, book="act", chapter=9, **extra):
-    return {"id": cid, "source_strategy": strategy, "weight": weight, "content": cid,
-            "book_id": book, "book_name": book, "chapter_num": chapter, "title": "",
-            "verse_range": "1", "kind": "passage", "passage_id": cid, **extra}
-
-
-@pytest.fixture
-def active():
-    lexicon = routing.load_lexicon(FROZEN)
-    build = Build("b20261008_1bb6912e", "bb20261008_1bb6912e", "passages__b", Path("/c"), False, 9)
-    context.install(context.make_active(build, lexicon, (EVENT,)), Handshake(build.build_id, (), True))
-    yield
-    context.reset()
-
-
-@pytest.fixture
-def scores(monkeypatch):
-    """rerank_score = table[id] (0.5 when absent), sorted like the real reranker."""
-    table = {}
-
-    def rerank(query, passages, top_k=5, text_key="content"):
-        for p in passages:
-            p["rerank_score"] = table.get(p["id"], 0.5)
-        return sorted(passages, key=lambda p: p["rerank_score"], reverse=True)[:top_k]
-
-    monkeypatch.setattr(reranker, "rerank", rerank)
-    return table
-
-
-def _dense(monkeypatch, hits_by_book=None, hits=()):
-    calls = []
-
-    async def fake(query, arm, top_k=None, book_ids=None):
-        calls.append((arm.label, top_k, book_ids))
-        found = (hits_by_book or {}).get(book_ids[0], []) if book_ids else list(hits)
-        return [{**c, "source_strategy": arm.label} for c in found]
-
-    monkeypatch.setattr(routes, "retrieve_dense", fake)
-    monkeypatch.setattr(router, "retrieve_dense", fake)
-    return calls
-
-
-def _no_supplement(monkeypatch):
-    async def chapter_passages(book_id, chapter):
-        return []
-    monkeypatch.setattr(routes.postgres, "chapter_passages", chapter_passages)
-
-
-def _run(**kwargs):
-    defaults = {"verse_refs": [], "intent_type": "topic", "entity_names": []}
-    return asyncio.run(router.retrieve_and_rerank(**{**defaults, **kwargs}))
 
 
 # --- pool bookkeeping ------------------------------------------------------------------
@@ -108,7 +50,8 @@ def test_chapter_pins_follow_verse_ref_order_across_hash_seeds():
         "refs = [VerseRef('jhn', '約翰福音', 1), VerseRef('gen', '創世記', 1)]\n"
         "ranked = [{'id': f'ps:rom.{i}.1', 'book_id': 'rom', 'chapter_num': i, 'rerank_score': 0.5}"
         " for i in range(1, 6)]\n"
-        "pool = ranked + [{'id': f'ps:{b}.1.{j}', 'book_id': b, 'chapter_num': 1, 'weight': 0.9}\n"
+        "pool = ranked + [{'id': f'ps:{b}.1.{j}', 'book_id': b, 'chapter_num': 1, 'weight': 0.9,\n"
+        "                  'start_key': f'{b}.1.{j}'}\n"
         "                 for b in ('gen', 'jhn') for j in range(1, 4)]\n"
         "print([c['id'] for c in pins.pin_chapter_candidates(ranked, pool, refs, top_k=5)])\n"
     )
@@ -118,7 +61,7 @@ def test_chapter_pins_follow_verse_ref_order_across_hash_seeds():
                               env={**os.environ, "PYTHONHASHSEED": s, "PYTHONPATH": path}).stdout
                for s in ("1", "2", "3", "4")}
     assert len(outputs) == 1
-    assert outputs.pop().startswith("['ps:gen.1.1', 'ps:gen.1.2', 'ps:jhn.1.1', 'ps:jhn.1.2'")
+    assert outputs.pop().startswith("['ps:jhn.1.1', 'ps:jhn.1.2', 'ps:gen.1.1', 'ps:gen.1.2'")
 
 
 def test_book_anchor_pin_only_absent_books_on_multi_book_questions():

@@ -3,8 +3,10 @@
 A verse reference reads the slots it names (design §2.23): a merged unit comes
 back whole once, its range marked (asking for 6:3 gives ``2-3``); an omitted slot
 comes back as 「本譯本此節從缺」 with its variant footnote. One candidate per
-reference; its verse_range is chapter-internal, start_key/end_key name the slots.
-A chapter-only reference returns the chapter's passages in canonical order.
+reference; its verse_range is chapter-internal, start_key/end_key name the slots,
+and its id is ``vs:{unit}`` for exactly one unit, else ``vr:{start}~{end}``.
+A chapter-only reference returns its chapter's passages in canonical order (a
+chapter range only its first chapter's, see utils.verse_parser).
 """
 
 from __future__ import annotations
@@ -21,10 +23,10 @@ SOURCE = "verse_direct"
 
 
 def source_id(pieces: list[content.VersePiece], start_key: str, end_key: str) -> str:
-    """``vs:{unit}`` for exactly one unit; else the slot (or ``{start}~{end}`` range)."""
+    """``vs:{unit}`` for exactly one unit; else ``vr:{start}~{end}`` over the slots."""
     if len(pieces) == 1 and pieces[0].unit_key is not None:
         return ids.verse_record_id(pieces[0].unit_key)
-    return start_key if start_key == end_key else f"{start_key}~{end_key}"
+    return ids.verse_range_id(start_key, end_key)
 
 
 def _passages_of(pieces, owners) -> tuple[str | None, list[str]]:

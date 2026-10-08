@@ -23,6 +23,7 @@ from qdrant_client import QdrantClient, models
 
 import main
 from config import settings
+from ragcommon import ids
 from serving import context, startup
 from utils import embedder, reranker
 from utils import intent_classifier
@@ -174,19 +175,22 @@ def test_an_omitted_verse_says_it_is_absent_with_its_footnote(backend):
 
     assert verse["status"] == "omitted_variant" and verse["text"] == "本譯本此節從缺"
     assert verse["footnote"] == "有古卷加：3人子來，為要拯救失喪的人。"
-    assert source["id"] == "mat.18.3~mat.18.4" and source["passage_id"] == "ps:mat.18.1"
+    assert source["id"] == "vr:mat.18.3~mat.18.4" and source["passage_id"] == "ps:mat.18.1"
+    assert ids.parse(source["id"]).kind == "verse_range"
     assert "3. 本譯本此節從缺（有古卷加：3人子來，為要拯救失喪的人。）" in source["context"]
 
 
 def test_a_verse_cut_by_a_heading_lists_the_heading_and_both_passages(backend):
     with TestClient(main.app) as client:
         verse = client.get("/api/v1/verse/act/9/3").json()
+        opening = client.get("/api/v1/verse/act/9/1").json()
 
     assert verse["text"] == "掃羅將到大馬士革，蹚過小河，忽然有光四面照着他。"
     assert verse["headings"] == [{"heading_id": "hd:act.9.3b#1", "offset": 14,
                                   "text": "天上的光"}]
     assert verse["passage_id"] == "ps:act.9.1"
     assert verse["split_passage_ids"] == ["ps:act.9.1", "ps:act.9.3b"]
+    assert opening["headings"] == []  # the headings before act.9.1 do not cut it
 
 
 def test_a_chapter_lists_passages_in_order_with_its_chapter_texts(backend):

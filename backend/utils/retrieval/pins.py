@@ -3,23 +3,26 @@
 - ``fuse_and_rank``: fused = (1 - alpha) * rerank_score + alpha * weight.
 - ``cap_book_anchor_entries``: multi-book questions keep one book_anchor per book
   in the fused order; the rest sink to the tail.
-- ``pin_chapter_candidates``: a chapter the user named (A書N章) keeps at least
-  ``min_pins`` of its passages in the top-k.
+- ``pin_chapter_candidates``: a chapter the user named (A書N章; a range by its
+  first chapter) keeps at least ``min_pins`` of its passages in the top-k.
 - ``pin_book_anchor_candidates``: a book the user named is represented
   (unconditionally for one book; only absent books for several).
 
-Every candidate here carries ``book_id`` and ``chapter_num``; ids are never parsed.
+Every candidate here carries ``book_id``, ``chapter_num`` and ``start_key``; ids are
+never parsed.
 """
 
 from __future__ import annotations
 
 import logging
 
+from database.content import key_order
 from utils.verse_parser import VerseRef
 
 logger = logging.getLogger(__name__)
 
 BOOK_ANCHOR = "book_anchor"
+PIN_WEIGHT_FLOOR = 0.85   # sql_chapter and book anchors; dense noise stays below
 
 
 def fuse_and_rank(candidates: list[dict], top_k: int, alpha: float) -> list[dict]:
@@ -65,31 +68,51 @@ def _evict_unprotected(result: list[dict], targets: list[tuple[str, int]], top_k
     return (protected + evictable[:max(0, top_k - len(protected))])[:top_k]
 
 
+def _pinnable(candidates: list[dict], existing: set[str], target: tuple[str, int]) -> list[dict]:
+    """Strong pool passages of ``target`` not yet ranked: heaviest first, then canonical order.
+
+    Legacy pericope ids (``gen:1:0``) sorted as strings gave the chapter's first
+    pericopes; new ids do not (``ps:gen.1.14`` < ``ps:gen.1.6``), so the start key decides.
+    """
+    return sorted((c for c in candidates if c["id"] not in existing and _in_chapter(c, target)
+                   and c.get("weight", 0) >= PIN_WEIGHT_FLOOR),
+                  key=lambda c: (-c.get("weight", 0), key_order(c["start_key"])))
+
+
+def _chapter_pins(ranked: list[dict], candidates: list[dict], targets: list[tuple[str, int]],
+                  top_k: int, min_pins: int) -> list[dict]:
+    """Passages each target still needs, in the order the user wrote the chapters."""
+    pinned: list[dict] = []
+    existing = {c["id"] for c in ranked}
+    for target in targets:
+        needed = min(min_pins, top_k) - sum(1 for c in ranked if _in_chapter(c, target))
+        for c in _pinnable(candidates, existing, target)[:max(needed, 0)]:
+            existing.add(c["id"])
+            pinned.append(c)
+    return pinned
+
+
 def pin_chapter_candidates(ranked: list[dict], candidates: list[dict], verse_refs: list[VerseRef],
                            top_k: int, min_pins: int = 2, score_key: str = "rerank_score"
                            ) -> list[dict]:
     """Guarantee chapter-specified passages survive rerank by pinning them into top-k.
 
-    Only pool candidates with weight >= 0.85 are eligible (floors out dense noise).
-    Pinned entries get a synthetic ``score_key`` just above the current max.
-    Targets follow verse_refs order (a set made the result follow PYTHONHASHSEED).
+    One target per chapter-only reference (a chapter range is served by its first
+    chapter, as legacy read it), pinned in the order the user wrote them; the
+    result keeps at most ``top_k`` (the first-written chapters win), and the
+    reranker still orders every slot the pins leave. Only pool candidates with
+    weight >= PIN_WEIGHT_FLOOR are eligible. Pinned entries get a synthetic
+    ``score_key`` just above the current max.
     """
     targets = list(dict.fromkeys((r.book_id, r.chapter) for r in verse_refs
                                  if r.verse_start is None))
     if not targets or not ranked:
         return ranked
-    result, existing = list(ranked), {c["id"] for c in ranked}
-    for target in targets:
-        needed = min(min_pins, top_k) - sum(1 for c in result if _in_chapter(c, target))
-        pool = sorted((c for c in candidates if c["id"] not in existing and _in_chapter(c, target)
-                       and c.get("weight", 0) >= 0.85),
-                      key=lambda c: (-c.get("weight", 0), c["id"]))
-        to_pin = pool[:max(needed, 0)]
-        base = _top_score(result, score_key)
-        for c in to_pin:
-            c[score_key] = base + 0.01
-            existing.add(c["id"])
-        result = to_pin + result
+    pinned = _chapter_pins(ranked, candidates, targets, top_k, min_pins)
+    base = _top_score(ranked, score_key)
+    for c in pinned:
+        c[score_key] = base + 0.01
+    result = pinned + ranked
     return _evict_unprotected(result, targets, top_k) if len(result) > top_k else result
 
 

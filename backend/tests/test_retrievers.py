@@ -5,6 +5,7 @@ import asyncio
 import pytest
 
 from database import content
+from ragcommon import ids
 from utils import embedder
 from utils.retrieval import dense, verse_retriever
 from utils.verse_parser import VerseRef
@@ -120,7 +121,7 @@ def test_one_verse_of_a_merged_unit_returns_the_whole_unit(pg):
 def test_a_range_lists_each_unit_once(pg):
     [c] = _lookup(VerseRef("eph", "以弗所書", 6, 1, 3))
 
-    assert c["id"] == "eph.6.1~eph.6.3" and c["verse_range"] == "1-3"
+    assert c["id"] == "vr:eph.6.1~eph.6.3" and c["verse_range"] == "1-3"
     assert c["content"] == "1. 作兒女的\n2-3. 要孝敬父母"
 
 
@@ -128,9 +129,23 @@ def test_an_omitted_slot_says_so_with_its_footnote(pg):
     [only] = _lookup(VerseRef("mat", "馬太福音", 18, 3, 3))
     [both] = _lookup(VerseRef("mat", "馬太福音", 18, 3, 4))
 
-    assert only["id"] == "mat.18.3" and only["passage_id"] is None and only["title"] == ""
+    assert only["id"] == "vr:mat.18.3~mat.18.3" and only["passage_id"] is None
+    assert only["title"] == ""
     assert only["content"] == "3. 本譯本此節從缺（有古卷加：3人子來。）"
-    assert both["id"] == "mat.18.3~mat.18.4" and both["passage_id"] == "ps:mat.18.4"
+    assert both["id"] == "vr:mat.18.3~mat.18.4" and both["passage_id"] == "ps:mat.18.4"
+
+
+@pytest.mark.parametrize("ref, kind", [
+    (VerseRef("eph", "以弗所書", 6, 3, 3), "verse_record"),
+    (VerseRef("eph", "以弗所書", 6, 1, 3), "verse_range"),
+    (VerseRef("mat", "馬太福音", 18, 3, 3), "verse_range"),
+    (VerseRef("mat", "馬太福音", 18, 3, 4), "verse_range"),
+])
+def test_every_verse_result_id_parses_with_ragcommon(pg, ref, kind):
+    [c] = _lookup(ref)
+
+    parsed = ids.parse(c["id"])
+    assert (parsed.kind, parsed.book_id, parsed.chapter) == (kind, ref.book_id, ref.chapter)
 
 
 def test_a_chapter_reference_returns_its_passages_and_repeats_are_dropped(pg):

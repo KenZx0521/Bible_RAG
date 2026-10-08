@@ -6,10 +6,10 @@ from pydantic import BaseModel
 
 
 class Source(BaseModel):
-    # The record's id in the build's grammar (ragcommon.ids): a passage (ps:),
-    # a chunk (ck:), or for a verse lookup the verse record (vs:{unit}) when it
-    # is one unit, else its slot range ({start_key}~{end_key}). Read `kind` and
-    # start_key/end_key instead of parsing it.
+    # The record's id in the build's grammar; every one parses with
+    # ragcommon.ids.parse: a passage (ps:), a chunk (ck:), or for a verse lookup
+    # the verse record (vs:{unit}) when it is one unit, else its slot range
+    # (vr:{start_key}~{end_key}). Read `kind` and start_key/end_key for the span.
     id: str
     book: str
     chapter: int | None = None
