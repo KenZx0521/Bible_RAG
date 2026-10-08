@@ -1,8 +1,9 @@
 """Build selection and the handshake checks (design §7.8, strict from R1).
 
-The build comes from rag_meta.serving for RAG_ENV, or from RAG_BUILD_ID; every
-check compares what the stores and the contract hold with the build row, and
-each kind of mismatch is reported, never repaired.
+The build comes from rag_meta.serving for RAG_ENV; RAG_BUILD_ID, when set, only
+asserts which build that is (it never bypasses serving). Every check compares
+what the stores and the contract hold with the build row, and each kind of
+mismatch is reported, never repaired.
 """
 
 import asyncio
@@ -51,11 +52,35 @@ def test_the_serving_row_of_the_env_names_the_build():
     assert conn.calls[0][1] == ("staging",)
 
 
-def test_rag_build_id_bypasses_serving():
-    conn = FakeConn({}, {BUILD_ROW["build_id"]: BUILD_ROW})
+OTHER_ROW = {**BUILD_ROW, "build_id": "b20261007_68412f4f", "pg_schema": "bb20261007_68412f4f",
+             "qdrant_collection": "passages__b20261007_68412f4f",
+             "contracts_dir": "/contracts/b20261007_68412f4f"}
+BOTH = {row["build_id"]: row for row in (BUILD_ROW, OTHER_ROW)}
 
-    assert _resolve(conn, build_id=BUILD_ROW["build_id"]).build_id == BUILD_ROW["build_id"]
-    assert all("rag_meta.serving" not in q for q, _ in conn.calls)
+
+def test_rag_build_id_equal_to_the_serving_build_is_served():
+    conn = FakeConn({"staging": BUILD_ROW["build_id"]}, BOTH)
+
+    found = _resolve(conn, env="staging", build_id=BUILD_ROW["build_id"])
+
+    assert found.build_id == BUILD_ROW["build_id"]
+    assert conn.calls[0][1] == ("staging",)
+
+
+def test_a_registered_rag_build_id_that_serving_does_not_name_raises():
+    conn = FakeConn({"staging": BUILD_ROW["build_id"]}, BOTH)
+
+    with pytest.raises(build_mod.BuildSelectionError,
+                       match=r"RAG_BUILD_ID=b20261007_68412f4f but "
+                             r"rag_meta\.serving\(env=staging\) names b20261008_1bb6912e"):
+        _resolve(conn, env="staging", build_id=OTHER_ROW["build_id"])
+
+
+def test_rag_build_id_without_a_serving_row_raises():
+    conn = FakeConn({}, BOTH)
+
+    with pytest.raises(build_mod.BuildSelectionError, match="no row for env=prod"):
+        _resolve(conn, build_id=BUILD_ROW["build_id"])
 
 
 @pytest.mark.parametrize("conn, message", [

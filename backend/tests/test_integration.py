@@ -235,10 +235,17 @@ def test_an_event_question_appends_the_registry_anchor_after_the_top_k(backend):
     assert body["sources"][2]["strategy"] == "event_registry"
 
 
-def test_a_build_id_the_registry_does_not_know_stops_strict_startup(backend, monkeypatch):
-    monkeypatch.setattr(settings, "rag_build_id", "b20990101_deadbeef")
+@pytest.mark.parametrize("env, build_id, message", [
+    ("staging", "b20990101_deadbeef",
+     rf"RAG_BUILD_ID=b20990101_deadbeef but rag_meta\.serving\(env=staging\) names {BUILD_ID}"),
+    ("prod", BUILD_ID, "rag_meta.serving has no row for env=prod"),
+])
+def test_a_rag_build_id_serving_does_not_name_stops_strict_startup(backend, monkeypatch, env,
+                                                                   build_id, message):
+    monkeypatch.setattr(settings, "rag_env", env)
+    monkeypatch.setattr(settings, "rag_build_id", build_id)
 
-    with pytest.raises(startup.StartupError, match="b20990101_deadbeef"):
+    with pytest.raises(startup.StartupError, match=message):
         with TestClient(main.app):
             pass
 

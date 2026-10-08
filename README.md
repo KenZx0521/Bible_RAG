@@ -95,7 +95,7 @@ docker compose up -d
 - **qdrant** — Qdrant 向量資料庫 (port 6333)
 - **neo4j** — Neo4j 圖譜資料庫 (port 7474/7687)，只在 `--profile kg` 時啟動；R1 起 backend 不讀 Neo4j（D-09）
 
-backend 啟動時依 `RAG_ENV`（prod／staging）讀 `rag_meta.serving` 決定服務哪個 build（或以 `RAG_BUILD_ID` 指定），
+backend 啟動時依 `RAG_ENV`（prod／staging）讀 `rag_meta.serving` 決定服務哪個 build（`RAG_BUILD_ID` 只能核對、不能改選），
 從 `rag_meta.builds` 取得該 build 的 PG schema、Qdrant collection 與契約檔目錄（`/contracts` 唯讀掛載），
 並做握手檢查；任一項不符時 `/api/v1/health` 回 503 並列出不符項，`STRICT_BUILD_CHECK=true`（預設）時啟動失敗。
 
@@ -342,7 +342,7 @@ cp .env.example .env
 | `BACKEND_PORT` | 後端服務埠號（Docker 部署用） | `8000` |
 | `BACKEND_UV_CACHE_DIR` | backend 映像檔建置時掛載的 uv 快取目錄（Docker 建置用，需存在） | `~/.cache/uv-bible-rag-backend` |
 | `RAG_ENV` | backend 讀 `rag_meta.serving` 的哪一列（`prod`／`staging`） | `prod` |
-| `RAG_BUILD_ID` | 直接指定 build（測試與 staging 用），略過 `rag_meta.serving` | 無 |
+| `RAG_BUILD_ID` | 預期服務的 build；必須等於 `rag_meta.serving` 該 env 指定的 build，不同就是握手不符（不能用來繞過 serving） | 無 |
 | `STRICT_BUILD_CHECK` | 握手不符時啟動失敗；`false` 時仍啟動，但不服務資料，只在 `/api/v1/health` 回 503 | `true` |
 | `CONTRACTS_ROOT` | 契約檔目錄的掛載點（compose 設為 `/contracts`）；未設時直接用 `rag_meta.builds.contracts_dir` | 無 |
 

@@ -111,11 +111,32 @@ def test_a_consistent_build_is_served(stores):
     assert active.lexicon.events
 
 
-def test_rag_build_id_selects_without_a_serving_row(stores, monkeypatch):
-    stores.serving = {}
+def test_rag_build_id_equal_to_the_serving_build_is_served(stores, monkeypatch):
     monkeypatch.setattr(settings, "rag_build_id", BUILD_ID)
 
     assert _start()[1].ok
+
+
+def test_a_complete_build_that_serving_does_not_name_is_refused(stores, monkeypatch):
+    """RAG_BUILD_ID on a registered, consistent build is refused when serving names another."""
+    other = "b20261007_68412f4f"
+    stores.builds[other] = {**stores.builds[BUILD_ID], "build_id": other}
+    stores.serving = {"prod": other}
+    monkeypatch.setattr(settings, "rag_build_id", BUILD_ID)
+
+    active, handshake = _start()
+
+    assert active is None and handshake.build_id is None
+    assert handshake.mismatches == (
+        f"build: RAG_BUILD_ID={BUILD_ID} but rag_meta.serving(env=prod) names {other}",)
+
+
+def test_rag_build_id_without_a_serving_row_is_refused(stores, monkeypatch):
+    stores.serving = {}
+    monkeypatch.setattr(settings, "rag_build_id", BUILD_ID)
+
+    [problem] = _mismatches()
+    assert "no row for env=prod" in problem
 
 
 def test_no_serving_row_for_the_env(stores, monkeypatch):
@@ -127,6 +148,14 @@ def test_no_serving_row_for_the_env(stores, monkeypatch):
 
 def test_a_wrong_build_id_is_refused(stores, monkeypatch):
     monkeypatch.setattr(settings, "rag_build_id", "b20990101_deadbeef")
+
+    [problem] = _mismatches()
+    assert problem == (f"build: RAG_BUILD_ID=b20990101_deadbeef "
+                       f"but rag_meta.serving(env=prod) names {BUILD_ID}")
+
+
+def test_a_serving_row_naming_an_unregistered_build_is_refused(stores):
+    stores.serving = {"prod": "b20990101_deadbeef"}
 
     [problem] = _mismatches()
     assert "b20990101_deadbeef is not in rag_meta.builds" in problem

@@ -1,11 +1,12 @@
 """Startup: resolve the build, open its stores, and shake hands (design §7.8).
 
 Checks, each a handshake mismatch when it fails: the build resolves
-(rag_meta.serving for RAG_ENV, or RAG_BUILD_ID); the schema's build_info names
-it; its Qdrant collection exists with ``rag_meta.builds.points`` points; its
-contract directory's manifest names it and every file hashes to the manifest
-(and agrees with the build row); it is not a KG build (no Neo4j driver exists in
-this backend); the encoder probes equal the contract fingerprint.
+(rag_meta.serving for RAG_ENV, equal to RAG_BUILD_ID when that is set); the
+schema's build_info names it; its Qdrant collection exists with
+``rag_meta.builds.points`` points; its contract directory's manifest names it
+and every file hashes to the manifest (and agrees with the build row); it is not
+a KG build (no Neo4j driver exists in this backend); the encoder probes equal
+the contract fingerprint.
 
 Any mismatch: /api/v1/health answers 503 with the list, no data is served, and
 with STRICT_BUILD_CHECK (the default) startup fails. A build that passes still

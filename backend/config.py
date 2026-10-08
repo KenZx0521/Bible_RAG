@@ -16,8 +16,9 @@ GraphStrategyName = Literal["event_registry"]
 
 class Settings(BaseSettings):
     # Which build to serve (design §7.6/§7.8): rag_meta.serving's row for
-    # RAG_ENV, unless RAG_BUILD_ID names one (tests, staging). Resolved once at
-    # startup; STRICT_BUILD_CHECK=false lets a failed handshake start the app so
+    # RAG_ENV, always. RAG_BUILD_ID, when set, is the build the operator expects:
+    # if serving names another, the handshake fails. Resolved once at startup;
+    # STRICT_BUILD_CHECK=false lets a failed handshake start the app so
     # /api/v1/health can list the mismatches (it still serves no data).
     rag_env: Literal["prod", "staging"] = "prod"
     rag_build_id: str | None = None
