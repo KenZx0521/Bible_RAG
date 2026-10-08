@@ -7,8 +7,9 @@
 - 工具：`mutool` 1.23.10、`pdftotext` 24.02.0（G-TOOL 逐一比對版本）。
 - Python：只用 `scripts/.venv` 跑 ragdata。管線不跑 backend，也不需要 backend 的 venv。
 - 模型一律離線：BGE-M3 在 `HF_HOME=/mnt/ollama-data/huggingface`，reranker tokenizer 在 `/mnt/ollama-data/bible_rag_store/models/`。建議有 GPU（emb 編碼與 G-ENC 全量重編碼）。
-- repo 內的輸入：`bible_pdf/`（66 卷）、`config/registries/`、`ragdata/src/ragdata/contract/expectations/`、`ground_truth.json`（G-ROUTE 探針的 500 題）、`backend/data/event_registry.json`（K1 的 legacy 事件註冊表）。
-- store `reference/` 的輸入：舊系統留下的唯讀副本。bible_md、legacy_output、route_live 三個目錄各有 `SHA256SUMS`，讀取端逐檔核對，任何一檔不符就停，不會默默換掉某一層。
+- repo 內的輸入：`bible_pdf/`（66 卷）、`config/registries/`（K0 註冊表；K1 讀 `events.yaml` v2；K4 另讀 `query_aliases.yaml`）、`ragdata/src/ragdata/contract/expectations/`、`ground_truth.json`（GT v1，G-GT 核對 GT v2 變更紀錄用）。
+  - `config/registries/routing_lexicon.legacy.json` 與 `backend/data/event_registry.json` 是 R1 的產物，管線與 backend 都不讀；R1 smoke 後清理。
+- store `reference/` 的輸入：舊系統留下的唯讀副本。bible_md、legacy_output 兩個目錄各有 `SHA256SUMS`，讀取端逐檔核對，任何一檔不符就停，不會默默換掉某一層。
   - `reference/bible_md/`：66 卷 md，只做 G-DIFF 對帳。text 層 `diff_summary.json` 的 `inputs.bible_md` 記著它的摘要。
   - `reference/audit_prototypes/gap_pdf_canonical/canonical_full.jsonl`：只做 G-DIFF 對帳。稽核時就放在這裡，沒有 `SHA256SUMS`；它的 sha 記在 `diff_summary.json` 的 `inputs.canonical_full`，內容一變，text 層就換版本。
   - `reference/legacy_output/`：舊 `output/` 的五個檔。
@@ -16,28 +17,13 @@
     - `embedding_queue.jsonl`、`embeddings.jsonl`：G-ENC 的相容抽樣。
     - `chapters.jsonl`：ragdata 不讀。evaluation 的 GT v1 路徑（`evaluation/src/verse_coverage.py`）目前仍讀 repo 的 `output/chapters.jsonl`，清理 `output/` 前要改指向這份。
     - 2026-10-08 從主 checkout 的 `output/` 複製，與 `/mnt/ollama-data/bible_rag_bak/20261007/output/` 逐位元相同。
-  - `reference/route_live/{探針 sha256}/live.json`：舊 backend（`entity_dicts`）在 G-ROUTE 探針文字上的比對結果。探針文字是 GT 500 題、全部節與全部標題。
-    - K4 build 與 G-ROUTE 只在兩個條件都成立時使用它：探針文字的 sha256 相同，而且 `frozen_from` 等於 `routing_lexicon.legacy.json` 的 `header.frozen_from`。否則停在 route，並印出重產指令。
-    - 現有一份：`32a5196c…`，34,124 段，出自 text@247eafe44b02。
+  - `reference/route_live/`：只是 R1 的產物（R1 的 G-ROUTE 拿舊 backend 的凍結比對結果對帳）。R2 的 route 層沒有 live 比對，管線不讀它；要重驗 R1 的 route 層，從 R1 的 commit（e7b1173）跑。
 - Store：`/mnt/ollama-data/bible_rag_store/`，底下 `layers/`、`releases/`、`contracts/`、`reference/`。
 - `--load`／`--verify` 讀 repo 的 `.env`（`POSTGRES_*`、`QDRANT_*`）。
 
 ```bash
 export HF_HOME=/mnt/ollama-data/huggingface HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 RAGDATA="env PYTHONPATH=ragdata/src:packages scripts/.venv/bin/python -m ragdata"
-```
-
-重產 route_live：只有節文字、標題文字或 `ground_truth.json` 的題目改變時才需要。
-- 舊 backend 已從 rebuild/main 移除（78b8abf），所以要從還有 `backend/utils/entity_dicts.py` 的 checkout 跑。f9ad4d3 的四個來源檔就是凍結版。
-- `freeze probe` 比對的是舊 backend 在 venv 裡實際 import 的四個檔（各模組的 `__file__`），不是 `--backend-dir` 旁邊同名路徑的檔。四個 sha 要等於凍結詞表的 `header.frozen_from`，不符就拒絕，什麼都不寫；任何一個模組不是從檔案 import 的也拒絕。`freeze route` 寫進 `frozen_from` 的也是實際 import 的檔。
-- 結果寫進新目錄 `{探針 sha256}/`；既有目錄永不覆寫，內容相同時什麼都不做。
-- `--backend-python` 要能 import 舊 backend，例如主 checkout 的 `backend/.venv`。
-
-```bash
-git worktree add <暫存目錄> f9ad4d3      # 或直接用主 checkout /home/kenzx0521/Bible_RAG
-$RAGDATA freeze probe --text /mnt/ollama-data/bible_rag_store/layers/text/<text 層版本> \
-  --backend-python /home/kenzx0521/Bible_RAG/backend/.venv/bin/python \
-  --backend-dir <暫存目錄>/backend
 ```
 
 ## 2. 一個指令
@@ -61,11 +47,18 @@ $RAGDATA pipeline run [--date YYYYMMDD] [--load] [--verify] [--report pipeline.j
 | struct（S5） | text、BGE-M3 tokenizer、`reference/legacy_output/` | pericopes、passages、chunks、verse_index、legacy_ids | G-SCHEMA、G-COUNT、G-REFINT、G-STRUCT | 同左 |
 | emb（S6–S7） | struct、text、BGE-M3＋reranker tokenizer；G-ENC 另讀 `reference/legacy_output/` | embedding_records、指紋；向量是 `.vectors` 附件 | G-SCHEMA、G-COUNT、G-EMB、G-ENC（抽樣） | G-ENC 全量重編碼 |
 | kg0（K0） | text、struct、K0 註冊表、`kg0_counts.yaml` | names、extra_spans、parallel_links | G-SCHEMA、G-REFINT、G-KG0、G-PROV | 同左 |
-| events（K1） | text、struct、`events.yaml`、legacy 事件註冊表 | events、anchor_changes、兩份事件契約 | G-SCHEMA、G-COUNT、G-REFINT、G-EVENT、G-PROV | 同左 |
-| route（K4） | text、`routing_lexicon.legacy.json`、`ground_truth.json`、`reference/route_live/` | routing_terms、routing_lexicon.json | G-SCHEMA、G-COUNT、G-ROUTE、G-PROV | 同左 |
+| events（K1） | text、struct、`events.yaml`（R2 人工註冊表，以 pericope 宣告錨點） | events、event_registry_v2.json、events_report.json | G-SCHEMA、G-COUNT、G-REFINT、G-EVENT、G-PROV | 同左 |
+| route（K4） | text、kg0、events、kg0 綁定的 `divine_refs`／`name_normalization`、`query_aliases.yaml`、`ragcommon` 書名 | routing_terms、routing_lexicon.json（v2）、query_aliases.json、route_report.json | G-SCHEMA、G-COUNT、G-ROUTE、G-PROV | 同左 |
+
+R2 的事件與路由層（R1 的轉換路徑已移除）：
+- **K1**：`events.yaml` v2 是人工註冊表本體，不再從舊 backend 的事件註冊表轉換。錨點以 pericope 宣告，建置時展開成它的全部 passage，證據取 pericope 標題；觸發詞只有 `pdf_terms`（附 PDF 位置）與 `external_aliases`；併掉的 id 列在 `retired`（`merged_into`）。契約只剩一份 `event_registry.json`（variant R2）。
+- **K4**：詞表是 PDF 各層與註冊表的聯集（kg0 名與省略「‧」的寫法、divine_refs、查詢別名、事件觸發詞、書名）。每個詞帶全部候選目標、route 型別、可否路由與其規則、來源。
+- **G-ROUTE**：從 text、kg0、events 與註冊表重編一次詞表，逐位元比對，並要求 `ragcommon.routing` 接受詞表與 `query_aliases.json`。它不跟舊 backend 比對（R2 沒有 live 比對），release 組裝時也會跑。
+- **比對器**：只有 `ragcommon.routing` 一份，K4 閘門與 backend 共用。先遮全書名；其他書名寫法與詞一起掃。每個出現處都是候選，排除表否決的除外。由最長的先取，同長取最左，不與已取的重疊。
+- **契約握手**：R2 的 backend 映像不接受 R1 build（詞表 v1、registry variant R1、沒有 `query_aliases.json`）。R1 映像也讀不了 v2 詞表。
 
 之後：
-- **release（S12）**：寫 `releases/{build_id}.json`（唯讀，同內容重寫是 no-op）；組裝時各層記錄閘門再跑一次。
+- **release（S12）**：寫 `releases/{build_id}.json`（唯讀，同內容重寫是 no-op）；組裝時各層記錄閘門再跑一次（重讀 PDF 的 G-CONSERVE、G-XCHECK 與要 GPU 的 G-ENC 除外）。
 - **load（S13）**：寫入新命名空間——PG schema `b{build_id}`、`rag_meta.builds` 一列、Qdrant `passages__{build_id}`、`contracts/{build_id}/`。目標已存在就拒絕；同一份 release 已登記則標 `reused`，不重載。
 - **verify（S14）**：G-PROJ C1–C6 與 G-SCHEMA.pg，全部從三庫讀回比對；C6 要求凍結的 GT v2 指向本 release 的文字層。
 
@@ -79,8 +72,6 @@ $RAGDATA pipeline run [--date YYYYMMDD] [--load] [--verify] [--report pipeline.j
 4. commit 上述檔案，再跑一次 `pipeline run`；已完成的層會直接重用。
 
 GT v2 的人工判斷寫在 `config/gold/gt_v2_curated.yaml`；errata 的字形裁決寫在 `config/registries/errata.yaml`（套用者 `decided_by: kay`）。改了這些檔，就照上面的順序重來。
-
-節或標題的文字一變，G-ROUTE 的探針 sha256 也跟著變。管線會停在 route，並印出 `freeze probe` 指令；照 §1 的「重產 route_live」跑完，再跑一次 `pipeline run`。route_live 在 store，不必 commit。
 
 ## 5. 重跑、重用與 G-DET
 
@@ -120,19 +111,20 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 - `scripts/tests/run.sh` 自己建暫存 shim。
 
 ```bash
-# ragdata＋packages：2,385 passed、5 skipped（PG 整合測試，要設 RAGDATA_TEST_PG_DSN），約 1.5 分鐘
+# ragdata＋packages：2,485 passed、5 skipped（PG 整合測試，要設 RAGDATA_TEST_PG_DSN），約 1.5 分鐘
 env HF_HOME=/mnt/ollama-data/huggingface HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
   scripts/.venv/bin/python -m pytest ragdata/tests packages/ragcommon/tests -q
-# backend：186 passed
+# backend：217 passed、1 skipped（R2 路由 golden 尚未凍結）
 PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
   backend/.venv/bin/python -m pytest backend/tests -q
 # scripts：1,588 passed、1 skipped
 scripts/tests/run.sh -q
-# evaluation：加入 R1 評估工具後收集到 493 項（之前 380 passed）
+# evaluation：537 passed
 evaluation/.venv/bin/python -m pytest evaluation/tests -q
 ```
 
 - 上面的數字是 2026-10-08 的結果。
 - ragdata 的測試會讀 store 的 `reference/`（bible_md、canonical_full）、repo 的 6 卷 PDF，以及離線的 BGE-M3 tokenizer。
-- route 的測試用假 backend，不需要舊 backend。
+- backend 的 `test_integration.py` 用本機 `pgvector/pgvector:pg15` 映像起一個用完即刪的 PG（沒有映像就整檔 skip），載入 `backend/tests/fixtures/mini_build/`。這份 build 由 `backend/tests/fixtures/make_mini_build.py` 從 ragdata 的 mini release 產生；契約一變就要重產，否則 ragdata 的 `test_backend_mini_build.py` 會失敗。
+- `test_routing_golden.py` 在 `backend/tests/fixtures/routing_r2_gt.json` 凍結、且 store 有它指名的 route 層之前一律 skip。route 層進 store 後，照 `make_routing_golden.py` 開頭的指令凍結。
