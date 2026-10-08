@@ -76,7 +76,13 @@ print(promote.promote(pg, "staging", "<build_id>", "sha256:<映像 digest>"))   
 EOF
 ```
 
-- 回滾：以 promote 回傳的先前配對再 promote 一次。
+- 第一次 promote 的回滾（該 env 在 `rag_meta.serving` 還沒有列，promote 回傳 `None`，沒有先前配對）：把 backend 容器切回舊映像 `bible_rag-backend:latest`，它讀 `public` 與舊 collection，不看 `rag_meta.serving`；切回時不要重建這個映像。serving 那一列可以留著；要清掉（例如之後要 unload 這個 build，serving 中的 build 會被拒絕），就刪該 env 的列（staging 則改成 `'staging'`）：
+
+  ```bash
+  docker exec bible_rag_postgres psql -U bible -d bible_rag -c "DELETE FROM rag_meta.serving WHERE env = 'prod'"
+  ```
+
+- 之後的回滾：以 promote 回傳的先前配對再 promote 一次。
 - 目前 `rag_meta.serving` 是空的，線上 backend 仍讀 `public` schema 與舊 collection。`public`、`bible_embeddings*`、`bible_entities` 是 R1 上線前的回滾基準，**不可刪**。
 
 ## 7. 清理被取代的 build
