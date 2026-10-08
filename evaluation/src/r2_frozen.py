@@ -28,7 +28,7 @@ FROZEN_R2_PATH = (Path(__file__).resolve().parent.parent
                   / "experiments" / "2026-10-09_r2" / "frozen_r2.json")
 # sha256 of the pre-registered frozen_r2.json bytes. Set once freeze_r2.py has written it,
 # before any R2 result exists; None refuses every read.
-FROZEN_R2_SHA256: str | None = None
+FROZEN_R2_SHA256: str | None = "7289bd01b94b4557c20cb07743de6331eecfe572b0bf4c59afaa09d120c0e527"
 
 
 def load_frozen(path: Path | str = FROZEN_R2_PATH) -> FrozenR1:

@@ -235,8 +235,8 @@ def _write(tmp_path, doc):
     return path, hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_nothing_is_read_before_the_freeze_is_pinned(tmp_path):
-    assert r2_frozen.FROZEN_R2_SHA256 is None
+def test_nothing_is_read_before_the_freeze_is_pinned(tmp_path, monkeypatch):
+    monkeypatch.setattr(r2_frozen, "FROZEN_R2_SHA256", None)
     path, _ = _write(tmp_path, _freeze_doc())
     with pytest.raises(FrozenR1Error, match="no freeze is pinned yet"):
         r2_frozen.load_frozen(path)

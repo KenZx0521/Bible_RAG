@@ -1,0 +1,1617 @@
+{
+ "arms": {
+  "R1": {
+   "build": "b20261008_6daa4f31",
+   "code": {
+    "commit": "e7b117305003c25d6eff04d0022790c7e4a33e12"
+   },
+   "contracts": {
+    "event_registry.json": "547e933c443502490de52329d6c224d9e0c8cb97443346729a6ded9295a99f50",
+    "routing_lexicon.json": "db9568dc558286a9070681d81946fe5974d1dab72f3d7afc6827599312461747"
+   }
+  },
+  "R2": {
+   "build": "b20261008_e05d3e55",
+   "code": {
+    "backend/utils/retrieval/event_registry.py": "a56124a2a28e6afc19333925e46f98b00e34bcc2b859ac26b7a3537436705e52",
+    "backend/utils/signal_detector.py": "b514788a0bc1459f8935b0f3d9f21eb295590409ffb24f24b2202dae5132633b",
+    "backend/utils/verse_parser.py": "68a8f51c7d293ecc848e56b900a3e1dc28ad32de4b65a04f3bbb15beb2312781",
+    "packages/ragcommon/routing.py": "dfffe5f424c8643aa7bd7f7851534bf25e3d91b9c52e5eaa5cc331b2a4d95490"
+   },
+   "contracts": {
+    "event_registry.json": "5782287e3823d71dadfaa81dc75046434edf2147d8e33d21dde32ed0d6c93e4c",
+    "routing_lexicon.json": "2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e"
+   }
+  }
+ },
+ "changed": {
+  "EVENT_QUESTION_001": {
+   "R1": {
+    "books": [
+     "gen"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "R2": {
+    "books": [
+     "gen"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "legacy_head",
+   "llm": "",
+   "observed": "R4",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_003": {
+   "R1": {
+    "books": [],
+    "events": [
+     "ev0019"
+    ],
+    "lane": [
+     "ps:exo.7.14",
+     "ps:exo.8.1",
+     "ps:exo.8.20",
+     "ps:exo.9.13",
+     "ps:exo.10.1",
+     "ps:exo.10.21",
+     "ps:exo.11.1",
+     "ps:exo.12.29"
+    ],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "R2": {
+    "books": [],
+    "events": [
+     "ev0019"
+    ],
+    "lane": [
+     "ps:exo.7.14",
+     "ps:exo.8.1",
+     "ps:exo.8.16",
+     "ps:exo.8.20",
+     "ps:exo.9.1",
+     "ps:exo.9.8",
+     "ps:exo.9.13",
+     "ps:exo.10.1",
+     "ps:exo.10.21",
+     "ps:exo.11.1",
+     "ps:exo.12.29"
+    ],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "causes": [
+    "lane"
+   ],
+   "family": "legacy_head",
+   "llm": "",
+   "observed": "R4",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_010": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "legacy_head",
+   "llm": "",
+   "observed": "R4",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_017": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "legacy_head",
+   "llm": "",
+   "observed": "R4",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_061": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "temporal",
+   "llm": "",
+   "observed": "R4",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_066": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R3",
+    "route": "R3"
+   },
+   "R2": {
+    "books": [],
+    "events": [
+     "ev0032"
+    ],
+    "lane": [
+     "ps:act.7.54"
+    ],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "causes": [
+    "lane"
+   ],
+   "family": "temporal",
+   "llm": "",
+   "observed": "R3",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_069": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "temporal",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_074": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "surface_form",
+   "llm": "",
+   "observed": "R6",
+   "question_type": "EVENT_QUESTION"
+  },
+  "EVENT_QUESTION_083": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "surface_form",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "EVENT_QUESTION"
+  },
+  "GENERAL_BIBLE_QUESTION_014": {
+   "R1": {
+    "books": [
+     "eph"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "R2": {
+    "books": [
+     "eph"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "legacy_head",
+   "llm": "",
+   "observed": "R6",
+   "question_type": "GENERAL_BIBLE_QUESTION"
+  },
+  "GENERAL_BIBLE_QUESTION_062": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "nt_quotes_ot",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "GENERAL_BIBLE_QUESTION"
+  },
+  "GENERAL_BIBLE_QUESTION_073": {
+   "R1": {
+    "books": [
+     "psa"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "R2": {
+    "books": [
+     "psa"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "typology",
+   "llm": "",
+   "observed": "R6",
+   "question_type": "GENERAL_BIBLE_QUESTION"
+  },
+  "PERSON_QUESTION_024": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "longtail_person",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_026": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "longtail_person",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_038": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "longtail_person",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_040": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "longtail_person",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_049": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "longtail_person",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_050": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "longtail_person",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_051": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "disambiguation",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_054": {
+   "R1": {
+    "books": [
+     "act"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [
+     "act"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "disambiguation",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_056": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "disambiguation",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_061": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "disambiguation",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_063": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "title_coref",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_064": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "title_coref",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_077": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "trajectory",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_080": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "trajectory",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_082": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "trajectory",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "PERSON_QUESTION_090": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "trajectory",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "PERSON_QUESTION"
+  },
+  "TOPIC_QUESTION_034": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R2",
+    "route": "R2"
+   },
+   "R2": {
+    "books": [
+     "neh"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R2",
+    "route": "R2"
+   },
+   "causes": [
+    "books"
+   ],
+   "family": "longtail_chapter",
+   "llm": "",
+   "observed": "R2",
+   "question_type": "TOPIC_QUESTION"
+  },
+  "TOPIC_QUESTION_055": {
+   "R1": {
+    "books": [
+     "jud"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R3",
+    "route": "R3"
+   },
+   "R2": {
+    "books": [
+     "jud"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "longtail_chapter",
+   "llm": "",
+   "observed": "R3",
+   "question_type": "TOPIC_QUESTION"
+  },
+  "TOPIC_QUESTION_057": {
+   "R1": {
+    "books": [
+     "mat"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R3",
+    "route": "R3"
+   },
+   "R2": {
+    "books": [
+     "mat"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "multi_chapter",
+   "llm": "",
+   "observed": "R3",
+   "question_type": "TOPIC_QUESTION"
+  },
+  "TOPIC_QUESTION_061": {
+   "R1": {
+    "books": [
+     "exo"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R4",
+    "route": "R4"
+   },
+   "R2": {
+    "books": [
+     "exo"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "multi_chapter",
+   "llm": "",
+   "observed": "R4",
+   "question_type": "TOPIC_QUESTION"
+  },
+  "TOPIC_QUESTION_063": {
+   "R1": {
+    "books": [
+     "jhn"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R3",
+    "route": "R3"
+   },
+   "R2": {
+    "books": [
+     "jhn"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "multi_chapter",
+   "llm": "",
+   "observed": "R3",
+   "question_type": "TOPIC_QUESTION"
+  },
+  "TOPIC_QUESTION_074": {
+   "R1": {
+    "books": [
+     "luk"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R3",
+    "route": "R3"
+   },
+   "R2": {
+    "books": [
+     "luk"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "multi_chapter",
+   "llm": "",
+   "observed": "R3",
+   "question_type": "TOPIC_QUESTION"
+  },
+  "VERSE_LOOKUP_035": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R1",
+    "route": "R1"
+   },
+   "R2": {
+    "books": [
+     "neh"
+    ],
+    "events": [],
+    "lane": [],
+    "query_only": "R1",
+    "route": "R1"
+   },
+   "causes": [
+    "books"
+   ],
+   "family": "longtail_book",
+   "llm": "",
+   "observed": "R1",
+   "question_type": "VERSE_LOOKUP"
+  },
+  "VERSE_LOOKUP_099": {
+   "R1": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "fallback",
+    "route": "fallback"
+   },
+   "R2": {
+    "books": [],
+    "events": [],
+    "lane": [],
+    "query_only": "R6",
+    "route": "R6"
+   },
+   "causes": [
+    "route"
+   ],
+   "family": "paraphrase",
+   "llm": "",
+   "observed": "fallback",
+   "question_type": "VERSE_LOOKUP"
+  }
+ },
+ "disambiguation": {
+  "n_questions": 12,
+  "question_ids": [
+   "PERSON_QUESTION_051",
+   "PERSON_QUESTION_052",
+   "PERSON_QUESTION_053",
+   "PERSON_QUESTION_054",
+   "PERSON_QUESTION_055",
+   "PERSON_QUESTION_056",
+   "PERSON_QUESTION_057",
+   "PERSON_QUESTION_058",
+   "PERSON_QUESTION_059",
+   "PERSON_QUESTION_060",
+   "PERSON_QUESTION_061",
+   "PERSON_QUESTION_062"
+  ],
+  "rows": {
+   "PERSON_QUESTION_051": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "fallback",
+     "route": "fallback"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [
+     "route"
+    ],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "fallback",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_052": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R3",
+     "route": "R3"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R3",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_053": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R3",
+     "route": "R3"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R3",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_054": {
+    "R1": {
+     "books": [
+      "act"
+     ],
+     "events": [],
+     "lane": [],
+     "query_only": "fallback",
+     "route": "fallback"
+    },
+    "R2": {
+     "books": [
+      "act"
+     ],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [
+     "route"
+    ],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "fallback",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_055": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R3",
+     "route": "R3"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R3",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_056": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "fallback",
+     "route": "fallback"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [
+     "route"
+    ],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "fallback",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_057": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R3",
+     "route": "R3"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R3",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_058": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R3",
+     "route": "R3"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R3",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_059": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R3",
+     "route": "R3"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R3",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_060": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R3",
+     "route": "R3"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R3",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_061": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "fallback",
+     "route": "fallback"
+    },
+    "R2": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R6",
+     "route": "R6"
+    },
+    "causes": [
+     "route"
+    ],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "fallback",
+    "question_type": "PERSON_QUESTION"
+   },
+   "PERSON_QUESTION_062": {
+    "R1": {
+     "books": [
+      "gen",
+      "jdg"
+     ],
+     "events": [],
+     "lane": [],
+     "query_only": "R5",
+     "route": "R5"
+    },
+    "R2": {
+     "books": [
+      "gen",
+      "jdg"
+     ],
+     "events": [],
+     "lane": [],
+     "query_only": "R5",
+     "route": "R5"
+    },
+    "causes": [],
+    "family": "disambiguation",
+    "llm": "",
+    "observed": "R5",
+    "question_type": "PERSON_QUESTION"
+   }
+  }
+ },
+ "excluded": {
+  "n_questions": 2,
+  "question_ids": [
+   "TOPIC_QUESTION_034",
+   "VERSE_LOOKUP_035"
+  ],
+  "rows": {
+   "TOPIC_QUESTION_034": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R2",
+     "route": "R2"
+    },
+    "R2": {
+     "books": [
+      "neh"
+     ],
+     "events": [],
+     "lane": [],
+     "query_only": "R2",
+     "route": "R2"
+    },
+    "causes": [
+     "books"
+    ],
+    "family": "longtail_chapter",
+    "llm": "",
+    "observed": "R2",
+    "question_type": "TOPIC_QUESTION"
+   },
+   "VERSE_LOOKUP_035": {
+    "R1": {
+     "books": [],
+     "events": [],
+     "lane": [],
+     "query_only": "R1",
+     "route": "R1"
+    },
+    "R2": {
+     "books": [
+      "neh"
+     ],
+     "events": [],
+     "lane": [],
+     "query_only": "R1",
+     "route": "R1"
+    },
+    "causes": [
+     "books"
+    ],
+    "family": "longtail_book",
+    "llm": "",
+    "observed": "R1",
+    "question_type": "VERSE_LOOKUP"
+   }
+  }
+ },
+ "gans_subset": {
+  "n_questions": 200,
+  "question_ids": [
+   "EVENT_QUESTION_002",
+   "EVENT_QUESTION_003",
+   "EVENT_QUESTION_005",
+   "EVENT_QUESTION_011",
+   "EVENT_QUESTION_015",
+   "EVENT_QUESTION_018",
+   "EVENT_QUESTION_019",
+   "EVENT_QUESTION_020",
+   "EVENT_QUESTION_021",
+   "EVENT_QUESTION_023",
+   "EVENT_QUESTION_025",
+   "EVENT_QUESTION_029",
+   "EVENT_QUESTION_031",
+   "EVENT_QUESTION_033",
+   "EVENT_QUESTION_034",
+   "EVENT_QUESTION_043",
+   "EVENT_QUESTION_044",
+   "EVENT_QUESTION_045",
+   "EVENT_QUESTION_047",
+   "EVENT_QUESTION_049",
+   "EVENT_QUESTION_050",
+   "EVENT_QUESTION_052",
+   "EVENT_QUESTION_054",
+   "EVENT_QUESTION_055",
+   "EVENT_QUESTION_058",
+   "EVENT_QUESTION_060",
+   "EVENT_QUESTION_063",
+   "EVENT_QUESTION_064",
+   "EVENT_QUESTION_066",
+   "EVENT_QUESTION_069",
+   "EVENT_QUESTION_072",
+   "EVENT_QUESTION_080",
+   "EVENT_QUESTION_089",
+   "EVENT_QUESTION_092",
+   "EVENT_QUESTION_094",
+   "EVENT_QUESTION_095",
+   "EVENT_QUESTION_096",
+   "EVENT_QUESTION_097",
+   "EVENT_QUESTION_098",
+   "EVENT_QUESTION_099",
+   "GENERAL_BIBLE_QUESTION_004",
+   "GENERAL_BIBLE_QUESTION_005",
+   "GENERAL_BIBLE_QUESTION_009",
+   "GENERAL_BIBLE_QUESTION_010",
+   "GENERAL_BIBLE_QUESTION_012",
+   "GENERAL_BIBLE_QUESTION_013",
+   "GENERAL_BIBLE_QUESTION_016",
+   "GENERAL_BIBLE_QUESTION_018",
+   "GENERAL_BIBLE_QUESTION_021",
+   "GENERAL_BIBLE_QUESTION_022",
+   "GENERAL_BIBLE_QUESTION_023",
+   "GENERAL_BIBLE_QUESTION_024",
+   "GENERAL_BIBLE_QUESTION_026",
+   "GENERAL_BIBLE_QUESTION_027",
+   "GENERAL_BIBLE_QUESTION_028",
+   "GENERAL_BIBLE_QUESTION_031",
+   "GENERAL_BIBLE_QUESTION_038",
+   "GENERAL_BIBLE_QUESTION_039",
+   "GENERAL_BIBLE_QUESTION_042",
+   "GENERAL_BIBLE_QUESTION_044",
+   "GENERAL_BIBLE_QUESTION_049",
+   "GENERAL_BIBLE_QUESTION_052",
+   "GENERAL_BIBLE_QUESTION_054",
+   "GENERAL_BIBLE_QUESTION_057",
+   "GENERAL_BIBLE_QUESTION_060",
+   "GENERAL_BIBLE_QUESTION_061",
+   "GENERAL_BIBLE_QUESTION_065",
+   "GENERAL_BIBLE_QUESTION_067",
+   "GENERAL_BIBLE_QUESTION_073",
+   "GENERAL_BIBLE_QUESTION_075",
+   "GENERAL_BIBLE_QUESTION_078",
+   "GENERAL_BIBLE_QUESTION_082",
+   "GENERAL_BIBLE_QUESTION_084",
+   "GENERAL_BIBLE_QUESTION_085",
+   "GENERAL_BIBLE_QUESTION_088",
+   "GENERAL_BIBLE_QUESTION_091",
+   "GENERAL_BIBLE_QUESTION_092",
+   "GENERAL_BIBLE_QUESTION_093",
+   "GENERAL_BIBLE_QUESTION_098",
+   "GENERAL_BIBLE_QUESTION_100",
+   "PERSON_QUESTION_001",
+   "PERSON_QUESTION_004",
+   "PERSON_QUESTION_008",
+   "PERSON_QUESTION_011",
+   "PERSON_QUESTION_012",
+   "PERSON_QUESTION_013",
+   "PERSON_QUESTION_016",
+   "PERSON_QUESTION_017",
+   "PERSON_QUESTION_022",
+   "PERSON_QUESTION_025",
+   "PERSON_QUESTION_026",
+   "PERSON_QUESTION_027",
+   "PERSON_QUESTION_028",
+   "PERSON_QUESTION_032",
+   "PERSON_QUESTION_033",
+   "PERSON_QUESTION_034",
+   "PERSON_QUESTION_041",
+   "PERSON_QUESTION_044",
+   "PERSON_QUESTION_045",
+   "PERSON_QUESTION_046",
+   "PERSON_QUESTION_047",
+   "PERSON_QUESTION_048",
+   "PERSON_QUESTION_050",
+   "PERSON_QUESTION_051",
+   "PERSON_QUESTION_053",
+   "PERSON_QUESTION_054",
+   "PERSON_QUESTION_055",
+   "PERSON_QUESTION_059",
+   "PERSON_QUESTION_061",
+   "PERSON_QUESTION_062",
+   "PERSON_QUESTION_063",
+   "PERSON_QUESTION_065",
+   "PERSON_QUESTION_067",
+   "PERSON_QUESTION_075",
+   "PERSON_QUESTION_077",
+   "PERSON_QUESTION_078",
+   "PERSON_QUESTION_080",
+   "PERSON_QUESTION_092",
+   "PERSON_QUESTION_094",
+   "PERSON_QUESTION_095",
+   "TOPIC_QUESTION_002",
+   "TOPIC_QUESTION_006",
+   "TOPIC_QUESTION_007",
+   "TOPIC_QUESTION_008",
+   "TOPIC_QUESTION_013",
+   "TOPIC_QUESTION_014",
+   "TOPIC_QUESTION_017",
+   "TOPIC_QUESTION_020",
+   "TOPIC_QUESTION_021",
+   "TOPIC_QUESTION_022",
+   "TOPIC_QUESTION_023",
+   "TOPIC_QUESTION_027",
+   "TOPIC_QUESTION_028",
+   "TOPIC_QUESTION_029",
+   "TOPIC_QUESTION_035",
+   "TOPIC_QUESTION_036",
+   "TOPIC_QUESTION_040",
+   "TOPIC_QUESTION_041",
+   "TOPIC_QUESTION_042",
+   "TOPIC_QUESTION_043",
+   "TOPIC_QUESTION_044",
+   "TOPIC_QUESTION_047",
+   "TOPIC_QUESTION_048",
+   "TOPIC_QUESTION_058",
+   "TOPIC_QUESTION_060",
+   "TOPIC_QUESTION_061",
+   "TOPIC_QUESTION_062",
+   "TOPIC_QUESTION_070",
+   "TOPIC_QUESTION_071",
+   "TOPIC_QUESTION_074",
+   "TOPIC_QUESTION_078",
+   "TOPIC_QUESTION_081",
+   "TOPIC_QUESTION_082",
+   "TOPIC_QUESTION_090",
+   "TOPIC_QUESTION_091",
+   "TOPIC_QUESTION_092",
+   "TOPIC_QUESTION_093",
+   "TOPIC_QUESTION_094",
+   "TOPIC_QUESTION_098",
+   "TOPIC_QUESTION_099",
+   "VERSE_LOOKUP_008",
+   "VERSE_LOOKUP_010",
+   "VERSE_LOOKUP_012",
+   "VERSE_LOOKUP_014",
+   "VERSE_LOOKUP_015",
+   "VERSE_LOOKUP_017",
+   "VERSE_LOOKUP_018",
+   "VERSE_LOOKUP_020",
+   "VERSE_LOOKUP_021",
+   "VERSE_LOOKUP_023",
+   "VERSE_LOOKUP_025",
+   "VERSE_LOOKUP_026",
+   "VERSE_LOOKUP_029",
+   "VERSE_LOOKUP_031",
+   "VERSE_LOOKUP_034",
+   "VERSE_LOOKUP_035",
+   "VERSE_LOOKUP_038",
+   "VERSE_LOOKUP_039",
+   "VERSE_LOOKUP_041",
+   "VERSE_LOOKUP_042",
+   "VERSE_LOOKUP_043",
+   "VERSE_LOOKUP_051",
+   "VERSE_LOOKUP_052",
+   "VERSE_LOOKUP_053",
+   "VERSE_LOOKUP_056",
+   "VERSE_LOOKUP_057",
+   "VERSE_LOOKUP_061",
+   "VERSE_LOOKUP_063",
+   "VERSE_LOOKUP_064",
+   "VERSE_LOOKUP_069",
+   "VERSE_LOOKUP_071",
+   "VERSE_LOOKUP_075",
+   "VERSE_LOOKUP_077",
+   "VERSE_LOOKUP_080",
+   "VERSE_LOOKUP_082",
+   "VERSE_LOOKUP_085",
+   "VERSE_LOOKUP_088",
+   "VERSE_LOOKUP_092",
+   "VERSE_LOOKUP_097",
+   "VERSE_LOOKUP_099"
+  ],
+  "sha256": "6ad9c464b9750057a37c54ab8b80c15779b2c235c7ed6a4b61af43b3e70301c0",
+  "source": "evaluation/experiments/2026-10-08_r1/frozen_r1.json"
+ },
+ "gt": {
+  "freeze_record": "config/gold/gt_v2_freeze.json",
+  "n_questions": 500,
+  "path": "ground_truth.v2.json",
+  "sha256": "7280bb42af869ee18d34230b296f302132eb82dbf5203391e07882fd3691b2f1",
+  "slot_universe": "text@247eafe44b02"
+ },
+ "observed_runs": [
+  {
+   "n_routes": 500,
+   "path": "/mnt/ollama-data/bible_rag_store/reports/r1eval/r1eval_r1.json",
+   "sha256": "3968eb40c23f583bed603f6ef16817e8b08bc5a1d4bfff601e254e4d4d02bb5c"
+  },
+  {
+   "n_routes": 500,
+   "path": "/mnt/ollama-data/bible_rag_store/reports/r2eval/r2eval_r1_L2.json",
+   "sha256": "fbe480cc6810c2b1e5cbe9b011fd9c31997536a291e806efb2e65146d7f885ec"
+  }
+ ],
+ "prereg": "evaluation/experiments/2026-10-09_r2/prereg.md",
+ "route_change_slice": {
+  "sub_slices": {
+   "books": {
+    "n_questions": 0,
+    "question_ids": []
+   },
+   "lane": {
+    "n_questions": 2,
+    "question_ids": [
+     "EVENT_QUESTION_003",
+     "EVENT_QUESTION_066"
+    ]
+   },
+   "route": {
+    "n_questions": 32,
+    "question_ids": [
+     "EVENT_QUESTION_001",
+     "EVENT_QUESTION_010",
+     "EVENT_QUESTION_017",
+     "EVENT_QUESTION_061",
+     "EVENT_QUESTION_069",
+     "EVENT_QUESTION_074",
+     "EVENT_QUESTION_083",
+     "GENERAL_BIBLE_QUESTION_014",
+     "GENERAL_BIBLE_QUESTION_062",
+     "GENERAL_BIBLE_QUESTION_073",
+     "PERSON_QUESTION_024",
+     "PERSON_QUESTION_026",
+     "PERSON_QUESTION_038",
+     "PERSON_QUESTION_040",
+     "PERSON_QUESTION_049",
+     "PERSON_QUESTION_050",
+     "PERSON_QUESTION_051",
+     "PERSON_QUESTION_054",
+     "PERSON_QUESTION_056",
+     "PERSON_QUESTION_061",
+     "PERSON_QUESTION_063",
+     "PERSON_QUESTION_064",
+     "PERSON_QUESTION_077",
+     "PERSON_QUESTION_080",
+     "PERSON_QUESTION_082",
+     "PERSON_QUESTION_090",
+     "TOPIC_QUESTION_055",
+     "TOPIC_QUESTION_057",
+     "TOPIC_QUESTION_061",
+     "TOPIC_QUESTION_063",
+     "TOPIC_QUESTION_074",
+     "VERSE_LOOKUP_099"
+    ]
+   }
+  },
+  "union": {
+   "n_questions": 34,
+   "question_ids": [
+    "EVENT_QUESTION_001",
+    "EVENT_QUESTION_003",
+    "EVENT_QUESTION_010",
+    "EVENT_QUESTION_017",
+    "EVENT_QUESTION_061",
+    "EVENT_QUESTION_066",
+    "EVENT_QUESTION_069",
+    "EVENT_QUESTION_074",
+    "EVENT_QUESTION_083",
+    "GENERAL_BIBLE_QUESTION_014",
+    "GENERAL_BIBLE_QUESTION_062",
+    "GENERAL_BIBLE_QUESTION_073",
+    "PERSON_QUESTION_024",
+    "PERSON_QUESTION_026",
+    "PERSON_QUESTION_038",
+    "PERSON_QUESTION_040",
+    "PERSON_QUESTION_049",
+    "PERSON_QUESTION_050",
+    "PERSON_QUESTION_051",
+    "PERSON_QUESTION_054",
+    "PERSON_QUESTION_056",
+    "PERSON_QUESTION_061",
+    "PERSON_QUESTION_063",
+    "PERSON_QUESTION_064",
+    "PERSON_QUESTION_077",
+    "PERSON_QUESTION_080",
+    "PERSON_QUESTION_082",
+    "PERSON_QUESTION_090",
+    "TOPIC_QUESTION_055",
+    "TOPIC_QUESTION_057",
+    "TOPIC_QUESTION_061",
+    "TOPIC_QUESTION_063",
+    "TOPIC_QUESTION_074",
+    "VERSE_LOOKUP_099"
+   ]
+  }
+ },
+ "rules": {
+  "books": "the detected book ids differ (book anchors, the multi-book pin)",
+  "disambiguation": "GT v2 family disambiguation, listed with its simulation; report only",
+  "excluded": "TOPIC_QUESTION_034, VERSE_LOOKUP_035: R1's verse parser already changed their routes (DOC 1 §7); they stay in C1/C2",
+  "gans_subset": "frozen_r1.json's gans_subset, unchanged",
+  "lane": "the event lane's anchor preference differs: on R4/R5 the triggered events in match_events order, their anchors concatenated, first occurrence kept (what one slot, rag_event_registry_slots=1, appends first that the top-k lacks); empty elsewhere",
+  "route": "the route handler differs: R1, R2, R5 and fallback each have their own; R3, R4 and R6 share one (routes._dense_route, one set of weights)",
+  "simulation": "per GT v2 question, query-only signals (intent '', no entities, no keywords) under each arm's lexicon and router; R1's route is the modal route of the observed R1 runs (ties: the earlier run) when one intent-LLM contribution (cross_reference intent -> R5, persons -> R3, event -> R4, place -> R6) turns R1's query-only route into it, and R2's is R2's query-only signals plus that contribution; otherwise (unexplained, unobserved) both are query-only",
+  "union": "route ∪ books ∪ lane minus the excluded ids; the only set C3 scores"
+ },
+ "schema": "evaluation.r2_frozen.v1",
+ "script": {
+  "path": "evaluation/experiments/2026-10-09_r2/freeze_r2.py",
+  "sha256": "0e07ae910665144702fc7dc4fde4b59f79a6b28385de0736f16d481ef96baa2a"
+ },
+ "transitions": {
+  "R3->R4": 1,
+  "R3->R6": 70,
+  "R3->fallback": 4,
+  "R4->R6": 7,
+  "R4->fallback": 5,
+  "R6->fallback": 3,
+  "fallback->R6": 20
+ },
+ "unexplained": []
+}
