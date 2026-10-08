@@ -70,6 +70,10 @@ VALID = [
     ("vs:act.9.19", "verse_record", {"book_id": "act", "chapter": 9, "verse": 19}),
     ("vs:eph.6.2-3", "verse_record", {"verse": 2, "verse_end": 3}),
     ("vs:psa.3.1", "verse_record", {"book_id": "psa"}),
+    ("vr:mat.18.3~mat.18.4", "verse_range", {"book_id": "mat", "chapter": 18, "verse": 3}),
+    ("vr:gen.1.30~gen.1.31", "verse_range", {"verse": 30, "half": False}),
+    ("vr:mat.18.3~mat.18.3", "verse_range", {"verse": 3}),
+    ("vr:gen.1.31~gen.2.3", "verse_range", {"chapter": 1, "verse": 31}),
     ("nm:c21faeeef08a", "name", {"digest": "c21faeeef08a"}),
     ("nm:000000000000", "name", {"digest": "000000000000"}),
     ("mn:0123456789abcdef", "mention", {"digest": "0123456789abcdef"}),
@@ -112,6 +116,9 @@ INVALID = [
     "ck:act.9.19b", "ck:act.9.25~act.9.19b", "ck:act.9.19~mat.9.25", "ck:act.9.19~",
     "ck:act.9.19b~act.9.19", "ck:eph.6.2-3~eph.6.9", "ck:act.10.1~act.9.30",
     "vs:act.9.19b", "vs:act.9", "vs:", "vs:act.9.19#1",
+    "vr:mat.18.3", "vr:mat.18.4~mat.18.3", "vr:mat.18.3~mrk.18.4", "vr:eph.6.2-3~eph.6.4",
+    "vr:act.9.19b~act.9.20", "vr:act.9.19~act.9.19b", "vr:mat.18.3~", "vr:", "vr:gen.2.1~gen.1.31",
+    "vr:mat.18.3~mat.18.4~mat.18.5",
     "nm:c21faeeef08", "nm:c21faeeef08aa", "nm:C21FAEEEF08A", "nm:g21faeeef08a",
     "mn:0123456789abcde", "mn:0123456789ABCDEF", "mn:act.9.19/掃羅/1",
     "e00231", "e0002310", "e000000", "E000231", "e00023a", "ev015", "ev00015", "ev0000",
@@ -129,6 +136,7 @@ ROLE_CASES = [
     ("act.9.19b", "slot", False), ("act.9.19b", "unit", False), ("act.9.19b", "key", True),
     ("psa.3", "chapter", True), ("psa.3", "slot", False), ("gen", "book", True),
     ("vs:act.9.19", "verse_record", True), ("vs:act.9.19", "passage", False),
+    ("vr:act.9.1~act.9.2", "verse_range", True), ("vr:act.9.1~act.9.2", "chunk", False),
     ("ps:act.9.19b", "passage", True), ("pc:act.9.19b", "passage", False),
     ("e000231", "entity", True), ("ev0015", "entity", False),
     ("legacy-20261004", "build", True), ("text@0123456789ab", "build", False),
@@ -176,6 +184,8 @@ def test_nested_parents_are_parsed():
     assert ns.parent.parent.kind == "unit"
     ck = ids.parse("ck:act.9.19b~act.9.25")
     assert (ck.parent.raw, ck.end.raw) == ("act.9.19b", "act.9.25")
+    vr = ids.parse("vr:gen.1.30~gen.2.3")
+    assert (vr.parent.kind, vr.parent.raw, vr.end.raw) == ("slot", "gen.1.30", "gen.2.3")
 
 
 BUILDERS = [
@@ -201,6 +211,8 @@ BUILDERS = [
     (lambda: ids.passage_id("act.9.19b"), "ps:act.9.19b"),
     (lambda: ids.chunk_id("act.9.19b", "act.9.25"), "ck:act.9.19b~act.9.25"),
     (lambda: ids.verse_record_id("eph.6.2-3"), "vs:eph.6.2-3"),
+    (lambda: ids.verse_range_id("mat.18.3", "mat.18.4"), "vr:mat.18.3~mat.18.4"),
+    (lambda: ids.verse_range_id("mat.18.3", "mat.18.3"), "vr:mat.18.3~mat.18.3"),
     (lambda: ids.entity_id(231), "e000231"),
     (lambda: ids.event_id(15), "ev0015"),
     (lambda: ids.layer_version("text", "0123456789abcdef" * 4), "text@0123456789ab"),
@@ -239,6 +251,9 @@ BAD_BUILDS = [
     lambda: ids.pericope_id("eph.6.2-3"),
     lambda: ids.chunk_id("act.9.25", "act.9.19"),
     lambda: ids.verse_record_id("act.9.19b"),
+    lambda: ids.verse_range_id("mat.18.4", "mat.18.3"),
+    lambda: ids.verse_range_id("eph.6.2-3", "eph.6.4"),
+    lambda: ids.verse_range_id("act.9.19b", "act.9.20"),
     lambda: ids.entity_id(0),
     lambda: ids.entity_id(1_000_000),
     lambda: ids.event_id(10_000),

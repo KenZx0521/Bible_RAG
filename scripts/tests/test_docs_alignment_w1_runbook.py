@@ -117,9 +117,16 @@ def test_a_read_only_evidence_file_stops_a_redirect_and_a_tee(tmp_path):
 
 # ---------------------------------------------------------------- (b) what "clean" means for :w1
 
+# The runbook builds the W1 image from a legacy checkout; R1's Dockerfile no longer copies
+# scripts/ or bible_chunking/, so the W1 image's inputs are read from the pre-R1 Dockerfile.
+PRE_R1 = "f9ad4d3"
+
+
 def _dockerfile_copy_roots() -> set[str]:
     roots = set()
-    for line in read(ROOT / "Dockerfile").splitlines():
+    dockerfile = subprocess.run(["git", "-C", str(ROOT), "show", f"{PRE_R1}:Dockerfile"],
+                                check=True, capture_output=True, text=True).stdout
+    for line in dockerfile.splitlines():
         parts = line.split()
         if parts[:1] == ["COPY"] and not parts[1].startswith("--"):
             roots |= {src.split("/")[0] for src in parts[1:-1]}

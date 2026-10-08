@@ -9,6 +9,10 @@ Verse-shaped ids have three spellings, distinguished by ``ParsedId.kind``:
 ``slot`` (``jhn.3.16``), ``unit`` (merged label, ``eph.6.2-3``) and ``key``
 (half verse, ``act.9.19b``). The roles ``unit`` and ``key`` also accept a plain
 slot, because a single-verse unit and a whole-verse key are spelled as a slot.
+
+``vr:{start_slot}~{end_slot}`` names a run of slots that is not exactly one unit
+(a range, or one that holds an omitted slot): the id the backend gives such a
+verse query's result, so every id the API serves parses here (design §3.2).
 """
 
 from __future__ import annotations
@@ -34,7 +38,7 @@ LEGACY_BUILD_ID = "legacy-20261004"
 KINDS = frozenset({
     "book", "chapter", "slot", "unit", "key", "superscription", "division", "heading",
     "parallel_ref", "footnote", "speaker", "name_span", "merge_group", "pericope",
-    "passage", "chunk", "verse_record", "name", "mention", "entity", "event",
+    "passage", "chunk", "verse_record", "verse_range", "name", "mention", "entity", "event",
     "relation", "decision", "layer_version", "build",
 })
 ROLES = MappingProxyType({"unit": frozenset({"slot", "unit"}), "key": frozenset({"slot", "key"})})
@@ -226,14 +230,17 @@ def _key_order(parsed: ParsedId) -> tuple[int, int, bool]:
     return (parsed.chapter, parsed.verse, parsed.half)
 
 
-def _parse_chunk(raw: str, rest: str) -> ParsedId:
-    parts = rest.split("~")
-    if len(parts) != 2:
-        raise IdError(f"chunk id needs start~end: {raw!r}")
-    start, end = (_require(p, "key", raw) for p in parts)
-    if start.book_id != end.book_id or _key_order(start) > _key_order(end):
-        raise IdError(f"chunk range must ascend within one book: {raw!r}")
-    return _anchored("chunk", raw, start, end=end)
+def _span(kind: str, ends: str) -> Callable[[str, str], ParsedId]:
+    """``{start}~{end}``: two ``ends`` ids ascending within one book."""
+    def handler(raw: str, rest: str) -> ParsedId:
+        parts = rest.split("~")
+        if len(parts) != 2:
+            raise IdError(f"{kind} id needs start~end: {raw!r}")
+        start, end = (_require(p, ends, raw) for p in parts)
+        if start.book_id != end.book_id or _key_order(start) > _key_order(end):
+            raise IdError(f"{kind} range must ascend within one book: {raw!r}")
+        return _anchored(kind, raw, start, end=end)
+    return handler
 
 
 def _digest(prefix: str) -> Callable[[str, str], ParsedId]:
@@ -255,8 +262,9 @@ _PREFIXED: dict[str, Callable[[str, str], ParsedId]] = {
     "mg": _parse_merge_group,
     "pc": _keyed("pericope", "key"),
     "ps": _keyed("passage", "key"),
-    "ck": _parse_chunk,
+    "ck": _span("chunk", "key"),
     "vs": _keyed("verse_record", "unit"),
+    "vr": _span("verse_range", "slot"),
     **{prefix: _digest(prefix) for prefix in _DIGEST_LEN},
 }
 
@@ -411,6 +419,10 @@ def chunk_id(start_key: str, end_key: str) -> str:
 
 def verse_record_id(unit_key_: str) -> str:
     return _built(f"vs:{unit_key_}", "verse_record")
+
+
+def verse_range_id(start_slot: str, end_slot: str) -> str:
+    return _built(f"vr:{start_slot}~{end_slot}", "verse_range")
 
 
 def point_id(record_id: str) -> str:

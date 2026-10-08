@@ -2,8 +2,7 @@
 
 BGE-M3 (SentenceTransformer) and the reranker swap their AutoTokenizer for
 ragcommon.encoder's pinned tokenizer.json (G28). A tokenizer that fails its
-contract fails init, and with it the app's startup; /health reports the
-fingerprints without letting them change the status.
+contract fails init, and with it the app's startup, before any store is opened.
 """
 
 import asyncio
@@ -18,10 +17,9 @@ from transformers import PreTrainedTokenizerFast
 
 import main
 from config import settings
-from database import neo4j_db, postgres, qdrant_db
+from serving import startup
 from ragcommon import encoder
 from ragcommon.encoder import EncoderContractError
-from routers import health
 from utils import embedder, reranker
 
 M3_FILE = (Path(os.environ.get("HF_HOME", "/mnt/ollama-data/huggingface")) / "hub"
@@ -157,11 +155,7 @@ def test_reranker_refuses_an_unpinned_model(models, monkeypatch):
         reranker.init_reranker()
 
 
-# --- app startup and /health ------------------------------------------------------
-
-async def _noop(*args, **kwargs):
-    return None
-
+# --- app startup -------------------------------------------------------------------
 
 async def _start_app():
     async with main.lifespan(main.app):
@@ -170,33 +164,13 @@ async def _start_app():
 
 def test_app_startup_fails_when_the_encoder_contract_fails(models, monkeypatch):
     _use(monkeypatch, _hub(models.root, files={"bge-m3": RERANKER_FILE}))
-    monkeypatch.setattr(postgres, "init_pool", _noop)
-    monkeypatch.setattr(qdrant_db, "init_client", lambda: None)
-    monkeypatch.setattr(neo4j_db, "init_driver", _noop)
+    reached = []
+
+    async def run(fingerprints):
+        reached.append(fingerprints)
+
+    monkeypatch.setattr(startup, "run", run)
 
     with pytest.raises(EncoderContractError):
         asyncio.run(_start_app())
-
-
-async def _up():
-    return True
-
-
-async def _down():
-    return False
-
-
-@pytest.mark.parametrize(("neo4j_check", "status"), [(_up, "ok"), (_down, "degraded")])
-def test_health_reports_fingerprints_without_changing_status(monkeypatch, neo4j_check, status):
-    fp = {"tokenizer_sha": "t", "probe_ids_sha": "p", "unk_count": 3, "pair_template_ok": True}
-    monkeypatch.setattr(postgres, "health_check", _up)
-    monkeypatch.setattr(qdrant_db, "health_check", lambda: True)
-    monkeypatch.setattr(neo4j_db, "health_check", neo4j_check)
-    monkeypatch.setattr(health, "get_llm_client", lambda: SimpleNamespace(health_check=_up))
-    monkeypatch.setattr(embedder, "_fingerprint", fp)
-    monkeypatch.setattr(reranker, "_fingerprint", None)
-
-    response = asyncio.run(health.health_check())
-
-    assert response.status == status
-    assert response.encoder == {"embedder": fp, "reranker": None}
+    assert reached == []  # no store is touched before the models pass their contract

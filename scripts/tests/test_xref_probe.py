@@ -22,6 +22,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -391,9 +392,14 @@ class FakeDocker:
         return SimpleNamespace(returncode=0, stdout=self.files[rel], stderr=b"")
 
 
+# R1 removed the guarded Neo4j files from backend/; the deploy-guard is a W1 tool for a
+# legacy checkout. Its tests use the files as committed just before R1 (rebuild/main base).
+PRE_R1 = "f9ad4d3"
+
+
 def head_files() -> dict[str, bytes]:
-    """The guarded files as committed at this checkout's HEAD: what a clean build holds."""
-    return {rel: subprocess.run(["git", "-C", str(ROOT), "cat-file", "blob", f"HEAD:backend/{rel}"],
+    """The guarded files as a legacy (pre-R1) checkout's HEAD holds them: what a clean build holds."""
+    return {rel: subprocess.run(["git", "-C", str(ROOT), "cat-file", "blob", f"{PRE_R1}:backend/{rel}"],
                                 check=True, capture_output=True).stdout
             for rel in (NEO4J_DB, RETRIEVER, PROBE)}
 
@@ -410,8 +416,17 @@ def committed_backend(tmp_path: Path, files: dict[str, bytes]) -> Path:
 
 
 def run_guard(monkeypatch, docker, *argv) -> int:
+    """deploy-guard against a legacy checkout whose HEAD holds head_files()."""
     monkeypatch.setattr(xp, "run_command", docker)
-    return xp.main(["deploy-guard", *argv])
+    guard = xp.deploy_guard
+    with tempfile.TemporaryDirectory() as tmp:
+        legacy = committed_backend(Path(tmp), head_files())
+        monkeypatch.setattr(xp, "deploy_guard",
+                            lambda container, runner: guard(container, runner, legacy))
+        try:
+            return xp.main(["deploy-guard", *argv])
+        finally:
+            monkeypatch.setattr(xp, "deploy_guard", guard)
 
 
 def test_deploy_guard_accepts_current_checkout(monkeypatch, capsys):
