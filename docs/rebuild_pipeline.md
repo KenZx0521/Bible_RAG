@@ -65,25 +65,20 @@ GT v2 的人工判斷寫在 `config/gold/gt_v2_curated.yaml`；errata 的字形�
 
 ## 6. promote 與回滾
 
-`rag_meta.serving` 決定 backend 服務哪個 (build_id, 映像 digest)。promote 是函式，不是指令，由操作者執行：
+`rag_meta.serving` 決定 backend 服務哪個 (build_id, 映像 digest)；backend 只在啟動時讀一次，改了要重啟才生效。
 
 ```bash
-env PYTHONPATH=ragdata/src:packages scripts/.venv/bin/python - <<'EOF'
-from ragdata import paths
-from ragdata.loader import cli, promote
-pg, qdrant = cli.connect(cli.environment(paths.REPO / ".env"))
-print(promote.promote(pg, "staging", "<build_id>", "sha256:<映像 digest>"))   # 回傳先前的配對
-EOF
+DIGEST=$(docker image inspect --format '{{.Id}}' bible_rag-backend:r1)
+$RAGDATA promote --env staging --build <build_id> --image "$DIGEST"   # 印出新配對與先前配對
+$RAGDATA promote --env staging --rollback                             # 回到上一筆
 ```
 
-- 第一次 promote 的回滾（該 env 在 `rag_meta.serving` 還沒有列，promote 回傳 `None`，沒有先前配對）：把 backend 容器切回舊映像 `bible_rag-backend:latest`，它讀 `public` 與舊 collection，不看 `rag_meta.serving`；切回時不要重建這個映像。serving 那一列可以留著；要清掉（例如之後要 unload 這個 build，serving 中的 build 會被拒絕），就刪該 env 的列（staging 則改成 `'staging'`）：
-
-  ```bash
-  docker exec bible_rag_postgres psql -U bible -d bible_rag -c "DELETE FROM rag_meta.serving WHERE env = 'prod'"
-  ```
-
-- 之後的回滾：以 promote 回傳的先前配對再 promote 一次。
-- 目前 `rag_meta.serving` 是空的，線上 backend 仍讀 `public` schema 與舊 collection。`public`、`bible_embeddings*`、`bible_entities` 是 R1 上線前的回滾基準，**不可刪**。
+- 每次 promote 在同一交易內附加一筆到 `rag_meta.serving_history`（第一次 promote 時建表）；配對與目前相同時什麼都不寫。
+- `--rollback`：把該 env 最新一筆未回滾的紀錄標為已回滾，serving 改回它的前一筆；再跑一次就再退一筆。最新一筆和 serving 不一致時拒絕，不做任何修改。
+- 第一次 promote 的回滾（沒有前一筆）會刪掉該 env 的 serving 列，回到「沒有 build 在服務」；之後即可 unload 該 build。prod 另要把 backend 容器切回舊映像 `bible_rag-backend:latest`（讀 `public` 與舊 collection，不看 `rag_meta.serving`），切回時不要重建這個映像。
+- `--env prod` 一律要加 `--yes-prod`，否則拒絕（promote 與 `--rollback` 都是）。
+- 目前 prod 沒有 serving 列，線上 backend 仍讀 `public` schema 與舊 collection。`public`、`bible_embeddings*`、`bible_entities` 是 R1 上線前的回滾基準，**不可刪**。
+- R1 staging backend（:8002）的啟動與驗證見 `docker-compose.staging.yml` 的 `backend-r1`。
 
 ## 7. 清理被取代的 build
 

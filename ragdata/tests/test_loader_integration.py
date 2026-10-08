@@ -90,17 +90,33 @@ def test_promote_and_switch_back(tmp_path, mini, db):
         loader.load(loaded.release, db, loaded.qdrant, tmp_path / "again")
 
 
-def test_the_first_promote_is_undone_by_deleting_the_env_row(tmp_path, mini, db):
-    """The first promote has no previous pair to go back to; deleting the env's serving
-    row (the SQL docs/rebuild_pipeline.md §6 gives) restores "nothing serves" and lets
-    the build be unloaded."""
+def test_rollback_steps_back_one_promote_at_a_time(tmp_path, mini, db):
+    loaded = _load(tmp_path, mini, db)
+    build_id = loaded.release.build_id
+    first, second = "sha256:" + "c" * 64, "sha256:" + "d" * 64
+    promoter.promote(db, "staging", build_id, first)
+    promoter.promote(db, "staging", build_id, second)
+
+    done = promoter.rollback(db, "staging")
+    assert done.restored == promoter.Serving("staging", build_id, first)
+    assert db.query('SELECT "backend_image_digest" FROM rag_meta.serving') == [(first,)]
+    assert promoter.rollback(db, "staging").restored is None
+    assert db.serving() == {}
+    with pytest.raises(promoter.PromoteError, match="nothing serves"):
+        promoter.rollback(db, "staging")
+    marked = db.query("SELECT count(*) FROM rag_meta.serving_history "
+                      "WHERE rolled_back_at IS NOT NULL")
+    assert marked == [(2,)]
+
+
+def test_the_first_promote_is_undone_by_rollback(tmp_path, mini, db):
+    """The first promote has no previous pair: rollback deletes the env's serving row,
+    restoring "nothing serves", and the build can then be unloaded."""
     loaded = _load(tmp_path, mini, db)
     build_id = loaded.release.build_id
     assert promoter.promote(db, "prod", build_id, "sha256:" + "c" * 64) is None
     with pytest.raises(unloader.UnloadError, match="serving"):
         unloader.unload(build_id, db, loaded.qdrant, loaded.contracts)
-    with db.transaction() as cur:
-        cur.execute("DELETE FROM rag_meta.serving WHERE env = 'prod'")
-    assert db.serving() == {}
+    assert promoter.rollback(db, "prod").restored is None and db.serving() == {}
     report = unloader.unload(build_id, db, loaded.qdrant, loaded.contracts)
     assert report["removed"] == list(unloader.OWNED)
