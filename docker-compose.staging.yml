@@ -21,6 +21,16 @@
 # (with or without this file) never starts them by accident; naming the service
 # enables it. pull_policy never: both images must already be local (the host
 # link is ~50 KB/s, and a silent pull of a newer tag would break image parity).
+#
+# R1 staging (design §7.5, §7.8): backend-r1 below, profile "r1", on :8002. It
+# serves the build rag_meta.serving(env='staging') names (`ragdata promote --env
+# staging`, docs/rebuild_pipeline.md §6). The project is pinned to bible_rag so
+# that a worktree checkout joins bible_rag_default and bible_rag_model_cache:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.staging.yml \
+#     up -d --no-deps --no-build --wait --wait-timeout 300 backend-r1
+
+name: bible_rag
 
 services:
   # Same image, APOC setup, credentials and memory as the production `neo4j`
@@ -94,6 +104,40 @@ services:
     volumes:
       - model_cache:/root/.cache
       - ./output/bm25_vocabulary.json:/app/backend/output/bm25_vocabulary.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  # The R1 image on the staging build. Same env as the production backend
+  # (.env plus the container-network hosts), with RAG_ENV=staging, offline
+  # models and the contract directories read-only. No depends_on: postgres,
+  # qdrant and ollama are the running production services, and naming them would
+  # let `up` converge (recreate) them. A failed handshake exits the process
+  # (STRICT_BUILD_CHECK defaults to true), so `--wait` fails instead of serving.
+  backend-r1:
+    image: bible_rag-backend:r1
+    pull_policy: never
+    profiles: ["r1"]
+    container_name: bible_rag_backend_r1
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_R1_PORT:-8002}:8000"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      QDRANT_HOST: qdrant
+      NEO4J_URI: bolt://neo4j:7687
+      OLLAMA_BASE_URL: http://ollama:11434
+      RAG_ENV: staging
+      HF_HUB_OFFLINE: "1"
+      CONTRACTS_ROOT: /contracts
+    volumes:
+      - model_cache:/root/.cache
+      - ${RAG_STORE:-/mnt/ollama-data/bible_rag_store}/contracts:/contracts:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 15s
