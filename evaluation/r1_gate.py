@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""R1 gates, as pre-registered in experiments/2026-10-08_r1/prereg.md.
+"""G-NONINF and G-ANS, as pre-registered in experiments/2026-10-08_r1/prereg.md (R1, the
+default) and experiments/2026-10-09_r2/prereg.md (--prereg r2; the R1 arm is the control).
 
   retrieval  G-NONINF over three quick_retrieval_eval.py results: the A/A pair
              of the control arm (L1, L2; L1 is the control) and the treatment
-             R. C1 Δvrec@6, C2 MRR win/loss sign, C3 damaged slice.
+             R. C1 Δvrec@6, C2 MRR (R1: mean win/loss sign; R2: mean ΔMRR),
+             C3 the frozen slice (R1 damaged, R2 route-change).
   answer     G-ANS over three quick_faithfulness_eval.py reports on the frozen
              200-question subset: A/A (A1, A2; A1 is the control) and R.
 
-The frozen sets come from frozen_r1.json through src.r1_frozen.load_frozen;
-question types and families from GT v2 (ground_truth.v2.json, whose sha must
-be the runs'). Statistics and verdicts are src/noninf.py's. The report JSON
+The frozen sets come from --frozen through src.r1_frozen.load_frozen
+(frozen_r1.json) or src.r2_frozen.load_frozen (frozen_r2.json, whose C3 slice
+is the route-change slice); question types and families from GT v2
+(ground_truth.v2.json, whose sha must be the runs'). Statistics and verdicts
+are src/noninf.py's, the prereg's constants its Protocol. The report JSON
 holds every number; stdout shows a summary. Nothing is queried or judged.
 
 Exit code: 0 PASS, 1 FAIL, 2 input error (refused before judging).
@@ -25,6 +29,11 @@ Usage (from evaluation/):
         --treatment results_quick/r1_ans_R.json \\
         --frozen experiments/2026-10-08_r1/frozen_r1.json \\
         --out experiments/2026-10-08_r1/gate_answer.json
+    .venv/bin/python r1_gate.py retrieval --prereg r2 \\
+        --aa results_quick/r2_L1.json results_quick/r2_L2.json \\
+        --treatment results_quick/r2_R.json \\
+        --frozen experiments/2026-10-09_r2/frozen_r2.json \\
+        --out experiments/2026-10-09_r2/gate_retrieval.json
 """
 
 from __future__ import annotations
@@ -41,8 +50,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from src import noninf  # noqa: E402
 from src.data_loader import load_gt  # noqa: E402
 from src.r1_frozen import load_frozen  # noqa: E402
+from src.r2_frozen import load_frozen as load_frozen_r2  # noqa: E402
 
-PREREG = "evaluation/experiments/2026-10-08_r1/prereg.md"
 EXIT_PASS, EXIT_FAIL, EXIT_INPUT = 0, 1, 2
 
 
@@ -80,7 +89,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         p.add_argument("--aa", nargs=2, type=Path, required=True, metavar=("CONTROL", "REPEAT"),
                        help=f"the control arm's two {what}s; the first is the control")
         p.add_argument("--treatment", type=Path, required=True, help=f"the treatment {what}")
-        p.add_argument("--frozen", type=Path, required=True, help="frozen_r1.json")
+        p.add_argument("--frozen", type=Path, required=True,
+                       help="frozen_r1.json (--prereg r1) or frozen_r2.json (--prereg r2)")
+        p.add_argument("--prereg", choices=sorted(noninf.PROTOCOLS), default="r1",
+                       help="whose prereg (default r1: R1 against legacy; r2: R2 against R1). "
+                            "Each fixes its control build; a control on another is refused")
         p.add_argument("--out", type=Path, required=True, help="report JSON path")
         p.add_argument("--overwrite", action="store_true", help="replace an existing --out")
     return parser.parse_args(argv)
@@ -91,11 +104,12 @@ def run_gate(args: argparse.Namespace) -> dict:
     inputs = [*args.aa, args.treatment]
     _check_out(args.out, [*inputs, args.frozen], args.overwrite)
     runs = [_load_json(path) for path in inputs]
-    frozen = load_frozen(args.frozen)
+    frozen = load_frozen(args.frozen) if args.prereg == "r1" else load_frozen_r2(args.frozen)
+    protocol = noninf.PROTOCOLS[args.prereg]
     judge = noninf.retrieval_gate if args.gate == "retrieval" else noninf.answer_gate
-    report = judge(*runs, frozen, gt_labels())
+    report = judge(*runs, frozen, gt_labels(), protocol=protocol)
     names = ("L1", "L2", "R") if args.gate == "retrieval" else ("A1", "A2", "R")
-    return {"prereg": PREREG,
+    return {"prereg": protocol.prereg,
             "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "inputs": {**{n: str(p) for n, p in zip(names, inputs)}, "frozen": str(args.frozen)},
             **report}
@@ -147,6 +161,10 @@ def _print_retrieval_report_only(ro: dict) -> None:
     _print_strata(ro["strata"])
     for metric, d in ro["deltas"].items():
         print(f"  Δ{metric}: R−L1 {_stat(d['r_vs_l1'])};  A/A {_stat(d['aa'])}")
+    for pair, s in ro.get("mrr_sign", {}).items():      # R2 only: C2 judges ΔMRR, not signs
+        label = "A/A" if pair == "aa" else "R−L1"
+        print(f"  MRR sign {label}: mean {_stat(s['mean_sign'])}; wins {s['wins']} "
+              f"losses {s['losses']} ties {s['ties']}; sign test p {s['sign_test_p']:.4g}")
     routes = ro["route_differs"]
     print(f"  route differs: A/A {routes['aa']['n']}, R−L1 {routes['r_vs_l1']['n']}")
     print(f"  Δvrec@6 ≤ {noninf.LARGE_DROP}: {len(ro['large_drops'])}")
@@ -156,24 +174,42 @@ def _print_retrieval_report_only(ro: dict) -> None:
               f"{_f(row['vrec_l1'], False)}->{_f(row['vrec_r'], False)}")
 
 
-def print_retrieval(report: dict) -> None:
+def _c2_mean_sign_lines(aa: dict, c2: dict) -> tuple[str, list[str]]:
+    """R1: the A/A MRR line and C2's lines."""
+    wl = aa["mrr_win_loss"]
+    return (f"     MRR wins {wl['wins']} losses {wl['losses']}  B_wl={_f(aa['B_wl'], False)}  "
+            f"δ_wl={_f(aa['delta_wl'], False)}",
+            [f"C2   mean sign(ΔMRR) {_stat(c2['mean_sign'])}  lower > {_f(c2['threshold'])}  "
+             f"{_ok(c2['passed'])}",
+             f"     ΔMRR {_stat(c2['delta_mrr'])}; wins {c2['wins']} losses {c2['losses']} "
+             f"ties {c2['ties']}; sign test p {c2['sign_test_p']:.4g}"])
+
+
+def _c2_delta_mrr_lines(aa: dict, c2: dict) -> tuple[str, list[str]]:
+    """R2 (P1): the A/A MRR line and C2's line; signs are under report only."""
+    return (f"     ΔMRR {_stat(aa['delta_mrr'])}  B_mrr={_f(aa['B_mrr'], False)}  "
+            f"δ_mrr={_f(aa['delta_mrr_margin'], False)}",
+            [f"C2   ΔMRR {_stat(c2)}  lower > {_f(c2['threshold'])}  {_ok(c2['passed'])}"])
+
+
+_C2_LINES = {noninf.C2_MEAN_SIGN: _c2_mean_sign_lines, noninf.C2_DELTA_MRR: _c2_delta_mrr_lines}
+
+
+def print_retrieval(report: dict, protocol: noninf.Protocol = noninf.R1_PROTOCOL) -> None:
     aa, crit = report["aa"], report["criteria"]
     c1, c2, c3 = crit["C1"], crit["C2"], crit["C3"]
+    aa_mrr_line, c2_lines = _C2_LINES[protocol.c2](aa, c2)
     print("G-NONINF (retrieval), control L1")
     _print_runs(report)
     _print_pairing("A/A L1–L2", aa["pairing"])
     _print_pairing("R–L1", report["pairing"])
-    wl = aa["mrr_win_loss"]
     print(f"A/A  Δvrec@6 {_stat(aa['delta_vrec'])}  B={_f(aa['B'], False)}  "
           f"δ={_f(aa['delta'], False)}")
-    print(f"     MRR wins {wl['wins']} losses {wl['losses']}  B_wl={_f(aa['B_wl'], False)}  "
-          f"δ_wl={_f(aa['delta_wl'], False)}")
+    print(aa_mrr_line)
     print(f"C1   Δvrec@6 {_stat(c1)}  lower > {_f(c1['threshold'])}  {_ok(c1['passed'])}")
-    print(f"C2   mean sign(ΔMRR) {_stat(c2['mean_sign'])}  lower > {_f(c2['threshold'])}  "
-          f"{_ok(c2['passed'])}")
-    print(f"     ΔMRR {_stat(c2['delta_mrr'])}; wins {c2['wins']} losses {c2['losses']} "
-          f"ties {c2['ties']}; sign test p {c2['sign_test_p']:.4g}")
-    print(f"C3   damaged union Δvrec@6 {_stat(c3['union'])}  mean ≥ 0  {_ok(c3['passed'])}")
+    print("\n".join(c2_lines))
+    print(f"C3   {protocol.slice_label} Δvrec@6 {_stat(c3['union'])}  mean ≥ 0  "
+          f"{_ok(c3['passed'])}")
     for name, s in c3["sub_slices"].items():
         print(f"       {name} {_stat(s)}" + (f"  unpaired {s['unpaired']}" if s["unpaired"] else ""))
     _print_retrieval_report_only(report["report_only"])
@@ -219,7 +255,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (ValueError, OSError) as exc:     # GateInputError, FrozenR1Error, GtV2Error, JSON
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_INPUT
-    (print_retrieval if args.gate == "retrieval" else print_answer)(report)
+    if args.gate == "retrieval":
+        print_retrieval(report, noninf.PROTOCOLS[args.prereg])
+    else:
+        print_answer(report)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"saved → {args.out}")

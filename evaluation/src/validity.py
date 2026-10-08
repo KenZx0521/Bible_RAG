@@ -27,17 +27,21 @@ AUXILIARY_STRATEGIES = frozenset({"event_registry"})
 GENERATION_ERROR_PREFIX = "生成回答時發生錯誤"
 
 
-def is_infra_failure(sample: EvalSample) -> bool:
+def infra_failed(source_strategies: list[str | None], errors: dict[str, str]) -> bool:
     """The pipeline failed, not retrieval.
 
     * no core sources (appended auxiliary passages aside) and a strategy error;
     * or an auxiliary lane raised: the treatment under test was not applied.
     """
-    errors = sample.strategy_errors
     if any(name in AUXILIARY_STRATEGIES for name in errors):
         return True
-    core = [s for s in sample.sources if s.strategy not in AUXILIARY_STRATEGIES]
+    core = [s for s in source_strategies if s not in AUXILIARY_STRATEGIES]
     return not core and bool(errors)
+
+
+def is_infra_failure(sample: EvalSample) -> bool:
+    """:func:`infra_failed` on a sample's sources and strategy errors."""
+    return infra_failed([s.strategy for s in sample.sources], sample.strategy_errors)
 
 
 def is_generation_failure(sample: EvalSample) -> bool:

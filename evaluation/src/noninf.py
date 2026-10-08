@@ -1,6 +1,12 @@
 """
-R1 non-inferiority gates, exactly as pre-registered in
-experiments/2026-10-08_r1/prereg.md: G-NONINF (retrieval) and G-ANS (answers).
+Non-inferiority gates G-NONINF (retrieval) and G-ANS (answers), exactly as
+pre-registered in experiments/2026-10-08_r1/prereg.md (R1 against legacy) and
+experiments/2026-10-09_r2/prereg.md (R2 against R1). What differs between the
+two is a :class:`Protocol`: the prereg path, the control arm's data build
+(R1 legacy-20261004, R2 the R1 build), C3's frozen slice (R1 the damaged
+union, R2 the route-change slice), the sizes the prereg fixes for the frozen
+sets, and C2's rule (a :data:`C2_RULES` key). Every function defaults to
+R1's, whose reports stay as they were.
 
 Pure functions over saved runs — quick_retrieval_eval.py results for
 retrieval, quick_faithfulness_eval.py reports for answers; r1_gate.py is the
@@ -11,10 +17,17 @@ inputs give equal reports).
 
 Retrieval (500 questions; the control is fixed to L1, the first A/A run):
   * A/A L2 − L1 sets the margins: δ = max(0.02, 2B), B = max |CI bound| of
-    mean Δvrec@6; δ_wl = max(0.02, 2·B_wl), B_wl = MRR (wins + losses) / n.
+    mean Δvrec@6; and C2's (below).
   * C1: CI lower of mean Δvrec@6 (R − L1) > −δ.
-  * C2: CI lower of mean sign(MRR_R − MRR_L1) > −δ_wl.
-  * C3: mean Δvrec@6 (R − L1) over the frozen damaged union (64) ≥ 0.
+  * C2, R1 ("mean_sign"): CI lower of mean sign(MRR_R − MRR_L1) > −δ_wl,
+    δ_wl = max(0.02, 2·B_wl), B_wl = A/A MRR (wins + losses) / n.
+    C2, R2 ("delta_mrr", P1; Kay 2026-10-08 after the R1 C2 diagnosis): CI
+    lower of mean ΔMRR (R − L1) > −δ_mrr, δ_mrr = max(0.02, 2·B_mrr), B_mrr =
+    max |CI bound| of the A/A mean ΔMRR (report key delta_mrr_margin;
+    delta_mrr is the ΔMRR summary, as delta_vrec is Δvrec@6's). Mean sign,
+    wins / losses and the sign test go to report_only["mrr_sign"].
+  * C3: mean Δvrec@6 (R − L1) over the frozen C3 slice ≥ 0 (R1: the damaged
+    union, 64; R2: the route-change slice).
   * A question invalid in either run of a pair is dropped and listed; a pair
     left with fewer than 495 questions fails the gate ("rerun arm").
 Answers (the frozen 200-question subset):
@@ -28,13 +41,14 @@ Answers (the frozen 200-question subset):
   * A row outside the subset means another subset was judged, and rows
     without the "invalid" flag come from a tool that could not see
     generation failures: both refused.
-Both gates: the A/A runs share a data build, the treatment runs another, and
-all three report one encoder fingerprint (the /health query-tokenizer probe;
+Both gates: the A/A runs share a data build, the protocol's control build
+(so runs judged under another prereg than their own are refused), the
+treatment runs another, and all three report one encoder fingerprint (the /health query-tokenizer probe;
 prod :8000 reports none and serves the same legacy build id as the control).
 Everything under "report_only" is descriptive and never decides a verdict.
-The frozen sets are r1_frozen.load_frozen's (FrozenR1); their sizes are
-checked against the prereg. Inputs that do not match the protocol raise
-GateInputError and get no verdict.
+The frozen sets are r1_frozen.load_frozen's or r2_frozen.load_frozen's
+(FrozenR1); their sizes are checked against the protocol. Inputs that do not
+match the protocol raise GateInputError and get no verdict.
 """
 
 from __future__ import annotations
@@ -42,9 +56,14 @@ from __future__ import annotations
 import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from typing import Any, Collection, Mapping, NamedTuple, Sequence
+from operator import itemgetter
+from types import MappingProxyType
+from typing import Any, Callable, Collection, Mapping, NamedTuple, Sequence
+
+from ragcommon.ids import LEGACY_BUILD_ID
 
 from .ab_stats import bootstrap_ci, sign_test_p
+from . import r2_frozen
 from .r1_frozen import SUB_SLICES, FrozenR1
 
 N_BOOT = 10_000
@@ -53,7 +72,7 @@ LEVEL = 0.95
 MIN_PAIRED = 495
 GT_VERSION = "v2"
 TOP_K, METRIC_K = 5, 6
-DELTA_FLOOR = 0.02          # δ and δ_wl
+DELTA_FLOOR = 0.02          # δ; C2's δ_wl (R1) and δ_mrr (R2)
 DELTA_ANS_FLOOR = 0.01      # δ_ans
 LARGE_DROP = -0.3           # report questions with Δvrec@6 at or below this
 STRICT_REFERENCE = 0.97
@@ -65,6 +84,48 @@ CONTEXT_FORMAT = "generator_blocks"
 SLICE_SIZES = {"G01": 56, "G15": 11, "G02": 9}
 DAMAGED_UNION_SIZE = 64
 GANS_SUBSET_SIZE = 200
+
+
+C2_MEAN_SIGN = "mean_sign"      # R1: mean sign(ΔMRR) against −δ_wl
+C2_DELTA_MRR = "delta_mrr"      # R2 (P1): mean ΔMRR against −δ_mrr
+
+
+@dataclass(frozen=True)
+class Protocol:
+    """What one prereg fixes beyond the shared statistics."""
+    prereg: str
+    slice_label: str                    # C3's frozen slice, in reports
+    sub_slices: tuple[str, ...]         # reported separately; C3 judges their union
+    slice_sizes: Mapping[str, int]      # empty: sizes pinned by the freeze's sha256 only
+    union_size: int | None
+    gans_size: int
+    c2: str                             # C2's rule, a C2_RULES key
+    control_build: str                  # the control arm's data_build_id (L1, A1), per the prereg
+
+
+@dataclass(frozen=True)
+class C2Rule:
+    """One prereg's C2: the margin the A/A sets for it, and what it judges against it."""
+    aa: Callable[..., dict]             # (A/A ΔMRR L2 − L1, n_boot, seed) → its "aa" entries
+    margin: str                         # the "aa" entry holding C2's margin
+    judge: Callable[..., dict]          # (l1, r, ids, margin, n_boot, seed) → criteria["C2"]
+    statistic: str                      # what C2 judges, in its fail reason
+    judged: Callable[[dict], dict]      # criteria["C2"] → the summary whose CI lower decides
+    signs_report_only: bool             # mean sign, W/L, sign test in report_only["mrr_sign"]
+
+
+R1_PROTOCOL = Protocol("evaluation/experiments/2026-10-08_r1/prereg.md", "damaged union",
+                       SUB_SLICES, MappingProxyType(SLICE_SIZES), DAMAGED_UNION_SIZE,
+                       GANS_SUBSET_SIZE, c2=C2_MEAN_SIGN, control_build=LEGACY_BUILD_ID)
+# R2 (prereg 2026-10-09_r2): the route-change slice is frozen by freeze_r2.py after the R2
+# build and before any R2 result; its sha256 pin (r2_frozen.FROZEN_R2_SHA256) fixes it.
+# C2 is P1 (Kay 2026-10-08): R1's mean-sign C2 fails neutral releases (r1eval/c2_diagnosis).
+# The control arm is R1 (:8002), so R2-shaped runs judged under the R1 default are refused.
+R1_BUILD_ID = "b20261008_6daa4f31"
+R2_PROTOCOL = Protocol("evaluation/experiments/2026-10-09_r2/prereg.md", "route-change slice",
+                       r2_frozen.SUB_SLICES, MappingProxyType({}), None, GANS_SUBSET_SIZE,
+                       c2=C2_DELTA_MRR, control_build=R1_BUILD_ID)
+PROTOCOLS = MappingProxyType({"r1": R1_PROTOCOL, "r2": R2_PROTOCOL})
 
 VREC, MRR = "verse_recall_at_k", "mrr"
 ANCHOR, HIT = "anchor_coverage_at_k", "hit_rate"
@@ -94,17 +155,18 @@ class GtLabels:
 
 # ---------------------------------------------------------------- frozen sets
 
-def frozen_problems(frozen: FrozenR1, known_ids: Collection[str]) -> list[str]:
-    """What in r1_frozen.load_frozen's sets contradicts the prereg sizes or GT v2."""
+def frozen_problems(frozen: FrozenR1, known_ids: Collection[str],
+                    protocol: Protocol = R1_PROTOCOL) -> list[str]:
+    """What in the loaded frozen sets contradicts the protocol's sizes or GT v2."""
     subs = frozen.sub_slices
     problems = [f"sub-slice {n} has {len(subs.get(n, ()))} questions, prereg {k}"
-                for n, k in SLICE_SIZES.items() if len(subs.get(n, ())) != k]
-    if len(frozen.damaged_union) != DAMAGED_UNION_SIZE:
-        problems.append(f"damaged union has {len(frozen.damaged_union)} questions, "
-                        f"prereg {DAMAGED_UNION_SIZE}")
-    if len(frozen.gans_subset) != GANS_SUBSET_SIZE:
+                for n, k in protocol.slice_sizes.items() if len(subs.get(n, ())) != k]
+    if protocol.union_size is not None and len(frozen.damaged_union) != protocol.union_size:
+        problems.append(f"{protocol.slice_label} has {len(frozen.damaged_union)} questions, "
+                        f"prereg {protocol.union_size}")
+    if len(frozen.gans_subset) != protocol.gans_size:
         problems.append(f"gans_subset has {len(frozen.gans_subset)} questions, "
-                        f"prereg {GANS_SUBSET_SIZE}")
+                        f"prereg {protocol.gans_size}")
     unknown = sorted((frozen.damaged_union | frozen.gans_subset) - set(known_ids))
     if unknown:
         problems.append(f"frozen ids not in GT v2: {unknown}")
@@ -212,8 +274,8 @@ def _retrieval_run_problems(name: str, run: Mapping) -> list[str]:
 
 
 def _cross_problems(metas: Mapping[str, Mapping], control: str, aa: str, treatment: str,
-                    gt: GtLabels) -> list[str]:
-    """One GT (the loaded v2), A/A on one build, the treatment on another."""
+                    gt: GtLabels, protocol: Protocol) -> list[str]:
+    """One GT (the loaded v2), A/A on the protocol's control build, the treatment on another."""
     problems = []
     shas = {n: m.get("gt_sha") for n, m in metas.items()}
     if len(set(shas.values())) != 1:
@@ -221,6 +283,10 @@ def _cross_problems(metas: Mapping[str, Mapping], control: str, aa: str, treatme
     elif shas[control] != gt.sha256:
         problems.append(f"runs scored GT sha {shas[control]}, ground_truth.v2.json is {gt.sha256}")
     builds = {n: m.get("data_build_id") for n, m in metas.items()}
+    if builds[control] != protocol.control_build:
+        problems.append(f"control {control} ran {builds[control]}, but {protocol.prereg} fixes "
+                        f"the control on {protocol.control_build} (r1_gate.py --prereg picks "
+                        "the prereg)")
     if builds[control] != builds[aa]:
         problems.append(f"A/A runs {control} and {aa} must share a data build: {builds}")
     if builds[treatment] == builds[control]:
@@ -245,14 +311,15 @@ def _same(configs: Mapping[str, Mapping], key: str) -> list[str]:
     return [] if len(set(map(repr, values.values()))) == 1 else [f"{key} differs: {values}"]
 
 
-def validate_retrieval_runs(runs: Mapping[str, Mapping], gt: GtLabels, frozen: FrozenR1) -> None:
+def validate_retrieval_runs(runs: Mapping[str, Mapping], gt: GtLabels, frozen: FrozenR1,
+                            protocol: Protocol = R1_PROTOCOL) -> None:
     """Refuse L1 / L2 / R runs that the prereg does not allow to be compared."""
     problems = [p for name, run in runs.items() for p in _retrieval_run_problems(name, run)]
-    problems += frozen_problems(frozen, gt.labels)
+    problems += frozen_problems(frozen, gt.labels, protocol)
     if not problems:
         metas = {n: run.get("meta") or {} for n, run in runs.items()}
         configs = {n: run.get("config") or {} for n, run in runs.items()}
-        problems += _cross_problems(metas, "L1", "L2", "R", gt)
+        problems += _cross_problems(metas, "L1", "L2", "R", gt, protocol)
         problems += _same(configs, "metric_version")
         unknown = sorted({q for run in runs.values() for q in run["per_question"]}
                          - set(gt.labels))
@@ -265,28 +332,46 @@ def validate_retrieval_runs(runs: Mapping[str, Mapping], gt: GtLabels, frozen: F
 # ---------------------------------------------------------------- retrieval gate
 
 def aa_noise(l1: Mapping[str, dict], l2: Mapping[str, dict],
-             n_boot: int = N_BOOT, seed: int = SEED) -> dict:
-    """The A/A noise bands and the margins δ, δ_wl they set."""
+             n_boot: int = N_BOOT, seed: int = SEED, protocol: Protocol = R1_PROTOCOL) -> dict:
+    """The A/A noise bands and the margins they set: δ, and C2's (the protocol's rule)."""
     pairing = pair_runs(l1, l2)
     ids = pairing["ids"]
     vrec = summarize(metric_diffs(l1, l2, ids, VREC), n_boot, seed)
-    mrr = metric_diffs(l1, l2, ids, MRR)
-    wl = win_loss(mrr)
     band = noise_band(vrec["ci"])
-    band_wl = (wl["wins"] + wl["losses"]) / len(ids) if ids else None
+    mrr = metric_diffs(l1, l2, ids, MRR)
     return {"pairing": pairing, "delta_vrec": vrec, "B": band, "delta": margin(band, DELTA_FLOOR),
-            "mrr_win_loss": wl, "B_wl": band_wl, "delta_wl": margin(band_wl, DELTA_FLOOR),
+            **C2_RULES[protocol.c2].aa(mrr, n_boot, seed)}
+
+
+def aa_win_loss(mrr: Sequence[float], n_boot: int = N_BOOT, seed: int = SEED) -> dict:
+    """R1's C2 margin: B_wl = A/A MRR (wins + losses) / n, δ_wl = max(0.02, 2·B_wl)."""
+    wl = win_loss(mrr)
+    band_wl = (wl["wins"] + wl["losses"]) / len(mrr) if mrr else None
+    return {"mrr_win_loss": wl, "B_wl": band_wl, "delta_wl": margin(band_wl, DELTA_FLOOR),
             "delta_mrr": summarize(mrr, n_boot, seed)}
 
 
-def c1_vrec(l1, r, ids, delta, n_boot=N_BOOT, seed=SEED) -> dict:
-    summary = summarize(metric_diffs(l1, r, ids, VREC), n_boot, seed)
+def aa_delta_mrr(mrr: Sequence[float], n_boot: int = N_BOOT, seed: int = SEED) -> dict:
+    """R2's C2 margin (P1): B_mrr = max |CI bound| of the A/A mean ΔMRR,
+    δ_mrr = max(0.02, 2·B_mrr) (key delta_mrr_margin)."""
+    summary = summarize(mrr, n_boot, seed)
+    band = noise_band(summary["ci"])
+    return {"delta_mrr": summary, "B_mrr": band, "delta_mrr_margin": margin(band, DELTA_FLOOR)}
+
+
+def _ci_criterion(l1, r, ids, metric: str, delta, n_boot=N_BOOT, seed=SEED) -> dict:
+    """CI lower of mean Δ``metric`` (R − L1) > −delta (strict)."""
+    summary = summarize(metric_diffs(l1, r, ids, metric), n_boot, seed)
     threshold = None if delta is None else -delta
     return {**summary, "threshold": threshold, "passed": _ci_lower_above(summary, threshold)}
 
 
+def c1_vrec(l1, r, ids, delta, n_boot=N_BOOT, seed=SEED) -> dict:
+    return _ci_criterion(l1, r, ids, VREC, delta, n_boot, seed)
+
+
 def c2_mrr(l1, r, ids, delta_wl, n_boot=N_BOOT, seed=SEED) -> dict:
-    """Mean per-question sign of ΔMRR against −δ_wl; ΔMRR and the sign test are reported."""
+    """R1: mean per-question sign of ΔMRR against −δ_wl; ΔMRR, the sign test reported."""
     diffs = metric_diffs(l1, r, ids, MRR)
     summary = summarize([sign(d) for d in diffs], n_boot, seed)
     threshold = None if delta_wl is None else -delta_wl
@@ -297,8 +382,30 @@ def c2_mrr(l1, r, ids, delta_wl, n_boot=N_BOOT, seed=SEED) -> dict:
             "sign_test_p": sign_test_p(wl["wins"], wl["losses"])}
 
 
-def c3_damaged(l1, r, ids, frozen: FrozenR1, n_boot=N_BOOT, seed=SEED) -> dict:
-    """Mean Δvrec@6 on the damaged union ≥ 0 (float noise tolerated); sub-slices reported."""
+def c2_delta_mrr(l1, r, ids, delta_mrr, n_boot=N_BOOT, seed=SEED) -> dict:
+    """R2 (P1): CI lower of mean ΔMRR (R − L1) > −δ_mrr, built as C1 is."""
+    return _ci_criterion(l1, r, ids, MRR, delta_mrr, n_boot, seed)
+
+
+def mrr_signs(control, treatment, ids, n_boot=N_BOOT, seed=SEED) -> dict:
+    """Report only (R2): mean sign(ΔMRR) with its CI, wins / losses / ties, exact sign test p."""
+    diffs = metric_diffs(control, treatment, ids, MRR)
+    wl = win_loss(diffs)
+    return {"mean_sign": summarize([sign(d) for d in diffs], n_boot, seed), **wl,
+            "sign_test_p": sign_test_p(wl["wins"], wl["losses"])}
+
+
+C2_RULES: Mapping[str, C2Rule] = MappingProxyType({
+    C2_MEAN_SIGN: C2Rule(aa_win_loss, "delta_wl", c2_mrr, "mean sign(ΔMRR)",
+                         itemgetter("mean_sign"), signs_report_only=False),
+    C2_DELTA_MRR: C2Rule(aa_delta_mrr, "delta_mrr_margin", c2_delta_mrr, "mean ΔMRR",
+                         lambda c2: c2, signs_report_only=True),
+})
+
+
+def c3_damaged(l1, r, ids, frozen: FrozenR1, n_boot=N_BOOT, seed=SEED,
+               sub_slices: Sequence[str] = SUB_SLICES) -> dict:
+    """Mean Δvrec@6 on the frozen C3 slice ≥ 0 (float noise tolerated); sub-slices reported."""
     paired = set(ids)
 
     def _slice(members: frozenset[str]) -> dict:
@@ -309,7 +416,7 @@ def c3_damaged(l1, r, ids, frozen: FrozenR1, n_boot=N_BOOT, seed=SEED) -> dict:
     union = _slice(frozen.damaged_union)
     return {"union": union, "threshold": 0.0,
             "passed": union["mean"] is not None and union["mean"] >= -_EPS,
-            "sub_slices": {name: _slice(frozen.sub_slices[name]) for name in SUB_SLICES}}
+            "sub_slices": {name: _slice(frozen.sub_slices[name]) for name in sub_slices}}
 
 
 def _rerun_reason(pair: str, pairing: dict, arms: Mapping[str, Mapping[str, dict]]) -> list[str]:
@@ -323,17 +430,19 @@ def _rerun_reason(pair: str, pairing: dict, arms: Mapping[str, Mapping[str, dict
 
 
 def _retrieval_fail_reasons(aa: dict, pairing: dict, criteria: dict,
-                            pq: Mapping[str, Mapping[str, dict]]) -> list[str]:
+                            pq: Mapping[str, Mapping[str, dict]], protocol: Protocol) -> list[str]:
     reasons = _rerun_reason("A/A L1–L2", aa["pairing"], {"L1": pq["L1"], "L2": pq["L2"]})
     reasons += _rerun_reason("R–L1", pairing, {"L1": pq["L1"], "R": pq["R"]})
     c1, c2, c3 = criteria["C1"], criteria["C2"], criteria["C3"]
+    rule = C2_RULES[protocol.c2]
     if not c1["passed"]:
         reasons.append(f"C1: CI lower of Δvrec@6 {_fmt(_lower(c1))} not > {_fmt(c1['threshold'])}")
     if not c2["passed"]:
-        reasons.append(f"C2: CI lower of mean sign(ΔMRR) {_fmt(_lower(c2['mean_sign']))} "
+        reasons.append(f"C2: CI lower of {rule.statistic} {_fmt(_lower(rule.judged(c2)))} "
                        f"not > {_fmt(c2['threshold'])}")
     if not c3["passed"]:
-        reasons.append(f"C3: damaged-union mean Δvrec@6 {_fmt(c3['union']['mean'])} < 0")
+        reasons.append(f"C3: {protocol.slice_label.replace(' ', '-')} mean Δvrec@6 "
+                       f"{_fmt(c3['union']['mean'])} < 0")
     return reasons
 
 
@@ -346,20 +455,22 @@ def _fmt(x: float | None) -> str:
 
 
 def retrieval_gate(l1: Mapping, l2: Mapping, treatment: Mapping, frozen: FrozenR1, gt: GtLabels,
-                   n_boot: int = N_BOOT, seed: int = SEED) -> dict:
+                   n_boot: int = N_BOOT, seed: int = SEED,
+                   protocol: Protocol = R1_PROTOCOL) -> dict:
     """G-NONINF over three quick_retrieval_eval results (control L1, A/A L2, treatment R)."""
     runs = {"L1": l1, "L2": l2, "R": treatment}
-    validate_retrieval_runs(runs, gt, frozen)
+    validate_retrieval_runs(runs, gt, frozen, protocol)
     pq = {name: run["per_question"] for name, run in runs.items()}
-    aa = aa_noise(pq["L1"], pq["L2"], n_boot, seed)
+    rule = C2_RULES[protocol.c2]
+    aa = aa_noise(pq["L1"], pq["L2"], n_boot, seed, protocol)
     pairing = pair_runs(pq["L1"], pq["R"])
     ids = pairing["ids"]
     criteria = {
         "C1": c1_vrec(pq["L1"], pq["R"], ids, aa["delta"], n_boot, seed),
-        "C2": c2_mrr(pq["L1"], pq["R"], ids, aa["delta_wl"], n_boot, seed),
-        "C3": c3_damaged(pq["L1"], pq["R"], ids, frozen, n_boot, seed),
+        "C2": rule.judge(pq["L1"], pq["R"], ids, aa[rule.margin], n_boot, seed),
+        "C3": c3_damaged(pq["L1"], pq["R"], ids, frozen, n_boot, seed, protocol.sub_slices),
     }
-    reasons = _retrieval_fail_reasons(aa, pairing, criteria, pq)
+    reasons = _retrieval_fail_reasons(aa, pairing, criteria, pq, protocol)
     return {
         "gate": "G-NONINF",
         "params": _params(n_boot, seed, delta_floor=DELTA_FLOOR, min_paired=MIN_PAIRED,
@@ -368,7 +479,7 @@ def retrieval_gate(l1: Mapping, l2: Mapping, treatment: Mapping, frozen: FrozenR
         "aa": aa, "pairing": pairing, "criteria": criteria,
         "passed": not reasons, "fail_reasons": reasons,
         "report_only": retrieval_report_only(pq, aa["pairing"]["ids"], ids, gt.labels,
-                                             n_boot, seed),
+                                             n_boot, seed, signs=rule.signs_report_only),
     }
 
 
@@ -420,9 +531,11 @@ def large_drops(l1, r, ids, labels: Mapping[str, Label]) -> list[dict]:
 
 
 def retrieval_report_only(pq: Mapping[str, Mapping[str, dict]], aa_ids, ids,
-                          labels: Mapping[str, Label], n_boot=N_BOOT, seed=SEED) -> dict:
+                          labels: Mapping[str, Label], n_boot=N_BOOT, seed=SEED,
+                          signs: bool = False) -> dict:
+    """Descriptive numbers; ``signs`` adds "mrr_sign" (R2, where C2 no longer judges signs)."""
     l1, l2, r = pq["L1"], pq["L2"], pq["R"]
-    return {
+    out = {
         "strata": strata(l1, r, ids, labels),
         "deltas": {m: {"aa": summarize(metric_diffs(l1, l2, aa_ids, m), n_boot, seed),
                        "r_vs_l1": summarize(metric_diffs(l1, r, ids, m), n_boot, seed)}
@@ -431,6 +544,10 @@ def retrieval_report_only(pq: Mapping[str, Mapping[str, dict]], aa_ids, ids,
                           "r_vs_l1": route_differs(l1, r, ids)},
         "large_drops": large_drops(l1, r, ids, labels),
     }
+    if signs:
+        out["mrr_sign"] = {"aa": mrr_signs(l1, l2, aa_ids, n_boot, seed),
+                           "r_vs_l1": mrr_signs(l1, r, ids, n_boot, seed)}
+    return out
 
 
 # ---------------------------------------------------------------- answer gate
@@ -464,14 +581,15 @@ def _answer_run_problems(name: str, run: Mapping, subset: frozenset[str]) -> lis
     return problems
 
 
-def validate_answer_runs(runs: Mapping[str, Mapping], frozen: FrozenR1, gt: GtLabels) -> None:
+def validate_answer_runs(runs: Mapping[str, Mapping], frozen: FrozenR1, gt: GtLabels,
+                         protocol: Protocol = R1_PROTOCOL) -> None:
     """Refuse A1 / A2 / R reports that the prereg does not allow to be compared."""
     problems = [p for name, run in runs.items()
                 for p in _answer_run_problems(name, run, frozen.gans_subset)]
-    problems += frozen_problems(frozen, gt.labels)
+    problems += frozen_problems(frozen, gt.labels, protocol)
     if not problems:
         metas = {n: run.get("meta") or {} for n, run in runs.items()}
-        problems += _cross_problems(metas, "A1", "A2", "R", gt)
+        problems += _cross_problems(metas, "A1", "A2", "R", gt, protocol)
         problems += _same(metas, "judge_provider") + _same(metas, "judge_model")
     if problems:
         raise GateInputError("; ".join(problems))
@@ -509,10 +627,11 @@ def paired_values(base: Mapping[str, float | None],
 
 
 def answer_gate(a1: Mapping, a2: Mapping, treatment: Mapping, frozen: FrozenR1, gt: GtLabels,
-                n_boot: int = N_BOOT, seed: int = SEED) -> dict:
+                n_boot: int = N_BOOT, seed: int = SEED,
+                protocol: Protocol = R1_PROTOCOL) -> dict:
     """G-ANS over three quick_faithfulness_eval reports (control A1, A/A A2, treatment R)."""
     runs = {"A1": a1, "A2": a2, "R": treatment}
-    validate_answer_runs(runs, frozen, gt)
+    validate_answer_runs(runs, frozen, gt, protocol)
     strict = {n: row_values(run, STRICT, frozen.gans_subset) for n, run in runs.items()}
     invalid = {n: invalid_rows(run, frozen.gans_subset) for n, run in runs.items()}
     aa = summarize(paired_values(strict["A1"], strict["A2"]), n_boot, seed)
@@ -532,7 +651,7 @@ def answer_gate(a1: Mapping, a2: Mapping, treatment: Mapping, frozen: FrozenR1, 
     return {
         "gate": "G-ANS",
         "params": _params(n_boot, seed, delta_floor=DELTA_ANS_FLOOR,
-                          subset_size=GANS_SUBSET_SIZE),
+                          subset_size=protocol.gans_size),
         "runs": {n: _answer_summary(run) for n, run in runs.items()},
         "aa": {"delta_strict": aa, "B_ans": band, "delta_ans": delta},
         "invalid": invalid, "criteria": criteria,
