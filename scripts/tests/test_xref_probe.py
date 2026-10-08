@@ -418,9 +418,15 @@ def committed_backend(tmp_path: Path, files: dict[str, bytes]) -> Path:
 def run_guard(monkeypatch, docker, *argv) -> int:
     """deploy-guard against a legacy checkout whose HEAD holds head_files()."""
     monkeypatch.setattr(xp, "run_command", docker)
+    guard = xp.deploy_guard
     with tempfile.TemporaryDirectory() as tmp:
-        monkeypatch.setattr(xp, "BACKEND_DIR", committed_backend(Path(tmp), head_files()))
-        return xp.main(["deploy-guard", *argv])
+        legacy = committed_backend(Path(tmp), head_files())
+        monkeypatch.setattr(xp, "deploy_guard",
+                            lambda container, runner: guard(container, runner, legacy))
+        try:
+            return xp.main(["deploy-guard", *argv])
+        finally:
+            monkeypatch.setattr(xp, "deploy_guard", guard)
 
 
 def test_deploy_guard_accepts_current_checkout(monkeypatch, capsys):
