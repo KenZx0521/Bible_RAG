@@ -6,10 +6,8 @@
 # borrows pytest from the evaluation venv through a throwaway shim directory
 # that holds only pytest's own packages.
 #
-# The process_bible tests load the BGE-M3 tokenizer. Offline, it comes from the
-# HF cache only: no hub request, and no download on a cold cache. On a cold
-# cache those tests run on the character fallback, and test_harness reports a
-# skip ("HF cache cold") instead of passing.
+# HF_HUB_OFFLINE / TRANSFORMERS_OFFLINE: no test may reach the hub
+# (test_harness checks both).
 #
 #   scripts/tests/run.sh [pytest args]
 set -euo pipefail

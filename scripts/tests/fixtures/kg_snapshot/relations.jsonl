@@ -1,6 +1,0 @@
-{"head_id": "person:tala", "relation": "FATHER_OF", "tail_id": "person:yabolahan", "source_pericope_id": "", "extraction_phase": 3, "notes": "", "source": "prior"}
-{"head_id": "person:tala", "relation": "FATHER_OF", "tail_id": "person:halan", "source_pericope_id": "gen:11:2", "extraction_phase": 4, "notes": "", "source": "llm"}
-{"head_id": "person:halan", "relation": "FATHER_OF", "tail_id": "person:luode", "source_pericope_id": "gen:11:2", "extraction_phase": 4, "notes": "", "source": "llm"}
-{"head_id": "person:yabolahan", "relation": "FATHER_OF", "tail_id": "person:yisa", "source_pericope_id": "gen:22:0", "extraction_phase": 4, "notes": "", "source": "llm"}
-{"head_id": "event:xianyisa", "relation": "OCCURRED_IN", "tail_id": "place:moliya", "source_pericope_id": "gen:22:0", "extraction_phase": 4, "notes": "", "source": "llm"}
-{"head_id": "person:bide", "relation": "PARTICIPATED_IN", "tail_id": "event:bidehuojiu", "source_pericope_id": "act:12:1", "extraction_phase": 4, "notes": "", "source": "llm"}

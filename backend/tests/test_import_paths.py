@@ -3,8 +3,8 @@
 embedder and reranker import ragcommon at module level, so every import of
 the backend needs packages/ on sys.path. The image sets PYTHONPATH, but the
 documented local start (`cd backend && uv run uvicorn main:app`, README) and
-the runbook's backend suite (`PYTHONPATH=$SHIM ... pytest backend/tests`,
-docs/staging_promotion.md R0) do not.
+the documented backend suite (`PYTHONPATH=$SHIM ... pytest backend/tests`,
+docs/rebuild_pipeline.md §8) do not.
 """
 
 import os

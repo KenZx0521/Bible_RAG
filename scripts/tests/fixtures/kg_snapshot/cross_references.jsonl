@@ -1,3 +1,0 @@
-{"source_id": "heb:1:1", "target_id": "psa:2:0", "source": "supplementary", "curated": true, "tsk": false, "votes": null, "curated_sources": ["supplementary"], "supp_anchors": ["heb 1:5>psa 2:7"]}
-{"source_id": "mrk:1:0", "target_id": "psa:2:0", "source": "markdown", "curated": true, "tsk": false, "votes": null, "curated_sources": ["markdown"], "md_anchors": ["mrk 1:?>psa 2:7"]}
-{"source_id": "gen:22:0", "target_id": "heb:1:1", "source": "tsk", "curated": false, "tsk": true, "votes": 12, "source_verses": null, "target_verses": null}

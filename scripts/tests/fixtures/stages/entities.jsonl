@@ -1,15 +1,0 @@
-{"entity_id": "event:chuaiji", "type": "Event", "canonical_name": "出埃及", "aliases": [], "description": "以色列人出埃及", "extraction_method": "pericope_title", "mention_count": 3}
-{"entity_id": "event:guohonghai", "type": "Event", "canonical_name": "過紅海", "aliases": [], "description": "", "extraction_method": "rule", "mention_count": 1}
-{"entity_id": "event:banbushijie", "type": "Event", "canonical_name": "頒布十誡", "aliases": [], "description": "", "extraction_method": "grounded_llm", "mention_count": 1}
-{"entity_id": "group:yiselieren", "type": "Group", "canonical_name": "以色列人", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 4}
-{"entity_id": "group:liweiren", "type": "Group", "canonical_name": "利未人", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 1}
-{"entity_id": "object:yuegui", "type": "Object", "canonical_name": "約櫃", "aliases": [], "description": "", "extraction_method": "rule", "mention_count": 2}
-{"entity_id": "object:huimu", "type": "Object", "canonical_name": "會幕", "aliases": [], "description": "", "extraction_method": "pos_tag", "mention_count": 2}
-{"entity_id": "person:moxi", "type": "Person", "canonical_name": "摩西", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 5}
-{"entity_id": "person:yesu", "type": "Person", "canonical_name": "耶穌", "aliases": ["主耶穌"], "description": "", "extraction_method": "ner", "mention_count": 5}
-{"entity_id": "person:yalun", "type": "Person", "canonical_name": "亞倫", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 2}
-{"entity_id": "person:miliyan", "type": "Person", "canonical_name": "米利暗", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 2}
-{"entity_id": "place:aiji", "type": "Place", "canonical_name": "埃及", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 3}
-{"entity_id": "place:xinaishan", "type": "Place", "canonical_name": "西奈山", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 1}
-{"entity_id": "place:xinai", "type": "Place", "canonical_name": "西奈", "aliases": [], "description": "", "extraction_method": "ner", "mention_count": 1}
-{"entity_id": "theme:jiushu", "type": "Theme", "canonical_name": "救贖", "aliases": [], "description": "他說\"救贖\"\\ 是 恩典", "extraction_method": "grounded_llm", "mention_count": 1}

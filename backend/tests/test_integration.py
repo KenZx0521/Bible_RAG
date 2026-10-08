@@ -2,6 +2,8 @@
 
 The PostgreSQL container uses only the local pgvector/pgvector:pg15 image
 (``--pull never``), listens on 127.0.0.1 only and is removed when the module ends.
+Its data directory is a tmpfs: the image declares a VOLUME there, and without
+the tmpfs every run would leave an anonymous volume behind (``rm -f -v`` too).
 It is loaded with ``fixtures/mini_build/pg.sql`` (what ``ragdata.loader`` writes
 for the mini release, see make_mini_build.py); Qdrant is an in-memory client
 holding ``points.jsonl``; the contract directory is ``fixtures/mini_build/contracts``.
@@ -77,7 +79,8 @@ def pg_server():
     name = f"bible_rag_be_test_{uuid.uuid4().hex[:8]}"
     started = _docker("run", "-d", "--rm", "--pull", "never", "--name", name,
                       "-e", "POSTGRES_USER=test", "-e", "POSTGRES_PASSWORD=test",
-                      "-e", "POSTGRES_DB=bible_rag", "-p", "127.0.0.1::5432", IMAGE)
+                      "-e", "POSTGRES_DB=bible_rag", "-p", "127.0.0.1::5432",
+                      "--tmpfs", "/var/lib/postgresql/data", IMAGE)
     assert started.returncode == 0, started.stderr
     try:
         _wait_ready(name)
@@ -88,7 +91,7 @@ def pg_server():
                        '.HostPort}}', name).stdout.strip()
         yield {"host": "127.0.0.1", "port": int(port)}
     finally:
-        _docker("rm", "-f", name)
+        _docker("rm", "-f", "-v", name)
 
 
 def _qdrant(points=POINTS) -> QdrantClient:
