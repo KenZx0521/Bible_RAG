@@ -9,6 +9,7 @@ import quick_retrieval_eval as qre
 from src.data_loader import load_gt
 from src.models import EvalSample, SourceInfo
 from src.provenance import ProvenanceError
+from src.slot_coverage import SlotCoverageError
 
 FINGERPRINT = {"embedder": {"tokenizer_sha": "a"}, "reranker": None}
 
@@ -59,6 +60,23 @@ def test_a_new_build_is_refused_against_gt_v1(monkeypatch, tmp_path):
     with pytest.raises(ProvenanceError, match="--gt v2"):
         _main(monkeypatch, tmp_path, ["--gt", "v1"],
               health={"build_id": "b20261008_0000abcd"}, samples=_ghost_answer)
+
+
+def test_legacy_answers_labelled_by_a_contracts_dir_do_not_score(monkeypatch, tmp_path,
+                                                                 write_contracts):
+    """BACKEND_URL left on legacy prod (silent /health) while --contracts-dir names a build."""
+    contracts = str(write_contracts(tmp_path / "contracts"))
+    with pytest.raises(SlotCoverageError, match="legacy source"):
+        _main(monkeypatch, tmp_path, ["--gt", "v2", "--contracts-dir", contracts],
+              samples=_ghost_answer)
+
+
+def test_a_legacy_health_handshake_is_not_relabelled_by_a_contracts_dir(monkeypatch, tmp_path,
+                                                                         write_contracts):
+    contracts = str(write_contracts(tmp_path / "contracts"))
+    with pytest.raises(ProvenanceError, match="legacy-20261004.*holds"):
+        _main(monkeypatch, tmp_path, ["--gt", "v2", "--contracts-dir", contracts],
+              health={"build_id": "legacy-20261004"}, samples=_ghost_answer)
 
 
 def test_from_raw_takes_the_build_from_the_checkpoints_run_meta(monkeypatch, tmp_path):

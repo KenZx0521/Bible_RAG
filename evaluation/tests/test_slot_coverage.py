@@ -140,23 +140,43 @@ def build(tmp_path):
     return build_ruler(UNIVERSE, BUILD, _contracts(tmp_path))
 
 
+def _new(book, chapter, verse_range="", **kw):
+    """A new build's source: a passage id of the ragcommon.ids grammar and its kind."""
+    return _src(book, chapter, verse_range, **{"id": "ps:gen.24.28", "kind": "passage", **kw})
+
+
 def test_build_sources_map_by_start_and_end_keys_with_whole_units(build):
     item = _item([("gen", 24, 30, 30, 24)], ["gen.24.30"])
-    source = _src("創世記", 24, "28-29", start_key="gen.24.28b", end_key="gen.24.29")
+    source = _new("創世記", 24, "28-29", start_key="gen.24.28b", end_key="gen.24.29")
 
     assert build.source_slots([source]) == {"gen.24.28", "gen.24.29", "gen.24.30"}
     assert build.verse_metrics(item, [source]) == (1.0, 1.0)
 
 
 def test_build_sources_without_keys_map_by_number_with_whole_units(build):
-    assert build.source_slots([_src("創世記", 24, "30")]) == {"gen.24.29", "gen.24.30"}
-    assert build.source_slots([_src("約翰福音", 7, "53")]) == {"jhn.8.1"}
+    assert build.source_slots([_new("創世記", 24, "30")]) == {"gen.24.29", "gen.24.30"}
+    assert build.source_slots([_new("約翰福音", 7, "53")]) == {"jhn.8.1"}
 
 
 def test_a_unit_end_key_ends_at_its_last_slot(build):
-    source = _src("創世記", 24, "", start_key="gen.24.28", end_key="gen.24.29-30")
+    source = _new("創世記", 24, "", start_key="gen.24.28", end_key="gen.24.29-30")
 
     assert build.source_slots([source]) == {"gen.24.28", "gen.24.29", "gen.24.30"}
+
+
+@pytest.mark.parametrize("fields", [
+    {"id": "ps:gen.24.28", "kind": None}, {"id": "s", "kind": "passage"},
+    {"id": "s", "kind": None, "start_key": "gen.24.28", "end_key": "gen.24.28"},
+])
+def test_any_new_build_mark_lets_a_source_map(build, fields):
+    assert build.source_slots([_new("創世記", 24, "28", **fields)]) == {"gen.24.28"}
+
+
+@pytest.mark.parametrize("source_id", ["jhn:5:3", "s"])
+def test_a_legacy_source_under_a_new_build_label_raises(build, source_id):
+    """Legacy answers labelled as a new build (BACKEND_URL left on prod) must not score."""
+    with pytest.raises(SlotCoverageError, match=f"legacy source.*{BUILD}"):
+        build.source_slots([_src("約翰福音", 5, "3", id=source_id)])
 
 
 @pytest.mark.parametrize("keys, message", [
@@ -169,7 +189,7 @@ def test_a_unit_end_key_ends_at_its_last_slot(build):
 ])
 def test_bad_keys_raise(build, keys, message):
     with pytest.raises(SlotCoverageError, match=message):
-        build.source_slots([_src("創世記", 24, "", **keys)])
+        build.source_slots([_new("創世記", 24, "", **keys)])
 
 
 @pytest.mark.parametrize("change, message", [

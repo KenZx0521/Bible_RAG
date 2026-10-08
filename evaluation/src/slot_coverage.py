@@ -12,7 +12,8 @@
   verse lands on its omitted slot and is never gold. A source of a new build
   maps through that build's ``contracts/{build_id}/verse_index.json``, by
   start_key/end_key when it has them, else by book/chapter/verse_range, and a
-  merged unit counts whole.
+  merged unit counts whole. Each arm refuses the other arm's sources: a run
+  labelled with one build never scores answers from another.
 
 Chapter-level sources take the chapter's actual slots, never 1..N of a count
 table. A verse number without a slot goes through ref_aliases (jhn.7.53 →
@@ -194,6 +195,11 @@ def keyed_slots(grid: SlotGrid, source: SourceInfo) -> frozenset[str]:
     return frozenset(grid.span(_key_slot(source.start_key, False), _key_slot(source.end_key, True)))
 
 
+def is_new_build_source(source: SourceInfo) -> bool:
+    """A new build's source has a kind, start/end keys or a ragcommon.ids id; a legacy one none."""
+    return bool(source.kind or source.start_key or source.end_key or ids.is_valid(source.id))
+
+
 def legacy_mapper(universe_grid: SlotGrid, universe: Versification) -> SourceMapper:
     """legacy-20261004: verse numbers straight onto the universe's slots.
 
@@ -202,16 +208,24 @@ def legacy_mapper(universe_grid: SlotGrid, universe: Versification) -> SourceMap
     mislabel the run, so it raises.
     """
     def mapped(source: SourceInfo) -> frozenset[str]:
-        if source.kind or source.start_key or source.end_key or ids.is_valid(source.id):
+        if is_new_build_source(source):
             raise SlotCoverageError(f"{source.id} is a new build's source, but the run is "
                                     "labelled legacy-20261004; pass --contracts-dir")
         return numbered_slots(universe_grid, universe, source)
     return mapped
 
 
-def build_mapper(grid: SlotGrid, universe: Versification) -> SourceMapper:
-    """A new build: start/end keys, else book/chapter/verse_range, on the build's grid."""
+def build_mapper(grid: SlotGrid, universe: Versification, build_id: str) -> SourceMapper:
+    """A new build: start/end keys, else book/chapter/verse_range, on the build's grid.
+
+    A legacy-shaped source means the answers came from the legacy backend
+    while the run is labelled ``build_id`` (a contracts directory named the
+    build); scoring it would compare legacy with legacy, so it raises.
+    """
     def mapped(source: SourceInfo) -> frozenset[str]:
+        if not is_new_build_source(source):
+            raise SlotCoverageError(f"{source.id} is a legacy source, but the run is labelled "
+                                    f"{build_id}; point BACKEND_URL at that build's backend")
         if source.start_key or source.end_key:
             return grid.with_units(keyed_slots(grid, source))
         return grid.with_units(numbered_slots(grid, universe, source))
@@ -273,4 +287,5 @@ def build_ruler(slot_universe: str, build_id: str, contracts_dir: Path | None) -
         return SlotRuler(build_id, universe, legacy_mapper(universe, vers))
     if contracts_dir is None:
         raise SlotCoverageError(f"build {build_id} needs its contracts directory")
-    return SlotRuler(build_id, universe, build_mapper(load_verse_index(contracts_dir, build_id), vers))
+    grid = load_verse_index(contracts_dir, build_id)
+    return SlotRuler(build_id, universe, build_mapper(grid, vers, build_id))

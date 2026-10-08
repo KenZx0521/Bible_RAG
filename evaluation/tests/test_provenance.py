@@ -1,40 +1,32 @@
 """Run provenance: build id and encoder from /health, run_meta.json, GT/build binding."""
 
-import hashlib
-import json
-
 import httpx
 import pytest
 
 from src import provenance as pv
 from src.data_loader import load_gt
+from src.models import SourceInfo
+from src.slot_coverage import SlotCoverageError
 
 BUILD = "b20261008_0000abcd"
 FINGERPRINT = {"embedder": {"tokenizer_sha": "a"}, "reranker": {"tokenizer_sha": "b"}}
 
 
-def _contracts(root, build_id=BUILD):
-    root.mkdir(parents=True, exist_ok=True)
-    data = json.dumps({"schema": "ragdata.contract.verse_index.v1",
-                       "slots": [{"slot_key": "jhn.3.16", "unit_key": "jhn.3.16"}]}).encode()
-    (root / "verse_index.json").write_bytes(data)
-    (root / "manifest.json").write_text(json.dumps(
-        {"build_id": build_id, "files": {"verse_index.json": hashlib.sha256(data).hexdigest()}}))
-    return root
-
-
 # --- /health ---------------------------------------------------------------------
 
-def test_a_backend_without_build_id_is_the_legacy_build():
+def test_a_backend_without_build_id_is_the_legacy_build_by_assumption():
     prov = pv.from_health({"status": "ok", "services": {}})
 
     assert prov.meta() == {"data_build_id": "legacy-20261004", "encoder_fingerprint": None}
+    assert prov.reported is False
 
 
-def test_build_id_and_encoder_come_from_health():
-    prov = pv.from_health({"build_id": BUILD, "encoder": FINGERPRINT})
+@pytest.mark.parametrize("build_id", [BUILD, "legacy-20261004"])
+def test_build_id_and_encoder_come_from_health(build_id):
+    prov = pv.from_health({"build_id": build_id, "encoder": FINGERPRINT})
 
-    assert prov.meta() == {"data_build_id": BUILD, "encoder_fingerprint": FINGERPRINT}
+    assert prov.meta() == {"data_build_id": build_id, "encoder_fingerprint": FINGERPRINT}
+    assert prov.reported is True
 
 
 def test_an_encoder_not_yet_initialised_is_null():
@@ -95,13 +87,13 @@ def test_legacy_with_v2_scores_on_the_slot_universe():
     assert ctx.meta()["gt_sha"] == load_gt("v2").sha256
 
 
-def test_a_new_build_is_refused_against_gt_v1(tmp_path):
+def test_a_new_build_is_refused_against_gt_v1(tmp_path, write_contracts):
     with pytest.raises(pv.ProvenanceError, match="--gt v2"):
-        pv.make_context(load_gt("v1"), pv.Provenance(BUILD), _contracts(tmp_path))
+        pv.make_context(load_gt("v1"), pv.Provenance(BUILD), write_contracts(tmp_path))
 
 
-def test_a_new_build_reads_its_contracts_from_the_store(tmp_path, monkeypatch):
-    _contracts(tmp_path / "contracts" / BUILD)
+def test_a_new_build_reads_its_contracts_from_the_store(tmp_path, monkeypatch, write_contracts):
+    write_contracts(tmp_path / "contracts" / BUILD)
     monkeypatch.setattr(pv.settings, "rag_store", tmp_path)
 
     ctx = pv.make_context(load_gt("v2"), pv.Provenance(BUILD))
@@ -109,17 +101,46 @@ def test_a_new_build_reads_its_contracts_from_the_store(tmp_path, monkeypatch):
     assert ctx.ruler.build_id == BUILD
 
 
-def test_a_contracts_dir_names_the_build_a_legacy_health_report_does_not(tmp_path):
-    ctx = pv.make_context(load_gt("v2"), pv.Provenance("legacy-20261004"), _contracts(tmp_path))
+def test_a_contracts_dir_names_the_build_only_when_health_names_none(tmp_path, write_contracts):
+    ctx = pv.make_context(load_gt("v2"), pv.from_health({"status": "ok"}),
+                          write_contracts(tmp_path))
 
     assert ctx.meta()["data_build_id"] == BUILD and ctx.ruler.build_id == BUILD
 
 
-def test_a_contracts_dir_of_another_build_is_refused(tmp_path):
+def _legacy_run_meta(directory):
+    pv.write_run_meta(directory, pv.Provenance("legacy-20261004"))
+    return directory
+
+
+@pytest.mark.parametrize("legacy", [
+    lambda d: pv.from_health({"build_id": "legacy-20261004"}),
+    lambda d: pv.read_run_meta(_legacy_run_meta(d / "run")),
+    lambda d: pv.read_run_meta(d),
+], ids=["health_handshake", "run_meta_legacy", "checkpoint_before_run_meta"])
+def test_a_build_known_to_be_legacy_is_not_relabelled_by_a_contracts_dir(
+        tmp_path, legacy, write_contracts):
+    with pytest.raises(pv.ProvenanceError, match="legacy-20261004.*holds"):
+        pv.make_context(load_gt("v2"), legacy(tmp_path), write_contracts(tmp_path / "c"))
+
+
+def test_legacy_answers_under_a_contracts_dir_label_do_not_score(tmp_path, write_contracts):
+    """BACKEND_URL left on the legacy prod backend while --contracts-dir names a build."""
+    ctx = pv.make_context(load_gt("v2"), pv.from_health({"status": "ok"}),
+                          write_contracts(tmp_path))
+    item = ctx.gt.by_id()["VERSE_LOOKUP_001"]
+    legacy = SourceInfo(id="jhn:3:16", book="約翰福音", chapter=3, verse_range="16")
+
+    with pytest.raises(SlotCoverageError, match="legacy source"):
+        ctx.ruler.verse_metrics(item, [legacy])
+
+
+def test_a_contracts_dir_of_another_build_is_refused(tmp_path, write_contracts):
     with pytest.raises(pv.ProvenanceError, match="holds"):
-        pv.make_context(load_gt("v2"), pv.Provenance("b20261009_ffffffff"), _contracts(tmp_path))
+        pv.make_context(load_gt("v2"), pv.Provenance("b20261009_ffffffff"),
+                        write_contracts(tmp_path))
 
 
 def test_a_contracts_dir_without_manifest_is_refused(tmp_path):
     with pytest.raises(pv.ProvenanceError, match="cannot read"):
-        pv.make_context(load_gt("v2"), pv.Provenance("legacy-20261004"), tmp_path)
+        pv.make_context(load_gt("v2"), pv.from_health({}), tmp_path)
