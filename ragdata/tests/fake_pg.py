@@ -3,7 +3,7 @@
 ``apply`` decodes the plan's COPY text the way PostgreSQL reads the text format
 (so the loader's encoding round-trips here), records the constraints the DDL
 names, runs ``during`` and only then "commits"; ``fail_on`` makes a COPY of that
-table fail first. Tests mutate ``schemas[...]`` to stand for a projection that
+table fail first. ``drop_build`` likewise runs ``during`` before it drops. Tests mutate ``schemas[...]`` to stand for a projection that
 drifted.
 """
 
@@ -91,6 +91,16 @@ class FakePg:
         self.schemas[plan.schema] = staged
         self.constraint_sets[plan.schema] = _constraints(plan)
         self.builds[build["build_id"]] = {**build, "synthetic": False}
+
+    def drop_build(self, schema: str, build_id: str, during: Callable[[], None]) -> None:
+        """Refuse a serving build; run ``during``; only then drop the schema and the row."""
+        serving = sorted(env for env, build in self.serving_rows.items() if build == build_id)
+        if serving:
+            raise PgError(f"{build_id} is serving {serving}")
+        during()
+        self.schemas.pop(schema, None)
+        self.constraint_sets.pop(schema, None)
+        self.builds.pop(build_id, None)
 
     def fetch(self, schema: str, tb: Table) -> list[dict[str, Any]]:
         return [dict(r) for r in self.schemas[schema].get(tb.name, [])]

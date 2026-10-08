@@ -29,6 +29,7 @@
     python -m ragdata verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F]
                                  [--tokenizer F] [--gt F] [--freeze F] [--device DEV]
                                  [--sample N] [--report F]
+    python -m ragdata unload BUILD_ID [--contracts DIR] [--env-file F]
 
 DAG-external tools that write a registry or an expectation file (never run by a build):
 
@@ -328,6 +329,11 @@ def _load(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _unload(args: argparse.Namespace) -> int:
+    _emit(loader_cli.run_unload(args), None)
+    return EXIT_OK
+
+
 def _verify(args: argparse.Namespace) -> int:
     report = loader_cli.run_verify(args)
     _emit(report.to_json(), args.report)
@@ -340,6 +346,7 @@ HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSErro
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
     "build": _build, "gate": _gate, "det": _det, "expect": _expect, "convert": _convert,
     "freeze": _freeze, "gt": _gt, "release": _release, "load": _load, "verify": _verify,
+    "unload": _unload,
 }
 
 

@@ -59,6 +59,10 @@ class QdrantDb:
                      for p in points[start:start + BATCH]]
             self._client.upsert(name, points=batch, wait=True)
 
+    def delete(self, name: str) -> None:
+        """Drop one collection (``loader.unload``)."""
+        self._client.delete_collection(name)
+
     def count(self, name: str) -> int:
         return int(self._client.count(name, exact=True).count)
 

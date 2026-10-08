@@ -4,6 +4,7 @@
                       [--tokenizer F]
     verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F] [--tokenizer F]
                         [--gt F] [--freeze F] [--device DEV] [--sample N] [--report F]
+    unload BUILD_ID [--contracts DIR] [--env-file F]
 
 Both read the release through the store (``read_release``: every layer verified and
 gated again, the file assembled again byte for byte; ``--tokenizer`` is BGE-M3's
@@ -11,7 +12,9 @@ tokenizer.json, default the HF cache). Connections come from POSTGRES_* and
 QDRANT_* in the environment, or else from ``--env-file`` (the repository's
 ``.env``). ``load`` writes only a new schema, ``rag_meta.builds``, a new collection
 and a new contract directory; ``--slot inactive`` is the only slot it accepts.
-``promote`` is a function (``ragdata.loader.promote``), not a command here.
+``promote`` is a function (``ragdata.loader.promote``), not a command here. ``unload``
+deletes one build's schema, builds row, collection and contract directory
+(``ragdata.loader.unload``); it refuses a serving build.
 """
 
 from __future__ import annotations
@@ -24,6 +27,7 @@ from typing import Any, Mapping
 from ragdata import paths
 from ragdata.loader import config
 from ragdata.loader.load import load
+from ragdata.loader.unload import unload
 from ragdata.loader.verify import ProjectionReport, VerifyInputs, verify
 from ragdata.release import gating
 from ragdata.release.assemble import Release, read_release
@@ -49,6 +53,10 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     check.add_argument("--device", help="where BGE-M3 re-encodes (default cuda if available)")
     check.add_argument("--sample", type=int, default=200)
     check.add_argument("--report", type=Path)
+    drop = sub.add_parser("unload", help="delete a loaded build that nothing serves")
+    drop.add_argument("build_id")
+    drop.add_argument("--contracts", type=Path, default=paths.CONTRACTS)
+    drop.add_argument("--env-file", type=Path, default=paths.REPO / ".env")
 
 
 def environment(env_file: Path) -> dict[str, str]:
@@ -92,6 +100,15 @@ def run_verify(args: argparse.Namespace) -> ProjectionReport:
     pg, qdrant = connect(environment(args.env_file))
     try:
         return verify(release, pg, qdrant, args.contracts, inputs)
+    finally:
+        pg.close()
+        qdrant.close()
+
+
+def run_unload(args: argparse.Namespace) -> dict[str, Any]:
+    pg, qdrant = connect(environment(args.env_file))
+    try:
+        return unload(args.build_id, pg, qdrant, args.contracts)
     finally:
         pg.close()
         qdrant.close()
