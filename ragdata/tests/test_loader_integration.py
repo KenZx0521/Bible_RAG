@@ -20,6 +20,7 @@ import mini_loaded
 import mini_release
 from ragdata.loader import load as loader
 from ragdata.loader import promote as promoter
+from ragdata.loader import unload as unloader
 from ragdata.loader.pg import PgDb
 from ragdata.loader.qdrant import QdrantDb
 
@@ -87,3 +88,19 @@ def test_promote_and_switch_back(tmp_path, mini, db):
     assert before == promoter.Serving("staging", loaded.release.build_id, digest)
     with pytest.raises(loader.LoadError, match="serving"):
         loader.load(loaded.release, db, loaded.qdrant, tmp_path / "again")
+
+
+def test_the_first_promote_is_undone_by_deleting_the_env_row(tmp_path, mini, db):
+    """The first promote has no previous pair to go back to; deleting the env's serving
+    row (the SQL docs/rebuild_pipeline.md §6 gives) restores "nothing serves" and lets
+    the build be unloaded."""
+    loaded = _load(tmp_path, mini, db)
+    build_id = loaded.release.build_id
+    assert promoter.promote(db, "prod", build_id, "sha256:" + "c" * 64) is None
+    with pytest.raises(unloader.UnloadError, match="serving"):
+        unloader.unload(build_id, db, loaded.qdrant, loaded.contracts)
+    with db.transaction() as cur:
+        cur.execute("DELETE FROM rag_meta.serving WHERE env = 'prod'")
+    assert db.serving() == {}
+    report = unloader.unload(build_id, db, loaded.qdrant, loaded.contracts)
+    assert report["removed"] == list(unloader.OWNED)

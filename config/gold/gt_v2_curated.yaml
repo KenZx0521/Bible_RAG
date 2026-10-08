@@ -6,7 +6,7 @@
 #   reference_answer（機械替換門檻 4 字以下的短子句不會自動改，逐字背誦時要人工補齊）。
 #   reference_answer 中的間接引語（第三人稱轉述，如 VL_025「律法書不可離開他的口」）是合法轉述，不改。
 # quote_exempt：「」內不是經文引文的子句（術語、節期名、主題標籤、情節概括、詩篇篇題），G-GT 引文檢查只略過這些。
-# kay_review：不自行修改、交 Kay 裁決的題目。
+# kay_review：交 Kay 裁決的題目；裁決寫在 detail 末尾（「Kay 2026-10-08 裁決：…」）。
 schema: ragdata.gt_v2_curated.v1
 
 quote_fixes:
@@ -214,6 +214,12 @@ quote_fixes:
     after: 其中不能分辨左手右手的有十二萬多人
     evidence_slot: jon.4.11
     reason: 拿4:11 原文（逐字背誦的答案要點）
+  - qid: VERSE_LOOKUP_020
+    field: reference_answer
+    before: 但那等候耶和華的必從新得力
+    after: 但那等候耶和華的必重新得力
+    evidence_slot: isa.40.31
+    reason: 賽40:31 原文（「從新」是和合本舊譯）；Kay 2026-10-08 裁決（見 kay_review）
 
 quote_exempt:
   - {qid: TOPIC_QUESTION_062, field: reference_answer, quote: 上行之詩, reason: 詩篇篇題（chapter_texts），不在 verse_units}
@@ -237,13 +243,16 @@ kay_review:
     detail: >-
       題目用 CUNP 拼法「大利烏」（題目不改，日後由 query_aliases 處理）。答案欄已依 cunp_spelling 改為「大流士」（但6:1）。
       v1 下三組設定都回答「經文沒有描述」，評分卻判為正確（稽核 G04）。請決定這題要不要排除或加評分備註。
+      Kay 2026-10-08 裁決：這是評分器的問題，題目與答案不改、不排除，只記錄。
   - qid: VERSE_LOOKUP_001
     issue: 題目與答案用字不一致
     detail: >-
       v1 答案要點用「祂／不至」、reference_answer 用「他／不致」，彼此矛盾。答案欄已依機械替換與 CUNP 規則逐字對齊約3:16
       （上帝／他／不致），兩者不再矛盾；題目「神如何表達祂對世人的愛」依規定未改。請決定題目是否保留原樣。
+      Kay 2026-10-08 裁決：題目不改（題目代表使用者輸入）。
   - qid: VERSE_LOOKUP_020
-    issue: 答案欄自相矛盾（未修改）
+    issue: 答案欄自相矛盾
     detail: >-
       答案要點作「等候耶和華的必重新得力」，reference_answer 作「但那等候耶和華的必從新得力」。服務文字賽40:31 作「重新得力」，
-      「從新」是和合本舊譯。建議 reference_answer 改「重新」；未自行修改。
+      「從新」是和合本舊譯。建議 reference_answer 改「重新」。
+      Kay 2026-10-08 裁決：採納，reference_answer 改為「重新得力」（quote_fixes VERSE_LOOKUP_020）。

@@ -7,6 +7,7 @@ row; ``during`` (the Qdrant and contract-file writes) runs before the commit.
 Any failure rolls the transaction back, and the schema this call created is
 dropped if it is still there: the only DROP the loader has. It never writes
 ``rag_meta.serving`` (``promote`` does) and never touches another schema.
+``drop_build`` is unload's side (``loader.unload``): one named build's schema and row.
 """
 
 from __future__ import annotations
@@ -94,6 +95,24 @@ class PgDb:
             if created:
                 self._drop_own(plan.schema)
             raise
+
+    def drop_build(self, schema: str, build_id: str, during: Callable[[], None]) -> None:
+        """Unload (``loader.unload``): in one transaction refuse a build ``rag_meta.serving``
+        points at (its rows locked), drop ``schema`` and delete the build's builds row;
+        ``during`` (the Qdrant and contract-file deletes) runs before the commit."""
+        meta = {name: self.table_exists(sql.META, name) for name in ("serving", "builds")}
+        with self.transaction() as cur:
+            if meta["serving"]:
+                cur.execute(f'SELECT "env" FROM "{sql.META}"."serving" WHERE "build_id" = %s '
+                            'FOR UPDATE', (build_id,))
+                envs = sorted(row[0] for row in cur.fetchall())
+                if envs:
+                    raise PgError(f"{build_id} is serving {envs}")
+            cur.execute(f"DROP SCHEMA IF EXISTS {sql.ident(schema)} CASCADE")
+            if meta["builds"]:
+                cur.execute(f'DELETE FROM "{sql.META}"."builds" WHERE "build_id" = %s',
+                            (build_id,))
+            during()
 
     def _drop_own(self, schema: str) -> None:
         """Drop the schema this load created and could not commit (if still there)."""

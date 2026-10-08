@@ -1,5 +1,11 @@
 """Command line for the snapshot pipeline.
 
+    python -m ragdata pipeline run [--date YYYYMMDD] [--load] [--verify] [--device DEV]
+                                 [--store DIR] [--releases DIR] [--report FILE]
+        every layer from the PDFs, gated, then the release (and load, verify) in one
+        run; it stops at the first red gate (see ragdata.pipeline and
+        docs/rebuild_pipeline.md). The commands below run one stage each.
+
     python -m ragdata build text --pdf-dir bible_pdf [--store DIR] [--counts YAML]
                                  [--source-expect YAML] [--registries DIR] [--md-dir DIR]
                                  [--canonical JSONL] [--diff-expect YAML] [--workers N]
@@ -29,6 +35,7 @@
     python -m ragdata verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F]
                                  [--tokenizer F] [--gt F] [--freeze F] [--device DEV]
                                  [--sample N] [--report F]
+    python -m ragdata unload BUILD_ID [--contracts DIR] [--env-file F]
 
 DAG-external tools that write a registry or an expectation file (never run by a build):
 
@@ -80,6 +87,8 @@ from ragdata.kg import k0_build, k1_build, k4_build, k4_route
 from ragdata.loader import cli as loader_cli
 from ragdata.loader.config import ConfigError
 from ragdata.loader.plan import LoaderError
+from ragdata.pipeline import cli as pipeline_cli
+from ragdata.pipeline.run import GATE
 from ragdata.gt import cli as gt_cli
 from ragdata.gt.errors import GT_ERRORS
 from ragdata.release import cli as release_cli
@@ -189,6 +198,7 @@ def _parser() -> argparse.ArgumentParser:
     _tool_parsers(sub)
     gt_cli.add_parser(sub)
     release_cli.add_parser(sub)
+    pipeline_cli.add_parser(sub)
     loader_cli.add_parsers(sub)
     return parser
 
@@ -328,6 +338,20 @@ def _load(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _pipeline(args: argparse.Namespace) -> int:
+    report = pipeline_cli.run_pipeline(args)
+    _emit(report.to_json(), args.report)
+    if report.stop is None:
+        return EXIT_OK
+    sys.stderr.write(pipeline_cli.describe(report.stop))
+    return EXIT_GATE_FAILED if report.stop.kind == GATE else EXIT_ERROR
+
+
+def _unload(args: argparse.Namespace) -> int:
+    _emit(loader_cli.run_unload(args), None)
+    return EXIT_OK
+
+
 def _verify(args: argparse.Namespace) -> int:
     report = loader_cli.run_verify(args)
     _emit(report.to_json(), args.report)
@@ -340,6 +364,7 @@ HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSErro
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
     "build": _build, "gate": _gate, "det": _det, "expect": _expect, "convert": _convert,
     "freeze": _freeze, "gt": _gt, "release": _release, "load": _load, "verify": _verify,
+    "unload": _unload, "pipeline": _pipeline,
 }
 
 

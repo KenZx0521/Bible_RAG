@@ -33,7 +33,7 @@
       "typology": 12
     },
     "gt_version": "v2",
-    "slot_universe": "text@ddb48c599861",
+    "slot_universe": "text@247eafe44b02",
     "v2_note": "答案欄位（reference_answer、expected_answer_points）對齊 slot_universe 的 verse_units.text；題目、question_type、book_name、reference 與 v1 相同。refs 由 ragcommon.refs strict 解析 reference 導出；gold_slots 是有經文的節位，omitted_slots 是只見於異文註腳的缺號槽，不算 gold。逐筆修改見 changes。",
     "v1": {
       "path": "ground_truth.json",
@@ -42,21 +42,21 @@
     "generator": {
       "script": "ragdata/src/ragdata/gt/build.py",
       "command": "python -m ragdata gt build",
-      "git_sha": "d9f133e279f6a948fc8023607623bf435cda6f76",
+      "git_sha": "5b2d7ffc451419c4397233344244d64aac44b833",
       "files": {
-        "ragdata/src/ragdata/gt": "224f67664704b8ff68abb6f1699cba56564d3445",
-        "packages/ragcommon": "916477b00b63598655b9080170b5d8a55cdc3e78",
-        "config/gold/gt_v2_curated.yaml": "da52c6b9f15198c978e4e6704ff886bf1a64c156"
+        "ragdata/src/ragdata/gt": "a47689dca51069c327122e9025bc57680a628826",
+        "packages/ragcommon": "8a0b336d22039783daafc0be8321795fa052bdc0",
+        "config/gold/gt_v2_curated.yaml": "c8e0fe76708506cb142fa66b6fa0c063e914bac1"
       }
     },
     "curated": {
       "path": "config/gold/gt_v2_curated.yaml",
-      "sha256": "e4474eea6227b6016a2ca0e49de2b9a75da11f95f3c583122cc6b781a3f10359"
+      "sha256": "1bd869850f547fc34a8fcbe765ccf3a89cb4f23fb159284b1c30d52a914b2038"
     },
     "changes": {
       "path": "config/gold/gt_v2_changes.jsonl",
-      "sha256": "c9fe4e59281e9fdc0baee53d14bf38a8e7aedf8a2d82f88a2af96fb8148b4342",
-      "count": 636,
+      "sha256": "54d22a862b6b77ae083d9517cc0a57209371607455be6c1579a526eb6754cb08",
+      "count": 637,
       "by_rule": {
         "corpus_orthography": 170,
         "cunp_gloss": 1,
@@ -65,7 +65,7 @@
         "interpunct": 33,
         "legacy_family": 100,
         "mechanical_clause": 291,
-        "quote_original": 34
+        "quote_original": 35
       }
     },
     "quote_exempt": [
@@ -158,17 +158,17 @@
       {
         "qid": "PERSON_QUESTION_013",
         "issue": "評分問題",
-        "detail": "題目用 CUNP 拼法「大利烏」（題目不改，日後由 query_aliases 處理）。答案欄已依 cunp_spelling 改為「大流士」（但6:1）。 v1 下三組設定都回答「經文沒有描述」，評分卻判為正確（稽核 G04）。請決定這題要不要排除或加評分備註。"
+        "detail": "題目用 CUNP 拼法「大利烏」（題目不改，日後由 query_aliases 處理）。答案欄已依 cunp_spelling 改為「大流士」（但6:1）。 v1 下三組設定都回答「經文沒有描述」，評分卻判為正確（稽核 G04）。請決定這題要不要排除或加評分備註。 Kay 2026-10-08 裁決：這是評分器的問題，題目與答案不改、不排除，只記錄。"
       },
       {
         "qid": "VERSE_LOOKUP_001",
         "issue": "題目與答案用字不一致",
-        "detail": "v1 答案要點用「祂／不至」、reference_answer 用「他／不致」，彼此矛盾。答案欄已依機械替換與 CUNP 規則逐字對齊約3:16 （上帝／他／不致），兩者不再矛盾；題目「神如何表達祂對世人的愛」依規定未改。請決定題目是否保留原樣。"
+        "detail": "v1 答案要點用「祂／不至」、reference_answer 用「他／不致」，彼此矛盾。答案欄已依機械替換與 CUNP 規則逐字對齊約3:16 （上帝／他／不致），兩者不再矛盾；題目「神如何表達祂對世人的愛」依規定未改。請決定題目是否保留原樣。 Kay 2026-10-08 裁決：題目不改（題目代表使用者輸入）。"
       },
       {
         "qid": "VERSE_LOOKUP_020",
-        "issue": "答案欄自相矛盾（未修改）",
-        "detail": "答案要點作「等候耶和華的必重新得力」，reference_answer 作「但那等候耶和華的必從新得力」。服務文字賽40:31 作「重新得力」， 「從新」是和合本舊譯。建議 reference_answer 改「重新」；未自行修改。"
+        "issue": "答案欄自相矛盾",
+        "detail": "答案要點作「等候耶和華的必重新得力」，reference_answer 作「但那等候耶和華的必從新得力」。服務文字賽40:31 作「重新得力」， 「從新」是和合本舊譯。建議 reference_answer 改「重新」。 Kay 2026-10-08 裁決：採納，reference_answer 改為「重新得力」（quote_fixes VERSE_LOOKUP_020）。"
       }
     ]
   },
@@ -710,7 +710,7 @@
         "他們必如鷹展翅上騰",
         "奔跑卻不困倦，行走卻不疲乏"
       ],
-      "reference_answer": "但那等候耶和華的必從新得力。他們必如鷹展翅上騰；他們奔跑卻不困倦，行走卻不疲乏。",
+      "reference_answer": "但那等候耶和華的必重新得力。他們必如鷹展翅上騰；他們奔跑卻不困倦，行走卻不疲乏。",
       "family": "legacy_head",
       "refs": [
         {
