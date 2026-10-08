@@ -217,8 +217,8 @@ def test_r4_appends_the_first_anchor_the_top_k_lacks(event_question):
     assert stats["route_used"] == "R4" and stats["reranked_top_k"] == 5
     assert [c["id"] for c in ranked[5:]] == ["ps:act.9.1"]
     assert ranked[5]["source_strategy"] == "event_registry"
-    assert ranked[5]["found_by"] == ["event_registry"] and ranked[5]["via_event_id"] == "event:saoluo"
-    assert stats["event_registry_events"] == ["event:saoluo"]
+    assert ranked[5]["found_by"] == ["event_registry"] and ranked[5]["via_event_id"] == "ev0002"
+    assert stats["event_registry_events"] == ["ev0002"]
     assert stats["strategies_used"][-1] == "event_registry"
 
 

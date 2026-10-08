@@ -8,7 +8,7 @@ class, or an empty layer, is red.
 
 from __future__ import annotations
 
-from typing import Any, Iterator, Mapping, Sequence
+from typing import Any, Callable, Iterator, Mapping, Sequence
 
 from ragdata.contract.provenance import COORDINATE_KEYS, EVIDENCE, PROVENANCE_CLASSES
 from ragdata.gates.base import GateResult, violations_result
@@ -32,21 +32,29 @@ def _units(value: Any, where: str) -> Iterator[tuple[str, Mapping[str, Any]]]:
 
 
 def _has_slot_range(unit: Mapping[str, Any]) -> bool:
-    if _set(unit.get("start_slot")) and _set(unit.get("end_slot")):
+    return _set(unit.get("start_slot")) and _set(unit.get("end_slot"))
+
+
+def _has_coordinate(unit: Mapping[str, Any]) -> bool:
+    return any(_set(unit.get(key)) for key in COORDINATE_KEYS)
+
+
+def _self_or_anchors(unit: Mapping[str, Any], has: Callable[[Mapping[str, Any]], bool]) -> bool:
+    """``unit`` has the evidence, or it has anchors and every one of them has it."""
+    if has(unit):
         return True
     anchors = unit.get("anchors")
     return isinstance(anchors, (list, tuple)) and bool(anchors) and all(
-        isinstance(a, Mapping) and _set(a.get("start_slot")) and _set(a.get("end_slot"))
-        for a in anchors)
+        isinstance(a, Mapping) and has(a) for a in anchors)
 
 
 def _evidence(unit: Mapping[str, Any], need: str) -> bool:
     if need == "coordinate":
-        return any(_set(unit.get(key)) for key in COORDINATE_KEYS)
+        return _self_or_anchors(unit, _has_coordinate)
     if need == "rule":
         return _set(unit.get("rule_id")) or _set(unit.get("norm_rule_ids"))
     if need == "slot_range":
-        return _has_slot_range(unit)
+        return _self_or_anchors(unit, _has_slot_range)
     return _set(unit.get(need))
 
 

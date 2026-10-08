@@ -4,9 +4,9 @@ A layer was gated when it was built, but the store keeps every version and the g
 move on: kg0@3151851bc84f passed G-KG0 when it was built and fails it now. So a
 release runs, for each core layer with the layers it depends on, every gate that reads
 only the layers and the repository (``runner.record_gates``: not G-CONSERVE and
-G-XCHECK, which re-read the PDFs) but G-ENC, which needs BGE-M3 on a GPU, and G-ROUTE,
-which needs the frozen live-probe result under ``reference/route_live``; those two stay
-with the layer's own ``ragdata gate`` report.
+G-XCHECK, which re-read the PDFs) but G-ENC, which needs BGE-M3 on a GPU and stays with
+the layer's own ``ragdata gate`` report. G-ROUTE compiles the lexicon again from the
+layers and the registries (``inputs.registries``).
 G-EMB reads only token counts, so it gets the pinned tokenizers, not the model.
 
 The verdicts are not written into the release: the build_id names the data alone, and
@@ -24,7 +24,7 @@ from ragdata.gates import runner
 from ragdata.stages.s06_emb.encoder import load_token_encoder
 from ragdata.store import LayerData
 
-NOT_RUN = frozenset({"G-ENC", "G-ROUTE"})
+NOT_RUN = frozenset({"G-ENC"})
 DETAILS = 3
 
 

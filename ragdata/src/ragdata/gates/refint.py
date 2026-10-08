@@ -127,14 +127,21 @@ KG0_FKS = (
        lambda k: [k.target_start_slot, k.target_end_slot]),
 )
 
+def _term_locations(heading: bool) -> Callable[[Any], list[str]]:
+    return lambda e: [t.at for t in e.pdf_terms if t.at.startswith("hd:") == heading]
+
+
 EVENTS_FKS = (
     fk("events", "anchors", "passages", lambda e: [a.passage_id for a in e.anchors]),
     fk("events", "anchor slots", "verse_slots",
        lambda e: [s for a in e.anchors for s in (a.start_slot, a.end_slot)]),
-    fk("anchor_changes", "event_id", "events"),
-    fk("anchor_changes", "passage_id", "passages"),
-    fk("anchor_changes", "slots", "verse_slots",
-       lambda c: [c.legacy_start_slot, c.legacy_end_slot, *c.removed_slots]),
+    fk("events", "anchor pericopes", "pericopes", lambda e: [a.pericope_id for a in e.anchors]),
+    fk("events", "evidence headings", "headings",
+       lambda e: [a.evidence.heading_id for a in e.anchors] + [e.name_heading_id]),
+    fk("events", "evidence quotes", "verse_units",
+       lambda e: [a.evidence.quote.unit_key for a in e.anchors if a.evidence.quote]),
+    fk("events", "pdf_term headings", "headings", _term_locations(True)),
+    fk("events", "pdf_term units", "verse_units", _term_locations(False)),
 )
 
 

@@ -59,7 +59,8 @@ class RetrievalStats(BaseModel):
     graph_strategies: list[str] = []
     # Effective rank-fusion alpha for this request (None = fusion disabled).
     fusion_alpha: float | None = None
-    # Event-registry events (legacy ids) the question triggered; their anchors
+    # Event-registry events (ev ids; the contract's events[].legacy_ids and
+    # retired[].merged_into map R1 ids to them) the question triggered; their anchors
     # appear as extra sources (strategy "event_registry") after the top-k.
     event_registry_events: list[str] = []
 

@@ -1,10 +1,9 @@
 """Mini KG registries and the kg0/events/route rows they must produce from the mini
 snapshot (mini_build.py), written by hand as the oracle the K stages reproduce.
 
-Registries: ``normalization()``, ``divine_refs()``, ``underline_fixes()`` (YAML docs),
-``legacy_registry()`` (the backend's event_registry.json shape) and ``lexicon()``
-(a frozen routing lexicon). ``write_registries(dir)`` writes the YAML ones and
-returns their versions; the oracle rows cite those versions.
+Registries: ``normalization()``, ``divine_refs()``, ``underline_fixes()`` (YAML docs)
+and ``events_yaml()`` (the R2 event registry). ``write_registries(dir)`` writes the
+K0 ones and returns their versions; the oracle rows cite those versions.
 """
 
 from __future__ import annotations
@@ -15,8 +14,6 @@ from pathlib import Path
 import yaml
 
 from ragcommon import ids
-
-GT_QUESTIONS = ("掃羅在大馬士革遇見誰？", "保羅歸主的經過", "以弗所書提到兒女和父母")
 
 
 def normalization() -> dict:
@@ -153,76 +150,90 @@ def kg0_counts(versions: dict[str, str], text: str, struct: str) -> dict:
 # ------------------------------------------------------------------ events
 
 
-def legacy_registry() -> dict:
-    """The backend's event_registry.json shape over the mini legacy pericopes."""
+ALIAS_SOURCE = "backend/data/event_registry.json@ef0e178 triggers"
+ALIAS_NOTE = "不在 PDF；legacy 觸發詞"
+
+
+def events_yaml() -> dict:
+    """The mini R2 registry: a pdf_term on a heading and on a verse, a section-heading name,
+    a continuation passage (pc:act.9.3b runs into act.10), a retired event, a quoted anchor
+    on an untitled pericope and an event without triggers."""
     return {
-        "version": 1, "generated_at": "2026-10-03T20:21:29", "generator": "test",
-        "trigger_rule": "exact keyword", "anchor_order": "canonical",
+        "schema": "ragdata.events.v2", "variant": "R2", "decided_by": "kay",
+        "external_alias_defaults": {"source": ALIAS_SOURCE, "note": ALIAS_NOTE},
+        "retired": [{"event_id": "ev0004", "legacy_ids": ["event:saoluo2"],
+                     "merged_into": "ev0003"}],
         "events": [
-            {"id": "event:kemu", "name": "渴慕上帝", "provenance": "alias_injection",
-             "triggers": ["渴慕"], "anchors": ["psa:42:0"]},
-            {"id": "event:tianguo", "name": "天國裏誰是最大的", "provenance": "head_event_backfill",
-             "triggers": ["天國", "最大的"], "anchors": ["mat:18:0"]},
-            {"id": "event:saoluo", "name": "掃羅歸主", "provenance": "manual_edges",
-             "triggers": ["保羅歸主"], "anchors": ["act:9:0", "act:9:1"]},
+            {"event_id": "ev0001", "legacy_ids": ["event:kemu"], "name": "渴慕上帝",
+             "name_heading_id": "hd:psa.42.1#1", "anchors": ["pc:psa.42.1"],
+             "pdf_terms": [{"text": "渴慕", "at": "hd:psa.42.1#1"},
+                           {"text": "切慕", "at": "psa.42.1"}],
+             "external_aliases": []},
+            {"event_id": "ev0002", "legacy_ids": ["event:tianguo"], "name": "天國裏誰是最大的",
+             "name_heading_id": "hd:mat.18.1#1", "anchors": ["pc:mat.18.1"], "pdf_terms": [],
+             "external_aliases": [{"text": "天國"}, {"text": "最大的", "note": "PDF 有此字串"}]},
+            {"event_id": "ev0003", "legacy_ids": ["event:saoluo", "event:saoluo2"],
+             "name": "掃羅歸主", "name_heading_id": "hd:act.9.1#1",
+             "anchors": ["pc:act.9.1", "pc:act.9.3b"],
+             "pdf_terms": [{"text": "天上的光", "at": "hd:act.9.3b#1"}],
+             "external_aliases": [{"text": "保羅歸主"}]},
+            {"event_id": "ev0005", "legacy_ids": ["event:qinzui"], "name": "新娘的歌",
+             "anchors": [{"pericope": "pc:sng.1.1",
+                          "quote": {"unit_key": "sng.1.1", "text": "與我親嘴"}}],
+             "pdf_terms": [], "external_aliases": []},
         ],
-        "dropped": [{"id": "event:none", "name": "無", "reason": "test"}],
     }
 
 
-LEGACY_SOURCE = "backend/data/event_registry.json"
-TRIGGER_NOTE = "R1 凍結的 legacy 觸發詞，依同一份 GT 調出（D3 報告須註明）"
+def write_events_yaml(path: Path, doc: dict | None = None) -> Path:
+    path.write_bytes(dump(doc or events_yaml()))
+    return path
 
 
-def legacy_sha() -> str:
-    import json
-    return hashlib.sha256(json.dumps(legacy_registry(), ensure_ascii=False).encode()).hexdigest()
+def _anchor(pericope, passage, start_key, end_key, heading=None, quote=None):
+    return {"pericope_id": pericope, "passage_id": passage, "start_key": start_key,
+            "end_key": end_key, "start_slot": start_key.rstrip("b"),
+            "end_slot": end_key.rstrip("b"), "evidence": {"heading_id": heading, "quote": quote},
+            "provenance_class": "curated_human", "decided_by": "kay"}
 
 
-def _anchor(legacy, passage, start_key, end_key, change):
-    return {"passage_id": passage, "start_key": start_key, "end_key": end_key,
-            "start_slot": start_key.rstrip("b"), "end_slot": end_key.rstrip("b"),
-            "change": change, "legacy_anchor": legacy, "provenance_class": "legacy_tuned"}
+def _term(text, at):
+    return {"text": text, "at": at, "decided_by": "kay", "provenance_class": "curated_human"}
 
 
-def _trigger(text):
-    return {"text": text, "provenance_class": "external_legacy", "source": LEGACY_SOURCE,
-            "note": TRIGGER_NOTE, "retire_by": "R2"}
+def _alias(text, note=ALIAS_NOTE):
+    return {"text": text, "source": ALIAS_SOURCE, "note": note,
+            "provenance_class": "external_event_alias"}
+
+
+def _event(n, legacy_ids, name, heading, anchors, terms=(), aliases=(), merged=()):
+    return {"event_id": f"ev{n:04d}", "legacy_ids": legacy_ids, "name": name,
+            "name_source": "curated" if heading is None else "pdf_heading",
+            "name_heading_id": heading, "anchors": anchors, "pdf_terms": list(terms),
+            "external_aliases": list(aliases), "merged_from": list(merged), "decided_by": "kay",
+            "provenance_class": "curated_human"}
 
 
 def events() -> list[dict]:
-    def event(n, legacy, name, prov, anchors, triggers):
-        return {"event_id": f"ev{n:04d}", "legacy_id": legacy, "name": name,
-                "legacy_provenance": prov, "anchors": anchors,
-                "legacy_triggers": [_trigger(t) for t in triggers], "pdf_terms": [],
-                "external_aliases": [], "provenance_class": "legacy_tuned"}
+    act = "hd:act.9.3b#1"
     return [
-        event(1, "event:kemu", "渴慕上帝", "alias_injection",
-              [_anchor("psa:42:0", "ps:psa.42.1", "psa.42.1", "psa.42.3", "same")], ["渴慕"]),
-        event(2, "event:tianguo", "天國裏誰是最大的", "head_event_backfill",
-              [_anchor("mat:18:0", "ps:mat.18.1", "mat.18.1", "mat.18.4", "narrowed")],
-              ["天國", "最大的"]),
-        event(3, "event:saoluo", "掃羅歸主", "manual_edges",
-              [_anchor("act:9:0", "ps:act.9.1", "act.9.1", "act.9.3", "widened"),
-               _anchor("act:9:1", "ps:act.9.3b", "act.9.3b", "act.9.3b", "same")], ["保羅歸主"]),
+        _event(1, ["event:kemu"], "渴慕上帝", "hd:psa.42.1#1",
+               [_anchor("pc:psa.42.1", "ps:psa.42.1", "psa.42.1", "psa.42.3", "hd:psa.42.1#1")],
+               [_term("渴慕", "hd:psa.42.1#1"), _term("切慕", "psa.42.1")]),
+        _event(2, ["event:tianguo"], "天國裏誰是最大的", "hd:mat.18.1#1",
+               [_anchor("pc:mat.18.1", "ps:mat.18.1", "mat.18.1", "mat.18.4", "hd:mat.18.1#1")],
+               aliases=[_alias("天國"), _alias("最大的", "PDF 有此字串")]),
+        _event(3, ["event:saoluo", "event:saoluo2"], "掃羅歸主", "hd:act.9.1#1",
+               [_anchor("pc:act.9.1", "ps:act.9.1", "act.9.1", "act.9.3", "hd:act.9.1#2"),
+                _anchor("pc:act.9.3b", "ps:act.9.3b", "act.9.3b", "act.9.3b", act),
+                _anchor("pc:act.9.3b", "ps:act.10.1", "act.10.1", "act.10.1", act)],
+               [_term("天上的光", act)], [_alias("保羅歸主")],
+               [{"event_id": "ev0004", "legacy_ids": ["event:saoluo2"]}]),
+        _event(5, ["event:qinzui"], "新娘的歌", None,
+               [_anchor("pc:sng.1.1", "ps:sng.1.1", "sng.1.1", "sng.1.1",
+                        quote={"unit_key": "sng.1.1", "text": "與我親嘴"})]),
     ]
 
 
-def anchor_changes(struct_version: str) -> list[dict]:
-    def change(event_id, legacy, passage, kind, old, keys, removed, added):
-        return {"change_key": f"{event_id}|{legacy}", "event_id": event_id,
-                "legacy_anchor": legacy, "passage_id": passage, "change": kind,
-                "legacy_start_slot": old[0], "legacy_end_slot": old[1], "start_key": keys[0],
-                "end_key": keys[1], "removed_slots": removed, "added_keys": added,
-                "provenance_class": "external_legacy",
-                "source": f"{LEGACY_SOURCE} → {struct_version} legacy_ids",
-                "note": ("去掉幽靈節 " + "、".join(removed)) if removed
-                else ("補回 " + "、".join(added)), "retire_by": "R2"}
-    return [change("ev0002", "mat:18:0", "ps:mat.18.1", "narrowed", ("mat.18.1", "mat.18.4"),
-                   ("mat.18.1", "mat.18.4"), ["mat.18.3"], []),
-            change("ev0003", "act:9:0", "ps:act.9.1", "widened", ("act.9.1", "act.9.2"),
-                   ("act.9.1", "act.9.3"), [], ["act.9.3"])]
-
-
-def events_layer(struct_version: str) -> dict[str, list[dict]]:
-    return {"events": events(), "anchor_changes": anchor_changes(struct_version)}
+def events_layer() -> dict[str, list[dict]]:
+    return {"events": events()}

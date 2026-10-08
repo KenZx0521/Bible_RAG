@@ -15,7 +15,8 @@ with the release's snapshot (its layers, verified by the store):
   PG's text by the pinned encoder, give their point's vector back (cos >= 0.99999);
 - C5 contracts: the directory holds exactly the release's contract files (by
   sha) and its manifest; every event anchor's passage and slots are in PG and its
-  passage in Qdrant; every routing term carries provenance and a source;
+  passage in Qdrant; every routing term carries provenance and a source, every query
+  alias row also a note;
 - C6 GT: the frozen GT v2 (sha and slot universe as its freeze record says, the
   universe being the release's text layer) has its gold slots among PG's present
   or merged slots and its omitted slots among the omitted ones;
@@ -35,6 +36,7 @@ import numpy as np
 
 from ragcommon import ids
 from ragdata import paths
+from ragdata.contract.kg import ROUTE_CATEGORIES
 from ragdata.gates.base import GateResult, capped
 from ragdata.gates.vectors import DET_COS, query_rows, rowwise_cos
 from ragdata.loader import projection as proj_mod
@@ -242,12 +244,19 @@ def _anchor_violations(registry: Mapping[str, Any], proj: Projection) -> list[st
     return out
 
 
-def _lexicon_violations(lexicon: Mapping[str, Any]) -> list[str]:
-    return [f"routing_lexicon.json {category}[{i}]: no provenance_class/source"
-            for category in ("persons", "places", "events", "books")
-            for i, entry in enumerate(lexicon.get(category, []))
-            if not (isinstance(entry, dict) and entry.get("provenance_class")
-                    and entry.get("source"))]
+def _unsourced(name: str, rows: Any, needs: Sequence[str]) -> list[str]:
+    return [f"{name}[{i}]: no {'/'.join(needs)}"
+            for i, row in enumerate(rows if isinstance(rows, list) else [])
+            if not (isinstance(row, dict) and all(row.get(k) for k in needs))]
+
+
+def _lexicon_violations(lexicon: Mapping[str, Any], aliases: Mapping[str, Any]) -> list[str]:
+    """Every routing term and every query alias row carries its provenance."""
+    out = [v for category in ROUTE_CATEGORIES
+           for v in _unsourced(f"routing_lexicon.json {category}", lexicon.get(category, []),
+                               ("provenance_class", "source"))]
+    return out + _unsourced("query_aliases.json aliases", aliases.get("aliases", []),
+                            ("provenance_class", "source", "note"))
 
 
 def _json_contract(contracts: Mapping[str, bytes], name: str) -> Mapping[str, Any]:
@@ -270,7 +279,8 @@ def check_c5(release: Release, proj: Projection) -> GateResult:
     if _manifest(proj).get("files") != want:
         out.append("manifest.json files are not the release's contract shas")
     out += _anchor_violations(_json_contract(contracts, "event_registry.json"), proj)
-    out += _lexicon_violations(_json_contract(contracts, "routing_lexicon.json"))
+    out += _lexicon_violations(_json_contract(contracts, "routing_lexicon.json"),
+                               _json_contract(contracts, "query_aliases.json"))
     return _gate("G-PROJ.C5", out, {"files": len(contracts)})
 
 

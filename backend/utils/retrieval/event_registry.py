@@ -7,10 +7,12 @@ enters the candidate pool: router.retrieve_and_rerank APPENDS its anchors after
 the finished dense top-k, which stays identical to the lane being off.
 
 The registry is the build's contract file ``event_registry.json``
-(``ragdata.event_registry.v2``, the R1 mechanical conversion): an event fires on
-one of its frozen legacy triggers, its anchors are passage ids, and it is
-reported by its legacy id (R1 keeps the old event ids). The startup check that
-every anchor passage exists lives in serving.startup.
+(``ragdata.event_registry.v2``, variant R2): an event fires on one of its triggers
+(its pdf_terms, then its external aliases), its anchors are passage ids, and it is
+reported by its ev id; ``legacy_ids`` (R1 ids, merged events included) are only
+for logs and evaluation. An event without triggers is legal and never fires. An
+R1 file (legacy triggers, external_legacy provenance) is refused. The startup
+check that every anchor passage exists lives in serving.startup.
 """
 
 from __future__ import annotations
@@ -19,8 +21,10 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
 from ragcommon import ids
+from ragcommon.routing import legacy_mark
 
 SCHEMA = "ragdata.event_registry.v2"
+VARIANT = "R2"
 _MASK = "□"
 
 
@@ -30,16 +34,23 @@ class RegistryError(ValueError):
 
 @dataclass(frozen=True)
 class RegistryEvent:
-    id: str                    # legacy id, what R1 reports
-    event_id: str              # ev id of the build
+    id: str                         # ev id, what R2 reports
+    legacy_ids: tuple[str, ...]     # R1 ids, for logs and evaluation id mapping only
     name: str
-    triggers: tuple[str, ...]
-    anchors: tuple[str, ...]   # passage ids, registry order
+    triggers: tuple[str, ...]       # pdf_terms then external aliases, de-duplicated
+    anchors: tuple[str, ...]        # passage ids, registry order
 
 
 def _require(ok: bool, message: str) -> None:
     if not ok:
         raise RegistryError(message)
+
+
+def _texts(rows: Any, where: str) -> list[str]:
+    _require(isinstance(rows, list), f"{where}: not a list")
+    texts = [row.get("text") if isinstance(row, Mapping) else None for row in rows]
+    _require(all(isinstance(t, str) and t for t in texts), f"{where}: needs a text per item")
+    return texts
 
 
 def _anchor(raw: Any, where: str) -> str:
@@ -52,23 +63,41 @@ def _anchor(raw: Any, where: str) -> str:
 def _event(raw: Any, i: int) -> RegistryEvent:
     where = f"events[{i}]"
     _require(isinstance(raw, Mapping), f"{where}: not an object")
-    triggers = tuple(t.get("text") for t in raw.get("legacy_triggers") or [])
-    _require(bool(triggers) and all(isinstance(t, str) and t for t in triggers),
-             f"{where}: needs legacy triggers")
+    _require(not raw.get("legacy_triggers"), f"{where}: carries legacy triggers (an R1 registry)")
+    _require(ids.is_valid(raw.get("event_id"), "event"),
+             f"{where}: {raw.get('event_id')!r} is not an event id")
+    _require(isinstance(raw.get("name"), str) and bool(raw["name"]), f"{where}: needs a name")
+    legacy_ids = raw.get("legacy_ids") or []
+    _require(isinstance(legacy_ids, list) and all(isinstance(x, str) for x in legacy_ids),
+             f"{where}: legacy_ids must be a list of ids")
+    triggers = (_texts(raw.get("pdf_terms"), f"{where}.pdf_terms")
+                + _texts(raw.get("external_aliases"), f"{where}.external_aliases"))
     anchors = tuple(_anchor(a, where) for a in raw.get("anchors") or [])
     _require(bool(anchors), f"{where}: needs anchors")
-    _require(bool(raw.get("legacy_id")) and bool(raw.get("name")), f"{where}: needs ids and name")
-    return RegistryEvent(raw["legacy_id"], raw.get("event_id", ""), raw["name"], triggers, anchors)
+    return RegistryEvent(raw["event_id"], tuple(legacy_ids), raw["name"],
+                         tuple(dict.fromkeys(triggers)), anchors)
+
+
+def _check_retired(retired: Any, event_ids: set[str]) -> None:
+    _require(isinstance(retired, list), "registry retired must be a list")
+    for i, row in enumerate(retired):
+        target = row.get("merged_into") if isinstance(row, Mapping) else None
+        _require(target in event_ids, f"retired[{i}]: merged_into {target!r} names no event")
 
 
 def parse_registry(doc: Any) -> tuple[RegistryEvent, ...]:
     """Validate the contract document; raise RegistryError on any defect."""
     _require(isinstance(doc, Mapping) and doc.get("schema") == SCHEMA,
              f"registry schema must be {SCHEMA}")
+    _require(doc.get("variant") == VARIANT,
+             f"registry variant must be {VARIANT}, got {doc.get('variant')!r}")
+    mark = legacy_mark(doc)
+    _require(mark is None, f"registry carries legacy provenance at {mark}")
     _require(isinstance(doc.get("events"), list), "registry events must be a list")
     events = tuple(_event(raw, i) for i, raw in enumerate(doc["events"]))
     seen = [e.id for e in events]
     _require(len(set(seen)) == len(seen), "duplicate registry event")
+    _check_retired(doc.get("retired"), set(seen))
     return events
 
 

@@ -80,8 +80,11 @@ def test_events_lose_their_anchors_to_event_anchors_in_order():
     anchors = tables.table("event_anchors").rows(files)
     assert [(a["event_id"], a["ord"], a["passage_id"]) for a in anchors] == [
         ("ev0001", 0, "ps:psa.42.1"), ("ev0002", 0, "ps:mat.18.1"),
-        ("ev0003", 0, "ps:act.9.1"), ("ev0003", 1, "ps:act.9.3b")]
+        ("ev0003", 0, "ps:act.9.1"), ("ev0003", 1, "ps:act.9.3b"),
+        ("ev0003", 2, "ps:act.10.1"), ("ev0005", 0, "ps:sng.1.1")]
     assert set(anchors[0]) == set(tables.table("event_anchors").column_names)
+    columns = {c.name: c.sql for c in tables.table("event_anchors").columns}
+    assert (columns["evidence"], columns["pericope_id"]) == ("jsonb", "text")
 
 
 def test_embedding_records_name_their_source_in_its_own_fk_column():

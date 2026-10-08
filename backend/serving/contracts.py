@@ -16,9 +16,11 @@ from types import MappingProxyType
 from typing import Any, Mapping
 
 MANIFEST = "manifest.json"
-# The files the R1 backend reads: routing words, the event registry (v2) and the
-# encoder fingerprint the startup probes are compared with.
-REQUIRED = ("routing_lexicon.json", "event_registry.json", "encoder_fingerprint.json")
+# The files the R2 backend reads: routing words (lexicon v2), the query-alias table
+# (validated only; its presence also tells an R2 build from an R1 build), the event
+# registry (variant R2) and the encoder fingerprint the startup probes are compared with.
+REQUIRED = ("routing_lexicon.json", "query_aliases.json", "event_registry.json",
+            "encoder_fingerprint.json")
 
 
 @dataclass(frozen=True)

@@ -126,9 +126,9 @@ def test_a_stored_layer_the_gates_now_turn_red_is_not_released(mini):
         rel.assemble(mini.store, [*mini.top[:3], bad.version], DATE, mini.checks)
 
 
-def test_the_release_gates_are_the_layer_gates_but_the_model_and_backend_ones():
+def test_the_release_gates_are_the_layer_gates_but_the_model_one():
     assert gating.release_gates("emb") == ("G-SCHEMA", "G-COUNT", "G-EMB")
-    assert gating.release_gates("route") == ("G-SCHEMA", "G-COUNT", "G-PROV")
+    assert gating.release_gates("route") == ("G-SCHEMA", "G-COUNT", "G-ROUTE", "G-PROV")
     assert gating.release_gates("text") == ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-REF")
 
 

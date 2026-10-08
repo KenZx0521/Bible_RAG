@@ -230,7 +230,7 @@ def test_an_event_question_appends_the_registry_anchor_after_the_top_k(backend):
         body = _ask(client, "保羅歸主的經過如何？", top_k=2)
 
     stats = body["retrieval_stats"]
-    assert stats["route_used"] == "R4" and stats["event_registry_events"] == ["event:saoluo"]
+    assert stats["route_used"] == "R4" and stats["event_registry_events"] == ["ev0003"]
     assert [s["id"] for s in body["sources"]] == ["ps:psa.42.1", "ps:sng.1.1", "ps:act.9.1"]
     assert body["sources"][2]["strategy"] == "event_registry"
 

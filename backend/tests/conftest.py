@@ -13,16 +13,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "packages"))
 
 @pytest.fixture
 def active():
-    """A served build with the frozen legacy lexicon and the router_fakes.EVENT registry."""
-    from ragcommon import routing
-    from router_fakes import EVENT, FROZEN
+    """A served build with the router_fakes lexicon (v2) and the router_fakes.EVENT registry."""
+    from router_fakes import EVENT, LEXICON
     from serving import context
     from serving.build import Build
     from serving.handshake import Handshake
 
-    lexicon = routing.load_lexicon(FROZEN)
     build = Build("b20261008_1bb6912e", "bb20261008_1bb6912e", "passages__b", Path("/c"), False, 9)
-    context.install(context.make_active(build, lexicon, (EVENT,)),
+    context.install(context.make_active(build, LEXICON, (EVENT,)),
                     Handshake(build.build_id, (), True))
     yield
     context.reset()

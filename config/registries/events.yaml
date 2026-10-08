@@ -1,1506 +1,444 @@
-# R1 事件註冊表：由 `python -m ragdata convert events` 從 backend/data/event_registry.json
-# 經 struct 層 legacy_ids 機械轉換；內容凍結（錨點 legacy_tuned、觸發詞 external_legacy，R2 退場）。不要手改。
-schema: ragdata.events.v1
-variant: R1
-source:
-  file: backend/data/event_registry.json
-  sha256: 9b2a5f3eaa8e464a7b208aa3c4486801317d2cf7cb2ce53b14a985dd9c0a4971
-  struct: struct@47a0f26501f3
-  generated_at: '2026-10-03T20:21:29'
-  trigger_rule: backend EVENT_KEYWORDS exactly equal to the event's canonical name or an alias
-  anchor_order: 'canonical: book order, chapter, pericope index'
-  dropped:
-  - id: event:yesushouxi
-    name: 耶穌受洗
-    reason: no EVENT_KEYWORDS exact match
-defaults:
-  anchor_provenance: legacy_tuned
-  trigger:
-    provenance_class: external_legacy
-    source: backend/data/event_registry.json
-    note: R1 凍結的 legacy 觸發詞，依同一份 GT 調出（D3 報告須註明）
-    retire_by: R2
+# R2 事件註冊表（K1 修正版）。人工註冊表本體：可手改，G-EVENT 守住。Kay 2026-10-08 裁決全部照 DOC 2 建議
+# （reports/r2prep/plan.md）。錨點以 pericope 宣告，建置時展開成它的全部 passage，證據取 pericope 標題。
+# - anchors：pc: id（證據＝該 pericope 的 heading_id），或 {pericope: pc:…, quote: {unit_key, text}}；依正典順序、不重複。
+#   行尾註解是標題與範圍，只供閱讀。
+# - name_heading_id：事件名取自的 PDF 標題；省略＝人工名（name_source curated）。
+# - pdf_terms：{text, at}，at 是標題 id 或 unit key，必須落在本事件的錨點內；decided_by 由頂層帶入。
+# - external_aliases：{text, source?, note?}，缺的欄位取 external_alias_defaults。
+# - retired：併入其他事件的 id（不重新編號）；legacy_ids 也列在 merged_into 事件的 legacy_ids 裏。
+schema: ragdata.events.v2
+variant: R2
+decided_by: kay
+external_alias_defaults:
+  source: "backend/data/event_registry.json@ef0e178 triggers（= backend/utils/entity_dicts.py@f9ad4d3 EVENT_KEYWORDS）"
+  note: "不在 PDF；legacy 觸發詞，依同一份 GT 調出"
+retired:
+  - {event_id: ev0003, legacy_ids: [event:baoluoxushuguizhujingguo], merged_into: ev0002}
+  - {event_id: ev0014, legacy_ids: [event:saoluodezhuanbian], merged_into: ev0002}
 events:
-- event_id: ev0001
-  legacy_id: event:babieta
-  name: 巴別塔
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 巴別塔
-  anchors:
-  - legacy: gen:11:0
-    passage_id: ps:gen.11.1
-    start_key: gen.11.1
-    end_key: gen.11.9
-    start_slot: gen.11.1
-    end_slot: gen.11.9
-    change: same
-- event_id: ev0002
-  legacy_id: event:baoluoxushuguizhudejingguo
-  name: 保羅敘述歸主的經過
-  legacy_provenance: manual_edges
-  legacy_triggers:
-  - 保羅歸主
-  anchors:
-  - legacy: act:9:0
-    passage_id: ps:act.9.1
-    start_key: act.9.1
-    end_key: act.9.19
-    start_slot: act.9.1
-    end_slot: act.9.19
-    change: same
-  - legacy: act:9:1
-    passage_id: ps:act.9.19b
-    start_key: act.9.19b
-    end_key: act.9.22
-    start_slot: act.9.19
-    end_slot: act.9.22
-    change: widened
-  - legacy: act:22:1
-    passage_id: ps:act.22.6
-    start_key: act.22.6
-    end_key: act.22.16
-    start_slot: act.22.6
-    end_slot: act.22.16
-    change: same
-  - legacy: act:26:1
-    passage_id: ps:act.26.12
-    start_key: act.26.12
-    end_key: act.26.18
-    start_slot: act.26.12
-    end_slot: act.26.18
-    change: same
-- event_id: ev0003
-  legacy_id: event:baoluoxushuguizhujingguo
-  name: 保羅敘述歸主經過
-  legacy_provenance: manual_edges
-  legacy_triggers:
-  - 保羅歸主
-  anchors:
-  - legacy: act:9:0
-    passage_id: ps:act.9.1
-    start_key: act.9.1
-    end_key: act.9.19
-    start_slot: act.9.1
-    end_slot: act.9.19
-    change: same
-  - legacy: act:9:1
-    passage_id: ps:act.9.19b
-    start_key: act.9.19b
-    end_key: act.9.22
-    start_slot: act.9.19
-    end_slot: act.9.22
-    change: widened
-  - legacy: act:22:1
-    passage_id: ps:act.22.6
-    start_key: act.22.6
-    end_key: act.22.16
-    start_slot: act.22.6
-    end_slot: act.22.16
-    change: same
-  - legacy: act:26:1
-    passage_id: ps:act.26.12
-    start_key: act.26.12
-    end_key: act.26.18
-    start_slot: act.26.12
-    end_slot: act.26.18
-    change: same
-- event_id: ev0004
-  legacy_id: event:beifangdezhipaifanpan
-  name: 北方的支派反叛
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 王國分裂
-  anchors:
-  - legacy: 1ki:12:0
-    passage_id: ps:1ki.12.1
-    start_key: 1ki.12.1
-    end_key: 1ki.12.20
-    start_slot: 1ki.12.1
-    end_slot: 1ki.12.20
-    change: same
-- event_id: ev0005
-  legacy_id: event:chongjianyelusalengchengqiang
-  name: 重建耶路撒冷城牆
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 重建城牆
-  anchors:
-  - legacy: neh:3:0
-    passage_id: ps:neh.3.1
-    start_key: neh.3.1
-    end_key: neh.3.16
-    start_slot: neh.3.1
-    end_slot: neh.3.16
-    change: same
-- event_id: ev0006
-  legacy_id: event:daochengroushen
-  name: 道成肉身
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 道成肉身
-  anchors:
-  - legacy: jhn:1:0
-    passage_id: ps:jhn.1.1
-    start_key: jhn.1.1
-    end_key: jhn.1.18
-    start_slot: jhn.1.1
-    end_slot: jhn.1.18
-    change: same
-- event_id: ev0007
-  legacy_id: event:dashiming
-  name: 大使命
-  legacy_provenance: manual_patch
-  legacy_triggers:
-  - 大使命
-  anchors:
-  - legacy: mat:28:2
-    passage_id: ps:mat.28.16
-    start_key: mat.28.16
-    end_key: mat.28.20
-    start_slot: mat.28.16
-    end_slot: mat.28.20
-    change: same
-- event_id: ev0008
-  legacy_id: event:daweijishageliya
-  name: 大衛擊殺歌利亞
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 大衛與歌利亞
-  anchors:
-  - legacy: 1sa:17:2
-    passage_id: ps:1sa.17.41
-    start_key: 1sa.17.41
-    end_key: 1sa.17.54
-    start_slot: 1sa.17.41
-    end_slot: 1sa.17.54
-    change: same
-- event_id: ev0009
-  legacy_id: event:diyicixuanjiaolvcheng
-  name: 第一次宣教旅程
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 第一次宣教旅程
-  anchors:
-  - legacy: act:13:0
-    passage_id: ps:act.13.1
-    start_key: act.13.1
-    end_key: act.13.3
-    start_slot: act.13.1
-    end_slot: act.13.3
-    change: same
-  - legacy: act:13:1
-    passage_id: ps:act.13.4
-    start_key: act.13.4
-    end_key: act.13.12
-    start_slot: act.13.4
-    end_slot: act.13.12
-    change: same
-  - legacy: act:13:2
-    passage_id: ps:act.13.13
-    start_key: act.13.13
-    end_key: act.13.52
-    start_slot: act.13.13
-    end_slot: act.13.52
-    change: same
-  - legacy: act:14:0
-    passage_id: ps:act.14.1
-    start_key: act.14.1
-    end_key: act.14.7
-    start_slot: act.14.1
-    end_slot: act.14.7
-    change: same
-  - legacy: act:14:2
-    passage_id: ps:act.14.20b
-    start_key: act.14.20b
-    end_key: act.14.28
-    start_slot: act.14.20
-    end_slot: act.14.28
-    change: widened
-- event_id: ev0010
-  legacy_id: event:jinniudushijian
-  name: 金牛犢事件
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 金牛犢
-  anchors:
-  - legacy: exo:32:0
-    passage_id: ps:exo.32.1
-    start_key: exo.32.1
-    end_key: exo.32.35
-    start_slot: exo.32.1
-    end_slot: exo.32.35
-    change: same
-- event_id: ev0011
-  legacy_id: event:keximanidaogao
-  name: 客西馬尼禱告
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 客西馬尼園禱告
-  - 客西馬尼禱告
-  anchors:
-  - legacy: mat:26:6
-    passage_id: ps:mat.26.36
-    start_key: mat.26.36
-    end_key: mat.26.46
-    start_slot: mat.26.36
-    end_slot: mat.26.46
-    change: same
-  - legacy: mrk:14:6
-    passage_id: ps:mrk.14.32
-    start_key: mrk.14.32
-    end_key: mrk.14.42
-    start_slot: mrk.14.32
-    end_slot: mrk.14.42
-    change: same
-  - legacy: luk:22:6
-    passage_id: ps:luk.22.39
-    start_key: luk.22.39
-    end_key: luk.22.46
-    start_slot: luk.22.39
-    end_slot: luk.22.46
-    change: same
-- event_id: ev0012
-  legacy_id: event:kuangyepiaoliu
-  name: 曠野漂流
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 曠野漂流
-  anchors:
-  - legacy: num:14:0
-    passage_id: ps:num.14.1
-    start_key: num.14.1
-    end_key: num.14.10
-    start_slot: num.14.1
-    end_slot: num.14.10
-    change: same
-  - legacy: num:14:2
-    passage_id: ps:num.14.26
-    start_key: num.14.26
-    end_key: num.14.38
-    start_slot: num.14.26
-    end_slot: num.14.38
-    change: same
-  - legacy: num:14:3
-    passage_id: ps:num.14.39
-    start_key: num.14.39
-    end_key: num.14.45
-    start_slot: num.14.39
-    end_slot: num.14.45
-    change: same
-- event_id: ev0013
-  legacy_id: event:morideshenpan
-  name: 末日的審判
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 末日審判
-  anchors:
-  - legacy: rev:20:2
-    passage_id: ps:rev.20.11
-    start_key: rev.20.11
-    end_key: rev.20.15
-    start_slot: rev.20.11
-    end_slot: rev.20.15
-    change: same
-- event_id: ev0014
-  legacy_id: event:saoluodezhuanbian
-  name: 掃羅的轉變
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 保羅歸主
-  anchors:
-  - legacy: act:9:0
-    passage_id: ps:act.9.1
-    start_key: act.9.1
-    end_key: act.9.19
-    start_slot: act.9.1
-    end_slot: act.9.19
-    change: same
-- event_id: ev0015
-  legacy_id: event:saoluoshougaozuowang
-  name: 掃羅受膏作王
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 掃羅受膏
-  anchors:
-  - legacy: 1sa:9:1
-    passage_id: ps:1sa.9.25
-    start_key: 1sa.9.25
-    end_key: 1sa.9.27
-    start_slot: 1sa.9.25
-    end_slot: 1sa.9.27
-    change: same
-  - legacy: 1sa:10:1
-    passage_id: ps:1sa.10.17
-    start_key: 1sa.10.17
-    end_key: 1sa.10.27
-    start_slot: 1sa.10.17
-    end_slot: 1sa.10.27
-    change: same
-- event_id: ev0016
-  legacy_id: event:shanshangbaoxun
-  name: 山上寶訓
-  legacy_provenance: manual_edges
-  legacy_triggers:
-  - 八福
-  - 山上寶訓
-  - 登山寶訓
-  anchors:
-  - legacy: mat:5:0
-    passage_id: ps:mat.5.1
-    start_key: mat.5.1
-    end_key: mat.5.2
-    start_slot: mat.5.1
-    end_slot: mat.5.2
-    change: same
-  - legacy: mat:5:1
-    passage_id: ps:mat.5.3
-    start_key: mat.5.3
-    end_key: mat.5.12
-    start_slot: mat.5.3
-    end_slot: mat.5.12
-    change: same
-  - legacy: mat:5:2
-    passage_id: ps:mat.5.13
-    start_key: mat.5.13
-    end_key: mat.5.16
-    start_slot: mat.5.13
-    end_slot: mat.5.16
-    change: same
-  - legacy: mat:5:3
-    passage_id: ps:mat.5.17
-    start_key: mat.5.17
-    end_key: mat.5.20
-    start_slot: mat.5.17
-    end_slot: mat.5.20
-    change: same
-  - legacy: mat:5:4
-    passage_id: ps:mat.5.21
-    start_key: mat.5.21
-    end_key: mat.5.26
-    start_slot: mat.5.21
-    end_slot: mat.5.26
-    change: same
-  - legacy: mat:5:5
-    passage_id: ps:mat.5.27
-    start_key: mat.5.27
-    end_key: mat.5.30
-    start_slot: mat.5.27
-    end_slot: mat.5.30
-    change: same
-  - legacy: mat:5:6
-    passage_id: ps:mat.5.31
-    start_key: mat.5.31
-    end_key: mat.5.32
-    start_slot: mat.5.31
-    end_slot: mat.5.32
-    change: same
-  - legacy: mat:5:7
-    passage_id: ps:mat.5.33
-    start_key: mat.5.33
-    end_key: mat.5.37
-    start_slot: mat.5.33
-    end_slot: mat.5.37
-    change: same
-  - legacy: mat:5:8
-    passage_id: ps:mat.5.38
-    start_key: mat.5.38
-    end_key: mat.5.42
-    start_slot: mat.5.38
-    end_slot: mat.5.42
-    change: same
-  - legacy: mat:5:9
-    passage_id: ps:mat.5.43
-    start_key: mat.5.43
-    end_key: mat.5.48
-    start_slot: mat.5.43
-    end_slot: mat.5.48
-    change: same
-  - legacy: mat:6:0
-    passage_id: ps:mat.6.1
-    start_key: mat.6.1
-    end_key: mat.6.4
-    start_slot: mat.6.1
-    end_slot: mat.6.4
-    change: same
-  - legacy: mat:6:1
-    passage_id: ps:mat.6.5
-    start_key: mat.6.5
-    end_key: mat.6.15
-    start_slot: mat.6.5
-    end_slot: mat.6.15
-    change: same
-  - legacy: mat:6:2
-    passage_id: ps:mat.6.16
-    start_key: mat.6.16
-    end_key: mat.6.18
-    start_slot: mat.6.16
-    end_slot: mat.6.18
-    change: same
-  - legacy: mat:6:3
-    passage_id: ps:mat.6.19
-    start_key: mat.6.19
-    end_key: mat.6.21
-    start_slot: mat.6.19
-    end_slot: mat.6.21
-    change: same
-  - legacy: mat:6:4
-    passage_id: ps:mat.6.22
-    start_key: mat.6.22
-    end_key: mat.6.23
-    start_slot: mat.6.22
-    end_slot: mat.6.23
-    change: same
-  - legacy: mat:6:5
-    passage_id: ps:mat.6.24
-    start_key: mat.6.24
-    end_key: mat.6.24
-    start_slot: mat.6.24
-    end_slot: mat.6.24
-    change: same
-  - legacy: mat:6:6
-    passage_id: ps:mat.6.25
-    start_key: mat.6.25
-    end_key: mat.6.34
-    start_slot: mat.6.25
-    end_slot: mat.6.34
-    change: same
-  - legacy: mat:7:0
-    passage_id: ps:mat.7.1
-    start_key: mat.7.1
-    end_key: mat.7.6
-    start_slot: mat.7.1
-    end_slot: mat.7.6
-    change: same
-  - legacy: mat:7:1
-    passage_id: ps:mat.7.7
-    start_key: mat.7.7
-    end_key: mat.7.12
-    start_slot: mat.7.7
-    end_slot: mat.7.12
-    change: same
-  - legacy: mat:7:2
-    passage_id: ps:mat.7.13
-    start_key: mat.7.13
-    end_key: mat.7.14
-    start_slot: mat.7.13
-    end_slot: mat.7.14
-    change: same
-  - legacy: mat:7:3
-    passage_id: ps:mat.7.15
-    start_key: mat.7.15
-    end_key: mat.7.20
-    start_slot: mat.7.15
-    end_slot: mat.7.20
-    change: same
-  - legacy: mat:7:4
-    passage_id: ps:mat.7.21
-    start_key: mat.7.21
-    end_key: mat.7.23
-    start_slot: mat.7.21
-    end_slot: mat.7.23
-    change: same
-  - legacy: mat:7:5
-    passage_id: ps:mat.7.24
-    start_key: mat.7.24
-    end_key: mat.7.29
-    start_slot: mat.7.24
-    end_slot: mat.7.29
-    change: same
-- event_id: ev0017
-  legacy_id: event:shiergetanzi
-  name: 十二個探子
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 探子窺地
-  anchors:
-  - legacy: num:13:0
-    passage_id: ps:num.13.1
-    start_key: num.13.1
-    end_key: num.13.33
-    start_slot: num.13.1
-    end_slot: num.13.33
-    change: same
-- event_id: ev0018
-  legacy_id: event:shijie
-  name: 十誡
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 十誡
-  - 頒布律法
-  anchors:
-  - legacy: exo:20:0
-    passage_id: ps:exo.20.1
-    start_key: exo.20.1
-    end_key: exo.20.17
-    start_slot: exo.20.1
-    end_slot: exo.20.17
-    change: same
-  - legacy: deu:5:0
-    passage_id: ps:deu.5.1
-    start_key: deu.5.1
-    end_key: deu.5.22
-    start_slot: deu.5.1
-    end_slot: deu.5.22
-    change: same
-- event_id: ev0019
-  legacy_id: event:shizai
-  name: 十災
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 十災
-  anchors:
-  - legacy: exo:7:2
-    passage_id: ps:exo.7.14
-    start_key: exo.7.14
-    end_key: exo.7.25
-    start_slot: exo.7.14
-    end_slot: exo.7.25
-    change: same
-  - legacy: exo:8:0
-    passage_id: ps:exo.8.1
-    start_key: exo.8.1
-    end_key: exo.8.15
-    start_slot: exo.8.1
-    end_slot: exo.8.15
-    change: same
-  - legacy: exo:8:2
-    passage_id: ps:exo.8.20
-    start_key: exo.8.20
-    end_key: exo.8.32
-    start_slot: exo.8.20
-    end_slot: exo.8.32
-    change: same
-  - legacy: exo:9:2
-    passage_id: ps:exo.9.13
-    start_key: exo.9.13
-    end_key: exo.9.35
-    start_slot: exo.9.13
-    end_slot: exo.9.35
-    change: same
-  - legacy: exo:10:0
-    passage_id: ps:exo.10.1
-    start_key: exo.10.1
-    end_key: exo.10.20
-    start_slot: exo.10.1
-    end_slot: exo.10.20
-    change: same
-  - legacy: exo:10:1
-    passage_id: ps:exo.10.21
-    start_key: exo.10.21
-    end_key: exo.10.29
-    start_slot: exo.10.21
-    end_slot: exo.10.29
-    change: same
-  - legacy: exo:11:0
-    passage_id: ps:exo.11.1
-    start_key: exo.11.1
-    end_key: exo.11.10
-    start_slot: exo.11.1
-    end_slot: exo.11.10
-    change: same
-  - legacy: exo:12:3
-    passage_id: ps:exo.12.29
-    start_key: exo.12.29
-    end_key: exo.12.36
-    start_slot: exo.12.29
-    end_slot: exo.12.36
-    change: same
-- event_id: ev0020
-  legacy_id: event:shounanzhou
-  name: 受難週
-  legacy_provenance: manual_patch
-  legacy_triggers:
-  - 受難週
-  anchors:
-  - legacy: mat:21:0
-    passage_id: ps:mat.21.1
-    start_key: mat.21.1
-    end_key: mat.21.11
-    start_slot: mat.21.1
-    end_slot: mat.21.11
-    change: same
-  - legacy: mat:21:1
-    passage_id: ps:mat.21.12
-    start_key: mat.21.12
-    end_key: mat.21.17
-    start_slot: mat.21.12
-    end_slot: mat.21.17
-    change: same
-  - legacy: mat:21:2
-    passage_id: ps:mat.21.18
-    start_key: mat.21.18
-    end_key: mat.21.22
-    start_slot: mat.21.18
-    end_slot: mat.21.22
-    change: same
-  - legacy: mat:21:3
-    passage_id: ps:mat.21.23
-    start_key: mat.21.23
-    end_key: mat.21.27
-    start_slot: mat.21.23
-    end_slot: mat.21.27
-    change: same
-  - legacy: mat:21:4
-    passage_id: ps:mat.21.28
-    start_key: mat.21.28
-    end_key: mat.21.32
-    start_slot: mat.21.28
-    end_slot: mat.21.32
-    change: same
-  - legacy: mat:21:5
-    passage_id: ps:mat.21.33
-    start_key: mat.21.33
-    end_key: mat.21.46
-    start_slot: mat.21.33
-    end_slot: mat.21.46
-    change: same
-  - legacy: mat:26:0
-    passage_id: ps:mat.26.1
-    start_key: mat.26.1
-    end_key: mat.26.5
-    start_slot: mat.26.1
-    end_slot: mat.26.5
-    change: same
-  - legacy: mat:26:1
-    passage_id: ps:mat.26.6
-    start_key: mat.26.6
-    end_key: mat.26.13
-    start_slot: mat.26.6
-    end_slot: mat.26.13
-    change: same
-  - legacy: mat:26:2
-    passage_id: ps:mat.26.14
-    start_key: mat.26.14
-    end_key: mat.26.16
-    start_slot: mat.26.14
-    end_slot: mat.26.16
-    change: same
-  - legacy: mat:26:3
-    passage_id: ps:mat.26.17
-    start_key: mat.26.17
-    end_key: mat.26.25
-    start_slot: mat.26.17
-    end_slot: mat.26.25
-    change: same
-  - legacy: mat:26:4
-    passage_id: ps:mat.26.26
-    start_key: mat.26.26
-    end_key: mat.26.30
-    start_slot: mat.26.26
-    end_slot: mat.26.30
-    change: same
-  - legacy: mat:26:5
-    passage_id: ps:mat.26.31
-    start_key: mat.26.31
-    end_key: mat.26.35
-    start_slot: mat.26.31
-    end_slot: mat.26.35
-    change: same
-  - legacy: mat:26:6
-    passage_id: ps:mat.26.36
-    start_key: mat.26.36
-    end_key: mat.26.46
-    start_slot: mat.26.36
-    end_slot: mat.26.46
-    change: same
-  - legacy: mat:26:7
-    passage_id: ps:mat.26.47
-    start_key: mat.26.47
-    end_key: mat.26.56
-    start_slot: mat.26.47
-    end_slot: mat.26.56
-    change: same
-  - legacy: mat:26:8
-    passage_id: ps:mat.26.57
-    start_key: mat.26.57
-    end_key: mat.26.68
-    start_slot: mat.26.57
-    end_slot: mat.26.68
-    change: same
-  - legacy: mat:26:9
-    passage_id: ps:mat.26.69
-    start_key: mat.26.69
-    end_key: mat.26.75
-    start_slot: mat.26.69
-    end_slot: mat.26.75
-    change: same
-  - legacy: mat:27:0
-    passage_id: ps:mat.27.1
-    start_key: mat.27.1
-    end_key: mat.27.2
-    start_slot: mat.27.1
-    end_slot: mat.27.2
-    change: same
-  - legacy: mat:27:1
-    passage_id: ps:mat.27.3
-    start_key: mat.27.3
-    end_key: mat.27.10
-    start_slot: mat.27.3
-    end_slot: mat.27.10
-    change: same
-  - legacy: mat:27:2
-    passage_id: ps:mat.27.11
-    start_key: mat.27.11
-    end_key: mat.27.14
-    start_slot: mat.27.11
-    end_slot: mat.27.14
-    change: same
-  - legacy: mat:27:3
-    passage_id: ps:mat.27.15
-    start_key: mat.27.15
-    end_key: mat.27.26
-    start_slot: mat.27.15
-    end_slot: mat.27.26
-    change: same
-  - legacy: mat:27:4
-    passage_id: ps:mat.27.27
-    start_key: mat.27.27
-    end_key: mat.27.31
-    start_slot: mat.27.27
-    end_slot: mat.27.31
-    change: same
-  - legacy: mat:27:5
-    passage_id: ps:mat.27.32
-    start_key: mat.27.32
-    end_key: mat.27.44
-    start_slot: mat.27.32
-    end_slot: mat.27.44
-    change: same
-  - legacy: mat:27:6
-    passage_id: ps:mat.27.45
-    start_key: mat.27.45
-    end_key: mat.27.56
-    start_slot: mat.27.45
-    end_slot: mat.27.56
-    change: same
-  - legacy: mat:27:7
-    passage_id: ps:mat.27.57
-    start_key: mat.27.57
-    end_key: mat.27.61
-    start_slot: mat.27.57
-    end_slot: mat.27.61
-    change: same
-  - legacy: mat:27:8
-    passage_id: ps:mat.27.62
-    start_key: mat.27.62
-    end_key: mat.27.66
-    start_slot: mat.27.62
-    end_slot: mat.27.66
-    change: same
-  - legacy: mrk:11:0
-    passage_id: ps:mrk.11.1
-    start_key: mrk.11.1
-    end_key: mrk.11.11
-    start_slot: mrk.11.1
-    end_slot: mrk.11.11
-    change: same
-  - legacy: mrk:11:1
-    passage_id: ps:mrk.11.12
-    start_key: mrk.11.12
-    end_key: mrk.11.14
-    start_slot: mrk.11.12
-    end_slot: mrk.11.14
-    change: same
-  - legacy: mrk:11:2
-    passage_id: ps:mrk.11.15
-    start_key: mrk.11.15
-    end_key: mrk.11.19
-    start_slot: mrk.11.15
-    end_slot: mrk.11.19
-    change: same
-  - legacy: mrk:11:3
-    passage_id: ps:mrk.11.20
-    start_key: mrk.11.20
-    end_key: mrk.11.26
-    start_slot: mrk.11.20
-    end_slot: mrk.11.26
-    change: same
-  - legacy: mrk:11:4
-    passage_id: ps:mrk.11.27
-    start_key: mrk.11.27
-    end_key: mrk.11.33
-    start_slot: mrk.11.27
-    end_slot: mrk.11.33
-    change: same
-  - legacy: mrk:14:0
-    passage_id: ps:mrk.14.1
-    start_key: mrk.14.1
-    end_key: mrk.14.2
-    start_slot: mrk.14.1
-    end_slot: mrk.14.2
-    change: same
-  - legacy: mrk:14:1
-    passage_id: ps:mrk.14.3
-    start_key: mrk.14.3
-    end_key: mrk.14.9
-    start_slot: mrk.14.3
-    end_slot: mrk.14.9
-    change: same
-  - legacy: mrk:14:2
-    passage_id: ps:mrk.14.10
-    start_key: mrk.14.10
-    end_key: mrk.14.11
-    start_slot: mrk.14.10
-    end_slot: mrk.14.11
-    change: same
-  - legacy: mrk:14:3
-    passage_id: ps:mrk.14.12
-    start_key: mrk.14.12
-    end_key: mrk.14.21
-    start_slot: mrk.14.12
-    end_slot: mrk.14.21
-    change: same
-  - legacy: mrk:14:4
-    passage_id: ps:mrk.14.22
-    start_key: mrk.14.22
-    end_key: mrk.14.26
-    start_slot: mrk.14.22
-    end_slot: mrk.14.26
-    change: same
-  - legacy: mrk:14:5
-    passage_id: ps:mrk.14.27
-    start_key: mrk.14.27
-    end_key: mrk.14.31
-    start_slot: mrk.14.27
-    end_slot: mrk.14.31
-    change: same
-  - legacy: mrk:14:6
-    passage_id: ps:mrk.14.32
-    start_key: mrk.14.32
-    end_key: mrk.14.42
-    start_slot: mrk.14.32
-    end_slot: mrk.14.42
-    change: same
-  - legacy: mrk:14:7
-    passage_id: ps:mrk.14.43
-    start_key: mrk.14.43
-    end_key: mrk.14.50
-    start_slot: mrk.14.43
-    end_slot: mrk.14.50
-    change: same
-  - legacy: mrk:14:8
-    passage_id: ps:mrk.14.51
-    start_key: mrk.14.51
-    end_key: mrk.14.52
-    start_slot: mrk.14.51
-    end_slot: mrk.14.52
-    change: same
-  - legacy: mrk:14:9
-    passage_id: ps:mrk.14.53
-    start_key: mrk.14.53
-    end_key: mrk.14.65
-    start_slot: mrk.14.53
-    end_slot: mrk.14.65
-    change: same
-  - legacy: mrk:14:10
-    passage_id: ps:mrk.14.66
-    start_key: mrk.14.66
-    end_key: mrk.14.72
-    start_slot: mrk.14.66
-    end_slot: mrk.14.72
-    change: same
-  - legacy: mrk:15:0
-    passage_id: ps:mrk.15.1
-    start_key: mrk.15.1
-    end_key: mrk.15.5
-    start_slot: mrk.15.1
-    end_slot: mrk.15.5
-    change: same
-  - legacy: mrk:15:1
-    passage_id: ps:mrk.15.6
-    start_key: mrk.15.6
-    end_key: mrk.15.15
-    start_slot: mrk.15.6
-    end_slot: mrk.15.15
-    change: same
-  - legacy: mrk:15:2
-    passage_id: ps:mrk.15.16
-    start_key: mrk.15.16
-    end_key: mrk.15.20
-    start_slot: mrk.15.16
-    end_slot: mrk.15.20
-    change: same
-  - legacy: mrk:15:3
-    passage_id: ps:mrk.15.21
-    start_key: mrk.15.21
-    end_key: mrk.15.32
-    start_slot: mrk.15.21
-    end_slot: mrk.15.32
-    change: narrowed
-  - legacy: mrk:15:4
-    passage_id: ps:mrk.15.33
-    start_key: mrk.15.33
-    end_key: mrk.15.41
-    start_slot: mrk.15.33
-    end_slot: mrk.15.41
-    change: same
-  - legacy: mrk:15:5
-    passage_id: ps:mrk.15.42
-    start_key: mrk.15.42
-    end_key: mrk.15.47
-    start_slot: mrk.15.42
-    end_slot: mrk.15.47
-    change: same
-  - legacy: luk:22:0
-    passage_id: ps:luk.22.1
-    start_key: luk.22.1
-    end_key: luk.22.6
-    start_slot: luk.22.1
-    end_slot: luk.22.6
-    change: same
-  - legacy: luk:22:1
-    passage_id: ps:luk.22.7
-    start_key: luk.22.7
-    end_key: luk.22.13
-    start_slot: luk.22.7
-    end_slot: luk.22.13
-    change: same
-  - legacy: luk:22:2
-    passage_id: ps:luk.22.14
-    start_key: luk.22.14
-    end_key: luk.22.23
-    start_slot: luk.22.14
-    end_slot: luk.22.23
-    change: same
-  - legacy: luk:22:3
-    passage_id: ps:luk.22.24
-    start_key: luk.22.24
-    end_key: luk.22.30
-    start_slot: luk.22.24
-    end_slot: luk.22.30
-    change: same
-  - legacy: luk:22:4
-    passage_id: ps:luk.22.31
-    start_key: luk.22.31
-    end_key: luk.22.34
-    start_slot: luk.22.31
-    end_slot: luk.22.34
-    change: same
-  - legacy: luk:22:5
-    passage_id: ps:luk.22.35
-    start_key: luk.22.35
-    end_key: luk.22.38
-    start_slot: luk.22.35
-    end_slot: luk.22.38
-    change: same
-  - legacy: luk:22:6
-    passage_id: ps:luk.22.39
-    start_key: luk.22.39
-    end_key: luk.22.46
-    start_slot: luk.22.39
-    end_slot: luk.22.46
-    change: same
-  - legacy: luk:22:7
-    passage_id: ps:luk.22.47
-    start_key: luk.22.47
-    end_key: luk.22.53
-    start_slot: luk.22.47
-    end_slot: luk.22.53
-    change: same
-  - legacy: luk:22:8
-    passage_id: ps:luk.22.54
-    start_key: luk.22.54
-    end_key: luk.22.62
-    start_slot: luk.22.54
-    end_slot: luk.22.62
-    change: same
-  - legacy: luk:22:9
-    passage_id: ps:luk.22.63
-    start_key: luk.22.63
-    end_key: luk.22.65
-    start_slot: luk.22.63
-    end_slot: luk.22.65
-    change: same
-  - legacy: luk:22:10
-    passage_id: ps:luk.22.66
-    start_key: luk.22.66
-    end_key: luk.22.71
-    start_slot: luk.22.66
-    end_slot: luk.22.71
-    change: same
-  - legacy: luk:23:0
-    passage_id: ps:luk.23.1
-    start_key: luk.23.1
-    end_key: luk.23.5
-    start_slot: luk.23.1
-    end_slot: luk.23.5
-    change: same
-  - legacy: luk:23:1
-    passage_id: ps:luk.23.6
-    start_key: luk.23.6
-    end_key: luk.23.12
-    start_slot: luk.23.6
-    end_slot: luk.23.12
-    change: same
-  - legacy: luk:23:2
-    passage_id: ps:luk.23.13
-    start_key: luk.23.13
-    end_key: luk.23.25
-    start_slot: luk.23.13
-    end_slot: luk.23.25
-    change: narrowed
-  - legacy: luk:23:3
-    passage_id: ps:luk.23.26
-    start_key: luk.23.26
-    end_key: luk.23.43
-    start_slot: luk.23.26
-    end_slot: luk.23.43
-    change: same
-  - legacy: luk:23:4
-    passage_id: ps:luk.23.44
-    start_key: luk.23.44
-    end_key: luk.23.49
-    start_slot: luk.23.44
-    end_slot: luk.23.49
-    change: same
-  - legacy: luk:23:5
-    passage_id: ps:luk.23.50
-    start_key: luk.23.50
-    end_key: luk.23.56
-    start_slot: luk.23.50
-    end_slot: luk.23.56
-    change: same
-  - legacy: jhn:18:0
-    passage_id: ps:jhn.18.1
-    start_key: jhn.18.1
-    end_key: jhn.18.11
-    start_slot: jhn.18.1
-    end_slot: jhn.18.11
-    change: same
-  - legacy: jhn:18:1
-    passage_id: ps:jhn.18.12
-    start_key: jhn.18.12
-    end_key: jhn.18.14
-    start_slot: jhn.18.12
-    end_slot: jhn.18.14
-    change: same
-  - legacy: jhn:18:2
-    passage_id: ps:jhn.18.15
-    start_key: jhn.18.15
-    end_key: jhn.18.18
-    start_slot: jhn.18.15
-    end_slot: jhn.18.18
-    change: same
-  - legacy: jhn:18:3
-    passage_id: ps:jhn.18.19
-    start_key: jhn.18.19
-    end_key: jhn.18.24
-    start_slot: jhn.18.19
-    end_slot: jhn.18.24
-    change: same
-  - legacy: jhn:18:4
-    passage_id: ps:jhn.18.25
-    start_key: jhn.18.25
-    end_key: jhn.18.27
-    start_slot: jhn.18.25
-    end_slot: jhn.18.27
-    change: same
-  - legacy: jhn:18:5
-    passage_id: ps:jhn.18.28
-    start_key: jhn.18.28
-    end_key: jhn.18.38
-    start_slot: jhn.18.28
-    end_slot: jhn.18.38
-    change: same
-  - legacy: jhn:18:6
-    passage_id: ps:jhn.18.38b
-    start_key: jhn.18.38b
-    end_key: jhn.18.40
-    start_slot: jhn.18.38
-    end_slot: jhn.18.40
-    change: widened
-  - legacy: jhn:19:0
-    passage_id: ps:jhn.19.1
-    start_key: jhn.19.1
-    end_key: jhn.19.16
-    start_slot: jhn.19.1
-    end_slot: jhn.19.16
-    change: same
-  - legacy: jhn:19:1
-    passage_id: ps:jhn.19.17
-    start_key: jhn.19.17
-    end_key: jhn.19.27
-    start_slot: jhn.19.17
-    end_slot: jhn.19.27
-    change: same
-  - legacy: jhn:19:2
-    passage_id: ps:jhn.19.28
-    start_key: jhn.19.28
-    end_key: jhn.19.30
-    start_slot: jhn.19.28
-    end_slot: jhn.19.30
-    change: same
-  - legacy: jhn:19:3
-    passage_id: ps:jhn.19.31
-    start_key: jhn.19.31
-    end_key: jhn.19.37
-    start_slot: jhn.19.31
-    end_slot: jhn.19.37
-    change: same
-  - legacy: jhn:19:4
-    passage_id: ps:jhn.19.38
-    start_key: jhn.19.38
-    end_key: jhn.19.42
-    start_slot: jhn.19.38
-    end_slot: jhn.19.42
-    change: same
-- event_id: ev0021
-  legacy_id: event:suoluomenjianzaoshengdian
-  name: 所羅門建造聖殿
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 建造聖殿
-  - 所羅門獻殿
-  anchors:
-  - legacy: 1ki:6:0
-    passage_id: ps:1ki.6.1
-    start_key: 1ki.6.1
-    end_key: 1ki.6.10
-    start_slot: 1ki.6.1
-    end_slot: 1ki.6.10
-    change: same
-  - legacy: 1ki:8:0
-    passage_id: ps:1ki.8.1
-    start_key: 1ki.8.1
-    end_key: 1ki.8.13
-    start_slot: 1ki.8.1
-    end_slot: 1ki.8.13
-    change: same
-  - legacy: 1ki:8:2
-    passage_id: ps:1ki.8.22
-    start_key: 1ki.8.22
-    end_key: 1ki.8.53
-    start_slot: 1ki.8.22
-    end_slot: 1ki.8.53
-    change: same
-  - legacy: 1ki:8:4
-    passage_id: ps:1ki.8.62
-    start_key: 1ki.8.62
-    end_key: 1ki.8.66
-    start_slot: 1ki.8.62
-    end_slot: 1ki.8.66
-    change: same
-- event_id: ev0022
-  legacy_id: event:wuxunjieshenglingjianglin
-  name: 五旬節聖靈降臨
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 五旬節
-  - 聖靈降臨
-  anchors:
-  - legacy: act:2:0
-    passage_id: ps:act.2.1
-    start_key: act.2.1
-    end_key: act.2.13
-    start_slot: act.2.1
-    end_slot: act.2.13
-    change: same
-  - legacy: act:2:1
-    passage_id: ps:act.2.14
-    start_key: act.2.14
-    end_key: act.2.42
-    start_slot: act.2.14
-    end_slot: act.2.42
-    change: same
-- event_id: ev0023
-  legacy_id: event:xintianxindi
-  name: 新天新地
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 新天新地
-  anchors:
-  - legacy: rev:21:0
-    passage_id: ps:rev.21.1
-    start_key: rev.21.1
-    end_key: rev.21.8
-    start_slot: rev.21.1
-    end_slot: rev.21.8
-    change: same
-  - legacy: rev:21:1
-    passage_id: ps:rev.21.9
-    start_key: rev.21.9
-    end_key: rev.21.27
-    start_slot: rev.21.9
-    end_slot: rev.21.27
-    change: same
-- event_id: ev0024
-  legacy_id: event:yabolahanzhiyue
-  name: 亞伯拉罕之約
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 亞伯拉罕之約
-  anchors:
-  - legacy: gen:15:0
-    passage_id: ps:gen.15.1
-    start_key: gen.15.1
-    end_key: gen.15.21
-    start_slot: gen.15.1
-    end_slot: gen.15.21
-    change: same
-  - legacy: gen:17:0
-    passage_id: ps:gen.17.1
-    start_key: gen.17.1
-    end_key: gen.17.27
-    start_slot: gen.17.1
-    end_slot: gen.17.27
-    change: same
-- event_id: ev0025
-  legacy_id: event:yadanghexiawabeiganchuyidianyuan
-  name: 亞當和夏娃被趕出伊甸園
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 墮落
-  anchors:
-  - legacy: gen:3:2
-    passage_id: ps:gen.3.22
-    start_key: gen.3.22
-    end_key: gen.3.24
-    start_slot: gen.3.22
-    end_slot: gen.3.24
-    change: same
-- event_id: ev0026
-  legacy_id: event:yelusalengdahui
-  name: 耶路撒冷大會
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 耶路撒冷大會
-  anchors:
-  - legacy: act:15:0
-    passage_id: ps:act.15.1
-    start_key: act.15.1
-    end_key: act.15.21
-    start_slot: act.15.1
-    end_slot: act.15.21
-    change: same
-  - legacy: act:15:1
-    passage_id: ps:act.15.22
-    start_key: act.15.22
-    end_key: act.15.35
-    start_slot: act.15.22
-    end_slot: act.15.35
-    change: narrowed
-- event_id: ev0027
-  legacy_id: event:yesubeidingshizijia
-  name: 耶穌被釘十字架
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 釘十字架
-  anchors:
-  - legacy: mat:27:5
-    passage_id: ps:mat.27.32
-    start_key: mat.27.32
-    end_key: mat.27.44
-    start_slot: mat.27.32
-    end_slot: mat.27.44
-    change: same
-  - legacy: mat:27:6
-    passage_id: ps:mat.27.45
-    start_key: mat.27.45
-    end_key: mat.27.56
-    start_slot: mat.27.45
-    end_slot: mat.27.56
-    change: same
-  - legacy: mrk:15:3
-    passage_id: ps:mrk.15.21
-    start_key: mrk.15.21
-    end_key: mrk.15.32
-    start_slot: mrk.15.21
-    end_slot: mrk.15.32
-    change: narrowed
-  - legacy: luk:23:3
-    passage_id: ps:luk.23.26
-    start_key: luk.23.26
-    end_key: luk.23.43
-    start_slot: luk.23.26
-    end_slot: luk.23.43
-    change: same
-  - legacy: jhn:19:1
-    passage_id: ps:jhn.19.17
-    start_key: jhn.19.17
-    end_key: jhn.19.27
-    start_slot: jhn.19.17
-    end_slot: jhn.19.27
-    change: same
-- event_id: ev0028
-  legacy_id: event:yesugaibianxingxiang
-  name: 耶穌改變形像
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 變像
-  anchors:
-  - legacy: mat:17:0
-    passage_id: ps:mat.17.1
-    start_key: mat.17.1
-    end_key: mat.17.13
-    start_slot: mat.17.1
-    end_slot: mat.17.13
-    change: same
-  - legacy: mrk:9:1
-    passage_id: ps:mrk.9.2
-    start_key: mrk.9.2
-    end_key: mrk.9.13
-    start_slot: mrk.9.2
-    end_slot: mrk.9.13
-    change: same
-  - legacy: luk:9:5
-    passage_id: ps:luk.9.28
-    start_key: luk.9.28
-    end_key: luk.9.36
-    start_slot: luk.9.28
-    end_slot: luk.9.36
-    change: same
-- event_id: ev0029
-  legacy_id: event:yesugeiwuqianrenchibao
-  name: 耶穌給五千人吃飽
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 五餅二魚
-  anchors:
-  - legacy: mat:14:1
-    passage_id: ps:mat.14.13
-    start_key: mat.14.13
-    end_key: mat.14.21
-    start_slot: mat.14.13
-    end_slot: mat.14.21
-    change: same
-  - legacy: mrk:6:3
-    passage_id: ps:mrk.6.30
-    start_key: mrk.6.30
-    end_key: mrk.6.44
-    start_slot: mrk.6.30
-    end_slot: mrk.6.44
-    change: same
-  - legacy: luk:9:2
-    passage_id: ps:luk.9.10
-    start_key: luk.9.10
-    end_key: luk.9.17
-    start_slot: luk.9.10
-    end_slot: luk.9.17
-    change: same
-  - legacy: jhn:6:0
-    passage_id: ps:jhn.6.1
-    start_key: jhn.6.1
-    end_key: jhn.6.15
-    start_slot: jhn.6.1
-    end_slot: jhn.6.15
-    change: same
-- event_id: ev0030
-  legacy_id: event:youdarenbeilu
-  name: 猶大人被擄
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 巴比倫之囚
-  anchors:
-  - legacy: 2ki:25:2
-    passage_id: ps:2ki.25.18
-    start_key: 2ki.25.18
-    end_key: 2ki.25.21
-    start_slot: 2ki.25.18
-    end_slot: 2ki.25.21
-    change: same
-- event_id: ev0031
-  legacy_id: event:yuyuejiedesheli
-  name: 逾越節的設立
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 逾越節
-  anchors:
-  - legacy: exo:12:0
-    passage_id: ps:exo.12.1
-    start_key: exo.12.1
-    end_key: exo.12.13
-    start_slot: exo.12.1
-    end_slot: exo.12.13
-    change: same
-  - legacy: exo:12:2
-    passage_id: ps:exo.12.21
-    start_key: exo.12.21
-    end_key: exo.12.28
-    start_slot: exo.12.21
-    end_slot: exo.12.28
-    change: same
-  - legacy: exo:12:5
-    passage_id: ps:exo.12.43
-    start_key: exo.12.43
-    end_key: exo.12.51
-    start_slot: exo.12.43
-    end_slot: exo.12.51
-    change: same
-- event_id: ev0032
-  legacy_id: event:zhongrenyongshitoudasisitifan
-  name: 眾人用石頭打死司提反
-  legacy_provenance: alias_injection
-  legacy_triggers:
-  - 司提反殉道
-  anchors:
-  - legacy: act:7:1
-    passage_id: ps:act.7.54
-    start_key: act.7.54
-    end_key: act.7.60
-    start_slot: act.7.54
-    end_slot: act.7.60
-    change: same
-- event_id: ev0033
-  legacy_id: event:zuihoudewancan
-  name: 最後的晚餐
-  legacy_provenance: head_event_backfill
-  legacy_triggers:
-  - 最後的晚餐
-  anchors:
-  - legacy: mat:26:3
-    passage_id: ps:mat.26.17
-    start_key: mat.26.17
-    end_key: mat.26.25
-    start_slot: mat.26.17
-    end_slot: mat.26.25
-    change: same
-  - legacy: mat:26:4
-    passage_id: ps:mat.26.26
-    start_key: mat.26.26
-    end_key: mat.26.30
-    start_slot: mat.26.26
-    end_slot: mat.26.30
-    change: same
-  - legacy: mrk:14:3
-    passage_id: ps:mrk.14.12
-    start_key: mrk.14.12
-    end_key: mrk.14.21
-    start_slot: mrk.14.12
-    end_slot: mrk.14.21
-    change: same
-  - legacy: mrk:14:4
-    passage_id: ps:mrk.14.22
-    start_key: mrk.14.22
-    end_key: mrk.14.26
-    start_slot: mrk.14.22
-    end_slot: mrk.14.26
-    change: same
-  - legacy: luk:22:1
-    passage_id: ps:luk.22.7
-    start_key: luk.22.7
-    end_key: luk.22.13
-    start_slot: luk.22.7
-    end_slot: luk.22.13
-    change: same
-  - legacy: luk:22:2
-    passage_id: ps:luk.22.14
-    start_key: luk.22.14
-    end_key: luk.22.23
-    start_slot: luk.22.14
-    end_slot: luk.22.23
-    change: same
-  - legacy: jhn:13:0
-    passage_id: ps:jhn.13.1
-    start_key: jhn.13.1
-    end_key: jhn.13.20
-    start_slot: jhn.13.1
-    end_slot: jhn.13.20
-    change: same
-  - legacy: jhn:13:1
-    passage_id: ps:jhn.13.21
-    start_key: jhn.13.21
-    end_key: jhn.13.30
-    start_slot: jhn.13.21
-    end_slot: jhn.13.30
-    change: same
+  - event_id: ev0001
+    legacy_ids: [event:babieta]
+    name: 巴別塔
+    name_heading_id: "hd:gen.11.1#1"
+    anchors:
+      - pc:gen.11.1      # 巴別塔（gen.11.1–gen.11.9）
+    pdf_terms:
+      - {text: "巴別塔", at: "hd:gen.11.1#1"}
+    external_aliases: []
+  - event_id: ev0002
+    legacy_ids: [event:baoluoxushuguizhudejingguo, event:baoluoxushuguizhujingguo, event:saoluodezhuanbian]
+    name: 掃羅的轉變
+    name_heading_id: "hd:act.9.1#1"
+    anchors:
+      - pc:act.9.1       # 掃羅的轉變（act.9.1–act.9.19）
+      - pc:act.9.19b     # 掃羅在大馬士革傳道（act.9.19b–act.9.22）
+      - pc:act.22.6      # 保羅敘述歸主的經過（act.22.6–act.22.16）
+      - pc:act.26.12     # 保羅敘述歸主經過（act.26.12–act.26.18）
+    pdf_terms: []
+    external_aliases:
+      - {text: "保羅歸主", note: "不在 PDF；legacy 觸發詞，依同一份 GT 調出；R1 時 ev0002、ev0003、ev0014 三事件共用"}
+  - event_id: ev0004
+    legacy_ids: [event:beifangdezhipaifanpan]
+    name: 北方的支派反叛
+    name_heading_id: "hd:1ki.12.1#1"
+    anchors:
+      - pc:1ki.12.1      # 北方的支派反叛（1ki.12.1–1ki.12.20）
+    pdf_terms: []
+    external_aliases:
+      - {text: "王國分裂"}
+  - event_id: ev0005
+    legacy_ids: [event:chongjianyelusalengchengqiang]
+    name: 重建耶路撒冷城牆
+    name_heading_id: "hd:neh.3.1#1"
+    anchors:
+      - pc:neh.3.1       # 重建耶路撒冷城牆（neh.3.1–neh.3.16）
+    pdf_terms: []
+    external_aliases:
+      - {text: "重建城牆"}
+  - event_id: ev0006
+    legacy_ids: [event:daochengroushen]
+    name: 道成肉身
+    name_heading_id: "hd:jhn.1.1#1"
+    anchors:
+      - pc:jhn.1.1       # 道成肉身（jhn.1.1–jhn.1.18）
+    pdf_terms:
+      - {text: "道成肉身", at: "hd:jhn.1.1#1"}
+    external_aliases: []
+  - event_id: ev0007
+    legacy_ids: [event:dashiming]
+    name: 門徒奉差遣
+    name_heading_id: "hd:mat.28.16#1"
+    anchors:
+      - pc:mat.28.16     # 門徒奉差遣（mat.28.16–mat.28.20）
+    pdf_terms: []
+    external_aliases:
+      - {text: "大使命", source: "backend/data/event_registry.json@ef0e178 triggers（= backend/utils/entity_dicts.py@f9ad4d3 EVENT_KEYWORDS）；config/curated/manual_graph_patches.jsonl@8d7328e"}
+  - event_id: ev0008
+    legacy_ids: [event:daweijishageliya]
+    name: 大衛擊殺歌利亞
+    name_heading_id: "hd:1sa.17.41#1"
+    anchors:
+      - pc:1sa.17.41     # 大衛擊殺歌利亞（1sa.17.41–1sa.17.54）
+    pdf_terms: []
+    external_aliases:
+      - {text: "大衛與歌利亞"}
+  - event_id: ev0009
+    legacy_ids: [event:diyicixuanjiaolvcheng]
+    name: 第一次宣教旅程
+    anchors:
+      - pc:act.13.1      # 巴拿巴和掃羅奉差遣（act.13.1–act.13.3）
+      - pc:act.13.4      # 在塞浦路斯傳道（act.13.4–act.13.12）
+      - pc:act.13.13     # 在彼西底的安提阿傳道（act.13.13–act.13.52）
+      - pc:act.14.1      # 在以哥念傳道（act.14.1–act.14.7）
+      - pc:act.14.8      # 在路司得傳道（act.14.8–act.14.20）
+      - pc:act.14.20b    # 回到敘利亞的安提阿（act.14.20b–act.14.28）
+    pdf_terms: []
+    external_aliases:
+      - {text: "第一次宣教旅程"}
+  - event_id: ev0010
+    legacy_ids: [event:jinniudushijian]
+    name: 金牛犢
+    name_heading_id: "hd:exo.32.1#1"
+    anchors:
+      - pc:exo.32.1      # 金牛犢（exo.32.1–exo.32.35）
+    pdf_terms:
+      - {text: "金牛犢", at: "hd:exo.32.1#1"}
+    external_aliases: []
+  - event_id: ev0011
+    legacy_ids: [event:keximanidaogao]
+    name: 在客西馬尼禱告
+    name_heading_id: "hd:mat.26.36#1"
+    anchors:
+      - pc:mat.26.36     # 在客西馬尼禱告（mat.26.36–mat.26.46）
+      - pc:mrk.14.32     # 在客西馬尼禱告（mrk.14.32–mrk.14.42）
+      - pc:luk.22.39     # 在橄欖山上禱告（luk.22.39–luk.22.46）
+    pdf_terms:
+      - {text: "客西馬尼禱告", at: "hd:mat.26.36#1"}
+    external_aliases:
+      - {text: "客西馬尼園禱告"}
+  - event_id: ev0012
+    legacy_ids: [event:kuangyepiaoliu]
+    name: 曠野漂流
+    anchors:
+      - pc:num.14.1      # 民眾埋怨（num.14.1–num.14.10）
+      - pc:num.14.26     # 耶和華懲罰埋怨的民眾（num.14.26–num.14.38）
+      - pc:num.14.39     # 首次進攻迦南（num.14.39–num.14.45）
+    pdf_terms: []
+    external_aliases:
+      - {text: "曠野漂流", note: "不在 PDF；legacy 觸發詞，依同一份 GT 調出；PDF 寫作「曠野飄流」（num.14.33）"}
+  - event_id: ev0013
+    legacy_ids: [event:morideshenpan]
+    name: 末日的審判
+    name_heading_id: "hd:rev.20.11#1"
+    anchors:
+      - pc:rev.20.11     # 末日的審判（rev.20.11–rev.20.15）
+    pdf_terms: []
+    external_aliases:
+      - {text: "末日審判"}
+  - event_id: ev0015
+    legacy_ids: [event:saoluoshougaozuowang]
+    name: 撒母耳膏掃羅作王
+    name_heading_id: "hd:1sa.9.25#1"
+    anchors:
+      - pc:1sa.9.25      # 撒母耳膏掃羅作王（1sa.9.25–1sa.10.16）
+      - pc:1sa.10.17     # 抽籤得掃羅為王（1sa.10.17–1sa.10.27）
+    pdf_terms: []
+    external_aliases:
+      - {text: "掃羅受膏"}
+  - event_id: ev0016
+    legacy_ids: [event:shanshangbaoxun]
+    name: 山上寶訓
+    name_heading_id: "hd:mat.5.1#1"
+    anchors:
+      - pc:mat.5.1       # 山上寶訓（mat.5.1–mat.5.2）
+      - pc:mat.5.3       # 論福（mat.5.3–mat.5.12）
+      - pc:mat.5.13      # 鹽和光（mat.5.13–mat.5.16）
+      - pc:mat.5.17      # 論律法（mat.5.17–mat.5.20）
+      - pc:mat.5.21      # 論發怒（mat.5.21–mat.5.26）
+      - pc:mat.5.27      # 論姦淫（mat.5.27–mat.5.30）
+      - pc:mat.5.31      # 論休妻（mat.5.31–mat.5.32）
+      - pc:mat.5.33      # 論起誓（mat.5.33–mat.5.37）
+      - pc:mat.5.38      # 論報復（mat.5.38–mat.5.42）
+      - pc:mat.5.43      # 論愛仇敵（mat.5.43–mat.5.48）
+      - pc:mat.6.1       # 論施捨（mat.6.1–mat.6.4）
+      - pc:mat.6.5       # 論禱告（mat.6.5–mat.6.15）
+      - pc:mat.6.16      # 論禁食（mat.6.16–mat.6.18）
+      - pc:mat.6.19      # 論天上的財寶（mat.6.19–mat.6.21）
+      - pc:mat.6.22      # 論心裏的光（mat.6.22–mat.6.23）
+      - pc:mat.6.24      # 論上帝和財利（mat.6.24）
+      - pc:mat.6.25      # 不要憂慮（mat.6.25–mat.6.34）
+      - pc:mat.7.1       # 不要論斷人（mat.7.1–mat.7.6）
+      - pc:mat.7.7       # 祈求、尋找、叩門（mat.7.7–mat.7.12）
+      - pc:mat.7.13      # 窄門（mat.7.13–mat.7.14）
+      - pc:mat.7.15      # 兩種果樹（mat.7.15–mat.7.20）
+      - pc:mat.7.21      # 我不認識你們（mat.7.21–mat.7.23）
+      - pc:mat.7.24      # 兩種蓋房子的人（mat.7.24–mat.7.29）
+    pdf_terms:
+      - {text: "山上寶訓", at: "hd:mat.5.1#1"}
+    external_aliases:
+      - {text: "八福"}
+      - {text: "登山寶訓"}
+  - event_id: ev0017
+    legacy_ids: [event:shiergetanzi]
+    name: 十二個探子
+    name_heading_id: "hd:num.13.1#1"
+    anchors:
+      - pc:num.13.1      # 十二個探子（num.13.1–num.13.33）
+    pdf_terms: []
+    external_aliases:
+      - {text: "探子窺地"}
+  - event_id: ev0018
+    legacy_ids: [event:shijie]
+    name: 十誡
+    name_heading_id: "hd:exo.20.1#1"
+    anchors:
+      - pc:exo.20.1      # 十誡（exo.20.1–exo.20.17）
+      - pc:deu.5.1       # 十誡（deu.5.1–deu.5.22）
+    pdf_terms:
+      - {text: "十誡", at: "hd:exo.20.1#1"}
+    external_aliases:
+      - {text: "頒布律法"}
+  - event_id: ev0019
+    legacy_ids: [event:shizai]
+    name: 十災
+    anchors:
+      - pc:exo.7.14      # 埃及遭災－血災（exo.7.14–exo.7.25）
+      - pc:exo.8.1       # －蛙災（exo.8.1–exo.8.15）
+      - pc:exo.8.16      # －虱災（exo.8.16–exo.8.19）
+      - pc:exo.8.20      # －蠅災（exo.8.20–exo.8.32）
+      - pc:exo.9.1       # －畜疫之災（exo.9.1–exo.9.7）
+      - pc:exo.9.8       # －瘡災（exo.9.8–exo.9.12）
+      - pc:exo.9.13      # －雹災（exo.9.13–exo.9.35）
+      - pc:exo.10.1      # －蝗災（exo.10.1–exo.10.20）
+      - pc:exo.10.21     # －黑暗之災（exo.10.21–exo.10.29）
+      - pc:exo.11.1      # 所有頭胎的都死（exo.11.1–exo.11.10）
+      - pc:exo.12.29     # 頭胎的被殺（exo.12.29–exo.12.36）
+    pdf_terms: []
+    external_aliases:
+      - {text: "十災"}
+  - event_id: ev0020
+    legacy_ids: [event:shounanzhou]
+    name: 受難週
+    anchors:
+      - pc:mat.21.1      # 光榮地進耶路撒冷（mat.21.1–mat.21.11）
+      - pc:mat.21.12     # 潔淨聖殿（mat.21.12–mat.21.17）
+      - pc:mat.21.18     # 咒詛無花果樹（mat.21.18–mat.21.22）
+      - pc:mat.21.23     # 質問耶穌的權柄（mat.21.23–mat.21.27）
+      - pc:mat.21.28     # 兩個兒子的比喻（mat.21.28–mat.21.32）
+      - pc:mat.21.33     # 凶惡園戶的比喻（mat.21.33–mat.21.46）
+      - pc:mat.26.1      # 殺害耶穌的陰謀（mat.26.1–mat.26.5）
+      - pc:mat.26.6      # 在伯大尼受膏（mat.26.6–mat.26.13）
+      - pc:mat.26.14     # 猶大出賣耶穌（mat.26.14–mat.26.16）
+      - pc:mat.26.17     # 和門徒同度逾越節（mat.26.17–mat.26.25）
+      - pc:mat.26.26     # 設立主的晚餐（mat.26.26–mat.26.30）
+      - pc:mat.26.31     # 預言彼得不認主（mat.26.31–mat.26.35）
+      - pc:mat.26.36     # 在客西馬尼禱告（mat.26.36–mat.26.46）
+      - pc:mat.26.47     # 耶穌被捕（mat.26.47–mat.26.56）
+      - pc:mat.26.57     # 耶穌在公會裏受審（mat.26.57–mat.26.68）
+      - pc:mat.26.69     # 彼得三次不認主（mat.26.69–mat.26.75）
+      - pc:mat.27.1      # 耶穌被交給彼拉多（mat.27.1–mat.27.2）
+      - pc:mat.27.3      # 猶大的死（mat.27.3–mat.27.10）
+      - pc:mat.27.11     # 耶穌在彼拉多面前受審（mat.27.11–mat.27.14）
+      - pc:mat.27.15     # 耶穌被判死刑（mat.27.15–mat.27.26）
+      - pc:mat.27.27     # 兵丁戲弄耶穌（mat.27.27–mat.27.31）
+      - pc:mat.27.32     # 耶穌被釘十字架（mat.27.32–mat.27.44）
+      - pc:mat.27.45     # 耶穌的死（mat.27.45–mat.27.56）
+      - pc:mat.27.57     # 耶穌的安葬（mat.27.57–mat.27.61）
+      - pc:mat.27.62     # 封石妥守（mat.27.62–mat.27.66）
+      - pc:mrk.11.1      # 光榮地進耶路撒冷（mrk.11.1–mrk.11.11）
+      - pc:mrk.11.12     # 咒詛無花果樹（mrk.11.12–mrk.11.14）
+      - pc:mrk.11.15     # 潔淨聖殿（mrk.11.15–mrk.11.19）
+      - pc:mrk.11.20     # 從無花果樹得教訓（mrk.11.20–mrk.11.26）
+      - pc:mrk.11.27     # 質問耶穌的權柄（mrk.11.27–mrk.11.33）
+      - pc:mrk.14.1      # 殺害耶穌的陰謀（mrk.14.1–mrk.14.2）
+      - pc:mrk.14.3      # 在伯大尼受膏（mrk.14.3–mrk.14.9）
+      - pc:mrk.14.10     # 猶大出賣耶穌（mrk.14.10–mrk.14.11）
+      - pc:mrk.14.12     # 和門徒同度逾越節（mrk.14.12–mrk.14.21）
+      - pc:mrk.14.22     # 設立主的晚餐（mrk.14.22–mrk.14.26）
+      - pc:mrk.14.27     # 預言彼得不認主（mrk.14.27–mrk.14.31）
+      - pc:mrk.14.32     # 在客西馬尼禱告（mrk.14.32–mrk.14.42）
+      - pc:mrk.14.43     # 耶穌被捕（mrk.14.43–mrk.14.50）
+      - pc:mrk.14.51     # 逃走的少年人（mrk.14.51–mrk.14.52）
+      - pc:mrk.14.53     # 耶穌在公會裏受審（mrk.14.53–mrk.14.65）
+      - pc:mrk.14.66     # 彼得三次不認主（mrk.14.66–mrk.14.72）
+      - pc:mrk.15.1      # 耶穌在彼拉多面前受審（mrk.15.1–mrk.15.5）
+      - pc:mrk.15.6      # 耶穌被判死刑（mrk.15.6–mrk.15.15）
+      - pc:mrk.15.16     # 兵丁戲弄耶穌（mrk.15.16–mrk.15.20）
+      - pc:mrk.15.21     # 耶穌被釘十字架（mrk.15.21–mrk.15.32）
+      - pc:mrk.15.33     # 耶穌的死（mrk.15.33–mrk.15.41）
+      - pc:mrk.15.42     # 耶穌的安葬（mrk.15.42–mrk.15.47）
+      - pc:luk.22.1      # 殺害耶穌的陰謀（luk.22.1–luk.22.6）
+      - pc:luk.22.7      # 預備逾越節的筵席（luk.22.7–luk.22.13）
+      - pc:luk.22.14     # 設立主的晚餐（luk.22.14–luk.22.23）
+      - pc:luk.22.24     # 爭論誰為大（luk.22.24–luk.22.30）
+      - pc:luk.22.31     # 預言彼得不認主（luk.22.31–luk.22.34）
+      - pc:luk.22.35     # 錢囊、口袋、刀（luk.22.35–luk.22.38）
+      - pc:luk.22.39     # 在橄欖山上禱告（luk.22.39–luk.22.46）
+      - pc:luk.22.47     # 耶穌被捕（luk.22.47–luk.22.53）
+      - pc:luk.22.54     # 彼得三次不認主（luk.22.54–luk.22.62）
+      - pc:luk.22.63     # 戲弄鞭打耶穌（luk.22.63–luk.22.65）
+      - pc:luk.22.66     # 耶穌在公會裏受審（luk.22.66–luk.22.71）
+      - pc:luk.23.1      # 耶穌在彼拉多面前受審（luk.23.1–luk.23.5）
+      - pc:luk.23.6      # 希律藐視耶穌（luk.23.6–luk.23.12）
+      - pc:luk.23.13     # 耶穌被判死刑（luk.23.13–luk.23.25）
+      - pc:luk.23.26     # 耶穌被釘十字架（luk.23.26–luk.23.43）
+      - pc:luk.23.44     # 耶穌的死（luk.23.44–luk.23.49）
+      - pc:luk.23.50     # 耶穌的安葬（luk.23.50–luk.23.56）
+      - pc:jhn.18.1      # 耶穌被捕（jhn.18.1–jhn.18.11）
+      - pc:jhn.18.12     # 耶穌被帶到亞那面前（jhn.18.12–jhn.18.14）
+      - pc:jhn.18.15     # 彼得不認耶穌（jhn.18.15–jhn.18.18）
+      - pc:jhn.18.19     # 大祭司盤問耶穌（jhn.18.19–jhn.18.24）
+      - pc:jhn.18.25     # 彼得再次不認耶穌（jhn.18.25–jhn.18.27）
+      - pc:jhn.18.28     # 耶穌在彼拉多面前受審（jhn.18.28–jhn.18.38）
+      - pc:jhn.18.38b    # 耶穌被判死刑（jhn.18.38b–jhn.19.16）
+      - pc:jhn.19.17     # 耶穌被釘十字架（jhn.19.17–jhn.19.27）
+      - pc:jhn.19.28     # 耶穌的死（jhn.19.28–jhn.19.30）
+      - pc:jhn.19.31     # 肋旁被扎（jhn.19.31–jhn.19.37）
+      - pc:jhn.19.38     # 耶穌的安葬（jhn.19.38–jhn.19.42）
+    pdf_terms: []
+    external_aliases:
+      - {text: "受難週", source: "backend/data/event_registry.json@ef0e178 triggers（= backend/utils/entity_dicts.py@f9ad4d3 EVENT_KEYWORDS）；config/curated/manual_graph_patches.jsonl@8d7328e"}
+  - event_id: ev0021
+    legacy_ids: [event:suoluomenjianzaoshengdian]
+    name: 所羅門建造聖殿
+    name_heading_id: "hd:1ki.6.1#1"
+    anchors:
+      - pc:1ki.6.1       # 所羅門建造聖殿（1ki.6.1–1ki.6.10）
+      - pc:1ki.8.1       # 運約櫃入殿（1ki.8.1–1ki.8.13）
+      - pc:1ki.8.22      # 所羅門的禱告（1ki.8.22–1ki.8.53）
+      - pc:1ki.8.62      # 奉獻聖殿（1ki.8.62–1ki.8.66）
+    pdf_terms:
+      - {text: "建造聖殿", at: "hd:1ki.6.1#1"}
+    external_aliases:
+      - {text: "所羅門獻殿"}
+  - event_id: ev0022
+    legacy_ids: [event:wuxunjieshenglingjianglin]
+    name: 聖靈降臨
+    name_heading_id: "hd:act.2.1#1"
+    anchors:
+      - pc:act.2.1       # 聖靈降臨（act.2.1–act.2.13）
+      - pc:act.2.14      # 彼得在五旬節的講論（act.2.14–act.2.42）
+    pdf_terms:
+      - {text: "五旬節", at: "act.2.1"}
+      - {text: "聖靈降臨", at: "hd:act.2.1#1"}
+    external_aliases: []
+  - event_id: ev0023
+    legacy_ids: [event:xintianxindi]
+    name: 新天新地
+    name_heading_id: "hd:rev.21.1#1"
+    anchors:
+      - pc:rev.21.1      # 新天新地（rev.21.1–rev.21.8）
+      - pc:rev.21.9      # 新耶路撒冷（rev.21.9–rev.22.5）
+    pdf_terms:
+      - {text: "新天新地", at: "hd:rev.21.1#1"}
+    external_aliases: []
+  - event_id: ev0024
+    legacy_ids: [event:yabolahanzhiyue]
+    name: 上帝與亞伯蘭立約
+    name_heading_id: "hd:gen.15.1#1"
+    anchors:
+      - pc:gen.15.1      # 上帝與亞伯蘭立約（gen.15.1–gen.15.21）
+      - pc:gen.17.1      # 割禮－立約的記號（gen.17.1–gen.17.27）
+    pdf_terms: []
+    external_aliases:
+      - {text: "亞伯拉罕之約"}
+  - event_id: ev0025
+    legacy_ids: [event:yadanghexiawabeiganchuyidianyuan]
+    name: 亞當和夏娃被趕出伊甸園
+    name_heading_id: "hd:gen.3.22#1"
+    anchors:
+      - pc:gen.3.22      # 亞當和夏娃被趕出伊甸園（gen.3.22–gen.3.24）
+    pdf_terms: []
+    external_aliases:
+      - {text: "墮落", note: "PDF 有此字串但不在本事件錨點內（psa.56.7）"}
+  - event_id: ev0026
+    legacy_ids: [event:yelusalengdahui]
+    name: 耶路撒冷會議
+    name_heading_id: "hd:act.15.1#1"
+    anchors:
+      - pc:act.15.1      # 耶路撒冷會議（act.15.1–act.15.21）
+      - pc:act.15.22     # 會議的覆函（act.15.22–act.15.35）
+    pdf_terms: []
+    external_aliases:
+      - {text: "耶路撒冷大會"}
+  - event_id: ev0027
+    legacy_ids: [event:yesubeidingshizijia]
+    name: 耶穌被釘十字架
+    name_heading_id: "hd:mat.27.32#1"
+    anchors:
+      - pc:mat.27.32     # 耶穌被釘十字架（mat.27.32–mat.27.44）
+      - pc:mat.27.45     # 耶穌的死（mat.27.45–mat.27.56）
+      - pc:mrk.15.21     # 耶穌被釘十字架（mrk.15.21–mrk.15.32）
+      - pc:luk.23.26     # 耶穌被釘十字架（luk.23.26–luk.23.43）
+      - pc:jhn.19.17     # 耶穌被釘十字架（jhn.19.17–jhn.19.27）
+    pdf_terms:
+      - {text: "釘十字架", at: "hd:mat.27.32#1"}
+    external_aliases: []
+  - event_id: ev0028
+    legacy_ids: [event:yesugaibianxingxiang]
+    name: 耶穌改變形像
+    name_heading_id: "hd:mat.17.1#1"
+    anchors:
+      - pc:mat.17.1      # 耶穌改變形像（mat.17.1–mat.17.13）
+      - pc:mrk.9.2       # 耶穌改變形像（mrk.9.2–mrk.9.13）
+      - pc:luk.9.28      # 耶穌改變形像（luk.9.28–luk.9.36）
+    pdf_terms: []
+    external_aliases:
+      - {text: "變像"}
+  - event_id: ev0029
+    legacy_ids: [event:yesugeiwuqianrenchibao]
+    name: 耶穌給五千人吃飽
+    name_heading_id: "hd:mat.14.13#1"
+    anchors:
+      - pc:mat.14.13     # 耶穌給五千人吃飽（mat.14.13–mat.14.21）
+      - pc:mrk.6.30      # 耶穌給五千人吃飽（mrk.6.30–mrk.6.44）
+      - pc:luk.9.10      # 耶穌給五千人吃飽（luk.9.10–luk.9.17）
+      - pc:jhn.6.1       # 耶穌給五千人吃飽（jhn.6.1–jhn.6.15）
+    pdf_terms: []
+    external_aliases:
+      - {text: "五餅二魚"}
+  - event_id: ev0030
+    legacy_ids: [event:youdarenbeilu]
+    name: 猶大人被擄
+    name_heading_id: "hd:2ki.25.18#1"
+    anchors:
+      - pc:2ki.25.18     # 猶大人被擄（2ki.25.18–2ki.25.21）
+    pdf_terms: []
+    external_aliases:
+      - {text: "巴比倫之囚"}
+  - event_id: ev0031
+    legacy_ids: [event:yuyuejiedesheli]
+    name: 逾越節
+    name_heading_id: "hd:exo.12.1#1"
+    anchors:
+      - pc:exo.12.1      # 逾越節（exo.12.1–exo.12.13）
+      - pc:exo.12.21     # 第一個逾越節（exo.12.21–exo.12.28）
+      - pc:exo.12.43     # 逾越節的條例（exo.12.43–exo.12.51）
+    pdf_terms:
+      - {text: "逾越節", at: "hd:exo.12.1#1"}
+    external_aliases: []
+  - event_id: ev0032
+    legacy_ids: [event:zhongrenyongshitoudasisitifan]
+    name: 眾人用石頭打死司提反
+    name_heading_id: "hd:act.7.54#1"
+    anchors:
+      - pc:act.7.54      # 眾人用石頭打死司提反（act.7.54–act.7.60）
+    pdf_terms: []
+    external_aliases:
+      - {text: "司提反殉道"}
+  - event_id: ev0033
+    legacy_ids: [event:zuihoudewancan]
+    name: 設立主的晚餐
+    name_heading_id: "hd:mat.26.26#1"
+    anchors:
+      - pc:mat.26.17     # 和門徒同度逾越節（mat.26.17–mat.26.25）
+      - pc:mat.26.26     # 設立主的晚餐（mat.26.26–mat.26.30）
+      - pc:mrk.14.12     # 和門徒同度逾越節（mrk.14.12–mrk.14.21）
+      - pc:mrk.14.22     # 設立主的晚餐（mrk.14.22–mrk.14.26）
+      - pc:luk.22.7      # 預備逾越節的筵席（luk.22.7–luk.22.13）
+      - pc:luk.22.14     # 設立主的晚餐（luk.22.14–luk.22.23）
+      - pc:jhn.13.1      # 耶穌為門徒洗腳（jhn.13.1–jhn.13.20）
+      - pc:jhn.13.21     # 預言自己將被出賣（jhn.13.21–jhn.13.30）
+    pdf_terms: []
+    external_aliases:
+      - {text: "最後的晚餐"}

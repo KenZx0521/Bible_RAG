@@ -3,9 +3,8 @@
 The mini snapshot has no PDFs, so its text step writes the hand-built text layer and is
 gated with the gates a stored layer can run without them. Every later step is the real
 ``steps.layer_steps`` with the mini inputs: the legacy output/ (struct's old pericopes and
-chunks, emb's old vectors), the stand-in token counter and encoder, the mini registries,
-event registry, frozen lexicon and the fake backend's matches frozen on the mini probe
-texts (``mini_release.build`` lays those out; ``fake_backend.freeze_live``).
+chunks, emb's old vectors), the stand-in token counter and encoder, the mini registries
+(with query_aliases.yaml) and event registry (``mini_release.build`` lays those out).
 The derived files are mini ones naming the mini text and struct layers; G-GT is a
 stand-in (the mini GT v2 holds only slots). Load and verify go to a FakePg, an in-memory
 Qdrant and a contract directory under ``root``.
@@ -22,12 +21,12 @@ from typing import Any, Callable
 
 from qdrant_client import QdrantClient
 
-import fake_backend
 import fake_encoder
 import mini_build
 import mini_emb
 import mini_kg
 import mini_release
+import mini_route
 import ref_dirs
 from fake_pg import FakePg
 from ragdata import paths
@@ -127,8 +126,9 @@ def _struct_version(root: Path, legacy: Path) -> tuple[str, str]:
     return text.version, result.layers["struct"].version
 
 
-def _files(root: Path, ref: Path, text: str, struct: str) -> derived.DerivedFiles:
+def _files(root: Path, text: str, struct: str) -> derived.DerivedFiles:
     versions = mini_kg.write_registries(root / "registries")
+    mini_route.write_query_aliases(root / "registries")
     shutil.copy(paths.REGISTRIES / "normalization.yaml", root / "registries")  # G-TEXT
     kg0 = root / "kg0_counts.yaml"
     kg0.write_bytes(mini_kg.dump(mini_kg.kg0_counts(versions, text, struct)))
@@ -136,7 +136,7 @@ def _files(root: Path, ref: Path, text: str, struct: str) -> derived.DerivedFile
     grid.write_text(json.dumps({"source": {"layer_version": text}}), encoding="utf-8")
     gt, freeze = mini_release.write_gt(root, text)
     return derived.DerivedFiles(versification=grid, kg0_counts=kg0, gt=gt, freeze=freeze,
-                                gt_v1=ref / "gt_v1.json", gt_changes=root / "changes.jsonl")
+                                gt_changes=root / "changes.jsonl")
 
 
 def make(root: Path) -> Mini:
@@ -144,16 +144,10 @@ def make(root: Path) -> Mini:
     mini_release.build(ref)
     legacy = _legacy(root / "legacy")
     text, struct = _struct_version(root, legacy)
-    files = _files(root, ref, text, struct)
-    lexicon, gt_v1, live = (ref / "routing_lexicon.legacy.json", ref / "gt_v1.json",
-                            ref / "route_live")
-    fake_backend.freeze_live(ref / "repo" / "backend", root / "scratch" / "text" / text, lexicon,
-                             gt_v1, live)
+    files = _files(root, text, struct)
     gate = GateInputs(versification=mini_build.versification(), token_counter=COUNTER,
                       legacy_dir=legacy, compat_sample=mini_emb.SAMPLE, encoder=fake_encoder.make(),
-                      registries=root / "registries", kg0_counts=files.kg0_counts,
-                      legacy_registry=ref / "event_registry.json",
-                      frozen_lexicon=lexicon, ground_truth=gt_v1, route_live=live)
+                      registries=root / "registries", kg0_counts=files.kg0_counts)
     sources = Sources(gate=gate, counts=mini_release.MINI_COUNTS, events_yaml=ref / "events.yaml")
     pg, qdrant = FakePg(), QdrantDb(QdrantClient(location=":memory:"))
     pg.close = qdrant.close = lambda: None

@@ -1,22 +1,24 @@
 """KG-layer record contracts: kg0 (names, extra spans, parallel links, design §2.17),
-events (§2.21, R1 frozen version) and route (the routing lexicon terms, §5.2, D-12(a)).
+events (§2.21, the R2 registry: curated anchors, pdf_terms and external_aliases) and route
+(the R2 routing lexicon terms, §5.2: kg0 names, divine surfaces, query aliases, event
+triggers and book names).
 
-R1 content rules that are policy rather than shape (anchors are ``legacy_tuned``,
-triggers retire by R2, no ``pdf_terms`` yet) are G-EVENT's and G-ROUTE's; the
-contracts here accept what R2 will also write.
+Content rules that are policy rather than shape (an anchor's evidence is its pericope's
+heading, a pdf_term lies inside an anchor, a trigger has one owner) are G-EVENT's and
+G-ROUTE's.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from types import MappingProxyType
+from typing import Any
 
 from ragcommon import ids
 from ragdata.contract.fields import (
-    Record, id_of, integer, json_object, legacy_key, list_of, nested, one_of, optional, parsed,
+    Record, boolean, id_of, integer, legacy_key, list_of, nested, one_of, optional, parsed,
     require, spec, string, verse_order,
 )
-from ragdata.contract.provenance import RETIRE_RELEASES
 
 SPAN_SOURCES = ("pdf_underline", "divine_rule", "lexicon", "curated_underline")
 EXTRA_SOURCES = SPAN_SOURCES[1:]
@@ -26,8 +28,12 @@ REGION_CONTAINERS = MappingProxyType({
     "body": ("slot", "unit"), "superscription": ("superscription",), "heading": ("heading",),
     "footnote": ("footnote",),
 })
-ANCHOR_CHANGES = ("same", "narrowed", "widened")
-ROUTE_CATEGORIES = ("persons", "places", "events", "books")
+# a routing term's kind -> the lexicon category that lists it (design §5.2, R2)
+ROUTE_KINDS = MappingProxyType({"name": "names", "dotless": "names", "divine": "divine",
+                                "alias": "aliases", "event": "events", "book": "books"})
+ROUTE_CATEGORIES = ("names", "divine", "aliases", "events", "books")
+ROUTE_TYPES = ("Person", "Place")
+UNROUTABLE_RULES = ("rt.min_len", "rt.common_word")
 
 
 def _sorted_unique(values: tuple, what: str) -> None:
@@ -121,110 +127,165 @@ class ParallelLink(Record):
 # ------------------------------------------------------------------ events
 
 
+def _anchor_keys_check(a: Anchor) -> None:
+    require(a.passage_id == ids.passage_id(a.start_key), "passage_id must be ps:{start_key}")
+    for key, slot in ((a.start_key, a.start_slot), (a.end_key, a.end_slot)):
+        p = parsed(key)
+        require(slot == ids.slot_key(p.book_id, p.chapter, p.verse), f"{slot} is not {key}'s slot")
+    s, e = parsed(a.start_key), parsed(a.end_key)
+    require((s.book_id, s.chapter) == (e.book_id, e.chapter), "an anchor stays in one chapter")
+    require(verse_order(a.start_key) <= verse_order(a.end_key), "anchor range descends")
+
+
+@dataclass(frozen=True)
+class Quote(Record):
+    unit_key: str = spec(id_of("unit"))
+    text: str = spec(string())
+
+
+@dataclass(frozen=True)
+class Evidence(Record):
+    """Why an anchor is the event: its pericope's heading, or a quote from one of its units."""
+
+    heading_id: str | None = spec(optional(id_of("heading")))
+    quote: Quote | None = spec(optional(nested(Quote)))
+
+    def check(self) -> None:
+        require((self.heading_id is None) != (self.quote is None),
+                "evidence is a heading_id or a quote, exactly one")
+
+
 @dataclass(frozen=True)
 class Anchor(Record):
+    """One passage of a pericope the registry declares (passage level, design D6)."""
+
+    pericope_id: str = spec(id_of("pericope"))
     passage_id: str = spec(id_of("passage"))
     start_key: str = spec(id_of("key"))
     end_key: str = spec(id_of("key"))
     start_slot: str = spec(id_of("slot"))
     end_slot: str = spec(id_of("slot"))
-    change: str = spec(one_of(*ANCHOR_CHANGES))
-    legacy_anchor: str = spec(legacy_key())
-    provenance_class: str = spec(one_of("legacy_tuned", "curated_human"))
+    evidence: Evidence = spec(nested(Evidence))
+    provenance_class: str = spec(one_of("curated_human"))
+    decided_by: str = spec(string())
 
     def check(self) -> None:
-        require(self.passage_id == ids.passage_id(self.start_key),
-                "passage_id must be ps:{start_key}")
-        for key, slot in ((self.start_key, self.start_slot), (self.end_key, self.end_slot)):
-            p = parsed(key)
-            require(slot == ids.slot_key(p.book_id, p.chapter, p.verse),
-                    f"{slot} is not {key}'s slot")
-        s, e = parsed(self.start_key), parsed(self.end_key)
-        require((s.book_id, s.chapter) == (e.book_id, e.chapter), "an anchor stays in one chapter")
-        require(verse_order(self.start_key) <= verse_order(self.end_key), "anchor range descends")
+        _anchor_keys_check(self)
+
+
+def _location(value: Any) -> str:
+    """A pdf_term's ``at``: a heading id or a unit key."""
+    require(isinstance(value, str) and (ids.is_valid(value, "heading")
+                                        or ids.is_valid(value, "unit")),
+            f"expected a heading id or a unit key, got {value!r}")
+    return value
 
 
 @dataclass(frozen=True)
-class LegacyTrigger(Record):
+class PdfTerm(Record):
     text: str = spec(string())
-    provenance_class: str = spec(one_of("external_legacy"))
+    at: str = spec(_location)
+    decided_by: str = spec(string())
+    provenance_class: str = spec(one_of("curated_human"))
+
+
+@dataclass(frozen=True)
+class ExternalAlias(Record):
+    text: str = spec(string())
     source: str = spec(string())
     note: str = spec(string())
-    retire_by: str = spec(one_of(*RETIRE_RELEASES))
+    provenance_class: str = spec(one_of("external_event_alias"))
+
+
+@dataclass(frozen=True)
+class MergedEvent(Record):
+    """A retired event id, merged into the event that lists it."""
+
+    event_id: str = spec(id_of("event"))
+    legacy_ids: tuple = spec(list_of(legacy_key(), min_len=1))
 
 
 @dataclass(frozen=True)
 class Event(Record):
     event_id: str = spec(id_of("event"))
-    legacy_id: str = spec(legacy_key())
+    legacy_ids: tuple = spec(list_of(legacy_key(), min_len=1))
     name: str = spec(string())
-    legacy_provenance: str = spec(string())
+    name_source: str = spec(one_of("pdf_heading", "curated"))
+    name_heading_id: str | None = spec(optional(id_of("heading")))
     anchors: tuple = spec(list_of(nested(Anchor), min_len=1))
-    legacy_triggers: tuple = spec(list_of(nested(LegacyTrigger)))
-    pdf_terms: tuple = spec(list_of(json_object()))
-    external_aliases: tuple = spec(list_of(json_object()))
-    provenance_class: str = spec(one_of("legacy_tuned", "curated_human"))
+    pdf_terms: tuple = spec(list_of(nested(PdfTerm)))
+    external_aliases: tuple = spec(list_of(nested(ExternalAlias)))
+    merged_from: tuple = spec(list_of(nested(MergedEvent)))
+    decided_by: str = spec(string())
+    provenance_class: str = spec(one_of("curated_human"))
+
+    @property
+    def triggers(self) -> tuple[str, ...]:
+        return tuple(t.text for t in (*self.pdf_terms, *self.external_aliases))
 
     def check(self) -> None:
         passages = [a.passage_id for a in self.anchors]
         require(len(set(passages)) == len(passages), "an event anchors a passage once")
-        texts = [t.text for t in self.legacy_triggers]
-        require(len(set(texts)) == len(texts), "legacy_triggers repeat")
-
-
-@dataclass(frozen=True)
-class AnchorChange(Record):
-    """An anchor whose verses changed when its legacy pericope became a passage (§3.3)."""
-
-    change_key: str = spec(string())
-    event_id: str = spec(id_of("event"))
-    legacy_anchor: str = spec(legacy_key())
-    passage_id: str = spec(id_of("passage"))
-    change: str = spec(one_of("narrowed", "widened"))
-    legacy_start_slot: str = spec(id_of("slot"))
-    legacy_end_slot: str = spec(id_of("slot"))
-    start_key: str = spec(id_of("key"))
-    end_key: str = spec(id_of("key"))
-    removed_slots: tuple = spec(list_of(id_of("slot")))
-    added_keys: tuple = spec(list_of(id_of("key")))
-    provenance_class: str = spec(one_of("external_legacy"))
-    source: str = spec(string())
-    note: str = spec(string())
-    retire_by: str = spec(one_of(*RETIRE_RELEASES))
-
-    def check(self) -> None:
-        require(self.change_key == f"{self.event_id}|{self.legacy_anchor}",
-                "change_key must be event_id|legacy_anchor")
-        narrowed = self.change == "narrowed"
-        require(narrowed == bool(self.removed_slots) and narrowed != bool(self.added_keys),
-                "a narrowed anchor lists removed slots, a widened one added keys")
+        require(len(set(self.triggers)) == len(self.triggers), "trigger texts repeat")
+        require((self.name_source == "pdf_heading") == (self.name_heading_id is not None),
+                "name_heading_id iff name_source is pdf_heading")
+        require(len(set(self.legacy_ids)) == len(self.legacy_ids), "legacy_ids repeat")
+        merged = {i for m in self.merged_from for i in m.legacy_ids}
+        require(merged <= set(self.legacy_ids), "a merged event's legacy ids are the event's")
 
 
 # ------------------------------------------------------------------ route
 
 
 @dataclass(frozen=True)
-class RouteTerm(Record):
-    """One entry of the routing lexicon, at its position in the frozen file."""
+class RouteTarget(Record):
+    """One candidate a routing term stands for: a kg0 name, a divine pattern or an event.
+    ``route_types`` is the only type the router counts (K4 resolves it, design §5.2)."""
 
-    term_key: str = spec(string())
-    category: str = spec(one_of(*ROUTE_CATEGORIES))
-    position: int = spec(integer(0))
-    term: str = spec(string())
-    aliases: tuple = spec(list_of(string()))
-    book_id: str | None = spec(optional(id_of("book")))
-    full_name: str | None = spec(optional(string()))
-    provenance_class: str = spec(one_of("external_legacy", "external_query",
-                                        "external_event_alias", "pdf_rule"))
-    source: str = spec(string())
-    note: str = spec(string())
-    retire_by: str | None = spec(optional(one_of(*RETIRE_RELEASES)))
+    ref: str = spec(string())
+    label: str = spec(string())
+    type_candidates: tuple = spec(list_of(nested(TypeCandidate)))
+    route_types: tuple = spec(list_of(one_of(*ROUTE_TYPES)))
 
     def check(self) -> None:
-        require(self.term_key == f"{self.category}/{self.position:04d}",
-                "term_key must be {category}/{position:04d}")
-        named = self.category in ("persons", "places")
-        require(named == bool(self.aliases), "persons and places (only) list aliases")
-        book = self.category == "books"
-        require(book == (self.book_id is not None) == (self.full_name is not None),
-                "books (only) carry book_id and full_name")
+        _sorted_unique(self.route_types, "route_types")
+
+
+@dataclass(frozen=True)
+class RouteTerm(Record):
+    """One term of the routing lexicon: its surface, every candidate it stands for, whether
+    the matcher sees it and its provenance. A field that does not apply to the kind is null
+    or empty; the lexicon lists the same object without ``term_key``."""
+
+    term_key: str = spec(string())
+    surface: str = spec(string())
+    kind: str = spec(one_of(*ROUTE_KINDS))
+    targets: tuple = spec(list_of(nested(RouteTarget)))
+    routable: bool = spec(boolean())
+    unroutable_rule: str | None = spec(optional(one_of(*UNROUTABLE_RULES)))
+    provenance_class: str = spec(one_of("pdf_deterministic", "pdf_rule", "curated_human",
+                                        "curated_metadata", "external_query",
+                                        "external_event_alias"))
+    source: str = spec(string())
+    evidence_span_id: str | None = spec(optional(id_of("name_span")))
+    rule_id: str | None = spec(optional(string()))
+    norm_rule_ids: tuple = spec(list_of(string()))
+    at: str | None = spec(optional(string()))
+    decided_by: str | None = spec(optional(string()))
+    note: str | None = spec(optional(string()))
+    alias_id: str | None = spec(optional(string()))
+    book_id: str | None = spec(optional(id_of("book")))
+    full_name: str | None = spec(optional(string()))
+
+    def check(self) -> None:
+        category, _, position = self.term_key.partition("/")
+        require(category == ROUTE_KINDS[self.kind] and len(position) == 4
+                and position.isdigit(), "term_key must be {category}/{position:04d}")
+        require(self.routable == (self.unroutable_rule is None),
+                "unroutable_rule is set iff the term is not routable")
+        refs = [t.ref for t in self.targets]
+        require(refs == sorted(set(refs)), "targets must be sorted by ref and unique")
+        book = self.kind == "book"
+        require(book == (self.book_id is not None) == (self.full_name is not None)
+                and book != bool(self.targets),
+                "a book carries book_id and full_name and no target; every other kind a target")

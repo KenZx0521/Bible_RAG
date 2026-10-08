@@ -31,8 +31,8 @@ def test_the_release_ships_every_contract_file(built):
 def test_layer_files_are_copied_byte_for_byte(built):
     mini, _, files = built
     copies = {"event_registry.json": ("events", "event_registry_v2.json"),
-              "event_registry.v1compat.json": ("events", "event_registry_v1.json"),
               "routing_lexicon.json": ("route", "routing_lexicon.json"),
+              "query_aliases.json": ("route", "query_aliases.json"),
               "encoder_fingerprint.json": ("emb", "encoder_fingerprint.json"),
               "legacy_ids.jsonl": ("struct", "legacy_ids.jsonl")}
     for name, (layer, source) in copies.items():

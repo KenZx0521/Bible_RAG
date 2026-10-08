@@ -7,14 +7,13 @@ import pytest
 from fastapi.testclient import TestClient
 
 import main
-from ragcommon import routing
+from router_fakes import LEXICON
 from routers import health, query
 from serving import context
 from serving.build import Build
 from serving.handshake import Handshake
 from utils import embedder, reranker
 
-FROZEN = Path(__file__).resolve().parents[2] / "config" / "registries" / "routing_lexicon.legacy.json"
 BUILD = Build("b20261008_1bb6912e", "bb20261008_1bb6912e", "passages__b", Path("/c"), False, 22)
 
 
@@ -26,7 +25,7 @@ def client():
 
 @pytest.fixture
 def serving():
-    active = context.make_active(BUILD, routing.load_lexicon(FROZEN), ())
+    active = context.make_active(BUILD, LEXICON, ())
     context.install(active, Handshake(BUILD.build_id, (), strict=True))
 
 

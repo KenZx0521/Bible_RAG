@@ -1,0 +1,53 @@
+# 查詢別名（DESIGN §5.2、§9.1 external_query）。只用於路由，不進 name_spans、mentions、KG。Kay 2026-10-08 核可（DOC 2 f）。
+# 每列：surface（使用者可能輸入的寫法）→ target（kg0 names 的 norm_key，或 divine_refs 的 surface）。
+# K4 載入時驗證：target 必須是 kg0 名稱或 divine surface；surface 不得是 kg0 名稱或任何其他詞；不得含拉丁字母。
+# qa.005（該撒→凱撒）暫緩：凱撒不畫線，需先在 divine_refs 加頭銜規則（等於重建 kg0），R2 不收。
+# 「‧」省略寫法不在這裏逐條列：由 K4 規則 rt.dotless 產生。
+# 不需要別名的舊寫法（最長比對會命中裏面的 PDF 名稱）：客西馬尼園、底格里斯河、巴別塔、迦勒底的吾珥、施洗約翰、
+#   抹大拉的馬利亞、革尼撒勒湖、X地（迦南地等）。不收：神的兒子、馬利亞（耶穌母親）、大海、曠野／會幕／聖殿／殿、巴旦・亞蘭。
+schema: ragdata.query_aliases.v1
+aliases:
+  # --- CUNP（和合本）拼法，RCUV 已改寫 ---
+  - {id: qa.001, surface: 古列, target: 塞魯士, source: "CUNP；舊 entity_dict PERSON_DICT", note: "RCUV 作塞魯士（拉1:1、代下36:22；22 處）"}
+  - {id: qa.002, surface: 大利烏, target: 大流士, source: "CUNP；GT PERSON_QUESTION_013 題目用字", note: "RCUV 作大流士（拉4:5、但6:1；25 處）"}
+  - {id: qa.003, surface: 推羅, target: 泰爾, source: "CUNP；舊 entity_dict PLACE_DICT", note: "RCUV 作泰爾（撒下5:11；64 處）"}
+  - {id: qa.004, surface: 撒瑪利亞, target: 撒馬利亞, source: "舊 entity_dict PLACE_DICT（錯字）", note: "CUNP 與 RCUV 都作撒馬利亞（王上16:24；132 處）；常見誤寫"}
+  - {id: qa.006, surface: 流便, target: 呂便, source: CUNP, note: "RCUV 作呂便（創29:32；90 處）；G-SRC 譯本標記"}
+  - {id: qa.007, surface: 尼哥底母, target: 尼哥德慕, source: "CUNP；舊 entity_dict PERSON_DICT", note: "RCUV 作尼哥德慕（約3:1；5 處）"}
+  - {id: qa.008, surface: 該撒利亞, target: 凱撒利亞, source: "CUNP；舊 entity_dict PLACE_DICT", note: "RCUV 作凱撒利亞（徒8:40；15 處）"}
+  - {id: qa.009, surface: 西乃, target: 西奈, source: CUNP, note: "CUNP 西乃山；RCUV 作西奈（出19:1；17 處，另西奈山 22 處由最長比對命中）"}
+  - {id: qa.010, surface: 亞西亞, target: 亞細亞, source: CUNP, note: "RCUV 作亞細亞（徒2:9；21 處）"}
+  - {id: qa.011, surface: 居比路, target: 塞浦路斯, source: CUNP, note: "RCUV 作塞浦路斯（徒4:36；8 處）"}
+  - {id: qa.012, surface: 革哩底, target: 克里特, source: CUNP, note: "RCUV 作克里特（徒27:7、多1:5；8 處）"}
+  - {id: qa.013, surface: 米利大, target: 馬耳他, source: CUNP, note: "RCUV 作馬耳他（徒28:1；1 處）"}
+  - {id: qa.014, surface: 埃提阿伯, target: 衣索匹亞, source: CUNP, note: "RCUV 作衣索匹亞（徒8:27；2 處）"}
+  - {id: qa.015, surface: 毘斯迦, target: 毗斯迦, source: "CUNP 字形", note: "異體字 毘→毗（民21:20）"}
+  # --- 現代名、外部稱呼 ---
+  - {id: qa.016, surface: 死海, target: 鹽海, source: "現代名；舊 entity_dict PLACE_DICT", note: "PDF 作鹽海（創14:3、書3:16；11 處）"}
+  - {id: qa.017, surface: 地中海, target: 西海, source: "現代名；舊 entity_dict PLACE_DICT", note: "PDF 底線名西海（申11:24、34:2）；屬詮釋性對應，Kay 2026-10-08 核可"}
+  - {id: qa.018, surface: 髑髏地, target: 各各他, source: "舊 entity_dict PLACE_DICT 別名", note: "PDF 自釋：太27:33「各各他，意思就是『髑髏地』」（另 可15:22、約19:17）；髑髏地不畫線"}
+# 問句排除語境：命中處落在 context 裏時不算 surface 的命中（K4 規則 rt.exclude_context，與 name_normalization 的 exclude_contexts 一起進詞表）。
+# rt.common_word 只量 PDF 經文；這裏收現代問句裏跨在罕用二字名上的常用詞，依語法類別列，不依任何題庫逐題調。
+question_exclusions:
+  # 疑問詞「如何／為何／任何」的「何」接動詞：不是何字開頭的名稱
+  - {surface: 何提, context: 如何提, why: "問句「如何提醒／如何提到」裏的「何提」不是名稱何提"}
+  - {surface: 何提, context: 為何提, why: "問句「為何提到…」裏的「何提」不是名稱何提"}
+  - {surface: 何提, context: 任何提, why: "「任何提到…」裏的「何提」不是名稱何提"}
+  - {surface: 何把, context: 如何把, why: "問句「如何把…」裏的「何把」不是名稱何把"}
+  - {surface: 何把, context: 為何把, why: "問句「為何把…」裏的「何把」不是名稱何把"}
+  - {surface: 何把, context: 任何把, why: "「任何把…」裏的「何把」不是名稱何把"}
+  - {surface: 何利, context: 如何利, why: "問句「如何利用」裏的「何利」不是名稱何利"}
+  - {surface: 何利, context: 為何利, why: "問句「為何利未人…」裏的「何利」不是名稱何利（應比到利未）"}
+  - {surface: 何坦, context: 如何坦, why: "問句「如何坦然／坦白」裏的「何坦」不是名稱何坦"}
+  # 代名詞「他」接動詞「施洗、施行、施恩」：不是地名他施
+  - {surface: 他施, context: 他施洗, why: "「為他施洗」是給他施洗，不是地名他施"}
+  - {surface: 他施, context: 他施行, why: "「為他施行神蹟」是給他施行，不是地名他施"}
+  - {surface: 他施, context: 他施恩, why: "「向他施恩」是給他施恩，不是地名他施"}
+  # 現代常用詞跨在名稱上
+  - {surface: 中門, context: 中門徒, why: "「其中門徒／當中門徒」是「門徒」，不是城門中門"}
+  - {surface: 以別, context: 以別人, why: "「以別人為重」是介詞「以」＋「別人」"}
+  - {surface: 以法, context: 以法律, why: "「以法律為…」是介詞「以」＋「法律」"}
+  - {surface: 以結, context: 以結論, why: "「以結論收尾」是介詞「以」＋「結論」"}
+  - {surface: 以結, context: 以結束, why: "「以結束」是介詞「以」＋「結束」"}
+  - {surface: 本都, context: 基本都, why: "「基本都…」是「基本」＋「都」，不是地名本都"}
+  - {surface: 本都, context: 根本都, why: "「根本都…」是「根本」＋「都」，不是地名本都"}

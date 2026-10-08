@@ -1,7 +1,7 @@
 {
- "build_id": "b20261008_1bb6912e",
- "pg_schema": "bb20261008_1bb6912e",
- "qdrant_collection": "passages__b20261008_1bb6912e",
+ "build_id": "b20261008_948afec2",
+ "pg_schema": "bb20261008_948afec2",
+ "qdrant_collection": "passages__b20261008_948afec2",
  "points": 22,
  "dim": 8
 }

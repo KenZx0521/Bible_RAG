@@ -22,7 +22,8 @@ An emb layer is gated with its struct and text layers. G-EMB and G-ENC also read
 its report, fingerprint and ``vectors`` attachment, and the pinned encoder
 (``GateInputs``: tokenizer files, device, the store's copy of the old ``output/``
 for the legacy check); an encoder that does not load fails both closed. G-ROUTE
-reads the old backend's matches frozen in the store (``kg.k4_live``).
+compiles the lexicon again from the text, kg0 and events layers and the registries
+(``GateInputs.registries``: divine_refs, name_normalization, query_aliases).
 """
 
 from __future__ import annotations
@@ -40,8 +41,8 @@ from ragdata.contract.counts import (
     KG0_COUNTS_PATH, PDF_COUNTS_PATH, load_counts, load_kg0_counts,
 )
 from ragdata.contract.registry import (
-    EMB_REPORT, ENCODER_FINGERPRINT, EVENT_REGISTRY_V1, EVENT_REGISTRY_V2, KG0_REPORT,
-    LAYER_REPORTS, ROUTE_REPORT, ROUTING_LEXICON, XCHECK_REPORT,
+    EMB_REPORT, ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, KG0_REPORT,
+    LAYER_REPORTS, QUERY_ALIASES, ROUTING_LEXICON, XCHECK_REPORT,
 )
 from ragdata.gates import emb_legacy, sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
@@ -57,8 +58,7 @@ from ragdata.gates.refint import check_refint
 from ragdata.gates.schema import check_schema
 from ragdata.gates.struct import check_struct
 from ragdata.gates.text import check_text
-from ragdata.kg import k4_live, k4_route
-from ragdata.kg.k4_route import LiveProbe
+from ragdata.kg import k4_route
 from ragdata.stages.errors import StageError
 from ragdata.stages.s00_source import EXPECT_PATH
 from ragdata.stages.s04_overlay.normalization import load_normalization
@@ -71,7 +71,7 @@ from ragdata.store import (
 REPORT_SCHEMA = "ragdata.gate_report.v1"
 REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {
     "text": (), "struct": ("text",), "emb": ("struct", "text"), "kg0": ("text", "struct"),
-    "events": ("text", "struct"), "route": ("text",),
+    "events": ("text", "struct"), "route": ("text", "kg0", "events"),
 }
 REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "text": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-CONSERVE", "G-XCHECK", "G-REF"),
@@ -90,7 +90,8 @@ class GateInputs:
     """What some gates read besides the layers."""
 
     pdf_dir: Path | None = None                   # G-XCHECK: the PDFs, read with poppler
-    registries: Path = paths.REGISTRIES           # G-TEXT: normalization.yaml (ASCII allow-list)
+    registries: Path = paths.REGISTRIES           # G-TEXT: normalization.yaml (ASCII allow-list);
+                                                  # G-ROUTE: the K0 registries, query_aliases
     source_expect: Path = EXPECT_PATH             # G-CONSERVE: the corpus totals
     versification: Versification | None = None    # G-REF: None means ragcommon's data
     tokenizer: Path | None = None                 # G-STRUCT/emb: tokenizer.json (None: HF cache)
@@ -102,11 +103,6 @@ class GateInputs:
     device: str | None = None                     # G-EMB/G-ENC: where BGE-M3 runs
     encoder: Encoder | None = None                # G-EMB/G-ENC: a stand-in encoder (tests only)
     kg0_counts: Path = KG0_COUNTS_PATH            # G-KG0: the per-surface expectations
-    legacy_registry: Path = paths.LEGACY_EVENT_REGISTRY  # G-EVENT: what R1 froze
-    frozen_lexicon: Path = paths.FROZEN_LEXICON   # G-ROUTE: the frozen routing lexicon
-    ground_truth: Path = paths.GROUND_TRUTH       # G-ROUTE: probe questions
-    route_live: Path = paths.ROUTE_LIVE           # G-ROUTE: the old backend's matches, frozen
-    live_probe: LiveProbe | None = None           # G-ROUTE: a stand-in live matcher (tests only)
 
 
 @dataclass(frozen=True)
@@ -241,32 +237,23 @@ def _kg0_gate(ctx: GateContext) -> GateResult:
 
 
 def _event_gate(ctx: GateContext) -> GateResult:
-    v1, v2 = stored_json(ctx, EVENT_REGISTRY_V1), stored_json(ctx, EVENT_REGISTRY_V2)
-    if v1 is None or v2 is None:
-        return missing_input("G-EVENT", f"the layer's {EVENT_REGISTRY_V1} and {EVENT_REGISTRY_V2}")
-    path = Path(ctx.inputs.legacy_registry)
-    legacy = path.read_bytes() if path.is_file() else None
-    return check_event(ctx.snapshot, v1, v2, legacy, ctx.target.depends_on.get("struct", ""))
-
-
-def _live(inputs: GateInputs, texts: list[str]) -> list[dict[str, Any]]:
-    probe = inputs.live_probe or k4_live.stored_probe(inputs.route_live, inputs.frozen_lexicon)
-    return probe(texts)
+    v2 = stored_json(ctx, EVENT_REGISTRY_V2)
+    if v2 is None:
+        return missing_input("G-EVENT", f"the layer's {EVENT_REGISTRY_V2}")
+    return check_event(ctx.snapshot, v2, ctx.target.depends_on.get("struct", ""))
 
 
 def _route_gate(ctx: GateContext) -> GateResult:
-    report = stored_json(ctx, ROUTE_REPORT)
-    if report is None or ROUTING_LEXICON not in ctx.target.file_shas:
-        return missing_input("G-ROUTE", f"the layer's {ROUTING_LEXICON} and {ROUTE_REPORT}")
-    frozen_path = Path(ctx.inputs.frozen_lexicon)
-    frozen = frozen_path.read_bytes() if frozen_path.is_file() else None
+    if not {ROUTING_LEXICON, QUERY_ALIASES} <= set(ctx.target.file_shas):
+        return missing_input("G-ROUTE", f"the layer's {ROUTING_LEXICON} and {QUERY_ALIASES}")
     try:
-        texts = k4_route.flatten(k4_route.probe_texts(ctx.snapshot, ctx.inputs.ground_truth))
-        live = _live(ctx.inputs, texts)
+        inputs = k4_route.route_inputs(ctx.snapshot, ctx.target.depends_on,
+                                       ctx.inputs.registries)
     except StageError as exc:
-        return missing_input("G-ROUTE", f"probe texts and live results ({exc})")
-    return check_route(ctx.snapshot.of("routing_terms"), report["lexicon_rest"],
-                       (ctx.target.path / ROUTING_LEXICON).read_bytes(), frozen, texts, live)
+        return missing_input("G-ROUTE", f"the registries kg0 was built with ({exc})")
+    return check_route(inputs, ctx.snapshot.of("routing_terms"),
+                       (ctx.target.path / ROUTING_LEXICON).read_bytes(),
+                       (ctx.target.path / QUERY_ALIASES).read_bytes())
 
 
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({

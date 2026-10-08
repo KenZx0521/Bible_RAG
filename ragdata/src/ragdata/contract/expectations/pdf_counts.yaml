@@ -252,69 +252,75 @@ emb:
     evidence: struct@47a0f26501f3 chunks.jsonl 433 列（169 段切出）
     definition: kind=chunk 的 embedding_records 數
 
-# events（K1 R1 凍結版）：由 backend/data/event_registry.json 經 struct 層 legacy_ids 機械轉換。
-# 這些不是 PDF 計數，是「凍結內容不得增減」的計數（DESIGN §5.3、§3.3）。
+# events（K1 R2 修正版）：config/registries/events.yaml v2 經 struct 層編譯（pericope 展開成全部 passage）。
+# 這些不是 PDF 計數，是 Kay 2026-10-08 核可內容（reports/r2prep/plan.md DOC 2）不得增減的計數（DESIGN §5.3）。
 events:
   events:
-    value: 33
+    value: 31
     g: [G56, G62]
-    evidence: REPORT G56／G62（registry 33 個事件）；backend/data/event_registry.json
+    evidence: R1 的 33 個事件併掉 ev0003、ev0014（DOC 2 (a)，併入 ev0002）
     definition: events.jsonl 列數
   event_anchors:
-    value: 178
+    value: 179
     g: [G56]
-    evidence: G56（178 個錨點）
-    definition: 所有事件的錨點數
+    evidence: R1 178 個 − 合併重複 5 個 ＋ 新增 6 個（ps:1sa.10.1、ps:rev.22.1、exo.8.16、exo.9.1、exo.9.8、act.14.8；DOC 2 (b2)）
+    definition: 所有事件的錨點數（passage 級）
   event_anchor_passages:
-    value: 159
+    value: 165
     g: [G56, G62]
-    evidence: G56（178 個錨點落在 159 段）
+    evidence: R1 159 段 ＋ 上列 6 段（176 個 pericope 宣告、162 種 pericope 只報告）
     definition: 錨點 passage_id 的種數
-  anchors_same:
-    value: 170
-    g: [G17]
-    evidence: DESIGN §0.1(d)、§3.3（170 個相同）
-    definition: change=same 的錨點數（整數節範圍相同、沒有幽靈節）
-  anchors_narrowed:
-    value: 4
-    g: [G02, G17]
-    evidence: DESIGN §3.3（4 個因移除幽靈節而縮小，如 mrk:15:3）
-    definition: change=narrowed 的錨點數
-  anchors_widened:
-    value: 4
-    g: [G15, G17]
-    evidence: DESIGN §3.3（4 個因節中標題補回半節而擴大：act.9.19b 兩次、act.14.20b、jhn.18.38b）
-    definition: change=widened 的錨點數
-  anchor_changes:
-    value: 8
-    g: [G17]
-    evidence: DESIGN §3.3（這 8 個列入 id 變動清單）
-    definition: anchor_changes.jsonl 列數
-  legacy_triggers:
-    value: 39
+  pdf_terms:
+    value: 12
     g: [G56]
-    evidence: G56（39 個觸發詞，37 種）
-    definition: 所有事件 legacy_triggers 的條數
+    evidence: DOC 2 (c) 核可的 12 條（含 [待決] 釘十字架、逾越節，Kay 核可）
+    definition: 所有事件 pdf_terms 的條數
+  external_aliases:
+    value: 25
+    g: [G56]
+    evidence: DOC 2 (d) 25 條；與 pdf_terms 合計即 R1 的 37 種觸發詞
+    definition: 所有事件 external_aliases 的條數
+  retired:
+    value: 2
+    g: [G56]
+    evidence: DOC 2 (a)：ev0003、ev0014 併入 ev0002
+    definition: 所有事件 merged_from 的條數
 
-# route（K4 R1 凍結版）：現行 backend 路由實際使用的詞表，凍結自 entity_dicts（D-12(a)）。
+# route（K4 R2 PDF 版）：kg0 名稱、divine_refs、query_aliases、事件觸發詞與書名的聯集（DESIGN §5.2）。
+# 依 kg0@14e68c8344b1、divine_refs@510328284327 與 Kay 2026-10-08 核可內容（reports/r2prep/plan.md DOC 2 f、g）。
 route:
-  route_persons:
-    value: 126
+  route_names:
+    value: 2926
     g: [G43]
-    evidence: scripts/entity_extraction/entity_dict.py PERSON_DICT 126 個 canonical（G43 的 270 個含 PLACE 84、GROUP 60）
-    definition: category=persons 的 routing_terms 數
-  route_places:
-    value: 84
+    evidence: kg0@14e68c8344b1 names.jsonl 2,926 列（R2 不重建 kg0）
+    definition: kind=name 的 routing_terms 數
+  route_dotless:
+    value: 219
     g: [G43]
-    evidence: PLACE_DICT 84 個 canonical
-    definition: category=places 的 routing_terms 數
+    evidence: rt.dotless：224 個含「‧」的名稱，扣掉 5 個去掉「‧」後已是名稱者（伯亞拉巴、迦特希弗、亞米利、特米拉、特哈薩）
+    definition: kind=dotless 的 routing_terms 數
+  route_divine:
+    value: 15
+    g: [G43]
+    evidence: divine_refs@510328284327 的 15 個 span_patterns，kg0 都有 divine_rule span
+    definition: kind=divine 的 routing_terms 數
+  route_aliases:
+    value: 17
+    g: [G43]
+    evidence: config/registries/query_aliases.yaml 17 條（qa.005 該撒暫緩；DOC 2 f）
+    definition: kind=alias 的 routing_terms 數
   route_events:
-    value: 55
+    value: 37
     g: [G56]
-    evidence: backend/utils/entity_dicts.py EVENT_KEYWORDS 55 個關鍵詞（REPORT 附表「55 個關鍵詞」）
-    definition: category=events 的 routing_terms 數
+    evidence: 事件層 pdf_terms 12 條＋external_aliases 25 條（R1 的 37 種觸發詞；18 個無主關鍵詞刪除，Kay 2026-10-08）
+    definition: kind=event 的 routing_terms 數
   route_books:
-    value: 83
+    value: 84
     g: [G13]
-    evidence: verse_parser._ALL_NAMES 132 個書名與縮寫中，match_books_in_text 實際使用的長度 ≥2 者 83 個
-    definition: category=books 的 routing_terms 數
+    evidence: rt.book_forms：ragcommon.books 66 個正式名加 18 個縮寫與異名（R1 的 83 個加尼希米記）
+    definition: kind=book 的 routing_terms 數
+  route_unroutable:
+    value: 45
+    g: [G43]
+    evidence: rt.min_len 23（21 個單字 kg0 名稱加主、神）＋rt.common_word 22（DOC 2 g）
+    definition: routable=false 的 routing_terms 數

@@ -114,25 +114,25 @@ EMB_COUNTERS: Mapping[str, Counter] = {
 }
 
 
-def _anchors(s: Snapshot, change: str | None = None) -> int:
-    return sum(1 for e in s.of("events") for a in e.anchors if change in (None, a.change))
+def _per_event(field: str) -> Counter:
+    return lambda s: sum(len(getattr(e, field)) for e in s.of("events"))
 
 
 EVENTS_COUNTERS: Mapping[str, Counter] = {
     "events": rows("events"),
-    "event_anchors": _anchors,
+    "event_anchors": _per_event("anchors"),
     "event_anchor_passages": lambda s: len({a.passage_id for e in s.of("events")
                                             for a in e.anchors}),
-    "anchors_same": lambda s: _anchors(s, "same"),
-    "anchors_narrowed": lambda s: _anchors(s, "narrowed"),
-    "anchors_widened": lambda s: _anchors(s, "widened"),
-    "anchor_changes": rows("anchor_changes"),
-    "legacy_triggers": lambda s: sum(len(e.legacy_triggers) for e in s.of("events")),
+    "pdf_terms": _per_event("pdf_terms"),
+    "external_aliases": _per_event("external_aliases"),
+    "retired": _per_event("merged_from"),
 }
 
 ROUTE_COUNTERS: Mapping[str, Counter] = {
-    f"route_{category}": rows("routing_terms", lambda t, c=category: t.category == c)
-    for category in ("persons", "places", "events", "books")
+    **{f"route_{key}": rows("routing_terms", lambda t, k=kind: t.kind == k)
+       for key, kind in (("names", "name"), ("dotless", "dotless"), ("divine", "divine"),
+                         ("aliases", "alias"), ("events", "event"), ("books", "book"))},
+    "route_unroutable": rows("routing_terms", lambda t: not t.routable),
 }
 
 COUNTERS: Mapping[str, Mapping[str, Counter]] = {

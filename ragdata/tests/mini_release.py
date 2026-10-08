@@ -1,7 +1,7 @@
 """Every mini layer a release names, built into one store, plus a mini GT v2 and its freeze.
 
 ``build(root)`` writes text and struct (mini_build), emb (stand-in encoder), kg0, events and
-route (mini_kg registries, a fake backend) into ``root/store`` and returns them by layer.
+route (mini_kg and mini_route registries) into ``root/store`` and returns them by layer.
 The mini text layer has no src layer under it, so a mini release names no src.
 ``MiniRelease.checks`` gates the mini layers when a release is assembled: the mini counts,
 grid, token counts, registries and the stand-in encoder.
@@ -11,20 +11,20 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
 
-import fake_backend
 import fake_encoder
 import mini_build
 import mini_emb
 import mini_kg
-from ragcommon import routing
+import mini_route
+from ragdata import paths
 from ragdata.kg import k0_build, k1_build, k4_build
 from ragdata.gates.runner import GateInputs
-from ragdata.legacy import route_live
 from ragdata.release.gating import ReleaseChecks
 from ragdata.stages.s05_struct.tokens import TokenCounter
 from ragdata.stages.s06_emb.build import build_emb
@@ -52,7 +52,7 @@ class MiniRelease:
     def checks(self) -> ReleaseChecks:
         inputs = GateInputs(versification=mini_build.versification(),
                             token_counter=TokenCounter(mini_build.count_tokens, {}),
-                            legacy_registry=self.root / "event_registry.json",
+                            registries=self.root / "registries",
                             kg0_counts=self.root / "kg0_counts.yaml", encoder=encoder())
         return ReleaseChecks(MINI_COUNTS, inputs)
 
@@ -72,24 +72,19 @@ def _kg0(root: Path, store: Path, text: StoredLayer, struct: StoredLayer) -> Sto
 
 
 def _events(root: Path, store: Path, text: StoredLayer, struct: StoredLayer) -> StoredLayer:
-    legacy = root / "event_registry.json"
-    legacy.write_text(json.dumps(mini_kg.legacy_registry(), ensure_ascii=False), encoding="utf-8")
-    events_yaml = root / "events.yaml"
-    events_yaml.write_text(k1_build.convert(text.path, struct.path, legacy), encoding="utf-8")
-    return _built(k1_build.build_events(text.path, struct.path, store, events_yaml, legacy,
+    events_yaml = mini_kg.write_events_yaml(root / "events.yaml")
+    return _built(k1_build.build_events(text.path, struct.path, store, events_yaml,
                                         MINI_COUNTS), "events")
 
 
-def _route(root: Path, store: Path, text: StoredLayer) -> StoredLayer:
-    backend = fake_backend.write(root / "repo")
-    lexicon = root / "routing_lexicon.legacy.json"
-    lexicon.write_bytes(routing.render_lexicon(route_live.freeze(backend)))
-    gt = root / "gt_v1.json"
-    gt.write_text(json.dumps({"questions": [{"question": q} for q in mini_kg.GT_QUESTIONS]},
-                             ensure_ascii=False), encoding="utf-8")
-    return _built(k4_build.build_route(text.path, store,
-                                       lambda texts: route_live.probe(backend, texts),
-                                       lexicon, gt, MINI_COUNTS), "route")
+def _route(root: Path, store: Path, layers: Mapping[str, StoredLayer]) -> StoredLayer:
+    """K4 over the mini layers, with the mini registries plus query_aliases.yaml (and the
+    repo's normalization.yaml beside them: the release gates G-TEXT with that directory)."""
+    mini_route.write_query_aliases(root / "registries")
+    shutil.copy(paths.REGISTRIES / "normalization.yaml", root / "registries")
+    return _built(k4_build.build_route(layers["text"].path, layers["kg0"].path,
+                                       layers["events"].path, store, root / "registries",
+                                       MINI_COUNTS), "route")
 
 
 def write_gt(root: Path, slot_universe: str, gold=GT_GOLD, omitted=GT_OMITTED) -> tuple[Path, Path]:
@@ -112,8 +107,8 @@ def build(root: Path) -> MiniRelease:
     emb = _built(build_emb(struct.path, text.path, store, counts_path=MINI_COUNTS,
                            inputs=mini_emb.inputs(root)), "emb")
     layers = {"text": text, "struct": struct, "emb": emb,
-              "kg0": _kg0(root, store, text, struct), "events": _events(root, store, text, struct),
-              "route": _route(root, store, text)}
+              "kg0": _kg0(root, store, text, struct), "events": _events(root, store, text, struct)}
+    layers["route"] = _route(root, store, layers)
     gt, freeze = write_gt(root, text.version)
     return MiniRelease(root, store, layers, gt, freeze)
 

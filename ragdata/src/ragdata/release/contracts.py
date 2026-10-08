@@ -3,7 +3,8 @@
 The backend reads them from ``store/contracts/{build_id}/``; the loader writes them
 there and the release pins their sha256s, so they must be a pure function of the
 layers. Layer files that already are contracts are copied byte for byte
-(the event registries, the routing lexicon, the encoder fingerprint, legacy_ids);
+(the event registry, the routing lexicon and its query aliases, the encoder fingerprint,
+legacy_ids);
 the rest are canonical JSON over the text and struct rows:
 
 - ``books.json``: the text layer's book rows in canon order;
@@ -19,15 +20,15 @@ import json
 from typing import Any, Mapping
 
 from ragdata.contract.registry import (
-    ENCODER_FINGERPRINT, EVENT_REGISTRY_V1, EVENT_REGISTRY_V2, ROUTING_LEXICON,
+    ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, QUERY_ALIASES, ROUTING_LEXICON,
 )
 from ragdata.store import LayerData
 from ragdata.store.cas import sha256_bytes
 
 COPIED = {
     "event_registry.json": ("events", EVENT_REGISTRY_V2),
-    "event_registry.v1compat.json": ("events", EVENT_REGISTRY_V1),
     "routing_lexicon.json": ("route", ROUTING_LEXICON),
+    "query_aliases.json": ("route", QUERY_ALIASES),
     "encoder_fingerprint.json": ("emb", ENCODER_FINGERPRINT),
     "legacy_ids.jsonl": ("struct", "legacy_ids.jsonl"),
 }

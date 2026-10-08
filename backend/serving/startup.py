@@ -6,7 +6,9 @@ schema's build_info names it; its Qdrant collection exists with
 ``rag_meta.builds.points`` points; its contract directory's manifest names it
 and every file hashes to the manifest (and agrees with the build row); it is not
 a KG build (no Neo4j driver exists in this backend); the encoder probes equal
-the contract fingerprint.
+the contract fingerprint; the routing lexicon (v2), the query-alias table and the
+event registry (variant R2) parse. A contract that fails to parse is a mismatch
+like any other, so an R1 build is refused through the handshake.
 
 Any mismatch: /api/v1/health answers 503 with the list, no data is served, and
 with STRICT_BUILD_CHECK (the default) startup fails. A build that passes still
@@ -32,6 +34,18 @@ logger = logging.getLogger(__name__)
 
 class StartupError(RuntimeError):
     """The backend must not start."""
+
+
+def _fingerprint(doc: Any) -> Mapping[str, Any]:
+    if not isinstance(doc, Mapping):
+        raise ValueError(f"expected an object, got {type(doc).__name__}")
+    return doc
+
+
+_PARSERS = {"routing_lexicon.json": routing.parse_lexicon,
+            "query_aliases.json": routing.parse_query_aliases,
+            "event_registry.json": event_registry.parse_registry,
+            "encoder_fingerprint.json": _fingerprint}
 
 
 async def _resolve() -> build_mod.Build:
@@ -60,24 +74,37 @@ def _qdrant_problems(build: build_mod.Build) -> list[str]:
         return [f"qdrant: {build.qdrant_collection} unreadable: {exc!r}"]
 
 
+def _parsed_contracts(found: contracts_mod.Contracts) -> tuple[dict[str, Any], list[str]]:
+    """Each contract the backend reads, parsed once; a parse error is a mismatch."""
+    parsed, problems = {}, []
+    for name, parse in _PARSERS.items():
+        if name not in found.files:
+            continue  # verify already reported it missing, unreadable or of another sha
+        try:
+            parsed[name] = parse(found.json(name))
+        except ValueError as exc:  # JSON, encoding and contract errors alike
+            problems.append(f"contracts: {name}: {exc}")
+    return parsed, problems
+
+
 def _contract_problems(build: build_mod.Build, found: contracts_mod.Contracts,
-                       fingerprints: Mapping[str, Any]) -> list[str]:
+                       fingerprints: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]:
     problems = list(found.mismatches) + hs.check_kg(build, found.manifest)
     if found.manifest:
         problems += hs.check_manifest(build, found.manifest)
-    if "encoder_fingerprint.json" in found.files:
-        problems += hs.check_encoders(found.json("encoder_fingerprint.json"), fingerprints)
-    return problems
+    parsed, parse_problems = _parsed_contracts(found)
+    if "encoder_fingerprint.json" in parsed:
+        problems += hs.check_encoders(parsed["encoder_fingerprint.json"], fingerprints)
+    return parsed, problems + parse_problems
 
 
-async def _activate(build: build_mod.Build, found: contracts_mod.Contracts) -> context.Active:
-    lexicon = routing.parse_lexicon(found.json("routing_lexicon.json"))
-    registry = event_registry.parse_registry(found.json("event_registry.json"))
+async def _activate(build: build_mod.Build, parsed: Mapping[str, Any]) -> context.Active:
+    registry = parsed["event_registry.json"]
     missing = await postgres.missing_passages(event_registry.anchor_passages(registry))
     if missing:
         raise StartupError(f"event registry anchors missing from {build.pg_schema}.passages: "
                            f"{missing}")
-    return context.make_active(build, lexicon, registry)
+    return context.make_active(build, parsed["routing_lexicon.json"], registry)
 
 
 async def start(fingerprints: Mapping[str, Any]) -> tuple[context.Active | None, hs.Handshake]:
@@ -89,11 +116,11 @@ async def start(fingerprints: Mapping[str, Any]) -> tuple[context.Active | None,
     await postgres.init_pool(build.pg_schema)
     qdrant_db.init_client(build.qdrant_collection)
     found = contracts_mod.verify(build.contracts_dir, build.build_id)
-    problems = [*await _pg_problems(build), *_qdrant_problems(build),
-                *_contract_problems(build, found, fingerprints)]
+    parsed, contract_problems = _contract_problems(build, found, fingerprints)
+    problems = [*await _pg_problems(build), *_qdrant_problems(build), *contract_problems]
     if problems:
         return None, hs.Handshake(build.build_id, tuple(problems), strict)
-    return await _activate(build, found), hs.Handshake(build.build_id, (), strict)
+    return await _activate(build, parsed), hs.Handshake(build.build_id, (), strict)
 
 
 async def run(fingerprints: Mapping[str, Any]) -> hs.Handshake:

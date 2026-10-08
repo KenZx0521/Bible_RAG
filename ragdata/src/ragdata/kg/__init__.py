@@ -2,7 +2,6 @@
 
 These modules read stored layers, the registries in ``config/registries/`` and
 the store's reference copies only; they never import a database driver or
-``scripts.*`` (G-IMPORT) and never write ``config/``. The tools that do write
-registries or references (``convert events``, ``freeze route``, ``freeze probe``)
-run outside the build DAG and are named as such.
+``scripts.*`` (G-IMPORT) and never write ``config/``. The one tool that writes an
+expectation file (``expect kg0``) runs outside the build DAG and is named as such.
 """

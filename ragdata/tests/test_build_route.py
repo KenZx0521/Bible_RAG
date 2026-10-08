@@ -1,112 +1,206 @@
-"""``build route``, G-ROUTE and ``freeze route``/``freeze probe`` on the mini text layer and a
-fake backend (the frozen matches themselves: test_k4_live)."""
+"""``build route`` (K4, R2) and G-ROUTE on the mini text, kg0 and events layers.
+
+The mini release's route layer is the union of mini_route (counts, aliases) over the mini
+kg0 and events; G-ROUTE compiles it again and turns red on any stored drift.
+"""
 
 from __future__ import annotations
 
 import json
 import shutil
-import sys
-from pathlib import Path
 
 import pytest
+import yaml
 
-import fake_backend
-import mini_build
-import mini_kg
+import mini_release
+import mini_route
 from ragcommon import routing
 from ragdata import cli, store
 from ragdata.gates import check_det
 from ragdata.gates.runner import GateInputs, gate_layer
 from ragdata.kg import k4_build, k4_route
-from ragdata.legacy import route_live
 from ragdata.stages.errors import StageError
 
-MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
+INPUTS = ("text", "kg0", "events")
 
 
-@pytest.fixture()
-def given(tmp_path):
-    text, _ = mini_build.write_layers(tmp_path / "given")
-    backend = fake_backend.write(tmp_path / "repo")
-    lexicon = tmp_path / "routing_lexicon.legacy.json"
-    lexicon.write_bytes(routing.render_lexicon(route_live.freeze(backend)))
-    gt = tmp_path / "gt.json"
-    gt.write_text(json.dumps({"questions": [{"question": q} for q in mini_kg.GT_QUESTIONS]},
-                             ensure_ascii=False), encoding="utf-8")
-    return {"text": text, "backend": backend, "lexicon": lexicon, "gt": gt, "root": tmp_path,
-            "live": lambda texts: route_live.probe(backend, texts)}
+@pytest.fixture(scope="module")
+def mini(tmp_path_factory):
+    return mini_release.build(tmp_path_factory.mktemp("route_mini"))
 
 
-def _build(given, store_dir="store", live=None, lexicon=None):
-    return k4_build.build_route(given["text"].path, given["root"] / store_dir,
-                                live or given["live"], lexicon or given["lexicon"], given["gt"],
-                                MINI_COUNTS)
+def _deps(mini):
+    return [mini.layers[name].path for name in INPUTS]
 
 
-def test_build_stores_the_frozen_lexicon_and_its_terms(given):
-    result = _build(given)
-    assert result.passed, [g.to_json() for g in result.gates if not g.passed]
-    assert [g.name for g in result.gates] == ["G-SCHEMA", "G-COUNT", "G-ROUTE", "G-PROV"]
-    built = store.read_layer(result.layers["route"].path)
-    assert (built.path / "routing_lexicon.json").read_bytes() == given["lexicon"].read_bytes()
-    terms = list(built.rows["routing_terms.jsonl"])
-    assert [t["term_key"] for t in terms][:2] == ["persons/0000", "persons/0001"]
-    report = json.loads((built.path / "route_report.json").read_text(encoding="utf-8"))
-    assert report["probes"]["ground_truth"] == 3 and report["probes"]["verses"] == 14
-    assert report["zero_in_verses"]["places"] == ["死海"]
-    gate = next(g for g in result.gates if g.name == "G-ROUTE")
-    assert gate.observed["mismatches"] == 0 and gate.observed["probes"] == 3 + 14 + 6
+def _json(layer, name):
+    return json.loads((layer.path / name).read_text(encoding="utf-8"))
 
 
-def test_a_matcher_that_disagrees_with_the_live_one_is_red(given):
-    def wrong(texts):
-        return [{**r, "persons": []} for r in route_live.probe(given["backend"], texts)]
-    result = _build(given, live=wrong)
-    assert not result.passed and result.layers == {}
+def _gate(mini, layer_dir, registries=None):
+    inputs = GateInputs(registries=registries or mini.root / "registries")
+    return gate_layer(layer_dir, "route", _deps(mini), mini_release.MINI_COUNTS, inputs=inputs)
 
 
-def test_terms_must_be_external_legacy_retiring_by_r2(given):
-    doc = json.loads(given["lexicon"].read_text(encoding="utf-8"))
-    doc["events"][0]["provenance_class"] = "external_query"
-    changed = given["root"] / "changed.json"
-    changed.write_bytes(routing.render_lexicon(doc))
-    result = _build(given, lexicon=changed)
-    route = next(g for g in result.gates if g.name == "G-ROUTE")
-    assert not route.passed and "R2" in " ".join(route.details)
+def test_the_build_stores_the_union_and_its_two_contracts(mini):
+    built = store.read_layer(mini.layers["route"].path)
+    assert set(built.file_shas) - {store.DEPENDS_ON} == {
+        "routing_terms.jsonl", "routing_lexicon.json", "query_aliases.json", "route_report.json"}
+    assert built.depends_on == {n: mini.layers[n].version for n in INPUTS}
+    terms = built.rows["routing_terms.jsonl"]
+    kinds = {k: sum(t["kind"] == k for t in terms) for k in mini_route.COUNTS}
+    assert kinds == mini_route.COUNTS
+    assert [t["term_key"] for t in terms][:2] == ["names/0000", "names/0001"]
+    doc = _json(built, "routing_lexicon.json")
+    routing.parse_lexicon(doc)
+    assert doc["header"]["inputs"]["kg0"] == mini.layers["kg0"].version
+    assert [(e["surface"], e["context"]) for e in doc["exclusions"]] == [("何提", "如何提"),
+                                                                        ("掃羅", "掃羅王")]
+    report = _json(built, "route_report.json")
+    assert report["divine_unprinted"] == ["神"]
+    assert report["unroutable"] == {"rt.min_len": ["主"], "rt.common_word": []}
 
 
-def _frozen(given):
-    root = given["root"] / "route_live"
-    fake_backend.freeze_live(given["backend"], given["text"].path, given["lexicon"], given["gt"],
-                             root)
-    return root
+def test_terms_carry_every_target_and_their_provenance(mini):
+    doc = _json(store.read_layer(mini.layers["route"].path), "routing_lexicon.json")
+    by = {t["surface"]: t for c in k4_route.ROUTE_CATEGORIES for t in doc[c]}
+    salt = by["鹽海"]["targets"][0]
+    assert (salt["route_types"], by["掃羅"]["targets"][0]["route_types"]) == (["Place"], ["Place"])
+    assert by["死海"]["targets"] == [salt] and by["死海"]["provenance_class"] == "external_query"
+    assert by["耶穌"]["targets"][0]["route_types"] == ["Person"]
+    assert by["上帝"]["targets"][0]["route_types"] == [] and not by["主"]["routable"]
+    assert by["天上的光"]["provenance_class"] == "curated_human"
+    assert by["天上的光"]["at"] == "hd:act.9.3b#1"
+    assert by["保羅歸主"]["targets"][0]["ref"] == "ev0003"
+    assert by["尼希米記"]["book_id"] == "neh" and by["尼希米記"]["targets"] == []
 
 
-def test_the_gate_reads_the_frozen_matches_without_a_backend(given):
-    first, second = _build(given, "a"), _build(given, "b")
-    assert check_det(first.layers["route"].path, second.layers["route"].path).passed
-    inputs = GateInputs(frozen_lexicon=given["lexicon"], ground_truth=given["gt"],
-                        route_live=_frozen(given))
-    report = gate_layer(first.layers["route"].path, "route", [given["text"].path], MINI_COUNTS,
-                        inputs=inputs)
+def test_the_alias_contract_is_the_compiled_registry(mini):
+    doc = _json(store.read_layer(mini.layers["route"].path), "query_aliases.json")
+    assert doc["schema"] == routing.QUERY_ALIASES_SCHEMA
+    assert [(a["alias_id"], a["surface"], a["target"]) for a in doc["aliases"]] == [
+        ("qa.001", "死海", "鹽海"), ("qa.002", "該撒利亞", "凱撒利亞")]
+    assert routing.parse_query_aliases(doc)
+
+
+def test_the_stored_layer_passes_its_gates_again_and_rebuilds_the_same(mini, tmp_path):
+    report = _gate(mini, mini.layers["route"].path)
     assert report.passed, [g.to_json() for g in report.gates if not g.passed]
+    again = k4_build.build_route(*_deps(mini), tmp_path / "store", mini.root / "registries",
+                                 mini_release.MINI_COUNTS)
+    assert again.layers["route"].version == mini.layers["route"].version
+    assert check_det(mini.layers["route"].path, again.layers["route"].path).passed
 
 
-@pytest.mark.parametrize("change", ["frozen", "live", "gt"])
-def test_the_gate_fails_closed_without_its_inputs(given, change):
-    layer = _build(given).layers["route"].path
-    inputs = {"frozen_lexicon": given["lexicon"], "ground_truth": given["gt"],
-              "route_live": _frozen(given)}
-    key = {"frozen": "frozen_lexicon", "live": "route_live", "gt": "ground_truth"}[change]
-    inputs[key] = given["root"] / "missing"
-    report = gate_layer(layer, "route", [given["text"].path], MINI_COUNTS,
-                        inputs=GateInputs(**inputs))
-    assert not report.passed
+def test_the_gate_fails_closed_without_the_registries(mini, tmp_path):
+    report = _gate(mini, mini.layers["route"].path, tmp_path / "none")
+    route = next(g for g in report.gates if g.name == "G-ROUTE")
+    assert not route.passed and route.observed == "missing input"
 
 
-def test_a_failing_live_backend_is_reported(given):
-    with pytest.raises(StageError, match="route_live probe failed"):
-        k4_route.subprocess_probe(Path(sys.executable), given["root"] / "nowhere", ["掃羅"])
+# ------------------------------------------------------------ stored drift
+
+
+def _copy(mini, tmp_path, rows=None, lexicon=None, aliases=None):
+    """The mini route layer with its records, lexicon or alias contract changed (the
+    lexicon joined again from changed records unless it is changed itself)."""
+    built = store.read_layer(mini.layers["route"].path)
+    records = [json.loads(json.dumps(r)) for r in built.rows["routing_terms.jsonl"]]
+    doc, alias_doc = _json(built, "routing_lexicon.json"), _json(built, "query_aliases.json")
+    if rows:
+        rows(records)
+        doc = k4_route.join_lexicon({k: v for k, v in doc.items()
+                                     if k not in k4_route.ROUTE_CATEGORIES}, records)
+    for change, target in ((lexicon, doc), (aliases, alias_doc)):
+        if change:
+            change(target)
+    files = {"routing_terms.jsonl": store.encode_jsonl(records),
+             "routing_lexicon.json": routing.render_lexicon(doc),
+             "query_aliases.json": json.dumps(alias_doc, ensure_ascii=False).encode("utf-8"),
+             "route_report.json": (built.path / "route_report.json").read_bytes()}
+    return store.write_layer(tmp_path / "store", "route", files,
+                             depends_on=built.depends_on).path
+
+
+def _term(records, surface):
+    return next(r for r in records if r["surface"] == surface)
+
+
+DRIFT = {
+    "a term the rules hide is made routable": (
+        dict(rows=lambda rs: _term(rs, "主").update(routable=True, unroutable_rule=None)),
+        "divine/0001 主: differs from the union"),
+    "a term carries legacy provenance": (
+        dict(lexicon=lambda d: d["names"][0].update(provenance_class="external_legacy")),
+        "legacy provenance at $.names[0].provenance_class"),
+    "a trigger points at another event": (
+        dict(rows=lambda rs: _term(rs, "天國")["targets"][0].update(ref="ev0001")),
+        "event term 天國 -> ev0001 is no trigger of that event"),
+    "an alias stands for a name that does not exist": (
+        dict(rows=lambda rs: _term(rs, "死海")["targets"][0].update(ref="nm:000000000000")),
+        "target nm:000000000000 is no kg0 name or divine pattern"),
+    "a book form leaves the lexicon": (
+        dict(rows=lambda rs: rs.remove(_term(rs, "尼希米記"))), "books/0018 尼希米記: missing"),
+    "the alias contract is edited": (
+        dict(aliases=lambda d: d["aliases"][0].update(note="改了")),
+        "query_aliases.json is not the compile of query_aliases.yaml"),
+}
+
+
+@pytest.mark.parametrize("case", sorted(DRIFT))
+def test_stored_drift_turns_g_route_red(mini, tmp_path, case):
+    changes, reason = DRIFT[case]
+    report = _gate(mini, _copy(mini, tmp_path, **changes))
+    route = next(g for g in report.gates if g.name == "G-ROUTE")
+    assert not route.passed and any(reason in d for d in route.details), route.details
+
+
+# ------------------------------------------------------------ registries
+
+
+def _registries(mini, tmp_path, **changes):
+    directory = tmp_path / "registries"
+    shutil.copytree(mini.root / "registries", directory)
+    mini_route.write_query_aliases(directory, mini_route.query_aliases(**changes))
+    return directory
+
+
+def _alias(**row):
+    return [{"id": "qa.001", "surface": "死海", "target": "鹽海", "source": "x", "note": "y",
+             **row}]
+
+
+@pytest.mark.parametrize("aliases, match", [
+    (_alias(target="不存在"), "target 不存在 is not a kg0 name"),
+    (_alias(target="神"), "target 神 is not a kg0 name or a divine surface the PDF prints"),
+    (_alias(surface="掃羅"), r"掃羅 is already a term \(name\)"),
+    (_alias(surface="天國"), r"天國 is already a term \(event\)"),
+    (_alias(surface="Salt Sea"), "latin letters"),
+    (_alias(id="qa.1"), "is not qa.NNN"),
+    ([*_alias(), *_alias(id="qa.002")], "listed twice"),
+])
+def test_an_alias_that_clashes_with_the_layers_stops_the_build(mini, tmp_path, aliases, match):
+    registries = _registries(mini, tmp_path, aliases=aliases)
+    with pytest.raises(StageError, match=match):
+        k4_build.build_route(*_deps(mini), tmp_path / "store", registries,
+                             mini_release.MINI_COUNTS)
+
+
+def test_registries_kg0_was_not_built_with_stop_the_build(mini, tmp_path):
+    registries = _registries(mini, tmp_path)
+    divine = yaml.safe_load((registries / "divine_refs.yaml").read_text(encoding="utf-8"))
+    divine["what"] = "改了"
+    (registries / "divine_refs.yaml").write_text(yaml.safe_dump(divine, allow_unicode=True),
+                                                 encoding="utf-8")
+    with pytest.raises(StageError, match="kg0 was built with"):
+        k4_build.build_route(*_deps(mini), tmp_path / "store", registries,
+                             mini_release.MINI_COUNTS)
+    route = next(g for g in _gate(mini, mini.layers["route"].path, registries).gates
+                 if g.name == "G-ROUTE")
+    assert not route.passed and "kg0 was built with" in route.expected
+
+
+# ------------------------------------------------------------ cli
 
 
 def _cli(capsys, *argv):
@@ -114,55 +208,15 @@ def _cli(capsys, *argv):
     return code, capsys.readouterr()
 
 
-def test_cli_freeze_build_and_gate_route(given, capsys):
-    out, live = given["root"] / "cli_lexicon.json", given["root"] / "cli_live"
-    backend = ("--backend-python", sys.executable, "--backend-dir", given["backend"])
-    code, captured = _cli(capsys, "freeze", "route", *backend, "--out", out)
-    assert code == 0, captured.err
-    assert out.read_bytes() == given["lexicon"].read_bytes()
-    inputs = ("--lexicon", out, "--ground-truth", given["gt"], "--route-live", live)
-    code, captured = _cli(capsys, "freeze", "probe", "--text", given["text"].path, *backend,
-                          *inputs)
-    assert code == 0, captured.err
-    assert json.loads(captured.out)["probes"]["total"] == 3 + 14 + 6
-    code, captured = _cli(capsys, "build", "route", "--text", given["text"].path, *inputs,
-                          "--counts", MINI_COUNTS, "--store", given["root"] / "cli")
+def test_cli_build_and_gate_route(mini, tmp_path, capsys):
+    text, kg0, events = _deps(mini)
+    common = ("--registries", mini.root / "registries", "--counts", mini_release.MINI_COUNTS)
+    code, captured = _cli(capsys, "build", "route", "--text", text, "--kg0", kg0,
+                          "--events", events, "--store", tmp_path, *common)
     assert code == 0, captured.out
     layer = json.loads(captured.out)["layers"]["route"]["path"]
-    code, captured = _cli(capsys, "gate", "route", layer, "--dep", given["text"].path, *inputs,
-                          "--counts", MINI_COUNTS)
+    code, captured = _cli(capsys, "gate", "route", layer, "--dep", text, "--dep", kg0,
+                          "--dep", events, *common)
     assert code == 0 and json.loads(captured.out)["pass"] is True
-
-
-def test_cli_freeze_needs_a_backend_python(given, capsys):
-    code, captured = _cli(capsys, "freeze", "route", "--backend-python", given["root"] / "none",
-                          "--backend-dir", given["backend"], "--out", given["root"] / "x.json")
-    assert code == 2 and "--backend-python" in captured.err
-
-
-def _freeze_probe(capsys, given, backend: Path, live: Path):
-    return _cli(capsys, "freeze", "probe", "--text", given["text"].path,
-                "--backend-python", sys.executable, "--backend-dir", backend,
-                "--lexicon", given["lexicon"], "--ground-truth", given["gt"], "--route-live", live)
-
-
-def test_cli_freeze_probe_refuses_a_backend_the_lexicon_was_not_frozen_from(given, capsys):
-    parser = given["root"] / "repo" / "backend" / "utils" / "verse_parser.py"
-    parser.write_text(parser.read_text(encoding="utf-8") + "# changed\n", encoding="utf-8")
-    code, captured = _freeze_probe(capsys, given, given["backend"], given["root"] / "live")
-    assert code == 2 and "backend/utils/verse_parser.py" in captured.err
-    assert not (given["root"] / "live").exists()
-
-
-def test_cli_freeze_probe_checks_the_files_imported_not_the_backend_siblings(given, capsys):
-    """``--backend-dir`` not named backend/: its own utils/ run, beside an unchanged backend/."""
-    changed = given["root"] / "repo" / "backend_mod"
-    shutil.copytree(given["backend"], changed)
-    dicts = changed / "utils" / "entity_dicts.py"
-    dicts.write_text(dicts.read_text(encoding="utf-8").replace('"天國"', '"天國", "耶穌"'),
-                     encoding="utf-8")
-    code, captured = _freeze_probe(capsys, given, changed, given["root"] / "live")
-    assert code == 2 and "backend/utils/entity_dicts.py" in captured.err
-    assert not (given["root"] / "live").exists()
-    code, captured = _freeze_probe(capsys, given, given["backend"], given["root"] / "live")
-    assert code == 0, captured.err
+    code, captured = _cli(capsys, "build", "route", "--text", text, "--store", tmp_path)
+    assert code == 2 and "--kg0" in captured.err

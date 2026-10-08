@@ -8,14 +8,30 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from ragcommon import ids
+from ragcommon import books, ids, routing
+from ragcommon.tests.lexicon_doc import book, document, event, name
 from utils.retrieval import event_registry as reg
 from utils.retrieval import router, routes
 
 BACKEND = Path(__file__).resolve().parents[1]
-FROZEN = BACKEND.parent / "config" / "registries" / "routing_lexicon.legacy.json"
-EVENT = reg.RegistryEvent("event:saoluo", "ev0003", "掃羅歸主", ("保羅歸主",),
-                          ("ps:act.9.1", "ps:act.9.3b"))
+EVENT = reg.RegistryEvent("ev0002", ("event:baoluoxushuguizhudejingguo",), "掃羅的轉變",
+                          ("保羅歸主",), ("ps:act.9.1", "ps:act.9.3b"))
+BOOK_TERMS = [book(b.name, b.book_id, b.name)
+              for b in sorted(books.all_books(), key=lambda b: (-len(b.name), b.ord))]
+
+
+def lexicon_doc() -> dict:
+    """A v2 lexicon: the 66 book names, a few names, the EVENT trigger.
+
+    The route types are made up for the route tests (K4 decides the real ones).
+    """
+    names = [name("掃羅", "nm:5a0000000001", "Person"), name("巴拿巴", "nm:5a0000000002", "Person"),
+             name("耶路撒冷", "nm:5a0000000003", "Place")]
+    return document(names=names, events=[event("保羅歸主", EVENT.id, EVENT.name)],
+                    books=BOOK_TERMS)
+
+
+LEXICON = routing.parse_lexicon(lexicon_doc())
 
 
 def cand(cid, strategy="hybrid_hybrid", weight=0.7, book="act", chapter=9, **extra) -> dict:

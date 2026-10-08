@@ -1,0 +1,25 @@
+{
+  "aliases": [
+    {
+      "alias_id": "qa.001",
+      "note": "PDF 作鹽海",
+      "provenance_class": "external_query",
+      "source": "現代名",
+      "surface": "死海",
+      "target": "鹽海",
+      "target_ref": "nm:3a06e6a1b756"
+    },
+    {
+      "alias_id": "qa.002",
+      "note": "RCUV 作凱撒利亞",
+      "provenance_class": "external_query",
+      "source": "CUNP",
+      "surface": "該撒利亞",
+      "target": "凱撒利亞",
+      "target_ref": "nm:6663874a4e02"
+    }
+  ],
+  "kg0": "kg0@76704b10e279",
+  "registry": "query_aliases@bdfebd90da43",
+  "schema": "ragdata.contract.query_aliases.v1"
+}

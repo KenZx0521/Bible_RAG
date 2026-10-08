@@ -30,9 +30,8 @@ def _red(report) -> dict[str, tuple[str, ...]]:
     return mini_loaded.red_details(report)
 
 
-def _inputs(loaded) -> runner.GateInputs:
-    return runner.GateInputs(versification=mini_build.versification(), token_counter=COUNTER,
-                             legacy_registry=loaded.mini.root / "event_registry.json")
+def _inputs() -> runner.GateInputs:
+    return runner.GateInputs(versification=mini_build.versification(), token_counter=COUNTER)
 
 
 # ------------------------------------------------------------ layer injections
@@ -44,7 +43,7 @@ def _text(loaded, mutate, layer="text"):
     text, struct = mini_build.write_layers(loaded.contracts.parent / "mutated", text=rows)
     target, deps = (text, []) if layer == "text" else (struct, [text.path])
     return _red(runner.gate_layer(target.path, layer, deps, MINI_COUNTS,
-                                  gates=runner.record_gates(layer), inputs=_inputs(loaded)))
+                                  gates=runner.record_gates(layer), inputs=_inputs()))
 
 
 def _layer(loaded, name, file_name, mutate, gates):
@@ -58,7 +57,7 @@ def _layer(loaded, name, file_name, mutate, gates):
                              depends_on=built.depends_on)
     deps = [loaded.mini.layers[d].path for d in built.depends_on]
     return _red(runner.gate_layer(copy.path, name, deps, MINI_COUNTS, gates=gates,
-                                  inputs=_inputs(loaded)))
+                                  inputs=_inputs()))
 
 
 def _drop(type_name, field, key):
@@ -86,8 +85,8 @@ def _anchor_off_the_page(rows):
 
 
 def _term_without_provenance(rows):
-    term = {k: v for k, v in rows[0].items() if k not in ("provenance_class", "source", "note")}
-    rows.append({**term, "term_key": "persons/0099", "position": 99, "term": "無名"})
+    term = {k: v for k, v in rows[0].items() if k not in ("provenance_class", "source")}
+    rows.append({**term, "term_key": "names/0099", "surface": "無名"})
 
 
 # ------------------------------------------------------------ projection injections
@@ -129,7 +128,7 @@ def _registry_anchor(doc):
 
 
 def _lexicon_term(doc):
-    doc["persons"].append({"name": "無名", "aliases": ["無名"]})
+    doc["names"].append({"surface": "無名", "kind": "name"})
 
 
 OTHER_BUILD = "b20000101_00000000"
@@ -175,7 +174,7 @@ CLASSES = {
         (lambda l: _layer(l, "route", "routing_terms.jsonl", _term_without_provenance,
                           ("G-SCHEMA", "G-PROV")), "G-PROV", "no provenance_class"),
         (lambda l: _projected(l, _contract("routing_lexicon.json", _lexicon_term)),
-         "G-PROJ.C5", "persons[3]: no provenance_class/source")],
+         "G-PROJ.C5", "names[5]: no provenance_class/source")],
 }
 
 

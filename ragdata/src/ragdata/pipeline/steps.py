@@ -4,12 +4,11 @@ A build runs the gates of its stage and stores nothing when a hard one is red. T
 layer is then gated again with every gate design §8 requires of it (``gates.runner``),
 including the ones a build cannot run: G-CONSERVE re-reads the src layer, G-XCHECK the
 PDFs, G-REF compares ragcommon's verse grid, G-ENC encodes every record again with the
-pinned BGE-M3 (on cuda) and G-ROUTE compares the frozen lexicon's matcher with the old
-backend's matches frozen in the store (no backend runs).
+pinned BGE-M3 (on cuda).
 
 ``Sources`` holds what the builds and gates read besides the store; one ``GateInputs``
 serves both, so a build and the gate after it read the same registries, tokenizer,
-reference copies (bible_md, the old ``output/``, the frozen matches) and encoder.
+reference copies (bible_md, the old ``output/``) and encoder.
 """
 
 from __future__ import annotations
@@ -21,7 +20,7 @@ from typing import Callable, Mapping
 from ragdata import paths, stages
 from ragdata.contract.counts import PDF_COUNTS_PATH
 from ragdata.gates.runner import REQUIRED_DEPS, GateInputs, GateReport, gate_layer
-from ragdata.kg import k0_build, k1_build, k4_build, k4_live
+from ragdata.kg import k0_build, k1_build, k4_build
 from ragdata.stages.errors import StageError
 from ragdata.stages.result import BuildResult
 from ragdata.stages.s05_struct.build import StructInputs, build_struct
@@ -90,14 +89,12 @@ def _kg0(built: Built, store: Path, s: Sources) -> BuildResult:
 
 def _events(built: Built, store: Path, s: Sources) -> BuildResult:
     return k1_build.build_events(built["text"].path, built["struct"].path, store,
-                                 s.events_yaml, s.gate.legacy_registry, s.counts)
+                                 s.events_yaml, s.counts)
 
 
 def _route(built: Built, store: Path, s: Sources) -> BuildResult:
-    g = s.gate
-    live = g.live_probe or k4_live.stored_probe(g.route_live, g.frozen_lexicon)
-    return k4_build.build_route(built["text"].path, store, live, g.frozen_lexicon,
-                                g.ground_truth, s.counts)
+    return k4_build.build_route(built["text"].path, built["kg0"].path, built["events"].path,
+                                store, s.gate.registries, s.counts)
 
 
 BUILDERS: Mapping[str, Callable[[Built, Path, Sources], BuildResult]] = {

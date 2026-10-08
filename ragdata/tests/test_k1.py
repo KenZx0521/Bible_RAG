@@ -1,14 +1,15 @@
-"""K1: the R1 event registry, converted from the legacy registry and compiled (§2.21, §5.3)."""
+"""K1, R2: events.yaml v2 compiled against the struct layer (§2.21, §5.3, R2 contract spec §2)."""
 
 from __future__ import annotations
 
 import copy
-import json
+import hashlib
 
 import pytest
 
 import mini_build
 import mini_kg
+from ragdata import paths
 from ragdata.gates.schema import check_schema
 from ragdata.kg import k1_events
 from ragdata.kg.k1_events import EventRegistryError
@@ -16,102 +17,92 @@ from ragdata.kg.k1_events import EventRegistryError
 STRUCT = "struct@222222222222"
 
 
-def _snapshot(struct=None):
-    files = mini_build.files("text", "struct")
-    if struct is not None:
-        files.update({f"{k}.jsonl": v for k, v in struct.items()})
-    return check_schema(files, ("text", "struct"))[1]
+def _snapshot():
+    return check_schema(mini_build.files("text", "struct"), ("text", "struct"))[1]
 
 
-def _legacy_bytes(doc=None):
-    return json.dumps(doc or mini_kg.legacy_registry(), ensure_ascii=False).encode()
+def _compiled(doc=None):
+    return k1_events.compile_events(doc or mini_kg.events_yaml(), _snapshot(), STRUCT,
+                                    "events@000000000000")
 
 
-def _converted(doc=None, snapshot=None):
-    return k1_events.convert_registry(_legacy_bytes(doc), snapshot or _snapshot(), STRUCT)
+def test_compilation_gives_the_oracle():
+    assert dict(_compiled().rows) == mini_kg.events_layer()
 
 
-def test_conversion_then_compilation_gives_the_oracle():
-    doc = _converted()
-    assert doc["source"]["sha256"] == mini_kg.legacy_sha()
-    result = k1_events.compile_events(doc, _snapshot(), STRUCT)
-    assert dict(result.rows) == mini_kg.events_layer(STRUCT)
+def test_a_pericope_expands_into_all_its_passages_with_its_heading_as_evidence():
+    saoluo = _compiled().rows["events"][2]
+    assert [(a["pericope_id"], a["passage_id"]) for a in saoluo["anchors"]] == [
+        ("pc:act.9.1", "ps:act.9.1"), ("pc:act.9.3b", "ps:act.9.3b"),
+        ("pc:act.9.3b", "ps:act.10.1")]
+    assert {a["evidence"]["heading_id"] for a in saoluo["anchors"][1:]} == {"hd:act.9.3b#1"}
 
 
-def test_the_yaml_round_trips(tmp_path):
-    doc = _converted()
-    path = tmp_path / "events.yaml"
-    path.write_text(k1_events.dump_events_yaml(doc), encoding="utf-8")
-    assert k1_events.load_events_yaml(path) == doc
+def test_the_contract_projects_the_records_and_lists_retired_events():
+    v2 = _compiled().v2
+    assert (v2["schema"], v2["variant"], v2["struct"]) == ("ragdata.event_registry.v2", "R2",
+                                                          STRUCT)
+    assert v2["retired"] == [{"event_id": "ev0004", "legacy_ids": ["event:saoluo2"],
+                              "merged_into": "ev0003"}]
+    first = v2["events"][0]
+    assert set(first) == {"event_id", "legacy_ids", "name", "name_source", "name_heading_id",
+                          "anchors", "pdf_terms", "external_aliases"}
+    assert first["anchors"] == mini_kg.events()[0]["anchors"]
 
 
-def test_v1_keeps_the_backend_shape_with_passage_ids():
-    result = k1_events.compile_events(_converted(), _snapshot(), STRUCT)
-    legacy = mini_kg.legacy_registry()
-    assert set(result.v1) == set(legacy)
-    assert result.v1["dropped"] == legacy["dropped"]
-    assert result.v1["events"][2] == {"id": "event:saoluo", "name": "掃羅歸主",
-                                      "provenance": "manual_edges", "triggers": ["保羅歸主"],
-                                      "anchors": ["ps:act.9.1", "ps:act.9.3b"]}
+def test_the_report_counts_and_lists_the_expanded_pericopes():
+    report = _compiled().report
+    assert report["registry"] == "events@000000000000" and report["struct"] == STRUCT
+    assert report["counts"] == {"events": 4, "anchors": 6, "passages": 6,
+                                "pericope_declarations": 5, "pericopes": 5, "pdf_terms": 3,
+                                "external_aliases": 3, "retired": 1}
+    assert report["expanded"] == [{"event_id": "ev0003", "pericope_id": "pc:act.9.3b",
+                                   "passage_ids": ["ps:act.9.3b", "ps:act.10.1"]}]
 
 
-def test_v2_carries_ids_slot_ranges_and_provenance():
-    result = k1_events.compile_events(_converted(), _snapshot(), STRUCT)
-    first = result.v2["events"][0]
-    assert result.v2["schema"] == k1_events.V2_SCHEMA and result.v2["struct"] == STRUCT
-    assert first["event_id"] == "ev0001" and first["legacy_id"] == "event:kemu"
-    assert first["anchors"][0]["start_slot"] == "psa.42.1"
-    assert first["anchors"][0]["provenance_class"] == "legacy_tuned"
-    assert first["legacy_triggers"][0]["retire_by"] == "R2"
-    assert result.report["counts"] == {"events": 3, "anchors": 4, "passages": 4, "same": 2,
-                                       "narrowed": 1, "widened": 1, "legacy_triggers": 4}
-    assert result.report["v1_vs_v2"]
+def test_load_events_yaml_names_the_file_bytes(tmp_path):
+    path = mini_kg.write_events_yaml(tmp_path / "events.yaml")
+    doc, version = k1_events.load_events_yaml(path)
+    assert doc == mini_kg.events_yaml()
+    assert version == f"events@{hashlib.sha256(path.read_bytes()).hexdigest()[:12]}"
 
 
-def test_an_unknown_legacy_anchor_is_refused():
-    doc = mini_kg.legacy_registry()
-    doc["events"][0]["anchors"] = ["psa:41:0"]
-    with pytest.raises(EventRegistryError, match="psa:41:0"):
-        _converted(doc)
-
-
-def test_a_split_legacy_anchor_is_refused():
-    struct = mini_build.struct_layer()
-    row = next(r for r in struct["legacy_ids"] if r["legacy_id"] == "psa:42:0")
-    row.update(relation="split", new_ids=["ps:psa.42.1", "ps:sng.1.1"])
-    with pytest.raises(EventRegistryError, match="one passage"):
-        _converted(snapshot=_snapshot(struct))
-
-
-def test_a_legacy_range_the_passage_does_not_cover_is_refused():
-    struct = mini_build.struct_layer()
-    row = next(r for r in struct["legacy_ids"] if r["legacy_id"] == "act:9:1")
-    row.update(start_slot="act.9.2")
-    with pytest.raises(EventRegistryError, match="neither"):
-        _converted(snapshot=_snapshot(struct))
+def _event(doc, n):
+    return doc["events"][n]
 
 
 @pytest.mark.parametrize("mutate, message", [
-    (lambda d: d["events"][0]["anchors"][0].update(change="widened"), "conversion gives"),
-    (lambda d: d["events"][0]["anchors"][0].update(passage_id="ps:sng.1.1"), "conversion gives"),
-    (lambda d: d["events"][1].update(event_id="ev0009"), "ev0002"),
-    (lambda d: d["events"][0].update(legacy_triggers=[]), "trigger"),
-    (lambda d: d.update(schema="x"), "schema"),
-    (lambda d: d["events"][0].pop("name"), "keys"),
+    (lambda d: d.update(schema="ragdata.events.v1"), "schema"),
+    (lambda d: d.update(variant="R1"), "variant"),
+    (lambda d: d.update(source={}), "keys"),
+    (lambda d: d["external_alias_defaults"].pop("note"), "external_alias_defaults"),
+    (lambda d: d["retired"][0].pop("merged_into"), r"retired\[0\]"),
+    (lambda d: d["retired"][0].update(merged_into="ev0009"), "names no event"),
+    (lambda d: _event(d, 0).update(legacy_triggers=["渴慕"]), "keys"),
+    (lambda d: _event(d, 0).update(anchors="pc:psa.42.1"), "must be a list"),
+    (lambda d: _event(d, 0).update(anchors=["pc:psa.41.1"]), "struct-layer pericope"),
+    (lambda d: _event(d, 3).update(anchors=["pc:sng.1.1"]), "declare a quote"),
+    (lambda d: _event(d, 3).update(anchors=[{"pericope": "pc:sng.1.1"}]), "keys"),
+    (lambda d: _event(d, 2).update(anchors=["pc:act.9.3b", "pc:act.9.1"]), "canon order"),
+    (lambda d: _event(d, 2).update(anchors=["pc:act.9.1", "pc:act.9.1"]), "once each"),
+    (lambda d: _event(d, 0)["pdf_terms"][0].update(decided_by="kay"), "pdf_terms"),
+    (lambda d: _event(d, 1)["external_aliases"][0].pop("text"), "external_aliases"),
 ])
-def test_compile_refuses_a_registry_that_drifted_from_the_conversion(mutate, message):
-    doc = copy.deepcopy(_converted())
+def test_compile_refuses_what_it_cannot_compile(mutate, message):
+    doc = copy.deepcopy(mini_kg.events_yaml())
     mutate(doc)
     with pytest.raises(EventRegistryError, match=message):
-        k1_events.compile_events(doc, _snapshot(), STRUCT)
+        _compiled(doc)
 
 
-def test_unreadable_legacy_registry_is_refused():
-    with pytest.raises(EventRegistryError, match="legacy registry"):
-        k1_events.convert_registry(b"{", _snapshot(), STRUCT)
-
-
-def test_report_lists_same_anchors_that_end_on_a_half_verse():
-    result = k1_events.compile_events(_converted(), _snapshot(), STRUCT)
-    assert result.report["same_with_half_verse"] == [
-        {"event_id": "ev0003", "legacy_anchor": "act:9:1", "passage_id": "ps:act.9.3b"}]
+def test_the_committed_registry_is_the_approved_r2_content():
+    """config/registries/events.yaml: Kay 2026-10-08 (DOC 2), before any build checks it."""
+    doc, _ = k1_events.load_events_yaml(paths.EVENTS_REGISTRY)
+    k1_events._check_doc(doc)
+    events = doc["events"]
+    assert len(events) == 31 and [r["event_id"] for r in doc["retired"]] == ["ev0003", "ev0014"]
+    assert sum(len(e["anchors"]) for e in events) == 176
+    assert sum(len(e["pdf_terms"]) for e in events) == 12
+    assert sum(len(e["external_aliases"]) for e in events) == 25
+    curated = [e["event_id"] for e in events if "name_heading_id" not in e]
+    assert curated == ["ev0009", "ev0012", "ev0019", "ev0020"]

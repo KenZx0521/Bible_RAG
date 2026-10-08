@@ -1,12 +1,14 @@
 """Startup handshake on fake stores: every kind of mismatch is refused.
 
 A wrong build (unknown, or a schema holding another one), a point count that
-differs, a contract file whose sha differs, an encoder probe that differs, a KG
-build: each is a mismatch; strict startup raises, non-strict startup serves no
-data. Missing event-registry anchors fail startup either way.
+differs, a contract file whose sha differs or that does not parse (an R1 build
+among them), an encoder probe that differs, a KG build: each is a mismatch;
+strict startup raises, non-strict startup serves no data. Missing event-registry
+anchors fail startup either way.
 """
 
 import asyncio
+import hashlib
 import json
 import shutil
 from contextlib import asynccontextmanager
@@ -16,6 +18,7 @@ import pytest
 
 from config import settings
 from serving import context, startup
+from utils.retrieval import event_registry
 
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "mini_build"
 META = json.loads((FIXTURE / "build.json").read_text(encoding="utf-8"))
@@ -24,6 +27,11 @@ FP_FILE = FIXTURE / "contracts" / BUILD_ID / "encoder_fingerprint.json"
 CONTRACT_FP = json.loads(FP_FILE.read_text(encoding="utf-8"))
 KEYS = ("tokenizer_sha", "probe_ids_sha", "unk_count", "pair_template_ok")
 GOOD_FP = {name: {k: CONTRACT_FP[name][k] for k in KEYS} for name in ("bge_m3", "reranker")}
+REGISTRY = event_registry.parse_registry(
+    json.loads((FIXTURE / "contracts" / BUILD_ID / "event_registry.json").read_text("utf-8")))
+ANCHORS = event_registry.anchor_passages(REGISTRY)
+R1_CONTRACTS = FIXTURE.parent / "r1_contracts"
+R1_BUILD_ID = "b20261008_1bb6912e"
 
 
 class Stores:
@@ -37,7 +45,7 @@ class Stores:
                                   "points": META["points"]}}
         self.build_info = [BUILD_ID]
         self.exists, self.points = True, META["points"]
-        self.passages = {"ps:psa.42.1", "ps:mat.18.1", "ps:act.9.1", "ps:act.9.3b"}
+        self.passages = set(ANCHORS)
         self.unreachable = False
         self.pool_schema = None
 
@@ -106,9 +114,10 @@ def test_a_consistent_build_is_served(stores):
     assert handshake.ok and handshake.build_id == BUILD_ID
     assert stores.pool_schema == META["pg_schema"]
     assert active.build.contracts_dir == stores.contracts
-    assert [e.id for e in active.registry] == ["event:kemu", "event:tianguo", "event:saoluo"]
+    assert active.registry == REGISTRY and all(e.id.startswith("ev") for e in REGISTRY)
     assert active.book_ids["使徒行傳"] == "act"
-    assert active.lexicon.events
+    assert set(active.book_names) == set(active.book_ids) and "撒上" not in active.book_names
+    assert active.lexicon.terms
 
 
 def test_rag_build_id_equal_to_the_serving_build_is_served(stores, monkeypatch):
@@ -184,7 +193,7 @@ def test_a_missing_collection_is_refused(stores):
 
 def test_a_contract_file_whose_sha_differs_is_refused(stores):
     path = stores.contracts / "event_registry.json"
-    path.write_bytes(path.read_bytes().replace(b"event:kemu", b"event:kemx"))
+    path.write_bytes(path.read_bytes() + b" ")
 
     [problem] = _mismatches()
     assert "event_registry.json sha256" in problem
@@ -234,9 +243,9 @@ def test_non_strict_startup_reports_and_serves_nothing(stores, monkeypatch):
 
 def test_a_missing_registry_anchor_fails_startup_even_when_not_strict(stores, monkeypatch):
     monkeypatch.setattr(settings, "strict_build_check", False)
-    stores.passages.discard("ps:act.9.3b")
+    stores.passages.discard(ANCHORS[-1])
 
-    with pytest.raises(startup.StartupError, match="ps:act.9.3b"):
+    with pytest.raises(startup.StartupError, match=ANCHORS[-1]):
         asyncio.run(startup.run(GOOD_FP))
 
 
@@ -244,3 +253,53 @@ def test_strict_success_installs_the_build(stores):
     handshake = asyncio.run(startup.run(GOOD_FP))
 
     assert handshake.ok and context.active().build.build_id == BUILD_ID
+
+
+def _rewrite(stores, name: str, data: bytes) -> None:
+    """Replace a contract file and re-hash it in the manifest: only its content is wrong."""
+    (stores.contracts / name).write_bytes(data)
+    manifest = json.loads((stores.contracts / "manifest.json").read_text(encoding="utf-8"))
+    manifest["files"][name] = hashlib.sha256(data).hexdigest()
+    (stores.contracts / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+
+@pytest.mark.parametrize("name, data, message", [
+    ("routing_lexicon.json", b"{not json", "routing_lexicon.json: Expecting"),
+    ("routing_lexicon.json", b'{"schema": "ragdata.routing_lexicon.v1"}',
+     "routing_lexicon.json: schema must be ragdata.routing_lexicon.v2"),
+    ("query_aliases.json", b"[]", "query_aliases.json: query aliases schema"),
+    ("event_registry.json", b'{"schema": "ragdata.event_registry.v2", "variant": "R1"}',
+     "event_registry.json: registry variant must be R2"),
+])
+def test_a_contract_that_does_not_parse_is_a_mismatch_not_a_crash(stores, monkeypatch, name,
+                                                                   data, message):
+    monkeypatch.setattr(settings, "strict_build_check", False)
+    _rewrite(stores, name, data)
+
+    handshake = asyncio.run(startup.run(GOOD_FP))
+
+    assert not handshake.ok and len(handshake.mismatches) == 1
+    assert handshake.mismatches[0].startswith(f"contracts: {name}: ")
+    assert message in handshake.mismatches[0]
+
+
+def test_the_r2_image_refuses_an_r1_build(stores, monkeypatch):
+    """The R1 mini build's own contracts, served under its own build row."""
+    r1 = json.loads((R1_CONTRACTS / R1_BUILD_ID / "manifest.json").read_text(encoding="utf-8"))
+    r1_fp = json.loads((R1_CONTRACTS / R1_BUILD_ID / "encoder_fingerprint.json")
+                       .read_text(encoding="utf-8"))
+    monkeypatch.setattr(settings, "contracts_root", str(R1_CONTRACTS))
+    stores.serving, stores.build_info = {"prod": R1_BUILD_ID}, [R1_BUILD_ID]
+    stores.points = r1["points"]
+    stores.builds[R1_BUILD_ID] = {"build_id": R1_BUILD_ID, "pg_schema": r1["pg_schema"],
+                                  "qdrant_collection": r1["qdrant_collection"],
+                                  "contracts_dir": f"/contracts/{R1_BUILD_ID}",
+                                  "kg_enabled": False, "points": r1["points"]}
+
+    mismatches = _mismatches({n: {k: r1_fp[n][k] for k in KEYS} for n in ("bge_m3", "reranker")})
+
+    assert mismatches == (
+        "contracts: manifest does not list query_aliases.json",
+        "contracts: routing_lexicon.json: schema must be ragdata.routing_lexicon.v2, "
+        "got 'ragdata.routing_lexicon.v1'",
+        "contracts: event_registry.json: registry variant must be R2, got 'R1'")

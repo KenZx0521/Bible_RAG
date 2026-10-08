@@ -52,16 +52,17 @@ emb:
   emb_passages: {value: 6, g: [G15, G58]}
   emb_chunks: {value: 2, g: [G19, G58]}
 events:
-  events: {value: 3, g: [G56]}
-  event_anchors: {value: 4, g: [G56]}
-  event_anchor_passages: {value: 4, g: [G56]}
-  anchors_same: {value: 2, g: [G56]}
-  anchors_narrowed: {value: 1, g: [G56]}
-  anchors_widened: {value: 1, g: [G56]}
-  anchor_changes: {value: 2, g: [G56]}
-  legacy_triggers: {value: 4, g: [G56]}
+  events: {value: 4, g: [G56]}
+  event_anchors: {value: 6, g: [G56]}
+  event_anchor_passages: {value: 6, g: [G56]}
+  pdf_terms: {value: 3, g: [G56]}
+  external_aliases: {value: 3, g: [G56]}
+  retired: {value: 1, g: [G56]}
 route:
-  route_persons: {value: 3, g: [G43]}
-  route_places: {value: 2, g: [G43]}
-  route_events: {value: 3, g: [G56]}
-  route_books: {value: 4, g: [G13]}
+  route_names: {value: 5, g: [G43]}
+  route_dotless: {value: 0, g: [G43]}
+  route_divine: {value: 3, g: [G43]}
+  route_aliases: {value: 2, g: [G43]}
+  route_events: {value: 6, g: [G56]}
+  route_books: {value: 84, g: [G13]}
+  route_unroutable: {value: 1, g: [G43]}

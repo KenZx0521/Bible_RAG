@@ -55,7 +55,7 @@ def test_the_event_lane_runs_on_event_routes_only(forced, route, appended):
     ranked, stats = run(query=EVENT_QUESTION, top_k=5)
 
     assert [c["id"] for c in ranked[5:]] == (["ps:act.9.1"] if appended else [])
-    assert stats["event_registry_events"] == (["event:saoluo"] if appended else [])
+    assert stats["event_registry_events"] == (["ev0002"] if appended else [])
 
 
 @pytest.mark.parametrize("size", [0, 3])

@@ -20,17 +20,17 @@ STRUCT_REPORT = "struct_report.json"
 EMB_REPORT = "emb_report.json"                  # template declaration and counts (S6)
 ENCODER_FINGERPRINT = "encoder_fingerprint.json"  # BGE-M3 and reranker fingerprints (S7)
 KG0_REPORT = "kg0_report.json"
-EVENT_REGISTRY_V1 = "event_registry_v1.json"   # the backend's current format, passage ids
-EVENT_REGISTRY_V2 = "event_registry_v2.json"   # the R1 contract file (design §2.21)
+EVENT_REGISTRY_V2 = "event_registry_v2.json"   # the event contract file (design §2.21)
 EVENTS_REPORT = "events_report.json"
 ROUTING_LEXICON = "routing_lexicon.json"       # the routing contract file (design §2.22)
+QUERY_ALIASES = "query_aliases.json"           # its external_query part, a contract of its own
 ROUTE_REPORT = "route_report.json"
 LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
                           DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,),
                  "emb": (EMB_REPORT, ENCODER_FINGERPRINT),
                  "kg0": (KG0_REPORT,),
-                 "events": (EVENT_REGISTRY_V1, EVENT_REGISTRY_V2, EVENTS_REPORT),
-                 "route": (ROUTING_LEXICON, ROUTE_REPORT)}
+                 "events": (EVENT_REGISTRY_V2, EVENTS_REPORT),
+                 "route": (ROUTING_LEXICON, QUERY_ALIASES, ROUTE_REPORT)}
 
 
 @dataclass(frozen=True)
@@ -68,7 +68,6 @@ RECORD_TYPES = tuple(RecordType(*row) for row in (
     ("extra_spans", "kg0", kg.ExtraSpan, "span_id"),
     ("parallel_links", "kg0", kg.ParallelLink, "link_key"),
     ("events", "events", kg.Event, "event_id"),
-    ("anchor_changes", "events", kg.AnchorChange, "change_key"),
     ("routing_terms", "route", kg.RouteTerm, "term_key"),
 ))
 _BY_NAME = MappingProxyType({t.name: t for t in RECORD_TYPES})

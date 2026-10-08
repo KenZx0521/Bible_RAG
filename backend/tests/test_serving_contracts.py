@@ -11,6 +11,7 @@ from serving import contracts
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "mini_build"
 BUILD = json.loads((FIXTURE / "build.json").read_text(encoding="utf-8"))
 BUILD_ID = BUILD["build_id"]
+R1_BUILD_ID = "b20261008_1bb6912e"  # fixtures/r1_contracts: the R1 mini build's contracts
 
 
 @pytest.fixture
@@ -32,7 +33,8 @@ def test_a_good_directory_verifies_and_yields_its_files(directory):
     assert found.mismatches == ()
     assert found.manifest["build_id"] == BUILD_ID
     assert set(contracts.REQUIRED) <= set(found.files)
-    assert json.loads(found.files["event_registry.json"])["schema"] == "ragdata.event_registry.v2"
+    registry = json.loads(found.files["event_registry.json"])
+    assert (registry["schema"], registry["variant"]) == ("ragdata.event_registry.v2", "R2")
 
 
 def test_a_missing_directory_is_a_mismatch(tmp_path):
@@ -76,6 +78,15 @@ def test_a_required_file_the_manifest_does_not_list_is_a_mismatch(directory):
     found = contracts.verify(directory, BUILD_ID)
 
     assert any("encoder_fingerprint.json" in m for m in found.mismatches)
+
+
+def test_an_r1_contract_directory_lacks_the_query_alias_table(tmp_path):
+    r1 = FIXTURE.parent / "r1_contracts" / R1_BUILD_ID
+    shutil.copytree(r1, tmp_path / R1_BUILD_ID)
+
+    found = contracts.verify(tmp_path / R1_BUILD_ID, R1_BUILD_ID)
+
+    assert found.mismatches == ("contracts: manifest does not list query_aliases.json",)
 
 
 def test_an_unreadable_manifest_is_a_mismatch(directory):

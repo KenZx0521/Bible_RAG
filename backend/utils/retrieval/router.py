@@ -141,7 +141,8 @@ async def _append_event_registry(query: str, ranked: list[dict], g: Gathered, sl
     """Curated event anchors to append after the finished top-k, and the triggered events.
 
     Triggers are registry words literally in the question (book names masked),
-    never LLM keywords. Appended passages carry no rerank/fused score.
+    never LLM keywords. Events are reported by ev id (via_event_id too); their
+    legacy ids are only logged. Appended passages carry no rerank/fused score.
     """
     events = event_registry.match_events(query, active.registry, active.book_names)
     if not events:
@@ -151,8 +152,9 @@ async def _append_event_registry(query: str, ranked: list[dict], g: Gathered, sl
     pool = {c["id"]: c for c in g.candidates}
     aux = [c for event_id, anchor in event_registry.select_aux_anchors(events, core, slots)
            if (c := await _aux_candidate(anchor, (event_id, names[event_id]), pool, g.errors))]
-    logger.info("event_registry: triggered %s, appended %s",
-                [e.id for e in events], [c["id"] for c in aux])
+    logger.info("event_registry: triggered %s (legacy %s), appended %s",
+                [e.id for e in events], [list(e.legacy_ids) for e in events],
+                [c["id"] for c in aux])
     return aux, [e.id for e in events]
 
 

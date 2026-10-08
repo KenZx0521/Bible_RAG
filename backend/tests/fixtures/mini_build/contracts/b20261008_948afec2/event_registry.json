@@ -1,0 +1,196 @@
+{
+  "events": [
+    {
+      "anchors": [
+        {
+          "decided_by": "kay",
+          "end_key": "psa.42.3",
+          "end_slot": "psa.42.3",
+          "evidence": {
+            "heading_id": "hd:psa.42.1#1",
+            "quote": null
+          },
+          "passage_id": "ps:psa.42.1",
+          "pericope_id": "pc:psa.42.1",
+          "provenance_class": "curated_human",
+          "start_key": "psa.42.1",
+          "start_slot": "psa.42.1"
+        }
+      ],
+      "event_id": "ev0001",
+      "external_aliases": [],
+      "legacy_ids": [
+        "event:kemu"
+      ],
+      "name": "渴慕上帝",
+      "name_heading_id": "hd:psa.42.1#1",
+      "name_source": "pdf_heading",
+      "pdf_terms": [
+        {
+          "at": "hd:psa.42.1#1",
+          "decided_by": "kay",
+          "provenance_class": "curated_human",
+          "text": "渴慕"
+        },
+        {
+          "at": "psa.42.1",
+          "decided_by": "kay",
+          "provenance_class": "curated_human",
+          "text": "切慕"
+        }
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "decided_by": "kay",
+          "end_key": "mat.18.4",
+          "end_slot": "mat.18.4",
+          "evidence": {
+            "heading_id": "hd:mat.18.1#1",
+            "quote": null
+          },
+          "passage_id": "ps:mat.18.1",
+          "pericope_id": "pc:mat.18.1",
+          "provenance_class": "curated_human",
+          "start_key": "mat.18.1",
+          "start_slot": "mat.18.1"
+        }
+      ],
+      "event_id": "ev0002",
+      "external_aliases": [
+        {
+          "note": "不在 PDF；legacy 觸發詞",
+          "provenance_class": "external_event_alias",
+          "source": "backend/data/event_registry.json@ef0e178 triggers",
+          "text": "天國"
+        },
+        {
+          "note": "PDF 有此字串",
+          "provenance_class": "external_event_alias",
+          "source": "backend/data/event_registry.json@ef0e178 triggers",
+          "text": "最大的"
+        }
+      ],
+      "legacy_ids": [
+        "event:tianguo"
+      ],
+      "name": "天國裏誰是最大的",
+      "name_heading_id": "hd:mat.18.1#1",
+      "name_source": "pdf_heading",
+      "pdf_terms": []
+    },
+    {
+      "anchors": [
+        {
+          "decided_by": "kay",
+          "end_key": "act.9.3",
+          "end_slot": "act.9.3",
+          "evidence": {
+            "heading_id": "hd:act.9.1#2",
+            "quote": null
+          },
+          "passage_id": "ps:act.9.1",
+          "pericope_id": "pc:act.9.1",
+          "provenance_class": "curated_human",
+          "start_key": "act.9.1",
+          "start_slot": "act.9.1"
+        },
+        {
+          "decided_by": "kay",
+          "end_key": "act.9.3b",
+          "end_slot": "act.9.3",
+          "evidence": {
+            "heading_id": "hd:act.9.3b#1",
+            "quote": null
+          },
+          "passage_id": "ps:act.9.3b",
+          "pericope_id": "pc:act.9.3b",
+          "provenance_class": "curated_human",
+          "start_key": "act.9.3b",
+          "start_slot": "act.9.3"
+        },
+        {
+          "decided_by": "kay",
+          "end_key": "act.10.1",
+          "end_slot": "act.10.1",
+          "evidence": {
+            "heading_id": "hd:act.9.3b#1",
+            "quote": null
+          },
+          "passage_id": "ps:act.10.1",
+          "pericope_id": "pc:act.9.3b",
+          "provenance_class": "curated_human",
+          "start_key": "act.10.1",
+          "start_slot": "act.10.1"
+        }
+      ],
+      "event_id": "ev0003",
+      "external_aliases": [
+        {
+          "note": "不在 PDF；legacy 觸發詞",
+          "provenance_class": "external_event_alias",
+          "source": "backend/data/event_registry.json@ef0e178 triggers",
+          "text": "保羅歸主"
+        }
+      ],
+      "legacy_ids": [
+        "event:saoluo",
+        "event:saoluo2"
+      ],
+      "name": "掃羅歸主",
+      "name_heading_id": "hd:act.9.1#1",
+      "name_source": "pdf_heading",
+      "pdf_terms": [
+        {
+          "at": "hd:act.9.3b#1",
+          "decided_by": "kay",
+          "provenance_class": "curated_human",
+          "text": "天上的光"
+        }
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "decided_by": "kay",
+          "end_key": "sng.1.1",
+          "end_slot": "sng.1.1",
+          "evidence": {
+            "heading_id": null,
+            "quote": {
+              "text": "與我親嘴",
+              "unit_key": "sng.1.1"
+            }
+          },
+          "passage_id": "ps:sng.1.1",
+          "pericope_id": "pc:sng.1.1",
+          "provenance_class": "curated_human",
+          "start_key": "sng.1.1",
+          "start_slot": "sng.1.1"
+        }
+      ],
+      "event_id": "ev0005",
+      "external_aliases": [],
+      "legacy_ids": [
+        "event:qinzui"
+      ],
+      "name": "新娘的歌",
+      "name_heading_id": null,
+      "name_source": "curated",
+      "pdf_terms": []
+    }
+  ],
+  "retired": [
+    {
+      "event_id": "ev0004",
+      "legacy_ids": [
+        "event:saoluo2"
+      ],
+      "merged_into": "ev0003"
+    }
+  ],
+  "schema": "ragdata.event_registry.v2",
+  "struct": "struct@2555195b0166",
+  "variant": "R2"
+}

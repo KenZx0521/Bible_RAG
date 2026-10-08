@@ -1,4 +1,4 @@
-"""``convert events`` and ``build events`` on the mini snapshot, through the runner and CLI."""
+"""``build events`` (K1, R2) on the mini snapshot, through the runner and the CLI."""
 
 from __future__ import annotations
 
@@ -6,13 +6,12 @@ import json
 from pathlib import Path
 
 import pytest
-import yaml
 
 import mini_build
 import mini_kg
 from ragdata import cli, store
 from ragdata.gates import check_det
-from ragdata.gates.runner import GateInputs, gate_layer
+from ragdata.gates.runner import gate_layer
 from ragdata.kg import k1_build
 from ragdata.kg.k1_events import EventRegistryError
 
@@ -22,54 +21,53 @@ MINI_COUNTS = Path(__file__).with_name("mini_counts.yaml")
 @pytest.fixture()
 def given(tmp_path):
     text, struct = mini_build.write_layers(tmp_path / "given")
-    legacy = tmp_path / "event_registry.json"
-    legacy.write_text(json.dumps(mini_kg.legacy_registry(), ensure_ascii=False), encoding="utf-8")
-    events_yaml = tmp_path / "events.yaml"
-    events_yaml.write_text(k1_build.convert(text.path, struct.path, legacy), encoding="utf-8")
-    return {"text": text, "struct": struct, "legacy": legacy, "yaml": events_yaml,
-            "root": tmp_path}
+    return {"text": text, "struct": struct, "root": tmp_path,
+            "yaml": mini_kg.write_events_yaml(tmp_path / "events.yaml")}
 
 
-def _build(given, store_dir="store", legacy=None, counts=MINI_COUNTS):
+def _build(given, store_dir="store"):
     return k1_build.build_events(given["text"].path, given["struct"].path,
-                                 given["root"] / store_dir, given["yaml"],
-                                 legacy or given["legacy"], counts)
+                                 given["root"] / store_dir, given["yaml"], MINI_COUNTS)
 
 
-def test_build_stores_the_registry_and_its_contract_files(given):
+def test_build_stores_the_records_the_contract_and_the_report(given):
     result = _build(given)
     assert result.passed, [g.to_json() for g in result.gates if not g.passed]
     assert [g.name for g in result.gates] == ["G-SCHEMA", "G-COUNT", "G-REFINT", "G-EVENT",
                                               "G-PROV"]
     built = store.read_layer(result.layers["events"].path)
-    events = list(built.rows["events.jsonl"])
-    assert [e["event_id"] for e in events] == ["ev0001", "ev0002", "ev0003"]
-    assert [c["change"] for c in built.rows["anchor_changes.jsonl"]] == ["narrowed", "widened"]
-    v1 = json.loads((built.path / "event_registry_v1.json").read_text(encoding="utf-8"))
-    assert v1["events"][0]["anchors"] == ["ps:psa.42.1"]
+    assert set(built.rows) == {"events.jsonl"}
+    assert list(built.rows["events.jsonl"]) == mini_kg.events()
+    assert built.depends_on == {"text": given["text"].version, "struct": given["struct"].version}
+    v2 = json.loads((built.path / "event_registry_v2.json").read_text(encoding="utf-8"))
+    assert v2["variant"] == "R2" and v2["struct"] == given["struct"].version
     report = json.loads((built.path / "events_report.json").read_text(encoding="utf-8"))
-    assert report["counts"]["anchors"] == 4 and report["source"]["file"] == "event_registry.json"
+    assert report["registry"].startswith("events@") and report["counts"]["anchors"] == 6
 
 
 def test_gate_and_det(given):
     first, second = _build(given, "a"), _build(given, "b")
     assert check_det(first.layers["events"].path, second.layers["events"].path).passed
     report = gate_layer(first.layers["events"].path, "events",
-                        [given["text"].path, given["struct"].path], MINI_COUNTS,
-                        inputs=GateInputs(legacy_registry=given["legacy"]))
+                        [given["text"].path, given["struct"].path], MINI_COUNTS)
     assert report.passed, [g.to_json() for g in report.gates if not g.passed]
 
 
-def test_without_the_legacy_registry_the_build_is_red(given):
-    result = _build(given, legacy=given["root"] / "missing.json")
+def test_a_red_gate_stores_nothing(given):
+    doc = mini_kg.events_yaml()
+    doc["events"][1]["pdf_terms"].append({"text": "門徒", "at": "act.9.1"})
+    mini_kg.write_events_yaml(given["yaml"], doc)
+    result = _build(given)
     assert not result.passed and result.layers == {}
+    red = {g.name for g in result.gates if not g.passed}
+    assert red == {"G-COUNT", "G-EVENT"}
 
 
-def test_a_hand_edited_registry_is_refused(given):
-    doc = yaml.safe_load(given["yaml"].read_text(encoding="utf-8"))
-    doc["events"][0]["anchors"][0]["change"] = "widened"
-    given["yaml"].write_text(yaml.safe_dump(doc, allow_unicode=True), encoding="utf-8")
-    with pytest.raises(EventRegistryError, match="drifted"):
+def test_a_registry_that_does_not_compile_is_refused(given):
+    doc = mini_kg.events_yaml()
+    doc["events"][0]["anchors"] = ["pc:psa.41.1"]
+    mini_kg.write_events_yaml(given["yaml"], doc)
+    with pytest.raises(EventRegistryError, match="pc:psa.41.1"):
         _build(given)
 
 
@@ -78,30 +76,20 @@ def _cli(capsys, *argv):
     return code, capsys.readouterr()
 
 
-def test_cli_convert_build_and_gate_events(given, capsys):
-    out = given["root"] / "cli_events.yaml"
-    code, _ = _cli(capsys, "convert", "events", "--text", given["text"].path,
-                   "--struct", given["struct"].path, "--legacy-registry", given["legacy"],
-                   "--out", out)
-    assert code == 0 and out.read_text(encoding="utf-8") == given["yaml"].read_text(
-        encoding="utf-8")
+def test_cli_build_and_gate_events(given, capsys):
     code, captured = _cli(capsys, "build", "events", "--text", given["text"].path,
-                          "--struct", given["struct"].path, "--events-yaml", out,
-                          "--legacy-registry", given["legacy"], "--counts", MINI_COUNTS,
-                          "--store", given["root"] / "cli")
+                          "--struct", given["struct"].path, "--events-yaml", given["yaml"],
+                          "--counts", MINI_COUNTS, "--store", given["root"] / "cli")
     assert code == 0, captured.out
     layer = json.loads(captured.out)["layers"]["events"]["path"]
     code, captured = _cli(capsys, "gate", "events", layer, "--dep", given["text"].path,
-                          "--dep", given["struct"].path, "--counts", MINI_COUNTS,
-                          "--legacy-registry", given["legacy"])
+                          "--dep", given["struct"].path, "--counts", MINI_COUNTS)
     assert code == 0 and json.loads(captured.out)["pass"] is True
 
 
-def test_cli_convert_reports_an_unconvertible_registry(given, capsys):
-    doc = mini_kg.legacy_registry()
-    doc["events"][0]["anchors"] = ["psa:1:0"]
-    given["legacy"].write_text(json.dumps(doc), encoding="utf-8")
-    code, captured = _cli(capsys, "convert", "events", "--text", given["text"].path,
-                          "--struct", given["struct"].path, "--legacy-registry", given["legacy"],
-                          "--out", given["root"] / "x.yaml")
-    assert code == 2 and "psa:1:0" in captured.err
+def test_cli_reports_a_registry_that_does_not_compile(given, capsys):
+    given["yaml"].write_text("schema: ragdata.events.v1\n", encoding="utf-8")
+    code, captured = _cli(capsys, "build", "events", "--text", given["text"].path,
+                          "--struct", given["struct"].path, "--events-yaml", given["yaml"],
+                          "--counts", MINI_COUNTS, "--store", given["root"] / "cli")
+    assert code == 2 and "events.yaml" in captured.err

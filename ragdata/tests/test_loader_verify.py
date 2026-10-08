@@ -77,7 +77,11 @@ def _move_anchor(doc):
 
 
 def _unsourced_term(doc):
-    doc["persons"].append({"name": "無名", "aliases": ["無名"]})
+    doc["names"].append({"surface": "無名", "kind": "name"})
+
+
+def _unnoted_alias(doc):
+    doc["aliases"][0]["note"] = ""
 
 
 def _reformat_contract(name):
@@ -173,7 +177,10 @@ MUTATIONS = {
         _drop_points("ps:act.9.1"), "G-PROJ.C5", "anchor ps:act.9.1: passage not in Qdrant"),
     "a routing term without provenance": (
         lambda l: _rewrite_contract(l, "routing_lexicon.json", _unsourced_term), "G-PROJ.C5",
-        "persons[3]: no provenance_class/source"),
+        "names[5]: no provenance_class/source"),
+    "a query alias without a note": (
+        lambda l: _rewrite_contract(l, "query_aliases.json", _unnoted_alias), "G-PROJ.C5",
+        "query_aliases.json aliases[0]: no provenance_class/source/note"),
     "a contract file's bytes change, not its content": (
         _reformat_contract("books.json"), "G-PROJ.C5", "books.json: sha256 is not the release's"),
     "the contract manifest lists another sha": (lambda l: _rewrite_contract(
@@ -222,15 +229,16 @@ def test_a_point_vector_a_hair_off_the_layer_turns_c4_red(loaded):
     assert mini_loaded.turned_red(found, "G-PROJ.C4", "re-encoded vs:eph.6.4: cos 0.9999")
 
 
-def test_lexicon_terms_without_provenance_or_source_are_named():
-    doc = {"persons": [{"term": "甲", "provenance_class": "pdf_text", "source": "x"},
-                       {"term": "乙", "source": "x"}],
-           "places": [{"term": "丙", "provenance_class": "pdf_text"}], "books": ["丁"]}
-    found = verifier._lexicon_violations(doc)
+def test_lexicon_terms_and_alias_rows_without_provenance_are_named():
+    doc = {"names": [{"surface": "甲", "provenance_class": "pdf_rule", "source": "x"},
+                     {"surface": "乙", "source": "x"}],
+           "events": [{"surface": "丙", "provenance_class": "curated_human"}], "books": ["丁"]}
+    aliases = {"aliases": [{"provenance_class": "external_query", "source": "x"}]}
+    found = verifier._lexicon_violations(doc, aliases)
     assert [v.split(":")[0] for v in found] == [
-        "routing_lexicon.json persons[1]", "routing_lexicon.json places[0]",
-        "routing_lexicon.json books[0]"]
-    assert verifier._lexicon_violations({"persons": doc["persons"][:1]}) == []
+        "routing_lexicon.json names[1]", "routing_lexicon.json events[0]",
+        "routing_lexicon.json books[0]", "query_aliases.json aliases[0]"]
+    assert verifier._lexicon_violations({"names": doc["names"][:1]}, {}) == []
 
 
 def test_the_text_sha_check_compares_payload_with_pg(loaded):

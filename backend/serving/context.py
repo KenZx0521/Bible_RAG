@@ -30,7 +30,9 @@ class Active:
 
     @property
     def book_names(self) -> tuple[str, ...]:
-        return tuple(self.book_ids)
+        """The books' full names: the event lane masks what the router masks before its
+        scan (an abbreviation such as 約三 is no mask: 亞伯拉罕之約三個應許)."""
+        return self.lexicon.full_names
 
 
 def make_active(build: Build, lexicon: RoutingLexicon,

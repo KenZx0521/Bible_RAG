@@ -4,7 +4,8 @@ Every record of the KG layers (and every nested fact with its own
 ``provenance_class``: an event anchor, a trigger) names one class. A class
 needs evidence fields:
 
-- ``coordinate``: a PDF coordinate — one of ``COORDINATE_KEYS`` set;
+- ``coordinate``: a PDF coordinate — one of ``COORDINATE_KEYS`` set, or anchors that each
+  carry one (an event row);
 - ``rule``: the rule that produced it (``rule_id``, or a non-empty ``norm_rule_ids``);
 - ``slot_range``: ``start_slot`` and ``end_slot``, or anchors that each carry both;
 - any other name: that field, set (non-empty).
@@ -20,7 +21,7 @@ PROVENANCE_CLASSES = (
     "external_reference", "external_dataset",
 )
 COORDINATE_KEYS = ("span_id", "evidence_span_id", "pr_id", "heading_id", "container_id",
-                   "passage_id", "start_slot")
+                   "passage_id", "start_slot", "at")
 EVIDENCE = MappingProxyType({
     "pdf_deterministic": ("coordinate",),
     "pdf_rule": ("coordinate", "rule"),
