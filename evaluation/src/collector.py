@@ -23,7 +23,7 @@ from .context_blocks import (
 )
 from .models import EvalSample, GroundTruthItem, MetricResult, SourceInfo
 from .provenance import Provenance, write_run_meta
-from .rag_client import query_rag, parse_sources
+from .rag_client import NO_KEEPALIVE, parse_sources, query_rag
 from .content_fetcher import get_pool, fetch_context_blocks
 
 console = Console()
@@ -111,7 +111,7 @@ async def collect_responses(
                 "(use_graph=%s, semantic_only=%s, graph_strategies=%s)",
                 total, use_graph, semantic_only, graph_strategies)
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=120.0, limits=NO_KEEPALIVE) as client:
         for idx, gt in enumerate(questions, 1):
             console.rule(f"[bold cyan][{idx}/{total}] {gt.question_id}")
             console.print(f"  [dim]Q:[/dim] {gt.question[:80]}")

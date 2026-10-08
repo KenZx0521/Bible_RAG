@@ -64,6 +64,7 @@ from src.config import settings  # noqa: E402
 from src.data_loader import GT_VERSIONS, load_gt  # noqa: E402
 from src.models import EvalSample, GroundTruthItem, SourceInfo  # noqa: E402
 from src.metrics.retrieval import compute_retrieval_metrics, gold_flags  # noqa: E402
+from src.rag_client import NO_KEEPALIVE  # noqa: E402
 from src.provenance import (  # noqa: E402
     RunContext, fetch_health, from_health, make_context, read_run_meta,
 )
@@ -260,7 +261,7 @@ async def collect(gts: list[GroundTruthItem], use_graph, alpha, top_k, concurren
     raw_sources: dict[str, list] = {}
     applied_by_q: dict[str, list[str] | None] = {}
     extra_by_q: dict[str, dict] = {}
-    async with httpx.AsyncClient(timeout=180.0) as client:
+    async with httpx.AsyncClient(timeout=180.0, limits=NO_KEEPALIVE) as client:
         tasks = [_query_one(client, sem, gt, use_graph, alpha, top_k, graph_strategies,
                             include_context, ruler)
                  for gt in gts]

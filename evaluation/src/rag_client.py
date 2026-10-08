@@ -14,6 +14,11 @@ from .models import SourceInfo
 
 logger = logging.getLogger(__name__)
 
+# uvicorn closes an idle connection after 5 s and httpx keeps one for 5 s, so a
+# reused connection can be closed under a request (httpx.ReadError mid-run, R1
+# retrieval arm 2026-10-08). One connection per request removes the race.
+NO_KEEPALIVE = httpx.Limits(max_keepalive_connections=0)
+
 
 async def query_rag(
     question: str,
@@ -57,7 +62,7 @@ async def query_rag(
 
     own_client = client is None
     if own_client:
-        client = httpx.AsyncClient(timeout=60.0)
+        client = httpx.AsyncClient(timeout=60.0, limits=NO_KEEPALIVE)
 
     try:
         logger.info("[RAG API] POST %s  question=%r  top_k=%d", url, question[:60], k)
