@@ -1,0 +1,1074 @@
+{
+ "schema": "ragdata.heldout_events.v1",
+ "purpose": "G-HELDOUT（設計書 §8）：R2 觸發詞與事件註冊表修正的驗收題。必須在任何觸發詞修改之前 commit。",
+ "protocol": "兩位撰寫代理（熟悉傳統名稱的信徒／不知事件名的新讀者）各寫 30 正例＋10 近似負例，只能讀去名化的事件清單（錨點範圍、錨點處 PDF 標題、經文摘錄）與文字層；不得讀 repo、註冊表、路由詞表、GT。盲驗證代理核對 gold 節位、去重後合併。",
+ "inputs": {
+  "events_layer": "events@904becb6ccd9",
+  "text_layer": "text@247eafe44b02",
+  "sanitized_event_list_sha256": "75b1202d2328a11520a4a934f52ec484b1d4c264d6ea116c74dbeb1c47ac9814"
+ },
+ "scoring_notes": "正例 gold 為該事件的一個錨點範圍；ev0003 與 ev0002 錨點相同、ev0014 是 ev0002 的錨點之一、ev0011／ev0027／ev0033 多半落在 ev0020 的錨點內：依事件判分時要接受父事件或孿生事件。負例 gold 與 33 個事件的錨點都不重疊。",
+ "counts": {
+  "positive": 43,
+  "negative": 18,
+  "events_covered": 32
+ },
+ "items": [
+  {
+   "id": "w1_001",
+   "kind": "positive",
+   "event_id": "ev0001",
+   "question": "巴別塔的故事裡，人們當初為什麼要蓋那座城和那座塔？",
+   "gold": [
+    {
+     "start": "gen.11.1",
+     "end": "gen.11.9"
+    }
+   ],
+   "style": "pdf_wording",
+   "note": "gen.11.4 說要傳揚自己的名、免得分散在全地上",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_002",
+   "kind": "positive",
+   "event_id": "ev0002",
+   "question": "保羅在亞基帕王面前作見證時，說主在大馬士革路上向他顯現，是要差派他去做什麼？",
+   "gold": [
+    {
+     "start": "act.26.12",
+     "end": "act.26.18"
+    }
+   ],
+   "style": "person_action",
+   "note": "act.26.16-18 主要派他作執事作見證，差他去叫人眼睛得開、從黑暗歸向光明",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_005",
+   "kind": "positive",
+   "event_id": "ev0007",
+   "question": "大使命裡復活的耶穌在加利利山上吩咐門徒去做哪幾件事？",
+   "gold": [
+    {
+     "start": "mat.28.16",
+     "end": "mat.28.20"
+    }
+   ],
+   "style": "colloquial",
+   "note": "mat.28.19-20 使萬民作門徒、奉父子聖靈的名施洗、教訓他們遵守",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_007",
+   "kind": "positive",
+   "event_id": "ev0009",
+   "question": "保羅第一次出去宣教，是哪個教會在什麼情況下把他和巴拿巴差派出去的？",
+   "gold": [
+    {
+     "start": "act.13.1",
+     "end": "act.13.3"
+    }
+   ],
+   "style": "colloquial",
+   "note": "act.13.1-3 安提阿教會事奉主禁食時聖靈吩咐，禁食禱告按手後打發他們",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_008",
+   "kind": "positive",
+   "event_id": "ev0010",
+   "question": "金牛犢事件後摩西質問亞倫，亞倫是怎麼解釋那頭牛犢的來歷？",
+   "gold": [
+    {
+     "start": "exo.32.1",
+     "end": "exo.32.35"
+    }
+   ],
+   "style": "pdf_wording",
+   "note": "exo.32.22-24 亞倫說把金環扔在火中這牛犢便出來了",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_010",
+   "kind": "positive",
+   "event_id": "ev0012",
+   "question": "以色列人聽了探子的惡信就哭鬧埋怨要回埃及，上帝最後怎麼懲罰那一代人？",
+   "gold": [
+    {
+     "start": "num.14.26",
+     "end": "num.14.38"
+    }
+   ],
+   "style": "outcome",
+   "note": "num.14.29-35 二十歲以上倒斃曠野、兒女飄流四十年，只有迦勒和約書亞得進",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_012",
+   "kind": "positive",
+   "event_id": "ev0014",
+   "question": "主在異象中叫亞拿尼亞去為掃羅按手，亞拿尼亞為什麼不太敢去、主又怎麼回答他？",
+   "gold": [
+    {
+     "start": "act.9.1",
+     "end": "act.9.19"
+    }
+   ],
+   "style": "person_action",
+   "note": "act.9.13-16 亞拿尼亞聽說掃羅苦害聖徒，主說他是我揀選的器皿",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_014",
+   "kind": "positive",
+   "event_id": "ev0016",
+   "question": "山上寶訓開頭講八福，第一句說虛心的人為什麼有福？",
+   "gold": [
+    {
+     "start": "mat.5.3",
+     "end": "mat.5.12"
+    }
+   ],
+   "style": "pdf_wording",
+   "note": "mat.5.3 因為天國是他們的",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_016",
+   "kind": "positive",
+   "event_id": "ev0018",
+   "question": "十誡裡守安息日的理由，出埃及記和申命記的講法一樣嗎？",
+   "gold": [
+    {
+     "start": "exo.20.1",
+     "end": "exo.20.17"
+    },
+    {
+     "start": "deu.5.1",
+     "end": "deu.5.22"
+    }
+   ],
+   "style": "pdf_wording",
+   "note": "exo.20.11 以六日創造第七日安息為理由；deu.5.15 以記念在埃及作奴僕被領出為理由",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_017",
+   "kind": "positive",
+   "event_id": "ev0019",
+   "question": "埃及十災的最後一災是在什麼時候臨到、法老當夜又對摩西和亞倫說了什麼？",
+   "gold": [
+    {
+     "start": "exo.12.29",
+     "end": "exo.12.36"
+    }
+   ],
+   "style": "outcome",
+   "note": "exo.12.29-32 半夜擊殺長子，法老夜間召摩西亞倫叫他們帶以色列人出去",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_018",
+   "kind": "positive",
+   "event_id": "ev0020",
+   "question": "彼得在大祭司的院子裡一再說不認得耶穌，雞叫之後他想起什麼、又做了什麼？",
+   "gold": [
+    {
+     "start": "mat.26.69",
+     "end": "mat.26.75"
+    },
+    {
+     "start": "mrk.14.66",
+     "end": "mrk.14.72"
+    },
+    {
+     "start": "luk.22.54",
+     "end": "luk.22.62"
+    }
+   ],
+   "style": "outcome",
+   "note": "mat.26.75/mrk.14.72/luk.22.61-62 想起雞叫以先要三次不認主的話，就出去痛哭",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_019",
+   "kind": "positive",
+   "event_id": "ev0021",
+   "question": "所羅門是在以色列人出埃及後第幾年、作王第幾年開工建耶和華的殿？",
+   "gold": [
+    {
+     "start": "1ki.6.1",
+     "end": "1ki.6.10"
+    }
+   ],
+   "style": "paraphrase",
+   "note": "1ki.6.1 出埃及後四百八十年、作王第四年西弗月",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_020",
+   "kind": "positive",
+   "event_id": "ev0022",
+   "question": "五旬節那天彼得講完道，眾人扎心問該怎麼行，結果那天約有多少人受洗加入門徒？",
+   "gold": [
+    {
+     "start": "act.2.14",
+     "end": "act.2.42"
+    }
+   ],
+   "style": "outcome",
+   "note": "act.2.37-41 彼得勸悔改受洗，那一天門徒約添了三千人",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_021",
+   "kind": "positive",
+   "event_id": "ev0024",
+   "question": "上帝領亞伯蘭到外面數天上的星，是要應許他什麼、他又有什麼回應？",
+   "gold": [
+    {
+     "start": "gen.15.1",
+     "end": "gen.15.21"
+    }
+   ],
+   "style": "person_action",
+   "note": "gen.15.5-6 後裔將要如眾星，亞伯蘭信耶和華，耶和華以此為他的義",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_023",
+   "kind": "positive",
+   "event_id": "ev0026",
+   "question": "耶路撒冷會議最後決定外邦信徒只要禁戒哪幾件事？",
+   "gold": [
+    {
+     "start": "act.15.1",
+     "end": "act.15.21"
+    },
+    {
+     "start": "act.15.22",
+     "end": "act.15.35"
+    }
+   ],
+   "style": "pdf_wording",
+   "note": "act.15.20 雅各的意見、act.15.29 覆函：禁戒偶像（祭偶像之物）、姦淫、勒死的牲畜和血",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_026",
+   "kind": "positive",
+   "event_id": "ev0029",
+   "question": "五餅二魚的神蹟裡，那五個餅兩條魚原本是誰帶來的，最後剩下的零碎裝了幾個籃子？",
+   "gold": [
+    {
+     "start": "jhn.6.1",
+     "end": "jhn.6.15"
+    }
+   ],
+   "style": "colloquial",
+   "note": "jhn.6.9 一個孩童帶着五個大麥餅兩條魚；jhn.6.13 裝滿十二個籃子",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_027",
+   "kind": "positive",
+   "event_id": "ev0030",
+   "question": "列王紀下25章18到21節，巴比倫的護衛長把大祭司西萊雅等人帶到哪裡、他們的結局如何？",
+   "gold": [
+    {
+     "start": "2ki.25.18",
+     "end": "2ki.25.21"
+    }
+   ],
+   "style": "reference",
+   "note": "2ki.25.20-21 帶到利比拉的巴比倫王那裏，在哈馬地的利比拉被擊殺",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_028",
+   "kind": "positive",
+   "event_id": "ev0031",
+   "question": "出埃及那一夜吃逾越節的羊羔，上帝吩咐以色列人要怎樣穿戴、怎麼吃？",
+   "gold": [
+    {
+     "start": "exo.12.1",
+     "end": "exo.12.13"
+    }
+   ],
+   "style": "pdf_wording",
+   "note": "exo.12.8-11 烤羊羔配無酵餅苦菜，腰間束帶、腳上穿鞋、手中拿杖、趕緊地吃",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_030",
+   "kind": "positive",
+   "event_id": "ev0033",
+   "question": "最後的晚餐上耶穌說有人要賣他，他是用什麼方式指出那個人的？",
+   "gold": [
+    {
+     "start": "mat.26.17",
+     "end": "mat.26.25"
+    },
+    {
+     "start": "mrk.14.12",
+     "end": "mrk.14.21"
+    },
+    {
+     "start": "luk.22.14",
+     "end": "luk.22.23"
+    },
+    {
+     "start": "jhn.13.21",
+     "end": "jhn.13.30"
+    }
+   ],
+   "style": "colloquial",
+   "note": "同我蘸手在盤子裏的（mat.26.23；mrk.14.20），蘸一點餅給誰就是誰（jhn.13.26）（verifier 補 gold：luk.22.14-luk.22.23）",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_031",
+   "kind": "negative",
+   "event_id": null,
+   "question": "耶羅波安作了北方以色列的王以後，為什麼要鑄兩個金牛犢，又把它們安在哪裡？",
+   "gold": [
+    {
+     "start": "1ki.12.25",
+     "end": "1ki.12.33"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似金牛犢事件（E10）且緊接王國分裂（E04）之後；1ki.12.26-29 怕民心歸回大衛家，牛犢安在伯特利和但",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_032",
+   "kind": "negative",
+   "event_id": null,
+   "question": "耶穌用七個餅和幾條小魚餵飽四千人那一次，最後收拾剩下的零碎裝滿了幾個筐子？",
+   "gold": [
+    {
+     "start": "mat.15.32",
+     "end": "mat.15.39"
+    },
+    {
+     "start": "mrk.8.1",
+     "end": "mrk.8.10"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似五餅二魚（E29）；mat.15.37 裝滿七個筐子（verifier 補 gold：mrk.8.1-mrk.8.10）",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_033",
+   "kind": "negative",
+   "event_id": null,
+   "question": "撒母耳奉命到伯利恆耶西家去膏立新王時，上帝為什麼不揀選身材高大的以利押？",
+   "gold": [
+    {
+     "start": "1sa.16.1",
+     "end": "1sa.16.13"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似撒母耳膏掃羅（E15）；1sa.16.7 人看外貌，耶和華看內心",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_034",
+   "kind": "negative",
+   "event_id": null,
+   "question": "約書亞從什亭打發兩個探子去窺探耶利哥，妓女喇合是怎麼把他們藏起來又送出城的？",
+   "gold": [
+    {
+     "start": "jos.2.1",
+     "end": "jos.2.24"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似十二個探子（E17）；jos.2.6 藏在房頂麻稭中，jos.2.15 用繩子從窗戶縋下去",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_035",
+   "kind": "negative",
+   "event_id": null,
+   "question": "腓利在往迦薩的路上遇到衣索匹亞的太監，那太監當時在車上念哪一位先知的書？",
+   "gold": [
+    {
+     "start": "act.8.26",
+     "end": "act.8.40"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似掃羅歸主（E02/E14）的歸信故事；act.8.28,30 念先知以賽亞的書",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_036",
+   "kind": "negative",
+   "event_id": null,
+   "question": "該隱殺了兄弟亞伯被上帝趕逐之後，最後去住在什麼地方？",
+   "gold": [
+    {
+     "start": "gen.4.8",
+     "end": "gen.4.16"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似被逐出伊甸園（E25）；gen.4.16 住在伊甸東邊挪得之地",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_037",
+   "kind": "negative",
+   "event_id": null,
+   "question": "摩西拿着兩塊法版下西奈山時面皮發光，百姓看見後有什麼反應、他又用什麼蒙臉？",
+   "gold": [
+    {
+     "start": "exo.34.29",
+     "end": "exo.34.35"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似登山變像（E28）的面容發光與十誡法版（E18）；exo.34.30,33 眾人怕挨近，他用帕子蒙臉",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_038",
+   "kind": "negative",
+   "event_id": null,
+   "question": "約西亞王吩咐百姓照約書守的那次逾越節為什麼特別，是在他作王第幾年守的？",
+   "gold": [
+    {
+     "start": "2ki.23.21",
+     "end": "2ki.23.23"
+    },
+    {
+     "start": "2ch.35.18",
+     "end": "2ch.35.19"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似出埃及逾越節（E31）且同書近被擄（E30）；2ki.23.22-23 自士師以來沒有守過這樣的逾越節，約西亞十八年（verifier 補 gold：2ch.35.18-2ch.35.19）",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_039",
+   "kind": "negative",
+   "event_id": null,
+   "question": "可拉一黨在曠野起來攻擊摩西和亞倫，最後他們是怎麼滅亡的？",
+   "gold": [
+    {
+     "start": "num.16.28",
+     "end": "num.16.35"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似加低斯百姓埋怨受罰（E12）；num.16.31-35 地開了口吞下他們，又有火燒滅獻香的二百五十人",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w1_040",
+   "kind": "negative",
+   "event_id": null,
+   "question": "彼得在哥尼流家講道時聖靈降在聽道的外邦人身上，他們有什麼表現、彼得接着又怎麼處理？",
+   "gold": [
+    {
+     "start": "act.10.44",
+     "end": "act.10.48"
+    }
+   ],
+   "style": "near_miss",
+   "note": "近似五旬節聖靈降臨（E22）；act.10.46-48 說方言稱讚上帝，彼得吩咐奉耶穌基督的名給他們施洗",
+   "writer": "w1",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_002",
+   "kind": "positive",
+   "event_id": "ev0002",
+   "question": "有個人本來要去大馬士革抓信耶穌的人，結果半路被天上的大光照到跌在地上，還聽到有聲音問他為什麼逼迫我，這個人後來怎麼了？",
+   "gold": [
+    {
+     "start": "act.9.1",
+     "end": "act.9.19"
+    },
+    {
+     "start": "act.22.6",
+     "end": "act.22.16"
+    }
+   ],
+   "style": "person_action",
+   "note": "徒9:3-18 掃羅見光仆倒、失明三日、亞拿尼亞按手後復明受洗；徒22 保羅自述同一經過",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_003",
+   "kind": "positive",
+   "event_id": "ev0004",
+   "question": "所羅門的兒子羅波安不肯減輕百姓的勞役，還說要用蠍子鞭打他們，結果以色列人怎麼回應？",
+   "gold": [
+    {
+     "start": "1ki.12.1",
+     "end": "1ki.12.20"
+    }
+   ],
+   "style": "outcome",
+   "note": "王上12:16-20 以色列人背叛大衛家、用石頭打死亞多蘭、立耶羅波安為王",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_004",
+   "kind": "positive",
+   "event_id": "ev0005",
+   "question": "當年大家分段修耶路撒冷的城門跟城牆，大祭司跟那些祭司負責修的是哪一個門？",
+   "gold": [
+    {
+     "start": "neh.3.1",
+     "end": "neh.3.16"
+    }
+   ],
+   "style": "colloquial",
+   "note": "尼3:1 大祭司以利亞實和眾祭司建立羊門",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_005",
+   "kind": "positive",
+   "event_id": "ev0006",
+   "question": "約翰福音第1章一開頭一直在講「道」，那個道到底是在指誰？",
+   "gold": [
+    {
+     "start": "jhn.1.1",
+     "end": "jhn.1.18"
+    }
+   ],
+   "style": "reference",
+   "note": "約1:14-18 道成了肉身住在我們中間，恩典和真理由耶穌基督來，獨生子將上帝表明",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_007",
+   "kind": "positive",
+   "event_id": "ev0008",
+   "question": "小時候聽過有個少年用彈弓一顆石頭就把巨人打倒，他後來是怎麼把巨人殺死、頭又拿去哪裡？",
+   "gold": [
+    {
+     "start": "1sa.17.41",
+     "end": "1sa.17.54"
+    }
+   ],
+   "style": "colloquial",
+   "note": "撒上17:49-54 大衛用機弦甩石打倒非利士人，拔對方的刀割頭，把頭拿到耶路撒冷",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_008",
+   "kind": "positive",
+   "event_id": "ev0009",
+   "question": "保羅跟巴拿巴坐船到塞浦路斯，碰到一個會法術的人一直阻撓，保羅讓他眼睛瞎掉，那個地方官看到後怎麼了？",
+   "gold": [
+    {
+     "start": "act.13.4",
+     "end": "act.13.12"
+    }
+   ],
+   "style": "outcome",
+   "note": "徒13:6-12 以呂馬瞎眼，方伯士求‧保羅看見就希奇主的道而信了",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_009",
+   "kind": "positive",
+   "event_id": "ev0010",
+   "question": "摩西上山太久沒下來，百姓就叫亞倫把金耳環熔了做一隻牛來拜，摩西下山看到之後做了哪些事？",
+   "gold": [
+    {
+     "start": "exo.32.1",
+     "end": "exo.32.35"
+    }
+   ],
+   "style": "colloquial",
+   "note": "出32:19-30 摔碎法版、燒毀牛犢磨碎撒水叫百姓喝、利未人擊殺約三千人、上山為百姓贖罪",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_010",
+   "kind": "positive",
+   "event_id": "ev0011",
+   "question": "耶穌被抓之前那晚自己去禱告，求天父把「這杯」拿走，回來卻看到門徒都在睡覺，他跟門徒說了什麼？",
+   "gold": [
+    {
+     "start": "mat.26.36",
+     "end": "mat.26.46"
+    },
+    {
+     "start": "mrk.14.32",
+     "end": "mrk.14.42"
+    },
+    {
+     "start": "luk.22.39",
+     "end": "luk.22.46"
+    }
+   ],
+   "style": "person_action",
+   "note": "三福音同載：求叫這杯離開、門徒睡着，耶穌說要警醒禱告免得入了迷惑",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_012",
+   "kind": "positive",
+   "event_id": "ev0013",
+   "question": "啟示錄第20章後面講到白色大寶座前的審判，名字沒寫在生命冊上的人最後會怎樣？",
+   "gold": [
+    {
+     "start": "rev.20.11",
+     "end": "rev.20.15"
+    }
+   ],
+   "style": "reference",
+   "note": "啟20:15 名字沒記在生命冊上的就被扔在火湖裏",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_013",
+   "kind": "positive",
+   "event_id": "ev0015",
+   "question": "撒母耳把大家叫到米斯巴抽籤選王，結果抽中的人竟然躲起來，大家最後是在哪裡找到他的？",
+   "gold": [
+    {
+     "start": "1sa.10.17",
+     "end": "1sa.10.27"
+    }
+   ],
+   "style": "person_action",
+   "note": "撒上10:20-23 掣出基士的兒子掃羅，耶和華說他藏在器具中，眾人從那裏領出他",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_014",
+   "kind": "positive",
+   "event_id": "ev0016",
+   "question": "耶穌在山上教門徒說有人打你右臉連左臉也轉過去給他打，那他對仇敵又是怎麼教的？",
+   "gold": [
+    {
+     "start": "mat.5.38",
+     "end": "mat.5.42"
+    },
+    {
+     "start": "mat.5.43",
+     "end": "mat.5.48"
+    }
+   ],
+   "style": "paraphrase",
+   "note": "太5:39 右臉左臉；5:44-48 要愛仇敵、為逼迫你們的禱告",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_015",
+   "kind": "positive",
+   "event_id": "ev0017",
+   "question": "摩西派去偷看迦南地的那些人扛了一大串葡萄回來以後，是怎麼跟大家報告那邊的情況？",
+   "gold": [
+    {
+     "start": "num.13.1",
+     "end": "num.13.33"
+    }
+   ],
+   "style": "person_action",
+   "note": "民13:23-33 抬回一掛葡萄，報說流奶與蜜但居民強壯、有亞衲族偉人、自己如蚱蜢；迦勒主張上去",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_017",
+   "kind": "positive",
+   "event_id": "ev0019",
+   "question": "埃及那時候整個國家黑漆漆三天、伸手不見五指，可是以色列人家裡卻有光，法老那一次到底有沒有放人走？",
+   "gold": [
+    {
+     "start": "exo.10.21",
+     "end": "exo.10.29"
+    }
+   ],
+   "style": "colloquial",
+   "note": "出10:21-29 黑暗三天惟以色列人家中有亮光；法老要留下牛羊，心剛硬不肯容去，叫摩西不要再見他",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_018",
+   "kind": "positive",
+   "event_id": "ev0020",
+   "question": "耶穌騎著驢進耶路撒冷，大家把衣服跟樹枝鋪在路上一直喊和散那，那時候城裡的人有什麼反應？",
+   "gold": [
+    {
+     "start": "mat.21.1",
+     "end": "mat.21.11"
+    }
+   ],
+   "style": "paraphrase",
+   "note": "太21:10-11 合城都驚動說這是誰，眾人說是加利利拿撒勒的先知耶穌",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_019",
+   "kind": "positive",
+   "event_id": "ev0021",
+   "question": "所羅門把約櫃抬進他蓋好的殿以後，祭司一出來殿裡忽然怎麼了，讓他們都沒辦法站著服事？",
+   "gold": [
+    {
+     "start": "1ki.8.1",
+     "end": "1ki.8.13"
+    }
+   ],
+   "style": "paraphrase",
+   "note": "王上8:10-11 有雲充滿耶和華的殿，耶和華的榮光充滿，祭司不能站立供職",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_020",
+   "kind": "positive",
+   "event_id": "ev0022",
+   "question": "門徒聚在一起的時候突然有像颳大風的聲音，頭上還出現像火一樣的舌頭，大家開始講各國的話，旁邊圍觀的人怎麼說？",
+   "gold": [
+    {
+     "start": "act.2.1",
+     "end": "act.2.13"
+    }
+   ],
+   "style": "paraphrase",
+   "note": "徒2:6-13 各國的人驚訝聽見鄉談，問這是甚麼意思，有人譏誚說他們是新酒灌滿了",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_021",
+   "kind": "positive",
+   "event_id": "ev0023",
+   "question": "啟示錄講的新天新地裡面，那座從天上降下來的城長什麼樣子？",
+   "gold": [
+    {
+     "start": "rev.21.1",
+     "end": "rev.21.8"
+    },
+    {
+     "start": "rev.21.9",
+     "end": "rev.21.27"
+    }
+   ],
+   "style": "pdf_wording",
+   "note": "啟21:2 新耶路撒冷從天而降；21:11-23 碧玉牆、十二珍珠門、精金街道、不用日月光照",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_022",
+   "kind": "positive",
+   "event_id": "ev0024",
+   "question": "上帝叫亞伯蘭把母牛、山羊、公綿羊劈成兩半排好，晚上有冒煙的爐跟火把從肉塊中間經過，這到底是在幹嘛？",
+   "gold": [
+    {
+     "start": "gen.15.1",
+     "end": "gen.15.21"
+    }
+   ],
+   "style": "person_action",
+   "note": "創15:9-18 劈開祭牲，冒煙的爐與火把經過，當日耶和華與亞伯蘭立約賜地",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_023",
+   "kind": "positive",
+   "event_id": "ev0025",
+   "question": "上帝把最早那個人趕出園子是怕他去摘哪棵樹的果子，後來園子東邊又放了什麼守著？",
+   "gold": [
+    {
+     "start": "gen.3.22",
+     "end": "gen.3.24"
+    }
+   ],
+   "style": "colloquial",
+   "note": "創3:22-24 恐怕他摘生命樹的果子而永遠活着；伊甸園東邊安設基路伯和發火焰的劍",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_025",
+   "kind": "positive",
+   "event_id": "ev0027",
+   "question": "耶穌被掛在十字架上的時候，旁邊一起受刑的犯人有一個求耶穌記得他，耶穌怎麼回答？",
+   "gold": [
+    {
+     "start": "luk.23.26",
+     "end": "luk.23.43"
+    }
+   ],
+   "style": "person_action",
+   "note": "路23:42-43 今日你要同我在樂園裏了",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_026",
+   "kind": "positive",
+   "event_id": "ev0028",
+   "question": "有一次耶穌帶三個門徒爬上一座高山，結果他整個人發亮，還突然冒出兩個古代的人跟他講話，那兩個人是誰？",
+   "gold": [
+    {
+     "start": "mat.17.1",
+     "end": "mat.17.13"
+    },
+    {
+     "start": "mrk.9.2",
+     "end": "mrk.9.13"
+    },
+    {
+     "start": "luk.9.28",
+     "end": "luk.9.36"
+    }
+   ],
+   "style": "colloquial",
+   "note": "三福音同載：變了形像衣服放光，摩西和以利亞顯現同耶穌說話",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_028",
+   "kind": "positive",
+   "event_id": "ev0031",
+   "question": "以色列人那時候在埃及為什麼要殺小羊，還要把羊血塗在門框上？",
+   "gold": [
+    {
+     "start": "exo.12.1",
+     "end": "exo.12.13"
+    },
+    {
+     "start": "exo.12.21",
+     "end": "exo.12.28"
+    }
+   ],
+   "style": "colloquial",
+   "note": "出12:7,12-13,23 血作記號，耶和華擊殺埃及頭生的時候見血就越過去",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_029",
+   "kind": "positive",
+   "event_id": "ev0032",
+   "question": "有個人被一群人拖到城外用石頭打，死前還跪著喊說不要把這罪算在他們身上，這個人是誰？",
+   "gold": [
+    {
+     "start": "act.7.54",
+     "end": "act.7.60"
+    }
+   ],
+   "style": "person_action",
+   "note": "徒7:58-60 眾人用石頭打司提反，他跪下喊不要將這罪歸於他們",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_030",
+   "kind": "positive",
+   "event_id": "ev0033",
+   "question": "耶穌跟門徒吃晚飯時起來幫他們洗腳，彼得一開始不肯讓他洗，耶穌怎麼回他？",
+   "gold": [
+    {
+     "start": "jhn.13.1",
+     "end": "jhn.13.20"
+    }
+   ],
+   "style": "person_action",
+   "note": "約13:6-8 彼得說你永不可洗我的腳，耶穌說我若不洗你，你就與我無分了",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_031",
+   "kind": "negative",
+   "event_id": null,
+   "question": "掃羅開始到處講耶穌以後，猶太人日夜守在城門口要殺他，他最後是怎麼逃出去的？",
+   "gold": [
+    {
+     "start": "act.9.23",
+     "end": "act.9.25"
+    },
+    {
+     "start": "2co.11.32",
+     "end": "2co.11.33"
+    }
+   ],
+   "style": "near_miss",
+   "note": "徒9:23-25 門徒夜間用筐子把他從城牆縋下去；緊接在掃羅歸主錨點(9:1-22)之後但不重疊（verifier 補 gold：2co.11.32-2co.11.33）",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_032",
+   "kind": "negative",
+   "event_id": null,
+   "question": "耶穌半夜在海面上走過來的時候，彼得也下船想走過去，結果他為什麼會沉下去？",
+   "gold": [
+    {
+     "start": "mat.14.22",
+     "end": "mat.14.33"
+    }
+   ],
+   "style": "near_miss",
+   "note": "太14:30 見風甚大就害怕將要沉下去；同章緊接五千人吃飽(14:13-21)但屬另一神蹟",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_035",
+   "kind": "negative",
+   "event_id": null,
+   "question": "耶穌受洗從水裡上來的時候，天上傳來的聲音說了什麼？",
+   "gold": [
+    {
+     "start": "mat.3.13",
+     "end": "mat.3.17"
+    },
+    {
+     "start": "mrk.1.9",
+     "end": "mrk.1.11"
+    },
+    {
+     "start": "luk.3.21",
+     "end": "luk.3.22"
+    }
+   ],
+   "style": "near_miss",
+   "note": "太3:17 這是我的愛子，我所喜悅的；與登山變像的天上聲音相似但非同一事件（verifier 補 gold：mrk.1.9-mrk.1.11、luk.3.21-luk.3.22）",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_036",
+   "kind": "negative",
+   "event_id": null,
+   "question": "耶穌在門徒眼前被雲接上天以後，旁邊兩個穿白衣的人跟門徒說了什麼？",
+   "gold": [
+    {
+     "start": "act.1.6",
+     "end": "act.1.11"
+    }
+   ],
+   "style": "near_miss",
+   "note": "徒1:10-11 為甚麼站着望天，耶穌怎樣往天上去還要怎樣來；近似復活後差遣與五旬節",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_037",
+   "kind": "negative",
+   "event_id": null,
+   "question": "雅各在路上拿石頭當枕頭睡覺，夢見一個梯子頂到天上，醒來以後他對那塊石頭做了什麼？",
+   "gold": [
+    {
+     "start": "gen.28.10",
+     "end": "gen.28.22"
+    }
+   ],
+   "style": "near_miss",
+   "note": "創28:18-22 把石頭立作柱子澆油、起名伯特利並許願；近似「通天」的巴別塔與立約應許",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_038",
+   "kind": "negative",
+   "event_id": null,
+   "question": "以色列人在曠野又抱怨上帝跟摩西，結果被火蛇咬死很多人，後來摩西是用什麼方法救他們？",
+   "gold": [
+    {
+     "start": "num.21.4",
+     "end": "num.21.9"
+    }
+   ],
+   "style": "near_miss",
+   "note": "民21:8-9 製造銅蛇掛在杆子上，被咬的一望就活；近似民14 埋怨受罰",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_039",
+   "kind": "negative",
+   "event_id": null,
+   "question": "啟示錄裡有個天使拿著大鍊子把那條古蛇抓起來，丟進無底坑關多久？",
+   "gold": [
+    {
+     "start": "rev.20.1",
+     "end": "rev.20.3"
+    }
+   ],
+   "style": "near_miss",
+   "note": "啟20:2-3 捆綁一千年；與白色大寶座審判(20:11-15)同章但不重疊",
+   "writer": "w2",
+   "tuned_on": false
+  },
+  {
+   "id": "w2_040",
+   "kind": "negative",
+   "event_id": null,
+   "question": "保羅跟西拉被關在監獄裡半夜唱詩，突然大地震監門全開，那個看守的人後來怎麼了？",
+   "gold": [
+    {
+     "start": "act.16.25",
+     "end": "act.16.34"
+    }
+   ],
+   "style": "near_miss",
+   "note": "徒16:27-34 禁卒要自殺被攔，問怎樣得救，全家信主受洗；近似歸主故事與第一次宣教旅程",
+   "writer": "w2",
+   "tuned_on": false
+  }
+ ]
+}
