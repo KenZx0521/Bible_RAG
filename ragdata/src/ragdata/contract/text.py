@@ -380,6 +380,8 @@ class ErrataApplied(Record):
         require(len(self.pdf_char) == 1 and len(self.corrected_char) == 1,
                 "errata replace exactly one character")
         require(self.pdf_char != self.corrected_char, "errata must change the character")
+        require(self.decided_by == "kay",
+                "an applied erratum is curated_human: Kay decides it (decided_by kay)")
 
 
 @dataclass(frozen=True)

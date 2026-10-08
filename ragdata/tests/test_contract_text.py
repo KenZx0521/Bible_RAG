@@ -117,6 +117,7 @@ BROKEN = {
     "errata no-op": _with("errata_applied", "er:0001", corrected_char="詵"),
     "errata two chars": _with("errata_applied", "er:0001", pdf_char="詵詵"),
     "errata id": _with("errata_applied", "er:0001", errata_id="er:1"),
+    "errata not decided by kay": _with("errata_applied", "er:0001", decided_by="claude"),
     "alias to itself": _with("ref_aliases", "mat.18.5", target="mat.18.5"),
     "alias relation": _with("ref_aliases", "mat.18.5", relation="same_as"),
     "alias provenance": _with("ref_aliases", "mat.18.5", provenance_class="pdf_deterministic"),
