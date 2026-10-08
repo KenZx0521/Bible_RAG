@@ -5,7 +5,7 @@
 > **資料來源**：`bible_md/`（66 卷新標點和合本 markdown）
 > **更新日期**：2026-04-29
 > **驗證方式**：MCP Neo4j Cypher 即時查詢
-> **⚠️ 歷史版本**：本文數據為 KG P0 修復前快照。P0 後（2026-07-06）anchor coverage 83.8%→98.2%、CROSS_REFERENCES 916→250,418、Event 參與者/地點補至 84%/75% 等已大幅變動，現況以 [../kg_optimization_progress.md](../kg_optimization_progress.md) 為準。重建至線上現況的完整步驟（含 TSK 匯入與 curated 資料重放鏈）見 [../build_database.md](../build_database.md) Step 9–10。
+> **⚠️ 歷史版本**：本文數據為 KG P0 修復前快照。P0 後（2026-07-06）anchor coverage 83.8%→98.2%、CROSS_REFERENCES 916→250,418、Event 參與者/地點補至 84%/75% 等已大幅變動，現況以 `kg_optimization_progress.md`（2026-10 已刪除，見 git 歷史 1618cbd） 為準。重建至線上現況的完整步驟（含 TSK 匯入與 curated 資料重放鏈）見 `build_database.md`（2026-10 已刪除，見 git 歷史 1618cbd） Step 9–10。
 
 ---
 
@@ -662,7 +662,7 @@ Database Stats:
   Total relationships: 49,389
 ```
 
-> ⚠ 上列預期輸出為 P0 前快照。P0 後 `import_neo4j.py` 內建 verse→pericope remap 與誠實計數器：重跑時 MENTIONS 會高於 41,034（97,235 條 verse 級 mention 不再靜默丟棄，落空者計入 `skipped_missing` 並輸出 log）。匯入完成後還需執行 TSK 匯入與修復重放鏈才會到線上現況 — 見 [../build_database.md](../build_database.md) Step 9–10。
+> ⚠ 上列預期輸出為 P0 前快照。P0 後 `import_neo4j.py` 內建 verse→pericope remap 與誠實計數器：重跑時 MENTIONS 會高於 41,034（97,235 條 verse 級 mention 不再靜默丟棄，落空者計入 `skipped_missing` 並輸出 log）。匯入完成後還需執行 TSK 匯入與修復重放鏈才會到線上現況 — 見 `build_database.md`（2026-10 已刪除，見 git 歷史 1618cbd） Step 9–10。
 
 #### 進階選項
 
@@ -763,7 +763,7 @@ RETURN length(path) AS hops, end.id LIMIT 10;
 本文件聚焦 **Neo4j 知識圖譜**。完整三庫架構（PostgreSQL + Neo4j + Qdrant）請參閱：
 
 - [../ARCHITECTURE.md](../ARCHITECTURE.md) — 現行全景架構（首選）
-- [../build_database.md](../build_database.md) — 完整建置流程（含 PG 與 Qdrant）
+- `build_database.md` — 舊的完整建置流程（含 PG 與 Qdrant；2026-10 已刪除，見 git 歷史 1618cbd，現行管線見 [../rebuild_pipeline.md](../rebuild_pipeline.md)）
 - [2026-02-27_database_architecture_report.md](2026-02-27_database_architecture_report.md) — 初版三庫整合分析（歷史快照）
 - [2026-05-17_architecture_snapshot.md](2026-05-17_architecture_snapshot.md) — 2026-05 系統架構快照（歷史）
 

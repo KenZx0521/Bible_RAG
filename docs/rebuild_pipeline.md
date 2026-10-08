@@ -1,6 +1,6 @@
 # 重建管線：從 66 卷 PDF 到 release、載入與驗證
 
-新管線的唯一入口文件。設計依據：`/mnt/ollama-data/bible_rag_store/reference/DESIGN.md`（§4 DAG、§7 loader、§8 閘門）。舊的 `docs/build_database.md`（Step 0–10）已被取代。
+新管線的唯一入口文件。設計依據：`/mnt/ollama-data/bible_rag_store/reference/DESIGN.md`（§4 DAG、§7 loader、§8 閘門）。舊管線（`docs/build_database.md` Step 0–10、`scripts/` 的建庫程式、`bible_chunking/`）已刪除，要看請用 R1 的 commit（1618cbd）。
 
 ## 1. 前置環境
 
@@ -8,7 +8,7 @@
 - Python：只用 `scripts/.venv` 跑 ragdata。管線不跑 backend，也不需要 backend 的 venv。
 - 模型一律離線：BGE-M3 在 `HF_HOME=/mnt/ollama-data/huggingface`，reranker tokenizer 在 `/mnt/ollama-data/bible_rag_store/models/`。建議有 GPU（emb 編碼與 G-ENC 全量重編碼）。
 - repo 內的輸入：`bible_pdf/`（66 卷）、`config/registries/`（K0 註冊表；K1 讀 `events.yaml` v2；K4 另讀 `query_aliases.yaml`）、`ragdata/src/ragdata/contract/expectations/`、`ground_truth.json`（GT v1，G-GT 核對 GT v2 變更紀錄用）。
-  - `config/registries/routing_lexicon.legacy.json` 與 `backend/data/event_registry.json` 是 R1 的產物，管線與 backend 都不讀；R1 smoke 後清理。
+  - R1 的 `config/registries/routing_lexicon.legacy.json` 與 `backend/data/event_registry.json` 已刪除（R2 管線與 backend 都不讀）；要重現 R1，從 R1 的 commit（1618cbd）跑。
 - store `reference/` 的輸入：舊系統留下的唯讀副本。bible_md、legacy_output 兩個目錄各有 `SHA256SUMS`，讀取端逐檔核對，任何一檔不符就停，不會默默換掉某一層。
   - `reference/bible_md/`：66 卷 md，只做 G-DIFF 對帳。text 層 `diff_summary.json` 的 `inputs.bible_md` 記著它的摘要。
   - `reference/audit_prototypes/gap_pdf_canonical/canonical_full.jsonl`：只做 G-DIFF 對帳。稽核時就放在這裡，沒有 `SHA256SUMS`；它的 sha 記在 `diff_summary.json` 的 `inputs.canonical_full`，內容一變，text 層就換版本。
@@ -118,13 +118,14 @@ env HF_HOME=/mnt/ollama-data/huggingface HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 # backend：217 passed、1 skipped（R2 路由 golden 尚未凍結）
 PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
   backend/.venv/bin/python -m pytest backend/tests -q
-# scripts：1,588 passed、1 skipped
+# scripts：12 passed（只剩 derive_ragcommon_data 與 harness）
 scripts/tests/run.sh -q
-# evaluation：537 passed
+# evaluation：482 passed
 evaluation/.venv/bin/python -m pytest evaluation/tests -q
 ```
 
 - 上面的數字是 2026-10-08 的結果。
 - ragdata 的測試會讀 store 的 `reference/`（bible_md、canonical_full）、repo 的 6 卷 PDF，以及離線的 BGE-M3 tokenizer。
-- backend 的 `test_integration.py` 用本機 `pgvector/pgvector:pg15` 映像起一個用完即刪的 PG（沒有映像就整檔 skip），載入 `backend/tests/fixtures/mini_build/`。這份 build 由 `backend/tests/fixtures/make_mini_build.py` 從 ragdata 的 mini release 產生；契約一變就要重產，否則 ragdata 的 `test_backend_mini_build.py` 會失敗。
+- backend 的 `test_integration.py` 用本機 `pgvector/pgvector:pg15` 映像起一個用完即刪的 PG（資料目錄是 tmpfs，不留匿名 volume；沒有映像就整檔 skip），載入 `backend/tests/fixtures/mini_build/`。這份 build 由 `backend/tests/fixtures/make_mini_build.py` 從 ragdata 的 mini release 產生；契約一變就要重產，否則 ragdata 的 `test_backend_mini_build.py` 會失敗。
+- `test_staging_compose_restart.py`（staging compose 的 backend 服務一律 restart "no"）在 backend 套件裡。
 - `test_routing_golden.py` 在 `backend/tests/fixtures/routing_r2_gt.json` 凍結、且 store 有它指名的 route 層之前一律 skip。route 層進 store 後，照 `make_routing_golden.py` 開頭的指令凍結。
