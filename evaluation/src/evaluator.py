@@ -15,6 +15,7 @@ import csv
 import json
 from collections import defaultdict
 from pathlib import Path
+from typing import Sequence
 
 from rich.console import Console
 from rich.table import Table
@@ -23,6 +24,7 @@ from .config import settings
 from .models import EvalSample, MetricResult, EvalReport, AggregatedReport, Rationale
 from .data_loader import GroundTruthSet, load_gt
 from .collector import collect_responses
+from .id_selection import select_questions
 from .provenance import RunContext
 from .validity import invalidate_infra_failures
 
@@ -255,9 +257,11 @@ async def run_collection(
     use_graph: bool | None = None,
     semantic_only: bool = False,
     graph_strategies: list[str] | None = None,
+    question_ids: Sequence[str] | None = None,
 ) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
-    Step 1: Collect RAG responses + inline Claude evaluation.
+    Step 1: Collect RAG responses. No LLM judge runs here: the inline
+    answer_point_coverage step was removed for cost (inline metrics stay empty).
 
     Args:
         ctx: The run's GT (its questions are asked) and backend provenance
@@ -268,12 +272,15 @@ async def run_collection(
             cross-ref and run pure semantic retrieval only.
         graph_strategies: Which graph strategies run (["all"] = every one).
             None = backend RAG_GRAPH_STRATEGIES default.
+        question_ids: Ask only these questions, in GT order (--ids-file).
+            None = every GT question; an id the GT lacks raises IdsFileError
+            before anything is asked or written.
 
-    Returns: (samples, inline_point_coverage_metrics)
+    Returns: (samples, inline_metrics)
     """
-    questions = list(ctx.gt.items)
-    console.print(f"[bold]Loaded {len(questions)} ground truth questions "
-                  f"(GT {ctx.gt.version}).[/bold]")
+    questions = select_questions(ctx.gt.items, question_ids)
+    console.print(f"[bold]Loaded {len(questions)} of {len(ctx.gt.items)} ground truth "
+                  f"questions (GT {ctx.gt.version}).[/bold]")
     return await collect_responses(
         questions, use_graph=use_graph, semantic_only=semantic_only,
         graph_strategies=graph_strategies, provenance=ctx.provenance,

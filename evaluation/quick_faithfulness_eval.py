@@ -8,8 +8,22 @@ run, or to re-judge a run of record after a judge fix.
 
 Usage:
     uv run python quick_faithfulness_eval.py --results-dir results_graph \
-        --out results_quick/faith_metric_validation.json [--limit N] [--ids A,B] \
-        [--gt v1|v2] [--contracts-dir DIR]
+        --out results_quick/faith_metric_validation.json [--limit N] \
+        [--ids A,B | --ids-file IDS] [--coverage] [--gt v1|v2] [--contracts-dir DIR]
+
+--results-dir and --out resolve under evaluation/ when relative; absolute paths
+are used as given. --ids-file is a JSON list or one id per line.
+
+Samples whose answer cannot be judged get null scores and leave every mean:
+infrastructure failures and the backend's generation-error answers
+(src/validity.py answer_failure). Per-row "invalid" says why ("infra",
+"generation", or null); meta "invalid_samples" lists them.
+
+--coverage also judges answer coverage (metrics/coverage_eval.py: recall over
+the --gt's expected_answer_points) on the same samples with the same judge
+provider and model; invalid samples get none. It adds per-row
+"coverage" (float or null), overall "coverage" and meta "coverage_enabled" /
+"n_coverage_scored"; every other field is what the run without it writes.
 
 The build comes from run_meta.json beside the checkpoint (none = legacy-20261004);
 a new build's checkpoint is judged only with --gt v2. The output meta records
@@ -86,9 +100,16 @@ def _load_stored_faithfulness(results_dir: Path) -> dict[str, float]:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Faithfulness-only re-judge over a raw_responses checkpoint")
     parser.add_argument("--results-dir", default="results_graph", help="directory holding raw_responses.json")
-    parser.add_argument("--out", required=True, help="output JSON path (relative to evaluation/)")
+    parser.add_argument("--out", required=True,
+                        help="output JSON path (relative to evaluation/, or absolute)")
     parser.add_argument("--limit", type=positive_int, default=0, help="only the first N samples")
-    parser.add_argument("--ids", default="", help="comma-separated question_ids to judge")
+    ids = parser.add_mutually_exclusive_group()
+    ids.add_argument("--ids", default="", help="comma-separated question_ids to judge")
+    ids.add_argument("--ids-file", type=Path, default=None,
+                     help="question_ids to judge: a JSON list or one id per line")
+    parser.add_argument("--coverage", action="store_true",
+                        help="also judge answer coverage (expected_answer_points of --gt) with "
+                             "the same judge; adds per-row and overall 'coverage'")
     parser.add_argument("--no-rebuild", action="store_true",
                         help="do not rebuild legacy headerless contexts from PostgreSQL")
     parser.add_argument("--gt", choices=("v1", "v2"), default=None,
@@ -108,10 +129,22 @@ def _run_context(args: argparse.Namespace, results_dir: Path):
     return make_context(load_gt(args.gt), read_run_meta(results_dir), args.contracts_dir)
 
 
+def _selected_ids(parser: argparse.ArgumentParser, args: argparse.Namespace) -> set[str] | None:
+    """--ids or --ids-file; None = every sample in the checkpoint."""
+    if args.ids_file is None:
+        return parse_ids(args.ids)
+    from src.id_selection import IdsFileError, read_ids_file
+
+    try:
+        return set(read_ids_file(args.ids_file))
+    except IdsFileError as exc:
+        parser.error(f"--ids-file {args.ids_file}: {exc}")
+
+
 def _load(parser: argparse.ArgumentParser, args: argparse.Namespace, results_dir: Path, gt) -> list:
     from src.evaluator import load_samples_from_checkpoint
 
-    only_ids = parse_ids(args.ids)
+    only_ids = _selected_ids(parser, args)
     samples = load_samples_from_checkpoint(
         rebuild_contexts=not args.no_rebuild,
         raw_path=results_dir / "raw_responses.json",
@@ -135,8 +168,34 @@ def _judge(samples: list) -> tuple[dict, dict]:
     return compute_faithfulness_only(samples)
 
 
+def _coverage(samples: list) -> dict[str, float | None]:
+    """Answer coverage per question, None where it is not valid (judge failure, no points,
+    infrastructure or generation failure, as faithfulness)."""
+    from src.metrics.coverage_eval import compute_coverage_metrics
+    from src.validity import invalidate_answer_failures
+
+    metrics = invalidate_answer_failures(samples, compute_coverage_metrics(samples))
+    return {s.question_id: next((m.value for m in metrics.get(s.question_id, [])
+                                 if m.name == "answer_coverage" and m.valid), None)
+            for s in samples}
+
+
+def _with_coverage(report: dict, coverage: dict[str, float | None]) -> dict:
+    """The report plus per-row and overall "coverage"; every existing field unchanged."""
+    scored = [v for v in coverage.values() if v is not None]
+    return {
+        **report,
+        "meta": {**report["meta"], "coverage_enabled": True, "n_coverage_scored": len(scored)},
+        "overall": {**report["overall"], "coverage": _mean(scored)},
+        "samples": [{**row, "coverage": coverage.get(row["question_id"])}
+                    for row in report["samples"]],
+    }
+
+
 def _tally(samples: list, metrics: dict, rationales: dict, stored: dict[str, float]) -> dict:
     """Per-sample rows plus overall / by-type / by-family means (stored scores paired)."""
+    from src.validity import answer_failure
+
     rows = []
     groups: dict[str, dict[str, dict[str, list[float]]]] = {
         "overall": defaultdict(lambda: defaultdict(list)),
@@ -147,7 +206,8 @@ def _tally(samples: list, metrics: dict, rationales: dict, stored: dict[str, flo
     for s in samples:
         vals = {m.name: m.value for m in metrics.get(s.question_id, []) if m.valid}
         family = s.ground_truth.family or "legacy_head"
-        rows.append(_row(s, family, vals, rationales.get(s.question_id), stored))
+        rows.append(_row(s, family, vals, rationales.get(s.question_id), stored,
+                         answer_failure(s)))
         if not vals:
             continue
         n_scored += 1
@@ -165,13 +225,15 @@ def _tally(samples: list, metrics: dict, rationales: dict, stored: dict[str, flo
             "by_family": means["by_family"]}
 
 
-def _row(s, family: str, vals: dict, rationale, stored: dict[str, float]) -> dict:
+def _row(s, family: str, vals: dict, rationale, stored: dict[str, float],
+         invalid: str | None) -> dict:
     return {
         "question_id": s.question_id,
         "question_type": s.question_type,
         "family": family,
         "route_used": s.route_used,
         "context_source": s.context_source,
+        "invalid": invalid,
         "stored_faithfulness": stored.get(s.question_id),
         "ragas_faithfulness": vals.get("ragas_faithfulness"),
         "ragas_faithfulness_strict": vals.get("ragas_faithfulness_strict"),
@@ -191,6 +253,8 @@ def _report(results_dir: Path, samples: list, tally: dict, run_meta: dict) -> di
             **run_meta,
             "n_samples": len(samples),
             "n_scored": tally["n_scored"],
+            "invalid_samples": {r["question_id"]: r["invalid"]
+                                for r in tally["rows"] if r["invalid"]},
             "n_paired_with_stored": tally["n_paired"],
             "judge_provider": settings.eval_llm_provider,
             "judge_model": _judge_model_name(),
@@ -218,6 +282,8 @@ def _save(report: dict, out: str) -> Path:
 
 
 def main() -> None:
+    from src.validity import invalidate_answer_failures
+
     parser = _parser()
     args = parser.parse_args()
     _setup_logging()
@@ -229,8 +295,14 @@ def main() -> None:
     console.print(f"[bold]Judging faithfulness for {len(samples)} samples from {results_dir.name}[/bold]")
 
     metrics, rationales = _judge(samples)
+    # Infrastructure and generation failures: judged, but their scores are void
+    # (prereg G-ANS counts them in n_invalid).
+    metrics = invalidate_answer_failures(samples, metrics)
     tally = _tally(samples, metrics, rationales, _load_stored_faithfulness(results_dir))
-    out_path = _save(_report(results_dir, samples, tally, ctx.meta()), args.out)
+    report = _report(results_dir, samples, tally, ctx.meta())
+    if args.coverage:
+        report = _with_coverage(report, _coverage(samples))
+    out_path = _save(report, args.out)
     console.print(f"[bold green]Saved {out_path}[/bold green]")
 
 

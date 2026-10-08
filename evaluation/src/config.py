@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     _graph_mode: bool | None = PrivateAttr(default=None)
     # When True, overrides graph mode and routes output to results_semantic/.
     _semantic_only: bool = PrivateAttr(default=False)
+    # run_eval --results-dir: this run's output directory, over both modes above.
+    _results_dir_override: Path | None = PrivateAttr(default=None)
 
     # Evaluation LLM Provider: claude | openai | gemini | ollama
     eval_llm_provider: str = "claude"
@@ -100,9 +102,15 @@ class Settings(BaseSettings):
         """Set semantic-only flag. When True, overrides graph mode for results_dir."""
         self._semantic_only = semantic_only
 
+    def set_results_dir(self, path: Path | None) -> None:
+        """Pin `results_dir` to ``path`` for this run (None: back to the mode-based directory)."""
+        self._results_dir_override = path
+
     @property
     def results_dir(self) -> Path:
-        """Resolve output directory based on graph/semantic mode set by CLI."""
+        """Resolve output directory: an explicit --results-dir, else by graph/semantic mode."""
+        if self._results_dir_override is not None:
+            return self._results_dir_override
         if self._semantic_only:
             return _EVAL_ROOT / "results_semantic"
         if self._graph_mode is True:

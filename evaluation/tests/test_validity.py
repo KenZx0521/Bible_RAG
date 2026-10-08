@@ -3,9 +3,13 @@ retrieval misses: their metrics must be flagged invalid so aggregates skip them
 instead of averaging in a 0 (VERSE_LOOKUP_035 in Round 3: ConnectTimeout,
 0 sources, every metric recorded as a valid 0)."""
 
+import pytest
+
 from src.evaluator import _aggregate
 from src.models import EvalSample, GroundTruthItem, MetricResult, SourceInfo
-from src.validity import invalidate_infra_failures, is_infra_failure
+from src.validity import (
+    answer_failure, invalidate_answer_failures, invalidate_infra_failures, is_infra_failure,
+)
 
 
 def _sample(qid: str, sources=(), errors=None) -> EvalSample:
@@ -74,6 +78,36 @@ def test_failed_auxiliary_lane_is_an_infra_failure():
     """The registry anchor could not be fetched: the treatment was not applied."""
     sample = _sample("Q", sources=["gen:1:0"], errors={"event_registry": "pg down"})
     assert is_infra_failure(sample)
+
+
+GENERATION_ERRORS = ("生成回答時發生錯誤：ReadTimeout('')", "生成回答時發生錯誤。")
+
+
+@pytest.mark.parametrize("answer", GENERATION_ERRORS, ids=["raised", "empty"])
+def test_backend_generation_error_is_an_answer_failure(answer):
+    """backend/utils/generator.py answers HTTP 200 with this text beside normal sources."""
+    sample = _sample("Q", sources=["gen:1:0"]).model_copy(update={"rag_answer": answer})
+
+    assert answer_failure(sample) == "generation"
+    assert not is_infra_failure(sample)  # retrieval worked; only answer metrics are void
+
+
+def test_answer_failure_reasons():
+    assert answer_failure(_sample("OK", sources=["gen:1:0"])) is None
+    assert answer_failure(_sample("Q", errors={"request": "HTTP 500"})) == "infra"
+    assert answer_failure(_sample("Q", sources=["gen:1:0"], errors={"event_registry": "x"})) == "infra"
+
+
+def test_invalidate_answer_failures_flags_generation_failures_too():
+    gen = _sample("GEN", sources=["gen:1:0"]).model_copy(update={"rag_answer": GENERATION_ERRORS[0]})
+    samples = [_sample("OK", sources=["gen:1:0"]), gen, _sample("BAD", errors={"hybrid": "x"})]
+    metrics = {"OK": _metrics(1.0), "GEN": _metrics(0.0), "BAD": _metrics(0.0)}
+
+    out = invalidate_answer_failures(samples, metrics)
+
+    assert all(m.valid for m in out["OK"])
+    assert not any(m.valid for m in out["GEN"] + out["BAD"])
+    assert all(m.valid for m in invalidate_infra_failures(samples, metrics)["GEN"])
 
 
 def test_csv_leaves_invalid_metrics_blank(tmp_path, monkeypatch):

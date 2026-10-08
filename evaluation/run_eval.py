@@ -26,6 +26,14 @@ Usage:
     through contracts/{build_id}/verse_index.json (--contracts-dir to override).
     evaluation_results.json meta records data_build_id, gt_version, gt_sha and
     encoder_fingerprint.
+
+    Question subset into a run's own directory (e.g. the R1 G-ANS arms):
+        BACKEND_URL=http://localhost:8002 uv run python run_eval.py --collect-only \
+            --gt v2 --ids-file gans_ids.txt --results-dir /path/to/gans_R [--overwrite]
+    --ids-file is a JSON list or one id per line (an id the GT lacks is refused);
+    --results-dir replaces results*/ for this run (relative = under evaluation/)
+    and a collection never replaces its raw_responses.json without --overwrite.
+    Collecting calls no LLM judge.
 """
 
 from __future__ import annotations
@@ -40,6 +48,7 @@ from rich.logging import RichHandler
 from rich.panel import Panel
 
 console = Console()
+EVAL_ROOT = Path(__file__).resolve().parent
 
 
 def _setup_logging() -> None:
@@ -94,12 +103,47 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--contracts-dir", type=Path, default=None,
                         help="the build's contracts directory (default: "
                              "$RAG_STORE/contracts/<build_id>)")
+    parser.add_argument("--ids-file", type=Path, default=None,
+                        help="collect only these question ids (JSON list or one id per line; "
+                             "ids the GT lacks are refused)")
+    parser.add_argument("--results-dir", type=Path, default=None,
+                        help="output directory for this run instead of results*/ "
+                             "(relative paths resolve under evaluation/)")
+    parser.add_argument("--overwrite", action="store_true",
+                        help="with --results-dir: collect even though it already holds "
+                             "raw_responses.json (replaced)")
     args = parser.parse_args()
+    _check_args(parser, args)
+    return args
+
+
+def _check_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Refuse flag combinations that do not add up; read the ids file into ``args.ids``."""
+    from src.id_selection import IdsFileError, read_ids_file
+
     if args.semantic and args.graph is not None:
         parser.error("--semantic cannot be combined with --graph / --no-graph")
     if args.rebuild_contexts and not args.eval_only:
         parser.error("--rebuild-contexts requires --eval-only")
-    return args
+    if args.ids_file is not None and (args.eval_only or args.visualize_only):
+        parser.error("--ids-file selects the questions to collect; it cannot be combined "
+                     "with --eval-only / --visualize-only")
+    if args.overwrite and args.results_dir is None:
+        parser.error("--overwrite requires --results-dir")
+    args.ids = None
+    if args.ids_file is not None:
+        try:
+            args.ids = read_ids_file(args.ids_file)
+        except IdsFileError as exc:
+            parser.error(f"--ids-file {args.ids_file}: {exc}")
+
+
+def _refuse_overwrite(args: argparse.Namespace, results_dir: Path) -> None:
+    """A run's own --results-dir keeps its checkpoint unless --overwrite says otherwise."""
+    checkpoint = results_dir / "raw_responses.json"
+    if args.results_dir is not None and not args.overwrite and checkpoint.exists():
+        raise SystemExit(f"{checkpoint} already exists; pass --overwrite to collect over it "
+                         "or choose another --results-dir")
 
 
 def _print_banner(args: argparse.Namespace, results_dir: Path) -> None:
@@ -132,9 +176,14 @@ def _run_context(args: argparse.Namespace, live: bool):
 
 def _collect(args: argparse.Namespace, ctx):
     from src.evaluator import run_collection
+    from src.id_selection import IdsFileError
 
-    return asyncio.run(run_collection(ctx, use_graph=args.graph, semantic_only=args.semantic,
-                                      graph_strategies=args.graph_strategies))
+    try:
+        return asyncio.run(run_collection(ctx, use_graph=args.graph, semantic_only=args.semantic,
+                                          graph_strategies=args.graph_strategies,
+                                          question_ids=args.ids))
+    except IdsFileError as exc:
+        raise SystemExit(f"--ids-file {args.ids_file}: {exc}") from None
 
 
 def _evaluate(samples, ctx, inline_metrics=None) -> None:
@@ -156,10 +205,13 @@ def main() -> None:
     from src.config import settings
     settings.set_graph_mode(args.graph)
     settings.set_semantic_mode(args.semantic)
+    settings.set_results_dir(None if args.results_dir is None
+                             else (EVAL_ROOT / args.results_dir).resolve())
     _print_banner(args, settings.results_dir)
 
     if args.collect_only:
         console.print("[bold]Mode: Collect Only[/bold]")
+        _refuse_overwrite(args, settings.results_dir)
         _collect(args, _run_context(args, live=True))
         console.print("[green]Collection complete. Run with --eval-only to run batch metrics.[/green]")
     elif args.eval_only:
@@ -178,8 +230,9 @@ def main() -> None:
         generate_dashboard(load_results())
     else:
         console.print("[bold]Mode: Full Evaluation Pipeline[/bold]\n")
+        _refuse_overwrite(args, settings.results_dir)
         ctx = _run_context(args, live=True)
-        console.rule("[bold cyan]Step 1: Collect RAG Responses + Claude Point Coverage")
+        console.rule("[bold cyan]Step 1: Collect RAG Responses")
         samples, inline_metrics = _collect(args, ctx)
         console.rule("[bold cyan]Step 2: Run Batch Evaluation Metrics")
         _evaluate(samples, ctx, inline_metrics=inline_metrics)
