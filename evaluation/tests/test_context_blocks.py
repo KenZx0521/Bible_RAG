@@ -2,15 +2,15 @@
 Context-block parity between the generator and the judge.
 
 The judge must see exactly what the generator saw: the `[i] 書卷 第N章 - 標題 (節)`
-header plus the passage text. These tests pin the header format and the
-verse/pericope id-collision resolution (`3jn:1:2` is both 3 John 1:2 and the
-2nd pericope of 3 John 1).
+header plus the passage text. These tests pin the header format and how a source's fetch is
+resolved from its fields (`3jn:1:2` is both 3 John 1:2 and a pericope id).
 """
+
+import pytest
 
 from src.context_blocks import (
     contexts_from_raw_item,
     format_context_block,
-    pericope_id_of,
     resolve_fetch_kind,
 )
 from src.models import SourceInfo
@@ -45,43 +45,47 @@ def test_header_missing_chapter_renders_empty_like_generator():
     assert block == "[1] 約翰福音 第章\nx"
 
 
-# --- fetch-kind resolution (id collision fix) ---
+# --- fetch-kind resolution: from the payload, never by splitting the id ---
 
-def test_verse_direct_single_verse_beats_pericope_collision():
-    assert resolve_fetch_kind("3jn:1:2", strategy="verse_direct", verse_range="2") == "verse"
-
-
-def test_verse_range_from_source_metadata_without_strategy():
-    # legacy raw_responses carry no strategy; verse_range == third segment is enough
-    assert resolve_fetch_kind("3jn:1:2", strategy=None, verse_range="2") == "verse"
+def _kind(source_id, verse_range="", **kw):
+    return resolve_fetch_kind(_src(id=source_id, verse_range=verse_range, **kw))
 
 
-def test_pericope_when_verse_range_is_a_span():
-    assert resolve_fetch_kind("3jn:1:2", strategy=None, verse_range="13-15") == "pericope"
+def test_verse_id_beats_pericope_collision():
+    # 3jn:1:2 is both 3 John 1:2 and a pericope id; the verse retriever's id matches its fields
+    assert _kind("3jn:1:2", "2", book="約翰三書", chapter=1, strategy="verse_direct") == "verse"
+    assert _kind("3jn:1:2", "2", book="約翰三書", chapter=1, strategy=None) == "verse"
 
 
-def test_pericope_when_no_metadata_at_all():
-    assert resolve_fetch_kind("rom:8:0", strategy=None, verse_range="") == "pericope"
+def test_a_pericope_with_its_own_span_is_a_record():
+    assert _kind("3jn:1:2", "13-15", book="約翰三書", chapter=1) == "record"
+    assert _kind("rom:8:0", "", book="羅馬書", chapter=8) == "record"
 
 
-def test_range_form_id():
-    assert resolve_fetch_kind("psa:23:1-3", strategy="verse_direct", verse_range="1-3") == "range"
+def test_range_id():
+    assert _kind("psa:23:1-3", "1-3", book="詩篇", chapter=23) == "range"
 
 
-def test_chunk_id():
-    assert resolve_fetch_kind("act:2:1:0", strategy="semantic", verse_range="") == "chunk"
+def test_old_nehemiah_name_still_spells_its_verse_id():
+    assert _kind("neh:8:10", "10", book="尼西米記", chapter=8) == "verse"
 
 
-def test_unknown_shape():
-    assert resolve_fetch_kind("weird", strategy=None, verse_range="") == "unknown"
-    assert resolve_fetch_kind("gen:1:x", strategy=None, verse_range="") == "unknown"
+@pytest.mark.parametrize("source_id", ["act:2:1:0", "act:9:0:v:4", "weird", "gen:1:x"])
+def test_chunks_verse_records_and_unknown_ids_are_records(source_id):
+    assert _kind(source_id, "", book="使徒行傳", chapter=2) == "record"
 
 
-def test_backend_verse_id_resolves_to_parent_pericope():
-    # backend postgres.get_content_by_id hydrates book:chapter:index:v:verse with the pericope
-    assert resolve_fetch_kind("act:9:0:v:4", strategy="semantic", verse_range="") == "pericope"
-    assert pericope_id_of("act:9:0:v:4") == "act:9:0"
-    assert pericope_id_of("act:9:0") == "act:9:0"
+def test_a_source_without_book_or_chapter_is_a_record():
+    assert _kind("jhn:3:16", "16", book="", chapter=3) == "record"
+    assert _kind("jhn:3:16", "16", chapter=None) == "record"
+
+
+@pytest.mark.parametrize("fields", [
+    {"id": "ps:jhn.3.1"}, {"id": "ck:jhn.3.1~jhn.3.21"}, {"id": "vs:jhn.3.16"},
+    {"id": "anything", "kind": "passage"},
+])
+def test_new_build_records_by_payload_kind_or_id_grammar(fields):
+    assert resolve_fetch_kind(_src(**fields)) == "build"
 
 
 # --- generator-format context blocks take precedence over legacy text ---

@@ -40,7 +40,7 @@ class SourceInfo(BaseModel):
     verse_range: str = ""
     score: float | None = None
     # Retrieval strategy that surfaced the source (verse_direct / semantic / ...).
-    # Disambiguates verse ids from pericope ids (see context_blocks.resolve_fetch_kind).
+    # Diagnostics only; legacy fetches are resolved from book/chapter/verse_range.
     strategy: str | None = None
     # The exact context block the generator saw (header + text), when the
     # backend was asked for it (include_context). None on legacy checkpoints.

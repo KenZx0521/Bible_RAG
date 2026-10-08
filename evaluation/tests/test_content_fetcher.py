@@ -106,6 +106,28 @@ def test_fetch_context_blocks_ignores_misaligned_stored_text():
     assert asyncio.run(fetch_context_blocks(pool, [_src(0), _src(1)], stored_texts=["only-one"])) == []
 
 
+def test_fetch_context_blocks_reads_a_chunk_when_no_pericope_has_the_id():
+    pool = StubPool(chunks={"gen:24:0:1": "C1"})
+    assert asyncio.run(fetch_context_blocks(pool, [_src("0:1")])) == ["[1] 創世記 第24章\nC1"]
+
+
+def test_fetch_context_blocks_reads_a_legacy_verse_range():
+    pool = StubPool(rows=CHAPTER)
+    src = SourceInfo(id="gen:24:28-29", book="創世記", chapter=24, verse_range="28-29")
+    assert asyncio.run(fetch_context_blocks(pool, [src])) == ["[1] 創世記 第24章 (28-29節)\n28. A\n29-30. B"]
+
+
+def test_fetch_context_blocks_refuses_new_build_sources():
+    with pytest.raises(ValueError, match="include_context"):
+        asyncio.run(fetch_context_blocks(StubPool(), [_src(0), SourceInfo(id="ps:gen.24.1", book="創世記")]))
+
+
+def test_get_content_by_id_refuses_new_build_sources():
+    from src.content_fetcher import get_content_by_id
+    with pytest.raises(ValueError, match="new build"):
+        asyncio.run(get_content_by_id(StubPool(), SourceInfo(id="x", book="創世記", kind="passage")))
+
+
 def test_fetch_context_blocks_verse_id_resolves_single_verse_not_pericope():
     # 3jn:1:2-style collision: verse_range == third segment -> verse lookup, never the pericope row
     pool = StubPool(rows=[{"verses": [{"num": "2", "text": "V2"}]}], pericopes={"3jn:1:2": "PERICOPE"})
