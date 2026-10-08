@@ -86,7 +86,7 @@ def points_jsonl(qdrant: QdrantDb, collection: str) -> str:
                    for p in points)
 
 
-def write(root: Path) -> dict:
+def write(root: Path, out: Path = OUT) -> dict:
     pg = RecordingPg()
     loaded = mini_loaded.load(root)
     # load again into the recording PG: same release, fresh targets
@@ -94,20 +94,20 @@ def write(root: Path) -> dict:
     report = loader.load(loaded.release, pg, qdrant, root / "contracts2")
     build_id = report["build_id"]
     build = {**pg.build, "contracts_dir": f"{CONTAINER_CONTRACTS}/{build_id}"}
-    if OUT.exists():
-        shutil.rmtree(OUT)
-    (OUT / "contracts").mkdir(parents=True)
-    (OUT / "pg.sql").write_text(pg_script(pg.plan, build), encoding="utf-8")
-    (OUT / "points.jsonl").write_text(points_jsonl(qdrant, report["qdrant_collection"]),
+    if out.exists():
+        shutil.rmtree(out)
+    (out / "contracts").mkdir(parents=True)
+    (out / "pg.sql").write_text(pg_script(pg.plan, build), encoding="utf-8")
+    (out / "points.jsonl").write_text(points_jsonl(qdrant, report["qdrant_collection"]),
                                       encoding="utf-8")
-    target = OUT / "contracts" / build_id
+    target = out / "contracts" / build_id
     shutil.copytree(Path(report["contracts_dir"]), target)
     for path in [target, *target.iterdir()]:
         path.chmod(0o755 if path.is_dir() else 0o644)
     meta = {"build_id": build_id, "pg_schema": report["pg_schema"],
             "qdrant_collection": report["qdrant_collection"], "points": report["points"],
             "dim": len(qdrant.points(report["qdrant_collection"])[0].vector)}
-    (OUT / "build.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
+    (out / "build.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
     return meta
 
 
