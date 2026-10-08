@@ -6,6 +6,9 @@ Computes 9 metrics at k (default k=5):
   Verse-level (primary readout, deterministic, added 2026-07-13):
   - verse_recall_at_k     true verse coverage of the gold reference span
   - anchor_coverage_at_k  fraction of chapter-level gold anchors hit
+  GT v1 expands the reference over the legacy chapter table (verse_coverage);
+  GT v2 reads gold_slots and scores on its slot universe (slot_coverage), so
+  a v2 run passes the ruler of the build it scores.
 
   Unit-level (kept for backward comparability with historical runs —
   ⚠️ chapter ranges count as 1 unit, so these are systematically inflated
@@ -17,9 +20,11 @@ from __future__ import annotations
 
 import math
 
-from ..models import EvalSample, MetricResult
+from ..gt_v2 import GroundTruthItemV2
+from ..models import EvalSample, MetricResult, ParsedReference, SourceInfo
 from ..reference_parser import parse_reference
 from ..relevance_judge import binary_relevance, graded_relevance, estimate_total_relevant
+from ..slot_coverage import SlotRuler
 from ..verse_coverage import verse_level_metrics
 
 _ALL_METRIC_NAMES = [
@@ -28,7 +33,19 @@ _ALL_METRIC_NAMES = [
 ]
 
 
-def _compute_for_sample(sample: EvalSample, k: int = 5) -> list[MetricResult]:
+def _verse_metrics(sample: EvalSample, gt_refs: list[ParsedReference],
+                   sources: list[SourceInfo], ruler: SlotRuler | None) -> tuple[float, float]:
+    """(verse_recall, anchor_coverage): v1 on the chapter table, v2 on the slot ruler."""
+    if isinstance(sample.ground_truth, GroundTruthItemV2) != (ruler is not None):
+        raise ValueError(f"{sample.question_id}: GT v2 items are scored with a slot ruler, "
+                         "GT v1 items without one")
+    if ruler is None:
+        return verse_level_metrics(gt_refs, sources)
+    return ruler.verse_metrics(sample.ground_truth, sources)
+
+
+def _compute_for_sample(sample: EvalSample, k: int = 5,
+                        ruler: SlotRuler | None = None) -> list[MetricResult]:
     """Compute all retrieval metrics for one sample."""
     gt_refs = parse_reference(sample.ground_truth.reference)
     sources = sample.sources[:k]
@@ -91,7 +108,7 @@ def _compute_for_sample(sample: EvalSample, k: int = 5) -> list[MetricResult]:
     hit_rate = 1.0 if any(rels) else 0.0
 
     # Verse-level metrics (deterministic, no inflation from chapter ranges)
-    verse_recall, anchor_coverage = verse_level_metrics(gt_refs, sources)
+    verse_recall, anchor_coverage = _verse_metrics(sample, gt_refs, sources, ruler)
 
     return [
         MetricResult(name="precision_at_k", value=round(precision, 4), category="retrieval"),
@@ -106,13 +123,12 @@ def _compute_for_sample(sample: EvalSample, k: int = 5) -> list[MetricResult]:
     ]
 
 
-def compute_retrieval_metrics(samples: list[EvalSample], k: int = 5) -> dict[str, list[MetricResult]]:
+def compute_retrieval_metrics(samples: list[EvalSample], k: int = 5,
+                              ruler: SlotRuler | None = None) -> dict[str, list[MetricResult]]:
     """
-    Compute retrieval metrics for all samples.
+    Compute retrieval metrics for all samples (``ruler``: the build's slot
+    ruler, required for GT v2 items).
 
     Returns: { question_id: [MetricResult, ...] }
     """
-    results: dict[str, list[MetricResult]] = {}
-    for sample in samples:
-        results[sample.question_id] = _compute_for_sample(sample, k=k)
-    return results
+    return {s.question_id: _compute_for_sample(s, k=k, ruler=ruler) for s in samples}

@@ -5,8 +5,7 @@ declare the same slot_universe; anything else raises, so a run can never score
 against an edited or half-written GT. Items are the v1 items plus structured
 ``refs`` and the gold/omitted slot lists of the slot universe.
 
-The evaluation runners still read v1 (``data_loader``); switching them is the
-next step and not done here.
+The runners reach it through ``data_loader.load_gt("v2")`` (``--gt v2``).
 """
 
 from __future__ import annotations
