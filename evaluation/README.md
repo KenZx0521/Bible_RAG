@@ -12,7 +12,6 @@ evaluation/
 ├── d3_gate.py                   # D3 非劣閘門(兩個 backend 跑 500 題 → 一致性 + 路由殘差判定)
 ├── xref_ab_slice.py             # opt-in xref A/B 的 touched 題數與 kg_xref 切片(W1,只報告;見 docs/staging_promotion.md)
 ├── quick_faithfulness_eval.py   # 快速 faithfulness 重判迴圈(只跑兩個 faithfulness judge)
-├── apply_coverage.py            # 答案要點覆蓋率離線補算
 ├── experiments/                 # 各實驗的事前登記、題號檔與腳本
 │   ├── 2026-10-03_event_registry/   # event_registry 附加槽的檢索 A/B、AA 校準與答案端探針
 │   └── 2026-10-05_kg_w1/        # W1 升版的題號檔:第 1 步的 20 題煙霧測試、第 1、2 步之間的 graph_event 抽查(K10)
@@ -213,6 +212,8 @@ uv run python quick_faithfulness_eval.py --results-dir results_graph --out resul
 ```
 
 輸出含 `stored_faithfulness`(該目錄 evaluation_results.json 裡的舊值,只在新 judge 有效評分的題目上配對平均)方便看修前修後差異;`meta.context_format` 記錄 judge 看到的 context 形式。
+
+build 取自 checkpoint 旁的 `run_meta.json`(沒有此檔即 legacy);新 build 的 checkpoint 只能用 `--gt v2` 重判(`--contracts-dir` 規則同上)。`meta` 記 `data_build_id`、`gt_version`、`gt_sha`、`encoder_fingerprint`。
 
 ## 消融實驗因子總覽
 
