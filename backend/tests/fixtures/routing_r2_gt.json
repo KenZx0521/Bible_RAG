@@ -1,0 +1,6083 @@
+{
+ "route": "route@c31c88e4681e",
+ "lexicon_sha256": "2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e",
+ "gt_sha256": "7280bb42af869ee18d34230b296f302132eb82dbf5203391e07882fd3691b2f1",
+ "rows": [
+  {
+   "question_id": "VERSE_LOOKUP_001",
+   "text": "根據約翰福音3:16，神如何表達祂對世人的愛？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_002",
+   "text": "根據創世記1:27，神如何創造人？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_003",
+   "text": "根據詩篇23:1-3，耶和華作為牧者如何照顧大衛？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_004",
+   "text": "根據以賽亞書53:5，受苦的僕人為我們承受了什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_005",
+   "text": "根據羅馬書3:23-24，保羅如何描述世人的光景和神的救贖？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "羅馬書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_006",
+   "text": "根據馬太福音5:3-6，耶穌在登山寶訓中說哪些人是有福的？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [
+    "ev0016"
+   ],
+   "books": [
+    "馬太福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_007",
+   "text": "根據加拉太書5:22-23，聖靈所結的果子包括哪些？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "加拉太書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_008",
+   "text": "根據約翰福音14:6，耶穌說祂是什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_009",
+   "text": "根據以弗所書2:8-9，人是如何得救的？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以弗所書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_010",
+   "text": "根據箴言3:5-6，信靠耶和華的人應該如何行？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "箴言"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_011",
+   "text": "根據哥林多前書13:4-7，愛的特質有哪些？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "哥林多前書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_012",
+   "text": "根據腓立比書4:6-7，保羅教導信徒如何面對憂慮？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "腓立比書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_013",
+   "text": "根據希伯來書11:1，信是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_014",
+   "text": "根據雅各書1:2-4，信徒遇到試煉時應該有什麼態度？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "雅各書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_015",
+   "text": "根據彼得前書5:7，信徒應該如何處理憂慮？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "彼得前書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_016",
+   "text": "根據約翰一書1:9，信徒如何得到罪的赦免？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰一書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_017",
+   "text": "根據啟示錄3:20，耶穌對老底嘉教會說了什麼應許？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "老底嘉"
+   ],
+   "events": [],
+   "books": [
+    "啟示錄"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_018",
+   "text": "根據提摩太後書3:16-17，聖經有什麼功用？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "提摩太後書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_019",
+   "text": "根據耶利米書29:11，耶和華對被擄之民有什麼應許？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "耶利米書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_020",
+   "text": "根據以賽亞書40:31，等候耶和華的人會得到什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_021",
+   "text": "根據出埃及記20:2-3，十誡的開頭如何宣告上帝與以色列的關係？第一條誡命是什麼？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [
+    "ev0018"
+   ],
+   "books": [
+    "出埃及記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_022",
+   "text": "根據利未記19:18，耶和華吩咐以色列人如何對待本國的子民？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "利未記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_023",
+   "text": "根據民數記6:24-26，亞倫式的祝福包含哪些內容？",
+   "persons": [],
+   "places": [
+    "亞倫"
+   ],
+   "events": [],
+   "books": [
+    "民數記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_024",
+   "text": "根據申命記6:4-5，以色列人當如何愛耶和華？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "申命記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_025",
+   "text": "根據約書亞記1:8-9，耶和華吩咐約書亞如何對待律法書？又給他什麼應許？",
+   "persons": [],
+   "places": [
+    "約書亞"
+   ],
+   "events": [],
+   "books": [
+    "約書亞記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_026",
+   "text": "根據士師記21:25，士師記的結尾如何總結那個時代的光景？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "士師記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_027",
+   "text": "根據路得記1:16-17，路得如何向拿俄米表明她的忠誠？",
+   "persons": [],
+   "places": [
+    "路得",
+    "拿俄米"
+   ],
+   "events": [],
+   "books": [
+    "路得記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_028",
+   "text": "根據撒母耳記上16:7，耶和華揀選人的標準與人的眼光有何不同？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "撒母耳記上"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_029",
+   "text": "根據撒母耳記下7:12-13，耶和華應許大衛的後裔什麼？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [
+    "撒母耳記下"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_030",
+   "text": "根據列王紀上3:9，所羅門向上帝求什麼？",
+   "persons": [],
+   "places": [
+    "所羅門"
+   ],
+   "events": [],
+   "books": [
+    "列王紀上"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_031",
+   "text": "根據列王紀下6:16-17，以利沙在多坍被亞蘭軍圍困時如何安慰他的僕人？",
+   "persons": [],
+   "places": [
+    "以利沙",
+    "多坍",
+    "亞蘭"
+   ],
+   "events": [],
+   "books": [
+    "列王紀下"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_032",
+   "text": "根據歷代志上4:10，雅比斯的禱告內容是什麼？結果如何？",
+   "persons": [],
+   "places": [
+    "雅比斯"
+   ],
+   "events": [],
+   "books": [
+    "歷代志上"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_033",
+   "text": "根據歷代志下7:14，稱為上帝名下的子民若要罪得赦免、地得醫治，需要做什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "歷代志下"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_034",
+   "text": "根據以斯拉記7:10，以斯拉定志要做哪幾件事？",
+   "persons": [],
+   "places": [
+    "以斯拉"
+   ],
+   "events": [],
+   "books": [
+    "以斯拉記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_035",
+   "text": "根據尼希米記8:10，尼希米如何勸勉那些聽見律法書就哭的百姓？",
+   "persons": [],
+   "places": [
+    "尼希米"
+   ],
+   "events": [],
+   "books": [
+    "尼希米記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_036",
+   "text": "根據以斯帖記4:14，末底改如何提醒以斯帖她王后位分的意義？",
+   "persons": [],
+   "places": [
+    "末底改",
+    "以斯帖"
+   ],
+   "events": [],
+   "books": [
+    "以斯帖記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_037",
+   "text": "根據約伯記19:25-26，約伯在苦難中宣告了什麼樣的盼望？",
+   "persons": [],
+   "places": [
+    "約伯"
+   ],
+   "events": [],
+   "books": [
+    "約伯記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_038",
+   "text": "根據傳道書12:13-14，傳道者全書的總結是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "傳道書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_039",
+   "text": "根據雅歌8:6-7，愛情的力量如何被描述？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "雅歌"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_040",
+   "text": "根據耶利米哀歌3:22-23，詩人在苦難中憑什麼存有盼望？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "耶利米哀歌"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_041",
+   "text": "根據以西結書36:26-27，上帝應許賜給以色列人什麼樣的更新？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "以西結書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_042",
+   "text": "根據但以理書3:17-18，沙得拉、米煞、亞伯尼歌面對烈火的窯時如何向王宣告他們的信心？",
+   "persons": [],
+   "places": [
+    "沙得拉",
+    "米煞",
+    "亞伯尼歌"
+   ],
+   "events": [],
+   "books": [
+    "但以理書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_043",
+   "text": "根據何西阿書6:6，耶和華喜愛什麼勝過祭祀？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "何西阿書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_044",
+   "text": "根據約珥書2:28-29，耶和華應許將他的靈澆灌時會出現什麼景象？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "約珥書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_045",
+   "text": "根據阿摩司書5:24，先知呼籲什麼要如大水滾滾？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "阿摩司書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_046",
+   "text": "根據俄巴底亞書1:15，耶和華降罰的日子臨近萬國時，報應的原則是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "俄巴底亞書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_047",
+   "text": "根據約拿書4:10-11，耶和華用蓖麻教導約拿什麼道理？",
+   "persons": [],
+   "places": [
+    "約拿"
+   ],
+   "events": [],
+   "books": [
+    "約拿書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_048",
+   "text": "根據彌迦書6:8，耶和華向世人所要的是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "彌迦書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_049",
+   "text": "根據那鴻書1:7，耶和華在患難的日子如何對待投靠他的人？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "那鴻書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_050",
+   "text": "根據哈巴谷書2:4，迦勒底人與義人有什麼對比？",
+   "persons": [],
+   "places": [
+    "迦勒底"
+   ],
+   "events": [],
+   "books": [
+    "哈巴谷書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_051",
+   "text": "根據西番雅書3:17，耶和華在他子民中間的心意如何被描述？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "西番雅書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_052",
+   "text": "根據哈該書1:5-6，先知要百姓省察自己什麼樣的光景？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "哈該書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_053",
+   "text": "根據撒迦利亞書4:6，耶和華指示所羅巴伯成事的原則是什麼？",
+   "persons": [],
+   "places": [
+    "所羅巴伯"
+   ],
+   "events": [],
+   "books": [
+    "撒迦利亞書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_054",
+   "text": "根據瑪拉基書3:10，耶和華要百姓以什麼事來試試他？應許是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "瑪拉基書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_055",
+   "text": "根據馬可福音10:45，人子來的目的是什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬可福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_056",
+   "text": "根據路加福音19:10，人子來是為了什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "路加福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_057",
+   "text": "根據使徒行傳1:8，耶穌升天前應許門徒什麼？又託付了什麼使命？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "使徒行傳"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_058",
+   "text": "根據哥林多後書5:17，人在基督裡會有什麼改變？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "哥林多後書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_059",
+   "text": "根據歌羅西書1:15-17，保羅如何描述愛子基督與創造的關係？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "歌羅西書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_060",
+   "text": "根據帖撒羅尼迦前書5:16-18，保羅給信徒哪三個簡短的吩咐？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "帖撒羅尼迦前書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_061",
+   "text": "根據帖撒羅尼迦後書3:10，保羅對不肯做工的人有什麼吩咐？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "帖撒羅尼迦後書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_062",
+   "text": "根據提摩太前書6:10，保羅如何描述貪財的危險？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "提摩太前書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_063",
+   "text": "根據提多書3:4-5，上帝救我們是憑著什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "提多書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_064",
+   "text": "根據腓利門書1:15-16，保羅如何勸腓利門重新接納阿尼西謀？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "腓利門",
+    "阿尼西謀"
+   ],
+   "events": [],
+   "books": [
+    "腓利門書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_065",
+   "text": "根據彼得後書1:20-21，聖經預言的來源是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "彼得後書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_066",
+   "text": "根據約翰二書1:6，什麼是愛？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰二書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_067",
+   "text": "根據約翰三書1:2，長老約翰為親愛的該猶有什麼祝願？",
+   "persons": [],
+   "places": [
+    "約翰",
+    "該猶"
+   ],
+   "events": [],
+   "books": [
+    "約翰三書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_068",
+   "text": "根據猶大書1:20-21，信徒當如何保守自己常在上帝的愛中？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "猶大書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_069",
+   "text": "根據創世記50:20，約瑟如何評價哥哥們從前害他的事？",
+   "persons": [],
+   "places": [
+    "約瑟"
+   ],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_070",
+   "text": "根據詩篇137:1-4，被擄的以色列人在巴比倫河邊有什麼樣的哀嘆？",
+   "persons": [],
+   "places": [
+    "以色列",
+    "巴比倫"
+   ],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_071",
+   "text": "根據詩篇90:12，摩西求上帝指教我們什麼？目的為何？",
+   "persons": [],
+   "places": [
+    "摩西"
+   ],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_072",
+   "text": "根據以賽亞書6:8，以賽亞聽見主的呼召時如何回應？",
+   "persons": [],
+   "places": [
+    "以賽亞"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_073",
+   "text": "根據以賽亞書9:6，那為我們而生的嬰孩有哪些名稱？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_074",
+   "text": "根據耶利米書17:9-10，人心的光景如何？誰能識透並鑒察？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "耶利米書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_075",
+   "text": "根據馬太福音11:28-30，耶穌向勞苦擔重擔的人發出什麼邀請？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬太福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_076",
+   "text": "根據約翰福音20:29，耶穌對多馬說什麼樣的人有福？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "多馬"
+   ],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_077",
+   "text": "根據羅馬書12:1-2，保羅勸信徒如何獻上自己並更新生命？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "羅馬書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_078",
+   "text": "根據加拉太書2:20，保羅如何描述與基督同釘十字架之後的生命？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [
+    "ev0027"
+   ],
+   "books": [
+    "加拉太書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_079",
+   "text": "根據箴言22:6，教養孩童的原則和果效是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "箴言"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_080",
+   "text": "根據哥林多前書10:13，信徒遇到試探時有什麼應許？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "哥林多前書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_081",
+   "text": "根據希伯來書4:12，上帝的道有什麼樣的能力？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_082",
+   "text": "根據啟示錄22:13，主如何宣告自己的身分？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "啟示錄"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_083",
+   "text": "聖經中「愛裏沒有懼怕」這句話出自哪裡？它如何解釋愛與懼怕的關係？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_084",
+   "text": "「生命在他裏頭，這生命就是人的光」出自哪卷福音書的開頭？接著如何描述光與黑暗的關係？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_085",
+   "text": "「壓傷的蘆葦，他不折斷」是哪位先知對耶和華僕人的描述？這段經文還說了什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_086",
+   "text": "聖經用「鐵磨鐵」比喻什麼？這句話出自哪裡？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_087",
+   "text": "聖經哪裡教導「不可含怒到日落」？這個教導的目的是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_088",
+   "text": "「施比受更為有福」這句主耶穌的話記載在哪裡？是誰在什麼場合引用的？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_089",
+   "text": "聖經用「用鹽調和」來形容什麼？出自哪封書信？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_090",
+   "text": "「敬畏耶和華是智慧的開端」出自箴言哪一處？它的下半句是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "箴言"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_091",
+   "text": "耶穌說安息日和人的關係是什麼？這句話記載在哪卷福音書？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_092",
+   "text": "耶穌用「莊稼」和「工人」的比喻要門徒祈求什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_093",
+   "text": "聖經說什麼「乃是良藥」？與它相對的又是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_094",
+   "text": "「隱祕的事是屬耶和華我們上帝的」出自哪卷書？明顯的事又屬於誰？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_095",
+   "text": "「日光之下並無新事」出自哪卷書？其上下文如何論到萬事的循環？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_096",
+   "text": "「我雖跌倒，卻要起來」是哪位先知的話？他在黑暗中倚靠誰？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_097",
+   "text": "「你們要休息，要知道我是上帝」出自哪一篇詩篇？這節經文接著說什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_098",
+   "text": "耶穌用哪兩個意象形容門徒在世上的身分？各自帶著什麼提醒？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_099",
+   "text": "保羅說他「凡事都能做」的祕訣是什麼？這句話出自哪裡？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "VERSE_LOOKUP_100",
+   "text": "「我要向山舉目」的詩人說他的幫助從何而來？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_001",
+   "text": "根據羅馬書第8章，保羅如何描述信徒在患難中仍有盼望的原因？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "羅馬書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_002",
+   "text": "根據詩篇第51篇，大衛如何表達真實悔改與認罪的心？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_003",
+   "text": "根據以弗所書第6章，保羅如何描述信徒在屬靈爭戰中需要的裝備？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "以弗所書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_004",
+   "text": "根據馬太福音第6章，耶穌如何教導正確的敬虔生活？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬太福音"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_005",
+   "text": "根據雅各書第3章，雅各如何描述言語的影響力？",
+   "persons": [],
+   "places": [
+    "雅各"
+   ],
+   "events": [],
+   "books": [
+    "雅各書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_006",
+   "text": "根據腓立比書第2章，保羅如何描述基督謙卑順服的榜樣？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "腓立比書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_007",
+   "text": "根據約翰福音第15章，耶穌如何用比喻說明與祂聯結的重要？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_008",
+   "text": "根據希伯來書第11章，作者如何描述舊約聖徒憑信心生活的見證？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_009",
+   "text": "根據哥林多後書第4章，保羅如何描述在逼迫中仍有盼望的秘訣？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "哥林多後書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_010",
+   "text": "根據彼得前書第2章，彼得如何描述信徒的身份和使命？",
+   "persons": [],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [
+    "彼得前書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_011",
+   "text": "根據約翰一書第4章，使徒約翰如何描述神的愛和信徒相愛的關係？",
+   "persons": [],
+   "places": [
+    "約翰"
+   ],
+   "events": [],
+   "books": [
+    "約翰一書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_012",
+   "text": "根據歌羅西書第3章，保羅如何教導信徒在基督裏的新生活？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "歌羅西書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_013",
+   "text": "根據詩篇第139篇，大衛如何描述神對人全面的認識和同在？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_014",
+   "text": "根據以賽亞書第55章，先知如何呼召人來就近神？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_015",
+   "text": "根據帖撒羅尼迦前書第4章，保羅如何描述主再來時的情景？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "帖撒羅尼迦前書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_016",
+   "text": "根據馬可福音第4章，耶穌用撒種的比喻如何說明人心對神話語的回應？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬可福音"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_017",
+   "text": "根據創世記第1章，神如何按次序創造天地萬物？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_018",
+   "text": "根據啟示錄第21章，使徒約翰如何描述新天新地的景象？",
+   "persons": [],
+   "places": [
+    "約翰"
+   ],
+   "events": [
+    "ev0023"
+   ],
+   "books": [
+    "啟示錄"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_019",
+   "text": "根據傳道書第3章，作者如何表達人生各樣經歷都有定時？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "傳道書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_020",
+   "text": "根據哥林多前書第12章，保羅如何說明教會肢體的合一與多元？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "哥林多前書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_021",
+   "text": "根據利未記第16章，贖罪日的條例中兩隻山羊各有什麼用途？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "利未記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_022",
+   "text": "根據利未記第23章，耶和華為以色列人設立了哪些節期？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "利未記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_023",
+   "text": "根據民數記第6章，拿細耳人的條例包含哪些要求？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "民數記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_024",
+   "text": "根據申命記第28章，遵行誡命的祝福與悖逆的咒詛各包括什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "申命記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_025",
+   "text": "根據申命記第30章，摩西如何呼籲以色列人在生死禍福之間作選擇？",
+   "persons": [],
+   "places": [
+    "摩西",
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "申命記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_026",
+   "text": "根據約書亞記第24章，約書亞在示劍如何帶領百姓重新立約？",
+   "persons": [],
+   "places": [
+    "約書亞",
+    "示劍"
+   ],
+   "events": [],
+   "books": [
+    "約書亞記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_027",
+   "text": "根據士師記第2章，以色列人在士師時代陷入什麼樣的循環？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "士師記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_028",
+   "text": "根據撒母耳記上第8章，以色列人要求立王時，撒母耳警告王的制度會帶來什麼？",
+   "persons": [],
+   "places": [
+    "以色列",
+    "撒母耳"
+   ],
+   "events": [],
+   "books": [
+    "撒母耳記上"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_029",
+   "text": "根據列王紀上第8章，所羅門獻殿的禱告包含哪些主要祈求？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0021"
+   ],
+   "books": [
+    "列王紀上"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_030",
+   "text": "根據列王紀下第17章，作者如何總結北國以色列滅亡的原因？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "列王紀下"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_031",
+   "text": "根據歷代志上第29章，大衛為建殿奉獻時的頌讚表達了什麼？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [
+    "歷代志上"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_032",
+   "text": "根據歷代志下第20章，約沙法面對大軍壓境時如何倚靠上帝得勝？",
+   "persons": [],
+   "places": [
+    "約沙法"
+   ],
+   "events": [],
+   "books": [
+    "歷代志下"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_033",
+   "text": "根據以斯拉記第3章，歸回的百姓恢復敬拜和立殿根基時有什麼情景？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以斯拉記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_034",
+   "text": "根據尼希米記第4章，尼希米如何應對仇敵對修牆工程的攻擊與譏誚？",
+   "persons": [],
+   "places": [
+    "尼希米"
+   ],
+   "events": [],
+   "books": [
+    "尼希米記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_035",
+   "text": "根據約伯記第1章，天上的會議與約伯的苦難是如何展開的？",
+   "persons": [],
+   "places": [
+    "約伯"
+   ],
+   "events": [],
+   "books": [
+    "約伯記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_036",
+   "text": "根據約伯記第38章，耶和華從旋風中如何回答約伯？",
+   "persons": [],
+   "places": [
+    "約伯"
+   ],
+   "events": [],
+   "books": [
+    "約伯記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_037",
+   "text": "根據以西結書第34章，上帝如何責備以色列的牧人，並應許親自牧養？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "以西結書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_038",
+   "text": "根據以西結書第37章，枯骨復生的異象傳達了什麼信息？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以西結書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_039",
+   "text": "根據但以理書第2章，尼布甲尼撒夢見的大像和那塊石頭各代表什麼？",
+   "persons": [],
+   "places": [
+    "尼布甲尼撒"
+   ],
+   "events": [],
+   "books": [
+    "但以理書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_040",
+   "text": "根據但以理書第9章，但以理的認罪禱告有什麼內容與回應？",
+   "persons": [],
+   "places": [
+    "但以理"
+   ],
+   "events": [],
+   "books": [
+    "但以理書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_041",
+   "text": "根據何西阿書第11章，上帝如何以父愛描述他對以色列的感情？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "何西阿書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_042",
+   "text": "根據約珥書第2章，先知如何呼籲百姓在耶和華的日子來臨前悔改？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "約珥書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_043",
+   "text": "根據哈巴谷書第3章，先知的禱告如何在困境中表達信心的喜樂？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "哈巴谷書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_044",
+   "text": "根據哈該書第2章，上帝對新殿的榮耀與所羅巴伯有什麼應許？",
+   "persons": [],
+   "places": [
+    "所羅巴伯"
+   ],
+   "events": [],
+   "books": [
+    "哈該書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_045",
+   "text": "根據撒迦利亞書第3章，大祭司約書亞的異象表達了什麼潔淨與應許？",
+   "persons": [],
+   "places": [
+    "約書亞"
+   ],
+   "events": [],
+   "books": [
+    "撒迦利亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_046",
+   "text": "根據瑪拉基書第4章，耶和華的日子來臨時，敬畏他名的人與惡人有何不同結局？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "瑪拉基書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_047",
+   "text": "根據箴言第31章，才德的婦人有哪些特質？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "箴言"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_048",
+   "text": "根據路加福音第15章，三個「失而復得」的比喻有什麼共同的信息？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "路加福音"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_049",
+   "text": "根據加拉太書第5章，情慾的事和聖靈的果子有什麼對比？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "加拉太書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_050",
+   "text": "根據提摩太前書第3章，作監督和作執事的人各需具備什麼資格？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "提摩太前書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_051",
+   "text": "根據帖撒羅尼迦後書第2章，主的日子來到之前必先發生什麼事？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "帖撒羅尼迦後書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_052",
+   "text": "根據提摩太後書第2章，保羅用哪些比喻勸勉提摩太作基督的精兵與無愧的工人？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅",
+    "提摩太"
+   ],
+   "events": [],
+   "books": [
+    "提摩太後書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_053",
+   "text": "根據提多書第2章，保羅教導各年齡層的信徒當有什麼樣的品行？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "提多書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_054",
+   "text": "根據彼得後書第3章，彼得如何回應「主要降臨的應許在哪裏」的譏誚？",
+   "persons": [],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [
+    "彼得後書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_055",
+   "text": "根據猶大書，作者如何描寫偷著進來的假教師並勸勉信徒？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "猶大書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_056",
+   "text": "以賽亞書中的四首「僕人之歌」分別描繪了耶和華僕人的哪些面貌？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_057",
+   "text": "馬太福音記載耶穌的五大講論分別在哪些章節？主題各是什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬太福音"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_058",
+   "text": "約伯記中，約伯的三位朋友在第一輪對話中各自提出什麼論點？",
+   "persons": [],
+   "places": [
+    "約伯"
+   ],
+   "events": [],
+   "books": [
+    "約伯記"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_059",
+   "text": "但以理書第7-8章記載了哪些異象？各預表什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "但以理書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_060",
+   "text": "創世記中，上帝與亞伯拉罕立約經過哪幾個階段？各階段的重點是什麼？",
+   "persons": [],
+   "places": [
+    "亞伯拉罕"
+   ],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_061",
+   "text": "出埃及記如何記載會幕從吩咐樣式到建造完成的過程？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "出埃及記"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_062",
+   "text": "詩篇120至134篇(傳統稱為「上行之詩」)這組詩歌中有哪些代表性的祈求與主題?",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_063",
+   "text": "約翰福音記載耶穌的七個「我是」宣告分別是什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_064",
+   "text": "哥林多前書處理了哥林多教會哪些具體問題？",
+   "persons": [],
+   "places": [
+    "哥林多"
+   ],
+   "events": [],
+   "books": [
+    "哥林多前書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_065",
+   "text": "啟示錄第2-3章中，七個教會分別得到什麼稱讚或責備？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "啟示錄"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_066",
+   "text": "雅各的十二個兒子分別由誰所生？",
+   "persons": [],
+   "places": [
+    "雅各"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_067",
+   "text": "利未記1-7章記載了哪五種祭？各有什麼特點？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "利未記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_068",
+   "text": "民數記為什麼記載了兩次數點百姓？兩次數點之間有什麼重大差別？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "民數記"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_069",
+   "text": "撒母耳記上記載大衛兩次有機會殺掃羅卻不下手，分別發生在哪裡？大衛的理由是什麼？",
+   "persons": [],
+   "places": [
+    "大衛",
+    "掃羅"
+   ],
+   "events": [],
+   "books": [
+    "撒母耳記上"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_070",
+   "text": "耶利米書用了哪些實物象徵來傳達信息？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "耶利米書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_071",
+   "text": "以西結書開頭與結尾的兩大異象分別是什麼？彼此有什麼呼應？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以西結書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_072",
+   "text": "阿摩司書7-9章記載先知看見哪五個審判的異象？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "阿摩司書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_073",
+   "text": "撒迦利亞書1-6章的夜間異象包含哪些內容？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "撒迦利亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_074",
+   "text": "路加福音記載了耶穌哪些關於禱告的教導和比喻？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "路加福音"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_075",
+   "text": "羅馬書1-3章如何論證世人都伏在罪的權下？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "羅馬書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_076",
+   "text": "創世記中「稱妻子為妹子」的事件發生過幾次？分別是誰、在什麼地方？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_077",
+   "text": "士師記記載了哪些主要的士師？他們各對付什麼仇敵？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "士師記"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_078",
+   "text": "箴言如何多處描寫懶惰人？用了哪些生動的比喻？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "箴言"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_079",
+   "text": "詩篇32篇與51篇如何描寫認罪與赦免的經歷？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_080",
+   "text": "民數記22-24章記載巴蘭的故事有哪些轉折？他最終如何祝福以色列？",
+   "persons": [],
+   "places": [
+    "巴蘭",
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "民數記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_081",
+   "text": "根據創世記第38章，猶大與她瑪的事件如何發展？",
+   "persons": [],
+   "places": [
+    "猶大",
+    "她瑪"
+   ],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_082",
+   "text": "根據創世記第49章，雅各臨終時對猶大和約瑟的祝福有什麼特點？",
+   "persons": [],
+   "places": [
+    "雅各",
+    "猶大",
+    "約瑟"
+   ],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_083",
+   "text": "根據馬太福音1:1-17，耶穌的家譜有什麼結構特點？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬太福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_084",
+   "text": "根據馬太福音第23章，耶穌對文士和法利賽人宣告了哪些「禍」？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬太福音"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_085",
+   "text": "根據羅馬書第16章，保羅的問安名單透露了初代教會哪些同工的樣貌？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "羅馬書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_086",
+   "text": "根據詩篇第1篇，義人和惡人的道路有什麼對比？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_087",
+   "text": "根據詩篇第73篇，詩人如何走出「惡人亨通」的信仰困惑？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_088",
+   "text": "根據以賽亞書第14章，先知如何譏刺巴比倫王「明亮之星」的墜落？",
+   "persons": [],
+   "places": [
+    "巴比倫"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_089",
+   "text": "根據以賽亞書第58章，上帝所揀選的禁食是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_090",
+   "text": "根據約翰福音第17章，耶穌的大祭司禱告為門徒祈求了什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_091",
+   "text": "根據希伯來書第12章，作者如何勸勉信徒奔跑天路並看待管教？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_092",
+   "text": "根據雅各書第2章，雅各如何論按外貌待人和信心與行為的關係？",
+   "persons": [],
+   "places": [
+    "雅各"
+   ],
+   "events": [],
+   "books": [
+    "雅各書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_093",
+   "text": "根據加拉太書6:1-10，保羅教導信徒之間如何彼此擔當並持續行善？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "加拉太書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_094",
+   "text": "根據腓立比書第3章，保羅如何看待自己從前的資歷與認識基督的至寶？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "腓立比書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_095",
+   "text": "根據以弗所書5:22-33，保羅如何以基督與教會的關係論夫妻之道？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "以弗所書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_096",
+   "text": "根據馬可福音7:1-23，耶穌如何回應洗手的傳統？他說什麼才真正污穢人？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬可福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_097",
+   "text": "根據路加福音12:13-34，耶穌藉無知財主的比喻教導什麼？又如何論憂慮？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "路加福音"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_098",
+   "text": "根據彼得前書4:12-19，信徒面對火煉的試驗應存什麼態度？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "彼得前書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_099",
+   "text": "根據啟示錄第12章，婦人與大紅龍的異象描繪了什麼屬靈爭戰？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "啟示錄"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "TOPIC_QUESTION_100",
+   "text": "根據哥林多後書11:16-33，保羅列舉了自己哪些為主受的苦難？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "哥林多後書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "PERSON_QUESTION_001",
+   "text": "亞伯拉罕、以撒、雅各三代之間的關係和神的應許如何延續？",
+   "persons": [],
+   "places": [
+    "亞伯拉罕",
+    "以撒",
+    "雅各"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_002",
+   "text": "雅各、以掃與利百加、拉班之間的關係如何影響雅各的一生？",
+   "persons": [],
+   "places": [
+    "雅各",
+    "以掃",
+    "利百加",
+    "拉班"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_003",
+   "text": "約瑟與他的兄弟猶大、便雅憫之間的關係在埃及如何發展？",
+   "persons": [],
+   "places": [
+    "約瑟",
+    "猶大",
+    "便雅憫",
+    "埃及"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_004",
+   "text": "摩西、亞倫、米利暗三兄妹在出埃及中各扮演什麼角色？",
+   "persons": [],
+   "places": [
+    "摩西",
+    "亞倫",
+    "米利暗",
+    "埃及"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_005",
+   "text": "摩西與葉忒羅的關係如何影響以色列人的治理？",
+   "persons": [],
+   "places": [
+    "摩西",
+    "葉忒羅",
+    "以色列"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_006",
+   "text": "路得、拿俄米、波阿斯三人之間的關係如何發展？",
+   "persons": [],
+   "places": [
+    "路得",
+    "拿俄米",
+    "波阿斯"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_007",
+   "text": "撒母耳、以利、哈拿三人之間的關係如何？",
+   "persons": [],
+   "places": [
+    "撒母耳",
+    "以利",
+    "哈拿"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_008",
+   "text": "大衛、掃羅、約拿單三人之間的關係有何張力？",
+   "persons": [],
+   "places": [
+    "大衛",
+    "掃羅",
+    "約拿單"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_009",
+   "text": "大衛、拔示巴、烏利亞、拿單之間發生了什麼事？",
+   "persons": [],
+   "places": [
+    "大衛",
+    "拔示巴",
+    "烏利亞",
+    "拿單"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_010",
+   "text": "大衛、所羅門、押沙龍之間的父子關係如何發展？",
+   "persons": [],
+   "places": [
+    "大衛",
+    "所羅門",
+    "押沙龍"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_011",
+   "text": "以利亞、以利沙師徒之間的關係如何？",
+   "persons": [],
+   "places": [
+    "以利亞",
+    "以利沙"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_012",
+   "text": "以利亞與亞哈、耶洗別之間的對抗如何發展？",
+   "persons": [],
+   "places": [
+    "以利亞",
+    "亞哈",
+    "耶洗別"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_013",
+   "text": "但以理與尼布甲尼撒、伯沙撒、大利烏三位王的關係如何？",
+   "persons": [],
+   "places": [
+    "但以理",
+    "尼布甲尼撒",
+    "伯沙撒",
+    "大流士"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_014",
+   "text": "沙得拉、米煞、亞伯尼歌與尼布甲尼撒之間發生了什麼事？",
+   "persons": [],
+   "places": [
+    "沙得拉",
+    "米煞",
+    "亞伯尼歌",
+    "尼布甲尼撒"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_015",
+   "text": "以斯帖、末底改、哈曼、亞哈隨魯王之間的關係如何發展？",
+   "persons": [],
+   "places": [
+    "以斯帖",
+    "末底改",
+    "哈曼",
+    "亞哈隨魯"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_016",
+   "text": "耶穌與彼得、約翰、雅各三位核心門徒的關係如何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "彼得",
+    "約翰",
+    "雅各"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_017",
+   "text": "耶穌與馬大、馬利亞、拉撒路的關係如何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "馬大",
+    "馬利亞",
+    "拉撒路"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_018",
+   "text": "保羅與巴拿巴、西拉、提摩太的同工關係如何發展？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "巴拿巴",
+    "西拉",
+    "提摩太"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_019",
+   "text": "彼得與哥尼流的相遇如何改變教會？",
+   "persons": [],
+   "places": [
+    "彼得",
+    "哥尼流"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_020",
+   "text": "保羅在宣教中與百基拉、亞居拉、亞波羅的關係如何？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "百基拉",
+    "亞居拉",
+    "亞波羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_021",
+   "text": "第一位士師俄陀聶是誰？他如何拯救以色列人？",
+   "persons": [],
+   "places": [
+    "俄陀聶",
+    "以色列"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_022",
+   "text": "士師以笏如何刺殺摩押王伊磯倫？",
+   "persons": [],
+   "places": [
+    "以笏",
+    "摩押",
+    "伊磯倫"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_023",
+   "text": "底波拉、巴拉與雅億在擊敗西西拉的戰役中各扮演什麼角色？",
+   "persons": [],
+   "places": [
+    "底波拉",
+    "巴拉",
+    "雅億",
+    "西西拉"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_024",
+   "text": "士師耶弗他的出身如何？他許了什麼願，帶來什麼後果？",
+   "persons": [],
+   "places": [
+    "耶弗他"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_025",
+   "text": "亞比該如何化解大衛對拿八的怒氣？她後來的結局如何？",
+   "persons": [],
+   "places": [
+    "亞比該",
+    "大衛",
+    "拿八"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_026",
+   "text": "米非波設是誰？大衛如何恩待他？",
+   "persons": [],
+   "places": [
+    "米非波設",
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_027",
+   "text": "押沙龍叛變時，亞希多弗和戶篩兩位謀士各站在哪一邊？他們的計謀如何交鋒？",
+   "persons": [],
+   "places": [
+    "押沙龍",
+    "亞希多弗",
+    "戶篩"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_028",
+   "text": "基列人巴西萊與大衛之間有什麼情誼？",
+   "persons": [],
+   "places": [
+    "基列",
+    "巴西萊",
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_029",
+   "text": "利斯巴為她被處決的兒子們做了什麼？大衛如何回應？",
+   "persons": [],
+   "places": [
+    "利斯巴",
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_030",
+   "text": "示每對大衛做了什麼事？他最終的結局如何？",
+   "persons": [],
+   "places": [
+    "示每",
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_031",
+   "text": "亞多尼雅如何自立為王？他後來因何被處死？",
+   "persons": [],
+   "places": [
+    "亞多尼雅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_032",
+   "text": "示巴女王為什麼來見所羅門？她的感想如何？",
+   "persons": [],
+   "places": [
+    "示巴",
+    "所羅門"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_033",
+   "text": "拿伯為什麼被處死？這件事給亞哈王帶來什麼後果？",
+   "persons": [],
+   "places": [
+    "拿伯",
+    "亞哈"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_034",
+   "text": "先知米該雅與亞哈王的四百個先知有什麼衝突？",
+   "persons": [],
+   "places": [
+    "米該雅",
+    "亞哈"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_035",
+   "text": "乃縵得潔淨的經過如何？他的僕人和基哈西各扮演什麼角色？",
+   "persons": [],
+   "places": [
+    "乃縵",
+    "基哈西"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_036",
+   "text": "書念婦人如何接待以利沙？她的兒子發生了什麼事？",
+   "persons": [],
+   "places": [
+    "書念",
+    "以利沙"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_037",
+   "text": "亞她利雅如何篡奪猶大王位？祭司耶何耶大如何保住大衛的王室血脈？",
+   "persons": [],
+   "places": [
+    "亞她利雅",
+    "猶大",
+    "耶何耶大",
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_038",
+   "text": "女先知戶勒大在約西亞王年間扮演了什麼角色？",
+   "persons": [],
+   "places": [
+    "戶勒大",
+    "約西亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_039",
+   "text": "古實人以伯‧米勒如何救了先知耶利米？",
+   "persons": [],
+   "places": [
+    "古實",
+    "以伯‧米勒",
+    "耶利米"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_040",
+   "text": "文士巴錄與耶利米如何同工？他抄寫的書卷遭遇了什麼？",
+   "persons": [],
+   "places": [
+    "巴錄",
+    "耶利米"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_041",
+   "text": "波提乏與約瑟的關係如何發展？約瑟為何被下在監裏？",
+   "persons": [],
+   "places": [
+    "波提乏",
+    "約瑟"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_042",
+   "text": "王后瓦實提為什麼被廢？這件事帶來什麼影響？",
+   "persons": [],
+   "places": [
+    "瓦實提"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_043",
+   "text": "所羅巴伯在歸回重建中承擔什麼角色？先知哈該對他有什麼應許？",
+   "persons": [],
+   "places": [
+    "所羅巴伯",
+    "哈該"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_044",
+   "text": "尼哥德慕在約翰福音出現過幾次？各是什麼場合？",
+   "persons": [],
+   "places": [
+    "尼哥德慕"
+   ],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_045",
+   "text": "稅吏長撒該遇見耶穌後有什麼改變？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "撒該"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_046",
+   "text": "瞎子巴底買如何得著醫治？",
+   "persons": [],
+   "places": [
+    "巴底買"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_047",
+   "text": "管會堂的睚魯求耶穌什麼？事情如何轉折與結束？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "睚魯"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_048",
+   "text": "亞拿尼亞和撒非喇夫婦犯了什麼罪？結局如何？",
+   "persons": [],
+   "places": [
+    "亞拿尼亞",
+    "撒非喇"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_049",
+   "text": "司提反是誰？他為何被殺？臨死時說了什麼？",
+   "persons": [],
+   "places": [
+    "司提反"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_050",
+   "text": "以巴弗提是誰？保羅如何評價他？",
+   "persons": [],
+   "places": [
+    "以巴弗提",
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_051",
+   "text": "新約中出現的幾位「希律」分別是誰？各與哪些事件相關？",
+   "persons": [],
+   "places": [
+    "希律"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_052",
+   "text": "新約中有哪幾位重要的「馬利亞」？如何區分她們？",
+   "persons": [],
+   "places": [
+    "馬利亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_053",
+   "text": "新約中有哪幾位「雅各」？如何區分他們的身分與事蹟？",
+   "persons": [],
+   "places": [
+    "雅各"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_054",
+   "text": "使徒行傳中出現了三位「亞拿尼亞」，他們分別是誰？",
+   "persons": [],
+   "places": [
+    "亞拿尼亞"
+   ],
+   "events": [],
+   "books": [
+    "使徒行傳"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_055",
+   "text": "聖經中有兩位著名的「掃羅」，他們分別是誰？有什麼對比？",
+   "persons": [],
+   "places": [
+    "掃羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_056",
+   "text": "北國有兩位名叫「耶羅波安」的王，他們分別是誰？",
+   "persons": [],
+   "places": [
+    "耶羅波安"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_057",
+   "text": "聖經中有哪幾位重要的「約瑟」？他們各自的角色是什麼？",
+   "persons": [],
+   "places": [
+    "約瑟"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_058",
+   "text": "新約中出現的幾位「西門」分別是誰？",
+   "persons": [],
+   "places": [
+    "西門"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_059",
+   "text": "新約中除了賣主的加略人猶大之外，還有哪幾位「猶大」？",
+   "persons": [],
+   "places": [
+    "加略",
+    "猶大"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_060",
+   "text": "聖經中有兩位著名的「哈拿尼雅」，一位是但以理的同伴，一位是假先知，他們的事蹟各是什麼？",
+   "persons": [],
+   "places": [
+    "哈拿尼雅",
+    "但以理"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_061",
+   "text": "聖經中有哪幾位重要的「撒迦利亞」？如何區分？",
+   "persons": [],
+   "places": [
+    "撒迦利亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_062",
+   "text": "聖經中有兩個著名的「亞比米勒」，一位在創世記、一位在士師記，他們分別是誰？",
+   "persons": [],
+   "places": [
+    "亞比米勒"
+   ],
+   "events": [],
+   "books": [
+    "創世記",
+    "士師記"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "PERSON_QUESTION_063",
+   "text": "所羅門的母親是誰？她如何為所羅門取得王位？",
+   "persons": [],
+   "places": [
+    "所羅門"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_064",
+   "text": "大衛軍隊的元帥是誰？他做過哪些爭議之事？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_065",
+   "text": "亞伯拉罕的姪兒是誰？他的選擇帶來什麼後果？",
+   "persons": [],
+   "places": [
+    "亞伯拉罕"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_066",
+   "text": "提摩太的外祖母和母親分別叫什麼名字？保羅如何提到她們？",
+   "persons": [],
+   "places": [
+    "提摩太",
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_067",
+   "text": "保羅的外甥做了什麼事救了保羅一命？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_068",
+   "text": "彼得的岳母發生過什麼事？",
+   "persons": [],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_069",
+   "text": "法老的女兒在摩西的生平中扮演了什麼角色？",
+   "persons": [
+    "法老"
+   ],
+   "places": [
+    "摩西"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_070",
+   "text": "「耶穌所愛的那門徒」在最後的晚餐、十字架下和空墳墓前各有什麼舉動？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [
+    "ev0033"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "PERSON_QUESTION_071",
+   "text": "被使徒稱為「勸慰子」（安慰之子）的是誰？他做了哪些配得此名的事？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "PERSON_QUESTION_072",
+   "text": "以色列的第一位大祭司是誰？他的聖職如何設立？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_073",
+   "text": "施洗約翰的父母是誰？他的出生有什麼特別之處？",
+   "persons": [],
+   "places": [
+    "約翰"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_074",
+   "text": "大衛逃亡時，挪伯城的祭司如何幫助他？這事帶來什麼慘劇？誰逃脫了？",
+   "persons": [],
+   "places": [
+    "大衛",
+    "挪伯"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_075",
+   "text": "約瑟的一生經歷了哪幾個重要階段？上帝如何藉此保全雅各全家？",
+   "persons": [],
+   "places": [
+    "約瑟",
+    "雅各"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_076",
+   "text": "雅各一生的遷徙軌跡如何？各地發生了什麼關鍵事件？",
+   "persons": [],
+   "places": [
+    "雅各"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_077",
+   "text": "摩西的一生可分為哪三個階段？各階段的關鍵轉折是什麼？",
+   "persons": [],
+   "places": [
+    "摩西"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_078",
+   "text": "大衛逃避掃羅期間輾轉去過哪些地方？各地發生了什麼事？",
+   "persons": [],
+   "places": [
+    "大衛",
+    "掃羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_079",
+   "text": "掃羅王從被膏立到陣亡經歷了怎樣的興衰？",
+   "persons": [],
+   "places": [
+    "掃羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_080",
+   "text": "所羅門王的一生如何從蒙福走向偏離？",
+   "persons": [],
+   "places": [
+    "所羅門"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_081",
+   "text": "以利沙行過哪些著名的神蹟？",
+   "persons": [],
+   "places": [
+    "以利沙"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_082",
+   "text": "耶利米因傳講信息受過哪些逼迫？",
+   "persons": [],
+   "places": [
+    "耶利米"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_083",
+   "text": "參孫的一生有哪些起伏？他如何在死時勝過非利士人？",
+   "persons": [],
+   "places": [
+    "參孫",
+    "非利士"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_084",
+   "text": "彼得從蒙召到向外邦人傳福音經歷了哪些關鍵時刻？",
+   "persons": [],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_085",
+   "text": "保羅的三次宣教旅程各有什麼重點？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_086",
+   "text": "施洗約翰的一生軌跡如何？他與耶穌的關係怎樣定位？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "約翰"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_087",
+   "text": "馬可（稱呼約翰的）在宣教工場上有過什麼失敗與恢復？",
+   "persons": [],
+   "places": [
+    "馬可",
+    "約翰"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_088",
+   "text": "亞伯拉罕蒙召後的信心之旅經過哪些關鍵地點與試驗？",
+   "persons": [],
+   "places": [
+    "亞伯拉罕"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_089",
+   "text": "以利亞的事奉經歷了哪些高峰與低谷？他如何離世？",
+   "persons": [],
+   "places": [
+    "以利亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_090",
+   "text": "約書亞在接班之前和之後各有哪些重要事蹟？",
+   "persons": [],
+   "places": [
+    "約書亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_091",
+   "text": "尼希米從波斯王宮到耶路撒冷的事奉歷程如何？",
+   "persons": [],
+   "places": [
+    "尼希米",
+    "波斯",
+    "耶路撒冷"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_092",
+   "text": "提摩太如何從路司得的青年成長為保羅的親密同工？",
+   "persons": [],
+   "places": [
+    "提摩太",
+    "路司得",
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_093",
+   "text": "歌利亞如何向以色列軍罵陣？大衛用什麼擊殺了他？",
+   "persons": [],
+   "places": [
+    "歌利亞",
+    "以色列",
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_094",
+   "text": "法老做了什麼夢？約瑟解夢後提出什麼治國建議，得到什麼結果？",
+   "persons": [
+    "法老"
+   ],
+   "places": [
+    "約瑟"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_095",
+   "text": "以利亞在迦密山如何證明耶和華是上帝？旱災又是如何結束的？",
+   "persons": [],
+   "places": [
+    "以利亞",
+    "迦密山"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_096",
+   "text": "生來瞎眼的人如何被耶穌醫治？他在法利賽人面前如何見證？最後結局如何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "PERSON_QUESTION_097",
+   "text": "巴蘭受巴勒邀請的背景是什麼？他的驢為什麼開口說話？",
+   "persons": [],
+   "places": [
+    "巴蘭",
+    "巴勒"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_098",
+   "text": "保羅往羅馬的航程中如何預警風暴？船難過程中他怎樣穩定眾人，最後如何獲救？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "羅馬"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_099",
+   "text": "約瑟做了什麼夢惹哥哥們嫉妒？他們如何處置他？",
+   "persons": [],
+   "places": [
+    "約瑟"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "PERSON_QUESTION_100",
+   "text": "約櫃被擄那一役，以利家遭遇了什麼？「以迦博」這名字為何而起？",
+   "persons": [],
+   "places": [
+    "以利",
+    "以迦博"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_001",
+   "text": "根據創世記，大洪水事件的起因、過程和結局為何？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_002",
+   "text": "巴別塔事件的起因和結果為何？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0001"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_003",
+   "text": "十災事件的順序和法老的反應為何？",
+   "persons": [
+    "法老"
+   ],
+   "places": [],
+   "events": [
+    "ev0019"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_004",
+   "text": "過紅海事件的經過為何？",
+   "persons": [],
+   "places": [
+    "紅海"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_005",
+   "text": "曠野漂流四十年是因為什麼事件？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0012"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_006",
+   "text": "征服迦南時耶利哥城是如何被攻取的？",
+   "persons": [],
+   "places": [
+    "迦南",
+    "耶利哥"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_007",
+   "text": "基甸三百人擊敗米甸人的經過為何？",
+   "persons": [],
+   "places": [
+    "基甸",
+    "米甸"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_008",
+   "text": "王國分裂是如何發生的？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0004"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_009",
+   "text": "被擄巴比倫和歸回重建的過程為何？",
+   "persons": [],
+   "places": [
+    "巴比倫"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_010",
+   "text": "耶穌降生的事件經過為何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_011",
+   "text": "登山寶訓的主要內容包括哪些？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0016"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_012",
+   "text": "五餅二魚神蹟的經過為何？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0029"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_013",
+   "text": "拉撒路復活神蹟的經過為何？",
+   "persons": [],
+   "places": [
+    "拉撒路"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_014",
+   "text": "最後的晚餐發生了哪些重要的事？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0033"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_015",
+   "text": "客西馬尼禱告的經過為何？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0011"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_016",
+   "text": "耶穌受難被釘十字架的經過為何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [
+    "ev0027"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_017",
+   "text": "耶穌復活當天發生了哪些事？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_018",
+   "text": "五旬節聖靈降臨的經過為何？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0022"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_019",
+   "text": "保羅歸主的經過為何？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0002"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_020",
+   "text": "浪子的比喻講述了什麼故事？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_021",
+   "text": "該隱殺亞伯的起因、經過和後果為何？",
+   "persons": [],
+   "places": [
+    "該隱",
+    "亞伯"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_022",
+   "text": "雅各在毗努伊勒與人摔跤的經過為何？這事件如何改變他？",
+   "persons": [],
+   "places": [
+    "雅各",
+    "毗努伊勒"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_023",
+   "text": "金牛犢事件的經過和後果為何？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0010"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_024",
+   "text": "可拉一黨叛變的經過和結局為何？",
+   "persons": [],
+   "places": [
+    "可拉"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_025",
+   "text": "亞干犯罪如何導致艾城之敗？事情如何被查出與處置？",
+   "persons": [],
+   "places": [
+    "亞干"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_026",
+   "text": "基遍人如何用詭計與以色列人立約？結果如何？",
+   "persons": [],
+   "places": [
+    "基遍",
+    "以色列"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_027",
+   "text": "約書亞爭戰時「日頭停住」的事件經過為何？",
+   "persons": [],
+   "places": [
+    "約書亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_028",
+   "text": "米迦的神像與但支派遷徙的事件如何發展？",
+   "persons": [],
+   "places": [
+    "米迦"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_029",
+   "text": "約櫃在非利士人之地經歷了什麼？他們如何把約櫃送回？",
+   "persons": [],
+   "places": [
+    "非利士"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_030",
+   "text": "掃羅在隱‧多珥求問交鬼婦人的經過為何？",
+   "persons": [],
+   "places": [
+    "掃羅",
+    "隱‧多珥"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_031",
+   "text": "大衛運約櫃進耶路撒冷時發生了什麼波折？",
+   "persons": [],
+   "places": [
+    "大衛",
+    "耶路撒冷"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_032",
+   "text": "所羅門審斷兩個婦人爭奪嬰孩的案件經過為何？",
+   "persons": [],
+   "places": [
+    "所羅門"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_033",
+   "text": "亞蘭軍圍困撒馬利亞造成的饑荒如何解除？四個長大痲瘋的人扮演什麼角色？",
+   "persons": [],
+   "places": [
+    "亞蘭",
+    "撒馬利亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_034",
+   "text": "耶戶如何除滅亞哈家並剷除巴力崇拜？",
+   "persons": [],
+   "places": [
+    "耶戶",
+    "亞哈",
+    "巴力"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_035",
+   "text": "以利沙死後，他的骸骨還行了什麼神蹟？",
+   "persons": [],
+   "places": [
+    "以利沙"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_036",
+   "text": "耶路撒冷陷落後，省長基大利遇害的經過為何？",
+   "persons": [],
+   "places": [
+    "耶路撒冷",
+    "基大利"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_037",
+   "text": "尼布甲尼撒王發瘋吃草的事件如何應驗與收場？",
+   "persons": [],
+   "places": [
+    "尼布甲尼撒"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_038",
+   "text": "普珥日是為記念什麼事件而設立的？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_039",
+   "text": "迦拿婚宴上耶穌行了什麼神蹟？經過如何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "迦拿"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_040",
+   "text": "耶穌與撒馬利亞婦人在井旁的對話如何展開？帶來什麼結果？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "撒馬利亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_041",
+   "text": "耶穌在畢士大池邊醫治病了三十八年的人，經過如何？為何引起爭議？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "畢士大"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_042",
+   "text": "行淫時被拿的婦人事件中，耶穌如何回應控告者？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_043",
+   "text": "耶穌在拿因城使寡婦的兒子復活的經過為何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "拿因"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_044",
+   "text": "施洗約翰是怎麼死的？",
+   "persons": [],
+   "places": [
+    "約翰"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_045",
+   "text": "彼得在海面上行走的事件經過為何？",
+   "persons": [],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_046",
+   "text": "耶穌咒詛無花果樹的事件經過為何？藉此教導什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_047",
+   "text": "寡婦投兩個小錢的事件中，耶穌如何評價她的奉獻？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_048",
+   "text": "賣主的猶大最後的結局如何？那三十塊錢的下落呢？",
+   "persons": [],
+   "places": [
+    "猶大"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_049",
+   "text": "彼得被希律囚在監裏後如何獲救？",
+   "persons": [],
+   "places": [
+    "彼得",
+    "希律"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_050",
+   "text": "保羅在路司得醫好瘸腿的人後，發生了什麼風波？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "路司得"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_051",
+   "text": "保羅和西拉在腓立比下監，當夜發生了什麼事？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "西拉",
+    "腓立比"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_052",
+   "text": "保羅在雅典亞略巴古的講道說了什麼？聽眾反應如何？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "雅典",
+    "亞略‧巴古"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_053",
+   "text": "以弗所的銀匠暴動因何而起？如何平息？",
+   "persons": [],
+   "places": [
+    "以弗所"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_054",
+   "text": "保羅在馬耳他島被蝮蛇咬住，之後發生了什麼？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "馬耳他"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_055",
+   "text": "從約瑟被賣到雅各全家下埃及，中間經過了哪些關鍵事件？順序如何？",
+   "persons": [],
+   "places": [
+    "約瑟",
+    "雅各",
+    "埃及"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_056",
+   "text": "出埃及、過紅海、西奈山頒十誡、金牛犢事件，這些事的先後順序和關聯為何？",
+   "persons": [],
+   "places": [
+    "埃及",
+    "紅海",
+    "西奈山"
+   ],
+   "events": [
+    "ev0018",
+    "ev0010"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_057",
+   "text": "以色列人求立王之前，撒母耳如何治理以色列？他們求王的直接原因是什麼？",
+   "persons": [],
+   "places": [
+    "以色列",
+    "撒母耳"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_058",
+   "text": "大衛從被膏立到登基作王，經歷了哪些階段？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_059",
+   "text": "耶路撒冷最後陷落時，事件的先後順序為何？西底家王的結局如何？",
+   "persons": [],
+   "places": [
+    "耶路撒冷",
+    "西底家"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_060",
+   "text": "第二聖殿的重建何時停工、何時復工？哪兩位先知促成了復工？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_061",
+   "text": "耶穌受洗與受試探的先後次序為何？受試探之後他做了什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_062",
+   "text": "約翰福音與符類福音記載的「潔淨聖殿」在時間點上有何不同？各自的內容重點是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰福音"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_063",
+   "text": "彼得三次不認主發生在哪個事件之後？耶穌何時預言、彼得何時想起？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_064",
+   "text": "耶穌復活後向門徒顯現的次序，約翰福音與哥林多前書15章分別如何記載？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "哥林多前書",
+    "約翰福音"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "EVENT_QUESTION_065",
+   "text": "耶穌復活後多久升天？五旬節聖靈降臨與升天相隔多久？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [
+    "ev0022"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_066",
+   "text": "司提反殉道與福音傳到撒馬利亞之間有什麼因果與先後關係？",
+   "persons": [],
+   "places": [
+    "撒馬利亞"
+   ],
+   "events": [
+    "ev0032"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_067",
+   "text": "保羅歸主之後先後去了哪些地方？加拉太書與使徒行傳如何互相補充？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0002"
+   ],
+   "books": [
+    "使徒行傳",
+    "加拉太書"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "EVENT_QUESTION_068",
+   "text": "以實瑪利的出生、以撒的出生與獻以撒，三件事的先後與關聯為何？",
+   "persons": [],
+   "places": [
+    "以實瑪利",
+    "以撒"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_069",
+   "text": "大衛之約是在什麼事件之後賜下的？大衛原本想做什麼？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_070",
+   "text": "以利亞升天前後發生了什麼？以利沙求了什麼？升天後以利沙行的頭一個神蹟是什麼？",
+   "persons": [],
+   "places": [
+    "以利亞",
+    "以利沙"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_071",
+   "text": "「焚而不毀的荊棘」異象中，上帝向摩西啟示了什麼名字與使命？",
+   "persons": [],
+   "places": [
+    "摩西"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_072",
+   "text": "「主禱文」是在什麼場合教導的？內容包括哪些祈求？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_073",
+   "text": "「白色大寶座的審判」場景是如何描述的？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_074",
+   "text": "「千禧年」的概念出自聖經哪一段？其間撒但與聖徒的光景如何？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_075",
+   "text": "「敵基督」一詞出現在聖經哪卷書？作者如何定義敵基督？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_076",
+   "text": "「道成肉身」的宣告出自哪裡？經文如何描述？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0006"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_077",
+   "text": "耶穌的「橄欖山講論」（末世講論）主要預言和教導了什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "橄欖山"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_078",
+   "text": "「棕枝主日」記念的是哪個事件？經過為何？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_079",
+   "text": "「十架七言」——耶穌在十字架上說過哪些話？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_080",
+   "text": "「基督徒」這個稱呼是從哪裡開始的？當時的背景如何？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_081",
+   "text": "「多疑的多馬」事件的經過為何？多馬最後如何回應？",
+   "persons": [],
+   "places": [
+    "多馬"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_082",
+   "text": "「馬其頓的呼聲」是什麼？它如何改變保羅的宣教路線？",
+   "persons": [],
+   "places": [
+    "馬其頓",
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_083",
+   "text": "保羅「肉體上的一根刺」是怎麼回事？他如何領受主的回答？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_084",
+   "text": "「約伯的忍耐」這個說法出自新約哪裡？約伯記開頭如何鋪陳他的苦難與堅忍？",
+   "persons": [],
+   "places": [
+    "約伯"
+   ],
+   "events": [],
+   "books": [
+    "約伯記"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_085",
+   "text": "「重生」的說法源自耶穌與誰的對話？那人如何誤解？耶穌如何解釋？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_086",
+   "text": "贖罪日儀式中那隻「歸與阿撒瀉勒的羊」（代罪羊）是怎麼處理的？象徵什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_087",
+   "text": "好撒馬利亞人的比喻講了什麼故事？回答了什麼問題？",
+   "persons": [],
+   "places": [
+    "撒馬利亞"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_088",
+   "text": "十個童女的比喻內容為何？教導什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_089",
+   "text": "按才幹接受託付（才幹／他連得）的比喻講了什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_090",
+   "text": "綿羊和山羊的比喻（萬民受審判）如何描述末日審判的標準？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0013"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "EVENT_QUESTION_091",
+   "text": "迷羊和失錢這兩個比喻各講了什麼？共同的結語是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_092",
+   "text": "不義的管家的比喻講了什麼？耶穌藉此教導什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_093",
+   "text": "財主與拉撒路的比喻描繪了什麼？亞伯拉罕如何回答財主的兩個請求？",
+   "persons": [],
+   "places": [
+    "拉撒路",
+    "亞伯拉罕"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "EVENT_QUESTION_094",
+   "text": "葡萄園工人的比喻（清早到酉初雇工）講了什麼？結語是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_095",
+   "text": "兩個兒子的比喻（一個說不去後來去了）針對誰說的？要點是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_096",
+   "text": "凶惡園戶的比喻講了什麼故事？聽的人有何反應？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_097",
+   "text": "大筵席的比喻中，被請的人如何推辭？家主如何回應？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_098",
+   "text": "十錠銀子的比喻（路加福音）與才幹的比喻有何不同？講了什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "路加福音"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_099",
+   "text": "稗子的比喻及其解釋講了什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "EVENT_QUESTION_100",
+   "text": "芥菜種和麵酵這兩個天國的比喻表達了什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_001",
+   "text": "以賽亞書的以馬內利預言如何在馬太福音應驗？",
+   "persons": [],
+   "places": [
+    "以馬內利"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書",
+    "馬太福音"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_002",
+   "text": "羅馬書和加拉太書如何用亞伯拉罕的例子論述因信稱義？",
+   "persons": [],
+   "places": [
+    "亞伯拉罕"
+   ],
+   "events": [],
+   "books": [
+    "加拉太書",
+    "羅馬書"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_003",
+   "text": "神的羔羊意象如何從以賽亞書延伸到約翰福音和啟示錄？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書",
+    "約翰福音",
+    "啟示錄"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_004",
+   "text": "約翰福音1章如何呼應創世記1章的創造敘事？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "約翰福音",
+    "創世記"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_005",
+   "text": "希伯來書如何說明基督的祭司職分比亞倫的祭司更美？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "亞倫"
+   ],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_006",
+   "text": "耶利米書的新約預言如何在希伯來書得到應用？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "耶利米書",
+    "希伯來書"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_007",
+   "text": "詩篇22篇的描述如何在耶穌受難中應驗？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_008",
+   "text": "撒迦利亞書的預言如何在受難週應驗？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0020"
+   ],
+   "books": [
+    "撒迦利亞書"
+   ],
+   "route": "R4"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_009",
+   "text": "出埃及記的嗎哪如何預表約翰福音的生命糧？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "出埃及記",
+    "約翰福音"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_010",
+   "text": "使徒行傳2章彼得如何引用舊約證明耶穌是彌賽亞？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [
+    "使徒行傳"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_011",
+   "text": "申命記18章關於先知的預言如何應用於耶穌？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "申命記"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_012",
+   "text": "彼得前書如何引用以賽亞書論房角石？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書",
+    "彼得前書"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_013",
+   "text": "哥林多前書15章如何回應創世記關於死亡的敘述？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "哥林多前書",
+    "創世記"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_014",
+   "text": "以弗所書如何說明外邦人得以進入神的約？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以弗所書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_015",
+   "text": "約拿在魚腹中的經歷如何預表基督的死與復活？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "約拿"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_016",
+   "text": "哥林多後書如何對比摩西和新約的職事？",
+   "persons": [],
+   "places": [
+    "摩西"
+   ],
+   "events": [],
+   "books": [
+    "哥林多後書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_017",
+   "text": "羅馬書9-11章如何引用舊約說明神對以色列和外邦人的計劃？",
+   "persons": [],
+   "places": [
+    "以色列"
+   ],
+   "events": [],
+   "books": [
+    "羅馬書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_018",
+   "text": "啟示錄的新耶路撒冷如何呼應創世記的伊甸園？",
+   "persons": [],
+   "places": [
+    "耶路撒冷",
+    "伊甸園"
+   ],
+   "events": [],
+   "books": [
+    "創世記",
+    "啟示錄"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_019",
+   "text": "以賽亞書53章的受苦僕人預言如何在新約應驗？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_020",
+   "text": "大使命如何連結創世記的祝福和啟示錄的異象？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0007"
+   ],
+   "books": [
+    "創世記",
+    "啟示錄"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_021",
+   "text": "彌迦書關於伯利恆的預言如何在耶穌降生時應驗？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "伯利恆"
+   ],
+   "events": [],
+   "books": [
+    "彌迦書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_022",
+   "text": "何西阿書「從埃及召出我的兒子來」如何被馬太福音引用？",
+   "persons": [],
+   "places": [
+    "埃及"
+   ],
+   "events": [],
+   "books": [
+    "何西阿書",
+    "馬太福音"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_023",
+   "text": "耶利米書「拉結哭她兒女」的預言與伯利恆的哪個事件相連？",
+   "persons": [],
+   "places": [
+    "拉結",
+    "伯利恆"
+   ],
+   "events": [],
+   "books": [
+    "耶利米書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_024",
+   "text": "以賽亞書「在曠野有人聲喊著」的預言如何應驗在施洗約翰身上？",
+   "persons": [],
+   "places": [
+    "約翰"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_025",
+   "text": "耶穌在拿撒勒會堂宣讀以賽亞書哪段經文？他如何宣告其應驗？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "拿撒勒"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_026",
+   "text": "以賽亞書關於西布倫、拿弗他利之地的預言如何在耶穌的事奉中應驗？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "西布倫",
+    "拿弗他利"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_027",
+   "text": "馬太福音如何用以賽亞書53章解釋耶穌的醫治事工？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書",
+    "馬太福音"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_028",
+   "text": "以賽亞書42章的僕人之歌如何被馬太福音用來描述耶穌的服事風格？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書",
+    "馬太福音"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_029",
+   "text": "以賽亞書6章「聽是要聽見卻不明白」的預言，耶穌如何用來解釋比喻的功用？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_030",
+   "text": "「我要開口用比喻」出自哪篇詩篇？馬太福音如何引用？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬太福音",
+    "詩篇"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_031",
+   "text": "「從嬰孩和吃奶的口中」這句詩篇如何在潔淨聖殿後被耶穌引用？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_032",
+   "text": "撒迦利亞書「擊打牧人，羊就分散」的預言，耶穌何時引用？如何應驗？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "撒迦利亞書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_033",
+   "text": "詩篇41篇「吃過我飯的也用腳踢我」如何應驗在猶大身上？",
+   "persons": [],
+   "places": [
+    "猶大"
+   ],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_034",
+   "text": "詩篇69篇「拿醋給我喝」如何在十字架上應驗？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_035",
+   "text": "「他的骨頭一根也不可折斷」的預言出自哪些舊約經文？如何在十字架上應驗？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_036",
+   "text": "耶穌如何用詩篇110篇反問法利賽人關於基督身分的問題？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_037",
+   "text": "初代教會受逼迫時如何引用詩篇第2篇禱告？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_038",
+   "text": "耶路撒冷會議上，雅各引用阿摩司書哪段預言支持接納外邦人？",
+   "persons": [],
+   "places": [
+    "耶路撒冷",
+    "雅各"
+   ],
+   "events": [],
+   "books": [
+    "阿摩司書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_039",
+   "text": "保羅和巴拿巴轉向外邦人時引用了以賽亞書哪句話？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "巴拿巴"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_040",
+   "text": "瑪拉基書預言的「以利亞先來」，耶穌如何解釋其應驗？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "以利亞"
+   ],
+   "events": [],
+   "books": [
+    "瑪拉基書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_041",
+   "text": "但以理書「人子駕雲而來」的異象，耶穌在受審時如何引用？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "但以理書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_042",
+   "text": "創世記3:15「女人的後裔要傷你的頭」被稱為「原始福音」，新約哪些經文呼應了它？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_043",
+   "text": "以賽亞書「耶西的根」的預言，保羅在羅馬書如何引用？",
+   "persons": [],
+   "places": [
+    "耶西",
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書",
+    "羅馬書"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_044",
+   "text": "「死被得勝吞滅」與「死啊，你的毒鉤在哪裏」出自哪兩卷先知書？保羅如何引用？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_045",
+   "text": "「必有一位救主從錫安出來」的預言如何支撐保羅對以色列全家得救的盼望？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "錫安",
+    "保羅",
+    "以色列"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_046",
+   "text": "耶穌用以賽亞書35章的哪些記號回答獄中施洗約翰的疑問？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "約翰"
+   ],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_047",
+   "text": "曠野受試探時，耶穌三次引用申命記回應魔鬼；魔鬼又引用了哪篇詩篇？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "申命記",
+    "詩篇"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_048",
+   "text": "「愛人如己」出自舊約哪卷書？耶穌與保羅如何引用它？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_049",
+   "text": "馬可福音記載文士問最大的誡命時，耶穌引用申命記哪段話？那文士如何回應？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬可福音",
+    "申命記"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_050",
+   "text": "耶穌回應撒都該人復活的詰難時，引用了出埃及記哪句話？如何論證？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "出埃及記"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_051",
+   "text": "「我喜愛憐恤，不喜愛祭祀」——耶穌在什麼場合引用何西阿書這句話？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "何西阿書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_052",
+   "text": "耶穌用以賽亞書哪句話責備法利賽人的洗手傳統？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_053",
+   "text": "「二人成為一體」出自創世記哪裡？耶穌與保羅分別如何引用？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "創世記"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_054",
+   "text": "「以眼還眼，以牙還牙」的律法出自哪裡？耶穌在登山寶訓中如何回應？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [
+    "ev0016"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_055",
+   "text": "摩西的休書條例出自哪裡？耶穌在登山寶訓怎樣論休妻？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "摩西"
+   ],
+   "events": [
+    "ev0016"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_056",
+   "text": "耶穌潔淨聖殿時把哪兩處先知的話合在一起引用？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_057",
+   "text": "「義人必因信得生」在新約被引用於哪幾卷書？各自的重點是什麼？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_058",
+   "text": "希伯來書如何引用詩篇95篇警告「不可硬著心」？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "希伯來書",
+    "詩篇"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_059",
+   "text": "「伸冤在我，我必報應」與「炭火堆在頭上」各出自哪裡？保羅如何併用？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_060",
+   "text": "雅各書如何引用創世記15:6論證「信心因著行為才得成全」？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "創世記",
+    "雅各書"
+   ],
+   "route": "R1"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_061",
+   "text": "保羅在羅馬書4章除了亞伯拉罕之外，還引用大衛的哪篇詩篇論稱義？",
+   "persons": [],
+   "places": [
+    "保羅",
+    "亞伯拉罕",
+    "大衛"
+   ],
+   "events": [],
+   "books": [
+    "羅馬書",
+    "詩篇"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_062",
+   "text": "「眼睛未曾看見，耳朵未曾聽見」這句常被引用的話，原文出自哪裡？保羅的上下文是什麼？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_063",
+   "text": "摩西在曠野舉銅蛇的事件如何預表基督被舉起？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "摩西"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_064",
+   "text": "麥基洗德是誰？希伯來書如何以他論證基督更美的祭司職分？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "麥基洗德"
+   ],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_065",
+   "text": "「我們逾越節的羔羊」是什麼意思？保羅如何應用逾越節與除酵的預表？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [
+    "ev0031"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_066",
+   "text": "希伯來書如何以贖罪日的儀式對比基督一次獻上的救贖？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_067",
+   "text": "會幕的樣式與天上的實體有什麼關係？希伯來書如何引用「照著山上指示你的樣式」？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_068",
+   "text": "保羅如何以出埃及與曠野的事為「鑑戒」？「那磐石就是基督」是什麼意思？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅",
+    "埃及"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_069",
+   "text": "彼得前書如何以挪亞洪水預表洗禮？",
+   "persons": [],
+   "places": [
+    "挪亞"
+   ],
+   "events": [],
+   "books": [
+    "彼得前書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_070",
+   "text": "保羅如何在羅馬書5章以亞當預表基督？兩者的對比是什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "保羅",
+    "亞當"
+   ],
+   "events": [],
+   "books": [
+    "羅馬書"
+   ],
+   "route": "R2"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_071",
+   "text": "希伯來書如何解讀亞伯拉罕獻以撒的信心？",
+   "persons": [],
+   "places": [
+    "亞伯拉罕",
+    "以撒"
+   ],
+   "events": [],
+   "books": [
+    "希伯來書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_072",
+   "text": "「心裏的割禮」這個主題如何從申命記延伸到保羅書信？",
+   "persons": [],
+   "places": [
+    "保羅"
+   ],
+   "events": [],
+   "books": [
+    "申命記"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_073",
+   "text": "「我為你的殿心裏焦急，如同火燒」出自哪篇詩篇？門徒何時想起這話？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "詩篇"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_074",
+   "text": "耶穌為門徒在安息日掐麥穗辯護時，引用了大衛的什麼先例？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_075",
+   "text": "大衛數點百姓的記載，撒母耳記下與歷代志上有什麼著名的差異？事件經過如何？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [],
+   "books": [
+    "撒母耳記下",
+    "歷代志上"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_076",
+   "text": "所羅門獻殿的記載在列王紀上與歷代志下有什麼異同？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0021"
+   ],
+   "books": [
+    "列王紀上",
+    "歷代志下"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_077",
+   "text": "約西亞守逾越節的記載，列王紀下與歷代志下的詳略有何不同？",
+   "persons": [],
+   "places": [
+    "約西亞"
+   ],
+   "events": [
+    "ev0031"
+   ],
+   "books": [
+    "列王紀下",
+    "歷代志下"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_078",
+   "text": "希西家病得要死又得醫治的事，在列王紀下、歷代志下與以賽亞書中如何互相補充？",
+   "persons": [],
+   "places": [
+    "希西家"
+   ],
+   "events": [],
+   "books": [
+    "列王紀下",
+    "歷代志下",
+    "以賽亞書"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_079",
+   "text": "西拿基立圍攻耶路撒冷的事件同時記載在哪兩卷書？結局如何？",
+   "persons": [],
+   "places": [
+    "西拿基立",
+    "耶路撒冷"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_080",
+   "text": "烏西雅（亞撒利雅）王的記載，列王紀下與歷代志下有何詳略差異？他為何長大痲瘋？",
+   "persons": [],
+   "places": [
+    "烏西雅",
+    "亞撒利雅"
+   ],
+   "events": [],
+   "books": [
+    "列王紀下",
+    "歷代志下"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_081",
+   "text": "馬太福音與路加福音記載曠野三個試探的順序有何不同？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "馬太福音",
+    "路加福音"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_082",
+   "text": "登山變像在三卷符類福音中的記載有哪些共同要素與獨特細節？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0028"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_083",
+   "text": "彼得認信「你是基督」的場景，三卷符類福音的記載各有什麼側重？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "彼得"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_084",
+   "text": "設立聖餐的記載出現在哪四處經文？彼此有什麼異同？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_085",
+   "text": "四福音書記載空墳墓清晨的婦女名單與所見情景有何異同？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_086",
+   "text": "迦百農癱子被縋下屋頂得醫治的記載，三卷福音書如何描述？耶穌先宣告什麼？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "迦百農"
+   ],
+   "events": [],
+   "books": [],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_087",
+   "text": "平靜風浪的神蹟在三卷符類福音中如何記載？門徒與耶穌的對話有何差異？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_088",
+   "text": "五餅二魚是唯一四卷福音書都記載的神蹟，各卷的記載有什麼獨特之處？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0029"
+   ],
+   "books": [],
+   "route": "R4"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_089",
+   "text": "「牧人」的意象如何貫穿詩篇、以西結書、約翰福音與彼得前書？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "以西結書",
+    "約翰福音",
+    "彼得前書",
+    "詩篇"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_090",
+   "text": "「葡萄園／葡萄樹」的意象如何從以賽亞書延伸到耶穌的比喻與宣告？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [],
+   "events": [],
+   "books": [
+    "以賽亞書"
+   ],
+   "route": "fallback"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_091",
+   "text": "「活水」的意象如何從耶利米書流向約翰福音與啟示錄？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "耶利米書",
+    "約翰福音",
+    "啟示錄"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_092",
+   "text": "「婚姻／新婦」的意象如何從何西阿書延伸到以弗所書與啟示錄？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "何西阿書",
+    "以弗所書",
+    "啟示錄"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_093",
+   "text": "「安息」的主題如何從創世記第七日、十誡延伸到希伯來書的屬天安息？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0018"
+   ],
+   "books": [
+    "希伯來書",
+    "創世記"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_094",
+   "text": "「十分之一」的奉獻在聖經中如何從麥基洗德、瑪拉基書延伸到耶穌的教導？",
+   "persons": [
+    "耶穌"
+   ],
+   "places": [
+    "麥基洗德"
+   ],
+   "events": [],
+   "books": [
+    "瑪拉基書"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_095",
+   "text": "聖所的演進如何從會幕、聖殿、以西結的異象走到啟示錄「未見城內有殿」？",
+   "persons": [],
+   "places": [
+    "以西結"
+   ],
+   "events": [],
+   "books": [
+    "啟示錄"
+   ],
+   "route": "R6"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_096",
+   "text": "「耶和華的榮光充滿」這一主題在出埃及記、列王紀與啟示錄中如何呼應？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "出埃及記",
+    "啟示錄"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_097",
+   "text": "利未記的初熟節與五旬節如何在新約的聖靈降臨與「初熟的果子」中得著呼應？",
+   "persons": [],
+   "places": [],
+   "events": [
+    "ev0022"
+   ],
+   "books": [
+    "利未記"
+   ],
+   "route": "R4"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_098",
+   "text": "「巴別／巴比倫」如何在聖經中成為人類驕傲的象徵？從創世記到啟示錄如何收尾？",
+   "persons": [],
+   "places": [
+    "巴別",
+    "巴比倫"
+   ],
+   "events": [],
+   "books": [
+    "創世記",
+    "啟示錄"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_099",
+   "text": "大衛之約的應許如何經詩篇89篇傳遞到路加福音的天使報信與五旬節講道？",
+   "persons": [],
+   "places": [
+    "大衛"
+   ],
+   "events": [
+    "ev0022"
+   ],
+   "books": [
+    "路加福音",
+    "詩篇"
+   ],
+   "route": "R5"
+  },
+  {
+   "question_id": "GENERAL_BIBLE_QUESTION_100",
+   "text": "「你們要聖潔，因為我是聖潔的」出自哪裡？彼得前書如何引用？",
+   "persons": [],
+   "places": [],
+   "events": [],
+   "books": [
+    "彼得前書"
+   ],
+   "route": "fallback"
+  }
+ ]
+}
