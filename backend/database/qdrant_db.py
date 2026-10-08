@@ -1,5 +1,9 @@
-"""
-Qdrant vector database client and search functions.
+"""Qdrant access to the serving build's collection ``passages__{build_id}``.
+
+The collection is fixed at startup from rag_meta.builds; points carry the emb
+contract payload (record_id, kind, book_id, passage_id, …). Search is plain dense
+cosine on the unnamed vector; a book restriction filters on the payload's
+``book_id`` (indexed by the loader), never on the Chinese book name.
 """
 
 import logging
@@ -13,24 +17,26 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 _client: Optional[QdrantClient] = None
+_collection: Optional[str] = None
 
 
-def init_client() -> QdrantClient:
-    global _client
-    _client = QdrantClient(
-        host=settings.qdrant_host,
-        port=settings.qdrant_http_port,
-    )
-    logger.info("Qdrant client initialized")
+def make_client() -> QdrantClient:
+    return QdrantClient(host=settings.qdrant_host, port=settings.qdrant_http_port)
+
+
+def init_client(collection: str) -> QdrantClient:
+    global _client, _collection
+    _client, _collection = make_client(), collection
+    logger.info("Qdrant client initialized (collection=%s)", collection)
     return _client
 
 
-def close_client():
-    global _client
+def close_client() -> None:
+    global _client, _collection
     if _client:
         _client.close()
-        _client = None
-        logger.info("Qdrant client closed")
+    _client, _collection = None, None
+    logger.info("Qdrant client closed")
 
 
 def get_client() -> QdrantClient:
@@ -39,93 +45,38 @@ def get_client() -> QdrantClient:
     return _client
 
 
+def collection() -> str:
+    if _collection is None:
+        raise RuntimeError("Qdrant collection not chosen")
+    return _collection
+
+
 def health_check() -> bool:
     try:
-        client = get_client()
-        client.get_collections()
+        get_client().get_collections()
         return True
-    except Exception:
+    except Exception:  # noqa: BLE001 — health reports, it does not raise
         return False
 
 
-def search_vectors(
-    query_vector: list[float],
-    top_k: int = 20,
-    score_threshold: Optional[float] = None,
-    book_filter: Optional[list[str]] = None,
-) -> list[dict]:
-    """
-    Search for similar vectors in the bible_embeddings collection.
-
-    When `book_filter` is non-empty, restricts hits to payloads whose
-    `book_name` matches any value in the list (book-anchored retrieval).
-
-    Returns list of dicts with: record_id, score, type, book_id, book_name,
-    chapter_num, title, verse_range, content_preview.
-    """
-    client = get_client()
-    query_filter = None
-    if book_filter:
-        query_filter = models.Filter(
-            must=[
-                models.FieldCondition(
-                    key="book_name",
-                    match=models.MatchAny(any=book_filter),
-                )
-            ]
-        )
-    results = client.search(
-        collection_name=settings.qdrant_collection,
-        query_vector=query_vector,
-        limit=top_k,
-        score_threshold=score_threshold,
-        query_filter=query_filter,
-    )
-
-    return [
-        {
-            "record_id": hit.payload.get("record_id", ""),
-            "score": hit.score,
-            "type": hit.payload.get("type", ""),
-            "book_id": hit.payload.get("book_id", ""),
-            "book_name": hit.payload.get("book_name", ""),
-            "chapter_num": hit.payload.get("chapter_num"),
-            "title": hit.payload.get("title", ""),
-            "verse_range": hit.payload.get("verse_range", ""),
-            "content_preview": hit.payload.get("content_preview", ""),
-        }
-        for hit in results
-    ]
+def collection_exists() -> bool:
+    return bool(get_client().collection_exists(collection()))
 
 
-def search_hybrid_dense(query_vector: list[float], top_k: int = 20) -> list[dict]:
-    """Search the "dense" named vector of the hybrid collection.
-
-    This is the exact call the retired sparse+dense arm always fell back to
-    (qdrant-client 1.8.2 has no query_points), kept as-is so results do not
-    change: same collection, named vector, limit and default search params.
-    Hits additionally carry `parent_pericope_id` from the payload.
-    """
-    client = get_client()
-    results = client.search(
-        collection_name=settings.qdrant_hybrid_collection,
-        query_vector=("dense", query_vector),
-        limit=top_k,
-    )
-    return [_hybrid_hit(point) for point in results]
+def count() -> int:
+    return int(get_client().count(collection(), exact=True).count)
 
 
-def _hybrid_hit(point) -> dict:
-    payload = point.payload or {}
-    return {
-        "record_id": payload.get("record_id", ""),
-        "score": point.score,
-        "type": payload.get("type", ""),
-        "book_id": payload.get("book_id", ""),
-        "book_name": payload.get("book_name", ""),
-        "chapter_num": payload.get("chapter_num"),
-        "title": payload.get("title", ""),
-        "verse_range": payload.get("verse_range", ""),
-        "content_preview": payload.get("content_preview", ""),
-        "parent_pericope_id": payload.get("parent_pericope_id"),
-    }
+def _book_filter(book_ids: Optional[list[str]]) -> Optional[models.Filter]:
+    if not book_ids:
+        return None
+    return models.Filter(must=[models.FieldCondition(key="book_id",
+                                                     match=models.MatchAny(any=book_ids))])
+
+
+def search(query_vector: list[float], top_k: int = 20,
+           book_ids: Optional[list[str]] = None) -> list[dict]:
+    """Nearest points as {score, payload}; ``book_ids`` restricts to those books."""
+    hits = get_client().search(collection_name=collection(), query_vector=query_vector,
+                               limit=top_k, query_filter=_book_filter(book_ids))
+    return [{"score": hit.score, "payload": dict(hit.payload or {})} for hit in hits]

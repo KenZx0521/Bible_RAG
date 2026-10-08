@@ -47,7 +47,6 @@ Usage (from the project root):
 from __future__ import annotations
 
 import argparse
-import ast
 import json
 import sys
 from collections.abc import Collection, Iterable, Mapping
@@ -66,7 +65,8 @@ from backfill_head_events import (  # noqa: E402  (also loads .env)
 
 OUT_PATH = _PROJECT_ROOT / "backend" / "data" / "event_registry.json"
 MANUAL_PATCHES = _PROJECT_ROOT / "config" / "curated" / "manual_graph_patches.jsonl"
-ENTITY_DICTS = _PROJECT_ROOT / "backend" / "utils" / "entity_dicts.py"
+# The backend's EVENT_KEYWORDS, frozen when R1 moved routing to the contract (D-12(a)).
+ROUTING_LEXICON = _PROJECT_ROOT / "config" / "registries" / "routing_lexicon.legacy.json"
 BOOKS = _PROJECT_ROOT / "output" / "books.jsonl"
 
 _ANCHOR_QUERY = """
@@ -96,12 +96,11 @@ def curated_event_ids() -> dict[str, str]:
 
 
 def event_keywords() -> set[str]:
-    """backend EVENT_KEYWORDS, read without importing the backend runtime."""
-    tree = ast.parse(ENTITY_DICTS.read_text(encoding="utf-8"))
-    for node in tree.body:
-        if isinstance(node, ast.AnnAssign) and getattr(node.target, "id", "") == "EVENT_KEYWORDS":
-            return set(ast.literal_eval(node.value))
-    raise RuntimeError(f"EVENT_KEYWORDS not found in {ENTITY_DICTS}")
+    """The backend's EVENT_KEYWORDS: the events of the frozen legacy routing lexicon."""
+    terms = {e["term"] for e in json.loads(ROUTING_LEXICON.read_text(encoding="utf-8"))["events"]}
+    if not terms:
+        raise RuntimeError(f"no event keywords in {ROUTING_LEXICON}")
+    return terms
 
 
 def canonical_key(book_order: Mapping[str, int]):

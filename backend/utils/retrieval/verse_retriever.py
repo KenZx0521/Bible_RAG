@@ -1,105 +1,75 @@
-"""
-Verse Retriever — exact verse lookup from PostgreSQL.
+"""Verse retriever — exact verse and chapter lookup in PostgreSQL (R1 route).
 
-Locates specific book:chapter:verse and returns verse-level content.
-Falls back to pericope-level for chapter-only references.
+A verse reference reads the slots it names (design §2.23): a merged unit comes
+back whole once, its range marked (asking for 6:3 gives ``2-3``); an omitted slot
+comes back as 「本譯本此節從缺」 with its variant footnote. One candidate per
+reference; its verse_range is chapter-internal, start_key/end_key name the slots.
+A chapter-only reference returns the chapter's passages in canonical order.
 """
+
+from __future__ import annotations
 
 import logging
+from typing import Any
 
-from database import postgres
+from database import content, postgres
+from ragcommon import ids
 from utils.verse_parser import VerseRef
 
 logger = logging.getLogger(__name__)
+SOURCE = "verse_direct"
 
 
-async def retrieve_by_verse_refs(verse_refs: list[VerseRef]) -> list[dict]:
-    """
-    Retrieve exact verse content matching verse references from PostgreSQL.
+def source_id(pieces: list[content.VersePiece], start_key: str, end_key: str) -> str:
+    """``vs:{unit}`` for exactly one unit; else the slot (or ``{start}~{end}`` range)."""
+    if len(pieces) == 1 and pieces[0].unit_key is not None:
+        return ids.verse_record_id(pieces[0].unit_key)
+    return start_key if start_key == end_key else f"{start_key}~{end_key}"
 
-    Flow per reference:
-      1. verse range  (e.g. 羅馬書3:23-24) → get_verses_range()
-      2. single verse (e.g. 羅馬書3:23)    → get_verse()
-      3. chapter only (e.g. 創世記第1章)   → search_pericopes_by_verse_ref()
 
-    Returns list of candidate dicts compatible with generator._build_context:
-        id, content, title, book_name, chapter_num, verse_range,
-        source_strategy, weight.
-    """
-    candidates = []
-    seen_ids: set[str] = set()
+def _passages_of(pieces, owners) -> tuple[str | None, list[str]]:
+    spanned = [p for piece in pieces if piece.unit_key
+               for p in (owners[piece.unit_key]["passage_id"],
+                         *owners[piece.unit_key]["split_passage_ids"])]
+    spanned = list(dict.fromkeys(spanned))
+    return (spanned[0] if spanned else None), (spanned if len(spanned) > 1 else [])
 
+
+async def _verse_candidate(ref: VerseRef) -> dict[str, Any]:
+    slots = [ids.slot_key(ref.book_id, ref.chapter, v)
+             for v in range(ref.verse_start, (ref.verse_end or ref.verse_start) + 1)]
+    pieces = await postgres.verse_slots(slots)
+    owners = await postgres.owner_passages([p.unit_key for p in pieces if p.unit_key])
+    passages = await postgres.fetch_sources([o["passage_id"] for o in owners.values()])
+    first, last = pieces[0], pieces[-1]
+    start = ids.slot_key(ref.book_id, ref.chapter, first.v_start)
+    end = ids.slot_key(ref.book_id, ref.chapter, last.v_end)
+    passage_id, split = _passages_of(pieces, owners)
+    span = str(first.v_start) if first.v_start == last.v_end else f"{first.v_start}-{last.v_end}"
+    return {"id": source_id(pieces, start, end), "kind": "verse",
+            "content": "\n".join(p.line for p in pieces),
+            "title": passages[passage_id]["title"] if passage_id else "",
+            "book_id": ref.book_id, "book_name": await postgres.book_name(ref.book_id),
+            "chapter_num": ref.chapter, "verse_range": span, "start_key": start, "end_key": end,
+            "passage_id": passage_id, "split_passage_ids": split,
+            "source_strategy": SOURCE, "weight": 1.0}
+
+
+async def _chapter_candidates(ref: VerseRef) -> list[dict[str, Any]]:
+    return [{**p, "source_strategy": SOURCE, "weight": 1.0}
+            for p in await postgres.chapter_passages(ref.book_id, ref.chapter)]
+
+
+async def retrieve_by_verse_refs(verse_refs: list[VerseRef]) -> list[dict[str, Any]]:
+    """One candidate per verse reference, the passages of each chapter-only one; no repeats."""
+    candidates: list[dict[str, Any]] = []
+    seen: set[str] = set()
     for ref in verse_refs:
-        if ref.verse_start is not None and ref.verse_end is not None and ref.verse_end > ref.verse_start:
-            # Verse range: e.g. 羅馬書3:23-24
-            verses = await postgres.get_verses_range(
-                book_id=ref.book_id,
-                chapter_num=ref.chapter,
-                start_verse=ref.verse_start,
-                end_verse=ref.verse_end,
-            )
-            if verses:
-                cid = f"{ref.book_id}:{ref.chapter}:{ref.verse_start}-{ref.verse_end}"
-                if cid not in seen_ids:
-                    seen_ids.add(cid)
-                    # stored label ("30" or merged "29-30") keeps the block identical
-                    # to what evaluation rebuilds from the same rows
-                    content = "\n".join(
-                        f"{v.get('label', v['verse'])}. {v['text']}" for v in verses
-                    )
-                    candidates.append({
-                        "id": cid,
-                        "content": content,
-                        "title": verses[0].get("pericope_title", ""),
-                        "book_name": verses[0]["book_name"],
-                        "chapter_num": ref.chapter,
-                        "verse_range": f"{ref.verse_start}-{ref.verse_end}",
-                        "source_strategy": "verse_direct",
-                        "weight": 1.0,
-                    })
-
-        elif ref.verse_start is not None:
-            # Single verse: e.g. 羅馬書3:23
-            verse = await postgres.get_verse(
-                book_id=ref.book_id,
-                chapter_num=ref.chapter,
-                verse_num=ref.verse_start,
-            )
-            if verse:
-                cid = f"{ref.book_id}:{ref.chapter}:{ref.verse_start}"
-                if cid not in seen_ids:
-                    seen_ids.add(cid)
-                    candidates.append({
-                        "id": cid,
-                        "content": f"{verse.get('label', verse['verse'])}. {verse['text']}",
-                        "title": verse.get("pericope_title", ""),
-                        "book_name": verse["book_name"],
-                        "chapter_num": ref.chapter,
-                        "verse_range": str(ref.verse_start),
-                        "source_strategy": "verse_direct",
-                        "weight": 1.0,
-                    })
-
-        else:
-            # Chapter only: e.g. 創世記第1章 → fall back to pericope-level
-            pericopes = await postgres.search_pericopes_by_verse_ref(
-                book_id=ref.book_id,
-                chapter_num=ref.chapter,
-                verse_num=None,
-            )
-            for p in pericopes:
-                if p["id"] not in seen_ids:
-                    seen_ids.add(p["id"])
-                    candidates.append({
-                        "id": p["id"],
-                        "content": p["content"],
-                        "title": p["title"],
-                        "book_name": p["book_name"],
-                        "chapter_num": p["chapter_num"],
-                        "verse_range": p.get("verse_range", ""),
-                        "source_strategy": "verse_direct",
-                        "weight": 1.0,
-                    })
-
-    logger.info(f"Verse retriever: {len(candidates)} candidates from {len(verse_refs)} refs")
+        found = (await _chapter_candidates(ref) if ref.verse_start is None
+                 else [await _verse_candidate(ref)])
+        for c in found:
+            if c["id"] not in seen:
+                seen.add(c["id"])
+                candidates.append(c)
+    logger.info("Verse retriever: %d candidates from %d refs", len(candidates), len(verse_refs))
     return candidates

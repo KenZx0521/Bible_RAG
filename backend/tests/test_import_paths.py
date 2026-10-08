@@ -38,6 +38,25 @@ def test_main_imports_from_backend_without_packages_on_pythonpath():
 
 def test_suite_collects_without_packages_on_pythonpath():
     result = _run(["-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider",
-                   "backend/tests/test_hybrid_dense_arm.py"], REPO)
+                   "backend/tests/test_content.py"], REPO)
 
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def _imported_roots(path: Path) -> set[str]:
+    import ast
+    roots = set()
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if isinstance(node, ast.Import):
+            roots |= {alias.name.split(".")[0] for alias in node.names}
+        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+            roots.add(node.module.split(".")[0])
+    return roots
+
+
+def test_backend_imports_neither_scripts_nor_bible_chunking():
+    """R1: the image no longer carries scripts/ or bible_chunking/ (design §11.1)."""
+    offenders = [p.relative_to(BACKEND).as_posix() for p in BACKEND.rglob("*.py")
+                 if ".venv" not in p.parts
+                 and _imported_roots(p) & {"scripts", "bible_chunking", "neo4j"}]
+    assert offenders == []

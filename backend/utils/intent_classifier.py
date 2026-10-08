@@ -7,7 +7,7 @@ import json
 import logging
 
 from utils.llm import get_llm_client
-from utils.verse_parser import parse_verse_references, VerseRef
+from utils.verse_parser import find_verse_references
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +49,33 @@ CLASSIFICATION_PROMPT = """你是一個聖經問題分類器。根據使用者�
 """
 
 
+async def _llm_intent(question: str) -> tuple[str, list[str], list[str]]:
+    """(intent, entities, keywords) from the LLM; raises when the call fails."""
+    llm = get_llm_client()
+    response_text = await llm.chat(
+        messages=[
+            {"role": "user", "content": CLASSIFICATION_PROMPT + f'問題: "{question}"'},
+        ],
+        temperature=0.1,
+        # gemma4 *-it 是 reasoning LLM，會先產出約 800-900 個隱藏 thinking
+        # token 才輸出 content。上限太低會讓 thinking 吃光額度、content 回空
+        # 字串，導致下方靜默 fallback 成預設的 "topic"。
+        max_tokens=4096,
+    )
+    parsed = _extract_json(response_text)
+    if not parsed:
+        return "topic", [], []
+    raw_intent = parsed.get("intent", "topic")
+    intent_type = raw_intent if raw_intent in INTENT_TYPES else "topic"
+    return intent_type, parsed.get("entities", []), parsed.get("keywords", [])
+
+
 async def classify_intent(question: str) -> dict:
     """
     Classify the user's question intent.
 
     Hybrid approach:
-    1. Regex detection for verse references
+    1. Reference detection (ragcommon.refs, checked against the PDF verse grid)
     2. LLM classification for semantic intent
 
     Returns:
@@ -62,46 +83,23 @@ async def classify_intent(question: str) -> dict:
             "type": str,  # one of INTENT_TYPES
             "entities": list[str],
             "keywords": list[str],
-            "verse_refs": list[VerseRef]
+            "verse_refs": list[VerseRef],
+            "rejected_refs": list[str],  # reference-shaped text naming no verse
         }
     """
-    # Step 1: Detect verse references
-    verse_refs = parse_verse_references(question)
-
-    # Step 2: LLM classification
-    intent_type = "topic"  # default
-    entities: list[str] = []
-    keywords: list[str] = []
+    found = find_verse_references(question)
+    verse_refs = list(found.refs)
+    rejected = [r.raw for r in found.rejected]
+    if rejected:
+        logger.warning("References naming no verse, not routed: %s", rejected)
 
     try:
-        llm = get_llm_client()
-        response_text = await llm.chat(
-            messages=[
-                {"role": "user", "content": CLASSIFICATION_PROMPT + f'問題: "{question}"'},
-            ],
-            temperature=0.1,
-            # gemma4 *-it 是 reasoning LLM，會先產出約 800-900 個隱藏 thinking
-            # token 才輸出 content。上限太低會讓 thinking 吃光額度、content 回空
-            # 字串，導致下方靜默 fallback 成預設的 "topic"。
-            max_tokens=4096,
-        )
-
-        # Parse JSON from response
-        parsed = _extract_json(response_text)
-        if parsed:
-            raw_intent = parsed.get("intent", "topic")
-            if raw_intent in INTENT_TYPES:
-                intent_type = raw_intent
-            entities = parsed.get("entities", [])
-            keywords = parsed.get("keywords", [])
-
+        intent_type, entities, keywords = await _llm_intent(question)
     except Exception as e:
         logger.warning(f"LLM intent classification failed: {e}")
-        # Fallback: if verse refs detected, it's verse_lookup
-        if verse_refs:
-            intent_type = "verse_lookup"
+        intent_type, entities, keywords = "topic", [], []
 
-    # Override: if verse refs detected but LLM didn't say verse_lookup, keep both
+    # A verse reference makes it verse_lookup unless the LLM said cross_reference
     if verse_refs and intent_type not in ("verse_lookup", "cross_reference"):
         intent_type = "verse_lookup"
 
@@ -110,6 +108,7 @@ async def classify_intent(question: str) -> dict:
         "entities": entities,
         "keywords": keywords,
         "verse_refs": verse_refs,
+        "rejected_refs": rejected,
     }
 
 

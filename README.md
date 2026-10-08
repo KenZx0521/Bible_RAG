@@ -93,7 +93,11 @@ docker compose up -d
 - **backend** — FastAPI 服務 (port 8000)
 - **postgres** — PostgreSQL + pgvector (port 5432)
 - **qdrant** — Qdrant 向量資料庫 (port 6333)
-- **neo4j** — Neo4j 圖譜資料庫 (port 7474/7687)
+- **neo4j** — Neo4j 圖譜資料庫 (port 7474/7687)，只在 `--profile kg` 時啟動；R1 起 backend 不讀 Neo4j（D-09）
+
+backend 啟動時依 `RAG_ENV`（prod／staging）讀 `rag_meta.serving` 決定服務哪個 build（或以 `RAG_BUILD_ID` 指定），
+從 `rag_meta.builds` 取得該 build 的 PG schema、Qdrant collection 與契約檔目錄（`/contracts` 唯讀掛載），
+並做握手檢查；任一項不符時 `/api/v1/health` 回 503 並列出不符項，`STRICT_BUILD_CHECK=true`（預設）時啟動失敗。
 
 ### 4. 確認服務健康
 
@@ -113,36 +117,34 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ```
 Bible_RAG/
-├── backend/                    # FastAPI 後端
+├── backend/                    # FastAPI 後端（讀 rag_meta.serving 指定的 build）
 │   ├── main.py                 # 應用程式入口 + lifespan 管理
 │   ├── config.py               # pydantic-settings 設定
+│   ├── serving/                # build 選擇、契約檔驗證、握手（design §7.8）
 │   ├── routers/
 │   │   ├── query.py            # RAG 查詢端點
-│   │   ├── verse.py            # 經文查詢端點
-│   │   ├── entity.py           # 實體查詢端點
-│   │   └── health.py           # 健康檢查端點
+│   │   ├── verse.py            # 經文與章查詢端點
+│   │   ├── entity.py           # 已退役（410，D-08）
+│   │   └── health.py           # 健康檢查與握手結果
 │   ├── database/
-│   │   ├── postgres.py         # PostgreSQL 連線與查詢
-│   │   ├── qdrant_db.py        # Qdrant 向量搜尋
-│   │   ├── qdrant_hybrid.py    # Qdrant 混合搜尋
-│   │   └── neo4j_db.py         # Neo4j 圖譜查詢
+│   │   ├── postgres.py         # build schema 的查詢（search_path = b{build_id}）
+│   │   ├── content.py          # chunk 文字、節單位組裝（純函式）
+│   │   └── qdrant_db.py        # build collection 的向量搜尋
 │   └── utils/
-│       ├── signal_detector.py  # 6-signal 查詢偵測器 + 決策樹
+│       ├── signal_detector.py  # 路由信號（契約的 routing_lexicon）+ 決策樹
 │       ├── intent_classifier.py# LLM 意圖分類器
-│       ├── entity_dicts.py     # 人物/地名/事件辭典比對
-│       ├── verse_parser.py     # 經文引用解析 (Regex)
+│       ├── verse_parser.py     # 經文引用解析（ragcommon.refs）
 │       ├── embedder.py         # BGE-M3 嵌入模型
 │       ├── reranker.py         # BGE Reranker v2
 │       ├── generator.py        # LLM 回答生成
-│       ├── sparse_encoder.py   # BM25 稀疏編碼
 │       ├── llm/                # 多 LLM Provider 抽象層
 │       └── retrieval/
-│           ├── router.py           # 6-route 信號驅動路由器
+│           ├── router.py           # 檢索、重排、釘選與事件附加槽
+│           ├── routes.py           # R1–R6 與 fallback
+│           ├── dense.py            # Qdrant dense 檢索
 │           ├── verse_retriever.py  # SQL 經文直查
-│           ├── semantic_retriever.py# Qdrant 語意檢索
-│           ├── hybrid_retriever.py # 混合檢索 (Dense + Sparse)
-│           ├── graph_retriever.py  # Neo4j 圖譜走訪
-│           └── cross_ref_retriever.py # 交叉引用檢索
+│           ├── pins.py             # 排序融合與釘選
+│           └── event_registry.py   # 契約的事件註冊表（v2）
 ├── bible_chunking/             # 聖經文本前處理
 │   ├── markdown_parser.py      # Markdown 聖經解析
 │   ├── hierarchical_chunker.py # 階層式分塊
@@ -231,8 +233,9 @@ Bible_RAG/
 |--------|------|-------------|
 | `GET` | `/api/v1/health` | 服務健康檢查 |
 | `POST` | `/api/v1/query` | RAG 聖經查詢 |
-| `GET` | `/api/v1/verse/{ref}` | 經文查詢 |
-| `GET` | `/api/v1/entity/{name}` | 實體查詢 |
+| `GET` | `/api/v1/verse/{book_id}/{chapter}` | 章查詢（段落、篇題、卷分隔） |
+| `GET` | `/api/v1/verse/{book_id}/{chapter}/{verse}` | 經文查詢（合併節回整個 unit；缺號槽回「本譯本此節從缺」加註腳） |
+| `GET` | `/api/v1/entity/{id}` | 已退役，回 410（D-08） |
 | `GET` | `/docs` | Swagger UI |
 
 ### Query Request
@@ -338,6 +341,10 @@ cp .env.example .env
 | `VERBOSE` | 是否啟用詳細日誌 | `false` |
 | `BACKEND_PORT` | 後端服務埠號（Docker 部署用） | `8000` |
 | `BACKEND_UV_CACHE_DIR` | backend 映像檔建置時掛載的 uv 快取目錄（Docker 建置用，需存在） | `~/.cache/uv-bible-rag-backend` |
+| `RAG_ENV` | backend 讀 `rag_meta.serving` 的哪一列（`prod`／`staging`） | `prod` |
+| `RAG_BUILD_ID` | 直接指定 build（測試與 staging 用），略過 `rag_meta.serving` | 無 |
+| `STRICT_BUILD_CHECK` | 握手不符時啟動失敗；`false` 時仍啟動，但不服務資料，只在 `/api/v1/health` 回 503 | `true` |
+| `CONTRACTS_ROOT` | 契約檔目錄的掛載點（compose 設為 `/contracts`）；未設時直接用 `rag_meta.builds.contracts_dir` | 無 |
 
 > **Docker Compose 注意事項**：使用 `docker compose up` 時，以下變數會自動被 `docker-compose.yml` 覆寫，不需手動修改：
 > - `POSTGRES_HOST` → `postgres`
