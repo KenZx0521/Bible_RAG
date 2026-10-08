@@ -1,6 +1,6 @@
 """Verse coverage on the GT v2 slot universe: gold slots, anchors, and both arms' source maps.
 
-Corpus facts used (text@ddb48c599861): 約翰福音 5 章第 4 節與馬太福音 18 章第 11 節
+Corpus facts used (the frozen GT v2 slot_universe): 約翰福音 5 章第 4 節與馬太福音 18 章第 11 節
 是缺號槽；約翰福音 7 章 52 節，7:53 經 ref_aliases 併入 8:1；路加福音 17 章有 37 個
 節位（舊計數表只記 36）；馬太福音 5–7 章 111 節。
 """
@@ -10,11 +10,11 @@ import json
 
 import pytest
 
-from src.gt_v2 import GroundTruthItemV2
+from src.gt_v2 import FREEZE_PATH, GroundTruthItemV2
 from src.models import SourceInfo
 from src.slot_coverage import SlotCoverageError, build_ruler, gold_anchors, load_verse_index
 
-UNIVERSE = "text@ddb48c599861"
+UNIVERSE = json.loads(FREEZE_PATH.read_text(encoding="utf-8"))["slot_universe"]
 LEGACY = "legacy-20261004"
 BUILD = "b20261008_0000abcd"
 
