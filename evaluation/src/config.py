@@ -7,6 +7,8 @@ Configuration management - layered env files:
 """
 
 from pathlib import Path
+from typing import Literal
+
 from pydantic import PrivateAttr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -64,6 +66,13 @@ class Settings(BaseSettings):
     # Evaluation settings
     top_k: int = 5
     request_delay: float = 1.5
+
+    # Ground truth the runners score with when no --gt is given: v1
+    # (ground_truth.json) or v2 (ground_truth.v2.json, frozen; data_loader).
+    eval_gt_version: Literal["v1", "v2"] = "v1"
+    # Artifact store holding contracts/{build_id}/ (each build's verse_index.json
+    # maps its sources to slots; slot_coverage).
+    rag_store: Path = Path("/mnt/ollama-data/bible_rag_store")
 
     # RAGAS RunConfig for API providers (ollama uses its own serialized path).
     # workers=16 saturates Anthropic rate limits → backoff retries blow the

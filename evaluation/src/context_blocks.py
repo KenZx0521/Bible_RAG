@@ -8,19 +8,20 @@ sentence the prompt itself demands (2026-09-10 audit,
 ``docs/records/2026-09-10_faithfulness_audit.md``).
 
 Preferred path: the backend returns the block per source (``include_context``);
-fallback: rebuild it here from source metadata + PostgreSQL content, keeping the
-header format byte-identical to the generator.
+fallback (legacy sources only): rebuild it here from source metadata +
+PostgreSQL content, keeping the header format byte-identical to the generator.
 """
 
 from __future__ import annotations
 
 from typing import Literal
 
+from ragcommon import ids
+
+from .book_names import book_id_of
 from .models import SourceInfo
 
-FetchKind = Literal["range", "verse", "pericope", "chunk", "unknown"]
-
-VERSE_DIRECT_STRATEGY = "verse_direct"
+FetchKind = Literal["verse", "range", "record", "build"]
 
 # raw_responses.json `context_source` values whose `contexts` are generator blocks.
 CONTEXT_SOURCE_BACKEND = "backend"
@@ -45,46 +46,49 @@ def format_context_block(index: int, source: SourceInfo, content: str) -> str:
     return f"{format_context_header(index, source)}\n{content}"
 
 
-def resolve_fetch_kind(source_id: str, strategy: str | None, verse_range: str) -> FetchKind:
+def verse_span(raw: object) -> tuple[int, int] | None:
+    """Parse a verse number or range ("16", 16, "29-30") into an inclusive span."""
+    if raw is None:
+        return None
+    text = str(raw).strip()
+    start, sep, end = text.partition("-")
+    if not start.isdigit():
+        return None
+    if sep and not end.isdigit():
+        return None
+    a = int(start)
+    return (a, int(end)) if sep else (a, a)
+
+
+def _legacy_verse_id(source: SourceInfo, book_id: str) -> str:
+    """The id the legacy verse retriever spells for a verse or range source
+    (backend utils/retrieval/verse_retriever.py), from the source's own fields."""
+    return f"{book_id}:{source.chapter}:{source.verse_range.strip()}"
+
+
+def resolve_fetch_kind(source: SourceInfo) -> FetchKind:
     """
-    Decide which table/lookup a source id refers to.
+    How to fetch a source's text, decided from its payload and never by
+    splitting its id (G-IDLINT).
 
-    Shapes: ``book:chapter:N`` (verse N or pericope index N),
-    ``book:chapter:a-b`` (verse range), ``book:chapter:index:chunk`` (chunk),
-    ``book:chapter:index:v:verse`` (verse id the backend hydrates with its
-    parent pericope -> treated as that pericope).
-
-    ``book:chapter:N`` is ambiguous. A pericope of index N can never span
-    exactly verse N (index k starts at verse >= k+1), so ``verse_range == N``
-    identifies a verse; the ``verse_direct`` strategy resolves the rare case
-    with no verse_range.
+    * ``build``: a new build's record. The payload carries ``kind`` or the id
+      follows the ragcommon.ids grammar; its text comes with the backend's
+      context blocks (include_context), not from the legacy tables.
+    * ``verse`` / ``range``: the id equals the one the legacy verse retriever
+      spells from this source's book, chapter and verse_range. A pericope can
+      never match (pericope k starts at verse >= k+1 and carries its own
+      span), which settles the ``3jn:1:2`` collision: 3 John 1:2 is a verse,
+      the 3rd pericope of 3 John 1 is not.
+    * ``record``: any other legacy id, a stored pericope or chunk looked up by id.
     """
-    parts = source_id.split(":")
-    if len(parts) == 5 and parts[3] == "v" and parts[4].isdigit():
-        return "pericope"
-    if len(parts) == 4:
-        return "chunk"
-    if len(parts) != 3:
-        return "unknown"
-    third = parts[2]
-    if "-" in third:
-        start, _, end = third.partition("-")
-        return "range" if start.isdigit() and end.isdigit() else "unknown"
-    if not third.isdigit():
-        return "unknown"
-    if verse_range and verse_range == third:
-        return "verse"
-    if strategy == VERSE_DIRECT_STRATEGY and not verse_range:
-        return "verse"
-    return "pericope"
-
-
-def pericope_id_of(source_id: str) -> str:
-    """The pericope a source id resolves to (parent for ``:v:`` verse ids)."""
-    parts = source_id.split(":")
-    if len(parts) == 5 and parts[3] == "v":
-        return ":".join(parts[:3])
-    return source_id
+    if source.kind is not None or ids.is_valid(source.id):
+        return "build"
+    span = verse_span(source.verse_range)
+    book_id = book_id_of(source.book)
+    if span and book_id and source.chapter is not None \
+            and source.id == _legacy_verse_id(source, book_id):
+        return "range" if span[1] > span[0] else "verse"
+    return "record"
 
 
 def contexts_from_raw_item(item: dict) -> list[str] | None:

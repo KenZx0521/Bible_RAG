@@ -21,8 +21,9 @@ from rich.table import Table
 
 from .config import settings
 from .models import EvalSample, MetricResult, EvalReport, AggregatedReport, Rationale
-from .data_loader import load_ground_truth
+from .data_loader import GroundTruthSet, load_gt
 from .collector import collect_responses
+from .provenance import RunContext
 from .validity import invalidate_infra_failures
 
 from .metrics.retrieval import compute_retrieval_metrics
@@ -250,6 +251,7 @@ def _print_summary(report: AggregatedReport) -> None:
 
 
 async def run_collection(
+    ctx: RunContext,
     use_graph: bool | None = None,
     semantic_only: bool = False,
     graph_strategies: list[str] | None = None,
@@ -258,6 +260,8 @@ async def run_collection(
     Step 1: Collect RAG responses + inline Claude evaluation.
 
     Args:
+        ctx: The run's GT (its questions are asked) and backend provenance
+            (recorded beside the checkpoint).
         use_graph: Per-request override for backend graph retrieval.
             None = use backend RAG_USE_GRAPH env default.
         semantic_only: When True, bypass backend routing / SQL / graph /
@@ -267,21 +271,25 @@ async def run_collection(
 
     Returns: (samples, inline_point_coverage_metrics)
     """
-    questions = load_ground_truth()
-    console.print(f"[bold]Loaded {len(questions)} ground truth questions.[/bold]")
+    questions = list(ctx.gt.items)
+    console.print(f"[bold]Loaded {len(questions)} ground truth questions "
+                  f"(GT {ctx.gt.version}).[/bold]")
     return await collect_responses(
         questions, use_graph=use_graph, semantic_only=semantic_only,
-        graph_strategies=graph_strategies,
+        graph_strategies=graph_strategies, provenance=ctx.provenance,
     )
 
 
 def run_evaluation(
     samples: list[EvalSample],
+    ctx: RunContext,
     inline_metrics: dict[str, list[MetricResult]] | None = None,
 ) -> AggregatedReport:
     """
     Step 2: Run batch metrics on collected samples.
 
+    ctx: the GT, build and slot ruler the samples are scored with; its meta
+    (data_build_id, gt_version, gt_sha, encoder_fingerprint) goes into the report.
     inline_metrics: kept for signature compatibility; currently unused after
     answer_point_coverage was removed for cost reduction.
     """
@@ -290,7 +298,7 @@ def run_evaluation(
 
     # 1. Retrieval metrics (fast, no LLM)
     console.print("\n[bold cyan]1/4 Retrieval Metrics[/bold cyan]")
-    retrieval = compute_retrieval_metrics(samples, k=settings.top_k)
+    retrieval = compute_retrieval_metrics(samples, k=settings.top_k, ruler=ctx.ruler)
 
     # 2. Semantic similarity
     console.print("\n[bold cyan]2/4 Semantic Similarity[/bold cyan]")
@@ -322,7 +330,7 @@ def run_evaluation(
 
     # Aggregate
     report = _aggregate(samples, all_metrics, rationales)
-    report.meta = _build_meta(len(samples), samples)
+    report.meta = {**_build_meta(len(samples), samples), **ctx.meta()}
     _print_summary(report)
 
     # Save
@@ -393,9 +401,11 @@ def load_samples_from_checkpoint(
     raw_path: Path | None = None,
     only_ids: set[str] | None = None,
     limit: int | None = None,
+    gt: GroundTruthSet | None = None,
 ) -> list[EvalSample]:
     """
-    Reconstruct EvalSample list from raw_responses.json + ground_truth.json.
+    Reconstruct EvalSample list from raw_responses.json + the ground truth
+    (``gt``; default: the EVAL_GT_VERSION setting).
 
     Judge contexts are the generator-format blocks when the checkpoint has
     them. Legacy checkpoints store headerless passages; with
@@ -413,7 +423,7 @@ def load_samples_from_checkpoint(
     with open(raw_path, encoding="utf-8") as f:
         raw_data = json.load(f)
 
-    gt_items = {q.question_id: q for q in load_ground_truth()}
+    gt_items = (gt or load_gt()).by_id()
 
     if limit is not None and limit <= 0:
         raise ValueError(f"limit must be a positive integer, got {limit}")

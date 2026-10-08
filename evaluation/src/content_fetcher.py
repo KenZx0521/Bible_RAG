@@ -1,17 +1,17 @@
 """
-Fetch pericope/chunk/verse content from PostgreSQL by source ID.
+Fetch a legacy source's text from the legacy PostgreSQL tables.
 
-Source ID formats:
-  - 3 segments (book:chapter:index)          → pericope  (e.g. rom:8:0)
-  - 3 segments (book:chapter:verse)           → verse     (e.g. jhn:3:16)
-  - 3 segments (book:chapter:start-end)       → verse range (e.g. psa:23:1-3)
-  - 4 segments (book:chapter:index:chunk)     → chunk
-  - 5 segments (book:chapter:index:v:verse)   → parent pericope (backend hydrates
-                                                 verse ids with the pericope text)
+``context_blocks.resolve_fetch_kind`` decides from the source's own fields
+(never by splitting the id):
 
-The verse/pericope forms collide (3jn:1:2 is both 3 John 1:2 and the 2nd
-pericope of 3 John 1); ``context_blocks.resolve_fetch_kind`` disambiguates
-from the source's verse_range / strategy, so pass them whenever available.
+  - verse / range: the verses of book, chapter and verse_range, each as
+    ``N. text`` (the legacy verse retriever's ids, e.g. jhn:3:16, psa:23:1-3);
+  - record: a stored pericope, else a chunk, with that id.
+
+Old verse-record ids (``…:v:N``) are records too and are not found by id:
+their block falls back to the checkpoint's stored text (no archived
+checkpoint holds one). A new build's sources are refused: their text comes
+with the backend's context blocks (include_context).
 
 Verse numbers in ``pericopes.verses`` may be merged ("29-30", 70 entries in
 the corpus); ``verse_span`` treats them as inclusive spans.
@@ -24,8 +24,9 @@ import logging
 
 import asyncpg
 
+from .book_names import book_id_of
 from .config import settings
-from .context_blocks import format_context_block, pericope_id_of, resolve_fetch_kind
+from .context_blocks import format_context_block, resolve_fetch_kind, verse_span
 from .models import SourceInfo
 
 logger = logging.getLogger(__name__)
@@ -42,20 +43,6 @@ async def get_pool() -> asyncpg.Pool:
         min_size=2,
         max_size=10,
     )
-
-
-def verse_span(raw: object) -> tuple[int, int] | None:
-    """Parse a stored verse number ("16", 16, "29-30") into an inclusive span."""
-    if raw is None:
-        return None
-    text = str(raw).strip()
-    start, sep, end = text.partition("-")
-    if not start.isdigit():
-        return None
-    if sep and not end.isdigit():
-        return None
-    a = int(start)
-    return (a, int(end)) if sep else (a, a)
 
 
 def _iter_chapter_verses(rows) -> list[tuple[str, tuple[int, int], str]]:
@@ -100,7 +87,7 @@ async def _fetch_single_verse(pool: asyncpg.Pool, book_id: str, chapter: int, ve
 
 
 async def _fetch_pericope(pool: asyncpg.Pool, source_id: str) -> str:
-    row = await pool.fetchrow("SELECT content FROM pericopes WHERE id = $1", pericope_id_of(source_id))
+    row = await pool.fetchrow("SELECT content FROM pericopes WHERE id = $1", source_id)
     return row["content"] if row else ""
 
 
@@ -109,41 +96,19 @@ async def _fetch_chunk(pool: asyncpg.Pool, source_id: str) -> str:
     return row["content"] if row else ""
 
 
-async def get_content_by_id(
-    pool: asyncpg.Pool,
-    source_id: str,
-    strategy: str | None = None,
-    verse_range: str = "",
-) -> str:
-    """
-    Fetch the text content for a source ID.
-
-    ``strategy`` / ``verse_range`` come from the source metadata and resolve
-    the verse-vs-pericope id collision. Returns "" if not found.
-    """
-    kind = resolve_fetch_kind(source_id, strategy, verse_range)
-    parts = source_id.split(":")
-
-    if kind == "range":
-        start_s, end_s = parts[2].split("-", 1)
-        return await _fetch_verse_range(pool, parts[0], int(parts[1]), int(start_s), int(end_s))
-
+async def get_content_by_id(pool: asyncpg.Pool, source: SourceInfo) -> str:
+    """The text of one legacy source ("" if not found); see the module docstring."""
+    kind = resolve_fetch_kind(source)
+    if kind == "build":
+        raise ValueError(f"{source.id} is a new build's record; its text comes with the "
+                         "backend's context blocks (include_context)")
+    if kind == "record":
+        content = await _fetch_pericope(pool, source.id)
+        return content or await _fetch_chunk(pool, source.id)
+    book_id, (start, end) = book_id_of(source.book), verse_span(source.verse_range)
     if kind == "verse":
-        return await _fetch_single_verse(pool, parts[0], int(parts[1]), int(parts[2]))
-
-    if kind == "chunk":
-        return await _fetch_chunk(pool, source_id)
-
-    if kind == "pericope":
-        content = await _fetch_pericope(pool, source_id)
-        if content or len(parts) != 3:
-            return content
-        # Legacy checkpoints without metadata: a verse id that is not a pericope id.
-        return await _fetch_single_verse(pool, parts[0], int(parts[1]), int(parts[2]))
-
-    # Unknown shape — try pericope, then chunk.
-    content = await _fetch_pericope(pool, source_id)
-    return content or await _fetch_chunk(pool, source_id)
+        return await _fetch_single_verse(pool, book_id, source.chapter, start)
+    return await _fetch_verse_range(pool, book_id, source.chapter, start, end)
 
 
 async def fetch_context_blocks(
@@ -158,14 +123,19 @@ async def fetch_context_blocks(
 
     ``stored_texts`` (a legacy checkpoint's headerless ``contexts``, aligned
     with ``sources``) is used when the DB lookup fails or errors; a source
-    with no text from either is skipped with an error log.
+    with no text from either is skipped with an error log. A new build's
+    sources raise: only the backend has their blocks.
     """
+    new = [src.id for src in sources if resolve_fetch_kind(src) == "build"]
+    if new:
+        raise ValueError(f"sources {new} belong to a new build; their context blocks come "
+                         "from the backend (include_context), not from PostgreSQL")
     aligned = stored_texts if stored_texts and len(stored_texts) == len(sources) else None
     blocks = []
     for index, src in enumerate(sources, 1):
         content = ""
         try:
-            content = await get_content_by_id(pool, src.id, src.strategy, src.verse_range)
+            content = await get_content_by_id(pool, src)
         except Exception as e:  # noqa: BLE001 - one bad id must not lose the sample
             logger.error("[Context] %s: lookup failed for %s: %r", src.book, src.id, e)
         if not content and aligned:

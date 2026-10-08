@@ -97,5 +97,8 @@ def parse_sources(raw_sources: list[dict]) -> list[SourceInfo]:
             score=s.get("score"),
             strategy=s.get("strategy"),
             context=s.get("context"),
+            kind=s.get("kind"),
+            start_key=s.get("start_key"),
+            end_key=s.get("end_key"),
         ))
     return results

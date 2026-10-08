@@ -29,6 +29,14 @@ Usage (from evaluation/):
     # D3 gate arm: also hash the generator's context blocks (see d3_gate.py)
     uv run python quick_retrieval_eval.py --top-k 5 --metric-k 6 --include-context --label d3_prod_w1
 
+--gt v1|v2 picks the ground truth (default: EVAL_GT_VERSION). The backend's
+/api/v1/health names the build (none = legacy-20261004) and its encoder
+fingerprint; a new build is scored only against GT v2, its sources mapped to
+slots through contracts/{build_id}/verse_index.json (--contracts-dir to give
+the directory). Every output's "meta" records data_build_id, gt_version,
+gt_sha and encoder_fingerprint; --from-raw reads them from the checkpoint's
+run_meta.json.
+
 Each question's source_detail records every passage's provenance (strategy,
 found_by) and whether it overlaps the gold reference, for ab_compare.py's
 change ledger. Infrastructure failures (no sources + a strategy error) are
@@ -53,11 +61,13 @@ import httpx
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.config import settings  # noqa: E402
-from src.data_loader import load_ground_truth  # noqa: E402
-from src.models import EvalSample, SourceInfo  # noqa: E402
-from src.metrics.retrieval import compute_retrieval_metrics  # noqa: E402
-from src.reference_parser import parse_reference  # noqa: E402
-from src.relevance_judge import binary_relevance  # noqa: E402
+from src.data_loader import GT_VERSIONS, load_gt  # noqa: E402
+from src.models import EvalSample, GroundTruthItem, SourceInfo  # noqa: E402
+from src.metrics.retrieval import compute_retrieval_metrics, gold_flags  # noqa: E402
+from src.provenance import (  # noqa: E402
+    RunContext, fetch_health, from_health, make_context, read_run_meta,
+)
+from src.slot_coverage import SlotRuler  # noqa: E402
 from src.validity import is_infra_failure  # noqa: E402
 
 _OUT_DIR = Path(__file__).resolve().parent / "results_quick"
@@ -65,10 +75,14 @@ _OUT_DIR = Path(__file__).resolve().parent / "results_quick"
 # Code that turns sources + reference into metric values; its hash is stored
 # in every run so ab_compare refuses to pair runs scored differently (e.g.
 # before/after the GENERAL_043 reference-parser fix).
+_SRC = Path(__file__).resolve().parent / "src"
+_RAGCOMMON = Path(__file__).resolve().parent.parent / "packages" / "ragcommon"
 _METRIC_CODE = [
-    Path(__file__).resolve().parent / "src" / name
-    for name in ("reference_parser.py", "verse_coverage.py", "relevance_judge.py",
-                 "metrics/retrieval.py")
+    *(_SRC / name for name in ("reference_parser.py", "verse_coverage.py", "relevance_judge.py",
+                               "slot_coverage.py", "book_names.py", "metrics/retrieval.py")),
+    *(_RAGCOMMON / name for name in ("refs.py", "_reflex.py", "books.py", "ids.py",
+                                     "versification.py", "data/books.json",
+                                     "data/versification.json", "data/ref_aliases.jsonl")),
 ]
 
 
@@ -150,6 +164,7 @@ async def _query_one(
     top_k: int,
     graph_strategies: list[str] | None = None,
     include_context: bool = False,
+    ruler: SlotRuler | None = None,
 ) -> tuple[EvalSample, list[dict], list[str] | None, dict]:
     payload: dict = {
         "question": gt.question,
@@ -181,6 +196,9 @@ async def _query_one(
             verse_range=s.get("verse_range", ""),
             score=s.get("score"),
             strategy=s.get("strategy"),
+            kind=s.get("kind"),
+            start_key=s.get("start_key"),
+            end_key=s.get("end_key"),
         )
         for s in data.get("sources", [])
     ]
@@ -199,23 +217,24 @@ async def _query_one(
     extra = {"event_registry_events": stats.get("event_registry_events")}
     if include_context:
         extra["context_sha"] = context_digest(data.get("sources", []))
-    return sample, source_detail(sample, data.get("sources", [])), applied, extra
+    return sample, source_detail(sample, data.get("sources", []), ruler), applied, extra
 
 
-def source_detail(sample: EvalSample, api_sources: list[dict]) -> list[dict]:
-    """Per-passage record: position-aligned API provenance + gold overlap."""
-    gt_refs = parse_reference(sample.ground_truth.reference)
+def source_detail(sample: EvalSample, api_sources: list[dict],
+                  ruler: SlotRuler | None = None) -> list[dict]:
+    """Per-passage record: position-aligned API provenance + gold overlap (GT v2: on ``ruler``)."""
+    golds = gold_flags(sample, sample.sources, ruler)
     return [
         {
             "id": src.id, "book": src.book, "chapter": src.chapter, "title": src.title,
             "verse_range": src.verse_range, "strategy": api.get("strategy"),
             "found_by": api.get("found_by"), "score": api.get("score"),
             "rerank_score": api.get("rerank_score"),
-            "gold": bool(gt_refs) and binary_relevance(src, gt_refs),
+            "gold": gold,
             "context_sha256": (context_sha256(api["context"])
                                if isinstance(api.get("context"), str) else None),
         }
-        for src, api in zip(sample.sources, api_sources)
+        for src, api, gold in zip(sample.sources, api_sources, golds)
     ]
 
 
@@ -226,11 +245,10 @@ def load_ids(path: Path) -> set[str]:
     return {i.strip() for i in ids if i.strip()}
 
 
-async def collect(use_graph, alpha, top_k, concurrency, only_prefix,
+async def collect(gts: list[GroundTruthItem], use_graph, alpha, top_k, concurrency, only_prefix,
                   graph_strategies=None, ids: set[str] | None = None,
-                  include_context: bool = False,
+                  include_context: bool = False, ruler: SlotRuler | None = None,
                   ) -> tuple[list[EvalSample], dict, dict, dict]:
-    gts = load_ground_truth()
     if only_prefix:
         gts = [g for g in gts if g.question_id.startswith(tuple(only_prefix))]
     if ids is not None:
@@ -244,7 +262,7 @@ async def collect(use_graph, alpha, top_k, concurrency, only_prefix,
     extra_by_q: dict[str, dict] = {}
     async with httpx.AsyncClient(timeout=180.0) as client:
         tasks = [_query_one(client, sem, gt, use_graph, alpha, top_k, graph_strategies,
-                            include_context)
+                            include_context, ruler)
                  for gt in gts]
         out = []
         done = 0
@@ -262,9 +280,8 @@ async def collect(use_graph, alpha, top_k, concurrency, only_prefix,
     return out, raw_sources, applied_by_q, extra_by_q
 
 
-def samples_from_raw(path: Path) -> list[EvalSample]:
+def samples_from_raw(path: Path, gts: dict[str, GroundTruthItem]) -> list[EvalSample]:
     """Rebuild EvalSamples from a full-pipeline raw_responses.json."""
-    gts = {g.question_id: g for g in load_ground_truth()}
     data = json.loads(path.read_text())
     samples: list[EvalSample] = []
     for item in data:
@@ -284,9 +301,9 @@ def samples_from_raw(path: Path) -> list[EvalSample]:
     return samples
 
 
-def aggregate(samples: list[EvalSample], k: int) -> dict:
-    """Metrics at k per question; averages skip infrastructure failures."""
-    per_q = compute_retrieval_metrics(samples, k=k)
+def aggregate(samples: list[EvalSample], k: int, ruler: SlotRuler | None = None) -> dict:
+    """Metrics at k per question (GT v2: on ``ruler``); averages skip infrastructure failures."""
+    per_q = compute_retrieval_metrics(samples, k=k, ruler=ruler)
     by_type: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
     overall: dict[str, list[float]] = defaultdict(list)
     per_question: dict[str, dict[str, float]] = {}
@@ -381,7 +398,7 @@ def compare(path_a: Path, path_b: Path) -> None:
             print(f"  {'▲' if d > 0 else '▼'} {qid} ({d:+.3f})")
 
 
-def main() -> int:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--label", default="run")
     parser.add_argument("--alpha", type=float, default=None,
@@ -400,6 +417,11 @@ def main() -> int:
                         help="ask for the generator's context blocks and record their sha256 "
                              "(per passage and per question); needed by ab_compare.py "
                              "--require-identical and d3_gate.py")
+    parser.add_argument("--gt", choices=GT_VERSIONS, default=None,
+                        help="ground truth version (default: EVAL_GT_VERSION setting)")
+    parser.add_argument("--contracts-dir", type=Path, default=None,
+                        help="the build's contracts directory (default: "
+                             "$RAG_STORE/contracts/<build_id from /health>)")
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--only", nargs="*", default=None,
                         help="question_id prefixes to include (e.g. EVENT PERSON)")
@@ -407,36 +429,35 @@ def main() -> int:
                         help="score an existing raw_responses.json instead of live collection")
     parser.add_argument("--compare", nargs=2, type=Path, default=None,
                         help="diff two saved result JSONs")
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    if args.compare:
-        compare(args.compare[0], args.compare[1])
-        return 0
 
-    applied_by_q: dict[str, list[str] | None] = {}
+def _run_context(args: argparse.Namespace) -> RunContext:
+    """GT, build and ruler; the build from /health, or a checkpoint's run_meta.json."""
+    gt = load_gt(args.gt)
+    if args.from_raw:
+        provenance = read_run_meta(args.from_raw.parent)
+    else:
+        provenance = from_health(fetch_health(settings.backend_url))
+    return make_context(gt, provenance, args.contracts_dir)
+
+
+def _samples(args: argparse.Namespace, ctx: RunContext) -> tuple[list[EvalSample], dict | None,
+                                                                   dict, dict]:
     if args.from_raw:
         if args.graph_strategies is not None:
             print("warning: --graph-strategies is ignored with --from-raw")
         if args.include_context:
             print("warning: --include-context is ignored with --from-raw")
-        samples = samples_from_raw(args.from_raw)
-        raw_sources = None
-    else:
-        ids = load_ids(args.ids_file) if args.ids_file else None
-        samples, raw_sources, applied_by_q, extra_by_q = asyncio.run(
-            collect(args.use_graph, args.alpha, args.top_k, args.concurrency, args.only,
-                    args.graph_strategies, ids, include_context=args.include_context)
-        )
+        return samples_from_raw(args.from_raw, ctx.gt.by_id()), None, {}, {}
+    ids = load_ids(args.ids_file) if args.ids_file else None
+    return asyncio.run(collect(list(ctx.gt.items), args.use_graph, args.alpha, args.top_k,
+                               args.concurrency, args.only, args.graph_strategies, ids,
+                               include_context=args.include_context, ruler=ctx.ruler))
 
-    metric_k = args.metric_k or args.top_k
-    agg = aggregate(samples, k=metric_k)
-    if raw_sources:
-        for qid, srcs in raw_sources.items():
-            if qid in agg["per_question"]:
-                agg["per_question"][qid]["source_detail"] = srcs
-                agg["per_question"][qid]["graph_strategies"] = applied_by_q.get(qid)
-                agg["per_question"][qid].update(extra_by_q.get(qid, {}))
-    agg["config"] = {
+
+def _config(args: argparse.Namespace, metric_k: int, applied_by_q: dict) -> dict:
+    return {
         "from_raw": str(args.from_raw) if args.from_raw else None,
         "use_graph": args.use_graph,
         "fusion_alpha": args.alpha,
@@ -449,6 +470,25 @@ def main() -> int:
         "graph_strategies_applied": applied_counts(applied_by_q),
         "include_context": bool(args.include_context and not args.from_raw),
     }
+
+
+def main() -> int:
+    args = _parse_args()
+    if args.compare:
+        compare(args.compare[0], args.compare[1])
+        return 0
+
+    ctx = _run_context(args)
+    samples, raw_sources, applied_by_q, extra_by_q = _samples(args, ctx)
+    metric_k = args.metric_k or args.top_k
+    agg = aggregate(samples, k=metric_k, ruler=ctx.ruler)
+    for qid, srcs in (raw_sources or {}).items():
+        if qid in agg["per_question"]:
+            agg["per_question"][qid]["source_detail"] = srcs
+            agg["per_question"][qid]["graph_strategies"] = applied_by_q.get(qid)
+            agg["per_question"][qid].update(extra_by_q.get(qid, {}))
+    agg["meta"] = ctx.meta()
+    agg["config"] = _config(args, metric_k, applied_by_q)
     print_table(agg, args.label, k=metric_k)
 
     _OUT_DIR.mkdir(exist_ok=True)

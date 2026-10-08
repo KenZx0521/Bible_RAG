@@ -298,8 +298,10 @@ def test_quick_eval_records_include_context_in_config(tmp_path, monkeypatch):
                 {"Q": ["event_registry"]}, {"Q": {"context_sha": "c1"}})
 
     monkeypatch.setattr(qre, "collect", fake_collect)
+    monkeypatch.setattr(qre, "fetch_health", lambda url: {"status": "ok"})
     monkeypatch.setattr(qre, "_OUT_DIR", tmp_path)
-    monkeypatch.setattr(sys, "argv", ["quick_retrieval_eval.py", "--include-context", "--label", "t"])
+    monkeypatch.setattr(sys, "argv", ["quick_retrieval_eval.py", "--include-context", "--label", "t",
+                                      "--gt", "v1"])
 
     assert qre.main() == 0
 

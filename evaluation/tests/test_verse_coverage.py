@@ -4,8 +4,10 @@ Ground anchors used here are corpus facts verified against
 output/chapters.jsonl: 創世記 1 章 = 31 節, 馬太福音 5-7 章 = 111 節.
 """
 
+import pytest
+
 from src.models import SourceInfo
-from src.reference_parser import parse_reference
+from src.reference_parser import RefParseError, parse_reference
 from src.verse_coverage import (
     _chapter_table,
     expand_refs_to_anchors,
@@ -61,11 +63,10 @@ def test_expand_cross_chapter_range():
     assert verses == expected
 
 
-def test_expand_clamps_out_of_range_verses():
-    # 創世記 1 章只有 31 節;50 節的 spec 需被夾住而非產生幽靈經節
-    verses = expand_refs_to_verses(parse_reference("創世記 1:28-50"))
-
-    assert verses == {("gen", 1, v) for v in range(28, 32)}
+def test_gold_with_a_verse_the_chapter_lacks_is_refused_not_clamped():
+    # 創世記 1 章只有 31 節;strict 解析直接拒絕,不再把 50 夾成 31
+    with pytest.raises(RefParseError):
+        parse_reference("創世記 1:28-50")
 
 
 # ---------- anchor expansion ----------
