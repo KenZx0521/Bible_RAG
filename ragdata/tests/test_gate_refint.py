@@ -149,6 +149,22 @@ STRUCT_CASES = {
         _set("passages", "passage_id", "ps:act.10.1", title="別的標題"), "title"),
     "next book missing": (_set("pericopes", "pericope_id", "pc:psa.42.1", next_book_id="gen"),
                           "gen"),
+    "verse index of a missing passage": (
+        _set("verse_index", "unit_key", "eph.6.4", passage_id="ps:eph.6.2"), "ps:eph.6.2"),
+    "verse index split into a missing passage": (
+        _set("verse_index", "unit_key", "act.9.3", split_passage_ids=["ps:act.9.1", "ps:act.9.2"]),
+        "ps:act.9.2"),
+    "verse index of a missing pericope": (
+        _set("verse_index", "unit_key", "eph.6.4", pericope_id="pc:eph.6.2"), "pc:eph.6.2"),
+    "verse index of a missing unit": (
+        _set("verse_index", "unit_key", "eph.6.4", unit_key="eph.6.5"), "eph.6.5"),
+    "legacy map to a missing passage": (
+        _set("legacy_ids", "legacy_id", "sng:1:0", new_ids=["ps:sng.1.2"]), "ps:sng.1.2"),
+    "legacy map to a missing chunk": (
+        _set("legacy_ids", "legacy_id", "act:9:0:0", new_ids=["ck:act.9.1~act.9.3"]),
+        "ck:act.9.1~act.9.3"),
+    "legacy map to a missing verse": (
+        _set("legacy_ids", "legacy_id", "sng:1:0:v:1", new_ids=["vs:sng.1.2"]), "sng.1.2 not found"),
 }
 
 

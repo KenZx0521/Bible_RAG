@@ -21,8 +21,8 @@ text:
   headings_mid: {value: 1, g: [G58]}
   headings_dash_sub: {value: 1, g: [G58]}
   headings_stacked: {value: 1, g: [G58]}
-  parallel_lines: {value: 2, g: [G58]}
-  parallel_segments: {value: 3, g: [G58]}
+  parallel_lines: {value: 3, g: [G58]}
+  parallel_segments: {value: 4, g: [G58]}
   section_ranges: {value: 1, g: [G58]}
   footnotes: {value: 4, g: [G58]}
   footnotes_alt_rendering: {value: 1, g: [G58]}
@@ -42,3 +42,26 @@ struct:
   pericopes_untitled: {value: 1, g: [G58]}
   passages: {value: 7, g: [G58]}
   passages_continued: {value: 1, g: [G58]}
+  legacy_pericopes: {value: 7, g: [G17]}
+  legacy_chunks: {value: 2, g: [G17]}
+  legacy_verses: {value: 15, g: [G17]}
+  legacy_verses_retired: {value: 1, g: [G02]}
+emb:
+  embedding_records: {value: 22, g: [G33, G58]}
+  emb_verses: {value: 14, g: [G12, G58]}
+  emb_passages: {value: 6, g: [G15, G58]}
+  emb_chunks: {value: 2, g: [G19, G58]}
+events:
+  events: {value: 3, g: [G56]}
+  event_anchors: {value: 4, g: [G56]}
+  event_anchor_passages: {value: 4, g: [G56]}
+  anchors_same: {value: 2, g: [G56]}
+  anchors_narrowed: {value: 1, g: [G56]}
+  anchors_widened: {value: 1, g: [G56]}
+  anchor_changes: {value: 2, g: [G56]}
+  legacy_triggers: {value: 4, g: [G56]}
+route:
+  route_persons: {value: 3, g: [G43]}
+  route_places: {value: 2, g: [G43]}
+  route_events: {value: 3, g: [G56]}
+  route_books: {value: 4, g: [G13]}

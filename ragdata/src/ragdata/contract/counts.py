@@ -69,3 +69,38 @@ def load_counts(path: Path | str = PDF_COUNTS_PATH) -> Mapping[str, Mapping[str,
         result[layer] = MappingProxyType(
             {key: _entry(raw, f"{layer}.{key}") for key, raw in entries.items()})
     return MappingProxyType(result)
+
+
+# ------------------------------------------------------------------ kg0 (G-KG0)
+
+KG0_COUNTS_PATH = Path(__file__).resolve().parent / "expectations" / "kg0_counts.yaml"
+KG0_SCHEMA = "ragdata.kg0_counts.v1"
+KG0_KEYS = {"schema", "registries", "inputs", "names", "parallel_links", "extra_spans"}
+KG0_TALLY_KEYS = {"total", "by_region", "by_surface"}
+
+
+def _kg0_tally(raw: Any, where: str) -> None:
+    if not isinstance(raw, dict) or set(raw) != KG0_TALLY_KEYS or not isinstance(raw["total"], int):
+        raise CountsError(f"{where}: needs total, by_region and by_surface")
+    for key in ("by_region", "by_surface"):
+        table = raw[key]
+        if not isinstance(table, dict) or not all(isinstance(v, int) for v in table.values()):
+            raise CountsError(f"{where}.{key}: must map strings to counts")
+
+
+def load_kg0_counts(path: Path | str = KG0_COUNTS_PATH) -> dict[str, Any]:
+    """The per-source, per-surface kg0 counts ``ragdata expect kg0`` wrote; CountsError if
+    malformed."""
+    try:
+        doc = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        raise CountsError(f"{path}: unreadable: {exc}") from None
+    if not isinstance(doc, dict) or doc.get("schema") != KG0_SCHEMA or set(doc) != KG0_KEYS:
+        raise CountsError(f"{path}: must be {KG0_SCHEMA} with keys {sorted(KG0_KEYS)}")
+    if not all(isinstance(doc[k], int) for k in ("names", "parallel_links")):
+        raise CountsError(f"{path}: names and parallel_links must be counts")
+    if not isinstance(doc["extra_spans"], dict):
+        raise CountsError(f"{path}: extra_spans must map sources to tallies")
+    for source, tally in doc["extra_spans"].items():
+        _kg0_tally(tally, f"{path}: extra_spans.{source}")
+    return doc

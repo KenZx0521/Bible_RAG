@@ -100,9 +100,45 @@ STRUCT_COUNTERS: Mapping[str, Counter] = {
     "pericopes_untitled": rows("pericopes", lambda p: p.heading_id is None),
     "passages": rows("passages"),
     "passages_continued": rows("passages", lambda p: p.continued),
+    "legacy_pericopes": rows("legacy_ids", lambda r: r.kind == "pericope"),
+    "legacy_chunks": rows("legacy_ids", lambda r: r.kind == "chunk"),
+    "legacy_verses": rows("legacy_ids", lambda r: r.kind == "verse"),
+    "legacy_verses_retired": rows("legacy_ids", lambda r: r.relation == "retired"),
 }
 
-COUNTERS: Mapping[str, Mapping[str, Counter]] = {"text": TEXT_COUNTERS, "struct": STRUCT_COUNTERS}
+EMB_COUNTERS: Mapping[str, Counter] = {
+    "embedding_records": rows("embedding_records"),
+    "emb_verses": rows("embedding_records", lambda r: r.kind == "verse"),
+    "emb_passages": rows("embedding_records", lambda r: r.kind == "passage"),
+    "emb_chunks": rows("embedding_records", lambda r: r.kind == "chunk"),
+}
+
+
+def _anchors(s: Snapshot, change: str | None = None) -> int:
+    return sum(1 for e in s.of("events") for a in e.anchors if change in (None, a.change))
+
+
+EVENTS_COUNTERS: Mapping[str, Counter] = {
+    "events": rows("events"),
+    "event_anchors": _anchors,
+    "event_anchor_passages": lambda s: len({a.passage_id for e in s.of("events")
+                                            for a in e.anchors}),
+    "anchors_same": lambda s: _anchors(s, "same"),
+    "anchors_narrowed": lambda s: _anchors(s, "narrowed"),
+    "anchors_widened": lambda s: _anchors(s, "widened"),
+    "anchor_changes": rows("anchor_changes"),
+    "legacy_triggers": lambda s: sum(len(e.legacy_triggers) for e in s.of("events")),
+}
+
+ROUTE_COUNTERS: Mapping[str, Counter] = {
+    f"route_{category}": rows("routing_terms", lambda t, c=category: t.category == c)
+    for category in ("persons", "places", "events", "books")
+}
+
+COUNTERS: Mapping[str, Mapping[str, Counter]] = {
+    "text": TEXT_COUNTERS, "struct": STRUCT_COUNTERS, "emb": EMB_COUNTERS,
+    "events": EVENTS_COUNTERS, "route": ROUTE_COUNTERS,
+}
 
 
 def _same(observed: Any, expected: Any) -> bool:

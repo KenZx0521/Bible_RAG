@@ -1,0 +1,12 @@
+# PDF 專名線的人工修正（DESIGN §2.11、§2.17；REPORT G08）。
+# not_entity：PDF 畫了線但不是名稱。span 留在 text 層（text 層保持純 PDF），
+#   K0 不由它產生名稱，也不放進詞表；它仍擋住其他來源的 span。
+# curated_underline：正文真正漏畫的地方（G08 估約 10–11 處），逐筆由 Kay 核可後才補；目前留空。
+schema: ragdata.underline_fixes.v1
+not_entity:
+  - id: uf-001
+    span_id: "ns:2ch.1.17@27"
+    surface: 舍客勒
+    decided_by: design-v1.1
+    why: 代下1:17 把貨幣單位「舍客勒」畫成專名線（G08 錯畫 1 處）；全書只此一處畫線
+curated_underline: []

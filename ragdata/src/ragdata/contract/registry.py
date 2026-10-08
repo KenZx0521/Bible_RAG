@@ -6,18 +6,31 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
-from ragdata.contract import struct, text
+from ragdata.contract import emb, kg, struct, text
 from ragdata.contract.fields import Record, parse
 
-LAYERS = ("text", "struct")
+LAYERS = ("text", "struct", "emb", "kg0", "events", "route")
 # non-record files a layer's build writes beside its records (S3, S4 and the diff reports)
 XCHECK_REPORT = "xcheck_report.json"
 OVERLAY_REPORT = "overlay_report.json"
 DIFF_MD_REPORT = "diff_vs_bible_md.tsv"
 DIFF_CANONICAL_REPORT = "diff_vs_canonical_full.tsv"
 DIFF_SUMMARY_REPORT = "diff_summary.json"
+STRUCT_REPORT = "struct_report.json"
+EMB_REPORT = "emb_report.json"                  # template declaration and counts (S6)
+ENCODER_FINGERPRINT = "encoder_fingerprint.json"  # BGE-M3 and reranker fingerprints (S7)
+KG0_REPORT = "kg0_report.json"
+EVENT_REGISTRY_V1 = "event_registry_v1.json"   # the backend's current format, passage ids
+EVENT_REGISTRY_V2 = "event_registry_v2.json"   # the R1 contract file (design §2.21)
+EVENTS_REPORT = "events_report.json"
+ROUTING_LEXICON = "routing_lexicon.json"       # the routing contract file (design §2.22)
+ROUTE_REPORT = "route_report.json"
 LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
-                          DIFF_SUMMARY_REPORT), "struct": ()}
+                          DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,),
+                 "emb": (EMB_REPORT, ENCODER_FINGERPRINT),
+                 "kg0": (KG0_REPORT,),
+                 "events": (EVENT_REGISTRY_V1, EVENT_REGISTRY_V2, EVENTS_REPORT),
+                 "route": (ROUTING_LEXICON, ROUTE_REPORT)}
 
 
 @dataclass(frozen=True)
@@ -48,6 +61,15 @@ RECORD_TYPES = tuple(RecordType(*row) for row in (
     ("pericopes", "struct", struct.Pericope, "pericope_id"),
     ("passages", "struct", struct.Passage, "passage_id"),
     ("chunks", "struct", struct.Chunk, "chunk_id"),
+    ("verse_index", "struct", struct.VerseIndex, "unit_key"),
+    ("legacy_ids", "struct", struct.LegacyId, "legacy_id"),
+    ("embedding_records", "emb", emb.EmbeddingRecord, "record_id"),
+    ("names", "kg0", kg.Name, "name_id"),
+    ("extra_spans", "kg0", kg.ExtraSpan, "span_id"),
+    ("parallel_links", "kg0", kg.ParallelLink, "link_key"),
+    ("events", "events", kg.Event, "event_id"),
+    ("anchor_changes", "events", kg.AnchorChange, "change_key"),
+    ("routing_terms", "route", kg.RouteTerm, "term_key"),
 ))
 _BY_NAME = MappingProxyType({t.name: t for t in RECORD_TYPES})
 _BY_FILE = MappingProxyType({t.file_name: t for t in RECORD_TYPES})

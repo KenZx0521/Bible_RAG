@@ -1,5 +1,8 @@
 # PDF count contract for G-COUNT (design §8). Every value is an absolute count
-# verified against the 66 PDFs during the audit; it is never ratcheted.
+# verified against the 66 PDFs during the audit; it is never ratcheted. The
+# struct legacy_* counts are the exception: they count the rows of the old
+# output/ that the legacy map must carry over (design §3.3), so dropping old
+# rows from legacy_ids.jsonl turns G-COUNT red.
 #   value       expected count (or, for *_keys, the exact set of ids)
 #   g           audit findings (REPORT.md) behind the number
 #   evidence    where the number was measured
@@ -204,3 +207,114 @@ struct:
     g: [G15]
     evidence: G15（163 段是跨章續段）
     definition: continued=true 的 passage 數
+  legacy_pericopes:
+    value: 2779
+    g: [G17]
+    evidence: DESIGN §3.3（舊 pericope 2,779 個）；output/pericopes.jsonl 2,779 列
+    definition: kind=pericope 的 legacy_ids 數
+  legacy_chunks:
+    value: 431
+    g: [G17, G19]
+    evidence: G19（chunk 431）；output/chunks.jsonl 431 列
+    definition: kind=chunk 的 legacy_ids 數
+  legacy_verses:
+    value: 31031
+    g: [G12, G17]
+    evidence: G12（儲存層 31,031 個節號標籤，含 10 個幽靈節）；output/pericopes.jsonl 的 verses 合計
+    definition: kind=verse 的 legacy_ids 數
+  legacy_verses_retired:
+    value: 10
+    g: [G02, G12]
+    evidence: G02（10 個幽靈節）；路17:36 舊資料本來就沒有，故比 omitted_slots 少 1
+    definition: relation=retired 的 legacy_ids 數
+
+emb:
+  embedding_records:
+    value: 34058
+    g: [G33]
+    evidence: >-
+      S6 首跑（struct@47a0f26501f3）：31,021 + 2,604 + 433；舊 queue 34,072 = 3,041 + 31,031。
+      差 14 = 10 個幽靈節不再嵌入 + 舊 2,610 pericope／431 chunk 改為 2,604 passage／433 chunk
+    definition: embedding_records.jsonl 列數；G-EMB 另驗公式 = unit 數 + 未切塊 passage 數 + chunk 數
+  emb_verses:
+    value: 31021
+    g: [G12]
+    evidence: G12（節單位 31,021，合併節只嵌一次，11 個缺號槽不嵌）
+    definition: kind=verse 的 embedding_records 數
+  emb_passages:
+    value: 2604
+    g: [G15, G31]
+    evidence: struct@47a0f26501f3 的 2,773 段中 169 段超過 768 tokens 要切塊，餘 2,604 段
+    definition: kind=passage 的 embedding_records 數（未切塊的 passage）
+  emb_chunks:
+    value: 433
+    g: [G19]
+    evidence: struct@47a0f26501f3 chunks.jsonl 433 列（169 段切出）
+    definition: kind=chunk 的 embedding_records 數
+
+# events（K1 R1 凍結版）：由 backend/data/event_registry.json 經 struct 層 legacy_ids 機械轉換。
+# 這些不是 PDF 計數，是「凍結內容不得增減」的計數（DESIGN §5.3、§3.3）。
+events:
+  events:
+    value: 33
+    g: [G56, G62]
+    evidence: REPORT G56／G62（registry 33 個事件）；backend/data/event_registry.json
+    definition: events.jsonl 列數
+  event_anchors:
+    value: 178
+    g: [G56]
+    evidence: G56（178 個錨點）
+    definition: 所有事件的錨點數
+  event_anchor_passages:
+    value: 159
+    g: [G56, G62]
+    evidence: G56（178 個錨點落在 159 段）
+    definition: 錨點 passage_id 的種數
+  anchors_same:
+    value: 170
+    g: [G17]
+    evidence: DESIGN §0.1(d)、§3.3（170 個相同）
+    definition: change=same 的錨點數（整數節範圍相同、沒有幽靈節）
+  anchors_narrowed:
+    value: 4
+    g: [G02, G17]
+    evidence: DESIGN §3.3（4 個因移除幽靈節而縮小，如 mrk:15:3）
+    definition: change=narrowed 的錨點數
+  anchors_widened:
+    value: 4
+    g: [G15, G17]
+    evidence: DESIGN §3.3（4 個因節中標題補回半節而擴大：act.9.19b 兩次、act.14.20b、jhn.18.38b）
+    definition: change=widened 的錨點數
+  anchor_changes:
+    value: 8
+    g: [G17]
+    evidence: DESIGN §3.3（這 8 個列入 id 變動清單）
+    definition: anchor_changes.jsonl 列數
+  legacy_triggers:
+    value: 39
+    g: [G56]
+    evidence: G56（39 個觸發詞，37 種）
+    definition: 所有事件 legacy_triggers 的條數
+
+# route（K4 R1 凍結版）：現行 backend 路由實際使用的詞表，凍結自 entity_dicts（D-12(a)）。
+route:
+  route_persons:
+    value: 126
+    g: [G43]
+    evidence: scripts/entity_extraction/entity_dict.py PERSON_DICT 126 個 canonical（G43 的 270 個含 PLACE 84、GROUP 60）
+    definition: category=persons 的 routing_terms 數
+  route_places:
+    value: 84
+    g: [G43]
+    evidence: PLACE_DICT 84 個 canonical
+    definition: category=places 的 routing_terms 數
+  route_events:
+    value: 55
+    g: [G56]
+    evidence: backend/utils/entity_dicts.py EVENT_KEYWORDS 55 個關鍵詞（REPORT 附表「55 個關鍵詞」）
+    definition: category=events 的 routing_terms 數
+  route_books:
+    value: 83
+    g: [G13]
+    evidence: verse_parser._ALL_NAMES 132 個書名與縮寫中，match_books_in_text 實際使用的長度 ≥2 者 83 個
+    definition: category=books 的 routing_terms 數

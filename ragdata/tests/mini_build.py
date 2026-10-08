@@ -2,10 +2,16 @@
 
 Five books, six chapters; it exercises every special case of design §2.23 that
 the contracts cover: a merged unit, an omitted slot with its variant footnote, a
-mid-verse heading, a stacked section heading with a section_range, a
-superscription and a book division, selah, a speaker, errata in a unit and in a
-footnote, underline spans in body and footnote (one merge group), a ref alias,
-a cross-chapter pericope, an untitled book opening and a chunked passage.
+mid-verse heading (and a parallel range ending on the verse it cuts), a stacked
+section heading with a section_range, a superscription and a book division,
+selah, a speaker, errata in a unit and in a footnote, underline spans in body and
+footnote (one merge group), a ref alias, a cross-chapter pericope, an untitled
+book opening and a chunked passage.
+
+The struct layer is written by hand as the oracle S5 must reproduce from the text
+layer: content strings, token counts of the v1c text under ``count_tokens`` (a
+stand-in for BGE-M3), chunks, verse_index, and the legacy map of the old rows in
+``legacy_pericopes()`` / ``legacy_chunks()``.
 
 ``build()`` returns fresh dicts every call, so tests may mutate the result.
 The expected counts live in ``mini_counts.yaml`` and were tallied by hand.
@@ -28,6 +34,12 @@ def _pdf_sha(book_id: str) -> str:
     return sha("pdf:" + book_id)
 
 
+def _break(spec) -> dict:
+    """An offset (a soft wrap) or an (offset, kind) pair."""
+    offset, kind = (spec, "soft") if isinstance(spec, int) else spec
+    return {"offset": offset, "kind": kind}
+
+
 def _unit(book, ch, vs, text_pdf, ve=None, text=None, errata=(), poetry=False, breaks=()):
     text = text_pdf if text is None else text
     markers = []
@@ -38,7 +50,7 @@ def _unit(book, ch, vs, text_pdf, ve=None, text=None, errata=(), poetry=False, b
         "unit_key": ids.unit_key(book, ch, vs, ve), "book_id": book, "chapter": ch,
         "label": str(vs) if ve is None else f"{vs}-{ve}", "v_start": vs, "v_end": ve or vs,
         "ord": 0, "text_pdf": text_pdf, "text": text, "text_sha256": sha(text),
-        "errata_ids": list(errata), "line_breaks": [{"offset": o, "kind": "soft"} for o in breaks],
+        "errata_ids": list(errata), "line_breaks": [_break(b) for b in breaks],
         "markers": markers, "is_poetry": poetry, "pages": [1],
         "prov": {"pdf_sha256": _pdf_sha(book), "first_glyph": [90.0, 102.0, 180.5]},
         "provenance_class": "pdf_deterministic",
@@ -53,8 +65,10 @@ FN_ORIGINAL_PDF = "原文是詴問"
 
 def _units() -> list[dict]:
     return [
-        _unit("psa", 42, 1, "上帝啊，我的心切慕你，如鹿切慕溪水。", poetry=True, breaks=(5,)),
-        _unit("psa", 42, 2, "我的心渴想上帝，就是永生上帝。" + SELAH, poetry=True),
+        _unit("psa", 42, 1, "上帝啊，我的心切慕你，如鹿切慕溪水。", poetry=True,
+              breaks=(5, (11, "hard"))),
+        _unit("psa", 42, 2, "我的心渴想上帝，就是永生上帝。" + SELAH, poetry=True,
+              breaks=((15, "indent"),)),
         _unit("psa", 42, 3, "我晝夜以眼淚當飲食。", poetry=True),
         _unit("sng", 1, 1, "願他用口與我親嘴。", poetry=True),
         _unit("mat", 18, 1, "當時，門徒進前來，問耶穌說：「天國裏誰是最大的？」"),
@@ -155,7 +169,7 @@ def _heading(hid, anchor, title, level=2, offset=0, parent=None, display=None):
         "anchor_offset": offset, "pos": "mid" if offset else "before", "level": level,
         "parent_heading_id": parent, "text_pdf": title, "text": title,
         "display_title": display or title, "ord": 0,
-        "prov": {"style_class": f"navy_h{level}", "glyph_range": [100, 100 + len(title) - 1]},
+        "prov": {"style_class": "navy_heading", "glyph_range": [100, 100 + len(title) - 1]},
         "provenance_class": "pdf_deterministic",
     }
 
@@ -185,6 +199,8 @@ def _parallel_refs() -> list[dict]:
          [_target("eph", "eph.6.1", "eph.6.4")], "abbr+ch‧v－v"),
         ("pr:hd:act.9.1#1#1", "hd:act.9.1#1", "（9‧1－10‧1）", 0, "section_range",
          [_target("act", "act.9.1", "act.10.1")], "ch‧v－ch‧v"),
+        ("pr:hd:eph.6.1#1#1", "hd:eph.6.1#1", "（徒9‧1－3）", 0, "parallel",
+         [_target("act", "act.9.1", "act.9.3")], "abbr+ch‧v－v"),
     ]
     keys = ("pr_id", "heading_id", "raw", "seg_idx", "kind", "targets", "parse_rule")
     return [dict(zip(keys, row), provenance_class="pdf_deterministic") for row in rows]
@@ -330,10 +346,50 @@ def _ref(unit, start=0, end=None):
     return {"unit_key": unit, "from": start, "to": end}
 
 
+def count_tokens(text: str) -> int:
+    """Stand-in for the BGE-M3 count: one token a character, 400 more for 威嚇 and 小河,
+    so that ps:act.9.1 (and only it) needs chunking, into the two chunks below."""
+    return len(text) + 400 * (text.count("威嚇") + text.count("小河"))
+
+
+# content as S5 assembles it (superscription, speaker, verses; poetry lines kept)
+CONTENT = {
+    "ps:psa.42.1": "可拉後裔的訓誨詩，交給聖詠團長。\n\n**1** 上帝啊，我的心切慕你，\n如鹿切慕溪水。"
+                   "\n\n**2** 我的心渴想上帝，就是永生上帝。\n（細拉）\n\n**3** 我晝夜以眼淚當飲食。",
+    "ps:sng.1.1": "〔新娘〕\n\n**1** 願他用口與我親嘴。",
+    "ps:mat.18.1": "**1** 當時，門徒進前來，問耶穌說：「天國裏誰是最大的？」\n\n"
+                   "**2** 耶穌就叫一個小孩子來，使他站在他們當中。\n\n"
+                   "**4** 所以，凡自己謙卑像這小孩子的，他在天國裏就是最大的。",
+    "ps:act.9.1": "**1** 掃羅仍然向主的門徒口吐威嚇兇殺的話。\n\n**2** 求文書給大馬士革的各會堂，經過鹽海。"
+                  "\n\n**3** 掃羅將到大馬士革，蹚過小河，",
+    "ps:act.9.3b": "**3** 忽然有光四面照着他。",
+    "ps:act.10.1": "**1** 在凱撒利亞有一個人名叫哥尼流。",
+    "ps:eph.6.1": "**1** 你們作兒女的，要在主裏聽從父母，這是理所當然的。\n\n"
+                  "**2-3** 「要孝敬父母，使你得福，在世長壽。」這是第一條帶應許的誡命。\n\n"
+                  "**4** 你們作父親的，不要惹兒女的氣。",
+}
+# the v1c text whose tokens are counted: {書名} 第{章}章 {標題} ({verse_range}節)：{bodies}
+_ACT_TITLE = "使徒行傳 第9章 掃羅歸主－在路上"
+EMBED = {
+    "ps:psa.42.1": "詩篇 第42章 渴慕上帝 (1-3節)：可拉後裔的訓誨詩，交給聖詠團長。 上帝啊，我的心切慕你，\n"
+                   "如鹿切慕溪水。 我的心渴想上帝，就是永生上帝。\n（細拉） 我晝夜以眼淚當飲食。",
+    "ps:sng.1.1": "雅歌 第1章 (1節)：〔新娘〕 願他用口與我親嘴。",
+    "ps:mat.18.1": "馬太福音 第18章 天國裏誰是最大的 (1-4節)：當時，門徒進前來，問耶穌說：「天國裏誰是最大的？」"
+                   " 耶穌就叫一個小孩子來，使他站在他們當中。 所以，凡自己謙卑像這小孩子的，他在天國裏就是最大的。",
+    "ps:act.9.1": f"{_ACT_TITLE} (1-3節)：掃羅仍然向主的門徒口吐威嚇兇殺的話。 求文書給大馬士革的各會堂，經過鹽海。"
+                  " 掃羅將到大馬士革，蹚過小河，",
+    "ps:act.9.3b": "使徒行傳 第9章 天上的光 (3節)：忽然有光四面照着他。",
+    "ps:act.10.1": "使徒行傳 第10章 天上的光 (1節)：在凱撒利亞有一個人名叫哥尼流。",
+    "ps:eph.6.1": "以弗所書 第6章 兒女和父母 (1-4節)：你們作兒女的，要在主裏聽從父母，這是理所當然的。"
+                  " 「要孝敬父母，使你得福，在世長壽。」這是第一條帶應許的誡命。 你們作父親的，不要惹兒女的氣。",
+    "ck:act.9.1~act.9.2": f"{_ACT_TITLE} (1-2節)：掃羅仍然向主的門徒口吐威嚇兇殺的話。 求文書給大馬士革的各會堂，經過鹽海。",
+    "ck:act.9.2~act.9.3": f"{_ACT_TITLE} (2-3節)：求文書給大馬士革的各會堂，經過鹽海。 掃羅將到大馬士革，蹚過小河，",
+}
+
+
 def _passage(pid, pericope, seg, title, verse_range, end_key, refs, **extra):
     start_key = pid[3:]
-    content = extra.get("content", "".join(r["unit_key"] for r in refs))
-    tokens = extra.get("tokens", 40)
+    content, tokens = CONTENT[pid], count_tokens(EMBED[pid])
     return {
         "passage_id": pid, "pericope_id": pericope, "chapter_key": start_key.rsplit(".", 1)[0],
         "seg_idx": seg[0], "seg_count": seg[1], "continued": seg[0] > 0, "title": title,
@@ -355,7 +411,7 @@ def _passages() -> list[dict]:
                  [_ref("mat.18.1"), _ref("mat.18.2"), _ref("mat.18.4")]),
         _passage("ps:act.9.1", "pc:act.9.1", (0, 1), "掃羅歸主－在路上", "1-3", "act.9.3",
                  [_ref("act.9.1"), _ref("act.9.2"), _ref("act.9.3", 0, ACT_MID)],
-                 end_partial=True, tokens=900),
+                 end_partial=True),
         _passage("ps:act.9.3b", "pc:act.9.3b", (0, 2), "天上的光", "3", "act.9.3b",
                  [_ref("act.9.3", ACT_MID)]),
         _passage("ps:act.10.1", "pc:act.9.3b", (1, 2), "天上的光", "1", "act.10.1",
@@ -365,21 +421,104 @@ def _passages() -> list[dict]:
     ]
 
 
+def _chunk(cid, idx, refs, overlap, verse_range):
+    start_key, end_key = cid[3:].split("~")
+    return {"chunk_id": cid, "passage_id": "ps:act.9.1", "idx": idx, "unit_refs": refs,
+            "overlap_unit_keys": overlap, "start_key": start_key, "end_key": end_key,
+            "verse_range": verse_range, "token_count": count_tokens(EMBED[cid]),
+            "provenance_class": "pdf_deterministic"}
+
+
 def _chunks() -> list[dict]:
     return [
-        {"chunk_id": "ck:act.9.1~act.9.2", "passage_id": "ps:act.9.1", "idx": 0,
-         "unit_refs": [_ref("act.9.1"), _ref("act.9.2")], "overlap_unit_keys": [],
-         "start_key": "act.9.1", "end_key": "act.9.2", "verse_range": "1-2",
-         "token_count": 500, "provenance_class": "pdf_deterministic"},
-        {"chunk_id": "ck:act.9.2~act.9.3", "passage_id": "ps:act.9.1", "idx": 1,
-         "unit_refs": [_ref("act.9.2"), _ref("act.9.3", 0, ACT_MID)],
-         "overlap_unit_keys": ["act.9.2"], "start_key": "act.9.2", "end_key": "act.9.3",
-         "verse_range": "2-3", "token_count": 450, "provenance_class": "pdf_deterministic"},
+        _chunk("ck:act.9.1~act.9.2", 0, [_ref("act.9.1"), _ref("act.9.2")], [], "1-2"),
+        _chunk("ck:act.9.2~act.9.3", 1, [_ref("act.9.2"), _ref("act.9.3", 0, ACT_MID)],
+               ["act.9.2"], "2-3"),
+    ]
+
+
+def _verse_index() -> list[dict]:
+    owners = {"psa.42.1": ("ps:psa.42.1", "pc:psa.42.1"), "psa.42.2": ("ps:psa.42.1", "pc:psa.42.1"),
+              "psa.42.3": ("ps:psa.42.1", "pc:psa.42.1"), "sng.1.1": ("ps:sng.1.1", "pc:sng.1.1"),
+              "mat.18.1": ("ps:mat.18.1", "pc:mat.18.1"), "mat.18.2": ("ps:mat.18.1", "pc:mat.18.1"),
+              "mat.18.4": ("ps:mat.18.1", "pc:mat.18.1"), "act.9.1": ("ps:act.9.1", "pc:act.9.1"),
+              "act.9.2": ("ps:act.9.1", "pc:act.9.1"), "act.9.3": ("ps:act.9.1", "pc:act.9.1"),
+              "act.10.1": ("ps:act.10.1", "pc:act.9.3b"), "eph.6.1": ("ps:eph.6.1", "pc:eph.6.1"),
+              "eph.6.2-3": ("ps:eph.6.1", "pc:eph.6.1"), "eph.6.4": ("ps:eph.6.1", "pc:eph.6.1")}
+    split = {"act.9.3": ["ps:act.9.1", "ps:act.9.3b"]}
+    return [{"unit_key": unit, "passage_id": ps, "pericope_id": pc,
+             "split_passage_ids": split.get(unit, []), "provenance_class": "pdf_deterministic"}
+            for unit, (ps, pc) in owners.items()]
+
+
+# ------------------------------------------------------------------ legacy inputs (old output/)
+
+
+def _old_pericope(pid, verse_range, nums):
+    book, chapter, _ = pid.split(":")
+    return {"id": pid, "metadata": {"book_id": book, "chapter_num": int(chapter),
+                                    "verse_range": verse_range},
+            "verses": [{"num": n} for n in nums]}
+
+
+def legacy_pericopes() -> list[dict]:
+    """Old ``pericopes.jsonl`` rows (only the fields the legacy map reads)."""
+    return [
+        _old_pericope("psa:42:0", "1-3", ["1", "2", "3"]),
+        _old_pericope("sng:1:0", "1", ["1"]),
+        _old_pericope("mat:18:0", "1-4", ["1", "2", "3", "4"]),
+        _old_pericope("act:9:0", "1-2", ["1", "2"]),
+        _old_pericope("act:9:1", "3", ["3"]),
+        _old_pericope("act:10:0", "1", ["1"]),
+        _old_pericope("eph:6:0", "1-4", ["1", "2-3", "4"]),
+    ]
+
+
+def legacy_chunks() -> list[dict]:
+    """Old ``chunks.jsonl`` rows (only the fields the legacy map reads)."""
+    return [{"id": cid, "metadata": {"book_id": "act", "chapter_num": 9, "verse_range": vr}}
+            for cid, vr in (("act:9:0:0", "1-2"), ("act:9:0:1", "1-3"))]
+
+
+def _legacy(legacy_id, kind, relation, new_ids, start, end=None):
+    return {"legacy_id": legacy_id, "kind": kind, "relation": relation, "new_ids": new_ids,
+            "start_slot": start, "end_slot": end or start, "provenance_class": "external_legacy"}
+
+
+def _legacy_verses() -> list[dict]:
+    rows = []
+    for old in legacy_pericopes():
+        book, chapter = old["metadata"]["book_id"], old["metadata"]["chapter_num"]
+        for verse in old["verses"]:
+            first, _, last = verse["num"].partition("-")
+            unit = f"{book}.{chapter}.{verse['num']}"
+            start, end = f"{book}.{chapter}.{first}", f"{book}.{chapter}.{last or first}"
+            retired = unit == "mat.18.3"
+            rows.append(_legacy(f"{old['id']}:v:{verse['num']}", "verse",
+                                "retired" if retired else "exact",
+                                [] if retired else [f"vs:{unit}"], start, end))
+    return rows
+
+
+def _legacy_ids() -> list[dict]:
+    return [
+        _legacy("psa:42:0", "pericope", "exact", ["ps:psa.42.1"], "psa.42.1", "psa.42.3"),
+        _legacy("sng:1:0", "pericope", "exact", ["ps:sng.1.1"], "sng.1.1"),
+        _legacy("mat:18:0", "pericope", "exact", ["ps:mat.18.1"], "mat.18.1", "mat.18.4"),
+        _legacy("act:9:0", "pericope", "contained", ["ps:act.9.1"], "act.9.1", "act.9.2"),
+        _legacy("act:9:1", "pericope", "exact", ["ps:act.9.3b"], "act.9.3"),
+        _legacy("act:10:0", "pericope", "exact", ["ps:act.10.1"], "act.10.1"),
+        _legacy("eph:6:0", "pericope", "exact", ["ps:eph.6.1"], "eph.6.1", "eph.6.4"),
+        _legacy("act:9:0:0", "chunk", "exact", ["ck:act.9.1~act.9.2"], "act.9.1", "act.9.2"),
+        _legacy("act:9:0:1", "chunk", "split",
+                ["ck:act.9.1~act.9.2", "ck:act.9.2~act.9.3", "ps:act.9.3b"], "act.9.1", "act.9.3"),
+        *_legacy_verses(),
     ]
 
 
 def struct_layer() -> dict[str, list[dict]]:
-    return {"pericopes": _pericopes(), "passages": _passages(), "chunks": _chunks()}
+    return {"pericopes": _pericopes(), "passages": _passages(), "chunks": _chunks(),
+            "verse_index": _verse_index(), "legacy_ids": _legacy_ids()}
 
 
 def build() -> dict[str, dict[str, list[dict]]]:
@@ -404,3 +543,66 @@ def write_layers(root, text: dict | None = None, struct: dict | None = None):
                                       encode(struct_layer() if struct is None else struct),
                                       depends_on={"text": text_layer_.version})
     return text_layer_, struct_layer_
+
+
+# ------------------------------------------------------------------ emb layer (S6 oracle)
+
+# the v1c verse text: {書名} 第{章}章 {標題} 第{n}節：{經文} — the owning passage's title,
+# the whole unit (poetry lines kept, no speaker label), an untitled book opening without title
+VERSE_EMBED = {
+    "vs:psa.42.1": "詩篇 第42章 渴慕上帝 第1節：上帝啊，我的心切慕你，\n如鹿切慕溪水。",
+    "vs:psa.42.2": "詩篇 第42章 渴慕上帝 第2節：我的心渴想上帝，就是永生上帝。\n（細拉）",
+    "vs:psa.42.3": "詩篇 第42章 渴慕上帝 第3節：我晝夜以眼淚當飲食。",
+    "vs:sng.1.1": "雅歌 第1章 第1節：願他用口與我親嘴。",
+    "vs:mat.18.1": "馬太福音 第18章 天國裏誰是最大的 第1節：當時，門徒進前來，問耶穌說：「天國裏誰是最大的？」",
+    "vs:mat.18.2": "馬太福音 第18章 天國裏誰是最大的 第2節：耶穌就叫一個小孩子來，使他站在他們當中。",
+    "vs:mat.18.4": "馬太福音 第18章 天國裏誰是最大的 第4節：所以，凡自己謙卑像這小孩子的，他在天國裏就是最大的。",
+    "vs:act.9.1": f"{_ACT_TITLE} 第1節：掃羅仍然向主的門徒口吐威嚇兇殺的話。",
+    "vs:act.9.2": f"{_ACT_TITLE} 第2節：求文書給大馬士革的各會堂，經過鹽海。",
+    "vs:act.9.3": f"{_ACT_TITLE} 第3節：掃羅將到大馬士革，蹚過小河，忽然有光四面照着他。",
+    "vs:act.10.1": "使徒行傳 第10章 天上的光 第1節：在凱撒利亞有一個人名叫哥尼流。",
+    "vs:eph.6.1": "以弗所書 第6章 兒女和父母 第1節：你們作兒女的，要在主裏聽從父母，這是理所當然的。",
+    "vs:eph.6.2-3": "以弗所書 第6章 兒女和父母 第2-3節：「要孝敬父母，使你得福，在世長壽。」這是第一條帶應許的誡命。",
+    "vs:eph.6.4": "以弗所書 第6章 兒女和父母 第4節：你們作父親的，不要惹兒女的氣。",
+}
+# record ids in file order: verses (canonical), unchunked passages, then chunks
+EMB_RECORD_IDS = (*VERSE_EMBED, "ps:psa.42.1", "ps:sng.1.1", "ps:mat.18.1", "ps:act.9.3b",
+                  "ps:act.10.1", "ps:eph.6.1", "ck:act.9.1~act.9.2", "ck:act.9.2~act.9.3")
+
+
+def emb_text(record_id: str) -> str:
+    return VERSE_EMBED.get(record_id) or EMBED[record_id]
+
+
+def count_unk(text: str) -> int:
+    """Stand-in for BGE-M3's <unk> count: 蹚 is outside the stand-in vocabulary."""
+    return text.count("蹚")
+
+
+# payloads written out by hand: a cut verse, a continued passage, a later chunk
+EMB_PAYLOADS = {
+    "vs:act.9.3": {
+        "record_id": "vs:act.9.3", "kind": "verse", "type": "verse", "book_id": "act",
+        "book_name": "使徒行傳", "chapter_num": 9, "chapter_end": 9, "title": "掃羅歸主－在路上",
+        "verse_range": "3", "start_key": "act.9.3", "end_key": "act.9.3",
+        "passage_id": "ps:act.9.1", "parent_pericope_id": "ps:act.9.1",
+        "split_passage_ids": ["ps:act.9.1", "ps:act.9.3b"], "pericope_id": "pc:act.9.1",
+        "content_preview": "掃羅將到大馬士革，蹚過小河，忽然有光四面照着他。",
+        "text_sha": sha(VERSE_EMBED["vs:act.9.3"]), "template_id": "v1c"},
+    "ps:act.10.1": {
+        "record_id": "ps:act.10.1", "kind": "passage", "type": "pericope", "book_id": "act",
+        "book_name": "使徒行傳", "chapter_num": 10, "chapter_end": 10, "title": "天上的光",
+        "verse_range": "1", "start_key": "act.10.1", "end_key": "act.10.1",
+        "passage_id": "ps:act.10.1", "parent_pericope_id": "ps:act.10.1",
+        "split_passage_ids": [], "pericope_id": "pc:act.9.3b",
+        "content_preview": EMBED["ps:act.10.1"], "text_sha": sha(EMBED["ps:act.10.1"]),
+        "template_id": "v1c"},
+    "ck:act.9.2~act.9.3": {
+        "record_id": "ck:act.9.2~act.9.3", "kind": "chunk", "type": "chunk", "book_id": "act",
+        "book_name": "使徒行傳", "chapter_num": 9, "chapter_end": 9, "title": "掃羅歸主－在路上",
+        "verse_range": "2-3", "start_key": "act.9.2", "end_key": "act.9.3",
+        "passage_id": "ps:act.9.1", "parent_pericope_id": "ps:act.9.1",
+        "split_passage_ids": [], "pericope_id": "pc:act.9.1",
+        "content_preview": EMBED["ck:act.9.2~act.9.3"],
+        "text_sha": sha(EMBED["ck:act.9.2~act.9.3"]), "template_id": "v1c"},
+}

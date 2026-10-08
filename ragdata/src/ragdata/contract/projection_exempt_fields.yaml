@@ -1,0 +1,17 @@
+# G-PROJ C3（設計書 §7.7）：快照記錄與投影逐 id 比對「全欄位」的正規化雜湊，只排除這裡列的欄位。
+# snapshot：快照記錄有、投影沒有的欄位；projection：投影才有的欄位。沒列在這裡的差異都讓 C3 變紅，
+# tests/test_loader_tables.py 也逐表核對 PG 欄位與記錄契約只差這些。
+schema: ragdata.projection_exempt.v1
+pg:
+  events:
+    snapshot:
+      anchors: 逐錨點投影成 event_anchors 的列（event_id、ord 與錨點欄位），C2、C3 在該表比對
+  embedding_records:
+    projection:
+      fk_unit_key: kind=verse 的 source_id，FK 到 verse_units
+      fk_passage_id: kind=passage 的 record_id，FK 到 passages
+      fk_chunk_id: kind=chunk 的 record_id，FK 到 chunks
+qdrant:
+  payload:
+    projection:
+      build_id: loader 寫入 payload 的 build_id；C1 另驗每個點都等於 release 的 build_id

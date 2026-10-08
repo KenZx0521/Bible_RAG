@@ -67,6 +67,14 @@ def _unit_refs(r: Any) -> list[str]:
     return [u.unit_key for u in r.unit_refs] + list(getattr(r, "overlap_unit_keys", ()))
 
 
+def _new_ids(kind: str) -> Callable[[Any], list[str]]:
+    """The new ids of a legacy row that are of ``kind`` (verse records as their unit key)."""
+    def refs(r: Any) -> list[str]:
+        found = [ids.parse(i) for i in r.new_ids]
+        return [p.parent.raw if kind == "verse_record" else p.raw for p in found if p.kind == kind]
+    return refs
+
+
 TEXT_FKS = (
     fk("chapters", "book_id", "books"),
     fk("chapters", "omitted_slots", "verse_slots", lambda c: c.omitted_slots),
@@ -103,6 +111,30 @@ STRUCT_FKS = (
     fk("passages", "superscription_id", "chapter_texts"),
     fk("chunks", "passage_id", "passages"),
     fk("chunks", "unit_refs", "verse_units", _unit_refs),
+    fk("verse_index", "unit_key", "verse_units"),
+    fk("verse_index", "passage_id", "passages",
+       lambda v: [v.passage_id, *v.split_passage_ids]),
+    fk("verse_index", "pericope_id", "pericopes"),
+    fk("legacy_ids", "new_ids", "passages", _new_ids("passage")),
+    fk("legacy_ids", "new_ids", "chunks", _new_ids("chunk")),
+    fk("legacy_ids", "new_ids", "verse_units", _new_ids("verse_record")),
+)
+
+KG0_FKS = (
+    fk("parallel_links", "pr_id", "parallel_refs"),
+    fk("parallel_links", "from/to", "pericopes", lambda k: [k.from_pericope, k.to_pericope]),
+    fk("parallel_links", "target", "verse_slots",
+       lambda k: [k.target_start_slot, k.target_end_slot]),
+)
+
+EVENTS_FKS = (
+    fk("events", "anchors", "passages", lambda e: [a.passage_id for a in e.anchors]),
+    fk("events", "anchor slots", "verse_slots",
+       lambda e: [s for a in e.anchors for s in (a.start_slot, a.end_slot)]),
+    fk("anchor_changes", "event_id", "events"),
+    fk("anchor_changes", "passage_id", "passages"),
+    fk("anchor_changes", "slots", "verse_slots",
+       lambda c: [c.legacy_start_slot, c.legacy_end_slot, *c.removed_slots]),
 )
 
 
@@ -300,10 +332,29 @@ def _pericope_chain(idx: Index) -> list[str]:
     return out
 
 
+# ------------------------------------------------------------------ events agreement
+
+
+def _anchor_passages(idx: Index) -> list[str]:
+    """An event anchor spells its passage's key and slot range."""
+    passages, out = idx["passages"], []
+    for event in idx["events"].values():
+        for a in event.anchors:
+            ps = passages.get(a.passage_id)
+            spelled = (a.start_key, a.end_key, a.start_slot, a.end_slot)
+            if ps is not None and spelled != (ps.start_key, ps.end_key, ps.start_slot,
+                                              ps.end_slot):
+                out.append(f"events {event.event_id}: anchor {spelled} is not passage "
+                           f"{ps.passage_id}")
+    return out
+
+
 RULES: Mapping[str, tuple[tuple[ForeignKey, ...], tuple[Callable[[Index], list[str]], ...]]] = {
     "text": (TEXT_FKS, (_slot_tiling, _variant_links, _chapter_aggregates, _book_aggregates,
                         _span_slices, _errata_slices, _offsets, _aliases)),
     "struct": (STRUCT_FKS, (_passage_links, _pericope_chain)),
+    "kg0": (KG0_FKS, ()),
+    "events": (EVENTS_FKS, (_anchor_passages,)),
 }
 
 

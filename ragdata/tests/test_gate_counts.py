@@ -52,6 +52,15 @@ def test_counter_without_expectation_and_expectation_without_counter_both_fail()
     assert any("verses" in d for d in result.details)
 
 
+def test_old_rows_dropped_from_the_legacy_map_turn_the_count_red():
+    files = mini_build.files(*BOTH)
+    files["legacy_ids.jsonl"] = [r for r in files["legacy_ids.jsonl"] if r["kind"] != "chunk"]
+    snap = check_schema(files, BOTH)[1]
+    result = check_counts(snap, "struct", load_counts(MINI_COUNTS)["struct"])
+    assert not result.passed
+    assert result.details == ("legacy_chunks: observed 0, expected 2 (G17)",)
+
+
 def test_list_counts_ignore_order():
     counts = dict(load_counts(MINI_COUNTS)["text"])
     snap = _mini_snapshot()
@@ -79,7 +88,7 @@ def test_malformed_expectation_files_are_rejected(tmp_path, body):
 
 def test_pdf_counts_cover_exactly_the_counters_and_cite_findings():
     counts = load_counts(PDF_COUNTS_PATH)
-    for layer in BOTH:
+    for layer in COUNTERS:
         assert set(counts[layer]) == set(COUNTERS[layer])
         assert all(e.g and e.definition for e in counts[layer].values())
 
@@ -94,6 +103,12 @@ def test_pdf_counts_are_internally_consistent():
     assert kinds <= text["footnotes"]
     assert text["section_ranges"] <= text["parallel_segments"]
     assert struct["passages"] == struct["pericopes"] + struct["passages_continued"]
+    assert struct["legacy_verses"] == text["verse_units"] + struct["legacy_verses_retired"]
+    assert struct["legacy_verses_retired"] < text["omitted_slots"]
+    emb = {k: e.value for k, e in load_counts(PDF_COUNTS_PATH)["emb"].items()}
+    assert emb["emb_verses"] == text["verse_units"]
+    assert emb["embedding_records"] == emb["emb_verses"] + emb["emb_passages"] + emb["emb_chunks"]
+    assert emb["emb_passages"] < struct["passages"]
 
 
 def test_list_expectation_for_a_scalar_count_is_red_not_a_crash():

@@ -9,3 +9,21 @@ REGISTRIES = REPO / "config" / "registries"   # errata, normalization, versifica
 BIBLE_MD = REPO / "bible_md"                  # the converter corpus the layer replaces
 CANONICAL = Path("/mnt/ollama-data/bible_rag_store/reference/audit_prototypes/"
                  "gap_pdf_canonical/canonical_full.jsonl")  # the audit's verse table
+LEGACY_OUTPUT = REPO / "output"              # the old build's records, read for legacy_ids only
+MODELS = Path("/mnt/ollama-data/bible_rag_store/models")
+RERANKER_TOKENIZER = (MODELS / "bge-reranker-v2-m3" / "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+                      / "tokenizer.json")   # the reranker snapshot's tokenizer (no weights here)
+# KG stages (K1, K4) and the DAG-external tools that write their registries
+EVENTS_REGISTRY = REGISTRIES / "events.yaml"                  # K1, converted from the next line
+LEGACY_EVENT_REGISTRY = REPO / "backend" / "data" / "event_registry.json"
+FROZEN_LEXICON = REGISTRIES / "routing_lexicon.legacy.json"   # K4, frozen from the backend
+GROUND_TRUTH = REPO / "ground_truth.json"                     # G-ROUTE probe questions
+BACKEND = REPO / "backend"
+BACKEND_PYTHON = BACKEND / ".venv" / "bin" / "python"          # imports entity_dicts (G-ROUTE)
+# releases and what the loader writes beside the layers (design §2.22, §7.5)
+STORE = Path("/mnt/ollama-data/bible_rag_store")
+RELEASES = STORE / "releases"                                  # releases/{build_id}.json
+CONTRACTS = STORE / "contracts"                                # contracts/{build_id}/
+GOLD = REPO / "config" / "gold"
+GT_V2 = REPO / "ground_truth.v2.json"                          # G-PROJ C6
+GT_V2_FREEZE = GOLD / "gt_v2_freeze.json"
