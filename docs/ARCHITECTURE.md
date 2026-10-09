@@ -345,10 +345,10 @@ flowchart TB
 | 三套環境 | `backend/`（容器）、`scripts/`（ragdata 的執行環境）、`evaluation/` 各有 pyproject.toml |
 | staging | `docker-compose.staging.yml` 的 `backend-stg`：:8002，映像由 `STG_IMAGE` 指定（預設 r2），restart `"no"`，握手不符就停在 exited |
 
-2026-10-08 晚間起的容器：
+2026-10-09 起的容器：
 
-- :8000 是線上 prod：映像 `bible_rag-backend:r1`，服務 R1 build；
-- :8002 是 staging（`backend-stg`），給 R2 評估用。
+- :8000 是線上 prod：映像 `bible_rag-backend:r2`，服務 R2 build；
+- staging（`backend-stg`，:8002）平時不開，要驗下一個 build 時再起。
 
 legacy 的容器、映像、`public` 舊表、舊 Qdrant collection 與 Neo4j 已在 R1 上線、20 題 smoke 通過後刪除（Kay 的決定）。要回到 legacy 只能從 `/mnt/ollama-data/bible_rag_bak/20261007/` 還原。
 
@@ -403,11 +403,11 @@ E0b 修正了 embedder 查詢端與 reranker 的 tokenizer。500 題配對比較
 
 ## 11. 版本現況
 
-| 版本 | 內容 | 狀態（2026-10-08） |
+| 版本 | 內容 | 狀態（2026-10-09） |
 |---|---|---|
 | legacy（`legacy-20261004`） | 舊轉換器語料、`public` schema、`bible_embeddings*`、`bible_entities`、Neo4j | 2026-10-08 R1 上線後刪除；備份在 bak/20261007 |
-| R1 `b20261008_6daa4f31` | 全部資料從 PDF 重建；路由詞表是 legacy 凍結版；事件註冊表是機械轉換版（33 事件）；sparse 退役；embedder 查詢端與 reranker 的 tokenizer 已修正；不讀 Neo4j | **線上 prod（:8000），2026-10-08 22:40 起**；評估完成（見下），C2 經 Kay 依揭露值接受；prod 20 題 smoke 20/20（store `reports/prod_r1_smoke20.json`） |
-| R2 `b20261008_e05d3e55`（本分支） | 事件註冊表修正版（31 事件）；路由詞表改為 PDF 版加查詢別名（契約 v2）；其餘五層與 R1 相同 | 已建置、載入並通過 verify；尚未 promote；評估依 R2 預登記進行 |
+| R1 `b20261008_6daa4f31` | 全部資料從 PDF 重建；路由詞表是 legacy 凍結版；事件註冊表是機械轉換版（33 事件）；sparse 退役；embedder 查詢端與 reranker 的 tokenizer 已修正；不讀 Neo4j | 2026-10-08 22:40 至 2026-10-09 上 prod，現為 R2 的回滾配對（保留 build 與映像）；評估見下，C2 經 Kay 依揭露值接受 |
+| R2 `b20261008_e05d3e55` | 事件註冊表修正版（31 事件）；路由詞表改為 PDF 版加查詢別名（契約 v2）；其餘五層與 R1 相同 | **線上 prod（:8000，映像 r2），2026-10-09 起**；評估見下，G-HELDOUT 經 Kay 簽核；prod 20 題 smoke 20/20 |
 
 R1 評估結果（2026-10-08，store `reports/r1eval/`）：
 
@@ -417,6 +417,12 @@ R1 評估結果（2026-10-08，store `reports/r1eval/`）：
   - C3 通過：受損切片 64 題 Δvrec@6 +0.0169 [−0.0089, +0.0465]，門檻 ≥ 0。
   - C2 診斷：逐題歸因沒有 R1 的缺陷；判準本身是定義錯誤，而且這次下界落在門檻上是種子造成的。Kay 2026-10-08 裁決依揭露值接受（比照 E0b 的 D-23），紀錄上 C2 仍是 FAIL。見 `c2_diagnosis/README.md`。
 - **G-ANS：PASS**（`gate_answer.json`）。Δstrict −0.0029 [−0.0175, +0.0126]，門檻 −0.0319；三份 n_invalid 都是 0。
+
+R2 評估結果（2026-10-09，store `reports/r2eval/`，核可紀錄 `evaluation/experiments/2026-10-09_r2/APPROVAL.md`）：
+
+- **G-NONINF：PASS**。C1 Δvrec@6 +0.0002 [−0.0016, +0.0026]；C2（P1）ΔMRR −0.0012 [−0.0041, +0.0012]，門檻 −0.02；C3 路由改變切片 34 題 +0.0076。
+- **G-ANS：PASS**。Δstrict（R2 − A1）+0.0153 [+0.0024, +0.0309]，門檻 −0.0434；strict 0.9905。
+- **G-HELDOUT：SIGNOFF**（觸發 13 題 < 30）。精確率 11/13（R1 9/11），配對 R2 勝 2 敗 0；兩臂同錯 2 題（金牛犢、逾越節的近似負例）。盲寫正例的召回只有 11/43：事件附加槽只認字面觸發詞，提高召回要另做觸發詞變更並用新 held-out 題驗收。
 
 ---
 

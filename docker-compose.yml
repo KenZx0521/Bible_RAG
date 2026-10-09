@@ -9,7 +9,7 @@ services:
   # a new tag with `docker build --build-context uvcache=$HOME/.cache/uv-bible-rag-backend
   # -t bible_rag-backend:<tag> .`, promote it, then point `image` at it.
   backend:
-    image: bible_rag-backend:r1
+    image: bible_rag-backend:r2
     pull_policy: never
     container_name: bible_rag_backend
     restart: unless-stopped
