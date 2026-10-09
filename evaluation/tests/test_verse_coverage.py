@@ -1,7 +1,7 @@
 """Verse-level coverage metric tests.
 
 Ground anchors used here are corpus facts verified against
-output/chapters.jsonl: 創世記 1 章 = 31 節, 馬太福音 5-7 章 = 111 節.
+store reference/legacy_output/chapters.jsonl: 創世記 1 章 = 31 節, 馬太福音 5-7 章 = 111 節.
 """
 
 import pytest

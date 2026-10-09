@@ -7,8 +7,8 @@ any single verse scores recall=1.0. On the 2026-07-12 500-question run that
 inflated hit_rate to 0.944 while true verse coverage was 0.75.
 
 This module expands both ground-truth references and retrieved sources into
-explicit verse sets, using the corpus chapter table (output/chapters.jsonl)
-for per-chapter verse counts:
+explicit verse sets, using the legacy corpus chapter table (archived in the store
+as reference/legacy_output/chapters.jsonl) for per-chapter verse counts:
 
   verse_recall_at_k    |retrieved verses ∩ gold verses| / |gold verses|
   anchor_coverage_at_k covered chapter-anchors / total chapter-anchors.
@@ -28,10 +28,13 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-from .models import ParsedReference, SourceInfo
 from .book_names import book_id_of
+from .config import settings
+from .models import ParsedReference, SourceInfo
 
-_CHAPTERS_PATH = Path(__file__).resolve().parent.parent.parent / "output" / "chapters.jsonl"
+# GT v1 scoring only (GT v2 uses slot_coverage). The legacy output/ was retired after
+# R1; its chapter table lives on, byte-identical, in the store (docs/rebuild_pipeline.md §1).
+_CHAPTERS_PATH = settings.rag_store / "reference" / "legacy_output" / "chapters.jsonl"
 
 # (book_id, chapter, verse)
 Verse = tuple[str, int, int]
