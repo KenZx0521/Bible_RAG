@@ -432,6 +432,7 @@ R2 評估結果（2026-10-09，store `reports/r2eval/`，核可紀錄 `evaluatio
 |---|---|
 | [README.md](README.md) | docs/ 文檔地圖 |
 | [rebuild_pipeline.md](rebuild_pipeline.md) | 重建管線操作手冊：前置環境、`pipeline run`、各層閘門、推導檔、promote／回滾、unload、測試 |
+| [records/2026-10-09_r1_r2_rollout.md](records/2026-10-09_r1_r2_rollout.md) | R1、R2 上線與 legacy 清理：結果、裁決、現況、待辦 |
 | [records/2026-10-08_rebuild_handoff.md](records/2026-10-08_rebuild_handoff.md) | 重建交接：Kay 的決定、資料與服務現況、已驗證結果、下一步、陷阱 |
 | [records/2026-10-07_e0_notes.md](records/2026-10-07_e0_notes.md) | E0a（sparse 退役）與 E0b（查詢端 tokenizer）紀錄 |
 | [records/2026-10-03_graph_auxiliary_review.md](records/2026-10-03_graph_auxiliary_review.md) | 圖譜輔助化審查：附加槽的依據 |

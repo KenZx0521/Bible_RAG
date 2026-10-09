@@ -15,7 +15,7 @@
   - `reference/legacy_output/`：舊 `output/` 的五個檔。
     - `pericopes.jsonl`、`chunks.jsonl`：struct 的 legacy id 對照。
     - `embedding_queue.jsonl`、`embeddings.jsonl`：G-ENC 的相容抽樣。
-    - `chapters.jsonl`：ragdata 不讀。evaluation 的 GT v1 路徑（`evaluation/src/verse_coverage.py`）目前仍讀 repo 的 `output/chapters.jsonl`，清理 `output/` 前要改指向這份。
+    - `chapters.jsonl`：ragdata 不讀；evaluation 的 GT v1 路徑（`evaluation/src/verse_coverage.py`）讀這份。
     - 2026-10-08 從主 checkout 的 `output/` 複製，與 `/mnt/ollama-data/bible_rag_bak/20261007/output/` 逐位元相同。
   - `reference/route_live/`：只是 R1 的產物（R1 的 G-ROUTE 拿舊 backend 的凍結比對結果對帳）。R2 的 route 層沒有 live 比對，管線不讀它；要重驗 R1 的 route 層，從 R1 的 commit（e7b1173）跑。
 - Store：`/mnt/ollama-data/bible_rag_store/`，底下 `layers/`、`releases/`、`contracts/`、`reference/`。
