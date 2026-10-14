@@ -1,0 +1,587 @@
+{
+ "accept": "A",
+ "spec": "prereg.md §3 驗收 A (NEW82)",
+ "passed": true,
+ "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+ "time_utc": "2026-10-14T03:44:15+00:00",
+ "checker": {
+  "path": "evaluation/experiments/2026-10-14_graph_gd/accept_a.py",
+  "sha256": "34b0fb2808a160b70cd2efea2cf390f0703ada4364fbb9f07be0a3c4ecf925ac",
+  "imports": {
+   "_eval_metrics.py": "9df303cfe53b640b315b65f563a3d8e9ead756c7d221c5e9134cee5ceecb5d45"
+  }
+ },
+ "inputs": {
+  "hashseed0": {
+   "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+   "sha256": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+  },
+  "hashseed1": {
+   "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists_hashseed1.json",
+   "sha256": "a0939bbdf08ac0a2e1d9f771e4d518f281b8dc2bcf077d72d6c520630d1ca077"
+  },
+  "threads1": {
+   "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists_threads1.json",
+   "sha256": "a483e4920fb272b9ba7ecd39cdca5ab5929640ec6deb107fcd1714f5c7b46c54"
+  },
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/verify_evidence/ev_sel_in.json": "c26500b0f3807aaee8726adb70374c64326198dd0d5ab5e210e89180e21615a5",
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/verify_evidence/ev_sel_out.jsonl": "2f9081c37aee92dcb6b6ffb4562d3fcdd0b3d0d83ca1b7748b00a4aecd0069a8",
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/verify_evidence/prf_lists.json": "da4f61954a8a1740b57b204ba68e6f5250ac3974023f752fefd0edb56146a89b",
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/verify_attribution/prf_lists.json": "1ad6f2f12ce6a2bd53b994ca4871e3e963b044efdd13a21c578663d01a9e6d07",
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/encode_out.jsonl": "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e",
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/rr_d5_in.json": "5b3133d96812cb9079582d37198dc64d3195a485da3bc446761d68b292eadedf",
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/rr_d5_out.jsonl": "dd1ed56c1c9dcb8b0ab3e903476d18923088531ba030bb94381a8f697c11caa5",
+  "reports/multihop_kg_20261012/session_15748325_graphsel/wf/final_merge/gd_hub.json": "092a36062ebdb60ebe08badc18c008fd23e1fb444347e07cff3e153af35e8da3",
+  "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920"
+ },
+ "script_sha256": {
+  "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+  "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+  "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+  "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+  "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+  "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+  "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+  "query_vectors": "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+ },
+ "checks": [
+  {
+   "name": "lists.json question ids == NEW82 (file order)",
+   "expected": [
+    "N_KIN_01",
+    "N_KIN_02",
+    "N_KIN_03",
+    "N_KIN_04",
+    "N_KIN_06",
+    "N_KIN_07",
+    "N_KIN_08",
+    "N_KIN_09",
+    "N_KIN_10",
+    "N_KIN_11",
+    "N_KIN_12",
+    "N_KIN_13",
+    "N_KIN_14",
+    "N_SUC_01",
+    "N_SUC_02",
+    "N_SUC_03",
+    "N_SUC_04",
+    "N_SUC_05",
+    "N_SUC_07",
+    "N_SUC_08",
+    "N_SUC_09",
+    "N_SUC_10",
+    "N_SUC_11",
+    "N_SUC_12",
+    "N_BRP_02",
+    "N_BRP_06",
+    "N_BRP_07",
+    "N_BRP_08",
+    "N_BRL_01",
+    "N_BRL_02",
+    "N_BRL_03",
+    "N_BRL_04",
+    "N_BRL_05",
+    "N_BRL_06",
+    "N_BRL_07",
+    "N_BRL_08",
+    "N_TO_01",
+    "N_TO_02",
+    "N_TO_03",
+    "N_TO_04",
+    "N_TO_05",
+    "N_TO_06",
+    "N_TO_07",
+    "N_TO_08",
+    "N_TO_09",
+    "N_TO_10",
+    "N_TO_11",
+    "N_TO_12",
+    "N_OQ_01",
+    "N_OQ_03",
+    "N_OQ_04",
+    "N_OQ_05",
+    "N_OQ_06",
+    "N_OQ_07",
+    "N_OQ_08",
+    "N_OQ_09",
+    "N_OQ_10",
+    "N_OQ_11",
+    "N_OQ_12",
+    "N_DIS_01",
+    "N_DIS_02",
+    "N_DIS_03",
+    "N_DIS_04",
+    "N_DIS_05",
+    "N_DIS_06",
+    "N_DIS_07",
+    "N_DIS_08",
+    "N_DIS_09",
+    "N_DIS_10",
+    "N_DIS_11",
+    "N_DIS_12",
+    "N_DIS_13",
+    "N_DIS_14",
+    "N_NULL_01",
+    "N_NULL_02",
+    "N_NULL_03",
+    "N_NULL_04",
+    "N_NULL_05",
+    "N_NULL_06",
+    "N_NULL_07",
+    "N_NULL_08",
+    "N_NULL_09"
+   ],
+   "got": [
+    "N_KIN_01",
+    "N_KIN_02",
+    "N_KIN_03",
+    "N_KIN_04",
+    "N_KIN_06",
+    "N_KIN_07",
+    "N_KIN_08",
+    "N_KIN_09",
+    "N_KIN_10",
+    "N_KIN_11",
+    "N_KIN_12",
+    "N_KIN_13",
+    "N_KIN_14",
+    "N_SUC_01",
+    "N_SUC_02",
+    "N_SUC_03",
+    "N_SUC_04",
+    "N_SUC_05",
+    "N_SUC_07",
+    "N_SUC_08",
+    "N_SUC_09",
+    "N_SUC_10",
+    "N_SUC_11",
+    "N_SUC_12",
+    "N_BRP_02",
+    "N_BRP_06",
+    "N_BRP_07",
+    "N_BRP_08",
+    "N_BRL_01",
+    "N_BRL_02",
+    "N_BRL_03",
+    "N_BRL_04",
+    "N_BRL_05",
+    "N_BRL_06",
+    "N_BRL_07",
+    "N_BRL_08",
+    "N_TO_01",
+    "N_TO_02",
+    "N_TO_03",
+    "N_TO_04",
+    "N_TO_05",
+    "N_TO_06",
+    "N_TO_07",
+    "N_TO_08",
+    "N_TO_09",
+    "N_TO_10",
+    "N_TO_11",
+    "N_TO_12",
+    "N_OQ_01",
+    "N_OQ_03",
+    "N_OQ_04",
+    "N_OQ_05",
+    "N_OQ_06",
+    "N_OQ_07",
+    "N_OQ_08",
+    "N_OQ_09",
+    "N_OQ_10",
+    "N_OQ_11",
+    "N_OQ_12",
+    "N_DIS_01",
+    "N_DIS_02",
+    "N_DIS_03",
+    "N_DIS_04",
+    "N_DIS_05",
+    "N_DIS_06",
+    "N_DIS_07",
+    "N_DIS_08",
+    "N_DIS_09",
+    "N_DIS_10",
+    "N_DIS_11",
+    "N_DIS_12",
+    "N_DIS_13",
+    "N_DIS_14",
+    "N_NULL_01",
+    "N_NULL_02",
+    "N_NULL_03",
+    "N_NULL_04",
+    "N_NULL_05",
+    "N_NULL_06",
+    "N_NULL_07",
+    "N_NULL_08",
+    "N_NULL_09"
+   ],
+   "pass": true
+  },
+  {
+   "name": "A1 D[0:20] == EV/prf_lists.json:d20",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 D[0:20] == AT/prf_lists.json:d20",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 C == EV/prf_lists.json:ctrl_extra",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 C == AT/prf_lists.json:CTRL",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 GD == EV/prf_lists.json:PPR_DENSEONLY",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 G == EV/prf_lists.json:PPR_BIP",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 G == AT/prf_lists.json:PPR_BIP",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 L == EV/prf_lists.json:BM25_Q",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 L == AT/prf_lists.json:BM25Q",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A1 LEXPRF == AT/prf_lists.json:LEXPRF",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A2 GD_DEGNORM S1 pool reach == FM/gd_hub.json",
+   "expected": {
+    "reach": 45,
+    "graph_only": 14,
+    "dense_only": 4,
+    "q_w": 11,
+    "q_l": 3
+   },
+   "got": {
+    "reach": 45,
+    "graph_only": 14,
+    "dense_only": 4,
+    "q_w": 11,
+    "q_l": 3
+   },
+   "pass": true
+  },
+  {
+   "name": "A2 GD_DEGNORM reach 45, question 11:3 (prereg §3)",
+   "expected": {
+    "reach": 45,
+    "q_w": 11,
+    "q_l": 3
+   },
+   "got": {
+    "reach": 45,
+    "q_w": 11,
+    "q_l": 3
+   },
+   "pass": true
+  },
+  {
+   "name": "A2 GD S1 pool reach == FM/gd_hub.json",
+   "expected": {
+    "reach": 59,
+    "graph_only": 25,
+    "dense_only": 1,
+    "q_w": 23,
+    "q_l": 1
+   },
+   "got": {
+    "reach": 59,
+    "graph_only": 25,
+    "dense_only": 1,
+    "q_w": 23,
+    "q_l": 1
+   },
+   "pass": true
+  },
+  {
+   "name": "A2 stored missing hops / questions",
+   "expected": [
+    102,
+    63
+   ],
+   "got": [
+    102,
+    63
+   ],
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed0: lists == hashseed0 lists",
+   "expected": true,
+   "got": true,
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed0: meta lists_sha256 == recomputed",
+   "expected": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+   "got": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed0: meta script sha256 == current files",
+   "expected": {
+    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+   },
+   "got": {
+    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+   },
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed0: meta set / ids / vectors",
+   "expected": [
+    "new82",
+    "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+   ],
+   "got": [
+    "new82",
+    "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+   ],
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed1: lists == hashseed0 lists",
+   "expected": true,
+   "got": true,
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed1: meta lists_sha256 == recomputed",
+   "expected": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+   "got": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed1: meta script sha256 == current files",
+   "expected": {
+    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+   },
+   "got": {
+    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+   },
+   "pass": true
+  },
+  {
+   "name": "A3 hashseed1: meta set / ids / vectors",
+   "expected": [
+    "new82",
+    "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+   ],
+   "got": [
+    "new82",
+    "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+   ],
+   "pass": true
+  },
+  {
+   "name": "A3 threads1: lists == hashseed0 lists",
+   "expected": true,
+   "got": true,
+   "pass": true
+  },
+  {
+   "name": "A3 threads1: meta lists_sha256 == recomputed",
+   "expected": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+   "got": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+   "pass": true
+  },
+  {
+   "name": "A3 threads1: meta script sha256 == current files",
+   "expected": {
+    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+   },
+   "got": {
+    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+   },
+   "pass": true
+  },
+  {
+   "name": "A3 threads1: meta set / ids / vectors",
+   "expected": [
+    "new82",
+    "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+   ],
+   "got": [
+    "new82",
+    "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+   ],
+   "pass": true
+  },
+  {
+   "name": "A3 PYTHONHASHSEED recorded",
+   "expected": [
+    "0",
+    "1",
+    "0"
+   ],
+   "got": [
+    "0",
+    "1",
+    "0"
+   ],
+   "pass": true
+  },
+  {
+   "name": "A3 thread env recorded for threads1",
+   "expected": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "got": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+   },
+   "pass": true
+  },
+  {
+   "name": "A4 bip edges / name nodes / passages",
+   "expected": {
+    "edges": 16616,
+    "name_nodes": 2929,
+    "passages": 2773
+   },
+   "got": {
+    "edges": 16616,
+    "name_nodes": 2929,
+    "passages": 2773
+   },
+   "pass": true
+  },
+  {
+   "name": "A4 R20 == PN/rr_d5_in.json pids",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  },
+  {
+   "name": "A4 D5≈ (R20 + archived D5 scores) == stored missing_rr",
+   "expected": "82/82",
+   "got": "82/82",
+   "pass": true
+  }
+ ],
+ "mismatches": {},
+ "report": {
+  "pool_lt30": {
+   "C": 0,
+   "GD": 0,
+   "GD_DEGNORM": 0,
+   "G": 0,
+   "L": 0,
+   "LEXPRF": 0
+  },
+  "pool_size_min": {
+   "C": 30,
+   "GD": 30,
+   "GD_DEGNORM": 30,
+   "G": 30,
+   "L": 30,
+   "LEXPRF": 30
+  },
+  "bip": {
+   "passages": 2773,
+   "name_nodes": 2929,
+   "edges": 16616,
+   "dangling_passages": 635,
+   "dense_records": 34058
+  },
+  "gd_top10_40_vs_200_iters_equal": 82,
+  "r20_sizes": {
+   "min": 6,
+   "max": 18
+  },
+  "cli_wall_seconds": {
+   "hashseed0": 2.76,
+   "hashseed1": 2.82,
+   "threads1": 3.04
+  },
+  "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+  "g_questions_without_names": [
+   "N_BRL_01",
+   "N_BRL_08",
+   "N_DIS_01",
+   "N_KIN_11",
+   "N_OQ_04"
+  ],
+  "blas": [
+   {
+    "source": "threadpoolctl",
+    "name": "openblas",
+    "version": "0.3.31.dev",
+    "num_threads": 24
+   }
+  ]
+ }
+}

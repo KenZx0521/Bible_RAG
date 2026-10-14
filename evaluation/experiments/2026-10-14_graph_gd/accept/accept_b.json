@@ -1,0 +1,2342 @@
+{
+ "meta": {
+  "time_utc": "2026-10-14T04:22:05+00:00",
+  "argv": [
+   "evaluate.py",
+   "accept-b",
+   "--lists",
+   "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+   "--scores",
+   "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+   "--ref",
+   "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/accept_b_reference.json"
+  ],
+  "python": "3.12.3",
+  "numpy": "2.4.2",
+  "pythonhashseed": "0",
+  "blas": [
+   {
+    "source": "threadpoolctl",
+    "name": "openblas",
+    "version": "0.3.31.dev",
+    "num_threads": 24
+   }
+  ],
+  "thread_env": {
+   "OMP_NUM_THREADS": null,
+   "OPENBLAS_NUM_THREADS": null,
+   "MKL_NUM_THREADS": null
+  },
+  "build_id": "b20261008_e05d3e55",
+  "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+  "layers": {
+   "text": "text@247eafe44b02",
+   "struct": "struct@d8d432b4df15",
+   "emb": "emb@ae5525447eda",
+   "kg0": "kg0@14e68c8344b1",
+   "route": "route@c31c88e4681e"
+  },
+  "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+  "fingerprints": {
+   "reranker": {
+    "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+    "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+    "unk_count": 2,
+    "pair_template_ok": true,
+    "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+   },
+   "embedder": {
+    "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+    "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+    "unk_count": 3,
+    "pair_template_ok": true,
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+   }
+  },
+  "sha256": {
+   "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+   "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+   "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+   "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+   "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+   "evaluate.py": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
+   "_eval_inputs.py": "54740e54422678191d2e22cad40704ca12960f548ec080b268bebd4e185f48ce",
+   "_eval_metrics.py": "9df303cfe53b640b315b65f563a3d8e9ead756c7d221c5e9134cee5ceecb5d45",
+   "_eval_report.py": "04172ee3dc8459a9c08bdf128671b2ff2d007f4becb92acdc172e5e54ddd0b85",
+   "_eval_stats.py": "07919fe5e21d6c0544912c22ead320df5ee9e2de33f87f96fc5f474146b30e29",
+   "_eval_accept.py": "1781a475ac58aa1f8925757ed004eb88a283d231ff1abd29006bd1e46a6b7f78",
+   "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+   "src/__init__.py": "d3dc5110f59c78d285756c6cfacc36cd14d74966432a3f07dd427286ffc39479",
+   "src/ab_stats.py": "a88f352ae70faaac6b2471f92b69ed567e05cf8f92d6ef1d4b2fbf25abc55e4c",
+   "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59",
+   "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc",
+   "ref": "4b937d27b6fe1d7050309887771ab3631dbac5dc4270e4a0be6c87116107c83b"
+  },
+  "script": "evaluate.py accept-b",
+  "metric_version": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
+  "question_sets": [
+   {
+    "name": "new82",
+    "ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "sources": {
+     "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+     "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+    }
+   }
+  ],
+  "pinned": true
+ },
+ "passed": true,
+ "pinned": true,
+ "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+ "drift": {
+  "max_abs": 1.7583370208740234e-06,
+  "n_pairs": 4481,
+  "max_allowed": 1e-05,
+  "ok": true,
+  "factor": 10,
+  "limit": 1.7583370208740234e-05
+ },
+ "topk_sets": {
+  "compared": 820,
+  "equal": 820,
+  "boundary": [],
+  "failed": []
+ },
+ "pool_mismatches": [],
+ "inputs": {
+  "lists": {
+   "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+   "content_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+  },
+  "scores": {
+   "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+   "refchecks": [
+    {
+     "n_pairs": 32,
+     "max_abs_diff": 0.0,
+     "pass": true
+    }
+   ]
+  }
+ },
+ "inputs_meta": {
+  "lists": {
+   "time_utc": "2026-10-14T03:44:08+00:00",
+   "argv": [
+    "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/arms.py",
+    "--set",
+    "new82",
+    "--vectors",
+    "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/encode_out.jsonl",
+    "--out",
+    "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+    "--overwrite"
+   ],
+   "python": "3.12.3",
+   "numpy": "2.4.2",
+   "pythonhashseed": "0",
+   "blas": [
+    {
+     "source": "threadpoolctl",
+     "name": "openblas",
+     "version": "0.3.31.dev",
+     "num_threads": 24
+    }
+   ],
+   "thread_env": {
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+   },
+   "build_id": "b20261008_e05d3e55",
+   "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+   "layers": {
+    "text": "text@247eafe44b02",
+    "struct": "struct@d8d432b4df15",
+    "emb": "emb@ae5525447eda",
+    "kg0": "kg0@14e68c8344b1",
+    "route": "route@c31c88e4681e"
+   },
+   "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+   "fingerprints": {
+    "reranker": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "embedder": {
+     "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+     "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+     "unk_count": 3,
+     "pair_template_ok": true,
+     "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+    }
+   },
+   "sha256": {
+    "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+    "query_vectors": "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+   },
+   "set": "new82",
+   "n_questions": 82,
+   "ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+   "question_sources": {
+    "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+    "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+   },
+   "query_vectors_meta": {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "qdrant_collection": "passages__b20261008_e05d3e55",
+    "embedder_fingerprint": {
+     "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+     "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+     "unk_count": 3,
+     "pair_template_ok": true
+    },
+    "device": "cpu"
+   },
+   "params": {
+    "n_dense": 30,
+    "n_base": 20,
+    "n_extra": 10,
+    "n_seeds": 10,
+    "ppr_alpha": 0.5,
+    "ppr_iters": 40,
+    "ppr_round": 12,
+    "ppr_min": 1e-12,
+    "name_mass": 0.5,
+    "n_d5_records": 20,
+    "bm25_k1": 1.2,
+    "bm25_b": 0.75,
+    "lexprf_terms": 40,
+    "lexprf_mix": 0.5,
+    "min_surface": 2
+   },
+   "graph": {
+    "passages": 2773,
+    "name_nodes": 2929,
+    "edges": 16616,
+    "dangling_passages": 635,
+    "dense_records": 34058
+   },
+   "pool_size": {
+    "N_KIN_01": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_02": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_03": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_04": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_06": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_09": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_10": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_11": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_12": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_13": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_KIN_14": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_01": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_02": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_03": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_04": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_05": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_09": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_10": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_11": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_SUC_12": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRP_02": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRP_06": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRP_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRP_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_01": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_02": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_03": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_04": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_05": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_06": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_BRL_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_01": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_02": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_03": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_04": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_05": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_06": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_09": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_10": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_11": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_TO_12": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_01": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_03": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_04": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_05": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_06": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_09": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_10": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_11": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_OQ_12": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_01": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_02": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_03": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_04": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_05": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_06": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_09": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_10": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_11": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_12": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_13": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_DIS_14": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_01": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_02": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_03": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_04": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_05": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_06": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_07": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_08": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    },
+    "N_NULL_09": {
+     "C": 30,
+     "GD": 30,
+     "GD_DEGNORM": 30,
+     "G": 30,
+     "L": 30,
+     "LEXPRF": 30
+    }
+   },
+   "pool_lt30": {
+    "C": [],
+    "GD": [],
+    "GD_DEGNORM": [],
+    "G": [],
+    "L": [],
+    "LEXPRF": []
+   },
+   "g_question_names": {
+    "N_KIN_01": [
+     "摩西",
+     "亞倫",
+     "利未"
+    ],
+    "N_KIN_02": [
+     "拿鶴",
+     "亞伯拉罕"
+    ],
+    "N_KIN_03": [
+     "法勒斯",
+     "摩西",
+     "猶大"
+    ],
+    "N_KIN_04": [
+     "摩西",
+     "以色列",
+     "約旦河"
+    ],
+    "N_KIN_06": [
+     "大衛",
+     "以拉谷",
+     "非利士"
+    ],
+    "N_KIN_07": [
+     "耶路撒冷",
+     "利比拉",
+     "巴比倫",
+     "尼希米",
+     "以利亞實"
+    ],
+    "N_KIN_08": [
+     "迦特",
+     "以色列",
+     "暗嫩",
+     "她瑪"
+    ],
+    "N_KIN_09": [
+     "耶利米",
+     "巴比倫",
+     "幼發拉底河"
+    ],
+    "N_KIN_10": [
+     "保羅",
+     "西奈山"
+    ],
+    "N_KIN_11": [],
+    "N_KIN_12": [
+     "大衛",
+     "所羅門"
+    ],
+    "N_KIN_13": [
+     "毗珥",
+     "以色列",
+     "米甸"
+    ],
+    "N_KIN_14": [
+     "伯特利",
+     "大衛",
+     "猶大"
+    ],
+    "N_SUC_01": [
+     "以色列",
+     "亞述",
+     "普勒",
+     "撒馬利亞"
+    ],
+    "N_SUC_02": [
+     "以色列",
+     "耶路撒冷",
+     "撒拉鐵",
+     "所羅巴伯"
+    ],
+    "N_SUC_03": [
+     "提備斯",
+     "以色列"
+    ],
+    "N_SUC_04": [
+     "亞哈隨魯",
+     "哈曼",
+     "猶大",
+     "巴比倫",
+     "耶路撒冷"
+    ],
+    "N_SUC_05": [
+     "以賽亞",
+     "亞哈斯",
+     "猶大"
+    ],
+    "N_SUC_07": [
+     "所羅門",
+     "約押",
+     "大衛"
+    ],
+    "N_SUC_08": [
+     "亞述",
+     "沙基",
+     "耶路撒冷",
+     "希西家"
+    ],
+    "N_SUC_09": [
+     "保羅",
+     "猶太"
+    ],
+    "N_SUC_10": [
+     "以色列",
+     "何珥山",
+     "摩西"
+    ],
+    "N_SUC_11": [
+     "比拿雅",
+     "耶何耶大",
+     "亞比亞他",
+     "大衛"
+    ],
+    "N_SUC_12": [
+     "猶大",
+     "耶路撒冷"
+    ],
+    "N_BRP_02": [
+     "以利亞",
+     "何烈山",
+     "大馬士革",
+     "亞蘭",
+     "以色列"
+    ],
+    "N_BRP_06": [
+     "保羅",
+     "哥林多"
+    ],
+    "N_BRP_07": [
+     "保羅",
+     "馬其頓"
+    ],
+    "N_BRP_08": [
+     "保羅"
+    ],
+    "N_BRL_01": [],
+    "N_BRL_02": [
+     "非利士",
+     "以色列"
+    ],
+    "N_BRL_03": [
+     "大衛",
+     "掃羅",
+     "亞伯蘭"
+    ],
+    "N_BRL_04": [
+     "約押",
+     "大衛",
+     "押沙龍"
+    ],
+    "N_BRL_05": [
+     "約拿",
+     "他施"
+    ],
+    "N_BRL_06": [
+     "以色列",
+     "埃及",
+     "約瑟"
+    ],
+    "N_BRL_07": [
+     "撒母耳",
+     "掃羅"
+    ],
+    "N_BRL_08": [],
+    "N_TO_01": [
+     "雅各",
+     "埃及",
+     "哈蘭"
+    ],
+    "N_TO_02": [
+     "以色列",
+     "西奈",
+     "摩西"
+    ],
+    "N_TO_03": [
+     "亞倫",
+     "何珥山",
+     "埃及",
+     "摩西",
+     "約旦河",
+     "摩押",
+     "以色列"
+    ],
+    "N_TO_04": [
+     "亞哈",
+     "以色列",
+     "猶大"
+    ],
+    "N_TO_05": [
+     "猶大",
+     "耶何耶大",
+     "撒馬利亞",
+     "以色列"
+    ],
+    "N_TO_06": [
+     "以賽亞",
+     "何西阿",
+     "迦得",
+     "猶大",
+     "以色列"
+    ],
+    "N_TO_07": [
+     "亞述",
+     "撒馬利亞",
+     "以色列",
+     "猶大",
+     "西拿基立"
+    ],
+    "N_TO_08": [
+     "約西亞",
+     "耶路撒冷",
+     "猶大"
+    ],
+    "N_TO_09": [
+     "巴比倫",
+     "尼布甲尼撒",
+     "幼發拉底河",
+     "迦基米施",
+     "埃及",
+     "尼哥",
+     "耶路撒冷"
+    ],
+    "N_TO_10": [
+     "以西結",
+     "迦巴魯河",
+     "猶大",
+     "巴比倫"
+    ],
+    "N_TO_11": [
+     "亞哈隨魯",
+     "瓦實提",
+     "哈曼",
+     "猶大"
+    ],
+    "N_TO_12": [
+     "亞迦布",
+     "安提阿"
+    ],
+    "N_OQ_01": [
+     "司提反",
+     "以色列"
+    ],
+    "N_OQ_03": [
+     "約西亞",
+     "伯特利"
+    ],
+    "N_OQ_04": [],
+    "N_OQ_05": [
+     "別迦摩",
+     "以色列"
+    ],
+    "N_OQ_06": [
+     "保羅",
+     "以色列"
+    ],
+    "N_OQ_07": [
+     "以色列",
+     "埃及"
+    ],
+    "N_OQ_08": [
+     "耶利米",
+     "猶大"
+    ],
+    "N_OQ_09": [
+     "耶利米",
+     "撒馬利亞"
+    ],
+    "N_OQ_10": [
+     "以實瑪利",
+     "米斯巴",
+     "巴比倫"
+    ],
+    "N_OQ_11": [
+     "約瑟",
+     "馬利亞",
+     "摩西",
+     "耶路撒冷"
+    ],
+    "N_OQ_12": [
+     "波阿斯"
+    ],
+    "N_DIS_01": [],
+    "N_DIS_02": [
+     "以撒",
+     "亞伯拉罕"
+    ],
+    "N_DIS_03": [
+     "亞伯蘭",
+     "大馬士革",
+     "摩西"
+    ],
+    "N_DIS_04": [
+     "雅各",
+     "伯特利",
+     "亞倫‧巴古"
+    ],
+    "N_DIS_05": [
+     "約拿單",
+     "非利士",
+     "掃羅",
+     "以弗",
+     "亭拿",
+     "以色列",
+     "米甸"
+    ],
+    "N_DIS_06": [
+     "約押",
+     "大衛",
+     "耶路‧比設"
+    ],
+    "N_DIS_07": [
+     "掃羅",
+     "米力‧巴力",
+     "基遍"
+    ],
+    "N_DIS_08": [
+     "以利亞",
+     "何烈山",
+     "以色列",
+     "猶大"
+    ],
+    "N_DIS_09": [
+     "耶羅波安",
+     "示羅",
+     "亞希雅",
+     "猶大"
+    ],
+    "N_DIS_10": [
+     "猶大",
+     "巴比倫"
+    ],
+    "N_DIS_11": [
+     "耶利米",
+     "巴比倫",
+     "猶大"
+    ],
+    "N_DIS_12": [
+     "撒迦利亞"
+    ],
+    "N_DIS_13": [
+     "尼希米",
+     "大衛",
+     "亞達薛西",
+     "書珊"
+    ],
+    "N_DIS_14": [
+     "保羅",
+     "耶路撒冷"
+    ],
+    "N_NULL_01": [
+     "以諾"
+    ],
+    "N_NULL_02": [
+     "摩西",
+     "以色列"
+    ],
+    "N_NULL_03": [
+     "雅各",
+     "以撒"
+    ],
+    "N_NULL_04": [
+     "掃羅",
+     "約拿單",
+     "以色列",
+     "非利士"
+    ],
+    "N_NULL_05": [
+     "猶大",
+     "亞述",
+     "巴比倫"
+    ],
+    "N_NULL_06": [
+     "耶路撒冷",
+     "巴比倫",
+     "猶大"
+    ],
+    "N_NULL_07": [
+     "尼希米",
+     "書珊",
+     "猶大",
+     "以斯帖"
+    ],
+    "N_NULL_08": [
+     "伯利恆"
+    ],
+    "N_NULL_09": [
+     "掃羅",
+     "大馬士革",
+     "保羅"
+    ]
+   },
+   "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+   "elapsed_s": 2.59
+  },
+  "scores": [
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_KIN_01",
+     "N_KIN_02",
+     "N_KIN_03",
+     "N_KIN_04",
+     "N_KIN_06",
+     "N_KIN_07",
+     "N_KIN_08",
+     "N_KIN_09",
+     "N_KIN_10",
+     "N_KIN_11"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_KIN_12",
+     "N_KIN_13",
+     "N_KIN_14",
+     "N_SUC_01",
+     "N_SUC_02",
+     "N_SUC_03",
+     "N_SUC_04",
+     "N_SUC_05",
+     "N_SUC_07",
+     "N_SUC_08"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_SUC_09",
+     "N_SUC_10",
+     "N_SUC_11",
+     "N_SUC_12",
+     "N_BRP_02",
+     "N_BRP_06",
+     "N_BRP_07",
+     "N_BRP_08",
+     "N_BRL_01",
+     "N_BRL_02"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_BRL_03",
+     "N_BRL_04",
+     "N_BRL_05",
+     "N_BRL_06",
+     "N_BRL_07",
+     "N_BRL_08",
+     "N_TO_01",
+     "N_TO_02",
+     "N_TO_03",
+     "N_TO_04"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_TO_05",
+     "N_TO_06",
+     "N_TO_07",
+     "N_TO_08",
+     "N_TO_09",
+     "N_TO_10",
+     "N_TO_11",
+     "N_TO_12",
+     "N_OQ_01",
+     "N_OQ_03"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_OQ_04",
+     "N_OQ_05",
+     "N_OQ_06",
+     "N_OQ_07",
+     "N_OQ_08",
+     "N_OQ_09",
+     "N_OQ_10",
+     "N_OQ_11",
+     "N_OQ_12",
+     "N_DIS_01"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_DIS_02",
+     "N_DIS_03",
+     "N_DIS_04",
+     "N_DIS_05",
+     "N_DIS_06",
+     "N_DIS_07",
+     "N_DIS_08",
+     "N_DIS_09",
+     "N_DIS_10",
+     "N_DIS_11"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_DIS_12",
+     "N_DIS_13",
+     "N_DIS_14",
+     "N_NULL_01",
+     "N_NULL_02",
+     "N_NULL_03",
+     "N_NULL_04",
+     "N_NULL_05",
+     "N_NULL_06",
+     "N_NULL_07"
+    ]
+   },
+   {
+    "type": "meta",
+    "build_id": "b20261008_e05d3e55",
+    "reranker_fingerprint": {
+     "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+     "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+     "unk_count": 2,
+     "pair_template_ok": true,
+     "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "device": "cpu",
+    "torch_threads": 12,
+    "batch": 16,
+    "host": {
+     "time_utc": "2026-10-14T03:49:40+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+      "rerank",
+      "--lists",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": null,
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+      "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+      "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+      "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+     },
+     "kind": "rerank",
+     "set": "new82",
+     "set_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "chunk_size": 10,
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+    },
+    "chunk": [
+     "N_NULL_08",
+     "N_NULL_09"
+    ]
+   }
+  ]
+ },
+ "summary": {
+  "new": {
+   "all_hops_hit": {
+    "10": {
+     "C": 137,
+     "GD": 151,
+     "G": 146,
+     "L": 143,
+     "LEXPRF": 141
+    },
+    "5": {
+     "C": 119,
+     "GD": 126,
+     "G": 124,
+     "L": 120,
+     "LEXPRF": 122
+    }
+   },
+   "missing_hops_hit": {
+    "10": {
+     "C": 17,
+     "GD": 31,
+     "G": 26,
+     "L": 24,
+     "LEXPRF": 21
+    },
+    "5": {
+     "C": 7,
+     "GD": 14,
+     "G": 13,
+     "L": 10,
+     "LEXPRF": 12
+    }
+   }
+  },
+  "reference": {
+   "all_hops_hit": {
+    "10": {
+     "C": 137,
+     "GD": 151,
+     "G": 146,
+     "L": 143,
+     "LEXPRF": 141
+    },
+    "5": {
+     "C": 119,
+     "GD": 126,
+     "G": 124,
+     "L": 120,
+     "LEXPRF": 122
+    }
+   },
+   "missing_hops_hit": {
+    "10": {
+     "C": 17,
+     "GD": 31,
+     "G": 26,
+     "L": 24,
+     "LEXPRF": 21
+    },
+    "5": {
+     "C": 7,
+     "GD": 14,
+     "G": 13,
+     "L": 10,
+     "LEXPRF": 12
+    }
+   }
+  },
+  "prereg": {
+   "all_hops_hit": {
+    "10": {
+     "C": 137,
+     "GD": 151,
+     "G": 146,
+     "L": 143,
+     "LEXPRF": 141
+    },
+    "5": {
+     "C": 119,
+     "GD": 126,
+     "G": 124,
+     "L": 120,
+     "LEXPRF": 122
+    }
+   },
+   "missing_hops_hit": {
+    "10": {
+     "C": 17,
+     "GD": 31,
+     "G": 26,
+     "L": 24,
+     "LEXPRF": 21
+    },
+    "5": {
+     "C": 7,
+     "GD": 14,
+     "G": 13,
+     "L": 10,
+     "LEXPRF": 12
+    }
+   }
+  },
+  "new_equals_prereg": true
+ },
+ "cut_gaps": {
+  "C@10": {
+   "min": 9.900331497192383e-05,
+   "boundary_lt_1e-5": []
+  },
+  "C@5": {
+   "min": 0.0001946091651916504,
+   "boundary_lt_1e-5": []
+  },
+  "GD@10": {
+   "min": 5.078315734863281e-05,
+   "boundary_lt_1e-5": []
+  },
+  "GD@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  },
+  "G@10": {
+   "min": 5.078315734863281e-05,
+   "boundary_lt_1e-5": []
+  },
+  "G@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  },
+  "L@10": {
+   "min": 2.3543834686279297e-05,
+   "boundary_lt_1e-5": []
+  },
+  "L@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  },
+  "LEXPRF@10": {
+   "min": 0.0001582913100719452,
+   "boundary_lt_1e-5": []
+  },
+  "LEXPRF@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  }
+ },
+ "reference": {
+  "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/accept_b_reference.json",
+  "sha256": "4b937d27b6fe1d7050309887771ab3631dbac5dc4270e4a0be6c87116107c83b",
+  "archived_cross_run_drift": 9.238719940185547e-07,
+  "min_cut_gap": 2.3543834686279297e-05
+ }
+}

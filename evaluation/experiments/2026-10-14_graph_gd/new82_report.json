@@ -1,0 +1,4793 @@
+{
+ "meta": {
+  "time_utc": "2026-10-14T04:22:17+00:00",
+  "argv": [
+   "evaluate.py",
+   "report",
+   "--set",
+   "new82",
+   "--lists",
+   "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+   "--scores",
+   "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+   "--out",
+   "new82_report.json"
+  ],
+  "python": "3.12.3",
+  "numpy": "2.4.2",
+  "pythonhashseed": "0",
+  "blas": [
+   {
+    "source": "threadpoolctl",
+    "name": "openblas",
+    "version": "0.3.31.dev",
+    "num_threads": 24
+   }
+  ],
+  "thread_env": {
+   "OMP_NUM_THREADS": null,
+   "OPENBLAS_NUM_THREADS": null,
+   "MKL_NUM_THREADS": null
+  },
+  "build_id": "b20261008_e05d3e55",
+  "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+  "layers": {
+   "text": "text@247eafe44b02",
+   "struct": "struct@d8d432b4df15",
+   "emb": "emb@ae5525447eda",
+   "kg0": "kg0@14e68c8344b1",
+   "route": "route@c31c88e4681e"
+  },
+  "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+  "fingerprints": {
+   "reranker": {
+    "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+    "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+    "unk_count": 2,
+    "pair_template_ok": true,
+    "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+   },
+   "embedder": {
+    "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+    "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+    "unk_count": 3,
+    "pair_template_ok": true,
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+   }
+  },
+  "sha256": {
+   "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+   "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+   "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+   "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+   "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+   "evaluate.py": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
+   "_eval_inputs.py": "54740e54422678191d2e22cad40704ca12960f548ec080b268bebd4e185f48ce",
+   "_eval_metrics.py": "9df303cfe53b640b315b65f563a3d8e9ead756c7d221c5e9134cee5ceecb5d45",
+   "_eval_report.py": "04172ee3dc8459a9c08bdf128671b2ff2d007f4becb92acdc172e5e54ddd0b85",
+   "_eval_stats.py": "07919fe5e21d6c0544912c22ead320df5ee9e2de33f87f96fc5f474146b30e29",
+   "_eval_accept.py": "1781a475ac58aa1f8925757ed004eb88a283d231ff1abd29006bd1e46a6b7f78",
+   "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+   "src/__init__.py": "d3dc5110f59c78d285756c6cfacc36cd14d74966432a3f07dd427286ffc39479",
+   "src/ab_stats.py": "a88f352ae70faaac6b2471f92b69ed567e05cf8f92d6ef1d4b2fbf25abc55e4c",
+   "lists:new82": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59",
+   "scores:new82": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+  },
+  "script": "evaluate.py report",
+  "metric_version": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
+  "question_sets": [
+   {
+    "name": "new82",
+    "ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+    "sources": {
+     "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+     "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+    }
+   }
+  ],
+  "report_set": "new82",
+  "pinned": true,
+  "inputs_meta": {
+   "new82": {
+    "lists": {
+     "content_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+     "time_utc": "2026-10-14T03:44:08+00:00",
+     "argv": [
+      "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/arms.py",
+      "--set",
+      "new82",
+      "--vectors",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/encode_out.jsonl",
+      "--out",
+      "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+      "--overwrite"
+     ],
+     "python": "3.12.3",
+     "numpy": "2.4.2",
+     "pythonhashseed": "0",
+     "blas": [
+      {
+       "source": "threadpoolctl",
+       "name": "openblas",
+       "version": "0.3.31.dev",
+       "num_threads": 24
+      }
+     ],
+     "thread_env": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+     },
+     "build_id": "b20261008_e05d3e55",
+     "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+     "layers": {
+      "text": "text@247eafe44b02",
+      "struct": "struct@d8d432b4df15",
+      "emb": "emb@ae5525447eda",
+      "kg0": "kg0@14e68c8344b1",
+      "route": "route@c31c88e4681e"
+     },
+     "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+     "fingerprints": {
+      "reranker": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "embedder": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true,
+       "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+     },
+     "sha256": {
+      "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+      "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+      "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+      "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+      "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
+      "query_vectors": "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
+     },
+     "set": "new82",
+     "n_questions": 82,
+     "ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+     "question_sources": {
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+      "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+     },
+     "query_vectors_meta": {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "qdrant_collection": "passages__b20261008_e05d3e55",
+      "embedder_fingerprint": {
+       "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+       "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+       "unk_count": 3,
+       "pair_template_ok": true
+      },
+      "device": "cpu"
+     },
+     "params": {
+      "n_dense": 30,
+      "n_base": 20,
+      "n_extra": 10,
+      "n_seeds": 10,
+      "ppr_alpha": 0.5,
+      "ppr_iters": 40,
+      "ppr_round": 12,
+      "ppr_min": 1e-12,
+      "name_mass": 0.5,
+      "n_d5_records": 20,
+      "bm25_k1": 1.2,
+      "bm25_b": 0.75,
+      "lexprf_terms": 40,
+      "lexprf_mix": 0.5,
+      "min_surface": 2
+     },
+     "graph": {
+      "passages": 2773,
+      "name_nodes": 2929,
+      "edges": 16616,
+      "dangling_passages": 635,
+      "dense_records": 34058
+     },
+     "pool_size": {
+      "N_KIN_01": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_02": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_03": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_04": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_06": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_09": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_10": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_11": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_12": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_13": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_KIN_14": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_01": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_02": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_03": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_04": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_05": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_09": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_10": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_11": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_SUC_12": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRP_02": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRP_06": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRP_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRP_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_01": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_02": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_03": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_04": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_05": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_06": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_BRL_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_01": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_02": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_03": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_04": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_05": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_06": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_09": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_10": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_11": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_TO_12": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_01": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_03": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_04": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_05": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_06": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_09": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_10": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_11": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_OQ_12": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_01": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_02": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_03": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_04": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_05": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_06": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_09": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_10": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_11": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_12": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_13": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_DIS_14": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_01": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_02": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_03": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_04": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_05": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_06": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_07": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_08": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      },
+      "N_NULL_09": {
+       "C": 30,
+       "GD": 30,
+       "GD_DEGNORM": 30,
+       "G": 30,
+       "L": 30,
+       "LEXPRF": 30
+      }
+     },
+     "pool_lt30": {
+      "C": [],
+      "GD": [],
+      "GD_DEGNORM": [],
+      "G": [],
+      "L": [],
+      "LEXPRF": []
+     },
+     "g_question_names": {
+      "N_KIN_01": [
+       "摩西",
+       "亞倫",
+       "利未"
+      ],
+      "N_KIN_02": [
+       "拿鶴",
+       "亞伯拉罕"
+      ],
+      "N_KIN_03": [
+       "法勒斯",
+       "摩西",
+       "猶大"
+      ],
+      "N_KIN_04": [
+       "摩西",
+       "以色列",
+       "約旦河"
+      ],
+      "N_KIN_06": [
+       "大衛",
+       "以拉谷",
+       "非利士"
+      ],
+      "N_KIN_07": [
+       "耶路撒冷",
+       "利比拉",
+       "巴比倫",
+       "尼希米",
+       "以利亞實"
+      ],
+      "N_KIN_08": [
+       "迦特",
+       "以色列",
+       "暗嫩",
+       "她瑪"
+      ],
+      "N_KIN_09": [
+       "耶利米",
+       "巴比倫",
+       "幼發拉底河"
+      ],
+      "N_KIN_10": [
+       "保羅",
+       "西奈山"
+      ],
+      "N_KIN_11": [],
+      "N_KIN_12": [
+       "大衛",
+       "所羅門"
+      ],
+      "N_KIN_13": [
+       "毗珥",
+       "以色列",
+       "米甸"
+      ],
+      "N_KIN_14": [
+       "伯特利",
+       "大衛",
+       "猶大"
+      ],
+      "N_SUC_01": [
+       "以色列",
+       "亞述",
+       "普勒",
+       "撒馬利亞"
+      ],
+      "N_SUC_02": [
+       "以色列",
+       "耶路撒冷",
+       "撒拉鐵",
+       "所羅巴伯"
+      ],
+      "N_SUC_03": [
+       "提備斯",
+       "以色列"
+      ],
+      "N_SUC_04": [
+       "亞哈隨魯",
+       "哈曼",
+       "猶大",
+       "巴比倫",
+       "耶路撒冷"
+      ],
+      "N_SUC_05": [
+       "以賽亞",
+       "亞哈斯",
+       "猶大"
+      ],
+      "N_SUC_07": [
+       "所羅門",
+       "約押",
+       "大衛"
+      ],
+      "N_SUC_08": [
+       "亞述",
+       "沙基",
+       "耶路撒冷",
+       "希西家"
+      ],
+      "N_SUC_09": [
+       "保羅",
+       "猶太"
+      ],
+      "N_SUC_10": [
+       "以色列",
+       "何珥山",
+       "摩西"
+      ],
+      "N_SUC_11": [
+       "比拿雅",
+       "耶何耶大",
+       "亞比亞他",
+       "大衛"
+      ],
+      "N_SUC_12": [
+       "猶大",
+       "耶路撒冷"
+      ],
+      "N_BRP_02": [
+       "以利亞",
+       "何烈山",
+       "大馬士革",
+       "亞蘭",
+       "以色列"
+      ],
+      "N_BRP_06": [
+       "保羅",
+       "哥林多"
+      ],
+      "N_BRP_07": [
+       "保羅",
+       "馬其頓"
+      ],
+      "N_BRP_08": [
+       "保羅"
+      ],
+      "N_BRL_01": [],
+      "N_BRL_02": [
+       "非利士",
+       "以色列"
+      ],
+      "N_BRL_03": [
+       "大衛",
+       "掃羅",
+       "亞伯蘭"
+      ],
+      "N_BRL_04": [
+       "約押",
+       "大衛",
+       "押沙龍"
+      ],
+      "N_BRL_05": [
+       "約拿",
+       "他施"
+      ],
+      "N_BRL_06": [
+       "以色列",
+       "埃及",
+       "約瑟"
+      ],
+      "N_BRL_07": [
+       "撒母耳",
+       "掃羅"
+      ],
+      "N_BRL_08": [],
+      "N_TO_01": [
+       "雅各",
+       "埃及",
+       "哈蘭"
+      ],
+      "N_TO_02": [
+       "以色列",
+       "西奈",
+       "摩西"
+      ],
+      "N_TO_03": [
+       "亞倫",
+       "何珥山",
+       "埃及",
+       "摩西",
+       "約旦河",
+       "摩押",
+       "以色列"
+      ],
+      "N_TO_04": [
+       "亞哈",
+       "以色列",
+       "猶大"
+      ],
+      "N_TO_05": [
+       "猶大",
+       "耶何耶大",
+       "撒馬利亞",
+       "以色列"
+      ],
+      "N_TO_06": [
+       "以賽亞",
+       "何西阿",
+       "迦得",
+       "猶大",
+       "以色列"
+      ],
+      "N_TO_07": [
+       "亞述",
+       "撒馬利亞",
+       "以色列",
+       "猶大",
+       "西拿基立"
+      ],
+      "N_TO_08": [
+       "約西亞",
+       "耶路撒冷",
+       "猶大"
+      ],
+      "N_TO_09": [
+       "巴比倫",
+       "尼布甲尼撒",
+       "幼發拉底河",
+       "迦基米施",
+       "埃及",
+       "尼哥",
+       "耶路撒冷"
+      ],
+      "N_TO_10": [
+       "以西結",
+       "迦巴魯河",
+       "猶大",
+       "巴比倫"
+      ],
+      "N_TO_11": [
+       "亞哈隨魯",
+       "瓦實提",
+       "哈曼",
+       "猶大"
+      ],
+      "N_TO_12": [
+       "亞迦布",
+       "安提阿"
+      ],
+      "N_OQ_01": [
+       "司提反",
+       "以色列"
+      ],
+      "N_OQ_03": [
+       "約西亞",
+       "伯特利"
+      ],
+      "N_OQ_04": [],
+      "N_OQ_05": [
+       "別迦摩",
+       "以色列"
+      ],
+      "N_OQ_06": [
+       "保羅",
+       "以色列"
+      ],
+      "N_OQ_07": [
+       "以色列",
+       "埃及"
+      ],
+      "N_OQ_08": [
+       "耶利米",
+       "猶大"
+      ],
+      "N_OQ_09": [
+       "耶利米",
+       "撒馬利亞"
+      ],
+      "N_OQ_10": [
+       "以實瑪利",
+       "米斯巴",
+       "巴比倫"
+      ],
+      "N_OQ_11": [
+       "約瑟",
+       "馬利亞",
+       "摩西",
+       "耶路撒冷"
+      ],
+      "N_OQ_12": [
+       "波阿斯"
+      ],
+      "N_DIS_01": [],
+      "N_DIS_02": [
+       "以撒",
+       "亞伯拉罕"
+      ],
+      "N_DIS_03": [
+       "亞伯蘭",
+       "大馬士革",
+       "摩西"
+      ],
+      "N_DIS_04": [
+       "雅各",
+       "伯特利",
+       "亞倫‧巴古"
+      ],
+      "N_DIS_05": [
+       "約拿單",
+       "非利士",
+       "掃羅",
+       "以弗",
+       "亭拿",
+       "以色列",
+       "米甸"
+      ],
+      "N_DIS_06": [
+       "約押",
+       "大衛",
+       "耶路‧比設"
+      ],
+      "N_DIS_07": [
+       "掃羅",
+       "米力‧巴力",
+       "基遍"
+      ],
+      "N_DIS_08": [
+       "以利亞",
+       "何烈山",
+       "以色列",
+       "猶大"
+      ],
+      "N_DIS_09": [
+       "耶羅波安",
+       "示羅",
+       "亞希雅",
+       "猶大"
+      ],
+      "N_DIS_10": [
+       "猶大",
+       "巴比倫"
+      ],
+      "N_DIS_11": [
+       "耶利米",
+       "巴比倫",
+       "猶大"
+      ],
+      "N_DIS_12": [
+       "撒迦利亞"
+      ],
+      "N_DIS_13": [
+       "尼希米",
+       "大衛",
+       "亞達薛西",
+       "書珊"
+      ],
+      "N_DIS_14": [
+       "保羅",
+       "耶路撒冷"
+      ],
+      "N_NULL_01": [
+       "以諾"
+      ],
+      "N_NULL_02": [
+       "摩西",
+       "以色列"
+      ],
+      "N_NULL_03": [
+       "雅各",
+       "以撒"
+      ],
+      "N_NULL_04": [
+       "掃羅",
+       "約拿單",
+       "以色列",
+       "非利士"
+      ],
+      "N_NULL_05": [
+       "猶大",
+       "亞述",
+       "巴比倫"
+      ],
+      "N_NULL_06": [
+       "耶路撒冷",
+       "巴比倫",
+       "猶大"
+      ],
+      "N_NULL_07": [
+       "尼希米",
+       "書珊",
+       "猶大",
+       "以斯帖"
+      ],
+      "N_NULL_08": [
+       "伯利恆"
+      ],
+      "N_NULL_09": [
+       "掃羅",
+       "大馬士革",
+       "保羅"
+      ]
+     },
+     "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+     "elapsed_s": 2.59
+    },
+    "scores": [
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_KIN_01",
+       "N_KIN_02",
+       "N_KIN_03",
+       "N_KIN_04",
+       "N_KIN_06",
+       "N_KIN_07",
+       "N_KIN_08",
+       "N_KIN_09",
+       "N_KIN_10",
+       "N_KIN_11"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_KIN_12",
+       "N_KIN_13",
+       "N_KIN_14",
+       "N_SUC_01",
+       "N_SUC_02",
+       "N_SUC_03",
+       "N_SUC_04",
+       "N_SUC_05",
+       "N_SUC_07",
+       "N_SUC_08"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_SUC_09",
+       "N_SUC_10",
+       "N_SUC_11",
+       "N_SUC_12",
+       "N_BRP_02",
+       "N_BRP_06",
+       "N_BRP_07",
+       "N_BRP_08",
+       "N_BRL_01",
+       "N_BRL_02"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_BRL_03",
+       "N_BRL_04",
+       "N_BRL_05",
+       "N_BRL_06",
+       "N_BRL_07",
+       "N_BRL_08",
+       "N_TO_01",
+       "N_TO_02",
+       "N_TO_03",
+       "N_TO_04"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_TO_05",
+       "N_TO_06",
+       "N_TO_07",
+       "N_TO_08",
+       "N_TO_09",
+       "N_TO_10",
+       "N_TO_11",
+       "N_TO_12",
+       "N_OQ_01",
+       "N_OQ_03"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_OQ_04",
+       "N_OQ_05",
+       "N_OQ_06",
+       "N_OQ_07",
+       "N_OQ_08",
+       "N_OQ_09",
+       "N_OQ_10",
+       "N_OQ_11",
+       "N_OQ_12",
+       "N_DIS_01"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_DIS_02",
+       "N_DIS_03",
+       "N_DIS_04",
+       "N_DIS_05",
+       "N_DIS_06",
+       "N_DIS_07",
+       "N_DIS_08",
+       "N_DIS_09",
+       "N_DIS_10",
+       "N_DIS_11"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_DIS_12",
+       "N_DIS_13",
+       "N_DIS_14",
+       "N_NULL_01",
+       "N_NULL_02",
+       "N_NULL_03",
+       "N_NULL_04",
+       "N_NULL_05",
+       "N_NULL_06",
+       "N_NULL_07"
+      ]
+     },
+     {
+      "type": "meta",
+      "build_id": "b20261008_e05d3e55",
+      "reranker_fingerprint": {
+       "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+       "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+       "unk_count": 2,
+       "pair_template_ok": true,
+       "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+      },
+      "device": "cpu",
+      "torch_threads": 12,
+      "batch": 16,
+      "host": {
+       "time_utc": "2026-10-14T03:49:40+00:00",
+       "argv": [
+        "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/score.py",
+        "rerank",
+        "--lists",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+        "--out",
+        "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl"
+       ],
+       "python": "3.12.3",
+       "numpy": "2.4.2",
+       "pythonhashseed": null,
+       "blas": [
+        {
+         "source": "threadpoolctl",
+         "name": "openblas",
+         "version": "0.3.31.dev",
+         "num_threads": 24
+        }
+       ],
+       "thread_env": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+       },
+       "build_id": "b20261008_e05d3e55",
+       "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "layers": {
+        "text": "text@247eafe44b02",
+        "struct": "struct@d8d432b4df15",
+        "emb": "emb@ae5525447eda",
+        "kg0": "kg0@14e68c8344b1",
+        "route": "route@c31c88e4681e"
+       },
+       "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+       "fingerprints": {
+        "reranker": {
+         "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+         "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+         "unk_count": 2,
+         "pair_template_ok": true,
+         "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+        },
+        "embedder": {
+         "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+         "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+         "unk_count": 3,
+         "pair_template_ok": true,
+         "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+       },
+       "sha256": {
+        "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+        "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+        "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+        "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+        "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+        "score.py": "d158a0e5c8066d9b6b633d14820881e4afd0e50da1b755132e0cbb6e8fd1d66f",
+        "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+        "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+        "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+       },
+       "kind": "rerank",
+       "set": "new82",
+       "set_sources": {
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+        "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+       },
+       "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+       "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+       "chunk_size": 10,
+       "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a"
+      },
+      "chunk": [
+       "N_NULL_08",
+       "N_NULL_09"
+      ]
+     }
+    ],
+    "refchecks": 1
+   }
+  }
+ },
+ "exploratory": "NEW82 只當探索集（§2）：結果只能標為探索性，不得作證據",
+ "sets": [
+  "new82"
+ ],
+ "arms": [
+  "C",
+  "GD",
+  "GD_DEGNORM",
+  "G",
+  "L",
+  "LEXPRF"
+ ],
+ "arms_absent": [],
+ "units": {
+  "n_questions": 82,
+  "n_units": 40,
+  "max_unit": 12,
+  "units": [
+   [
+    "N_BRL_01"
+   ],
+   [
+    "N_BRL_02",
+    "N_BRL_04",
+    "N_DIS_04",
+    "N_OQ_01",
+    "N_OQ_08",
+    "N_TO_06"
+   ],
+   [
+    "N_BRL_03"
+   ],
+   [
+    "N_BRL_05"
+   ],
+   [
+    "N_BRL_06",
+    "N_OQ_07",
+    "N_SUC_10"
+   ],
+   [
+    "N_BRL_07"
+   ],
+   [
+    "N_BRL_08"
+   ],
+   [
+    "N_BRP_02"
+   ],
+   [
+    "N_BRP_06",
+    "N_TO_12"
+   ],
+   [
+    "N_BRP_07"
+   ],
+   [
+    "N_BRP_08"
+   ],
+   [
+    "N_DIS_01",
+    "N_KIN_11",
+    "N_KIN_12",
+    "N_OQ_04",
+    "N_TO_01"
+   ],
+   [
+    "N_DIS_02",
+    "N_KIN_02"
+   ],
+   [
+    "N_DIS_03",
+    "N_DIS_05",
+    "N_DIS_10",
+    "N_DIS_11",
+    "N_DIS_12",
+    "N_DIS_13",
+    "N_KIN_01",
+    "N_KIN_07",
+    "N_KIN_13",
+    "N_NULL_06",
+    "N_SUC_02",
+    "N_TO_10"
+   ],
+   [
+    "N_DIS_06",
+    "N_SUC_03"
+   ],
+   [
+    "N_DIS_07"
+   ],
+   [
+    "N_DIS_08",
+    "N_OQ_10",
+    "N_SUC_12",
+    "N_TO_04"
+   ],
+   [
+    "N_DIS_09"
+   ],
+   [
+    "N_DIS_14"
+   ],
+   [
+    "N_KIN_03",
+    "N_KIN_06",
+    "N_KIN_14",
+    "N_NULL_05",
+    "N_NULL_07",
+    "N_OQ_03",
+    "N_OQ_12",
+    "N_SUC_04",
+    "N_SUC_05",
+    "N_TO_08",
+    "N_TO_11"
+   ],
+   [
+    "N_KIN_04",
+    "N_NULL_01",
+    "N_NULL_02"
+   ],
+   [
+    "N_KIN_08"
+   ],
+   [
+    "N_KIN_09"
+   ],
+   [
+    "N_KIN_10"
+   ],
+   [
+    "N_NULL_03"
+   ],
+   [
+    "N_NULL_04"
+   ],
+   [
+    "N_NULL_08"
+   ],
+   [
+    "N_NULL_09"
+   ],
+   [
+    "N_OQ_05"
+   ],
+   [
+    "N_OQ_06"
+   ],
+   [
+    "N_OQ_09"
+   ],
+   [
+    "N_OQ_11"
+   ],
+   [
+    "N_SUC_01"
+   ],
+   [
+    "N_SUC_07",
+    "N_SUC_11"
+   ],
+   [
+    "N_SUC_08",
+    "N_TO_07"
+   ],
+   [
+    "N_SUC_09"
+   ],
+   [
+    "N_TO_02"
+   ],
+   [
+    "N_TO_03"
+   ],
+   [
+    "N_TO_05"
+   ],
+   [
+    "N_TO_09"
+   ]
+  ],
+  "density_low": 47,
+  "density": {
+   "N_KIN_01": "2469/2773",
+   "N_KIN_02": "1866/2773",
+   "N_KIN_03": "2277/2773",
+   "N_KIN_04": "55/59",
+   "N_KIN_06": "2495/2773",
+   "N_KIN_07": "2004/2773",
+   "N_KIN_08": "45/59",
+   "N_KIN_09": "2206/2773",
+   "N_KIN_10": "2004/2773",
+   "N_KIN_11": "2342/2773",
+   "N_KIN_12": "2711/2773",
+   "N_KIN_13": "2524/2773",
+   "N_KIN_14": "45/59",
+   "N_SUC_01": "2391/2773",
+   "N_SUC_02": "2004/2773",
+   "N_SUC_03": "1866/2773",
+   "N_SUC_04": "2342/2773",
+   "N_SUC_05": "45/59",
+   "N_SUC_07": "2759/2773",
+   "N_SUC_08": "2004/2773",
+   "N_SUC_09": "1866/2773",
+   "N_SUC_10": "2206/2773",
+   "N_SUC_11": "2391/2773",
+   "N_SUC_12": "2524/2773",
+   "N_BRP_02": "2004/2773",
+   "N_BRP_06": "45/59",
+   "N_BRP_07": "1296/2773",
+   "N_BRP_08": "1296/2773",
+   "N_BRL_01": "961/2773",
+   "N_BRL_02": "2567/2773",
+   "N_BRL_03": "1866/2773",
+   "N_BRL_04": "2004/2773",
+   "N_BRL_05": "2004/2773",
+   "N_BRL_06": "2418/2773",
+   "N_BRL_07": "2277/2773",
+   "N_BRL_08": "1866/2773",
+   "N_TO_01": "1510/2773",
+   "N_TO_02": "1296/2773",
+   "N_TO_03": "2688/2773",
+   "N_TO_04": "2524/2773",
+   "N_TO_05": "2469/2773",
+   "N_TO_06": "2206/2773",
+   "N_TO_07": "2610/2773",
+   "N_TO_08": "2004/2773",
+   "N_TO_09": "2004/2773",
+   "N_TO_10": "1866/2773",
+   "N_TO_11": "45/59",
+   "N_TO_12": "2469/2773",
+   "N_OQ_01": "45/59",
+   "N_OQ_03": "1510/2773",
+   "N_OQ_04": "1296/2773",
+   "N_OQ_05": "1866/2773",
+   "N_OQ_06": "635/2773",
+   "N_OQ_07": "2206/2773",
+   "N_OQ_08": "1696/2773",
+   "N_OQ_09": "2004/2773",
+   "N_OQ_10": "2669/2773",
+   "N_OQ_11": "1296/2773",
+   "N_OQ_12": "1866/2773",
+   "N_DIS_01": "2342/2773",
+   "N_DIS_02": "2391/2773",
+   "N_DIS_03": "2277/2773",
+   "N_DIS_04": "2495/2773",
+   "N_DIS_05": "2524/2773",
+   "N_DIS_06": "2495/2773",
+   "N_DIS_07": "2663/2773",
+   "N_DIS_08": "2539/2773",
+   "N_DIS_09": "45/59",
+   "N_DIS_10": "45/59",
+   "N_DIS_11": "2391/2773",
+   "N_DIS_12": "1510/2773",
+   "N_DIS_13": "2755/2773",
+   "N_DIS_14": "2206/2773",
+   "N_NULL_01": "2004/2773",
+   "N_NULL_02": "2642/2773",
+   "N_NULL_03": "45/59",
+   "N_NULL_04": "2469/2773",
+   "N_NULL_05": "45/59",
+   "N_NULL_06": "2391/2773",
+   "N_NULL_07": "2567/2773",
+   "N_NULL_08": "1696/2773",
+   "N_NULL_09": "45/59"
+  },
+  "categories": {
+   "親屬": 13,
+   "消歧": 14,
+   "時序": 12,
+   "多跳": 34,
+   "其他": 9
+  }
+ },
+ "missing_hops": {
+  "by_set": {
+   "new82": {
+    "source": [
+     "stored missing_rr (PN/question_summary.json)"
+    ],
+    "hops": 102,
+    "questions": 63
+   }
+  },
+  "new82_d5approx_check": {
+   "d5approx_hops": 102,
+   "d5approx_questions": 63,
+   "equal_to_stored": 82,
+   "of": 82
+  }
+ },
+ "pools": {
+  "C": {
+   "lt_30": 0,
+   "min": 30
+  },
+  "GD": {
+   "lt_30": 0,
+   "min": 30
+  },
+  "GD_DEGNORM": {
+   "lt_30": 0,
+   "min": 30
+  },
+  "G": {
+   "lt_30": 0,
+   "min": 30
+  },
+  "L": {
+   "lt_30": 0,
+   "min": 30
+  },
+  "LEXPRF": {
+   "lt_30": 0,
+   "min": 30
+  }
+ },
+ "metrics": {
+  "@10": {
+   "C": {
+    "all_hops_hit": 137,
+    "full_chain": 28,
+    "missing_hops_hit": 17,
+    "mean_coverage": 0.6508130081300812,
+    "strict_all_hops_hit": 124,
+    "strict_full_chain": 23
+   },
+   "GD": {
+    "all_hops_hit": 151,
+    "full_chain": 36,
+    "missing_hops_hit": 31,
+    "mean_coverage": 0.7117886178861789,
+    "strict_all_hops_hit": 135,
+    "strict_full_chain": 30
+   },
+   "GD_DEGNORM": {
+    "all_hops_hit": 141,
+    "full_chain": 28,
+    "missing_hops_hit": 21,
+    "mean_coverage": 0.6670731707317074,
+    "strict_all_hops_hit": 126,
+    "strict_full_chain": 22
+   },
+   "G": {
+    "all_hops_hit": 146,
+    "full_chain": 33,
+    "missing_hops_hit": 26,
+    "mean_coverage": 0.6878048780487804,
+    "strict_all_hops_hit": 130,
+    "strict_full_chain": 27
+   },
+   "L": {
+    "all_hops_hit": 143,
+    "full_chain": 30,
+    "missing_hops_hit": 24,
+    "mean_coverage": 0.6731707317073171,
+    "strict_all_hops_hit": 126,
+    "strict_full_chain": 22
+   },
+   "LEXPRF": {
+    "all_hops_hit": 141,
+    "full_chain": 30,
+    "missing_hops_hit": 21,
+    "mean_coverage": 0.6680894308943089,
+    "strict_all_hops_hit": 126,
+    "strict_full_chain": 23
+   }
+  },
+  "@5": {
+   "C": {
+    "all_hops_hit": 119,
+    "full_chain": 21,
+    "missing_hops_hit": 7,
+    "mean_coverage": 0.5695121951219512,
+    "strict_all_hops_hit": 109,
+    "strict_full_chain": 17
+   },
+   "GD": {
+    "all_hops_hit": 126,
+    "full_chain": 24,
+    "missing_hops_hit": 14,
+    "mean_coverage": 0.6030487804878049,
+    "strict_all_hops_hit": 112,
+    "strict_full_chain": 19
+   },
+   "GD_DEGNORM": {
+    "all_hops_hit": 124,
+    "full_chain": 21,
+    "missing_hops_hit": 9,
+    "mean_coverage": 0.591869918699187,
+    "strict_all_hops_hit": 112,
+    "strict_full_chain": 17
+   },
+   "G": {
+    "all_hops_hit": 124,
+    "full_chain": 24,
+    "missing_hops_hit": 13,
+    "mean_coverage": 0.5928861788617886,
+    "strict_all_hops_hit": 111,
+    "strict_full_chain": 19
+   },
+   "L": {
+    "all_hops_hit": 120,
+    "full_chain": 20,
+    "missing_hops_hit": 10,
+    "mean_coverage": 0.5715447154471545,
+    "strict_all_hops_hit": 110,
+    "strict_full_chain": 16
+   },
+   "LEXPRF": {
+    "all_hops_hit": 122,
+    "full_chain": 22,
+    "missing_hops_hit": 12,
+    "mean_coverage": 0.5827235772357724,
+    "strict_all_hops_hit": 111,
+    "strict_full_chain": 17
+   }
+  }
+ },
+ "cut_gaps": {
+  "C@10": {
+   "min": 9.900331497192383e-05,
+   "boundary_lt_1e-5": []
+  },
+  "C@5": {
+   "min": 0.0001946091651916504,
+   "boundary_lt_1e-5": []
+  },
+  "GD@10": {
+   "min": 5.078315734863281e-05,
+   "boundary_lt_1e-5": []
+  },
+  "GD@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  },
+  "GD_DEGNORM@10": {
+   "min": 0.00027653761208057404,
+   "boundary_lt_1e-5": []
+  },
+  "GD_DEGNORM@5": {
+   "min": 0.00016382988542318344,
+   "boundary_lt_1e-5": []
+  },
+  "G@10": {
+   "min": 5.078315734863281e-05,
+   "boundary_lt_1e-5": []
+  },
+  "G@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  },
+  "L@10": {
+   "min": 2.3543834686279297e-05,
+   "boundary_lt_1e-5": []
+  },
+  "L@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  },
+  "LEXPRF@10": {
+   "min": 0.0001582913100719452,
+   "boundary_lt_1e-5": []
+  },
+  "LEXPRF@5": {
+   "min": 6.276369094848633e-05,
+   "boundary_lt_1e-5": []
+  }
+ },
+ "hypotheses": {
+  "H1": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 11,
+   "unit_L": 0,
+   "unit_W:L": "11:0",
+   "discordant_units": 11,
+   "direction": 1,
+   "sum_v": "6647/2640",
+   "mean_unit_diff": 0.06294507575757576,
+   "ci95": [
+    0.02782828282828283,
+    0.10409722222222222
+   ],
+   "question_W:L": "14:0",
+   "mean_question_diff": 0.06097560975609756,
+   "p": 0.0009765625,
+   "p_exact": "1/1024",
+   "p_method": "exact_dp",
+   "dp_states": 400,
+   "pair": "GD-C@10",
+   "pass": true,
+   "rejected": true,
+   "direction_positive": true
+  },
+  "H2": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 8,
+   "unit_L": 2,
+   "unit_W:L": "8:2",
+   "discordant_units": 10,
+   "direction": 1,
+   "sum_v": "583/720",
+   "mean_unit_diff": 0.020243055555555556,
+   "ci95": [
+    -0.014930555555555555,
+    0.05368055555555555
+   ],
+   "question_W:L": "10:3",
+   "mean_question_diff": 0.03353658536585366,
+   "p": 0.26953125,
+   "p_exact": "69/256",
+   "p_method": "exact_dp",
+   "dp_states": 160,
+   "pair": "GD-C@5",
+   "tested": true,
+   "rejected": false,
+   "direction_positive": true,
+   "pass": false
+  },
+  "H3": {
+   "tested": true,
+   "rejected": false,
+   "direction_positive": true,
+   "pass": false,
+   "p": 0.025390625,
+   "p_exact": "13/512",
+   "parts": {
+    "GD-LEXPRF@10": {
+     "n_questions": 82,
+     "n_units": 40,
+     "max_unit": 12,
+     "unit_W": 10,
+     "unit_L": 1,
+     "unit_W:L": "10:1",
+     "discordant_units": 11,
+     "direction": 1,
+     "sum_v": "983/495",
+     "mean_unit_diff": 0.04964646464646465,
+     "ci95": [
+      0.008674242424242425,
+      0.09393939393939393
+     ],
+     "question_W:L": "11:1",
+     "mean_question_diff": 0.04369918699186992,
+     "p": 0.025390625,
+     "p_exact": "13/512",
+     "p_method": "exact_dp",
+     "dp_states": 224,
+     "pair": "GD-LEXPRF@10"
+    },
+    "GD-L@10": {
+     "n_questions": 82,
+     "n_units": 40,
+     "max_unit": 12,
+     "unit_W": 10,
+     "unit_L": 2,
+     "unit_W:L": "10:2",
+     "discordant_units": 12,
+     "direction": 1,
+     "sum_v": "8293/3960",
+     "mean_unit_diff": 0.05235479797979798,
+     "ci95": [
+      0.010195707070707072,
+      0.09784090909090909
+     ],
+     "question_W:L": "12:3",
+     "mean_question_diff": 0.03861788617886179,
+     "p": 0.02392578125,
+     "p_exact": "49/2048",
+     "p_method": "exact_dp",
+     "dp_states": 248,
+     "pair": "GD-L@10"
+    }
+   }
+  },
+  "alpha": 0.05,
+  "holm": "H1 過了之後 H2、H3 並列：較小 p <0.025，另一項 <0.05"
+ },
+ "attached_notes": {},
+ "descriptive": {
+  "G-C@10": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 7,
+   "unit_L": 1,
+   "unit_W:L": "7:1",
+   "discordant_units": 8,
+   "direction": 1,
+   "sum_v": "3499/3600",
+   "mean_unit_diff": 0.02429861111111111,
+   "ci95": [
+    -0.006249999999999999,
+    0.05571527777777777
+   ],
+   "question_W:L": "11:2",
+   "mean_question_diff": 0.03699186991869919
+  },
+  "G-C@5": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 8,
+   "unit_L": 3,
+   "unit_W:L": "8:3",
+   "discordant_units": 11,
+   "direction": 1,
+   "sum_v": "1691/2640",
+   "mean_unit_diff": 0.016013257575757577,
+   "ci95": [
+    -0.01784090909090909,
+    0.04934659090909091
+   ],
+   "question_W:L": "8:3",
+   "mean_question_diff": 0.023373983739837397
+  },
+  "GD_DEGNORM-C@10": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 7,
+   "unit_L": 4,
+   "unit_W:L": "7:4",
+   "discordant_units": 11,
+   "direction": 1,
+   "sum_v": "61/240",
+   "mean_unit_diff": 0.006354166666666667,
+   "ci95": [
+    -0.03003472222222222,
+    0.04496527777777778
+   ],
+   "question_W:L": "8:4",
+   "mean_question_diff": 0.016260162601626018
+  },
+  "GD_DEGNORM-C@5": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 7,
+   "unit_L": 2,
+   "unit_W:L": "7:2",
+   "discordant_units": 9,
+   "direction": 1,
+   "sum_v": "149/198",
+   "mean_unit_diff": 0.018813131313131313,
+   "ci95": [
+    -0.013825757575757575,
+    0.0529040404040404
+   ],
+   "question_W:L": "7:2",
+   "mean_question_diff": 0.022357723577235773
+  },
+  "L-C@10": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 5,
+   "unit_L": 3,
+   "unit_W:L": "5:3",
+   "discordant_units": 8,
+   "direction": 1,
+   "sum_v": "61/144",
+   "mean_unit_diff": 0.010590277777777778,
+   "ci95": [
+    -0.020833333333333332,
+    0.04375
+   ],
+   "question_W:L": "9:4",
+   "mean_question_diff": 0.022357723577235773
+  },
+  "L-C@5": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 5,
+   "unit_L": 4,
+   "unit_W:L": "5:4",
+   "discordant_units": 9,
+   "direction": 1,
+   "sum_v": "1/6",
+   "mean_unit_diff": 0.004166666666666667,
+   "ci95": [
+    -0.04166666666666667,
+    0.04583333333333333
+   ],
+   "question_W:L": "6:5",
+   "mean_question_diff": 0.0020325203252032522
+  },
+  "LEXPRF-C@10": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 5,
+   "unit_L": 2,
+   "unit_W:L": "5:2",
+   "discordant_units": 7,
+   "direction": 1,
+   "sum_v": "383/720",
+   "mean_unit_diff": 0.013298611111111112,
+   "ci95": [
+    -0.012916666666666665,
+    0.042881944444444445
+   ],
+   "question_W:L": "7:3",
+   "mean_question_diff": 0.017276422764227643
+  },
+  "LEXPRF-C@5": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 6,
+   "unit_L": 3,
+   "unit_W:L": "6:3",
+   "discordant_units": 9,
+   "direction": 1,
+   "sum_v": "479/528",
+   "mean_unit_diff": 0.02267992424242424,
+   "ci95": [
+    -0.008570075757575757,
+    0.057291666666666664
+   ],
+   "question_W:L": "6:3",
+   "mean_question_diff": 0.013211382113821139
+  },
+  "GD-G@10": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 6,
+   "unit_L": 1,
+   "unit_W:L": "6:1",
+   "discordant_units": 7,
+   "direction": 1,
+   "sum_v": "3826/2475",
+   "mean_unit_diff": 0.038646464646464644,
+   "ci95": [
+    0.007333333333333333,
+    0.07790404040404039
+   ],
+   "question_W:L": "6:1",
+   "mean_question_diff": 0.023983739837398373
+  },
+  "GD-G@5": {
+   "n_questions": 82,
+   "n_units": 40,
+   "max_unit": 12,
+   "unit_W": 3,
+   "unit_L": 1,
+   "unit_W:L": "3:1",
+   "discordant_units": 4,
+   "direction": 1,
+   "sum_v": "67/396",
+   "mean_unit_diff": 0.00422979797979798,
+   "ci95": [
+    -0.004166666666666667,
+    0.01477272727272727
+   ],
+   "question_W:L": "3:1",
+   "mean_question_diff": 0.01016260162601626
+  }
+ },
+ "sensitivity": {
+  "GD-C@10": {
+   "question_level": {
+    "n_questions": 82,
+    "n_units": 82,
+    "max_unit": 1,
+    "unit_W": 14,
+    "unit_L": 0,
+    "unit_W:L": "14:0",
+    "discordant_units": 14,
+    "direction": 1,
+    "sum_v": "5",
+    "mean_unit_diff": 0.06097560975609756,
+    "ci95": [
+     0.03353658536585366,
+     0.09349593495934959
+    ],
+    "question_W:L": "14:0",
+    "mean_question_diff": 0.06097560975609756
+   },
+   "strict": {
+    "n_questions": 82,
+    "n_units": 40,
+    "max_unit": 12,
+    "unit_W": 11,
+    "unit_L": 1,
+    "unit_W:L": "11:1",
+    "discordant_units": 12,
+    "direction": 1,
+    "sum_v": "4001/1584",
+    "mean_unit_diff": 0.06314709595959596,
+    "ci95": [
+     0.026041666666666668,
+     0.1056344696969697
+    ],
+    "question_W:L": "13:2",
+    "mean_question_diff": 0.054878048780487805
+   },
+   "core_cluster": {
+    "n_questions": 82,
+    "n_units": 40,
+    "max_unit": 12,
+    "unit_W": 11,
+    "unit_L": 0,
+    "unit_W:L": "11:0",
+    "discordant_units": 11,
+    "direction": 1,
+    "sum_v": "6647/2640",
+    "mean_unit_diff": 0.06294507575757576,
+    "ci95": [
+     0.02782828282828283,
+     0.10409722222222222
+    ],
+    "question_W:L": "14:0",
+    "mean_question_diff": 0.06097560975609756
+   },
+   "W": {
+    "not_computed": "本輪不算：W 逐窗重排留到附錄 A 之前（任務範圍）"
+   },
+   "category": {
+    "親屬": {
+     "n_questions": 13,
+     "n_units": 8,
+     "max_unit": 3,
+     "unit_W": 2,
+     "unit_L": 0,
+     "unit_W:L": "2:0",
+     "discordant_units": 2,
+     "direction": 1,
+     "sum_v": "1/2",
+     "mean_unit_diff": 0.0625,
+     "ci95": [
+      0.0,
+      0.14583333333333331
+     ],
+     "question_W:L": "2:0",
+     "mean_question_diff": 0.05128205128205128
+    },
+    "消歧": {
+     "n_questions": 14,
+     "n_units": 13,
+     "max_unit": 2,
+     "unit_W": 5,
+     "unit_L": 0,
+     "unit_W:L": "5:0",
+     "discordant_units": 5,
+     "direction": 1,
+     "sum_v": "13/8",
+     "mean_unit_diff": 0.125,
+     "ci95": [
+      0.035256410256410256,
+      0.22756410256410253
+     ],
+     "question_W:L": "5:0",
+     "mean_question_diff": 0.125
+    },
+    "時序": {
+     "n_questions": 12,
+     "n_units": 12,
+     "max_unit": 1,
+     "unit_W": 0,
+     "unit_L": 0,
+     "unit_W:L": "0:0",
+     "discordant_units": 0,
+     "direction": 0,
+     "sum_v": "0",
+     "mean_unit_diff": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "question_W:L": "0:0",
+     "mean_question_diff": 0.0
+    },
+    "多跳": {
+     "n_questions": 34,
+     "n_units": 26,
+     "max_unit": 3,
+     "unit_W": 6,
+     "unit_L": 0,
+     "unit_W:L": "6:0",
+     "discordant_units": 6,
+     "direction": 1,
+     "sum_v": "67/36",
+     "mean_unit_diff": 0.07158119658119658,
+     "ci95": [
+      0.0202991452991453,
+      0.1346153846153846
+     ],
+     "question_W:L": "6:0",
+     "mean_question_diff": 0.0661764705882353
+    },
+    "其他": {
+     "n_questions": 9,
+     "n_units": 8,
+     "max_unit": 2,
+     "unit_W": 1,
+     "unit_L": 0,
+     "unit_W:L": "1:0",
+     "discordant_units": 1,
+     "direction": 1,
+     "sum_v": "1/3",
+     "mean_unit_diff": 0.041666666666666664,
+     "ci95": [
+      0.0,
+      0.125
+     ],
+     "question_W:L": "1:0",
+     "mean_question_diff": 0.037037037037037035
+    }
+   },
+   "density": {
+    "low": {
+     "n_questions": 47,
+     "n_units": 33,
+     "max_unit": 6,
+     "unit_W": 8,
+     "unit_L": 0,
+     "unit_W:L": "8:0",
+     "discordant_units": 8,
+     "direction": 1,
+     "sum_v": "143/60",
+     "mean_unit_diff": 0.07222222222222222,
+     "ci95": [
+      0.02525252525252525,
+      0.12777777777777777
+     ],
+     "question_W:L": "8:0",
+     "mean_question_diff": 0.06028368794326241
+    },
+    "high": {
+     "n_questions": 35,
+     "n_units": 22,
+     "max_unit": 4,
+     "unit_W": 5,
+     "unit_L": 0,
+     "unit_W:L": "5:0",
+     "discordant_units": 5,
+     "direction": 1,
+     "sum_v": "25/18",
+     "mean_unit_diff": 0.06313131313131314,
+     "ci95": [
+      0.01515151515151515,
+      0.12373737373737374
+     ],
+     "question_W:L": "6:0",
+     "mean_question_diff": 0.06190476190476191
+    }
+   },
+   "excl_new82_shared": {
+    "not_applicable": "只適用於 OLD31（§5）"
+   }
+  },
+  "GD-C@5": {
+   "question_level": {
+    "n_questions": 82,
+    "n_units": 82,
+    "max_unit": 1,
+    "unit_W": 10,
+    "unit_L": 3,
+    "unit_W:L": "10:3",
+    "discordant_units": 13,
+    "direction": 1,
+    "sum_v": "11/4",
+    "mean_unit_diff": 0.03353658536585366,
+    "ci95": [
+     0.0040650406504065045,
+     0.06605691056910569
+    ],
+    "question_W:L": "10:3",
+    "mean_question_diff": 0.03353658536585366
+   },
+   "strict": {
+    "n_questions": 82,
+    "n_units": 40,
+    "max_unit": 12,
+    "unit_W": 5,
+    "unit_L": 3,
+    "unit_W:L": "5:3",
+    "discordant_units": 8,
+    "direction": 1,
+    "sum_v": "109/144",
+    "mean_unit_diff": 0.01892361111111111,
+    "ci95": [
+     -0.009027777777777777,
+     0.0484375
+    ],
+    "question_W:L": "7:4",
+    "mean_question_diff": 0.017276422764227643
+   },
+   "core_cluster": {
+    "n_questions": 82,
+    "n_units": 40,
+    "max_unit": 12,
+    "unit_W": 8,
+    "unit_L": 2,
+    "unit_W:L": "8:2",
+    "discordant_units": 10,
+    "direction": 1,
+    "sum_v": "583/720",
+    "mean_unit_diff": 0.020243055555555556,
+    "ci95": [
+     -0.014930555555555555,
+     0.05368055555555555
+    ],
+    "question_W:L": "10:3",
+    "mean_question_diff": 0.03353658536585366
+   },
+   "W": {
+    "not_computed": "本輪不算：W 逐窗重排留到附錄 A 之前（任務範圍）"
+   },
+   "category": {
+    "親屬": {
+     "n_questions": 13,
+     "n_units": 8,
+     "max_unit": 3,
+     "unit_W": 1,
+     "unit_L": 1,
+     "unit_W:L": "1:1",
+     "discordant_units": 2,
+     "direction": -1,
+     "sum_v": "-1/6",
+     "mean_unit_diff": -0.020833333333333332,
+     "ci95": [
+      -0.125,
+      0.0625
+     ],
+     "question_W:L": "1:1",
+     "mean_question_diff": 0.0
+    },
+    "消歧": {
+     "n_questions": 14,
+     "n_units": 13,
+     "max_unit": 2,
+     "unit_W": 3,
+     "unit_L": 0,
+     "unit_W:L": "3:0",
+     "discordant_units": 3,
+     "direction": 1,
+     "sum_v": "23/24",
+     "mean_unit_diff": 0.07371794871794872,
+     "ci95": [
+      0.0,
+      0.16666666666666666
+     ],
+     "question_W:L": "3:0",
+     "mean_question_diff": 0.07738095238095238
+    },
+    "時序": {
+     "n_questions": 12,
+     "n_units": 12,
+     "max_unit": 1,
+     "unit_W": 0,
+     "unit_L": 0,
+     "unit_W:L": "0:0",
+     "discordant_units": 0,
+     "direction": 0,
+     "sum_v": "0",
+     "mean_unit_diff": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "question_W:L": "0:0",
+     "mean_question_diff": 0.0
+    },
+    "多跳": {
+     "n_questions": 34,
+     "n_units": 26,
+     "max_unit": 3,
+     "unit_W": 4,
+     "unit_L": 1,
+     "unit_W:L": "4:1",
+     "discordant_units": 5,
+     "direction": 1,
+     "sum_v": "1",
+     "mean_unit_diff": 0.038461538461538464,
+     "ci95": [
+      -0.009615384615384616,
+      0.09294871794871794
+     ],
+     "question_W:L": "5:2",
+     "mean_question_diff": 0.03431372549019608
+    },
+    "其他": {
+     "n_questions": 9,
+     "n_units": 8,
+     "max_unit": 2,
+     "unit_W": 1,
+     "unit_L": 0,
+     "unit_W:L": "1:0",
+     "discordant_units": 1,
+     "direction": 1,
+     "sum_v": "1/4",
+     "mean_unit_diff": 0.03125,
+     "ci95": [
+      0.0,
+      0.09375
+     ],
+     "question_W:L": "1:0",
+     "mean_question_diff": 0.05555555555555555
+    }
+   },
+   "density": {
+    "low": {
+     "n_questions": 47,
+     "n_units": 33,
+     "max_unit": 6,
+     "unit_W": 5,
+     "unit_L": 2,
+     "unit_W:L": "5:2",
+     "discordant_units": 7,
+     "direction": 1,
+     "sum_v": "19/30",
+     "mean_unit_diff": 0.01919191919191919,
+     "ci95": [
+      -0.02525252525252525,
+      0.06818181818181818
+     ],
+     "question_W:L": "6:3",
+     "mean_question_diff": 0.02304964539007092
+    },
+    "high": {
+     "n_questions": 35,
+     "n_units": 22,
+     "max_unit": 4,
+     "unit_W": 4,
+     "unit_L": 0,
+     "unit_W:L": "4:0",
+     "discordant_units": 4,
+     "direction": 1,
+     "sum_v": "43/36",
+     "mean_unit_diff": 0.054292929292929296,
+     "ci95": [
+      0.00505050505050505,
+      0.11363636363636363
+     ],
+     "question_W:L": "4:0",
+     "mean_question_diff": 0.047619047619047616
+    }
+   },
+   "excl_new82_shared": {
+    "not_applicable": "只適用於 OLD31（§5）"
+   }
+  },
+  "H3_excl_shortcut": {
+   "not_applicable": "[SHORTCUT] 只出現在 HO（§5、§7）"
+  }
+ },
+ "per_question": {
+  "N_KIN_01": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_KIN_02": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "2/3",
+    "G": "1",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "2/3",
+    "G": "1",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_KIN_03": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_KIN_04": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_KIN_06": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_KIN_07": {
+   "@10": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   },
+   "@5": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   }
+  },
+  "N_KIN_08": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_KIN_09": {
+   "@10": {
+    "C": "2/3",
+    "GD": "1",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_KIN_10": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_KIN_11": {
+   "@10": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "1/3",
+    "G": "2/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "1/3",
+    "G": "2/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_KIN_12": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_KIN_13": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_KIN_14": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_SUC_01": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "3/4",
+    "G": "1",
+    "L": "3/4",
+    "LEXPRF": "3/4"
+   },
+   "@5": {
+    "C": "3/4",
+    "GD": "3/4",
+    "GD_DEGNORM": "3/4",
+    "G": "3/4",
+    "L": "3/4",
+    "LEXPRF": "3/4"
+   }
+  },
+  "N_SUC_02": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_SUC_03": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_SUC_04": {
+   "@10": {
+    "C": "2/3",
+    "GD": "1",
+    "GD_DEGNORM": "2/3",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "1",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_SUC_05": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "1/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "0",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "0",
+    "L": "0",
+    "LEXPRF": "0"
+   }
+  },
+  "N_SUC_07": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1/2",
+    "LEXPRF": "1"
+   }
+  },
+  "N_SUC_08": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_SUC_09": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_SUC_10": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_SUC_11": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_SUC_12": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "0",
+    "GD": "0",
+    "GD_DEGNORM": "0",
+    "G": "0",
+    "L": "0",
+    "LEXPRF": "0"
+   }
+  },
+  "N_BRP_02": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_BRP_06": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1/2",
+    "G": "1",
+    "L": "1/2",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_BRP_07": {
+   "@10": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   },
+   "@5": {
+    "C": "1/4",
+    "GD": "0",
+    "GD_DEGNORM": "1/4",
+    "G": "0",
+    "L": "0",
+    "LEXPRF": "0"
+   }
+  },
+  "N_BRP_08": {
+   "@10": {
+    "C": "1/4",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/4",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/4",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/4",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_BRL_01": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_BRL_02": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_BRL_03": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_BRL_04": {
+   "@10": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/2",
+    "LEXPRF": "1/4"
+   },
+   "@5": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   }
+  },
+  "N_BRL_05": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_BRL_06": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_BRL_07": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_BRL_08": {
+   "@10": {
+    "C": "2/3",
+    "GD": "1",
+    "GD_DEGNORM": "2/3",
+    "G": "1",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_TO_01": {
+   "@10": {
+    "C": "1/5",
+    "GD": "1/5",
+    "GD_DEGNORM": "1/5",
+    "G": "2/5",
+    "L": "1/5",
+    "LEXPRF": "1/5"
+   },
+   "@5": {
+    "C": "1/5",
+    "GD": "1/5",
+    "GD_DEGNORM": "1/5",
+    "G": "1/5",
+    "L": "1/5",
+    "LEXPRF": "1/5"
+   }
+  },
+  "N_TO_02": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "1",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_TO_03": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_TO_04": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_TO_05": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1/2",
+    "LEXPRF": "1"
+   }
+  },
+  "N_TO_06": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "3/4",
+    "GD": "3/4",
+    "GD_DEGNORM": "3/4",
+    "G": "3/4",
+    "L": "3/4",
+    "LEXPRF": "3/4"
+   }
+  },
+  "N_TO_07": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_TO_08": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_TO_09": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_TO_10": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_TO_11": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_TO_12": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_OQ_01": {
+   "@10": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "3/4",
+    "LEXPRF": "1/4"
+   },
+   "@5": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   }
+  },
+  "N_OQ_03": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "1/3",
+    "L": "2/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_OQ_04": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "2/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_OQ_05": {
+   "@10": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   },
+   "@5": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   }
+  },
+  "N_OQ_06": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_OQ_07": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_OQ_08": {
+   "@10": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_OQ_09": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "2/3",
+    "G": "1/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "2/3",
+    "G": "1/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_OQ_10": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_OQ_11": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_OQ_12": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "2/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_DIS_01": {
+   "@10": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "1/3",
+    "G": "2/3",
+    "L": "1/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_DIS_02": {
+   "@10": {
+    "C": "0",
+    "GD": "0",
+    "GD_DEGNORM": "0",
+    "G": "0",
+    "L": "0",
+    "LEXPRF": "0"
+   },
+   "@5": {
+    "C": "0",
+    "GD": "0",
+    "GD_DEGNORM": "0",
+    "G": "0",
+    "L": "0",
+    "LEXPRF": "0"
+   }
+  },
+  "N_DIS_03": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_DIS_04": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1",
+    "GD_DEGNORM": "1/2",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1",
+    "GD_DEGNORM": "1/2",
+    "G": "1",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_DIS_05": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_DIS_06": {
+   "@10": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "0",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_DIS_07": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_DIS_08": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "0",
+    "GD": "0",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "0",
+    "LEXPRF": "0"
+   }
+  },
+  "N_DIS_09": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_DIS_10": {
+   "@10": {
+    "C": "3/4",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "3/4",
+    "GD": "1",
+    "GD_DEGNORM": "3/4",
+    "G": "1",
+    "L": "3/4",
+    "LEXPRF": "1"
+   }
+  },
+  "N_DIS_11": {
+   "@10": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   },
+   "@5": {
+    "C": "1/4",
+    "GD": "1/4",
+    "GD_DEGNORM": "1/4",
+    "G": "1/4",
+    "L": "1/4",
+    "LEXPRF": "1/4"
+   }
+  },
+  "N_DIS_12": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_DIS_13": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   }
+  },
+  "N_DIS_14": {
+   "@10": {
+    "C": "1/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_NULL_01": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_NULL_02": {
+   "@10": {
+    "C": "1/2",
+    "GD": "1/2",
+    "GD_DEGNORM": "1/2",
+    "G": "1/2",
+    "L": "1/2",
+    "LEXPRF": "1/2"
+   },
+   "@5": {
+    "C": "0",
+    "GD": "1/2",
+    "GD_DEGNORM": "0",
+    "G": "0",
+    "L": "0",
+    "LEXPRF": "0"
+   }
+  },
+  "N_NULL_03": {
+   "@10": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   },
+   "@5": {
+    "C": "1/3",
+    "GD": "1/3",
+    "GD_DEGNORM": "1/3",
+    "G": "1/3",
+    "L": "1/3",
+    "LEXPRF": "1/3"
+   }
+  },
+  "N_NULL_04": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_NULL_05": {
+   "@10": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_NULL_06": {
+   "@10": {
+    "C": "2/3",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "2/3",
+    "GD": "2/3",
+    "GD_DEGNORM": "2/3",
+    "G": "2/3",
+    "L": "2/3",
+    "LEXPRF": "2/3"
+   }
+  },
+  "N_NULL_07": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_NULL_08": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  },
+  "N_NULL_09": {
+   "@10": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   },
+   "@5": {
+    "C": "1",
+    "GD": "1",
+    "GD_DEGNORM": "1",
+    "G": "1",
+    "L": "1",
+    "LEXPRF": "1"
+   }
+  }
+ }
+}
