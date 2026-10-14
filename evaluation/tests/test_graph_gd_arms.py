@@ -268,6 +268,11 @@ def test_vector_file_problems_raise(tmp_path, sids, meta):
         arms.load_query_vectors(encode_file(tmp_path, sids, meta), ["A", "B"])
 
 
+def test_gtv2_is_a_set_choice_of_the_cli():
+    assert "gtv2" in arms.SET_NAMES and arms.parse_args(
+        ["--set", "gtv2", "--vectors", "v", "--out", "o"]).set == "gtv2"
+
+
 def test_the_guard_runs_before_anything_is_read(tmp_path, monkeypatch):
     def locked(name, prereg=gd.PREREG_PATH):
         raise gd.ConfirmationLockedError(name)
@@ -284,7 +289,7 @@ def test_the_guard_runs_before_anything_is_read(tmp_path, monkeypatch):
 
 
 @pytest.mark.skipif(gd.appendix_has_content("A"), reason="prereg appendix A is filled")
-@pytest.mark.parametrize("name", ["old31", "ho"])
+@pytest.mark.parametrize("name", ["old31", "ho", "gtv2"])
 def test_confirmation_sets_are_refused_while_appendix_a_is_pending(tmp_path, name):
     with pytest.raises(gd.ConfirmationLockedError, match="待追加"):
         arms.main(["--set", name, "--vectors", str(tmp_path / "v"), "--out", str(tmp_path / "o")])

@@ -5,11 +5,12 @@ prereg.md in this directory is the only spec; § numbers refer to it. The metric
 of §4 is this file's sha256 (meta.metric_version); its helpers (_eval_inputs.py: lists /
 scores and their provenance; _eval_metrics.py: top-k, f(q), D5≈, density; _eval_report.py:
 items, comparisons, gate, strata, V1; _eval_stats.py: clusters, sign-flip, bootstrap, Holm;
-_eval_accept.py: acceptance B), _score_io.py and evaluation/src/ab_stats.py are hashed
-into meta.sha256 next to it.
+_eval_accept.py: acceptance B), _score_io.py, _score_w.py and evaluation/src/ab_stats.py
+are hashed into meta.sha256 next to it.
 
     evaluate.py report --set new82 --lists L.json --scores S.jsonl --out new82_report.json
     evaluate.py report --set old31+ho --lists L_old31 L_ho --scores S_old31 S_ho --out e2.json
+                       --scores-w W_old31 W_ho     # §5 W 版 (score.py rerank-w), one per set
     evaluate.py v1 --lists <store>/old31/lists.json --scores <store>/old31/scores.jsonl
     evaluate.py units --set old31 --out units.json         # gold-only cluster table, density
     evaluate.py build-ref --out <store>/new82/accept_b_reference.json
@@ -20,7 +21,12 @@ v1, which prints and writes nothing but the stop decision and the unit W:L (§6)
 command except units refuses a set whose appendix is 待追加 or whose acceptance files have
 not passed (gd.assert_set_allowed). Inputs must be pinned (_eval_inputs.py); report and
 accept-b on NEW82 take --allow-unpinned for chain checks with converted archive files.
-Errors exit 2 with one line.
+--scores-w adds the W block of the sensitivity (GD_W−C_W W:L, CI and the C_W / GD_W cut
+gaps at @10 and @5, no p, no effect on the decision); each W file must name the content
+hashes of its set's lists and scores (_eval_inputs.WScores). §5 lists W among the 必報敏感度,
+so the E2 report (old31+ho) refuses to run without it; on NEW82 it is optional. A scores file made with score.py rerank --arms covers
+only those arms' pools: report then fails on the first pool without scores. Errors exit 2
+with one line.
 """
 from __future__ import annotations
 
@@ -41,6 +47,7 @@ import _eval_metrics as M  # noqa: E402
 import _eval_report as R  # noqa: E402
 import _eval_stats as st  # noqa: E402
 import _score_io as sio  # noqa: E402
+import _score_w as sw  # noqa: E402
 import gd_common as gd  # noqa: E402
 from _eval_report import (DESCRIPTIVE, H_PAIRS, Item, Table, arm_metrics,  # noqa: E402,F401
                           attached_notes, compare, descriptive, hypotheses, items_of, sensitivity,
@@ -50,9 +57,12 @@ SOURCE_FILES = {"evaluate.py": Path(__file__).resolve(),
                 **{n: _HERE / n for n in ("_eval_inputs.py", "_eval_metrics.py", "_eval_report.py",
                                           "_eval_stats.py", "_eval_accept.py")},
                 "_score_io.py": Path(sio.__file__).resolve(),
+                "_score_w.py": Path(sw.__file__).resolve(),
                 "src/__init__.py": Path(st._ab_stats.__file__).resolve().parent / "__init__.py",
                 "src/ab_stats.py": Path(st._ab_stats.__file__).resolve()}
 REPORT_SETS = {"new82": ("new82",), "old31+ho": ("old31", "ho")}
+UNIT_SETS = ("new82", "old31", "ho")   # sets with §4 hop gold; GT v2 (§8 E3) has none
+W_REQUIRED = ("old31+ho",)    # §5 必報敏感度 includes W 版: E2 needs --scores-w
 EXPLORATORY = {"new82": "NEW82 只當探索集（§2）：結果只能標為探索性，不得作證據"}
 ACCEPT_B_OUT = _HERE / "accept" / "accept_b.json"
 V1_OUT = _HERE / "v1_old31.json"
@@ -128,19 +138,39 @@ def _report_parts(set_name: str, lists_paths: list[Path], scores_paths: list[Pat
     return [load_part(n, lp, sp, pinned) for n, lp, sp in zip(names, lists_paths, scores_paths)]
 
 
+def w_table(parts: Sequence[Part], items: Sequence[Item], table: Table,
+            scores_w_paths: Sequence[Path]) -> tuple[Table, list[I.WScores]]:
+    """§5 W 版: the C and GD pools of `table` under each set's window-max scores."""
+    if len(scores_w_paths) != len(parts):
+        raise gd.GdError(f"--scores-w needs {len(parts)} files, in order "
+                         f"{[p.qset.name for p in parts]}")
+    ws = [I.WScores(path, p.qset, p.lists, p.scores) for p, path in zip(parts, scores_w_paths)]
+    scores = {q: s for w in ws for q, s in w.by_qid.items()}
+    return Table(items, {a: table.pools[a] for a in sw.W_ARMS}, scores), ws
+
+
 def report(set_name: str, lists_paths: Path | Sequence[Path], scores_paths: Path | Sequence[Path],
-           pinned: bool = True) -> dict[str, Any]:
+           pinned: bool = True, scores_w_paths: Path | Sequence[Path] | None = None) -> dict[str, Any]:
+    if set_name in W_REQUIRED and not scores_w_paths:
+        raise gd.GdError(f"report --set {set_name} needs --scores-w (one score.py rerank-w file per set): "
+                         "§5 W 版 is a required sensitivity")
     parts = _report_parts(set_name, _paths(lists_paths), _paths(scores_paths), pinned)
     items, table = merge(parts)
     lacking = [a for a in M.TESTED_ARMS if a not in table.arms]
     if lacking:
         raise gd.GdError(f"tested arms {lacking} are absent from the lists")
+    wt, ws = w_table(parts, items, table, _paths(scores_w_paths)) if scores_w_paths else (None, [])
     hyp = hypotheses(table)
     ids = [it.qid for it in items]
     files = {f"{kind}:{p.qset.name}": getattr(p, kind).path for p in parts for kind in ("lists", "scores")}
+    files.update({f"scores_w:{p.qset.name}": w.path for p, w in zip(parts, ws)})
     inputs = {p.qset.name: {"lists": {"content_sha256": p.lists.content_sha256, **dict(p.lists.meta)},
-                            "scores": list(p.scores.metas), "refchecks": len(p.scores.refchecks)}
+                            "scores": list(p.scores.metas), "refchecks": len(p.scores.refchecks),
+                            "scores_arms": p.scores.arms}
               for p in parts}
+    for p, w in zip(parts, ws):
+        inputs[p.qset.name]["scores_w"] = {"metas": list(w.metas), "refchecks": w.n_refchecks,
+                                           "scores_sha256": w.scores_sha256}
     return {"meta": _meta("evaluate.py report", [p.qset for p in parts], files, report_set=set_name,
                           pinned=pinned, inputs_meta=inputs),
             "exploratory": EXPLORATORY.get(set_name), "sets": [p.qset.name for p in parts],
@@ -153,7 +183,7 @@ def report(set_name: str, lists_paths: Path | Sequence[Path], scores_paths: Path
             "metrics": {f"@{k}": {a: arm_metrics(table, a, k) for a in table.arms} for k in M.KS},
             "cut_gaps": M.cut_gap_table(table.pools, table.scores, table.arms, ids),
             "hypotheses": hyp, "attached_notes": attached_notes(table, hyp),
-            "descriptive": descriptive(table), "sensitivity": sensitivity(table),
+            "descriptive": descriptive(table), "sensitivity": sensitivity(table, w_table=wt),
             "per_question": {it.qid: {f"@{k}": {a: str(table.cov(a, k)[it.qid]) for a in table.arms}
                                       for k in M.KS} for it in items}}
 
@@ -170,7 +200,10 @@ def v1(lists_path: Path, scores_path: Path) -> dict[str, Any]:
 
 
 def units(set_name: str) -> dict[str, Any]:
-    """Gold-only cluster table and density layers (no lists or scores: §2 allows it for OLD31)."""
+    """Gold-only cluster table and density layers (no lists or scores: §2 allows it for OLD31).
+    Only UNIT_SETS: GT v2 questions carry no hops, so their table would be empty."""
+    if set_name not in UNIT_SETS:
+        raise gd.GdError(f"units needs a set with §4 hop gold, one of {list(UNIT_SETS)}; got {set_name!r}")
     qset = gd.load_question_set(set_name)
     items = items_of(qset, gold_only=True)
     out = {"meta": _meta("evaluate.py units", [qset], {}), **unit_table(items)}
@@ -203,6 +236,9 @@ def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     p.add_argument("--scores", type=Path, nargs="+", required=True)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--allow-unpinned", action="store_true", help="NEW82 chain checks only")
+    p.add_argument("--scores-w", type=Path, nargs="+",
+                   help="score.py rerank-w files, one per set in --lists order (§5 W 版; "
+                        "required for old31+ho)")
     p = sub.add_parser("v1")
     p.add_argument("--lists", type=Path, required=True)
     p.add_argument("--scores", type=Path, required=True)
@@ -224,7 +260,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     a = parse_args(argv)
     pinned = not getattr(a, "allow_unpinned", False)
     commands: dict[str, Callable[[], tuple[dict, int]]] = {
-        "report": lambda: (report(a.set, a.lists, a.scores, pinned), 0),
+        "report": lambda: (report(a.set, a.lists, a.scores, pinned, a.scores_w), 0),
         "v1": lambda: (v1(a.lists, a.scores), 0),
         "units": lambda: (units(a.set), 0),
         "build-ref": lambda: ({"meta": _meta("evaluate.py build-ref", [gd.load_new82()], {}),
@@ -243,6 +279,6 @@ def main(argv: Sequence[str] | None = None) -> int:
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except gd.GdError as err:          # same exit convention as arms.py / score.py: one line, code 2
+    except (gd.GdError, OSError, json.JSONDecodeError) as err:   # as arms.py / score.py: one line, code 2
         print(f"evaluate.py: {type(err).__name__}: {err}", file=sys.stderr)
         sys.exit(2)

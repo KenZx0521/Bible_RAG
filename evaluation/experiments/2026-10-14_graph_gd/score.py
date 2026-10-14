@@ -4,20 +4,28 @@ Subcommands:
   encode   --set new82 [--ids a,b,...] --out V.jsonl [--ref REF.jsonl]
       Query vectors from encode_stdin.py. --ref compares each vector with REF (sid qid or
       'qid|Q', e.g. PN/encode_out.jsonl): max|Δ| must be ≤1e-5 (§3).
-  rerank   --lists L.json --out S.jsonl [--set new82] [--chunk N]
-      Reranker scores (rerank_stdin.py) of each question's pool union D30[:20] ∪ every arm's
-      extra, in pid order, N questions per container run; then, in one more container run,
-      the §10 reference pairs, appended as a "refcheck" line (|Δ|>1e-5 fails). Re-running
+  rerank   --lists L.json --out S.jsonl [--set new82] [--arms C,GD] [--chunk N]
+      Reranker scores (rerank_stdin.py) of each question's pool union D30[:20] ∪ the extra
+      of every arm (or of the --arms ones, recorded in meta as host "arms"; E3 uses C,GD),
+      in pid order, N questions per container run; then, in one more container run, the
+      §10 reference pairs, appended as a "refcheck" line (|Δ|>1e-5 fails). Re-running
       resumes: questions the file holds are skipped, a cut last line is dropped, and a
       missing final refcheck is redone even when no question is left.
+  rerank-w --lists L.json --scores S.jsonl --out W.jsonl [--ids a,b] [--chunk N]
+      §3 W (逐窗重排): window-max scores (rerank_w_stdin.py) of each question's C∪GD pool,
+      single-window passages taking their whole-passage score from S (the finished rerank
+      file of the same lists, read with every resume check), then the refcheck line as in
+      rerank. Lines and meta: _score_w.py. Resumes like rerank; --ids scores only those
+      questions (a later run without it completes the file).
   refpairs --out R.jsonl
       The same 32 reference pairs (first (qid, pid) of EV/ev_sel_out.jsonl) on their own.
 
 Outputs are JSON lines (formats in _score_io.py): per container run a meta line (the
 container's own, checked against the gd_common pins and run settings before anything is
 kept, plus "host" = gd.collect_meta with the scorer scripts' and the lists' sha256), then
-{"type": "q", "sid", "vec_b64"} or {"type": "r", "sid", "scores": {pid: score}, "missing":
-[], "elapsed_s"} per question. Raw outputs are never overwritten. Pin mismatches and
+{"type": "q", "sid", "vec_b64"}, {"type": "r", "sid", "scores": {pid: score}, "missing": [],
+"elapsed_s"} or {"type": "w", "sid", "scores", "n_windows", "elapsed_s"} per question. Raw
+outputs are never overwritten. Pin mismatches and
 infrastructure failures exit 2 with one line; the confirmation sets stay locked until their
 prereg appendices exist and both acceptance files passed (gd.assert_set_allowed).
 """
@@ -33,21 +41,25 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 import _score_io
+import _score_w as sw
 import gd_common as gd
 from _score_io import (  # noqa: F401  (the format helpers are re-exported for tests)
-    EV_SCORES, N_REF_PAIRS, SCRIPT_NAMES, Record, Scan, Writer, build_script, check_score_record,
-    compare_vectors, completed, decode_vector, fresh, load_lists, needs_refcheck, pool_union,
-    reference_pairs, refcheck_record, scan_jsonl, write_new_jsonl)
+    EV_SCORES, N_REF_PAIRS, SCRIPT_NAMES, Record, Scan, Writer, arms_union, build_script,
+    check_against_ref, check_score_record, compare_vectors, completed, decode_vector,
+    drop_cut_tail, fresh, line_appender, lists_arms, load_lists, needs_refcheck, parse_arms,
+    pool_union, positive_int, reference_pairs, refcheck_record, refpair_items, report_time,
+    scan_jsonl, select_ids, write_new_jsonl)
 
 SCRIPT = Path(__file__).resolve()
 IO_MODULE = Path(_score_io.__file__).resolve()
+W_MODULE = Path(sw.__file__).resolve()
 ENCODE_STDIN = SCRIPT.parent / "encode_stdin.py"
 RERANK_STDIN = SCRIPT.parent / "rerank_stdin.py"
+RERANK_W_STDIN = SCRIPT.parent / "rerank_w_stdin.py"
 PREREG = gd.PREREG_PATH      # what the appendix guard reads (tests point it elsewhere)
 ACCEPT = gd.ACCEPT_DIR       # where the guard looks for accept_a.json / accept_b.json
-EV_INPUT = gd.EV_SEL_IN
 DEFAULT_CHUNK = 10           # questions per container run (one model load each)
-REF_TOL = ENCODE_TOL = gd.DRIFT_TOL   # §10 reference-pair drift, §3 re-encode max|Δ|
+REF_TOL = gd.DRIFT_TOL       # §10 reference-pair drift
 
 
 class ContainerError(gd.GdError):
@@ -131,14 +143,27 @@ def err_log(out: Path) -> Path:
     return out.with_name(out.name + ".err.log")
 
 
-def script_files(stdin_script: Path) -> dict[str, Path]:
-    """The scorer's own files (SCRIPT_NAMES order for rerank) hashed into every meta line."""
-    return {"score.py": SCRIPT, "_score_io.py": IO_MODULE, stdin_script.name: stdin_script}
+def script_files(*stdin_scripts: Path) -> dict[str, Path]:
+    """The scorer's own files hashed into every meta line: score.py and the modules it loads
+    (SCRIPT_NAMES / W_SCRIPT_NAMES order), then the container scripts the run feeds."""
+    return {"score.py": SCRIPT, "_score_io.py": IO_MODULE, "_score_w.py": W_MODULE,
+            **{path.name: path for path in stdin_scripts}}
 
 
 def script_shas() -> dict[str, str]:
-    """sha256 of score.py, _score_io.py and rerank_stdin.py, as a scores file must record them."""
-    return {name: gd.file_sha256(path) for name, path in script_files(RERANK_STDIN).items()}
+    """sha256 of SCRIPT_NAMES, as a scores file must record them."""
+    files = script_files(RERANK_STDIN)
+    return {name: gd.file_sha256(files[name]) for name in SCRIPT_NAMES}
+
+
+def w_script_files() -> dict[str, Path]:
+    """W runs feed rerank_w_stdin.py, and rerank_stdin.py for the §10 reference pairs."""
+    return script_files(RERANK_W_STDIN, RERANK_STDIN)
+
+
+def w_script_shas() -> dict[str, str]:
+    """sha256 of W_SCRIPT_NAMES, as a W file must record them."""
+    return {name: gd.file_sha256(path) for name, path in w_script_files().items()}
 
 
 def host_meta(kind: str, files: Mapping[str, Path], qset: gd.QuestionSet, **extra: Any) -> dict:
@@ -163,50 +188,47 @@ def score_chunks(items: Sequence[Record], write: Writer, host: Record, err: Path
     return out
 
 
-def report_time(lines: Sequence[Record], wall: float) -> None:
-    pairs = sum(len(r["scores"]) for r in lines)
-    scoring = sum(float(r["elapsed_s"]) for r in lines)
-    print(f"pairs {pairs}; wall {wall:.1f}s ({wall / max(pairs, 1):.3f} s/pair); "
-          f"in-container scoring {scoring:.1f}s ({scoring / max(pairs, 1):.3f} s/pair)")
-
-
 # ------------------------------------------------------------------ rerank
 
-def rerank_plan(lists_path: Path, cli_set: str | None) -> tuple[gd.QuestionSet, dict, str]:
-    """(question set, qid -> pool union in set order, lists content sha256) after the guard."""
+def guarded_lists(lists_path: Path, cli_set: str | None) -> tuple[gd.QuestionSet, dict]:
+    """(question set, lists) after the confirmation-set guard; lists may hold a subset."""
     name, lists = load_lists(lists_path, cli_set)
     gd.assert_set_allowed(name, PREREG, ACCEPT)
     qset = gd.load_question_set(name)
     unknown = sorted(set(lists) - set(qset.ids))
     if unknown:
         raise gd.IntegrityError(f"{lists_path} has questions outside {name}: {unknown[:3]}")
-    expected = {q: pool_union(q, lists[q]) for q in qset.ids if q in lists}
-    return qset, expected, gd.lists_sha256(lists)
+    return qset, lists
+
+
+def rerank_plan(lists_path: Path, cli_set: str | None, arms_spec: str | None = None
+                ) -> tuple[gd.QuestionSet, dict, str, tuple[str, ...]]:
+    """(question set, qid -> pool union of the arms in set order, lists content sha256, arms)."""
+    qset, lists = guarded_lists(lists_path, cli_set)
+    arms = parse_arms(arms_spec) or lists_arms(lists)
+    expected = {q: arms_union(q, lists[q], arms) for q in qset.ids if q in lists}
+    return qset, expected, gd.lists_sha256(lists), arms
 
 
 def cmd_rerank(args: argparse.Namespace) -> None:
     lists_path, out = Path(args.lists), Path(args.out)
-    qset, expected, lists_sha = rerank_plan(lists_path, args.set)
+    qset, expected, lists_sha, arms = rerank_plan(lists_path, args.set, args.arms)
     scan = scan_jsonl(out)
-    done = completed(scan.records, expected, lists_sha, script_shas())
+    done = completed(scan.records, expected, lists_sha, script_shas(), arms)
     todo = [q for q in expected if q not in done]
-    print(f"rerank {qset.name}: {len(expected)}/{len(qset.ids)} questions in lists, {len(done)} "
-          f"done, {len(todo)} to score ({sum(len(expected[q]) for q in todo)} pairs)")
-    if scan.cut_tail:
-        with open(out, "r+b") as fh:
-            fh.truncate(scan.keep_bytes)
-        print(f"dropped the incomplete last line of {out}")
+    print(f"rerank {qset.name} arms {','.join(arms)}: {len(expected)}/{len(qset.ids)} questions "
+          f"in lists, {len(done)} done, {len(todo)} to score "
+          f"({sum(len(expected[q]) for q in todo)} pairs)")
+    drop_cut_tail(scan, out)
     if not (todo or needs_refcheck(scan.records)):
         return
     host = host_meta("rerank", {**script_files(RERANK_STDIN), "lists": lists_path}, qset,
-                     chunk_size=args.chunk, lists_sha256=lists_sha)
+                     chunk_size=args.chunk, lists_sha256=lists_sha, arms=list(arms))
     by_id = qset.by_id()
     items = [{"sid": q, "query": by_id[q].question, "pids": list(expected[q])} for q in todo]
     t0 = time.monotonic()
     with open(out, "a", encoding="utf-8") as fh:
-        def append(rec: Record) -> None:   # flushed per line: a crash keeps finished questions
-            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            fh.flush()
+        append = line_appender(fh)
         lines = score_chunks(items, append, host, err_log(out), args.chunk)
         report_time(lines, time.monotonic() - t0)
         _, check = run_refcheck(host, err_log(out))
@@ -214,20 +236,59 @@ def cmd_rerank(args: argparse.Namespace) -> None:
     finish_refcheck(check, out)
 
 
-# ------------------------------------------------------------------ refpairs (§10)
+# ------------------------------------------------------------------ rerank-w (§3 W)
 
-def refpair_items(ref: Sequence[tuple[str, str, float]], qset: gd.QuestionSet) -> list[dict]:
-    """One item per question of the reference pairs; its query must be the EV query."""
+def score_w_chunks(items: Sequence[Record], put: Writer, host: Record, err: Path,
+                   chunk: int) -> list[Record]:
+    """W-score `items`, `chunk` questions per container run; returns the container lines."""
+    body = RERANK_W_STDIN.read_text(encoding="utf-8")
+    out: list[Record] = []
+    for start in range(0, len(items), chunk):
+        part = items[start:start + chunk]
+        sink = Sink("reranker", part, host, put, sw.check_w_container_line)
+        run_container(build_script(body, part), err, sink)
+        out += sink.finish()
+        print(f"  W-scored {start + len(part)}/{len(items)} questions, "
+              f"{sum(map(sw.scored_windows, out))} windows", flush=True)
+    return out
+
+
+def cmd_rerank_w(args: argparse.Namespace) -> None:
+    lists_path, scores_path, out = Path(args.lists), Path(args.scores), Path(args.out)
+    qset, lists = guarded_lists(lists_path, args.set)
+    lists_sha = gd.lists_sha256(lists)
+    whole = sw.read_whole_scores(scores_path, qset, lists, lists_sha)
+    ids = [q for q in qset.ids if q in lists]
+    expected = sw.w_pools(lists, ids)
+    wanted = set(select_ids(args.ids, qset) if args.ids else ids)
+    outside = sorted(wanted - set(ids))
+    if outside:
+        raise gd.GdError(f"--ids {outside[:3]} are not in {lists_path}")
+    scan = scan_jsonl(out)
+    done = sw.completed_w(scan.records, expected, whole, lists_sha, w_script_shas())
+    todo = [q for q in ids if q in wanted and q not in done]      # set order
+    print(f"rerank-w {qset.name}: {len(ids)} questions in lists, {len(done)} done, {len(todo)} "
+          f"to W-score ({sum(len(expected[q]) for q in todo)} passages)")
+    drop_cut_tail(scan, out)
+    if not (todo or needs_refcheck(scan.records, sw.W_LINE)):
+        return
+    host = host_meta(sw.W_KIND, {**w_script_files(), "lists": lists_path, "scores": scores_path},
+                     qset, chunk_size=args.chunk, lists_sha256=lists_sha,
+                     scores_sha256=whole.content_sha256, arms=list(sw.W_ARMS))
     by_id = qset.by_id()
-    archived = {i["sid"]: i["query"]
-                for i in json.loads(gd.read_pinned(EV_INPUT, gd.ARCHIVE_SHA256[EV_INPUT]))}
-    groups: dict[str, list[str]] = {}
-    for qid, pid, _ in ref:
-        groups.setdefault(qid, []).append(pid)
-    for qid in groups:
-        gd.expect(f"{qid} question vs the EV query", by_id[qid].question, archived.get(f"{qid}|Q"))
-    return [{"sid": q, "query": by_id[q].question, "pids": sorted(p)} for q, p in groups.items()]
+    items = [{"sid": q, "query": by_id[q].question, "pids": list(expected[q])} for q in todo]
+    t0 = time.monotonic()
+    with open(out, "a", encoding="utf-8") as fh:
+        append = line_appender(fh)
+        lines = score_w_chunks(items, sw.w_writer(append, expected, whole), host, err_log(out),
+                               args.chunk)
+        sw.report_w_time(lines, time.monotonic() - t0)
+        _, check = run_refcheck(host, err_log(out))
+        append(check)
+    finish_refcheck(check, out)
 
+
+# ------------------------------------------------------------------ refpairs (§10)
 
 def run_refcheck(host: Record, err: Path) -> tuple[list[Record], dict]:
     """Re-score the §10 reference pairs in one container run: (its lines, the refcheck line)."""
@@ -260,14 +321,6 @@ def cmd_refpairs(args: argparse.Namespace) -> None:
 
 # ------------------------------------------------------------------ encode
 
-def select_ids(spec: str | None, qset: gd.QuestionSet) -> list[str]:
-    ids = [s.strip() for s in spec.split(",") if s.strip()] if spec else list(qset.ids)
-    bad = sorted(set(ids) - set(qset.ids))
-    if bad or len(set(ids)) != len(ids) or not ids:
-        raise gd.GdError(f"--ids must be distinct {qset.name} ids (unknown: {bad[:3]})")
-    return ids
-
-
 def cmd_encode(args: argparse.Namespace) -> None:
     gd.assert_set_allowed(args.set, PREREG, ACCEPT)
     out = fresh(Path(args.out))
@@ -287,31 +340,7 @@ def cmd_encode(args: argparse.Namespace) -> None:
         check_against_ref(out, Path(args.ref))
 
 
-def vectors(path: Path) -> dict:
-    return {r["sid"]: decode_vector(r) for r in scan_jsonl(path).records if r.get("type") == "q"}
-
-
-def check_against_ref(out: Path, ref: Path) -> None:
-    """§3 re-encode check; the result is kept next to the vectors as <out>.refcheck.json."""
-    diffs = compare_vectors(vectors(out), vectors(ref))
-    worst = max(diffs.values())
-    report = {"ref": str(ref), "ref_sha256": gd.file_sha256(ref), "tol": ENCODE_TOL,
-              "max_abs_diff": diffs, "worst": worst, "pass": worst <= ENCODE_TOL}
-    side = fresh(out.with_name(out.name + ".refcheck.json"))
-    side.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(f"encode vs {ref.name}: max|Δ| {worst:.3g} over {len(diffs)} vectors "
-          f"(tol {ENCODE_TOL:g}) -> {side.name}")
-    if worst > ENCODE_TOL:
-        raise gd.IntegrityError(f"re-encoded vectors differ by {worst:.3g} > {ENCODE_TOL:g} (§3)")
-
-
 # ------------------------------------------------------------------ CLI
-
-def positive_int(text: str) -> int:
-    if not text.isdigit() or int(text) < 1:
-        raise argparse.ArgumentTypeError(f"{text!r} is not a positive integer")
-    return int(text)
-
 
 def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -325,7 +354,16 @@ def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     rr.add_argument("--lists", required=True)
     rr.add_argument("--out", required=True)
     rr.add_argument("--set", help="question set (default: the lists.json meta 'set')")
+    rr.add_argument("--arms", help="comma-separated arms whose extra is scored (default: every arm)")
     rr.add_argument("--chunk", type=positive_int, default=DEFAULT_CHUNK,
+                    help="questions per container run")
+    rw = sub.add_parser("rerank-w", help="§3 W window-max scores of each question's C∪GD pool")
+    rw.add_argument("--lists", required=True)
+    rw.add_argument("--scores", required=True, help="the finished rerank file of these lists")
+    rw.add_argument("--out", required=True)
+    rw.add_argument("--set", help="question set (default: the lists.json meta 'set')")
+    rw.add_argument("--ids", help="comma-separated question ids to W-score now (default: all)")
+    rw.add_argument("--chunk", type=positive_int, default=DEFAULT_CHUNK,
                     help="questions per container run")
     ref = sub.add_parser("refpairs", help="re-score the 32 EV reference pairs (§10)")
     ref.add_argument("--out", required=True)
@@ -334,10 +372,11 @@ def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    handler = {"encode": cmd_encode, "rerank": cmd_rerank, "refpairs": cmd_refpairs}[args.cmd]
+    handler = {"encode": cmd_encode, "rerank": cmd_rerank, "rerank-w": cmd_rerank_w,
+               "refpairs": cmd_refpairs}[args.cmd]
     try:
         handler(args)
-    except (gd.GdError, subprocess.CalledProcessError, OSError) as err:
+    except (gd.GdError, subprocess.CalledProcessError, OSError, json.JSONDecodeError) as err:
         print(f"score.py {args.cmd}: {type(err).__name__}: {err}", file=sys.stderr)
         return 2
     return 0

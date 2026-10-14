@@ -263,3 +263,17 @@ def test_an_unpinned_accept_b_refuses_to_write_the_acceptance_file(tmp_path):
 def test_report_runs_only_on_new82_or_the_e2_pool(name, tmp_path):
     with pytest.raises(gd.ConfirmationLockedError):
         ev.report(name, tmp_path / "l.json", tmp_path / "s.jsonl")
+
+
+@pytest.mark.parametrize("name", ["gtv2", "old31+ho", "nope"])
+def test_units_refuses_sets_without_hop_gold(name):
+    with pytest.raises(gd.GdError, match="units needs a set with §4 hop gold"):
+        ev.units(name)
+
+
+def test_cli_units_on_gtv2_exits_2_with_one_line_and_no_output(tmp_path):
+    out = tmp_path / "units.json"
+    proc = subprocess.run([sys.executable, "-B", str(_DIR / "evaluate.py"), "units", "--set", "gtv2",
+                           "--out", str(out)], capture_output=True, text=True, cwd=tmp_path)
+    assert proc.returncode == 2 and not out.exists()
+    assert proc.stderr.startswith("evaluate.py: GdError:") and proc.stderr.count("\n") == 1

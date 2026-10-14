@@ -5,7 +5,8 @@ density, core, [SHORTCUT]); Table holds the top-k and f(q) of every arm over poo
 scores that may span several question sets (E2 = OLD31 ∪ HO). compare() is one X−Y
 comparison with units by union-find inside the given items (§5): Δ̄, W:L, CI and, when
 asked, the exact sign-flip p. hypotheses() is the §5 把關順序, descriptive() the 只描述
-pairs, sensitivity() the 必報敏感度 (H3 without [SHORTCUT] questions included),
+pairs, sensitivity() the 必報敏感度 (H3 without [SHORTCUT] questions and, given a W
+table of window-max scores, GD_W−C_W with the §10 cut gaps of C_W and GD_W included),
 attached_notes() the 事先寫死的附註, and v1_decision() the §6 停損 rule.
 """
 from __future__ import annotations
@@ -17,13 +18,14 @@ from typing import Any, Mapping, Sequence
 
 import _eval_metrics as M
 import _eval_stats as st
+import _score_w as sw
 import gd_common as gd
 
 H_PAIRS = {"H1": ("GD", "C", 10), "H2": ("GD", "C", 5),
            "H3_LEXPRF": ("GD", "LEXPRF", 10), "H3_L": ("GD", "L", 10)}
 H3_ARMS = ("LEXPRF", "L")
 DESCRIPTIVE = (("G", "C"), ("GD_DEGNORM", "C"), ("L", "C"), ("LEXPRF", "C"), ("GD", "G"))
-NOT_THIS_STAGE = "本輪不算：W 逐窗重排留到附錄 A 之前（任務範圍）"
+W_NOT_GIVEN = "未提供 --scores-w（score.py rerank-w 的 W 逐窗重排分數）"
 HOLM_RULE = "H1 過了之後 H2、H3 並列：較小 p <0.025，另一項 <0.05"
 V1_MIN_DISCORDANT = 3          # §6: 不一致 ≥3 且負 ≥勝 → 結案
 V1_RULE = "20 個單位中不一致 ≥3 且負 ≥勝 → 結案，不出 HO；其餘一律繼續（§6）"
@@ -200,9 +202,31 @@ def h3_without_shortcut(table: Table) -> dict[str, Any]:
     return out
 
 
-def sensitivity(table: Table, shared: frozenset[str] | None = None) -> dict[str, Any]:
-    """GD−C@10 and @5: question level, strict, core clusters, strata (W:L and CI only);
-    plus H3 without [SHORTCUT] questions."""
+def w_cut_gaps(w_table: Table, k: int) -> dict[str, Any]:
+    """§10 on the W scores: smallest top-k cut gap of C_W and GD_W and the questions below
+    1e−5 (listed, the decision does not change). W mixes two runs: single-window passages
+    keep the whole-passage score, multi-window ones the W run's."""
+    ids = [it.qid for it in w_table.items]
+    gaps = M.cut_gap_table(w_table.pools, w_table.scores, sw.W_ARMS, ids)
+    return {f"{a}_W@{k}": gaps[f"{a}@{k}"] for a in sw.W_ARMS}
+
+
+def w_block(table: Table, w_table: Table | None, k: int) -> dict[str, Any]:
+    """§5 W 版: GD_W−C_W@k on the same items and gold-cluster units (W:L and CI, no p), from
+    a Table of the C and GD pools under the window-max scores, with its cut gaps;
+    not_computed without one."""
+    if w_table is None:
+        return {"not_computed": W_NOT_GIVEN}
+    gd.expect("W table questions", [it.qid for it in w_table.items], [it.qid for it in table.items])
+    gd.expect("W table arms", w_table.arms, sw.W_ARMS)
+    out = compare(w_table.items, w_table.cov("GD", k), w_table.cov("C", k), with_p=False)[0]
+    return {"pair": f"GD_W-C_W@{k}", **out, "cut_gaps": w_cut_gaps(w_table, k)}
+
+
+def sensitivity(table: Table, shared: frozenset[str] | None = None,
+                w_table: Table | None = None) -> dict[str, Any]:
+    """GD−C@10 and @5: question level, strict, core clusters, W (given w_table), strata (W:L
+    and CI only); plus H3 without [SHORTCUT] questions."""
     out: dict[str, Any] = {}
     strata = subsets(table.items, shared)
     for k in M.KS:
@@ -212,7 +236,7 @@ def sensitivity(table: Table, shared: frozenset[str] | None = None) -> dict[str,
             "strict": compare(table.items, table.cov("GD", k, True), table.cov("C", k, True),
                               with_p=False)[0],
             "core_cluster": compare(table.items, gd_, c, with_p=False, core=True)[0],
-            "W": {"not_computed": NOT_THIS_STAGE}}
+            "W": w_block(table, w_table, k)}
         for group, parts in strata.items():
             row[group] = {name: compare(sub, gd_, c, with_p=False)[0] for name, sub in parts.items()}
         if "excl_new82_shared" not in row:

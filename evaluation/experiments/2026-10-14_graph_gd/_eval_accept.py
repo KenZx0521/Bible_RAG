@@ -19,7 +19,7 @@ import hashlib
 import json
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 import _eval_inputs as I
 import _eval_metrics as M
@@ -152,6 +152,17 @@ def _drift(ref_q: Mapping[str, Mapping[str, Any]],
     return max(diffs), len(diffs)
 
 
+def check_scored(pools: Mapping[str, Mapping[str, Sequence[str]]],
+                 by_qid: Mapping[str, Mapping[str, float]], ids: Sequence[str]) -> None:
+    """Every ACCEPT_ARMS pool passage has a score; else GdError naming the question and arm
+    (as evaluate.py report does), e.g. for a file scored with score.py rerank --arms."""
+    for q in ids:
+        for arm in ACCEPT_ARMS:
+            absent = [p for p in pools[arm][q] if p not in by_qid[q]]
+            if absent:
+                raise gd.GdError(f"{q} / {arm}: pool passages without a reranker score: {absent}")
+
+
 def _mismatch(qid: str, arm: str, k: int, pool: tuple[str, ...], scores: Mapping[str, float],
               ref_q: Mapping[str, Any], limit: float) -> tuple[str, dict[str, Any]] | None:
     """None when the top-k sets agree; else ('boundary' | 'failed', row). Boundary needs both
@@ -179,6 +190,7 @@ def accept_b(lists_path: Path, scores_path: Path, ref_path: Path,
     lacking = [a for a in ACCEPT_ARMS if a not in lists.arms]
     if lacking:
         raise gd.GdError(f"{lists_path}: arms {lacking} are absent")
+    check_scored(lists.pools, scores.by_qid, ids)
     rq = ref["questions"]
     drift, n_pairs = _drift(rq, scores.by_qid)
     drift_ok = drift <= DRIFT_MAX

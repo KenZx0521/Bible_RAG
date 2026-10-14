@@ -1,6 +1,6 @@
 {
  "meta": {
-  "time_utc": "2026-10-14T04:22:05+00:00",
+  "time_utc": "2026-10-14T06:36:26+00:00",
   "argv": [
    "evaluate.py",
    "accept-b",
@@ -13,7 +13,7 @@
   ],
   "python": "3.12.3",
   "numpy": "2.4.2",
-  "pythonhashseed": "0",
+  "pythonhashseed": null,
   "blas": [
    {
     "source": "threadpoolctl",
@@ -55,25 +55,27 @@
   },
   "sha256": {
    "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
-   "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+   "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
-   "evaluate.py": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
-   "_eval_inputs.py": "54740e54422678191d2e22cad40704ca12960f548ec080b268bebd4e185f48ce",
+   "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+   "evaluate.py": "387d16ee666901a8c70264fbab9b5c067c12d44954d2bbf467693c4a37cb0cf8",
+   "_eval_inputs.py": "7335bfbdc266cd0b02905608db3dfc05a7c35678e15fc4525a08971b2298b502",
    "_eval_metrics.py": "9df303cfe53b640b315b65f563a3d8e9ead756c7d221c5e9134cee5ceecb5d45",
-   "_eval_report.py": "04172ee3dc8459a9c08bdf128671b2ff2d007f4becb92acdc172e5e54ddd0b85",
+   "_eval_report.py": "9bdc809cec059e77ff950c05705e4cbc0941075e0169244f1719b432094b37f4",
    "_eval_stats.py": "07919fe5e21d6c0544912c22ead320df5ee9e2de33f87f96fc5f474146b30e29",
-   "_eval_accept.py": "1781a475ac58aa1f8925757ed004eb88a283d231ff1abd29006bd1e46a6b7f78",
-   "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+   "_eval_accept.py": "5e436496db4403df1f0da073af904d76a32d83889fca8280ef00f3da13f68150",
+   "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+   "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
    "src/__init__.py": "d3dc5110f59c78d285756c6cfacc36cd14d74966432a3f07dd427286ffc39479",
    "src/ab_stats.py": "a88f352ae70faaac6b2471f92b69ed567e05cf8f92d6ef1d4b2fbf25abc55e4c",
-   "lists": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59",
+   "lists": "80beba9cfa26ea7879232fbb6fe76bdc217cc265c85e8b41be5207620e8b4c55",
    "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc",
    "ref": "4b937d27b6fe1d7050309887771ab3631dbac5dc4270e4a0be6c87116107c83b"
   },
   "script": "evaluate.py accept-b",
-  "metric_version": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
+  "metric_version": "387d16ee666901a8c70264fbab9b5c067c12d44954d2bbf467693c4a37cb0cf8",
   "question_sets": [
    {
     "name": "new82",
@@ -122,7 +124,7 @@
  },
  "inputs_meta": {
   "lists": {
-   "time_utc": "2026-10-14T03:44:08+00:00",
+   "time_utc": "2026-10-14T06:36:00+00:00",
    "argv": [
     "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/arms.py",
     "--set",
@@ -177,11 +179,12 @@
    },
    "sha256": {
     "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
-    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
     "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
     "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
     "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
-    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+    "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
     "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
     "query_vectors": "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
    },

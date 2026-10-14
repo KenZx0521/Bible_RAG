@@ -1,0 +1,317 @@
+<title>HO 抽查審題</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of question records; a sticky tally bar on top; verse keys in rubric red like a study-bible margin. */
+:root {
+  --paper: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #1b1f27;
+  --muted: #5b6372;
+  --rule: #dce0e6;
+  --rubric: #a3122a;
+  --select: #23395d;
+  --select-fg: #ffffff;
+  --ok: #1d7448;
+  --ok-bg: #e5f3eb;
+  --warn: #9a5b00;
+  --warn-bg: #fbf0dc;
+  --bad: #b42318;
+  --bad-bg: #fbe7e5;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: 2rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11141a; --surface: #191d25; --ink: #e6e8ec; --muted: #9aa3b1; --rule: #2a303a;
+    --rubric: #f08a98; --select: #a9c1e8; --select-fg: #11141a;
+    --ok: #63c793; --ok-bg: #16301f; --warn: #e6aa4f; --warn-bg: #33270f; --bad: #f2806f; --bad-bg: #3a1a17;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11141a; --surface: #191d25; --ink: #e6e8ec; --muted: #9aa3b1; --rule: #2a303a;
+  --rubric: #f08a98; --select: #a9c1e8; --select-fg: #11141a;
+  --ok: #63c793; --ok-bg: #16301f; --warn: #e6aa4f; --warn-bg: #33270f; --bad: #f2806f; --bad-bg: #3a1a17;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.7; }
+.wrap { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 80px; }
+header.top { display: grid; gap: 6px; padding-bottom: 18px; }
+h1 { font-family: var(--font-display); font-size: var(--step-3); line-height: 1.25; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); margin: 0; max-width: 62ch; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); border-bottom: 1px solid var(--rule); padding-block: 10px; display: grid; gap: 8px; }
+.tally { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: var(--step--1); color: var(--muted); font-variant-numeric: tabular-nums; align-items: center; }
+.tally b { color: var(--ink); font-weight: 700; }
+.meter { flex: 1 1 160px; height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; display: flex; min-width: 120px; }
+.meter span { display: block; height: 100%; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: inherit; font-size: var(--step--1); border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--select); color: var(--select-fg); border-color: var(--select); }
+.chip:focus-visible, button:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--select); outline-offset: 2px; }
+.notice { font-size: var(--step--1); padding: 8px 12px; border-radius: 6px; background: var(--warn-bg); color: var(--warn); }
+article.q { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; display: grid; gap: 12px; margin-top: 16px; }
+.qhead { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: var(--step--1); color: var(--muted); }
+.qid { font-family: var(--font-mono); color: var(--ink); font-weight: 500; }
+.tag { border: 1px solid var(--rule); border-radius: 4px; padding: 0 6px; }
+.tag.fixed { color: var(--warn); border-color: var(--warn); }
+.tag.dis { color: var(--select); border-color: var(--select); }
+.state { margin-left: auto; font-weight: 700; padding: 0 8px; border-radius: 4px; }
+.state.accept { color: var(--ok); background: var(--ok-bg); }
+.state.revise { color: var(--warn); background: var(--warn-bg); }
+.state.drop { color: var(--bad); background: var(--bad-bg); }
+.qtext { font-family: var(--font-display); font-size: var(--step-1); line-height: 1.6; margin: 0; text-wrap: pretty; }
+.label { font-size: var(--step--1); letter-spacing: 0.08em; color: var(--muted); font-weight: 500; margin: 0 0 2px; }
+.answer { margin: 0; }
+ul.kp { margin: 0; padding-left: 1.3em; }
+ol.hops { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: hop; }
+ol.hops > li { counter-increment: hop; display: grid; grid-template-columns: 2.2em 1fr; gap: 0 8px; }
+ol.hops > li::before { content: counter(hop); font-family: var(--font-mono); color: var(--rubric); font-weight: 500; text-align: right; padding-top: 1px; }
+.hop-body { min-width: 0; display: grid; gap: 4px; }
+.role { margin: 0; font-weight: 500; }
+.verse { margin: 0; font-size: var(--step--1); color: var(--muted); }
+.vk { font-family: var(--font-mono); color: var(--rubric); margin-right: 6px; }
+.ptitle { color: var(--muted); }
+details.more > summary { cursor: pointer; font-size: var(--step--1); color: var(--muted); }
+details.more p { margin: 6px 0 0; font-size: var(--step--1); color: var(--muted); }
+.warns { margin: 0; padding: 8px 12px; border-radius: 6px; background: var(--warn-bg); color: var(--warn); font-size: var(--step--1); list-style: none; }
+ul.flags { margin: 0; padding: 8px 12px 8px 1.8em; border-radius: 6px; border: 1px dashed var(--rule); color: var(--muted); font-size: var(--step--1); }
+.decide { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.btns button { font: inherit; font-size: var(--step--1); font-weight: 500; padding: 4px 14px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btns button[data-v="accept"][aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.btns button[data-v="revise"][aria-pressed="true"] { background: var(--warn); border-color: var(--warn); color: var(--surface); }
+.btns button[data-v="drop"][aria-pressed="true"] { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.btns button:disabled { cursor: not-allowed; opacity: 0.55; }
+textarea { font: inherit; font-size: var(--step--1); width: 100%; min-height: 3.2em; resize: vertical; border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px; background: var(--paper); color: var(--ink); }
+.saved { font-size: var(--step--1); color: var(--muted); min-height: 1.2em; }
+section.aside { margin-top: 40px; display: grid; gap: 10px; }
+h2 { font-family: var(--font-display); font-size: var(--step-2); margin: 0; }
+.rej { border-top: 1px solid var(--rule); padding-top: 8px; font-size: var(--step--1); }
+.rej p { margin: 2px 0; }
+.empty { color: var(--muted); padding: 24px 0; }
+@media (prefers-reduced-motion: no-preference) { .btns button, .chip { transition: background-color .12s, color .12s; } }
+@media (max-width: 480px) { article.q { padding: 14px; } .state { margin-left: 0; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>HO 抽查審題</h1>
+    <p class="lede" id="lede"></p>
+  </header>
+  <div class="bar">
+    <div class="tally" id="tally"></div>
+    <div class="chips" id="catChips" role="group" aria-label="類別"></div>
+    <div class="chips" id="stateChips" role="group" aria-label="審閱狀態"></div>
+    <p class="notice" id="notice" hidden></p>
+  </div>
+  <main id="list"></main>
+  <section class="aside" id="concernsSec">
+    <h2>去重時提出的疑點</h2>
+    <ul id="concerns"></ul>
+  </section>
+  <section class="aside">
+    <h2>審查階段已退件或判為重複</h2>
+    <p class="lede">這些題不在上面的清單裏，列出來供你確認退件理由。</p>
+    <div id="rejects"></div>
+  </section>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const CATS = { KIN: "親屬", DIS: "消歧", TO: "時序", SUC: "多跳·承繼職分", BRP: "多跳·人物橋接", BRL: "多跳·地點物件橋接", OQ: "多跳·引文溯源" };
+const DECISION = { accept: "採用", revise: "要修改", drop: "刪除" };
+const SEVERITY = { ok: "無問題", minor: "小問題", major: "重大問題", critical: "嚴重問題", not_audited: "未稽核" };
+const all = DATA.questions;
+const live = all.filter(q => q.status !== "reject" && !q.dedup_drop);
+const gone = all.filter(q => q.status === "reject" || q.dedup_drop);
+let reviews = {};
+let db = null;
+let canWrite = false;
+const view = { cat: "ALL", state: "ALL" };
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const c of kids) if (c != null) n.append(c);
+  return n;
+}
+
+function decisionOf(id) { return reviews[id] && reviews[id].decision || null; }
+
+function renderTally() {
+  const counts = { accept: 0, revise: 0, drop: 0 };
+  live.forEach(q => { const d = decisionOf(q.id); if (d) counts[d]++; });
+  const done = counts.accept + counts.revise + counts.drop;
+  const t = document.getElementById("tally");
+  t.replaceChildren(
+    el("span", {}, "已審 ", el("b", { text: `${done}` }), ` / ${live.length}`),
+    el("span", {}, "採用 ", el("b", { text: `${counts.accept}` })),
+    el("span", {}, "要修改 ", el("b", { text: `${counts.revise}` })),
+    el("span", {}, "刪除 ", el("b", { text: `${counts.drop}` })),
+  );
+  const m = el("div", { class: "meter", role: "img", "aria-label": `已審 ${done} / ${live.length}` });
+  [["accept", "var(--ok)"], ["revise", "var(--warn)"], ["drop", "var(--bad)"]].forEach(([k, c]) => {
+    const s = el("span"); s.style.width = `${(counts[k] / live.length) * 100}%`; s.style.background = c; m.append(s);
+  });
+  t.append(m);
+}
+
+function chip(label, pressed, onClick) {
+  const b = el("button", { class: "chip", type: "button", "aria-pressed": String(pressed), text: label });
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function renderChips() {
+  const cc = document.getElementById("catChips");
+  const cats = ["ALL", ...Object.keys(CATS).filter(c => live.some(q => q.category === c))];
+  cc.replaceChildren(...cats.map(c => {
+    const n = c === "ALL" ? live.length : live.filter(q => q.category === c).length;
+    return chip(`${c === "ALL" ? "全部" : CATS[c]} ${n}`, view.cat === c, () => { view.cat = c; renderAll(); });
+  }));
+  const sc = document.getElementById("stateChips");
+  const states = [["ALL", "全部狀態"], ["todo", "未審"], ["accept", "採用"], ["revise", "要修改"], ["drop", "刪除"]];
+  sc.replaceChildren(...states.map(([k, l]) => chip(l, view.state === k, () => { view.state = k; renderAll(); })));
+}
+
+function card(q) {
+  const d = decisionOf(q.id);
+  const head = el("div", { class: "qhead" },
+    el("span", { class: "qid", text: q.id }),
+    el("span", { text: CATS[q.category] || q.category }),
+    el("span", { class: "tag", text: `${q.n_hops} 跳` }),
+    el("span", { class: "tag", text: q.cross_book ? `跨 ${q.books.length} 卷` : "同卷" }),
+    q.needs_identity_resolution ? el("span", { class: "tag dis", text: "需分辨同名／異名" }) : null,
+    q.core ? el("span", { class: "tag", text: `核心：${q.core}` }) : null,
+    (q.change_log || "").includes("[SHORTCUT]") ? el("span", { class: "tag fixed", text: "[SHORTCUT] 改寫" }) : null,
+    q.status === "fixed" ? el("span", { class: "tag fixed", text: "審查後已修改" }) : null,
+    d ? el("span", { class: `state ${d}`, text: DECISION[d] }) : null,
+  );
+  const hops = el("ol", { class: "hops" }, ...q.hops.map(h => el("li", {},
+    el("div", { class: "hop-body" },
+      el("p", { class: "role", text: h.role }),
+      ...h.verses.map(v => el("p", { class: "verse" }, el("span", { class: "vk", text: v.key }), v.text, el("span", { class: "ptitle", text: `（段落：${v.title || v.pid}）` }))),
+    ))));
+  const a = q.audit || {};
+  const auditNotes = (a.issues || []).length
+    ? el("p", { text: `獨立稽核（${SEVERITY[a.severity] || a.severity}）：${a.issues.join("；")}${a.outcome ? `　處理：${a.outcome}` : ""}` }) : null;
+  const more = el("details", { class: "more" }, el("summary", { text: "為何需要多跳、捷徑搜尋、修改與稽核紀錄" }),
+    el("p", { text: `為何需要多跳：${q.why_multihop}` }),
+    el("p", { text: `橋接：${q.bridge}` }),
+    el("p", { text: `捷徑搜尋：${q.shortcut_search}` }),
+    q.change_log ? el("p", { text: `審查後修改：${q.change_log}` }) : null,
+    q.notes ? el("p", { text: `備註：${q.notes}` }) : null,
+    auditNotes);
+  const alerts = [...(q.auto_warnings || []).map(w => `自動檢查：${w}`)];
+  if (a.outcome && a.outcome.startsWith("修正後驗收未通過")) alerts.push(`稽核：${a.outcome}`);
+  if (a.outcome && (a.outcome.startsWith("修題 agent") || a.outcome.startsWith("小問題尚未處理"))) alerts.push(`稽核：${a.outcome}`);
+  const warns = alerts.length ? el("ul", { class: "warns" }, ...alerts.map(w => el("li", { text: w }))) : null;
+  const flags = q.flags && q.flags.length
+    ? el("ul", { class: "flags" }, ...q.flags.map(f => el("li", { text: f }))) : null;
+  const note = el("textarea", { id: `note-${q.id}`, "aria-label": `${q.id} 備註`, placeholder: "備註（要怎麼改、為什麼刪）" });
+  note.value = (reviews[q.id] && reviews[q.id].note) || "";
+  const saved = el("div", { class: "saved", id: `saved-${q.id}` });
+  const btns = el("div", { class: "btns" }, ...Object.entries(DECISION).map(([k, l]) => {
+    const b = el("button", { type: "button", "data-v": k, "aria-pressed": String(d === k), text: l });
+    b.disabled = !canWrite;
+    b.addEventListener("click", () => save(q.id, decisionOf(q.id) === k ? null : k, note.value, saved));
+    return b;
+  }));
+  note.disabled = !canWrite;
+  note.addEventListener("change", () => save(q.id, decisionOf(q.id), note.value, saved));
+
+  return el("article", { class: "q", id: q.id }, head,
+    el("p", { class: "qtext", text: q.question }),
+    el("div", {}, el("p", { class: "label", text: "參考答案" }), el("p", { class: "answer", text: q.answer })),
+    el("div", {}, el("p", { class: "label", text: "評分要點" }), el("ul", { class: "kp" }, ...q.key_points.map(k => el("li", { text: k })))),
+    el("div", {}, el("p", { class: "label", text: "各跳與經文" }), hops),
+    warns, flags, more,
+    el("div", { class: "decide" }, btns, note, saved));
+}
+
+function renderList() {
+  const items = live.filter(q => (view.cat === "ALL" || q.category === view.cat) &&
+    (view.state === "ALL" || (view.state === "todo" ? !decisionOf(q.id) : decisionOf(q.id) === view.state)));
+  const list = document.getElementById("list");
+  list.replaceChildren(...(items.length ? items.map(card) : [el("p", { class: "empty", text: "這個篩選條件下沒有題目。" })]));
+}
+
+function applyDecision(id) {
+  const art = document.getElementById(id);
+  if (!art) return;
+  const d = decisionOf(id);
+  art.querySelectorAll(".btns button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === d)));
+  const head = art.querySelector(".qhead");
+  const old = head.querySelector(".state");
+  if (old) old.remove();
+  if (d) head.append(el("span", { class: `state ${d}`, text: DECISION[d] }));
+  const note = art.querySelector("textarea");
+  if (note && document.activeElement !== note) note.value = (reviews[id] && reviews[id].note) || "";
+}
+
+function renderAll() { renderTally(); renderChips(); renderList(); }
+
+async function save(id, decision, noteText, savedEl) {
+  if (!db) return;
+  const prev = reviews[id];
+  const body = { decision: decision || null, note: noteText || "", updated_at: new Date().toISOString() };
+  if (prev && prev.decision === body.decision && (prev.note || "") === body.note) return;
+  savedEl.textContent = "儲存中…";
+  try {
+    await db.collection("reviews").doc(id).set(body);
+    savedEl.textContent = "已儲存";
+  } catch (e) {
+    savedEl.textContent = e && e.code === "invalid_argument" ? "你沒有寫入權限，決定沒有儲存。" : "儲存失敗，請稍後再按一次。";
+  }
+}
+
+function renderStatic() {
+  const nCats = new Set(live.map(q => q.category)).size;
+  document.getElementById("lede").textContent =
+    `${live.length} 題，${nCats} 類，${DATA.sample_note || ""}每題由出題 agent 以和合本修訂版文字層核對、機械檢查（經節存在、整節鍵、gold 不重疊、同核心 ≤2 題），再由沒看過的稽核 agent 從頭核對；major、critical 修過並複驗。請逐題判斷「採用」「要修改」或「刪除」，理由寫在備註。`;
+  const cs = DATA.concerns || [];
+  document.getElementById("concernsSec").hidden = !cs.length;
+  document.getElementById("concerns").replaceChildren(...cs.map(c => el("li", { text: c })));
+  document.getElementById("rejects").closest("section").hidden = !gone.length;
+  document.getElementById("rejects").replaceChildren(...(gone.length ? gone.map(q => el("div", { class: "rej" },
+    el("p", {}, el("span", { class: "qid", text: q.id }), `　${q.question}`),
+    el("p", { text: q.dedup_drop ? `判為重複（與 ${q.dedup_drop.duplicate_of}）：${q.dedup_drop.reason}` : `退件理由：${q.reject_reason}` }))) : [el("p", { class: "empty", text: "沒有退件。" })]));
+}
+
+function notice(text) { const n = document.getElementById("notice"); n.textContent = text; n.hidden = !text; }
+
+renderStatic();
+renderAll();
+notice("正在連線儲存空間…");
+
+(async () => {
+  if (typeof claude === "undefined") { notice("這是本機檔案：按鈕不會儲存。請把要修改或刪除的題號與理由直接告訴 Claude。"); return; }
+  const [dbNs, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+  if (!dbNs) { notice("這個檢視無法儲存決定。請登入 claude.ai 後從連結開啟。"); return; }
+  db = dbNs;
+  const w = user ? await user.can("data.write") : null;
+  canWrite = w !== false;
+  notice(canWrite ? "" : "你只有檢視權限，可以看題目，但無法記錄決定。");
+  renderList();
+  db.collection("reviews").onSnapshot(snap => {
+    const next = {};
+    snap.docs.forEach(doc => { next[doc.id] = doc.data(); });
+    const changed = Object.keys({ ...reviews, ...next }).filter(id => JSON.stringify(reviews[id]) !== JSON.stringify(next[id]));
+    reviews = next;
+    renderTally();
+    renderChips();
+    if (view.state !== "ALL") renderList(); else changed.forEach(applyDecision);
+  }, () => notice("和儲存空間的連線中斷，重新整理頁面即可恢復。"));
+})();
+</script>

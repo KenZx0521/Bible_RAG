@@ -73,7 +73,7 @@ def _constants(tree):
             for t in n.targets if isinstance(t, ast.Name) and isinstance(n.value, ast.Constant)}
 
 
-@pytest.mark.parametrize("name", ["encode_stdin.py", "rerank_stdin.py"])
+@pytest.mark.parametrize("name", ["encode_stdin.py", "rerank_stdin.py", "rerank_w_stdin.py"])
 def test_container_scripts_read_the_payload_and_write_no_files(name):
     tree = ast.parse((_DIR / name).read_text(encoding="utf-8"))
     names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
@@ -84,8 +84,9 @@ def test_container_scripts_read_the_payload_and_write_no_files(name):
     assert "retrieve_dense" not in calls          # encode returns vectors only
 
 
-def test_rerank_script_uses_the_section_3_batch_and_threads():
-    consts = _constants(ast.parse(sc.RERANK_STDIN.read_text(encoding="utf-8")))
+@pytest.mark.parametrize("name", ["rerank_stdin.py", "rerank_w_stdin.py"])
+def test_rerank_scripts_use_the_section_3_batch_and_threads(name):
+    consts = _constants(ast.parse((_DIR / name).read_text(encoding="utf-8")))
     assert consts["BATCH"] == 16 and consts["TORCH_THREADS"] == 12
 
 

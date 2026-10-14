@@ -8,11 +8,18 @@ prove where they came from, otherwise nothing is computed:
   the gd_common pins, meta.lists_sha256 equals the content hash recomputed here, and the
   query vectors' container meta passes the embedder pins;
 * scores: every meta line passes the reranker pins and run settings (batch 16, 12 threads),
-  its host part names these lists (content hash), this question set and one and the same
-  set of scorer scripts, and every r line is followed by a passing §10 refcheck line.
+  its host part names these lists (content hash), this question set, one and the same
+  set of scorer scripts and one and the same set of scored arms (score.py rerank --arms;
+  none recorded = every arm), and every r line is followed by a passing §10 refcheck line.
+  A pool whose passages lack scores (an arm left out by --arms) fails in _eval_report.Table.
 
 Unpinned inputs (converted archive files in chain checks) only get the shape and the
 container fingerprint checks; reports record which mode ran.
+
+WScores reads a score.py rerank-w file (§3 W, _score_w.read_w) and is always checked in
+full: its meta lines must name the content hashes of these lists and of these whole-passage
+scores, its single-window passages must carry exactly their whole-passage score, and it
+must cover the C∪GD pool of every question.
 """
 from __future__ import annotations
 
@@ -22,9 +29,10 @@ from types import MappingProxyType
 from typing import Any, Mapping
 
 import _score_io as sio
+import _score_w as sw
 import gd_common as gd
 
-__all__ = ["Lists", "Scores"]
+__all__ = ["Lists", "Scores", "WScores"]
 
 
 class Lists:
@@ -91,6 +99,10 @@ class Scores:
         self.pinned = lists_sha256 is not None
         if self.pinned:
             _check_scores_provenance(path, metas, order, qset, lists_sha256)
+        arms = {tuple((m.get("host") or {}).get("arms") or ()) for m in metas}
+        if len(arms) != 1:
+            raise gd.IntegrityError(f"{path}: meta lines record different scored arms {sorted(arms)}")
+        self.arms: tuple[str, ...] | None = arms.pop() or None   # None: every arm (before --arms)
         self.path = Path(path)
         self.metas = tuple(metas)
         self.refchecks = tuple(r for r in order if r.get("type") == "refcheck")
@@ -121,3 +133,19 @@ def _score_row(path: Path, n: int, rec: Mapping[str, Any], rows: dict) -> None:
     if not (isinstance(scores, dict) and all(isinstance(v, (int, float)) for v in scores.values())):
         raise gd.GdError(f"{path}:{n}: {qid} scores must be a {{pid: number}} object")
     rows[qid] = MappingProxyType(dict(scores))
+
+
+class WScores:
+    """score.py rerank-w output (§3 W): per question the W score of every passage of its C∪GD
+    pool, bound to `lists` and `scores` (content hashes, single-window passages)."""
+
+    def __init__(self, path: Path, qset: gd.QuestionSet, lists: Lists, scores: Scores) -> None:
+        lacking = [a for a in sw.W_ARMS if a not in lists.arms]
+        if lacking:
+            raise gd.GdError(f"{lists.path}: W needs arms {list(sw.W_ARMS)}; {lacking} are absent")
+        expected = {q: tuple(sorted(set(lists.pools["C"][q]) | set(lists.pools["GD"][q])))
+                    for q in qset.ids}
+        self.by_qid, self.metas, self.n_refchecks = sw.read_w(
+            Path(path), qset, expected, scores.by_qid, lists.content_sha256)
+        self.path = Path(path)
+        self.scores_sha256 = sw.scores_content_sha256(scores.by_qid)

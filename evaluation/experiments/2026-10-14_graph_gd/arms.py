@@ -13,10 +13,11 @@ lives in _gd_lex.py and is re-exported here. For every question of one set:
   r / max(deg, 1); G = GD seeds and linked question names at 0.5 / 0.5; L = CJK-bigram BM25
   over all passages; LEXPRF = BM25 with the q(t) feedback query, positive scores only.
 
-CLI:  arms.py --set new82 --vectors <encode jsonl> --out <lists.json>
+CLI:  arms.py --set new82|old31|ho|gtv2 --vectors <encode jsonl> --out <lists.json>
 writes {"meta": {...}, "lists": {qid: {"D30": [30 pid], "R20": [...], "C": [...], "GD": [...],
-...}}} (shape: gd_common / _gd_pool.py); the pool of an arm is D30[:20] + its extra. Only
-sets whose prereg appendices are filled and acceptance files passed run (gd.assert_set_allowed).
+...}}} (shape: gd_common / _gd_pool.py); the pool of an arm is D30[:20] + its extra. gtv2 is
+the §8 E3 set (GT v2, _gd_gtv2.py), same lists format. Only sets whose prereg appendices are
+filled and acceptance files passed run (gd.assert_set_allowed; gtv2 needs 附錄 A).
 --overwrite replaces an existing --out (accept_a.py regenerates the NEW82 lists with it).
 """
 from __future__ import annotations
@@ -46,7 +47,7 @@ PPR_ROUND = 12              # sort key -round(r, 12)
 PPR_MIN = 1e-12             # keep r > 1e-12
 NAME_MASS = 0.5             # G: share of the name seeds (dense seeds get the rest)
 ARMS = gd.ARMS
-SET_NAMES = ("new82", "old31", "ho")
+SET_NAMES = ("new82", "old31", "ho", gd.GTV2)
 SCRIPT_FILES = tuple(gd.EXP_DIR / n for n in ("arms.py", "_gd_lex.py"))
 
 

@@ -3,10 +3,11 @@
 prereg.md in this directory is the only spec; § numbers refer to it. This is the one
 module the experiment scripts import (``import gd_common``). It re-exports
 _gd_store.py (store paths, layer versions, pinned reads, layer loaders, §4 gold key
-resolution), _gd_sets.py (the Question shape, NEW82 / OLD31 / HO loaders) and
-_gd_pool.py (the §3 lists / pool shape), and adds the confirmation-set guard, the §10
-fingerprint and run-setting checks and collect_meta(). Everything reads the store, never
-/tmp; any pin, count or fingerprint mismatch raises.
+resolution), _gd_sets.py (the Question shape, NEW82 / OLD31 / HO loaders), _gd_gtv2.py
+(the GT v2 pins and loader; its load_question_set, which also knows "gtv2", replaces
+_gd_sets') and _gd_pool.py (the §3 lists / pool shape), and adds the confirmation-set
+guard, the §10 fingerprint and run-setting checks and collect_meta(). Everything reads the
+store, never /tmp; any pin, count or fingerprint mismatch raises.
 """
 from __future__ import annotations
 
@@ -27,12 +28,15 @@ _HERE = str(Path(__file__).resolve().parent)
 if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
+import _gd_gtv2  # noqa: E402
 import _gd_pool  # noqa: E402
 import _gd_sets  # noqa: E402
 import _gd_store  # noqa: E402
 from _gd_pool import *  # noqa: E402,F401,F403
 from _gd_sets import *  # noqa: E402,F401,F403
 from _gd_store import *  # noqa: E402,F401,F403
+from _gd_gtv2 import *  # noqa: E402,F401,F403
+from _gd_gtv2 import load_question_set  # noqa: E402,F401  (gtv2-aware; replaces _gd_sets')
 from _gd_store import (ACCEPT_DIR, EXP_DIR, PREREG_PATH, GdError, IntegrityError,  # noqa: E402
                        expect, file_sha256)
 
@@ -59,7 +63,7 @@ RUN_SETTINGS = MappingProxyType({
     "reranker": MappingProxyType({"device": "cpu", "batch": 16, "torch_threads": 12}),
     "embedder": MappingProxyType({"device": "cpu", "torch_threads": 8})})
 MODULE_FILES = tuple(EXP_DIR / n for n in ("gd_common.py", "_gd_store.py", "_gd_sets.py",
-                                           "_gd_pool.py"))
+                                           "_gd_pool.py", "_gd_gtv2.py"))
 SET_REQUIRES = MappingProxyType({"new82": (), "old31": ("A",), "gtv2": ("A",), "ho": ("A", "B")})
 THREAD_ENV = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
 
@@ -73,7 +77,8 @@ _BULLET = re.compile(r"^\s*(?:[-*+>]|\d+[.)、])\s*")
 _DECOR = " \t（）()【】[]「」『』<>*_~`:：。.,，;；!！?？…-"
 _PLACEHOLDERS = frozenset({"待追加", "待補", "待填", "待定", "TODO", "TBD", "PENDING"})
 
-__all__ = [*_gd_store.__all__, *_gd_sets.__all__, *_gd_pool.__all__, "BUILD_ID", "CONTAINER",
+__all__ = [*_gd_store.__all__, *_gd_sets.__all__, *_gd_pool.__all__, *_gd_gtv2.__all__,
+           "BUILD_ID", "CONTAINER",
            "IMAGE_ID", "RUN_SETTINGS", "DRIFT_TOL", "ACCEPT_FILES",
            "CONTAINER_PYTHON", "REVISIONS", "FINGERPRINTS", "MODULE_FILES", "SET_REQUIRES",
            "THREAD_ENV", "ConfirmationLockedError", "appendix_has_content", "assert_set_allowed",

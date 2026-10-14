@@ -1,6 +1,6 @@
 {
  "meta": {
-  "time_utc": "2026-10-14T04:22:17+00:00",
+  "time_utc": "2026-10-14T06:36:35+00:00",
   "argv": [
    "evaluate.py",
    "report",
@@ -10,12 +10,14 @@
    "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
    "--scores",
    "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+   "--scores-w",
+   "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl",
    "--out",
    "new82_report.json"
   ],
   "python": "3.12.3",
   "numpy": "2.4.2",
-  "pythonhashseed": "0",
+  "pythonhashseed": null,
   "blas": [
    {
     "source": "threadpoolctl",
@@ -57,24 +59,27 @@
   },
   "sha256": {
    "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
-   "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+   "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
    "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
    "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
-   "evaluate.py": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
-   "_eval_inputs.py": "54740e54422678191d2e22cad40704ca12960f548ec080b268bebd4e185f48ce",
+   "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+   "evaluate.py": "387d16ee666901a8c70264fbab9b5c067c12d44954d2bbf467693c4a37cb0cf8",
+   "_eval_inputs.py": "7335bfbdc266cd0b02905608db3dfc05a7c35678e15fc4525a08971b2298b502",
    "_eval_metrics.py": "9df303cfe53b640b315b65f563a3d8e9ead756c7d221c5e9134cee5ceecb5d45",
-   "_eval_report.py": "04172ee3dc8459a9c08bdf128671b2ff2d007f4becb92acdc172e5e54ddd0b85",
+   "_eval_report.py": "9bdc809cec059e77ff950c05705e4cbc0941075e0169244f1719b432094b37f4",
    "_eval_stats.py": "07919fe5e21d6c0544912c22ead320df5ee9e2de33f87f96fc5f474146b30e29",
-   "_eval_accept.py": "1781a475ac58aa1f8925757ed004eb88a283d231ff1abd29006bd1e46a6b7f78",
-   "_score_io.py": "f74d5679cb07272db9c118c5a85aefad194507b9aa2f4d3d826d73e86df27ac2",
+   "_eval_accept.py": "5e436496db4403df1f0da073af904d76a32d83889fca8280ef00f3da13f68150",
+   "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+   "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
    "src/__init__.py": "d3dc5110f59c78d285756c6cfacc36cd14d74966432a3f07dd427286ffc39479",
    "src/ab_stats.py": "a88f352ae70faaac6b2471f92b69ed567e05cf8f92d6ef1d4b2fbf25abc55e4c",
-   "lists:new82": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59",
-   "scores:new82": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+   "lists:new82": "80beba9cfa26ea7879232fbb6fe76bdc217cc265c85e8b41be5207620e8b4c55",
+   "scores:new82": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc",
+   "scores_w:new82": "62248b7104469363186c5c34a0cc4e2b0c4976be263309e89fbc30ccab58e941"
   },
   "script": "evaluate.py report",
-  "metric_version": "439414e8c1970b8a543aae4f1c322428713ce04c9df78b0ff4e2756822d67b47",
+  "metric_version": "387d16ee666901a8c70264fbab9b5c067c12d44954d2bbf467693c4a37cb0cf8",
   "question_sets": [
    {
     "name": "new82",
@@ -91,7 +96,7 @@
    "new82": {
     "lists": {
      "content_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
-     "time_utc": "2026-10-14T03:44:08+00:00",
+     "time_utc": "2026-10-14T06:36:00+00:00",
      "argv": [
       "/home/kenzx0521/Bible_RAG/evaluation/experiments/2026-10-14_graph_gd/arms.py",
       "--set",
@@ -146,11 +151,12 @@
      },
      "sha256": {
       "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
-      "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+      "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
       "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
       "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
       "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
-      "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+      "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+      "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
       "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
       "query_vectors": "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
      },
@@ -2154,7 +2160,1014 @@
       ]
      }
     ],
-    "refchecks": 1
+    "refchecks": 1,
+    "scores_arms": null,
+    "scores_w": {
+     "metas": [
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_KIN_01",
+        "N_KIN_02",
+        "N_KIN_03",
+        "N_KIN_04",
+        "N_KIN_06",
+        "N_KIN_07",
+        "N_KIN_08",
+        "N_KIN_09",
+        "N_KIN_10",
+        "N_KIN_11"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_KIN_12",
+        "N_KIN_13",
+        "N_KIN_14",
+        "N_SUC_01",
+        "N_SUC_02",
+        "N_SUC_03",
+        "N_SUC_04",
+        "N_SUC_05",
+        "N_SUC_07",
+        "N_SUC_08"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_SUC_09",
+        "N_SUC_10",
+        "N_SUC_11",
+        "N_SUC_12",
+        "N_BRP_02",
+        "N_BRP_06",
+        "N_BRP_07",
+        "N_BRP_08",
+        "N_BRL_01",
+        "N_BRL_02"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_BRL_03",
+        "N_BRL_04",
+        "N_BRL_05",
+        "N_BRL_06",
+        "N_BRL_07",
+        "N_BRL_08",
+        "N_TO_01",
+        "N_TO_02",
+        "N_TO_03",
+        "N_TO_04"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_TO_05",
+        "N_TO_06",
+        "N_TO_07",
+        "N_TO_08",
+        "N_TO_09",
+        "N_TO_10",
+        "N_TO_11",
+        "N_TO_12",
+        "N_OQ_01",
+        "N_OQ_03"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_OQ_04",
+        "N_OQ_05",
+        "N_OQ_06",
+        "N_OQ_07",
+        "N_OQ_08",
+        "N_OQ_09",
+        "N_OQ_10",
+        "N_OQ_11",
+        "N_OQ_12",
+        "N_DIS_01"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_DIS_02",
+        "N_DIS_03",
+        "N_DIS_04",
+        "N_DIS_05",
+        "N_DIS_06",
+        "N_DIS_07",
+        "N_DIS_08",
+        "N_DIS_09",
+        "N_DIS_10",
+        "N_DIS_11"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_DIS_12",
+        "N_DIS_13",
+        "N_DIS_14",
+        "N_NULL_01",
+        "N_NULL_02",
+        "N_NULL_03",
+        "N_NULL_04",
+        "N_NULL_05",
+        "N_NULL_06",
+        "N_NULL_07"
+       ]
+      },
+      {
+       "type": "meta",
+       "build_id": "b20261008_e05d3e55",
+       "reranker_fingerprint": {
+        "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+        "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+        "unk_count": 2,
+        "pair_template_ok": true,
+        "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+       },
+       "device": "cpu",
+       "torch_threads": 12,
+       "batch": 16,
+       "window_max_length": 512,
+       "host": {
+        "time_utc": "2026-10-14T05:40:24+00:00",
+        "argv": [
+         "score.py",
+         "rerank-w",
+         "--lists",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
+         "--scores",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores.jsonl",
+         "--out",
+         "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/scores_w.jsonl"
+        ],
+        "python": "3.12.3",
+        "numpy": "2.4.2",
+        "pythonhashseed": null,
+        "blas": [
+         {
+          "source": "threadpoolctl",
+          "name": "openblas",
+          "version": "0.3.31.dev",
+          "num_threads": 24
+         }
+        ],
+        "thread_env": {
+         "OMP_NUM_THREADS": null,
+         "OPENBLAS_NUM_THREADS": null,
+         "MKL_NUM_THREADS": null
+        },
+        "build_id": "b20261008_e05d3e55",
+        "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "layers": {
+         "text": "text@247eafe44b02",
+         "struct": "struct@d8d432b4df15",
+         "emb": "emb@ae5525447eda",
+         "kg0": "kg0@14e68c8344b1",
+         "route": "route@c31c88e4681e"
+        },
+        "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+        "fingerprints": {
+         "reranker": {
+          "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+          "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+          "unk_count": 2,
+          "pair_template_ok": true,
+          "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+         },
+         "embedder": {
+          "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+          "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+          "unk_count": 3,
+          "pair_template_ok": true,
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+         }
+        },
+        "sha256": {
+         "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+         "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+         "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+         "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+         "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+         "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+         "score.py": "93af7982600fac8606840131801446fda691fe29386cd80b6f6caa02f9be65ce",
+         "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+         "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+         "rerank_w_stdin.py": "dd59093ba961e4a0e21c6e8d8a47d6ea2f6ee300d575f2f5aab20826ddfd2961",
+         "rerank_stdin.py": "55be23201470b77ef26ed26b53ebb5b5ca59555471d76ba31116b6729ef9d8cc",
+         "lists": "d815f8716dd6ba82fa6834e2770a6c551512a4c3b7111835bbc07d9ca2c9f02d",
+         "scores": "e66cd51118c62ee1ccc3ef5bc59838ef0efd6aed1ab7f7a898611a4bd0b6bddc"
+        },
+        "kind": "rerank-w",
+        "set": "new82",
+        "set_sources": {
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/newq/questions_v5.json": "4b37e5c322de1a4cde4a4cabafb8b5f9c8d3125b0cc4362d3bca1f9d7acde99f",
+         "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_15748325_graphsel/wf/probe_newq/question_summary.json": "cdd10c1adc41c532853569c55d0a07b88828886cb6e49d4ffa9ff3c5c7e3764b"
+        },
+        "set_ids_sha256": "84985f6d2d6cea27834c0116c1d8b0251d2cd04714defd1adc1cf6c5ce4f2946",
+        "container_image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+        "chunk_size": 10,
+        "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
+        "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2",
+        "arms": [
+         "C",
+         "GD"
+        ]
+       },
+       "chunk": [
+        "N_NULL_08",
+        "N_NULL_09"
+       ]
+      }
+     ],
+     "refchecks": 1,
+     "scores_sha256": "e465de1efceec6f406e9e492f22561a1ef3be7d11514c35feeac6ac14c00d0b2"
+    }
    }
   }
  },
@@ -2980,7 +3993,33 @@
     "mean_question_diff": 0.06097560975609756
    },
    "W": {
-    "not_computed": "本輪不算：W 逐窗重排留到附錄 A 之前（任務範圍）"
+    "pair": "GD_W-C_W@10",
+    "n_questions": 82,
+    "n_units": 40,
+    "max_unit": 12,
+    "unit_W": 12,
+    "unit_L": 1,
+    "unit_W:L": "12:1",
+    "discordant_units": 13,
+    "direction": 1,
+    "sum_v": "6251/2640",
+    "mean_unit_diff": 0.05919507575757576,
+    "ci95": [
+     0.016654040404040404,
+     0.1046875
+    ],
+    "question_W:L": "14:1",
+    "mean_question_diff": 0.05589430894308943,
+    "cut_gaps": {
+     "C_W@10": {
+      "min": 1.055002212524414e-05,
+      "boundary_lt_1e-5": []
+     },
+     "GD_W@10": {
+      "min": 5.078315734863281e-05,
+      "boundary_lt_1e-5": []
+     }
+    }
    },
    "category": {
     "親屬": {
@@ -3172,7 +4211,33 @@
     "mean_question_diff": 0.03353658536585366
    },
    "W": {
-    "not_computed": "本輪不算：W 逐窗重排留到附錄 A 之前（任務範圍）"
+    "pair": "GD_W-C_W@5",
+    "n_questions": 82,
+    "n_units": 40,
+    "max_unit": 12,
+    "unit_W": 8,
+    "unit_L": 2,
+    "unit_W:L": "8:2",
+    "discordant_units": 10,
+    "direction": 1,
+    "sum_v": "1709/1584",
+    "mean_unit_diff": 0.026972853535353534,
+    "ci95": [
+     -0.01248421717171717,
+     0.06933396464646464
+    ],
+    "question_W:L": "9:3",
+    "mean_question_diff": 0.028455284552845527,
+    "cut_gaps": {
+     "C_W@5": {
+      "min": 0.0001946091651916504,
+      "boundary_lt_1e-5": []
+     },
+     "GD_W@5": {
+      "min": 3.7610530853271484e-05,
+      "boundary_lt_1e-5": []
+     }
+    }
    },
    "category": {
     "親屬": {

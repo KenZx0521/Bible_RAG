@@ -3,7 +3,7 @@
  "spec": "prereg.md §3 驗收 A (NEW82)",
  "passed": true,
  "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
- "time_utc": "2026-10-14T03:44:15+00:00",
+ "time_utc": "2026-10-14T06:36:07+00:00",
  "checker": {
   "path": "evaluation/experiments/2026-10-14_graph_gd/accept_a.py",
   "sha256": "34b0fb2808a160b70cd2efea2cf390f0703ada4364fbb9f07be0a3c4ecf925ac",
@@ -14,15 +14,15 @@
  "inputs": {
   "hashseed0": {
    "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists.json",
-   "sha256": "24e4b24f90b84e7e17c7db7b7ab1f893aac288132ee39448d24296135c34ac59"
+   "sha256": "80beba9cfa26ea7879232fbb6fe76bdc217cc265c85e8b41be5207620e8b4c55"
   },
   "hashseed1": {
    "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists_hashseed1.json",
-   "sha256": "a0939bbdf08ac0a2e1d9f771e4d518f281b8dc2bcf077d72d6c520630d1ca077"
+   "sha256": "94ecde53533eec3c0aa1cc2d2eaaf2a09eaf7c90d05c8395ae9ce6951df4ce69"
   },
   "threads1": {
    "path": "/mnt/ollama-data/bible_rag_store/reports/graph_gd_20261014/new82/lists_threads1.json",
-   "sha256": "a483e4920fb272b9ba7ecd39cdca5ab5929640ec6deb107fcd1714f5c7b46c54"
+   "sha256": "08390b431ae1a9b51e1bd70519bbbe43a205e35398aafbc6d6cf74fa59653374"
   },
   "reports/multihop_kg_20261012/session_15748325_graphsel/wf/verify_evidence/ev_sel_in.json": "c26500b0f3807aaee8726adb70374c64326198dd0d5ab5e210e89180e21615a5",
   "reports/multihop_kg_20261012/session_15748325_graphsel/wf/verify_evidence/ev_sel_out.jsonl": "2f9081c37aee92dcb6b6ffb4562d3fcdd0b3d0d83ca1b7748b00a4aecd0069a8",
@@ -36,11 +36,12 @@
  },
  "script_sha256": {
   "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
-  "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+  "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
   "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
   "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
   "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
-  "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+  "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+  "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
   "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
   "query_vectors": "1c4f8461ccca0e5cd8551a90b27e9aa7615fc1c679c2e8e5f0b16dbc136e306e"
  },
@@ -354,20 +355,22 @@
   {
    "name": "A3 hashseed0: meta script sha256 == current files",
    "expected": {
-    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
     "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
-    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
     "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
     "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
-    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+    "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e"
    },
    "got": {
-    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
     "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
-    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
     "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
     "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
-    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+    "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e"
    },
    "pass": true
   },
@@ -400,20 +403,22 @@
   {
    "name": "A3 hashseed1: meta script sha256 == current files",
    "expected": {
-    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
     "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
-    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
     "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
     "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
-    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+    "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e"
    },
    "got": {
-    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
     "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
-    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
     "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
     "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
-    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+    "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e"
    },
    "pass": true
   },
@@ -446,20 +451,22 @@
   {
    "name": "A3 threads1: meta script sha256 == current files",
    "expected": {
-    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
     "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
-    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
     "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
     "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
-    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+    "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e"
    },
    "got": {
-    "arms.py": "33a2a3c5169cd813a0e2bf73ed1d0ca6a6a11409a421f5a749adec96445b9878",
+    "arms.py": "5ebb0ed359aae70a7dc7be158c78358260a273661c14923150fe74ca0870e10c",
     "_gd_lex.py": "0d18742093c4a347296ca5a4526e4e8453c006389f185177ce205f0ce59dbfd5",
-    "gd_common.py": "e616a88d70cc55592a2ef44e49dc32a5ab907e64ca38f834cedebff065449234",
+    "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
     "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
     "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
-    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25"
+    "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+    "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e"
    },
    "pass": true
   },
@@ -563,8 +570,8 @@
    "max": 18
   },
   "cli_wall_seconds": {
-   "hashseed0": 2.76,
-   "hashseed1": 2.82,
+   "hashseed0": 2.77,
+   "hashseed1": 2.75,
    "threads1": 3.04
   },
   "lists_sha256": "25b196a248cb1d81ce3f1edd1abbf3390a40beeac2a840477e1da2137cbad74a",
