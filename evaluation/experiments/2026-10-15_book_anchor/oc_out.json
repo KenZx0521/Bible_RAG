@@ -1,0 +1,344 @@
+{
+ "pool_sd_cov": 0.1462,
+ "pool_sd_strict": 0.0794,
+ "E|n19|Rc3|dcov+0.00|dstr+0.00": {
+  "adopt": 0.52,
+  "harm": 0.007,
+  "inconcl": 0.473
+ },
+ "E|n19|Rc3|dcov+0.03|dstr+0.00": {
+  "adopt": 0.814,
+  "harm": 0.004,
+  "inconcl": 0.182
+ },
+ "E|n19|Rc3|dcov-0.05|dstr+0.00": {
+  "adopt": 0.022,
+  "harm": 0.536,
+  "inconcl": 0.441
+ },
+ "E|n19|Rc3|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 0.961,
+  "inconcl": 0.039
+ },
+ "E|n19|Rc3|dcov+0.00|dstr-0.04": {
+  "adopt": 0.004,
+  "harm": 0.899,
+  "inconcl": 0.098
+ },
+ "E|n19|Rc6|dcov+0.00|dstr+0.00": {
+  "adopt": 0.752,
+  "harm": 0.008,
+  "inconcl": 0.24
+ },
+ "E|n19|Rc6|dcov+0.03|dstr+0.00": {
+  "adopt": 0.865,
+  "harm": 0.003,
+  "inconcl": 0.132
+ },
+ "E|n19|Rc6|dcov-0.05|dstr+0.00": {
+  "adopt": 0.011,
+  "harm": 0.873,
+  "inconcl": 0.116
+ },
+ "E|n19|Rc6|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "E|n19|Rc6|dcov+0.00|dstr-0.04": {
+  "adopt": 0.011,
+  "harm": 0.869,
+  "inconcl": 0.12
+ },
+ "E|n20|Rc3|dcov+0.00|dstr+0.00": {
+  "adopt": 0.525,
+  "harm": 0.008,
+  "inconcl": 0.467
+ },
+ "E|n20|Rc3|dcov+0.03|dstr+0.00": {
+  "adopt": 0.829,
+  "harm": 0.004,
+  "inconcl": 0.167
+ },
+ "E|n20|Rc3|dcov-0.05|dstr+0.00": {
+  "adopt": 0.017,
+  "harm": 0.571,
+  "inconcl": 0.412
+ },
+ "E|n20|Rc3|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 0.972,
+  "inconcl": 0.028
+ },
+ "E|n20|Rc3|dcov+0.00|dstr-0.04": {
+  "adopt": 0.006,
+  "harm": 0.894,
+  "inconcl": 0.1
+ },
+ "E|n20|Rc6|dcov+0.00|dstr+0.00": {
+  "adopt": 0.786,
+  "harm": 0.005,
+  "inconcl": 0.21
+ },
+ "E|n20|Rc6|dcov+0.03|dstr+0.00": {
+  "adopt": 0.885,
+  "harm": 0.002,
+  "inconcl": 0.113
+ },
+ "E|n20|Rc6|dcov-0.05|dstr+0.00": {
+  "adopt": 0.011,
+  "harm": 0.898,
+  "inconcl": 0.091
+ },
+ "E|n20|Rc6|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "E|n20|Rc6|dcov+0.00|dstr-0.04": {
+  "adopt": 0.011,
+  "harm": 0.902,
+  "inconcl": 0.087
+ },
+ "E|n39|Rc3|dcov+0.00|dstr+0.00": {
+  "adopt": 0.884,
+  "harm": 0.01,
+  "inconcl": 0.106
+ },
+ "E|n39|Rc3|dcov+0.03|dstr+0.00": {
+  "adopt": 0.992,
+  "harm": 0.003,
+  "inconcl": 0.005
+ },
+ "E|n39|Rc3|dcov-0.05|dstr+0.00": {
+  "adopt": 0.021,
+  "harm": 0.914,
+  "inconcl": 0.065
+ },
+ "E|n39|Rc3|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "E|n39|Rc3|dcov+0.00|dstr-0.04": {
+  "adopt": 0.001,
+  "harm": 0.999,
+  "inconcl": 0.001
+ },
+ "E|n39|Rc6|dcov+0.00|dstr+0.00": {
+  "adopt": 0.981,
+  "harm": 0.011,
+  "inconcl": 0.008
+ },
+ "E|n39|Rc6|dcov+0.03|dstr+0.00": {
+  "adopt": 0.99,
+  "harm": 0.005,
+  "inconcl": 0.005
+ },
+ "E|n39|Rc6|dcov-0.05|dstr+0.00": {
+  "adopt": 0.001,
+  "harm": 0.998,
+  "inconcl": 0.001
+ },
+ "E|n39|Rc6|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "E|n39|Rc6|dcov+0.00|dstr-0.04": {
+  "adopt": 0.001,
+  "harm": 0.997,
+  "inconcl": 0.002
+ },
+ "Q|n19|Rc3|dcov+0.00|dstr+0.00": {
+  "adopt": 0.797,
+  "harm": 0.001,
+  "inconcl": 0.202
+ },
+ "Q|n19|Rc3|dcov+0.03|dstr+0.00": {
+  "adopt": 0.926,
+  "harm": 0.0,
+  "inconcl": 0.074
+ },
+ "Q|n19|Rc3|dcov-0.05|dstr+0.00": {
+  "adopt": 0.005,
+  "harm": 0.8,
+  "inconcl": 0.195
+ },
+ "Q|n19|Rc3|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 0.972,
+  "inconcl": 0.028
+ },
+ "Q|n19|Rc3|dcov+0.00|dstr-0.04": {
+  "adopt": 0.0,
+  "harm": 0.934,
+  "inconcl": 0.066
+ },
+ "Q|n19|Rc6|dcov+0.00|dstr+0.00": {
+  "adopt": 0.906,
+  "harm": 0.001,
+  "inconcl": 0.093
+ },
+ "Q|n19|Rc6|dcov+0.03|dstr+0.00": {
+  "adopt": 0.942,
+  "harm": 0.0,
+  "inconcl": 0.058
+ },
+ "Q|n19|Rc6|dcov-0.05|dstr+0.00": {
+  "adopt": 0.001,
+  "harm": 0.941,
+  "inconcl": 0.058
+ },
+ "Q|n19|Rc6|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 0.997,
+  "inconcl": 0.003
+ },
+ "Q|n19|Rc6|dcov+0.00|dstr-0.04": {
+  "adopt": 0.0,
+  "harm": 0.94,
+  "inconcl": 0.06
+ },
+ "Q|n20|Rc3|dcov+0.00|dstr+0.00": {
+  "adopt": 0.812,
+  "harm": 0.003,
+  "inconcl": 0.186
+ },
+ "Q|n20|Rc3|dcov+0.03|dstr+0.00": {
+  "adopt": 0.948,
+  "harm": 0.0,
+  "inconcl": 0.052
+ },
+ "Q|n20|Rc3|dcov-0.05|dstr+0.00": {
+  "adopt": 0.003,
+  "harm": 0.826,
+  "inconcl": 0.171
+ },
+ "Q|n20|Rc3|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 0.978,
+  "inconcl": 0.022
+ },
+ "Q|n20|Rc3|dcov+0.00|dstr-0.04": {
+  "adopt": 0.0,
+  "harm": 0.955,
+  "inconcl": 0.045
+ },
+ "Q|n20|Rc6|dcov+0.00|dstr+0.00": {
+  "adopt": 0.925,
+  "harm": 0.005,
+  "inconcl": 0.07
+ },
+ "Q|n20|Rc6|dcov+0.03|dstr+0.00": {
+  "adopt": 0.953,
+  "harm": 0.0,
+  "inconcl": 0.047
+ },
+ "Q|n20|Rc6|dcov-0.05|dstr+0.00": {
+  "adopt": 0.001,
+  "harm": 0.952,
+  "inconcl": 0.047
+ },
+ "Q|n20|Rc6|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 0.998,
+  "inconcl": 0.002
+ },
+ "Q|n20|Rc6|dcov+0.00|dstr-0.04": {
+  "adopt": 0.0,
+  "harm": 0.948,
+  "inconcl": 0.052
+ },
+ "Q|n39|Rc3|dcov+0.00|dstr+0.00": {
+  "adopt": 0.981,
+  "harm": 0.005,
+  "inconcl": 0.014
+ },
+ "Q|n39|Rc3|dcov+0.03|dstr+0.00": {
+  "adopt": 0.999,
+  "harm": 0.0,
+  "inconcl": 0.001
+ },
+ "Q|n39|Rc3|dcov-0.05|dstr+0.00": {
+  "adopt": 0.002,
+  "harm": 0.977,
+  "inconcl": 0.021
+ },
+ "Q|n39|Rc3|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "Q|n39|Rc3|dcov+0.00|dstr-0.04": {
+  "adopt": 0.0,
+  "harm": 0.998,
+  "inconcl": 0.002
+ },
+ "Q|n39|Rc6|dcov+0.00|dstr+0.00": {
+  "adopt": 0.99,
+  "harm": 0.007,
+  "inconcl": 0.003
+ },
+ "Q|n39|Rc6|dcov+0.03|dstr+0.00": {
+  "adopt": 0.997,
+  "harm": 0.0,
+  "inconcl": 0.002
+ },
+ "Q|n39|Rc6|dcov-0.05|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "Q|n39|Rc6|dcov-0.08|dstr+0.00": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "Q|n39|Rc6|dcov+0.00|dstr-0.04": {
+  "adopt": 0.0,
+  "harm": 0.999,
+  "inconcl": 0.001
+ },
+ "E|n20|Rc6|dcov+0.00|sd0.12": {
+  "adopt": 0.85,
+  "harm": 0.006,
+  "inconcl": 0.144
+ },
+ "E|n20|Rc6|dcov-0.05|sd0.12": {
+  "adopt": 0.005,
+  "harm": 0.988,
+  "inconcl": 0.008
+ },
+ "E|n39|Rc6|dcov+0.00|sd0.12": {
+  "adopt": 0.984,
+  "harm": 0.014,
+  "inconcl": 0.003
+ },
+ "E|n39|Rc6|dcov-0.05|sd0.12": {
+  "adopt": 0.0,
+  "harm": 1.0,
+  "inconcl": 0.0
+ },
+ "E|n20|Rc6|dcov+0.00|sd0.19": {
+  "adopt": 0.579,
+  "harm": 0.006,
+  "inconcl": 0.414
+ },
+ "E|n20|Rc6|dcov-0.05|sd0.19": {
+  "adopt": 0.008,
+  "harm": 0.685,
+  "inconcl": 0.307
+ },
+ "E|n39|Rc6|dcov+0.00|sd0.19": {
+  "adopt": 0.929,
+  "harm": 0.009,
+  "inconcl": 0.062
+ },
+ "E|n39|Rc6|dcov-0.05|sd0.19": {
+  "adopt": 0.01,
+  "harm": 0.956,
+  "inconcl": 0.034
+ }
+}

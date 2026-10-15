@@ -1,0 +1,9 @@
+# book_anchor ablation (prereg §9): layered last on docker-compose.yml +
+# docker-compose.staging.yml for the one-off `docker compose run --rm --no-deps -T
+# backend-stg …` batch container. No healthcheck, so it is never marked unhealthy;
+# ports reset so `config` shows none (`run` publishes none without --service-ports).
+services:
+  backend-stg:
+    healthcheck:
+      test: ["NONE"]
+    ports: !reset []
