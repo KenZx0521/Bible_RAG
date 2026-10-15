@@ -43,6 +43,7 @@
 修正輪後重跑（2026-10-14）：A 通過（32/32），lists_sha256 `25b196a2…` 不變；B 820/820，漂移 1.76e−6，邊界題 0；H1 11:0 p=1/1024、H2 8:2 p=69/256、H3 p=13/512（Holm 未過），與先前報告相同。W（N/scores_w.jsonl，4,032 窗，refcheck max|Δ|=0）：GD_W−C_W @10 單位 12:1、Δ̄ 0.059（CI 0.017～0.105），@5 8:2（CI −0.012～0.069）；切點最小間隔 C_W@10 1.06e−5、GD_W@10 5.08e−5、C_W@5 1.95e−4、GD_W@5 3.76e−5，邊界題 0。
 
 ## 確認集（附錄 A 之後）
+- **結果（2026-10-15）：V1 停損，實驗結案。** OLD31 GD−C@10 單位 W:L 2:2（20 單位中不一致 4），見 `v1_old31.json` 與 prereg 執行紀錄一、二。不出 HO、不跑 E2 與 E3，不再開新的單發圖譜變體。以下是原本的程序，留作紀錄。
 - V1：`score.py encode --set old31 --out G/old31/encode.jsonl` → `arms.py --set old31 …` → `score.py rerank --lists G/old31/lists.json --out G/old31/scores.jsonl` → `evaluate.py v1 --lists … --scores …`（只印停損判定與單位 W:L；用預設 `--out`，HO 執行器讀它）。
 - E2（附錄 B 之後）：HO 照同樣三步；兩集各跑 `score.py rerank-w`；`evaluate.py report --set old31+ho --lists L_old31 L_ho --scores S_old31 S_ho --scores-w W_old31 W_ho --out e2_report.json`。
 
