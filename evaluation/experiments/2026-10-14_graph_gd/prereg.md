@@ -153,3 +153,12 @@
 - **V1 操作特性（單位層級，v1_power.json；操作特性 200,000 次模擬、程序檢定力 4,000 次）**：r＝0.222 時，虛無（勝率 0.5）下停損 0.552，勝率 0.8 時停損 0.072（題層級版 0.562／0.063）。程序檢定力（含 V1 停損，HO 120 題＋OLD31 20 單位）：r_ho 0.17、勝率 0.8 時拒絕 0.825，0.75 時 0.653，虛無下 0.024；r_ho 0.12、勝率 0.8 時 0.695。封存的 s2_power.json、recheck.json 都已重現。方法選擇（|d| 取四位小數、單位大小排序、HO 視為 120 個單題群、r_old＝min(0.9, r_ho·0.222/0.171)）未另行獨立審查，只作揭露、不影響判定。
 - **Kay 2026-10-14 裁決**：(a) HO agent 的 context 會被注入帳號 email（OAuth 無法關閉），接受並揭露；transcript 看不到注入內容。(b) Claude Code CLI 釘 2.1.299，`_ho_claude.launch` 版本不符就拒跑（`--thinking-display` 是 --help 未列的選項，換版前要用 ho/probe 的方法重測）。(c) `/srv` 必須為空，`check_cwd` 已擋。(d) E3 用 `--arms C,GD`（批次組成與 §3「所有臂池的聯集」不同；實測 |Δ| 最大 1.07e−6，封存跨 run 漂移 9.24e−7，驗收 B 漂移 1.76e−6，都在 §10 門檻 1e−5 內）。
 - **偏離登記內容的事項**：(1) HO transcript 只含 API 端 thinking 摘要；(2) 禁用字出現在 agent 自己寫的文字只記 warn，出現在 system prompt 才是 error；(3) 盲化違規在提交時就刪題、由後續題遞補；(4) agent 看得到所有已用核心與題數，core 的別名異寫由稽核判 major、機械檢查只 warn；(5) bt_guard 拒絕引號外的萬用字元與 ~，bt 不回顯非經節鍵的參數；(6) E3 run 互斥，失敗輸出留在 failed/；(7) W 另報切點間隔；(8) 附錄 B 另列 overlap_avoided、transcript_breaches；(9) 工作樹另有一處未 commit 的測試檔改動（evaluation/tests/test_graph_gd_ho_order.py 移除 CLI 釘版測試，來源不明），不影響實驗腳本，釘版檢查仍在 `_ho_claude.py`。
+
+### 執行紀錄一（2026-10-15 追加；V1 的啟動時序與打分環境）
+
+- **時序**：V1 在 2026-10-14 15:56（UTC+8）就啟動（encode、arms、rerank），早於 Kay 同意 commit 附錄 A（2026-10-15）。當時附錄 A 已寫進工作樹、尚未 commit。lists.json 與 scores.jsonl 的 meta 記錄的 prereg sha256 是 `c2432536…`，等於 commit f3d1bd4 的版本；腳本與 83ea063 相同（appendix_a_sha256.txt 其餘 50 檔核對無誤）。
+- **中斷**：rerank 在 16:06 隨 session 中止而停下，完成 18/31 題（兩個 chunk，10 題與 8 題）。沒有 refcheck 行，`evaluate.py v1` 沒執行。續跑前只讀過分數檔的行數、meta 與每題的 sid／elapsed／missing，沒有讀分數。
+- **打分環境**：第二個 chunk（JDG_01、MH_BR_01、MH_BR_03、MH_TO_01–04、MH_OQ_01）打分時，兩支已中止 workflow 留下的行程（p5_query.py、build_it.py）同時在用機器與 backend。每題耗時 42–52 秒，第一個 chunk 是 19–37 秒。容器設定沒變（CPU、batch 16、12 threads，meta 有記錄）。
+- **處理（看結果前決定）**：(1) 已打的 18 題另存重打一次（G/old31/recheck18/，只呼叫 score.py 原函式，不改腳本），逐對比較，只印對數與 max|Δ|。max|Δ| ≤ 1e−5 就沿用原檔；超過算 §10 基礎設施失敗，另起新分數檔，OLD31 31 題全部重打（算第 1 次重跑）。(2) 照 README 續跑 `score.py rerank`（補 13 題，結尾 refcheck），再跑 `evaluate.py v1`。續跑的 meta 會記錄追加本段後的 prereg sha。
+- **命名**：本段不叫附錄 B。§10 的附錄 B 是 HO 凍結清單，`gd.assert_set_allowed` 把「附錄 B」標題下有內容當作 HO 的解鎖條件。
+- **CLI 版本**：本機 Claude Code CLI 已自動更新到 2.1.300，與附錄 A (b) 釘的 2.1.299 不同。只影響 HO（`_ho_claude.launch` 會拒跑），V1 不用 CLI；HO 前另行處理。
