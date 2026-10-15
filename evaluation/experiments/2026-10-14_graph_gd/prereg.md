@@ -144,3 +144,12 @@
 - **其他**：E7＝`reports/multihop_kg_20261012/session_e73fd5d9`；LAY＝`layers`。
 - **核對輸出**：X＝撰寫時的核對輸出（x_arms、x_metrics、x_data）；R＝審查時的核對輸出（review_impl、review_stats）。兩者都在登記時封存到 `…/session_15748325_graphsel/prereg_check/`。
 - **repo**：repo 內的檔案寫 repo 相對路徑。
+
+### 附錄 A（2026-10-14 追加；凍結點，V1 之前）
+
+- **凍結**：腳本全在 commit `83ea0638a9b8b477d33afbe75788d6623e279b4b`，實驗目錄的追蹤檔與該 commit 無差異。本檔追加前 sha256 `985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920`。全部腳本、兩份 HO prompt（gen `ac17dc2e…`、audit `74458b1e…`）、page_template、units_old31.json、v1_power.json、驗收檔的完整 sha256 列在同目錄 `appendix_a_sha256.txt`（52 行，sha256 `c673b98ead3a11207b4716c384538aef79afed26bf6d80dff86d501b4ec8ee4e`）。本附錄與 units_old31.json、v1_power.json、appendix_a_sha256.txt 尚未 commit，等 Kay 同意後 commit；V1 的 meta 會記錄含本附錄的 prereg sha。
+- **驗收**：A 通過（lists_sha256 `25b196a2…`，PYTHONHASHSEED 0／1、threads 1 都相同）。B 通過：逐題 top-k 820/820 相同，漂移 1.76e−6（上限 1e−5），邊界題 0，refcheck 32 對 max|Δ|=0。NEW82 新打分彙總與 §3 參考值相同（new82_report.json，探索性）。
+- **OLD31 群聚表**（units_old31.json）：20 單位、最大 9 題。多題單位：{DISAMBIG_MH_07, 08, 09, 10, KIN_01–05}（9）、{DISAMBIG_MH_03, DISAMBIG_MH_04, MH_OQ_02}（3）、{MH_TO_02, SUC_01}（2），其餘 17 題各自成單位。四類：親屬 7、消歧 9、時序 4、多跳 10、其他 1。低密度層 15 題。與 NEW82 共用 gold 段的 16 題：DISAMBIG_MH_04、07、08、09，KIN_01、02、03、04、06、07，MH_OQ_01，MH_TO_01、03、04，PRI_01，SUC_01。與封存的 R/review_impl/gold_clusters.out 相同。
+- **V1 操作特性（單位層級，v1_power.json；操作特性 200,000 次模擬、程序檢定力 4,000 次）**：r＝0.222 時，虛無（勝率 0.5）下停損 0.552，勝率 0.8 時停損 0.072（題層級版 0.562／0.063）。程序檢定力（含 V1 停損，HO 120 題＋OLD31 20 單位）：r_ho 0.17、勝率 0.8 時拒絕 0.825，0.75 時 0.653，虛無下 0.024；r_ho 0.12、勝率 0.8 時 0.695。封存的 s2_power.json、recheck.json 都已重現。方法選擇（|d| 取四位小數、單位大小排序、HO 視為 120 個單題群、r_old＝min(0.9, r_ho·0.222/0.171)）未另行獨立審查，只作揭露、不影響判定。
+- **Kay 2026-10-14 裁決**：(a) HO agent 的 context 會被注入帳號 email（OAuth 無法關閉），接受並揭露；transcript 看不到注入內容。(b) Claude Code CLI 釘 2.1.299，`_ho_claude.launch` 版本不符就拒跑（`--thinking-display` 是 --help 未列的選項，換版前要用 ho/probe 的方法重測）。(c) `/srv` 必須為空，`check_cwd` 已擋。(d) E3 用 `--arms C,GD`（批次組成與 §3「所有臂池的聯集」不同；實測 |Δ| 最大 1.07e−6，封存跨 run 漂移 9.24e−7，驗收 B 漂移 1.76e−6，都在 §10 門檻 1e−5 內）。
+- **偏離登記內容的事項**：(1) HO transcript 只含 API 端 thinking 摘要；(2) 禁用字出現在 agent 自己寫的文字只記 warn，出現在 system prompt 才是 error；(3) 盲化違規在提交時就刪題、由後續題遞補；(4) agent 看得到所有已用核心與題數，core 的別名異寫由稽核判 major、機械檢查只 warn；(5) bt_guard 拒絕引號外的萬用字元與 ~，bt 不回顯非經節鍵的參數；(6) E3 run 互斥，失敗輸出留在 failed/；(7) W 另報切點間隔；(8) 附錄 B 另列 overlap_avoided、transcript_breaches；(9) 工作樹另有一處未 commit 的測試檔改動（evaluation/tests/test_graph_gd_ho_order.py 移除 CLI 釘版測試，來源不明），不影響實驗腳本，釘版檢查仍在 `_ho_claude.py`。

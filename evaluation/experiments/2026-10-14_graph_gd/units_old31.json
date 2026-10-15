@@ -1,0 +1,220 @@
+{
+ "meta": {
+  "time_utc": "2026-10-14T07:36:10+00:00",
+  "argv": [
+   "evaluate.py",
+   "units",
+   "--set",
+   "old31",
+   "--out",
+   "units_old31.json"
+  ],
+  "python": "3.12.3",
+  "numpy": "2.4.2",
+  "pythonhashseed": null,
+  "blas": [
+   {
+    "source": "threadpoolctl",
+    "name": "openblas",
+    "version": "0.3.31.dev",
+    "num_threads": 24
+   }
+  ],
+  "thread_env": {
+   "OMP_NUM_THREADS": null,
+   "OPENBLAS_NUM_THREADS": null,
+   "MKL_NUM_THREADS": null
+  },
+  "build_id": "b20261008_e05d3e55",
+  "image_id": "sha256:c79266296cb0e48be2274c24a3e6744b7b3e8eb420771ef9cc5cb1fd4e8ab912",
+  "layers": {
+   "text": "text@247eafe44b02",
+   "struct": "struct@d8d432b4df15",
+   "emb": "emb@ae5525447eda",
+   "kg0": "kg0@14e68c8344b1",
+   "route": "route@c31c88e4681e"
+  },
+  "vectors_sha256": "870ca1fc695585a592fc3b31dbeee8fd90e1e14779e1937aa94b1f8c736e579c",
+  "fingerprints": {
+   "reranker": {
+    "tokenizer_sha": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+    "probe_ids_sha": "0e7683debf6b3b5061e0c3cad60aea8fb1078d1b742d6e74595e38dfbae86b22",
+    "unk_count": 2,
+    "pair_template_ok": true,
+    "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+   },
+   "embedder": {
+    "tokenizer_sha": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08",
+    "probe_ids_sha": "a0e8db608c923b243d6909dfa38d915989863349eadb2532dad262c106b8be3a",
+    "unk_count": 3,
+    "pair_template_ok": true,
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+   }
+  },
+  "sha256": {
+   "prereg.md": "985d933dcd903a7aa22ece2cd05a3ec78bff7e8e00862997255398805f6d4920",
+   "gd_common.py": "18eced31f4dca1c7a9177543e73755a9eb5e6db31421d3207b49f44d568f8390",
+   "_gd_store.py": "76091b14c2e418d6488319871b7d29165ce3b57b5283441be575acf1f18adb6c",
+   "_gd_sets.py": "a7fc1dc1d6bcf2ffc59d6596256ddee711a26968a518cc189f270837a795b949",
+   "_gd_pool.py": "7e1aaf12772a9a4da1487564afbf02381858fc7c0e3f483495cb5e13dc328e25",
+   "_gd_gtv2.py": "623ede8cd3a6587d4fa88e72798a36b88bc9e881fc610fd41f6021254c074c8e",
+   "evaluate.py": "387d16ee666901a8c70264fbab9b5c067c12d44954d2bbf467693c4a37cb0cf8",
+   "_eval_inputs.py": "7335bfbdc266cd0b02905608db3dfc05a7c35678e15fc4525a08971b2298b502",
+   "_eval_metrics.py": "9df303cfe53b640b315b65f563a3d8e9ead756c7d221c5e9134cee5ceecb5d45",
+   "_eval_report.py": "9bdc809cec059e77ff950c05705e4cbc0941075e0169244f1719b432094b37f4",
+   "_eval_stats.py": "07919fe5e21d6c0544912c22ead320df5ee9e2de33f87f96fc5f474146b30e29",
+   "_eval_accept.py": "5e436496db4403df1f0da073af904d76a32d83889fca8280ef00f3da13f68150",
+   "_score_io.py": "fcf920dcfd88410f9d4e89329da074c148fea9eb55f3f4c53da30f5898f51518",
+   "_score_w.py": "511ce017108b099f379b602bcbfeb4791b156a92445f9e51c7731bccf7059271",
+   "src/__init__.py": "d3dc5110f59c78d285756c6cfacc36cd14d74966432a3f07dd427286ffc39479",
+   "src/ab_stats.py": "a88f352ae70faaac6b2471f92b69ed567e05cf8f92d6ef1d4b2fbf25abc55e4c"
+  },
+  "script": "evaluate.py units",
+  "metric_version": "387d16ee666901a8c70264fbab9b5c067c12d44954d2bbf467693c4a37cb0cf8",
+  "question_sets": [
+   {
+    "name": "old31",
+    "ids_sha256": "868f75d693b598257ac9362c77e5e72d501c4c3aa7c28d7dee98cae98026fa11",
+    "sources": {
+     "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/multihop/synth/usable.json": "0ade60b8670a1e71ccc516caad39ce56fd1c5a9af4ab566e09ba87775c75d98b",
+     "/mnt/ollama-data/bible_rag_store/reports/multihop_kg_20261012/session_e73fd5d9/reenable/api_arms.json": "7e28ef3b4660976e7b13a47faa75baf5622e951b60f0b4f6864b726ee36b073b"
+    }
+   }
+  ]
+ },
+ "n_questions": 31,
+ "n_units": 20,
+ "max_unit": 9,
+ "units": [
+  [
+   "DISAMBIG_MH_01"
+  ],
+  [
+   "DISAMBIG_MH_02"
+  ],
+  [
+   "DISAMBIG_MH_03",
+   "DISAMBIG_MH_04",
+   "MH_OQ_02"
+  ],
+  [
+   "DISAMBIG_MH_07",
+   "DISAMBIG_MH_08",
+   "DISAMBIG_MH_09",
+   "DISAMBIG_MH_10",
+   "KIN_01",
+   "KIN_02",
+   "KIN_03",
+   "KIN_04",
+   "KIN_05"
+  ],
+  [
+   "DISAMBIG_MH_12"
+  ],
+  [
+   "JDG_01"
+  ],
+  [
+   "KIN_06"
+  ],
+  [
+   "KIN_07"
+  ],
+  [
+   "MH_BR_01"
+  ],
+  [
+   "MH_BR_03"
+  ],
+  [
+   "MH_OQ_01"
+  ],
+  [
+   "MH_OQ_03"
+  ],
+  [
+   "MH_OQ_04"
+  ],
+  [
+   "MH_TO_01"
+  ],
+  [
+   "MH_TO_02",
+   "SUC_01"
+  ],
+  [
+   "MH_TO_03"
+  ],
+  [
+   "MH_TO_04"
+  ],
+  [
+   "NULL_MH_03"
+  ],
+  [
+   "PRI_01"
+  ],
+  [
+   "SUC_02"
+  ]
+ ],
+ "density_low": 15,
+ "density": {
+  "KIN_01": "2391/2773",
+  "KIN_02": "1510/2773",
+  "KIN_03": "2747/2773",
+  "KIN_04": "45/59",
+  "KIN_05": "2277/2773",
+  "KIN_06": "2469/2773",
+  "KIN_07": "2391/2773",
+  "SUC_01": "2524/2773",
+  "SUC_02": "2277/2773",
+  "PRI_01": "55/59",
+  "JDG_01": "45/59",
+  "MH_BR_01": "1696/2773",
+  "MH_BR_03": "1296/2773",
+  "MH_TO_01": "2567/2773",
+  "MH_TO_02": "961/2773",
+  "MH_TO_03": "2342/2773",
+  "MH_TO_04": "45/59",
+  "MH_OQ_01": "1696/2773",
+  "MH_OQ_02": "2627/2773",
+  "MH_OQ_03": "1510/2773",
+  "MH_OQ_04": "1296/2773",
+  "DISAMBIG_MH_01": "1696/2773",
+  "DISAMBIG_MH_02": "1866/2773",
+  "DISAMBIG_MH_03": "1510/2773",
+  "DISAMBIG_MH_04": "2277/2773",
+  "DISAMBIG_MH_07": "2744/2773",
+  "DISAMBIG_MH_08": "2495/2773",
+  "DISAMBIG_MH_09": "2495/2773",
+  "DISAMBIG_MH_10": "2524/2773",
+  "DISAMBIG_MH_12": "635/2773",
+  "NULL_MH_03": "2206/2773"
+ },
+ "categories": {
+  "親屬": 7,
+  "消歧": 9,
+  "時序": 4,
+  "多跳": 10,
+  "其他": 1
+ },
+ "shares_gold_with_new82": [
+  "DISAMBIG_MH_04",
+  "DISAMBIG_MH_07",
+  "DISAMBIG_MH_08",
+  "DISAMBIG_MH_09",
+  "KIN_01",
+  "KIN_02",
+  "KIN_03",
+  "KIN_04",
+  "KIN_06",
+  "KIN_07",
+  "MH_OQ_01",
+  "MH_TO_01",
+  "MH_TO_03",
+  "MH_TO_04",
+  "PRI_01",
+  "SUC_01"
+ ]
+}
