@@ -5,6 +5,8 @@
 每題只做一次 intent，生成直接呼叫 backend 的 `generate_answer`。輸出在
 `/mnt/ollama-data/bible_rag_store/reports/ba_ablation_20261015/`（prereg §11）。
 
+- **結果（2026-10-16）：prod 動作＝採 off（§8 第 2 條）。** nopin:ctrl 無法判定、off:ctrl 與 off:nopin 可改；不劣，不是改善。off 的代價（點名書出現率 38/39→19/39、拒答或含糊 13→28）見 prereg 執行紀錄三。改 prod 是 commit ③（§12），另起工作。報告副本：`report.md`。
+
 ## 檔案
 
 | 檔 | 在哪裡跑 | 內容 |
