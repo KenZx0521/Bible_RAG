@@ -155,3 +155,29 @@ harness 由 workflow 經四步產生：建置、K0 核對、對抗審查、修�
 - 都沒有：N＝C0。
 - 正式跑一律帶 `--num-ctx N`。
 - B 的 smoke 直接用 A 定出的 N：模型和預設 context 相同，C0 已在 A 的 smoke1 量過。B 的 smoke 在 N 下仍截斷，B 就改用 32768。
+
+### 2026-10-18 Ollama 時段一（21:38 起）
+
+- 環境：git HEAD 2f6694f；Ollama 0.32.5；backend 映像 bible_rag-backend:r2（release b20261008_e05d3e55）；開跑前 /api/ps 為空。完整紀錄在 store `run_env.json`。
+- A smoke1（N_KIN_14、SUC_01、N_SUC_01；不帶 num_ctx）：3 個 seed 加 27 個 stage-2 呼叫，0 截斷，done_reason=length 0 次，最大 prompt+生成 5921 token。/api/ps 的 context_length C0＝131072。依上面的規則，N＝C0＝131072，不重跑 smoke；K0-3 通過（store `A/k0_status.json`）。只看了 token 數，沒有看答案內容。
+- A 正式跑：seed 30/30、stage-2 270/270（沒有棄權），0 截斷，最大 prompt+生成 6240 token；22:12 完成。
+- B smoke（`--num-ctx 131072`，3 題）：錨點 3 個、各臂 20 個呼叫，0 截斷，最大 5318 token。`k0_result.json` 寫入：卡片 40/44＝0.909，truncation_ok。
+- B 正式跑：錨點 48/48、各臂 391/391，22:57 完成。Ollama 時段一共用約 1 小時 20 分（21:38–22:57），沒有用到第二段。
+
+### 2026-10-18 stage-0 判定（照 §4 措辭，看結果後沒有改任何規則）
+
+- **A：開發集通過，請 Kay 授權確認集。**
+  - K-S0-1：G-auto−T-rows ＝ +0.525，門檻 +0.22。
+  - K-S0-2：a＝0.867、h＝0.865、pR＝0.242、pC＝0.179，pow_H1_and_H2＝1.0，門檻 0.7。
+  - 描述，開發集 30 題的各臂平均：G-auto 0.767、T-canon 0.179、T-rows 0.242、B0 0.017、G-ref 0.750。
+  - 自然題 6 題：G-auto 0.417、T-rows 0.125、T-canon 0.312。模板題 24 題：0.854、0.271、0.146。
+  - 拿掉陷阱規則重算（描述）：G-auto 0.783、T-rows 0.258、T-canon 0.329。
+  - 模板題的 gold 與引擎同源，只能當開發集。
+- **B：開發集通過，請 Kay 授權確認集。**
+  - K-S0 1–4 都不成立：pT 0.292；分散題 T-1hop+CoT 0.179，卡片答對 0.571；G 0.302 對 B0 0.042；IUT 檢定力 0.823。
+  - 代入值：出手 15/48、a 0.1395、prec 1.000、adh 0.833、r 0.000。
+  - 描述，48 題：G−T-LLM +0.156，題層 p 0.008，9 群聚 p 0.125；G−T-1hop+CoT +0.188，題層 p 0.002，群聚 p 0.062。
+  - 只看出手的 15 題：G 0.90、T-1hop+CoT 0.30、T-LLM 0.40。
+  - 卡片只在 LIN、SEQ、UNC 出手；COU、DIL、FIL、MGF 都是 0 張。
+- FP §2 第 2 步：盲集確認最多只開一條，A 優先。確認集（D6、D7）要等 Kay 另行授權；stage-0 不構成證據。
+- 輸出、報告與 run_env 都在 store `reports/kg_cards_20261018/`（A/report.md、B/report.md）。
