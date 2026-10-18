@@ -29,35 +29,48 @@ does not move the final metric, the community rarely learns \emph{which
 layer} --- extraction, storage, retrieval, ranking, generation, or the
 benchmark itself --- gated the outcome. This paper documents a deployed
 system in which exactly that question was forced into the open, four
-times, by concrete engineering incidents.
+times on the legacy system by concrete engineering incidents, and once
+more, under pre-registered stopping rules, on the rebuilt system.
 
-We design, build, deploy, and iteratively optimize a GraphRAG system for
-question answering over the Traditional Chinese Bible (Revised Chinese
-Union Version; RCUV). The system converts 66 books from
-PDF into a pericope-centric hierarchical corpus, constructs a knowledge
-graph with grounded entity and relation extraction, indexes three
-complementary databases (PostgreSQL, Qdrant, Neo4j), and serves queries
-through a signal-driven six-route retrieval architecture terminated by a
-cross-encoder reranker and a linear rank-fusion layer. Along the way we
+We designed, built, deployed, and iteratively optimized a GraphRAG system
+for question answering over the Traditional Chinese Bible (Revised Chinese
+Union Version; RCUV). The system evaluated in Rounds~0--3, which we call
+the legacy system, converted 66 books from PDF into a pericope-centric
+hierarchical corpus, constructed a knowledge graph with grounded entity
+and relation extraction, indexed three complementary databases
+(PostgreSQL, Qdrant, Neo4j), and served queries through a signal-driven
+six-route retrieval architecture terminated by a cross-encoder reranker
+and a linear rank-fusion layer. Along the way we
 performed a quantified audit of KG construction quality, executed a
 completeness overhaul, observed a rigorously verified \emph{negative
 result} --- the overhaul produced zero retrieval improvement on our
 benchmark --- diagnosed the mechanism question by question, and repaired
 the actual bottlenecks (the ranking and vocabulary layers) in one day
-of engineering, surpassing all previous results. A September 2026
+of engineering, surpassing all previous results on the same benchmark. A
+September 2026
 re-evaluation on an expanded 500-question benchmark, with a no-graph
 control, then replicated that head result while showing that most of it
 belongs to signal routing rather than to the graph. An October 2026 audit
 of the data pipeline later found defects in the corpus conversion and the
 retrieval stack that qualify these results, which we report as run; the
-system has since been rebuilt and no longer serves the graph from Neo4j
-(Appendix~\ref{app:rebuild}).
+system has since been rebuilt and no longer uses Neo4j or any graph
+traversal (Appendix~\ref{app:rebuild}). The rebuild reduced the knowledge layer to
+a name layer and a curated event registry, with no entity-identity or
+relation layer. On it we tested graph retrieval --- personalized PageRank
+(PPR) over a name--passage graph, used directly, as a source of name
+hints for an LLM sub-query writer, and as extra candidates in iterative
+retrieval --- against $k$-aligned dense retrieval
+and, where an LLM rewrote the query, against non-graph twins, under pre-registered stopping rules; no gain was detected outside the development set, and we closed graph retrieval on the current knowledge
+layer (Section~\ref{sec:rebuiltgraph}).
 
-This paper makes seven contributions:
+This paper makes eight contributions. Contributions 1--7 report on the
+legacy system of Rounds~0--3, with pointers to the rebuilt system where
+its evidence bears on them; contribution~8 concerns the rebuilt system.
 
 \begin{enumerate}
 \item \textbf{A complete pipeline from raw PDF to GraphRAG
-for Traditional Chinese biblical text} (Sections~\ref{sec:preprocessing}
+for Traditional Chinese biblical text, and an audit of its graph}
+(Sections~\ref{sec:preprocessing}
 and~\ref{sec:kg}): layout-geometry PDF parsing without OCR or LLMs,
 pericope-centric hierarchical chunking with the embedding model's own
 tokenizer, grounded dual-track entity extraction (six types, 9{,}120
@@ -65,15 +78,26 @@ entities, 173{,}896 mentions), closed-schema grounded relation extraction
 (37 relation types with evidence-span verification), and a three-source
 cross-reference network of 250{,}418 edges integrating the Treasury of
 Scripture Knowledge (TSK) in its OpenBible.info edition (CC~BY)~\cite{tsk}.
+This is the legacy pipeline. A later audit showed that its completeness
+metrics did not imply correctness (the strict precision of its 15{,}926
+semantic edges was about 0.23--0.28), and its graph was retired rather
+than rebuilt (Appendix~\ref{app:rebuild}).
 
 \item \textbf{A signal-adaptive six-route retrieval architecture over a
 triple-database backend, terminated by a rank-fusion layer}
-(Section~\ref{sec:retrieval}): six boolean query signals select among six
-routes plus a fallback; each route runs a weighted combination of eleven
-retrieval strategies; candidates are deduplicated, reranked by a
-cross-encoder, fused by
+(Section~\ref{sec:retrieval}): in the legacy system, six boolean query
+signals selected among six routes plus a fallback; each route ran a
+weighted combination of eleven retrieval strategies; candidates were
+deduplicated, reranked by a cross-encoder, fused by
 $s_{\mathrm{fused}}=(1-\alpha)\,s_{\mathrm{rr}}+\alpha\,w$, and finally
-adjusted by a small set of ``user-literal'' pins.
+adjusted by a small set of ``user-literal'' pins. Its measured value came
+mainly from routing, not graph traversal: Round~3 attributes $+0.13$ of the
+$+0.16$ head margin to routing (Section~\ref{sec:round3}), and on the
+rebuilt system the pipeline's answer-coverage gain over semantic-only
+retrieval ($+0.032$, descriptive; Appendix~\ref{app:rebuild}) is
+concentrated in the 179 questions with explicit scripture references
+($+0.092$), that is, in citation resolution; on the other 321 questions
+no gain was detected ($-0.002$, upper bound $+0.017$).
 
 \item \textbf{A quantified causal chain from chunking granularity to KG
 quality} (Section~\ref{sec:audit}): we show that the damage to KG quality
@@ -103,7 +127,9 @@ frequently over-read due to evaluation bias~\cite{zeng2025unbiased}.
 declassing, a curated head-event backfill that re-enabled entity-vector
 retrieval, and the linear fusion layer together lift hit rate to 0.97
 (event-narrative questions to 1.00), surpassing the pre-overhaul state and
-widening the margin over the semantic-only baseline to $+0.16$. The
+widening the margin over the semantic-only baseline to $+0.16$ on the 100
+development questions; Round~3 re-attributes most of that margin to
+routing (Section~\ref{sec:round3}). The
 $\alpha$ ablation exposes a complementary structure --- discrete data
 repairs saturate hit rate, continuous fusion recovers tail anchors --- and
 a mechanism-level finding that discrete ``pin'' patches flip from
@@ -114,11 +140,17 @@ ablation} (Section~\ref{sec:round3}): on 500 questions (the original 100
 plus 400 in 19 diagnostic families), with verse-level retrieval metrics
 and a repaired faithfulness judge, the head result replicates (hit rate
 0.97, $+0.16$) but decomposes into $+0.13$ from signal routing and a
-non-significant $+0.03$ from the graph, the latter concentrated in
-hand-curated head events; on the new questions the graph is neutral to
-slightly harmful (paired anchor coverage@5 $-0.012$, 95\% CI
-$[-0.023,-0.003]$), because wrongly anchored graph candidates pass a
-ranking layer that cannot tell them from right ones. The round also
+$+0.03$ from the graph that is not distinguishable from zero (95\% CI
+upper bound $+0.08$), the latter concentrated in hand-curated head events. On the 399 new questions
+no graph gain is detected (verse recall@5 $-0.009$ and answer coverage
+$-0.014$, each with upper bound $+0.001$, from one run per
+configuration). The direction is consistently negative, but after Holm
+adjustment over eight retrieval tests the anchor-coverage@5 deficit
+($-0.012$) has $p=0.107$; the harm survives only as first-gold-rank win:loss counts, under a Holm adjustment applied to the sign tests of the same eight cells (12:35, sign test $p=0.001$, replicated
+at 13:32, $p=0.007$, in a retrieval-only rerun), a statistic chosen after
+inspecting the results. We trace this direction to wrongly anchored
+graph candidates passing a ranking layer that cannot tell them from right
+ones. The round also
 documents two instrument failures of general relevance: a faithfulness
 judge blind to the generator's citation headers (0.912 rising to 0.987
 on unchanged answers once repaired), and an intent classifier silently
@@ -127,26 +159,48 @@ disabled by a reasoning model's hidden tokens.
 \item \textbf{A methodological conclusion for GraphRAG practice}
 (Section~\ref{sec:discussion}): KG construction quality, the retrieval
 ranking mechanism, and benchmark design jointly determine the observable
-benefit of any single-layer investment. In our deployment, one day of
-ranking-layer repair outperformed what a week-scale re-extraction was
-projected to deliver on the same benchmark; three incidents show graph
-value gated by retrieval-side mechanisms, a fourth shows wrong graph
-evidence passing through them, and the expanded benchmark shows that a
-head benchmark can misattribute gains between layers. We
+benefit of any single-layer investment. In the legacy deployment, one day
+of ranking-layer repair outperformed what a week-scale re-extraction was
+projected to deliver on the same benchmark, an in-sample comparison;
+three incidents show graph signal gated by retrieval-side mechanisms, a
+fourth shows wrong graph evidence passing through them, and the expanded
+benchmark shows that a head benchmark can misattribute gains between
+layers. On the rebuilt system, measured against $k$-aligned dense retrieval and, where an LLM rewrote the query, non-graph twins on targeted multi-hop questions, graph signal was not detectable outside the development set (contribution~8). We
 argue that evaluation design is a \emph{prerequisite} for --- not an
 afterthought of --- further construction-side optimization, and that a
 layer's contribution must be established by ablation on questions its
 repairs were not developed on.
+
+\item \textbf{A negative result for graph retrieval on the rebuilt
+system, with upper bounds, an attribution protocol, and three failure
+mechanisms} (Section~\ref{sec:rebuiltgraph}). Each graph arm was
+compared with dense retrieval reading the same number of passages and,
+where it used an LLM rewrite, also with a non-graph twin of the same
+pipeline, on multi-hop sets written by an LLM and not reviewed by
+humans; only PPR or traversals of two or more hops counted as graph
+operations (a rule fixed before the October 18 run and applied
+retrospectively to the earlier runs). No result is confirmatory, and
+none detected a gain outside the development set: PPR-ranked name hints
+for an LLM sub-query writer changed hop coverage by $-0.017$ against
+their non-graph twin (upper bound $+0.023$), and dense-seeded PPR,
+selected on the development set (cluster win:loss 11:0 at $k=10$; upper
+bound $+0.054$ at the production $k=5$), split 2:2 in a pre-registered
+check on a second, partially exposed set and was stopped (not evidence
+of absence). We describe three mechanisms consistent with this null ---
+reranker selection, no identity or relation layer, and little
+graph-unique headroom --- and the conditions for reopening the line
+(Sections~\ref{sec:rebuiltmech}--\ref{sec:rebuiltclosure}).
 \end{enumerate}
 
 The remainder of the paper follows the pipeline order: corpus and
-preprocessing (Section~\ref{sec:preprocessing}), knowledge-graph
-construction (Section~\ref{sec:kg}), online retrieval and generation
-(Section~\ref{sec:retrieval}), the evaluation framework
+preprocessing (Section~\ref{sec:preprocessing}), the legacy
+knowledge-graph construction (Section~\ref{sec:kg}) and online retrieval
+and generation (Section~\ref{sec:retrieval}), the evaluation framework
 (Section~\ref{sec:eval}), the quality audit and the four experiment
 rounds (Sections~\ref{sec:round0}--\ref{sec:round3}: Round~0, the P0
 round as Round~1, the rank-fusion round as Round~2, and the
-expanded-benchmark Round~3), discussion
+expanded-benchmark Round~3), graph retrieval on the rebuilt system
+(Section~\ref{sec:rebuiltgraph}), discussion
 (Section~\ref{sec:discussion}), limitations and future work
 (Sections~\ref{sec:limitations}--\ref{sec:future}), and conclusion
 (Section~\ref{sec:conclusion}). Appendix~\ref{app:citations} maps each
@@ -164,15 +218,15 @@ scoring~\cite{robertson2009bm25} remain the two complementary retrieval
 substrates, commonly combined by reciprocal rank fusion
 (RRF)~\cite{cormack2009rrf}. Our system uses BGE-M3~\cite{chen2024bgem3}
 for dense embeddings (and its companion cross-encoder,
-BGE-reranker-v2-m3, for reranking); it also indexes BM25 sparse vectors
-over Chinese-specific CKIP tokenization~\cite{ckip} for RRF dense--sparse
-hybrid search, but that path never executed
-(Section~\ref{sec:strategies}), so every reported run is dense-only.
+BGE-reranker-v2-m3, for reranking); the legacy system also indexed BM25
+sparse vectors over Chinese-specific CKIP tokenization~\cite{ckip} for
+RRF dense--sparse hybrid search, but that path never executed
+(Section~\ref{sec:strategies}), so every run of Rounds~0--3 is dense-only.
 Distinct from standard hybrid search, the final ranking in
 our system linearly fuses the cross-encoder score with a
 \emph{strategy-prior} weight that encodes which retrieval strategy
-proposed the candidate --- a channel by which graph evidence survives into
-the final top-$k$ (Section~\ref{sec:fusionlayer}). Calibrated fusion of
+proposed the candidate --- in the legacy system, a channel by which graph
+evidence survived into the final top-$k$ (Section~\ref{sec:fusionlayer}). Calibrated fusion of
 heterogeneous graph and vector scores has recently been studied in
 multi-hop QA~\cite{bacellar2026calibrated}; our fusion is deliberately
 simpler (a single linear interpolation with one global $\alpha$) and is
@@ -190,14 +244,19 @@ retrieval~\cite{wang2025archrag}, and recursive abstractive summary trees
 (RAPTOR)~\cite{sarthi2024raptor}. Event-centric variants build explicit
 event nodes and temporal edges~\cite{zhang2025entityevent,sun2025dygrag}.
 Benchmark studies ask \emph{when} graphs actually help
-RAG~\cite{xiang2025whengraphs}. Our architecture differs from these
-retrieval-operator designs in that graph traversal is one family among
-the eleven strategies selected \emph{per query} by boolean signals
+RAG~\cite{xiang2025whengraphs}. Our legacy architecture differed from
+these retrieval-operator designs in that graph traversal was one family
+among the eleven strategies selected \emph{per query} by boolean signals
 (route-level
 adaptivity), and in that the paper's empirical focus is not a new
 operator but the interaction between graph asset quality, ranking, and
 benchmark --- an interaction that, to our knowledge, has not been
 documented at incident-level granularity for a deployed GraphRAG system.
+On the rebuilt system we do evaluate an operator of the PPR
+family~\cite{gutierrez2025hipporag2}, seeded by dense retrieval over a
+name--passage graph, though not as a reimplementation of that system:
+each graph arm is held to $k$-aligned dense retrieval and, where an LLM rewrites the query, to a non-graph twin, which bears on the question of when graphs help~\cite{xiang2025whengraphs}
+for a graph without entity identity (Section~\ref{sec:rebuiltgraph}).
 
 \subsection{LLM-Based Knowledge Graph Construction}
 
@@ -225,8 +284,11 @@ isolated triples~\cite{huang2025tcrqf}, and GNN-guided cross-chunk graph
 augmentation~\cite{zhang2026crossaug}. Atomic-fact decomposition with
 dual-time modeling~\cite{lairgi2025atom} shows finer construction units
 increase fact coverage. Our audit (Section~\ref{sec:audit}) maps each of
-our locally measured defects onto this literature, and our remediation
-roadmap adopts its recipes.
+our locally measured defects onto this literature, and the remediation
+roadmap we proposed adopted its recipes. Beyond the P0 overhaul, that
+roadmap was not executed: re-extraction (P1) was deferred
+(Section~\ref{sec:p0}), and the legacy graph was retired in the October
+2026 rebuild (Appendix~\ref{app:rebuild}).
 
 \subsection{Evaluating RAG and GraphRAG}
 

@@ -1,5 +1,5 @@
 %% ============================================================================
-%% Sections XII-XV: Discussion, Limitations, Future Work, Conclusion
+%% Sections XIII-XVI: Discussion, Limitations, Future Work, Conclusion
 %% ============================================================================
 
 \section{Discussion}
@@ -12,14 +12,16 @@ system, \textbf{knowledge-graph construction quality, the retrieval
 ranking mechanism, and benchmark design jointly determine observable
 benefit} --- and any one of the three can silently zero out investment
 in the others. The evidence chain is summarized by the original
-three-round chain (Rounds~0--2): a completeness overhaul whose
-construction metrics all moved (entity anchor coverage $+14.4$\,pt,
-event completeness
+three-round chain (Rounds~0--2) on the legacy system: a completeness
+overhaul whose construction metrics all moved (entity anchor coverage
+$+14.4$\,pt, event completeness
 $+50$\,pt, cross-references $\times 273$) read as \emph{zero} through a
 reranker-monopolized ranking onto a head-saturated benchmark
 (Section~\ref{sec:p0}); one day of ranking-layer repair then released
 more measured value than the week-scale re-extraction program was
-projected to deliver on the same benchmark (Section~\ref{sec:fusion}).
+projected to deliver on the same benchmark (Section~\ref{sec:fusion})
+--- an in-sample comparison, since that repair was developed on the
+same 100 questions.
 The practical rule we draw: \emph{optimization order should follow the
 bottleneck layer, not the upstream-first order of the data flow} ---
 and the bottleneck is found by per-question forensics, not by metric
@@ -29,12 +31,43 @@ Round~3 adds the converse. The same co-determinants can also silently
 \emph{inflate} a reading: on a head benchmark whose failing graph
 anchors had been repaired question by question, the graph was credited
 with part of a margin that a no-graph control assigns mostly to signal
-routing ($+0.13$ of $+0.16$ on the same 100 questions), while on 400 new
-questions the graph's share disappears (Section~\ref{sec:round3}). Benchmark design
+routing ($+0.13$ of $+0.16$ on the same 100 questions), while on the 399
+new questions no graph gain is detected (answer-coverage upper bound
+$+0.001$; Section~\ref{sec:round3}). Benchmark design
 therefore decides not only whether a layer's investment is visible but
 also to which layer it is credited, and the instrument that settled the
 attribution was an ablation removing one layer while holding the others
 fixed.
+
+The rebuilt system bounds the claim (Section~\ref{sec:rebuiltgraph}).
+The co-determinant frame explains the legacy results, whose positive
+graph readings were in-sample, but it does not imply that a graph holds
+value which fixing one co-determinant will release. On the rebuilt layer
+the benchmark co-determinant was addressed directly --- targeted
+multi-hop question sets, $k$-aligned dense controls, non-graph twins, an attribution rule fixed before the October~18 runs (and applied retrospectively to the earlier ones), and pre-registered stopping
+rules --- and still no gain was detected. Giving PPR-ranked names to an
+LLM decomposer had an upper bound of $+0.023$ in hop coverage (a mean
+over question clusters) against its non-graph twin, and adding PPR
+candidates to iterative retrieval an upper bound of $+0.027$ (an interval resting on the two untied clusters of 40; both under
+a pre-registered stopping rule); dense-seeded PPR alone (GD) had an
+upper bound of $+0.054$ at the production $k=5$ (exploratory,
+development set). The three failure mechanisms of Section~\ref{sec:rebuiltmech}
+touch all three co-determinants at once. (A)~Selection (ranking): the
+cross-encoder scores passages only against the question or sub-query,
+so, in the per-hop and appended-passage settings, graph-proposed bridge
+passages reach the pool but rarely survive to the top-$k$. (B)~No
+identity or relation layer (construction): the rebuilt layer has no
+entity-identity or relation layer, so names collapse homonyms, and on
+the GN-41 questions the legacy graph supplied only 9 of 104 needed
+answer-entity groups (3 strictly). (C)~Headroom and evaluation: on NEW82
+only about 6 of 102 missing hops appear reachable by the graph and by no
+non-graph channel (a count whose script was not archived), the apparent
+gains of graph arms with an LLM decomposer over plain dense retrieval
+were reproduced by their non-graph twins, and the one positive setting,
+chosen on the seen development set, fell from 11:0 to 2:2 on a second
+set. Within the limited power of these sets
+(Section~\ref{sec:limitations}), the targeted yardstick did not reveal
+graph value that the 500-question benchmark had hidden.
 
 \subsection{Four Incidents of the Same Lesson}
 
@@ -58,13 +91,22 @@ Round 1 (P0) & correct anchors newly in pool; TSK breadth & same monopoly
 $+$ vote-ranked topical noise & fusion $+$ provenance-stratified
 weights \\
 Round 2 residual: dual-anchor family & \emph{all} needed cross-book
-edges present & 1-hop expansion depends on seed correctness & open
-(query decomposition) \\
+edges present & 1-hop expansion depends on seed correctness & open;
+non-graph query decomposition tested Oct.\ 2026, below its
+pre-registered bar (\S\ref{sec:rebuiltresults}) \\
 Round 3 (Sept.) & entity and event anchors, now fed by a working
 classifier & wrong anchors enter the pool; neither reranker nor fixed
-prior demotes them & open (anchor gating, slot quotas) \\
+prior demotes them & graph strategies retired in the rebuild; graph
+operations tested Oct.\ 2026: no gain detected
+(\S\ref{sec:rebuiltgraph}) \\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}\footnotesize
+\item Rounds~0--3 ran on the legacy system; resolutions as of October
+2026. The rebuilt-system experiments are not a fifth incident of the
+same kind: in the per-hop and appended-passage settings, the bridge passages their graph proposed were also rarely selected, but few missing hops were reachable only through the graph, so selection
+was not the only limit (\S\ref{sec:rebuiltmech}).
+\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -76,16 +118,16 @@ misses remaining after Round~2 are one family: cross-book
 simultaneously (GENERAL\_006: Jeremiah's new covenant in Hebrews, gold
 $=$ Jer.~31:31--34 $+$ Heb.~8; GENERAL\_008: Zechariah's prophecies in
 Passion Week, gold $=$ Zech.~9:9; 11:12--13; 12:10 $+$ Matt.~21/27).
-Live graph verification shows \textbf{every needed cross-reference edge
-exists} --- Jer.~31$\leftrightarrow$Heb.~8 (3 edges),
+Live verification of the legacy graph showed that \textbf{every needed
+cross-reference edge existed} --- Jer.~31$\leftrightarrow$Heb.~8 (3 edges),
 Zech.~9$\leftrightarrow$Matt.~21 (2), Zech.~11$\leftrightarrow$Matt.~27
 (5), Zech.~12$\leftrightarrow$John~19 (2); TSK is \emph{designed} for
-exactly this relation. The failure is upstream of ranking: retrieval
-seeds land in the wrong chapters (``prophecy'' surface forms hit the
-false-prophet conflict of Jer.~26/28/29; ``Zechariah'' hits the
+exactly this relation. The failure was upstream of ranking: retrieval
+seeds landed in the wrong chapters (``prophecy'' surface forms hit the
+false-prophet conflict of Jer.~26/28/29; ``Zechariah'' hit the
 Zerubbabel visions of Zech.~4), and 1-hop expansion from wrong seeds
-cannot reach right edges. Assets in the graph; value gated by the
-seed-selection mechanism. These two questions also post the two
+could not reach right edges. Assets in the graph; value gated by the
+seed-selection mechanism. These two questions also posted the two
 lowest answer-correctness scores of the original suite
 ($\approx 0.13$, stable across re-judged runs). Round~3 populated the
 family (prophecy\_fulfillment, $n=26$), and its reading is consistent
@@ -93,20 +135,42 @@ with the diagnosis: with the graph on, hit rate is 0.92 and anchor
 coverage@5 0.65, against 0.96 and 0.68 with it off --- expansion from
 imperfect seeds adds nothing measurable (edge presence and seed
 placement were not re-verified for the new questions).
-GENERAL\_008 itself now hits, through the entity traversal that the
-repaired classifier activated rather than through cross-references.
+In Round~3, GENERAL\_008 itself hit, through the entity traversal that
+the repaired classifier activated rather than through cross-references.
+The planned fix, query decomposition, was later tested on the rebuilt
+system in non-graph form, since the rebuilt knowledge layer has no
+relation layer and hence no cross-reference edges to join on
+(Section~\ref{sec:rebuiltsetup}). On the 204 multi-anchor questions of
+GT~v2 (the 500 benchmark questions as evaluated on Rebuild-2),
+appending the best passage for one LLM-written sub-query to the same
+five passages changed anchor coverage@6 by $+0.0174$ (95\% CI
+$[-0.0025, +0.0380]$; question W:L 29:20) relative to appending a
+passage from a deeper dense pool. That missed the pre-registered
+bar (at least $+0.03$ with a CI lower bound above 0), so the
+multi-anchor line was stopped by the pre-registered rule; this is not
+evidence of absence (Section~\ref{sec:rebuiltresults}). The dual-anchor
+family remains open.
 
-The fourth incident inverts the first two. There, the ranking layer
-discarded correct graph evidence; in Round~3 it passes graph evidence
-whether or not it is correct, because neither of its signals concerns
-the anchor: the reranker scores surface form and the prior scores the
+The fourth incident inverted the first two. There, the ranking layer
+discarded correct graph evidence; in Round~3 it passed graph evidence
+whether or not it was correct, because neither of its signals concerned
+the anchor: the reranker scored surface form and the prior scored the
 proposing strategy. On the 29 questions where graph strategies took all
 five context slots, the graph run trailed the no-graph run by 0.10
 verse recall and 0.11 coverage (a descriptive split on the graph run's
 own output), and in most graph-caused losses the reranker alone already
 preferred the injected passages (Section~\ref{sec:round3mech}).
 Injecting graph candidates is a safe default only for verified anchors;
-fusion compounds the problem rather than causing it.
+fusion compounds the problem rather than causing it. The rebuild took
+the conservative course: apart from routing vocabulary drawn from its
+name layer, its only online knowledge-layer signal is a curated event
+lookup lane that appends at most one curated anchor after
+the top-$k$ instead of injecting candidates into the pool. Even this
+lookup, which is not a graph operation, showed a retrieval gain only in
+sample, on the 23 of 500 questions where it fired, and switching it on
+versus off moved answer coverage by $+0.0089$ (95\% CI
+$[-0.0030, +0.0207]$; not $k$-aligned; descriptive;
+Section~\ref{sec:rebuiltresults}).
 
 \subsection{Retrieval-to-Answer Attenuation}
 
@@ -145,9 +209,9 @@ dual-anchor conjunction (GENERAL\_006/008; query decomposition). (Round~3
 qualifies both: without the graph PERSON\_004 hits at the unit level,
 its graph-mode miss being the displacement of
 Section~\ref{sec:round3mech}, although complete coverage still needs
-aggregation; and GENERAL\_008 now hits through the classifier-activated
+aggregation; and GENERAL\_008 then hit through the classifier-activated
 entity traversal.)
-Consequently, \emph{every} remaining roadmap item --- long-tail
+Consequently, \emph{every} roadmap item then remaining --- long-tail
 re-extraction (P1), event-temporal modeling
 (P2,~\cite{lairgi2025atom,zhang2025entityevent,sun2025dygrag}),
 hierarchical aggregation (P3) --- would read as zero on this yardstick:
@@ -158,8 +222,8 @@ perfectly at the unit level (their verse recall is only 0.43; see
 below), and P3's target population is $n=1$.
 The methodological consequence: \textbf{benchmark redesign is the
 prerequisite for all further optimization}, not a reporting
-afterthought. We specify the needed instruments in
-Section~\ref{sec:future}; the general principle --- that the benchmark
+afterthought. The needed instruments have since been built (below and
+Section~\ref{sec:rebuiltsetup}); the general principle --- that the benchmark
 itself gates which layer's investment is visible --- echoes the
 defect-sensitivity methodology of BRINK~\cite{zhou2025brink} and the
 task-dependence findings of~\cite{xiang2025whengraphs}. A cautionary
@@ -178,7 +242,33 @@ above: P2's target questions do \emph{not} retrieve perfectly once
 breadth is measured --- the temporal family reads verse recall 0.42 and
 anchor coverage@5 0.53 under the graph configuration ---
 and the aggregation families sit lower still (verse recall 0.34 for
-trajectory, 0.37 for multi\_chapter). The yardstick has room again.
+trajectory, 0.37 for multi\_chapter). The yardstick has room again for
+multi-anchor retrieval in general, though not enough to detect a graph
+gain: only one of the 500 questions has a multi-hop relation as its
+primary type and only 15 need two or more hops, and even a perfect
+repair of every non-curated question the legacy graph could serve would
+have raised verse recall by about $+0.018$ (at most $+0.030$), 1.2--2
+times the minimum detectable effect. The 500 questions can reliably
+detect graph harm, not a graph gain (Section~\ref{sec:rebuiltsetup}).
+
+For the graph, the prescription was then carried out in October 2026,
+mostly on the rebuilt system. Three targeted multi-hop sets were built
+--- NEW82 (82 questions, 223 hops), OLD31 (31 questions, 101 hops), and GN-41 (41
+questions on the legacy graph) --- and each graph arm was compared with
+a $k$-aligned dense control and, where an LLM rewrote the query, with a
+non-graph twin that differed only in the graph operation
+(Section~\ref{sec:rebuiltsetup}). No graph arm showed a detectable gain
+(Table~\ref{tab:rebuiltgraph}) except in one development-set reading:
+dense-seeded PPR at $k=10$ (cluster W:L 11:0, selected among about ten
+settings; at the production $k=5$ its upper bound is $+0.054$). In the
+pre-registered direction check on OLD31 it fell to 2:2 (4 of 20
+clusters discordant) and was stopped by the pre-registered rule; this
+is not evidence of absence. On the current layer, then, a yardstick
+built to see graph value detected none; with these set sizes that
+argues against a large hidden gain but cannot exclude a small one.
+The principle stands --- a yardstick must be able to see a layer before
+that layer's investment is judged --- but a yardstick that can see a
+layer may simply report that the layer adds nothing detectable.
 
 \subsection{Patch Lifecycles Under Architecture Evolution}
 
@@ -197,9 +287,12 @@ last mile.
 
 \subsection{Cost and Privacy}
 
-All conclusions above were reached with every model local --- embedder,
-reranker, extraction classifiers, generator, and judge --- on a single
-GPU host. Round 0 established that a locally served 8-bit E4B-class
+All legacy-round conclusions above were reached with every model of the
+system local --- embedder, reranker, extraction classifiers, generator,
+and judge --- on a single GPU host; the rebuilt-system experiments kept
+the retrieval stack and the decomposer local, but their multi-hop
+questions were written, and the OLD31 answers graded, by a commercial
+LLM (Claude; Section~\ref{sec:rebuiltsetup}). Round 0 established that a locally served 8-bit E4B-class
 model matches a commercial API model end to end on this task within
 4\,pp on six of seven metrics~(Table~\ref{tab:round0}). Round~3
 qualifies but does not overturn that result --- Gemma's Round~0
@@ -215,20 +308,62 @@ procurement.
 \section{Limitations}
 \label{sec:limitations}
 
-\textbf{Knowledge-graph residuals.} 164 chunk-only entities still lack
-pericope-level \textsc{mentions} in the graph itself (retrieval-side
-remap restores their visibility, the graph remains incomplete); alias
-coverage is $\sim$0.8\% of entities (dictionary and curated sources are
-exhausted; mass production requires entity-resolution merge-back);
-67{,}306 relation candidates remain unclassified (the 77{,}953-pair
-pile minus the 10{,}647 Event-related pairs consumed or set aside by
-the P0 rescue); the event layer has
-only 26 native temporal/causal Event--Event edges live (the audit-time
-figure of 45 included miscounted person-succession edges and edges of
-since-deleted generic events) plus 277 unrescued Event--Event
-candidates; there is no coreference resolution; toneless-pinyin IDs can
-over-merge homophones; and duplicate-name splits (\eg Israel as
-Place vs.\ Israelites as Group) await entity resolution.
+\textbf{Rebuilt knowledge layer.} The rebuilt system has no
+entity-identity or relation layer: its name layer (2{,}926 names) puts
+homonyms on one node, and its 31-event registry fires on literal
+triggers. On unseen event questions the registry fired on too few
+questions (13 of 61) for its pre-registered test, with precision 11/13
+and recall 11/43 (descriptive), and 15 of the 23 benchmark questions on
+which it fired matched external aliases tuned on the same ground truth.
+Of the legacy graph that Rounds~0--3 ran on, the residuals listed in
+earlier versions (incomplete pericope-level \textsc{mentions}, alias
+coverage of $\sim$0.8\% of entities, unclassified relation candidates,
+no coreference resolution, and toneless-pinyin IDs that over-merge
+homophones, 266 of them colliding) no longer bear on the deployed
+system, which retired that graph.
+
+\textbf{Rebuilt graph experiments.} The graph experiments of
+Section~\ref{sec:rebuiltgraph}, none of which is confirmatory, carry
+six further limits. (i)~\emph{Development sets.} NEW82 is a seen
+development set: the dense-seeded PPR configuration was chosen among
+about ten settings on it, and the name formula of the decomposer arms
+was revised after inspecting the name lists of six of its questions.
+OLD31 is only partially blind: 16 of its 31 questions share gold
+passages with NEW82, and the PPR seed type was chosen after its
+pool-level results were seen. (ii)~\emph{LLM-authored, unreviewed
+sets.} NEW82, OLD31, and GN-41 were authored by an LLM (Claude) and
+never reviewed by a human, and the OLD31 answers were graded by two
+Claude raters, whose agreement (linear $\kappa$ 0.98) measures
+reliability, not validity; three OLD31 questions score zero in every
+arm, including the arm given the gold facts, which suggests faulty
+items. (iii)~\emph{Low power.} The pre-registered direction check that
+stopped dense-seeded PPR would have stopped with probability 0.552
+under the null and 0.072 at a cluster win rate of 0.8, so its 2:2
+argues against a cluster win rate as high as 0.8 but says little about
+moderate or small effects; the OLD31 answer-level comparisons have minimum detectable effects
+of 0.085--0.179 at 80\% power; and the 500-question benchmark can
+detect graph harm but hardly a graph gain. (iv)~\emph{One generation
+per arm.} Round~3 and the GT~v2 comparison of the event lane generated
+each answer once, and their question-resampling intervals do not cover
+run-level drift (a Rebuild-1 A/A rerun moved answer coverage by
+$+0.0149$); the three decompositions averaged by the decomposer arms
+are not independent samples. (v)~\emph{Question-level intervals.} The
+GD and decomposer-arm intervals resample clusters of questions that
+share gold passages, but the OLD31 answer-level, GN-41, GT~v2, and
+Round~3 intervals resample questions; OLD31's largest
+cluster holds 9 of its 31 questions, so its intervals may be too
+narrow. (vi)~\emph{Selection and instruments.} No family-wise control
+spans the rebuilt-system program, which ran well over a dozen
+comparisons; its positive exploratory readings (GD at $k=10$, QD on
+NEW82) carry that multiplicity as well as their selection on the
+development set. Mechanism~(A) was observed with one cross-encoder
+(BGE-reranker-v2-m3, 512-token input) and the sub-query arms with one
+small local LLM (Gemma~4 E4B), so other selectors or decomposers may
+behave differently. The count of about 6 graph-only missing hops behind
+mechanism~(C) cannot be reproduced, because its script was not
+archived. Finally, GD and the October~18 arms were measured at an offline
+retrieval stage (host-side exact dense search, without routing or the
+event lane) and at the retrieval level only.
 
 \textbf{Benchmark scale and design.} Rounds~0--2 rest on 100
 head-entity questions, on which the Round~2 repairs were also developed;
@@ -245,10 +380,17 @@ ground truth, are less affected. The 400 new items were content-checked
 in an LLM-assisted review rather than by the annotators of the original
 100. The expansion set is diagnostic rather than representative: its
 families target known failure modes, some of which favor dense
-retrieval and some of which expose graph gaps, so ``neutral to slightly
-harmful'' describes the graph on this mix, from one run per
-configuration. Finally, the semantic-only baseline has no reference
-parser, so most of the routing gain is the use of a reference that the
+retrieval and some of which expose graph gaps, so the Round~3 reading
+of the graph --- no gain detected, with an upper bound of $+0.001$ on
+the expansion answer-coverage difference --- describes this mix, from
+one run per configuration. Its harm direction is consistent, but the
+mean-difference harm does not survive a Holm adjustment~\cite{holm1979}
+over the eight retrieval tests of the later audit (expansion anchor
+coverage@5, $-0.012$: raw $p$ 0.013, adjusted 0.107; a retrieval-only
+rerun gives $p$ 0.060). Only the first-gold-rank win:loss count survives a Holm adjustment applied to the sign tests of the same eight cells (12:35 on the 399 expansion questions, sign test $p$
+0.001), and it replicated in the rerun (13:32, $p$ 0.007); that
+statistic was chosen after the results had been seen. Finally, the
+semantic-only baseline has no reference parser, so most of the routing gain is the use of a reference that the
 user supplied; and the book-anchor change deployed in all Round~3
 configurations was itself checked on the 500 questions.
 
@@ -279,7 +421,9 @@ The architecture's signal set and dictionaries are domain-engineered;
 transfer requires re-instantiating those assets (though the
 methodological findings --- ranking-layer gating, benchmark dependence,
 patch lifecycles --- are domain-agnostic claims about system structure,
-not about the Bible).
+not about the Bible). The rebuilt-system null concerns one name-level
+knowledge layer over one corpus; it says nothing about graphs that have
+identity and relation layers.
 
 \section{Future Work}
 \label{sec:future}
@@ -288,57 +432,96 @@ not about the Bible).
 artifact was the benchmark, not the pipeline. Done since the first
 version of this paper: long-tail question sets, populated
 cross-chapter-aggregation and dual-anchor families
-(Section~\ref{sec:benchmark}), and the faithfulness repair. Still open:
-(i) BRINK-style defect injection~\cite{zhou2025brink} --- remove known
-edges, measure answer degradation --- as a causal probe of KG value that
-no head benchmark can fake, made more pressing by Round~3, since a
-no-graph ablation shows whether the graph helps on average but not
-which edges carry the value; (ii) noncommittal exclusion and
-position/length debiasing~\cite{zeng2025unbiased}; (iii) an audit of the
-expected answer points; and (iv) repeated runs per configuration.
+(Section~\ref{sec:benchmark}), the faithfulness repair, and, for the
+graph, targeted multi-hop sets with $k$-aligned non-graph controls and
+pre-registered stopping rules (Section~\ref{sec:rebuiltsetup}).
+BRINK-style defect injection~\cite{zhou2025brink} --- remove known
+edges, measure answer degradation --- was listed here as a causal probe
+of KG value; it presupposes a measurable graph contribution to remove,
+and none was detected on the current layer, so it is deferred until a
+layer shows a detectable contribution.
+Still open: (i) noncommittal exclusion and position/length
+debiasing~\cite{zeng2025unbiased}; (ii) an audit of the expected answer
+points; (iii) repeated runs per configuration; and (iv) human review of
+the LLM-authored multi-hop sets.
 
-\textbf{P1 --- decoupled re-extraction.} Feed extraction whole
-pericopes (storage unit $\ne$ extraction unit~\cite{neo4jbuilder});
-add a coreference pass scoped to pericope$+$chapter context following
-the LINK-KG recipe~\cite{meher2025linkkg}; adopt true-loop gleanings as
-in the GraphRAG lineage~\cite{edge2024graphrag} (\eg the nano-graphrag
-implementation~\cite{nanographrag}); post-hoc entity resolution with
-lexical$+$embedding double signals and propose-then-confirm merging,
-writing merged surface forms back as aliases (the alias-generation
-mechanism identified in the cross-system survey); type assignment by
-majority vote; description regeneration by merge-and-summarize
-(cf.~LightRAG~\cite{guo2024lightrag}); ontology-grounded
-post-correction as the cheap alternative to
-re-extraction~\cite{loconte2026betterlater,zhang2024edc}; and KG
-denoising with downstream verification~\cite{zheng2025lessismore}.
+\textbf{What reopening the graph line would require.} Graph retrieval
+on the current layer is closed (Section~\ref{sec:rebuiltclosure}). It
+was measured on the L0 name--passage graph (dense-seeded PPR, GD;
+PPR-ranked name hints to an LLM decomposer, QD+G; PPR candidates in
+iterative retrieval, IT-GD): GD was stopped by its pre-registered
+direction check and QD+G by rule G, and IT-GD, which its own rule did
+not stop, was closed with them because the authors' pre-run ruling tied
+the closure to the failure of rule G; this is not evidence of absence.
+The L1 event registry and kinship surface triples, measured earlier
+(the event lookup lane; the kinship walk KIN on OLD31), are closed by
+the authors' pre-run ruling. Reopening requires a new graph layer
+(\eg entity identity, reliable relations) and a new
+pre-registration. In the authors' judgement, a reopened line would
+need five things, matched to the mechanisms of
+Section~\ref{sec:rebuiltmech}.
+(1)~\emph{An entity-identity layer}, so that homonyms stop sharing a
+node. The decoupled re-extraction once planned here as P1 is the
+obvious route --- whole pericopes as the extraction unit (storage unit
+$\ne$ extraction unit~\cite{neo4jbuilder}), a coreference pass
+following LINK-KG~\cite{meher2025linkkg}, true-loop
+gleanings~\cite{edge2024graphrag,nanographrag}, and post-hoc entity
+resolution with propose-then-confirm merging --- but it is no longer
+planned work: the rebuild stopped the knowledge layer at a name layer
+and an event registry.
+(2)~\emph{Reliable relations.} The legacy semantic edges had a strict
+precision of only about 0.23--0.28, so a relation layer would need
+ontology-grounded correction~\cite{loconte2026betterlater,zhang2024edc},
+cross-chunk assembly~\cite{zhang2025rakg,zhang2026crossaug}, and
+denoising checked downstream~\cite{zheng2025lessismore}; the
+event-temporal layer once planned as
+P2~\cite{lairgi2025atom,zhang2025entityevent,sun2025dygrag} is likewise
+not planned.
+(3)~\emph{A blind, held-out, human-reviewed multi-hop question set},
+written before any arm is designed or tuned.
+(4)~\emph{Selection that can score bridge passages}: a selector that
+judges a passage by the hop it bridges, not only by its match to the
+question or sub-query --- for example PPR-ranked passages as in
+HippoRAG~2~\cite{gutierrez2025hipporag2} or calibrated graph--vector
+fusion~\cite{bacellar2026calibrated}. Plain reciprocal-rank fusion of
+reranker and PPR rankings did not help in our one test: in a per-hop
+probe on OLD31 it
+selected 19 of 58 missing hops, against 21 for the reranker alone
+(descriptive).
+(5)~\emph{The attribution protocol} of Section~\ref{sec:rebuiltsetup}:
+only PPR or a traversal of two or more hops counts as a graph
+operation, LLM query rewriting does not, and a graph arm must beat both
+a $k$-aligned dense arm and its non-graph twin.
 
-\textbf{P2 --- the event-temporal layer.} Promote the event layer from
-participants/places (now 84\%/75.5\%) to temporal--causal structure,
-following atomic-fact dual-time construction~\cite{lairgi2025atom} and
-entity--event dual-graph designs~\cite{zhang2025entityevent,sun2025dygrag};
-the 77{,}953-pair provenance-kept rejection pile and the 277 unrescued
-Event--Event candidates are the ready inputs.
+\textbf{Aggregation retrieval.} Community summaries (Leiden
+partitions~\cite{traag2019leiden} as in~\cite{edge2024graphrag}),
+hierarchical community retrieval~\cite{wang2025archrag}, or RAPTOR-style
+summary trees~\cite{sarthi2024raptor} for cross-chapter aggregation
+remain untested. They are not retrieval variants on the closed graph
+layer, so the closure does not cover them, but they should be judged by
+the same protocol. The multi-anchor questions they target remain open:
+the non-graph query decomposition aimed at them missed its
+pre-registered bar (Section~\ref{sec:rebuiltresults}).
 
-\textbf{P3 --- aggregation retrieval.} Community summaries (Leiden
-partitions~\cite{traag2019leiden} as in~\cite{edge2024graphrag}) or
-RAPTOR-style summary trees~\cite{sarthi2024raptor} for
-cross-chapter aggregation; RAKG-style pre-entity
-re-retrieval~\cite{zhang2025rakg} and cross-chunk graph
-augmentation~\cite{zhang2026crossaug} for cross-boundary relations.
-
-\textbf{Retrieval mechanics.} Anchor-confidence gating, the repair
-Round~3 points to: admit or weight graph candidates by the confidence of
-their entity resolution, with penalties for hub entities and generic
-events --- since most wrong anchors are injected rather than merely
-up-weighted, the gate must act on candidates, not only on the prior;
-per-strategy slot quotas in the top-5; a re-sweep of $\alpha$ on the
-500 questions (an $\alpha=0$ run also separates injection from prior
-effects); query decomposition for dual-anchor conjunctions
-(retrieve prophecy and fulfillment sides separately, then join on
-cross-reference edges); theme-level anchoring; and, if the
-strategy-prior fusion reaches its ceiling, calibrated score fusion in
-the spirit of~\cite{bacellar2026calibrated} or graph-native retrieval
-scoring~\cite{gutierrez2025hipporag2,wang2025archrag}.
+\textbf{Retrieval mechanics.} The retrieval repairs listed here in
+earlier versions are no longer open. Anchor-confidence gating, per-strategy
+slot quotas, and the $\alpha=0$ run that would have separated injection
+from prior effects all concerned graph candidates in the ranked pool,
+which the rebuild removed; query decomposition and PPR candidates on
+the name layer were tested on the rebuilt system
+(Section~\ref{sec:rebuiltgraph}), and graph-native scoring on that
+layer --- ranking passages by PPR scores without the cross-encoder, as
+HippoRAG~2 does~\cite{gutierrez2025hipporag2} --- falls under the
+closure although we did not reproduce that design on this layer; the
+closure is a decision about further work, not a result about that
+design. The only item those experiments left
+open is non-graph: a blind confirmation of LLM sub-query rewriting
+(QD). On the NEW82 development set, QD raised hop coverage (cluster-averaged)
+over a passage from a deeper dense pool by $+0.101$ (95\% CI
+$[+0.058, +0.147]$; cluster W:L 19:2; exploratory, development set);
+on the 204 multi-anchor questions of GT~v2 it missed its
+pre-registered bar ($+0.0174$, $[-0.0025, +0.0380]$). The blind
+confirmation was not run, by decision.
 
 \textbf{Generation.} Answer-model A/B under debiased judging, since the
 attenuation analysis locates a further bottleneck there.
@@ -346,9 +529,9 @@ attenuation analysis locates a further bottleneck there.
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented the complete architecture of a deployed GraphRAG system
-for Traditional Chinese Bible QA --- from layout-geometric PDF parsing,
-pericope-centric chunking, grounded dual-track entity extraction,
+We presented the complete architecture of the GraphRAG system that
+served Traditional Chinese Bible QA in Rounds~0--3 --- from
+layout-geometric PDF parsing, pericope-centric chunking, grounded dual-track entity extraction,
 closed-schema relation extraction, and a three-source cross-reference
 network, through a signal-adaptive six-route retrieval design
 terminated by cross-encoder reranking and linear rank fusion --- and an
@@ -362,26 +545,69 @@ remediation that surpassed all prior results (hit rate 0.97, EVENT
 complementary discrete and continuous mechanisms. A fourth round, on a
 500-question benchmark with repaired instruments and a no-graph
 control, replicated the head hit rate and margin and re-attributed
-them: about four-fifths of the margin over semantic-only belongs to
-signal routing, the graph's share is concentrated in head events with
-hand-curated anchors, and on 400 new questions the graph is neutral to
-slightly harmful, because wrongly anchored graph candidates pass a
-ranking layer that cannot tell them from right ones. The same round
-uncovered an intent classifier that had been silently inactive in every
-earlier local-model run.
+them: about four-fifths of the margin over semantic-only belonged to
+signal routing, the graph's share ($+0.03$, not distinguishable from
+zero; upper bound $+0.08$) was concentrated in head events with
+hand-curated anchors, and on 399 new questions no graph gain was
+detected (verse recall@5 $-0.009$ and answer coverage $-0.014$, each
+with upper bound $+0.001$, from one run per configuration), with wrongly
+anchored graph candidates passing a ranking layer that could not tell
+them from right ones; the harm direction survived a multiplicity
+adjustment only in a first-gold-rank count chosen after the results
+were seen. The same round uncovered an intent classifier that had been
+silently inactive in every earlier local-model run.
 
-The system-level conclusions are, we believe, portable to any GraphRAG
-deployment. Graph assets have no value until the ranking layer
-transmits them, and a ranking layer that cannot judge anchors transmits
-wrong ones too; benchmark design decides which layer's investment is
-visible at all, and to which layer it is credited; discrete patches
-have architecture-bound lifetimes; a layer's contribution is established
-only by an ablation on questions its repairs never saw; and the correct
-optimization order follows the measured bottleneck, not the data flow.
-In our deployment, the bottleneck rule delivered, in a day of work, a
-larger measured return on the head benchmark than the deferred
-week-scale re-extraction plan was projected to yield there; the
-ablation rule, applied in Round~3, then showed that the graph's share of
-that return does not transfer beyond the questions it was built on ---
-and identified the next bottlenecks (anchor precision in the ranking
-layer, then generation) before any further construction spend.
+The rebuilt system, whose knowledge layer is reduced to a name layer and
+a curated event registry, then gave the graph a targeted test, and graph retrieval showed no detectable gain outside the development set: against $k$-aligned dense controls and, for the decomposer arms, non-graph twins on LLM-authored multi-hop sets, the upper bounds on
+the hop-coverage difference (averaged over clusters of questions that
+share gold passages) were $+0.054$ for dense-seeded PPR at $k=5$
+(exploratory, development set), and $+0.023$ for PPR-ranked name hints
+to an LLM decomposer and $+0.027$ for PPR candidates in iterative
+retrieval (pre-registered stopping rules), while the apparent gains of
+the decomposer arms over plain dense retrieval were reproduced by their
+non-graph twins. On the L0 name--passage graph, dense-seeded PPR and the
+PPR name hints were stopped by their pre-registered rules. PPR
+candidates in iterative retrieval (IT-GD), which their own rule did not
+stop ($+0.010$, upper bound $+0.027$), were closed with them by the
+authors' pre-run ruling. This is not evidence of absence.
+The L1 event registry and kinship surface triples, measured earlier,
+are closed by the authors' pre-run ruling, and reopening requires a new
+graph layer (\eg entity identity, reliable relations) and a new
+pre-registration.
+
+Three conclusions, we believe, carry to other GraphRAG deployments.
+First, the measurable gains were not the graph's: signal routing
+carried about four-fifths of the Round~3 margin, and on the rebuilt
+system the pipeline's gain over
+semantic-only ($+0.032$ answer coverage on GT~v2, a development set;
+descriptive; Appendix~\ref{app:rebuild}) was concentrated in questions
+that cite a reference explicitly ($+0.092$ on 179; $-0.002$, upper
+bound $+0.017$, on the other 321). Second,
+graph gains were in-sample: the legacy graph's share appeared on head
+questions whose anchors had been built or verified on those very
+questions and did not transfer to new ones, and on the rebuilt layer
+no route of transmission --- the reranker selecting PPR candidates
+(apart from a post-hoc $k=10$ reading on NEW82 that fell to 2:2 on
+OLD31), PPR names given to an LLM decomposer, or even gold bridge names
+(upper bound $+0.008$ over all 82 questions, only 24 of which had
+eligible names) --- produced a detectable gain; on NEW82 dense-seeded
+PPR at $k=10$ reached only 14 of 102 missing hops that its dense control
+missed, and, by a count whose script was not archived, only about 6
+were out of reach of every non-graph channel, so there appears to have been
+little to transmit. Third, the methods that settled
+these readings are portable: establish a layer's contribution by
+ablation on questions its repairs never saw; compare a graph arm with a
+$k$-aligned dense arm and with a non-graph twin that differs only in
+the graph operation; and fix the stopping rule before the run. The
+structural observations of the legacy rounds stand alongside: a ranking
+layer can hide correct graph evidence (Rounds~1--2) or pass wrong graph
+evidence (Round~3); benchmark design decides which layer's investment
+is visible, and to which layer it is credited; discrete patches have
+architecture-bound lifetimes; and optimization order should follow the
+measured bottleneck, not the data flow. In our deployment, the
+bottleneck rule delivered, in a day of work, a larger in-sample return
+on the head benchmark than the deferred week-scale re-extraction plan
+was projected to yield there; the ablation rule then showed that the
+graph's share of that return did not transfer beyond the questions it
+was built on; and the rebuilt-system experiments found no detectable
+graph share to transmit on a name-level layer.

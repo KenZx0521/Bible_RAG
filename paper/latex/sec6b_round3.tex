@@ -2,6 +2,9 @@
 %% Section XI: Round 3 --- expanded benchmark and graph ablation (Sept. 2026)
 %% Every number is reproduced by paper/tools/round3_stats.py from
 %% evaluation/results_{graph,no_graph,semantic}/
+%% Holm adjustment, MRR sign tests, and the 2026-10-03 rerun: archived output
+%% store reports/tmp_evidence_20261010/.../verify_stats/{multi,c01_03}.out
+%% (see paper/record/2026-10-18_rebuilt_graph_findings.md, F26)
 %% ============================================================================
 
 \section{Round 3: Expanded Benchmark and Graph Ablation}
@@ -20,6 +23,9 @@ Section~\ref{sec:benchmark}, whose 400 new questions were written after
 the Round~2 repairs, with the repaired instruments of
 Section~\ref{sec:evalmetrics}, and --- for the first time --- with the
 knowledge graph switched off while everything else is held fixed.
+Round~3 is the paper's last round on the legacy Neo4j system; graph
+retrieval on the rebuilt system is reported in
+Section~\ref{sec:rebuiltgraph}.
 
 \subsection{Setup}
 
@@ -40,7 +46,9 @@ retrieval (top-20) and reranking only.
 \end{itemize}
 
 All three use Gemma~4 E4B as answer model (temperature 0.1), top-5
-context, and Gemma~4 26B as judge, one run per configuration. Four
+context, and Gemma~4 26B as judge, one run per configuration. Round~3
+was not pre-registered: no primary metric, decision rule, or test family
+was fixed in advance, so all of its contrasts are exploratory. Four
 changes separate this deployment from Round~2. None of them changes the
 graph's content (a July~8 maintenance step only attached provenance tags
 to 106 existing manual edges and synchronized two manual event nodes
@@ -169,6 +177,24 @@ Graph $-$ no-graph & All (499) & $+$0.002 & $-$0.007 & $-$0.005 & $-$0.006 & $-$
 \item Means of per-question differences; intervals (leading zeros
 omitted) from 10{,}000 bootstrap resamples with a fixed seed.
 VERSE\_LOOKUP\_035 (infrastructure failure) is excluded throughout.
+Intervals are per cell and uncorrected for multiplicity, and Round~3 was
+not pre-registered; for graph $-$ no-graph, the upper end of an interval
+is the upper bound on the graph's average gain.
+\item Multiplicity, graph $-$ no-graph (question unit, $k=5$): Holm's
+adjustment~\cite{holm1979} over eight sign-flip tests (100{,}000 flips;
+a family defined by the October 2026 audit after the Round~3 results
+were known) --- hit rate, verse recall@5, anchor coverage@5, and MRR, each on all
+499 and on the 399 expansion questions --- takes expansion anchor
+coverage@5 from $p=0.013$ to $0.107$, expansion MRR from $0.026$ to
+$0.18$, expansion verse recall from $0.092$ to $0.55$, and the other
+five cells to 1. A retrieval-only rerun of both configurations on
+October~3 gave expansion anchor coverage@5 $-0.0103$
+$[-0.0215, +0.0001]$, $p=0.060$. The MRR win:loss count (questions on
+which the graph configuration ranked the first gold passage higher
+vs.\ lower) is 12:35 on the expansion set (sign test $p=0.001$; it
+survives a Holm adjustment applied to the sign tests of the same eight
+cells) and 13:32 in the rerun
+($p=0.007$); this statistic was chosen after the results had been seen.
 \end{tablenotes}
 \end{threeparttable}
 \end{table*}
@@ -210,24 +236,46 @@ lookups that dense retrieval already finds --- and because fewer of them
 cite a reference (33\% are routed R1/R2, against 45\% of the original
 100).
 
-\textbf{On questions the graph repairs never saw, the graph is
-neutral to slightly harmful.} On the 399 expansion questions the graph
-configuration trails no-graph on every retrieval metric by small but
-consistent margins: anchor coverage@5 $-0.012$ $[-0.023, -0.003]$, context
-recall $-0.012$ $[-0.023, -0.003]$, MRR $-0.015$ $[-0.028, -0.002]$,
-verse recall $-0.009$ $[-0.019, +0.001]$, answer coverage $-0.014$
-$[-0.029, +0.001]$. Against semantic-only, the graph configuration's
-expansion advantage reduces to hit rate ($+0.025$ $[+0.005, +0.048]$)
-and, marginally, MRR ($+0.030$, interval lower bound $\approx 0$); verse
-recall, anchor coverage, context recall, and coverage are statistically
-flat. The losses
+\textbf{On questions the graph repairs never saw, no graph gain was
+detected.} On the 399 expansion questions, graph minus no-graph answer
+coverage is $-0.014$ $[-0.029, +0.001]$: the 95\% CI upper ends are
+$+0.001$ for coverage and $+0.008$ for hit rate. Both come from one run
+per configuration and resample questions only; the coverage interval is
+about as wide as the $\pm 0.013$ generation-and-judge noise measured
+below, so the retrieval bounds, which carry no judge noise (verse
+recall@5 upper end $+0.001$), are the firmer ones. Every
+retrieval point estimate is negative --- hit rate $-0.005$, verse recall
+$-0.009$ $[-0.019, +0.001]$, anchor coverage@5 $-0.012$
+$[-0.023, -0.003]$, MRR $-0.015$ $[-0.028, -0.002]$ --- and so is the
+judged context recall ($-0.012$ $[-0.023, -0.003]$). These intervals are
+per cell and uncorrected. Holm's adjustment~\cite{holm1979} over the
+eight sign-flip tests of hit rate, verse recall@5, anchor coverage@5, and
+MRR on all 499 and on the 399 expansion questions takes the
+anchor-coverage $p$ from 0.013 to 0.107 and the MRR $p$ from 0.026 to
+0.18, so no retrieval mean difference survives it; a retrieval-only
+rerun of both configurations on October~3 reproduced the
+anchor-coverage direction only at $p=0.060$
+(Table~\ref{tab:round3paired}, notes). Only one harm statistic
+survives adjustment: the graph configuration ranked
+the first gold passage lower than no-graph on 35 expansion questions and
+higher on 12 (MRR win:loss 12:35, sign test $p=0.001$, which survives
+a Holm adjustment applied to the sign tests of the same eight cells),
+and the rerun gave 13:32 ($p=0.007$).
+That statistic was chosen by an audit after the Round~3 results had been seen, so this harm signal is post hoc.
+Against semantic-only, the graph configuration's expansion advantage
+reduces to hit rate ($+0.025$ $[+0.005, +0.048]$) and, marginally, MRR
+($+0.030$, interval lower bound $\approx 0$), both uncorrected; the
+intervals for verse recall, anchor coverage, context recall, and
+coverage include zero. Descriptively, the losses
 concentrate in the person route: on the 55 expansion questions routed
 R3 in both runs, switching the graph on lowers verse recall from 0.692
 to 0.627 and coverage from 0.606 to 0.567. By family
 (Table~\ref{tab:round3family}) the largest losses are title\_coref
 ($-0.120$ verse recall), multi\_chapter ($-0.049$), and nt\_quotes\_ot
 ($-0.031$); typology is the one family with a sizable gain ($+0.117$,
-on $n=12$).
+on $n=12$). These route and family deltas are exploratory and
+descriptive: they carry no intervals and no multiplicity correction, and
+they rest on small subsets.
 
 \subsection{Mechanism: Wrong Graph Anchors Pass the Ranking Layer}
 \label{sec:round3mech}
@@ -388,7 +436,8 @@ $\Delta_{\mathrm{VR}}$ \\
 \end{tabular}
 \begin{tablenotes}\footnotesize
 \item G $=$ graph, NG $=$ no-graph, S $=$ semantic-only;
-$\Delta_{\mathrm{VR}}$ $=$ G $-$ NG verse recall@5. ``Original'' rows
+$\Delta_{\mathrm{VR}}$ $=$ G $-$ NG verse recall@5, descriptive (no
+intervals, no multiplicity correction). ``Original'' rows
 are each type's 20 Round~0--2 questions; head\_cold spans two types and
 is split by type. Archived aggregates: $^\dagger$the difference is
 entirely the infrastructure failure VERSE\_LOOKUP\_035 (R1, R2, and the
@@ -426,8 +475,9 @@ correctness by 0.074, faithfulness by 0.028, and context recall ---
 judged on the context alone --- by 0.003. With a standard deviation
 of 0.131 for the per-question coverage difference, a paired difference
 of two 400-question coverage means carries about $\pm 0.013$ of pure
-noise at 95\% confidence --- the size of the graph's coverage effect
-above (the retrieval metrics carry no judge noise), which is why every
+noise at 95\% confidence --- the size of the graph $-$ no-graph
+coverage difference above (the retrieval metrics carry no judge
+noise), which is why every
 contrast is reported paired and with an interval. The zero-slot row of Table~\ref{tab:round3slots} shows the
 same floor directly: identical retrieval metrics, $+0.034$ coverage.
 
@@ -437,11 +487,14 @@ Four revisions to the reading of Rounds~0--2 follow. First, the
 $+0.16$ head margin is real, but about four-fifths of it belongs to
 signal routing --- all 13 original questions that no-graph recovers from
 semantic-only come from exact-verse (R1) and chapter (R2) lookup ---
-and one-fifth to the knowledge graph. Second, the
-graph's measured benefit is concentrated in head events whose graph
+and the remaining $+0.03$ is not distinguishable from zero (95\% CI
+upper bound $+0.08$). Second, the
+graph's point estimate on the original 100 comes from head events whose graph
 anchors were built or verified on the evaluation questions themselves;
-it does not transfer to 400 questions written afterwards, where the
-same machinery is neutral to slightly harmful. Third, the bottleneck
+it does not transfer to the 399 evaluable questions written afterwards, where no gain
+is detected (answer coverage upper bound $+0.001$) and the graph more
+often lowers than raises the rank of the first gold passage. Third,
+the bottleneck
 has moved: Rounds~1--2 found a ranking layer that could not
 \emph{transmit} graph signal; Round~3 finds one that cannot
 \emph{discriminate} it --- neither the reranker nor a fixed strategy
@@ -453,11 +506,32 @@ longtail\_chapter, and verse recall $-0.027$, $+0.002$, and $0.000$,
 because dense retrieval already resolves single-anchor long-tail
 questions. Head saturation explains why P0 read zero on the original
 100, but in this architecture a long-tail benchmark does not reveal
-hidden P0 value either. The natural next repairs are anchor-confidence
-gating (admitting or weighting graph candidates by entity-resolution
+hidden P0 value either.
+
+At the time, the natural next repairs were anchor-confidence gating
+(admitting or weighting graph candidates by entity-resolution
 confidence, with penalties for hub entities and generic events),
-per-strategy slot quotas, and query decomposition for multi-anchor
-questions; none has been tested yet, and the $\alpha=0.3$ of
-Section~\ref{sec:ablation}, chosen on the original 100, should itself be
-re-swept on the 500 --- an $\alpha=0$ run would also measure how much of
-the graph's damage the prior adds to injection.
+per-strategy slot quotas, query decomposition for multi-anchor
+questions, and a re-sweep on the 500 of the $\alpha=0.3$ of
+Section~\ref{sec:ablation}, which had been chosen on the original 100.
+The legacy graph was retired in October 2026, and
+Section~\ref{sec:rebuiltgraph} reports graph retrieval on the rebuilt
+system (question sets in Section~\ref{sec:rebuiltsetup}). The rebuilt knowledge layer has no
+identity or relation layer, so there is no entity-resolution confidence to gate on, and its
+ranked pool holds no graph candidates (a curated event lookup lane
+appends at most one passage after the top-$k$), so slot quotas and an
+$\alpha=0$ run can no longer apportion graph damage. Where graph signals
+could still act, no gain was detected against $k$-aligned non-graph
+controls; the one positive reading, on the development set on which the
+configuration was selected, did not hold on a second set. Fusing PPR or name-layer ranks into passage
+selection lowered the number of missing hops recovered in a per-hop
+probe on the multi-hop set OLD31 (19 and 14 of 58, against 21 for the reranker
+alone; descriptive). Query decomposition, which is not a graph
+operation, gained $+0.101$ in hop coverage over a deeper dense pool on
+the seen multi-hop development set NEW82 (exploratory) but missed its
+pre-registered bar on the 204 multi-anchor questions of the benchmark as
+evaluated on the rebuilt system (GT~v2; $+0.0174$ $[-0.0025, +0.0380]$
+in anchor coverage@6). Giving the decomposer
+PPR-ranked names instead of non-graph names changed hop coverage on NEW82 by $-0.017$ (upper bound $+0.023$).
+Both lines were stopped by the pre-registered rule; this is not
+evidence of absence (Section~\ref{sec:rebuiltclosure}).

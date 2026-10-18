@@ -5,11 +5,16 @@
 \section{Online Retrieval Architecture}
 \label{sec:retrieval}
 
-The online service evaluated in Rounds~0--3 is a FastAPI application
-exposing \code{POST /api/v1/query}. Figure~\ref{fig:online} shows the
-query pipeline; this section walks through it stage by stage. (The
-service rebuilt in October 2026 no longer queries Neo4j;
-Appendix~\ref{app:rebuild}.)
+The online service evaluated in Rounds~0--3 was a FastAPI application
+exposing \code{POST /api/v1/query}. Figure~\ref{fig:online} shows its
+query pipeline; this section walks through that legacy architecture
+stage by stage. The service rebuilt in
+October 2026 no longer queries Neo4j and has no graph traversal: its
+routes are served by SQL and dense strategies only, the reranker and
+rank fusion are kept without graph candidates, and the knowledge layer
+enters retrieval only through a curated event lookup lane (its names
+serve only as routing vocabulary; Appendix~\ref{app:rebuild}). The graph-retrieval experiments on the
+rebuilt system are reported in Section~\ref{sec:rebuiltgraph}.
 
 \begin{figure*}[!t]
 \centering
@@ -89,7 +94,9 @@ Appendix~\ref{app:rebuild}.)
 \node[lbl, text=orange!75!red, align=center] at (13.9,2.35)
   {R1 exact verse:\\skip rerank/fusion/pins};
 \end{tikzpicture}
-\caption{Online query pipeline. Compared with the May 2026 deployment, the
+\caption{Legacy online query pipeline (Rounds~0--3; Neo4j and the graph
+strategies were removed in the October 2026 rebuild). Compared with the
+May 2026 deployment, the
 post-retrieval chain gained the rank-fusion stage, and the pin set was
 re-audited: only ``user-literal'' pins survive
 (Section~\ref{sec:fusionlayer}).}
@@ -99,21 +106,22 @@ re-audited: only ``user-literal'' pins survive
 \subsection{Triple-Database Roles and Content Hydration}
 \label{sec:tripledb}
 
-The three stores play strictly complementary roles:
+In Rounds~0--3 the three stores played strictly complementary roles:
 
 \begin{itemize}
-\item \textbf{PostgreSQL} is the authoritative source of truth: full
+\item \textbf{PostgreSQL} was the authoritative source of truth: full
 text, hierarchy, entity mentions. \emph{Every} retrieval strategy returns
 only IDs; final passage text is always hydrated by a single PostgreSQL
 lookup (\code{get\_content\_by\_id()}), which resolves 3-segment IDs to
 pericopes, 4-segment IDs to chunks, and verse IDs to their parent
 pericope. This guarantees that no matter which index proposed a
 candidate, the generator always sees identical, authoritative text.
-\item \textbf{Qdrant} is the semantic entry point: dense and
+\item \textbf{Qdrant} was the semantic entry point: dense and
 entity-vector search (the configured hybrid mode never executed;
 Section~\ref{sec:strategies}).
-\item \textbf{Neo4j} is the relational entry point: hierarchy traversal,
-entity networks, and cross-reference expansion.
+\item \textbf{Neo4j} was the relational entry point: hierarchy traversal,
+entity networks, and cross-reference expansion. It was removed in the
+October 2026 rebuild.
 \end{itemize}
 
 Strategy weights are \emph{priors} on the reliability of the proposing
@@ -133,8 +141,9 @@ selection; (4) parallel multi-strategy retrieval for the selected route;
 context assembly from the top-5 passages; (7) constrained answer
 generation. Five request-level switches matter for evaluation:
 \code{semantic\_only} bypasses steps 1--3 (the ablation baseline);
-\code{use\_graph} gates all Neo4j strategies per request (A/B without
-container restarts); \code{fusion\_alpha} overrides $\alpha$
+\code{use\_graph} gated all Neo4j strategies per request in
+Rounds~0--3 (A/B without container restarts; in the rebuilt service it
+gates only the curated event lookup lane); \code{fusion\_alpha} overrides $\alpha$
 (Section~\ref{sec:ablation}); \code{retrieval\_only} skips step 7 (the
 fast evaluation loop of Section~\ref{sec:evalinfra}); and
 \code{include\_context} returns, per source, the context block the
@@ -175,7 +184,11 @@ query rewriting}: the raw user query reaches both the embedder and the
 reranker verbatim, so the lexical gap between modern phrasing and the
 CUV-derived vocabulary of the RCUV text must be bridged by graph anchors
 and the fusion layer --- a recurring causal thread in
-Sections~\ref{sec:p0}--\ref{sec:fusion}.
+Sections~\ref{sec:p0}--\ref{sec:fusion}. The rebuilt-system experiments
+revisit this design bet (Section~\ref{sec:rebuiltmech}): where
+graph-derived names were combined with LLM sub-query rewriting, a
+non-graph twin with the same rewriting reproduced the gain over plain
+dense retrieval.
 
 \subsection{Six-Route Decision Tree}
 \label{sec:routes}
@@ -200,7 +213,7 @@ Sections~\ref{sec:p0}--\ref{sec:fusion}.
 \end{algorithm}
 
 \begin{table}[!t]
-\caption{Routes and Strategy Compositions (Weights in Parentheses)}
+\caption{Legacy Routes and Strategy Compositions (Rounds~0--3; Weights in Parentheses)}
 \label{tab:routes}
 \centering
 \begin{threeparttable}
@@ -230,7 +243,7 @@ FB & \code{semantic}/\code{hybrid} $+$ \code{book\_anchor} (if a book is
 \bottomrule
 \end{tabular}
 \begin{tablenotes}\footnotesize
-\item Names are the deployment's route-configuration keys:
+\item Names are the legacy deployment's route-configuration keys:
 \code{graph} denotes the route's typed entity-graph traversal
 (\code{graph\_person} / \code{graph\_event} / \code{graph\_place});
 \code{cross\_reference} is R5's dedicated cross-reference retrieval,
@@ -239,7 +252,7 @@ sharing the seed-support$+$votes machinery of \code{cross\_ref\_expand};
 \code{sql\_chapter}; \code{hybrid} is the configured dense$+$sparse mode
 of \code{semantic}, which fell back to dense-only in every reported run
 (Section~\ref{sec:strategies}). With \code{use\_graph=false}, all
-Neo4j-backed strategies are gated off. Observed route distribution on
+Neo4j-backed strategies were gated off. Observed route distribution on
 the original 100 questions: R1$=$20, R2$=$25, R3$=$21, R4$=$18, R5$=$10, R6$=$4,
 fallback$=$2 in the Gemma runs of Rounds~0--1 (R4$=$19, R6$=$3 in
 Round~2, after the event keyword ``Gethsemane prayer'' was added);
@@ -257,14 +270,19 @@ and Jethro'' by person-graph traversal; ``how Jeremiah's new-covenant
 prophecy is applied in Hebrews'' by cross-book expansion. A
 priority-ordered decision tree (Algorithm~\ref{alg:routes}) maps the six
 signals to six routes plus a fallback; each route launches its strategies
-in parallel with the priors listed in Table~\ref{tab:routes}.
+in parallel with the priors listed in Table~\ref{tab:routes}. This was
+the design rationale of the legacy routes; on the rebuilt system, a
+prototype kinship traversal showed no detectable gain over $k$-aligned
+dense retrieval on multi-hop questions (exploratory, development set;
+Section~\ref{sec:rebuiltresults}).
 
 \subsection{Retrieval Strategies}
 \label{sec:strategies}
 
-Eleven strategies --- three of them the typed graph traversals ---
-share the ID-only/hydrate-later contract of
-Section~\ref{sec:tripledb}:
+In Rounds~0--3, eleven strategies --- three of them the typed graph
+traversals --- shared the ID-only/hydrate-later contract of
+Section~\ref{sec:tripledb} (the Neo4j-backed ones were removed in the
+rebuild):
 
 \begin{itemize}
 \item \textbf{\code{semantic}} --- BGE-M3 query embedding against the
@@ -273,8 +291,8 @@ and BM25-sparse branches (50 each) and merge them by
 RRF~\cite{cormack2009rrf} inside Qdrant, but it never executed: the
 installed Qdrant client (1.8.2) lacks the \code{query\_points} call it
 relies on, so every hybrid request fell back to dense-only (541 of 541
-logged calls) while still being labeled hybrid. All results in this
-paper are therefore dense-only.
+logged calls) while still being labeled hybrid. All results of
+Rounds~0--3 are therefore dense-only.
 \item \textbf{\code{verse\_direct}} --- exact SQL lookup of a verse,
 verse range, or whole chapter.
 \item \textbf{\code{sql\_chapter} / \code{sql\_supplement}} --- direct
@@ -318,9 +336,11 @@ guaranteeing that an explicitly named book contributes seeds.
 \subsection{Rank-Fusion Layer}
 \label{sec:fusionlayer}
 
-The post-retrieval chain is the architectural core of the current system
-and the layer where two of the four incidents of
-Table~\ref{tab:threerounds} were resolved and where the fourth arises:
+The post-retrieval chain was the architectural core of the legacy system
+of Rounds~0--3 and the layer where two of the four incidents of
+Table~\ref{tab:threerounds} were resolved and where the fourth arose.
+The rebuilt service keeps reranking and rank fusion, but no graph
+candidates reach them. In the legacy system the chain was:
 
 \begin{enumerate}
 \item \textbf{Deduplication}: same-ID candidates keep the maximum
@@ -341,7 +361,7 @@ restricted to ``user-literal'' triggers (Table~\ref{tab:pins}).
 \end{enumerate}
 
 \begin{table}[!t]
-\caption{Pin Ladder (Additive Bonuses on the Final Score)}
+\caption{Legacy Pin Ladder (Rounds~0--3; Additive Bonuses on the Final Score)}
 \label{tab:pins}
 \centering
 \begin{threeparttable}
@@ -369,18 +389,26 @@ two pins. The bonuses are spaced so pins never override one another.
 \end{threeparttable}
 \end{table}
 
-\textbf{Why fusion is necessary.} The cross-encoder is a surface-form
+\textbf{Why fusion was introduced.} The cross-encoder is a surface-form
 matcher. When modern question vocabulary does not occur in the RCUV text,
 the ground-truth anchor's reranker score can be as low as $0.001$ ---
 \eg ``the Last Supper'' against a corpus that says ``Passover meal'' ---
 and no amount of candidate-pool engineering makes it visible under pure
-reranker ordering. Fusion lets a candidate with
+reranker ordering. In the legacy system, fusion let a candidate with
 $s_{\mathrm{rr}}\approx 0.001$ but a graph prior of $w=0.85$ enter the
 top-5. The magnitudes are interpretable: at $\alpha=0.3$ a graph anchor
 ($w\in[0.85,0.9]$) beats a TSK neighbor ($w\in[0.5,0.6]$) unless the
 latter's reranker advantage exceeds $\approx 0.11$. R1 (exact verse)
 bypasses reranking, fusion, and pins entirely; if the reranker itself
-fails, ordering falls back to strategy priors.
+fails, ordering falls back to strategy priors. In Round~3 the graph
+strategies also injected off-target anchors that the reranker, and in
+some cases the prior, then favored (Section~\ref{sec:round3mech}). On
+the rebuilt system the same cross-encoder, which scores a passage only
+against the question or sub-query, underlies the first failure
+mechanism of graph retrieval, (A) selection: in the per-hop and
+appended-passage settings, graph-proposed bridge passages reached the
+candidate pool but rarely survived to the top-$k$
+(Section~\ref{sec:rebuiltmech}).
 
 \textbf{Pin lifecycle.} The EQ pin and the graph-uncertainty pin were
 designed \emph{before} fusion existed, as discrete rescues for graph
@@ -411,13 +439,15 @@ enabled per-question forensics.
 \subsection{Deployment}
 \label{sec:deployment}
 
-The system ships as five Docker Compose services --- backend (FastAPI),
-PostgreSQL 15 with pgvector, Qdrant v1.13.2, Neo4j 5.15 Community with
-APOC, and Ollama with GPU access --- with health-checked startup
-ordering. The backend image is baked (no code volume); the only
-code-relevant mounts are the read-only BM25 vocabulary (loaded, but
-unused for scoring; Section~\ref{sec:strategies}) and the
-HuggingFace model cache. Build (\code{scripts/}), serving
+In Rounds~0--3 the system shipped as five Docker Compose services ---
+backend (FastAPI), PostgreSQL 15 with pgvector, Qdrant v1.13.2, Neo4j
+5.15 Community with APOC, and Ollama with GPU access --- with
+health-checked startup ordering. The backend image was baked (no code
+volume); the only code-relevant mounts were the read-only BM25
+vocabulary (loaded, but unused for scoring; Section~\ref{sec:strategies})
+and the HuggingFace model cache. The rebuilt deployment drops the Neo4j
+service and the BM25 vocabulary mount and serves one versioned build
+whose contract files are mounted read-only. Build (\code{scripts/}), serving
 (\code{backend/}), and evaluation (\code{evaluation/}) each pin their own
 dependency manifest, isolating environment drift. All models --- embedder,
 reranker, extractor, generator, judge --- run locally; no external API is
