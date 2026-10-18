@@ -181,3 +181,4 @@ harness 由 workflow 經四步產生：建置、K0 核對、對抗審查、修�
   - 卡片只在 LIN、SEQ、UNC 出手；COU、DIL、FIL、MGF 都是 0 張。
 - FP §2 第 2 步：盲集確認最多只開一條，A 優先。確認集（D6、D7）要等 Kay 另行授權；stage-0 不構成證據。
 - 輸出、報告與 run_env 都在 store `reports/kg_cards_20261018/`（A/report.md、B/report.md）。
+- 2026-10-18 晚 Kay：「開 A 確認集，照你的建議跑」（D6、D7）。A 確認集的事前登記另立 `confirm_A.md`，程式在 `A/confirm/`，輸出在 store `A_confirm/`；B 不開。
