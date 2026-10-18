@@ -1,4 +1,6 @@
-# 發現要點紀錄:重建系統上的圖譜檢索 —— 未偵測到增益(附上界)與三個失敗機制
+# 發現要點紀錄:重建系統上的圖譜檢索實驗(F19–F31)
+
+> **狀態(2026-10-18)**:僅為實驗素材，**論文未採用、不定稿**。Kay 指示：論文先不寫「No Gain Detected」這類結論，等架構完全確定後再決定怎麼寫。依本檔撰寫的論文改寫草稿保留在分支 `draft/paper-graph-chapter`(commit a8fe6d1)，main 的 `paper/latex/` 維持改寫前版本。下文的「論文位置」「建議章節」都只是草稿當時的規劃。
 
 **日期**:2026-10-18
 **性質**:論文寫作素材 — 發現層級整理(延續 F10–F18,本檔為 F19–F31);供新節 `paper/latex/sec6c_rebuilt_graph.tex`(`sec:rebuiltgraph`)與 abstract、intro、Round 3、討論、附錄的改寫使用,是 .tex 新數字的**唯一**來源。每個數字在撰寫時都開啟 primary 檔逐一核對;只存在於 scratchpad、/tmp 或記憶的數字一律列入文末「引用陷阱」,不進發現。**沒有任何一項是 confirmatory**。

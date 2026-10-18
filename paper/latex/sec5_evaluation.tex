@@ -83,14 +83,7 @@ references were machine-validated against the corpus, every question
 was content-checked against the corpus text in an LLM-assisted review
 (49 corrections), and new reference answers use the corpus's own
 spellings. The original 100 are unchanged, so they remain a comparable
-subset across all four rounds. Audits in October 2026 found that the 500
-questions can reliably detect harm from a graph but not a small gain:
-275 of them (55\%) give away the answer's location in the question
-itself (an explicit citation or a single lexical anchor), only one is
-primarily a multi-hop question, and 15 need two or more hops. The graph
-tests on the rebuilt system therefore use separate multi-hop question
-sets, written by an LLM and not reviewed by humans
-(Section~\ref{sec:rebuiltsetup}).
+subset across all four rounds.
 
 \subsection{Metrics}
 \label{sec:evalmetrics}

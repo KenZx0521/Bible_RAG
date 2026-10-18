@@ -105,7 +105,7 @@ The practical consequence: the system runs at zero marginal cost with
 full data privacy, and the investment frontier is retrieval
 infrastructure, not model scale.
 
-\textbf{The hard question types pointed at the knowledge graph.} VERSE
+\textbf{The hard question types point at the knowledge graph.} VERSE
 (1.000/0.975 coverage) and TOPIC (0.900/0.856) are largely solved by
 exact SQL and semantic search; PERSON (0.635/0.594), EVENT
 (0.613/0.606), and GENERAL (0.601/0.580) lag. Person questions hinge on
@@ -119,11 +119,6 @@ that the audit traces to entity-layer damage rather than to routing.
 and no graph, all 20 original PERSON questions hit;
 Section~\ref{sec:round3mech}.)
 These observations motivated the audit of Section~\ref{sec:audit}.
-That reading was taken on the legacy system in Round~0; on the rebuilt
-system, graph retrieval on targeted multi-hop questions showed no
-detectable gain against $k$-aligned non-graph controls; its one positive
-reading, on the development set on which the configuration was
-selected, did not hold on a second set (Section~\ref{sec:rebuiltgraph}).
 
 \section{Knowledge-Graph Quality Audit: The Granularity-Mismatch Causal
 Chain}
@@ -292,8 +287,7 @@ driver.
 P0 repaired data in place --- days of work, no re-extraction ---
 following the audit's cheapest-first ordering
 (Table~\ref{tab:p0}). Construction-side quality indicators moved
-decisively; three of them were then tracked as construction-CI metrics
-of the legacy graph.
+decisively; three of them are now tracked as permanent CI metrics.
 
 \begin{table}[!t]
 \caption{P0 Data Repairs and Construction-Side Results (July 6, 2026)}
@@ -474,12 +468,9 @@ is absorbed by the reranker (mechanism 2); and (iii) the remaining
 blind-entity population had already shrunk to 164 (1.8\%). P1 was
 therefore \textbf{deferred}, and three day-scale, evaluation-verifiable
 ranking-layer repairs were scheduled instead --- with the explicit note
-that P1's value proposition was unchanged \emph{as graph asset}; what
+that P1's value proposition is unchanged \emph{as graph asset}; what
 failed was the claim that its effect would be observable on this
-benchmark. P1 was never carried out: the October 2026 rebuild stopped
-the knowledge layer at a name layer and a curated event registry, with
-no identity or relation layer, and Section~\ref{sec:rebuiltgraph}
-reports what graph retrieval on that layer achieved.
+benchmark.
 
 \section{Round 2: Rank-Fusion Remediation}
 \label{sec:fusion}
@@ -681,12 +672,8 @@ effects are complementary rather than redundant. This
 decomposition is the constructive counterpart of the negative result:
 the same graph assets that read as zero in Section~\ref{sec:p0} ---
 together with the curated head events of Repair~2, which the $\alpha=0$
-column shows carry the hit-rate gain --- produced the
-Table~\ref{tab:evolution} gains once the ranking layer transmitted
+column shows carry the hit-rate gain --- produce the
+Table~\ref{tab:evolution} gains once the ranking layer transmits
 them. Like every number in this section, that reading was taken on the
-100 questions the repairs were developed on. Section~\ref{sec:round3}
-re-tests it on the 399 evaluable questions none of them saw and detects no graph gain
-there; on the rebuilt system, no gain from a graph operation was
-detected against $k$-aligned non-graph controls, and the one positive
-reading, on the development set on which the configuration was
-selected, did not hold on a second set (Section~\ref{sec:rebuiltgraph}).
+100 questions the repairs were developed on; Section~\ref{sec:round3}
+re-tests it on 400 questions none of them saw.

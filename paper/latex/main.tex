@@ -40,15 +40,11 @@ Computing and Big Data, Chung Yuan Christian University, Taoyuan City,
 Taiwan (corresponding author: Y.-H. Tan).}%
 \thanks{Manuscript drafted July 7, 2026; revised October 2, 2026 to add
 the September 2026 expanded-benchmark evaluation (Round 3). Corpus and
-graph statistics were re-verified against the legacy deployment, then
-live, on July 6, 2026; Round 3 statistics are recomputed from the
-archived run outputs. Statements contradicted by an October 2026 data
-audit were corrected on October 8, 2026 (Appendix~\ref{app:rebuild}); no
-experimental number was changed. Revised again on October 18, 2026 to add
-graph-retrieval experiments run after Round~3, mostly on the rebuilt
-system (Section~\ref{sec:rebuiltgraph}), to add multiplicity-adjusted
-readings of Round~3, and to mark the retired graph-centric architecture
-as legacy; no number reported for Rounds 0--3 was changed.}}
+graph statistics were re-verified against the live deployment on July 6,
+2026; Round 3 statistics are recomputed from the archived run outputs.
+Statements contradicted by an October 2026 data audit were corrected on
+October 8, 2026 (Appendix~\ref{app:rebuild}); no experimental number was
+changed.}}
 
 \markboth{Preprint — October 2026 (revised)}%
 {Chung \MakeLowercase{\textit{et al.}}: Signal-Adaptive GraphRAG for Traditional Chinese Bible QA}
@@ -58,23 +54,20 @@ as legacy; no number reported for Rounds 0--3 was changed.}}
 \begin{abstract}
 Domain-specific question answering (QA) with large language models (LLMs)
 faces high API cost, data-privacy constraints, and strict factuality
-requirements. We present the complete design, deployment, and four-round
-empirical evaluation of a graph-based retrieval-augmented generation
-(GraphRAG) system for Traditional Chinese Bible QA, followed by tests of
-graph retrieval on the rebuilt system. The legacy system of Rounds~0--3
-converted 66 books of the Revised Chinese Union Version from PDF into a
-pericope-centric hierarchical corpus by layout-geometry analysis, applied
-token-aware hierarchical chunking, and built a knowledge graph with
+requirements. We present the complete design, deployment, and three-round
+empirical optimization of a graph-based retrieval-augmented generation
+(GraphRAG) system for Traditional Chinese Bible QA. The offline pipeline
+converts 66 books of the Revised Chinese Union Version from PDF into a
+pericope-centric hierarchical corpus by layout-geometry analysis, applies
+token-aware hierarchical chunking, and builds a knowledge graph with
 grounded dual-track entity extraction (9{,}120 entities of six types;
 173{,}896 mentions), closed-schema grounded relation extraction (37
 relation types), and a 250{,}418-edge cross-reference network that
-integrated the Treasury of Scripture Knowledge. Content, vectors, and
-graph were stored in PostgreSQL, Qdrant, and Neo4j, and served online by
-a signal-driven six-route retrieval architecture with eleven strategies,
+integrates the Treasury of Scripture Knowledge. Content, vectors, and graph
+are stored in PostgreSQL, Qdrant, and Neo4j, and served online by a
+signal-driven six-route retrieval architecture with eleven strategies,
 cross-encoder reranking, and a linear rank-fusion layer
-$s_{\mathrm{fused}}=(1-\alpha)\,s_{\mathrm{rr}}+\alpha\,w$; an October
-2026 rebuild retired Neo4j and reduced the knowledge layer to a name
-layer (2{,}926 names) and a curated registry of 31 events. On a
+$s_{\mathrm{fused}}=(1-\alpha)\,s_{\mathrm{rr}}+\alpha\,w$. On a
 100-question benchmark spanning five question types we report a three-round
 evidence chain: (i) signal-adaptive retrieval beats a semantic-only
 baseline by $+14$--$15$ percentage points hit rate with either answer
@@ -84,49 +77,24 @@ $83.8\%\!\rightarrow\!98.2\%$, cross-references $\times 273$) yields
 result we diagnose, question by question, to a reranker-monopolized final
 ranking, topical cross-reference noise, and benchmark head saturation; and
 (iii) a one-day rank-fusion remediation recovers and surpasses all prior
-results on the 100 questions it was developed on (hit rate $0.97$,
-event-narrative hit rate $1.00$, $+0.16$ over the semantic baseline), with
-an ablation showing a complementary structure between discrete data
-repairs and continuous score fusion. A fourth round (Round 3)
-re-evaluates on 500 questions (the original 100 plus 400 in 19 diagnostic
-families) with verse-level metrics, a repaired faithfulness judge, a
-repaired intent classifier (silently inactive in all earlier local-model
-runs), and a no-graph ablation: routing alone accounts for $+0.13$ of the
-replicated $+0.16$ head margin, and the graph's $+0.03$ is not
-distinguishable from zero (95\% CI upper bound $+0.08$). On the 399 new questions no
-graph gain is detected (verse recall@5 $-0.009$ and answer coverage
-$-0.014$, each with upper bound $+0.001$, from one run per configuration);
-the direction is consistently negative, but the anchor-coverage@5 deficit
-of $-0.012$ has a Holm-adjusted $p=0.107$, and harm survives
-multiplicity adjustment only in first-gold-rank win:loss counts (12:35,
-sign test $p=0.001$, replicated in a rerun; a statistic chosen after
-inspecting the results), a direction we trace to wrongly anchored graph
-candidates passing the ranking layer; faithfulness is $\approx 0.98$
-throughout. On the rebuilt system, whose knowledge layer has no
-entity-identity or relation layer, we tested graph operations over a
-name--passage graph --- chiefly personalized PageRank (PPR), used
-directly and as name hints for an LLM sub-query writer --- against dense
-retrieval that reads the same number of passages ($k$-aligned) and,
-for the sub-query arms, against non-graph twins of the same pipeline, on multi-hop questions
-written by an LLM and not reviewed by humans. No comparison is
-confirmatory, and none detected a gain outside the development set:
-dense-seeded PPR, selected on that set, where it won 11 question clusters
-and lost none at $k=10$, split 2:2 in a pre-registered check on a second,
-partially exposed set and was stopped (this is not evidence of absence);
-PPR name hints changed hop coverage by $-0.017$ against their non-graph
-twin (upper bound $+0.023$); and apparent gains of graph-hinted
-sub-queries were attributable to LLM query rewriting. We relate this
-null to reranker selection, missing identity and relation layers, and
-little graph-unique headroom, and we stopped graph-retrieval work on
-this layer pending a new graph layer and a new pre-registration. We
-conclude that, in the legacy rounds,
-knowledge-graph construction quality, the retrieval ranking mechanism,
-and benchmark design \emph{jointly} determined observable benefit and
-that optimization order should follow the bottleneck layer rather than
-the upstream-first order of the data flow; and, across both systems, that
-a layer's gains must be validated by ablation on questions its repairs
-never saw and, for a graph, against both $k$-aligned dense retrieval and
-a non-graph twin.
+results (hit rate $0.97$, event-narrative hit rate $1.00$, $+0.16$ over the
+semantic baseline), with an ablation showing a complementary structure
+between discrete data repairs and continuous score fusion. A fourth
+round (Round 3) re-evaluates on 500 questions (the original 100 plus 400
+in 19 diagnostic families) with verse-level metrics, a repaired
+faithfulness judge, a repaired intent classifier (silently inactive in
+all earlier local-model runs), and a no-graph ablation: routing alone
+accounts for $+0.13$ of the replicated $+0.16$ head margin, the graph's
+$+0.03$ is not significant, and on the new questions the graph is
+neutral to slightly harmful (anchor coverage@5 $-0.012$, 95\% CI
+$[-0.023,-0.003]$) because wrongly anchored graph candidates pass the
+ranking layer; faithfulness is $\approx 0.98$ throughout. We conclude
+that knowledge-graph construction quality, the retrieval ranking
+mechanism, and benchmark design \emph{jointly} determine observable
+benefit, that optimization order should follow the bottleneck layer
+rather than the upstream-first order of the data flow, and that a
+layer's gains must be validated by ablation on questions its repairs
+never saw.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -144,7 +112,6 @@ generation, Traditional Chinese.
 \input{sec5_evaluation}
 \input{sec6_experiments}
 \input{sec6b_round3}
-\input{sec6c_rebuilt_graph}
 \input{sec7_discussion}
 \input{appendix}
 

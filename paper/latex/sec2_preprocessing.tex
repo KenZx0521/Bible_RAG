@@ -71,10 +71,9 @@ import, so each stage is independently inspectable and re-runnable.
 \end{tikzpicture}%
 }
 \caption{Offline build pipeline. Every arrow is a materialized JSONL
-hand-off; the three databases played complementary roles in
-Rounds~0--3 (Section~\ref{sec:tripledb}); database counts show the
-legacy deployment's post-remediation state (July 6, 2026; Neo4j was
-retired in October 2026, Appendix~\ref{app:rebuild}). The embedding queue doubles as
+hand-off; the three databases play complementary roles
+(Section~\ref{sec:tripledb}); database counts show the live
+post-remediation state (July 6, 2026). The embedding queue doubles as
 the extraction feed --- the structural root cause analyzed in
 Section~\ref{sec:audit} (mechanism M1).}
 \label{fig:offline}

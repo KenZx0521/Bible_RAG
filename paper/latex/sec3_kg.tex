@@ -5,20 +5,14 @@
 \section{Knowledge Graph Construction}
 \label{sec:kg}
 
-This section describes the legacy knowledge graph of Rounds~0--3, which
-was retired in October 2026 (Appendix~\ref{app:rebuild}); the reduced
-knowledge layer of the rebuilt system is described in
-Section~\ref{sec:rebuiltsetup}. The legacy graph comprised three
-subnetworks --- the corpus hierarchy, the entity network, and the
-cross-reference network --- built by the four pipelines described below.
-Throughout construction we enforced a single anti-hallucination design
-rule, \emph{grounding}: LLMs never invent entities, relation types, or
-evidence; they only \emph{classify} candidates that rule-based stages
-propose, and every LLM output must quote an evidence span that is
-verified post hoc to be a literal substring of the source text,
-otherwise the output is demoted or discarded (the run of record also
-contains edges without verified evidence; they are listed at the end of
-Section~\ref{sec:relation}). This is the
+The knowledge graph comprises three subnetworks --- the corpus hierarchy,
+the entity network, and the cross-reference network --- built by the four
+pipelines described below. Throughout construction we enforce a single
+anti-hallucination discipline, \emph{grounding}: LLMs never invent
+entities, relation types, or evidence; they only \emph{classify}
+candidates that rule-based stages propose, and every LLM output must quote
+an evidence span that is verified post hoc to be a literal substring of
+the source text, otherwise the output is demoted or discarded. This is the
 schema-based end of the paradigm spectrum surveyed
 in~\cite{bian2025kgsurvey}, and the structured-prompting choice follows
 the noise-suppression evidence of~\cite{meher2025corekg,meher2025insidecorekg}.
@@ -31,7 +25,7 @@ two tracks in parallel: a named-entity-recognition (NER) track and a
 grounded classification track.
 
 \begin{table}[!t]
-\caption{Entity Types (Legacy Graph Counts, July 6, 2026; Retired October 2026)}
+\caption{Entity Types (Live Graph Counts, July 6, 2026)}
 \label{tab:entities}
 \centering
 \begin{threeparttable}
@@ -50,11 +44,11 @@ Total  & & 9{,}124 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}\footnotesize
-\item The deployed counts differ slightly from the raw extraction output
+\item Live counts differ slightly from the raw extraction output
 (9{,}120; Section~\ref{sec:entity}) because of import-time merging and
 the post-audit curation of Sections~\ref{sec:p0}--\ref{sec:fusion}
 (16 generic-noun events deleted, 18 curated events added, one entity
-retyped); the pre-remediation deployed count, used by the audit of
+retyped); the pre-remediation live count, used by the audit of
 Section~\ref{sec:audit}, was 9{,}122.
 \end{tablenotes}
 \end{threeparttable}
@@ -195,8 +189,7 @@ on the 64 prior edges and no evidence on the 9{,}060 co-occurrence
 backfill edges of Section~\ref{sec:p0}, and two independent samples put
 the strict precision of all 15{,}926 semantic edges
 (Table~\ref{tab:kgscale}) at about 0.23--0.28 (lenient 0.34--0.45).
-They are therefore candidate relations, not verified facts --- one part
-of failure mechanism~(B) of Section~\ref{sec:rebuiltmech}.
+They are therefore candidate relations, not verified facts.
 
 \subsection{Cross-Reference Network}
 \label{sec:crossrefs}
@@ -223,9 +216,8 @@ coincidence; the PDF has 31{,}092 verse positions); only 7 rows fail to
 map, yielding 250{,}358 unique pericope pairs.
 \end{enumerate}
 
-After idempotent merge the legacy graph held \textbf{250{,}418}
-\textsc{cross\_references} edges (TSK is not loaded in the rebuilt
-system; Appendix~\ref{app:rebuild}). Every TSK edge stores its \code{votes};
+After idempotent merge the live graph holds \textbf{250{,}418}
+\textsc{cross\_references} edges. Every TSK edge stores its \code{votes};
 manual edges are assigned a sentinel vote of 999 (highest trust). This
 vote-based provenance is what later made \emph{selective de-noising}
 possible without deleting data (Section~\ref{sec:fusion}) --- the same
@@ -289,8 +281,8 @@ is quantified in Section~\ref{sec:audit}.}
 \label{fig:schema}
 \end{figure}
 
-Figure~\ref{fig:schema} shows the schema; Table~\ref{tab:kgscale} the
-scale of the legacy graph as deployed. Salient design points:
+Figure~\ref{fig:schema} shows the schema; Table~\ref{tab:kgscale} the live
+scale. Salient design points:
 
 \begin{itemize}
 \item \textbf{Dual labels.} Hierarchy nodes carry
@@ -305,15 +297,12 @@ time --- and the direct precondition of the silent mention-loss defect
 \code{aliases} (a native list), \code{description}, \code{mention\_count}.
 \item \textbf{Provenance-first edges.} Semantic edges keep confidence and
 evidence fields; cross-reference edges keep votes and source; backfilled edges
-are flagged --- all imports were idempotent \textsc{merge} operations, so
-while the legacy graph was deployed it could be rebuilt or rolled back
-deterministically. Neo4j and the legacy data were deleted in the October
-2026 rebuild; the legacy graph can now be restored only from the
-pre-rebuild backup (Appendix~\ref{app:repro}).
+are flagged --- all imports are idempotent \textsc{merge} operations, so
+the graph can be rebuilt or rolled back deterministically.
 \end{itemize}
 
 \begin{table}[!t]
-\caption{Legacy Knowledge-Graph Scale (Neo4j, July 6, 2026; Retired October 2026)}
+\caption{Live Knowledge-Graph Scale (Neo4j, July 6, 2026)}
 \label{tab:kgscale}
 \centering
 \begin{tabular}{lr}
@@ -352,11 +341,11 @@ titles}'' truncated to 200 characters, upserted idempotently (UUID5 keys)
 into a dedicated collection (9{,}122 points).
 \end{itemize}
 
-In the legacy system, imports populated PostgreSQL (6 tables; the
-authoritative store), Qdrant (\code{bible\_embeddings}, dense-only;
+Imports populate PostgreSQL (6 tables; the authoritative store),
+Qdrant (\code{bible\_embeddings}, dense-only;
 \code{bible\_embeddings\_hybrid} with named dense$+$sparse vectors;
 \code{bible\_entities}), and Neo4j (structure, mentions, semantic edges,
-cross-references). The import layer was where the audit later found the
+cross-references). The import layer is where the audit later found the
 single most damaging defect of the whole pipeline --- verse-level
 mentions silently dropped because their target nodes do not exist
 (Section~\ref{sec:audit}) --- and where honesty counters were
