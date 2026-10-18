@@ -117,8 +117,41 @@
 
 ## 附錄 A、附錄 B
 
-（harness commit 時補上：題目與答案鍵表、模板、別名修正規則、prompt 原文的 sha256。補上時還沒有任何臂的生成。）
+harness commit 時寫入，當時還沒有任何 Ollama 呼叫。全文是 `A/appendix_A.md`（sha256 `09f63b4a…`）與 `B/appendix_B.md`（sha256 `5aa1395a…`），分別由 `A/appendix_a.py`、`B/b_appendix.py` 從 store 檔案產生。內容：題號與答案鍵表、模板、別名修正規則、臂規格、計分規則、prompt 與程式的 sha256、job 數。經文、自然題原文、TIPNR 衍生內容只放 store。
+
+- **A**：job 300（seed 30、stage-2 270；正式跑扣掉棄權）。生成 system `f58c03fa…`、user 模板 `677e91e5…`、全部 seed prompt `84e32f9a…`、dry-run（gold 種子）全部 stage-2 prompt `e73504f1…`。K0-1 40/40、K0-2 錯綁 0。
+- **B**：job 448（錨點 48、各臂 400；G、G-oracle 數依 gemma 錨點而定）。卡片 K0 36/40＋換題新卡 4/4＝40/44（0.909）。槽位上限 107 字、6 行。
+- `cards_common.py` sha256 `ae9dc16c…`，與 a5966c1 相同。
 
 ## 執行紀錄
 
-（空）
+### 2026-10-18 生成前（harness commit 時，還沒有任何 Ollama 呼叫）
+
+harness 由 workflow 經四步產生：建置、K0 核對、對抗審查、修正（wf_aba360bd-38c），之後第二輪對抗審查（wf_1f1d4f3d-187）。下面是對本檔字面的修訂與解讀，由主程序在任何生成之前定案。依 Kay「流程精簡」的偏好，不另外請簽核；Kay 若不同意，本次判定作廢重跑。
+
+**共同**
+- 答案行：先去掉 Markdown，再找最後一個「答案：」，否則「**答案**：」會被當成沒有答案行（§1 本來就要求去 Markdown）。A 取這個標記之後到第一個空行的整段（A.5）；B 取 `cards_common.answer_line` 的一行。
+
+**A（附錄 A.5、A.6、A.9、A.10）**
+- 自然題答案鍵只計題目有問的項目。dev_eval 的其他 walk/lookup 王名只從陷阱豁免，不計分（A.9-1）。理由：作答指示要求最後一行只寫答案，若把沒問的中間王也當鍵，量到的是答案行寫多長。
+- K0 核對時補了兩把死因詞鍵：SUC_02 焚／火，N_SUC_05 殺／弒。數字鍵改為必須帶單位，SUC_02 是「七日」。依據節都已核對經文。
+- 陷阱規則的豁免範圍：父名片語、同名王錯父、另一國前綴、自然題 walk 路徑（A.5）。模板題的答案行若列出整條鏈，仍記 0。
+- powerA 的輸入 h、pR、pC 夾到 [0.01, 0.99]。原因是 logit 在 0 與 1 無定義，cell 會 ZeroDivisionError。
+- T-canon 中心仍用 tier 優先。dry-run 有 11/30 題的窗缺依據公式節，所以 H1 是跟「同字數預算的經文窗」比，不是跟「拿到完整事實的文本」比。判定照舊，含齊依據節的子集另列描述（A.9-7、A.9-8）。
+- 防呆：K0 檔、num_ctx、續跑 options 與 prompt sha、seed 完整性（A.6）。
+
+**B（附錄 B14；B14.6 列出的事項）**
+- 建置者另加三條題目有效性規則：錨點表層名在 pericope 對到超過 1 人就排除；雙錨點最短路徑命名出超過一種關係就排除；每個 pericope 上限 8 題。
+- gold：48 題全部對照經文核對，比本檔規定的 20 題嚴格。錯 9 題，b19 另外是答案鍵錯；錯誤來源是 TIPNR 錯邊與探針的標籤對錯。修法是在 store `gold_fixes.json` 改邊與標籤，再按槽位換題，換題程序含第 3 層 fallback。換進來的 9 題與 4 張新卡由第二輪獨立判讀再核一次，全部正確。
+- 分散題的定義：每一跳都在邊表裡定位到，但不是連續行，n＝14。有一跳找不到（unlocated）的讀法只列描述。
+- 槽位上限＝max(K0 的 107 字, 正式錨點下 G 卡的最大字數)。
+- 寫鏈指示加上「第一行就寫第一跳，不要前言、不要編號」。
+- smoke 換 num_ctx 時，舊檔移到 `smoke/superseded/`，所有呼叫重發；ps.json 只在 context_length 等於 --num-ctx 時寫入。
+- K0 核對看到三個卡片規則缺口，都不修，因為修了等於看核對結果調規則；方向對 G 不利。三個缺口：同名阻擋只看 ≥2 個父系父母；(U,S)→Um；母系旁系沒有稱謂。
+
+**num_ctx（K0-3）的決定規則，在 smoke 前寫定**
+- smoke1 照 §1 不帶 num_ctx，結束後馬上讀 /api/ps 的 context_length（C0）。
+- smoke1 有任何截斷，或最大的 prompt_eval_count+eval_count ≥ 0.75×C0：N＝16384，換新目錄用 N 重跑 smoke；smoke2 還有截斷就 N＝32768。
+- 都沒有：N＝C0。
+- 正式跑一律帶 `--num-ctx N`。
+- B 的 smoke 直接用 A 定出的 N：模型和預設 context 相同，C0 已在 A 的 smoke1 量過。B 的 smoke 在 N 下仍截斷，B 就改用 32768。
