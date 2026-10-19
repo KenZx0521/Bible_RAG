@@ -316,30 +316,35 @@ def test_blocked_or_unchained_names_take_no_card_and_no_seed_call(client, questi
 # --- store-backed (in-sample) -------------------------------------------------------------
 
 STORE = Path("/mnt/ollama-data/bible_rag_store")
-STORE_LAYER = STORE / "layers/relations/relations@a04b67a301dc/regnal_layer.json"
+# the layer b20261019_18aa84ad serves, and the fixed one (R1a–R12, R14) of b20261019_a86f2b06
+STORE_LAYERS = (STORE / "layers/relations/relations@a04b67a301dc/regnal_layer.json",
+                STORE / "layers/relations/relations@ee8e78c043d2/regnal_layer.json")
 ROUTE_LEXICON = STORE / "layers/route/route@c31c88e4681e/routing_lexicon.json"   # b20261019_18aa84ad's
 RUN_A = STORE / "reports/kg_cards_20261018/A"
 CONFIRM = STORE / "reports/kg_cards_20261018/A_confirm"
 REPO = Path(__file__).resolve().parents[2]
 OLD_LAYER = "932d2242dc3fdce8830112484c81bc0ea5364cc4caaf6978b12f8984790ee9ab"
+FIXED_LAYER = "252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11"
 # measured on the 500-question GT (v1 and v2 alike): questions naming a chain king without the
-# blockers, with them; and the blockers the lexicon gives that layer
-NAMED = {OLD_LAYER: (21, 19, 28)}
+# blockers, with them; and the blockers the lexicon gives that layer (所羅門 is off the fixed
+# layer's chains, so fewer questions name a chain king there)
+NAMED = {OLD_LAYER: (21, 19, 28), FIXED_LAYER: (15, 12, 28)}
 # the blockers route@c31c88e4681e's lexicon gives each layer, pinned so a new route layer's
 # list is read before it serves (the startup log prints it too)
-STORE_BLOCKERS = {OLD_LAYER: (
+OLD_BLOCKERS = (
     "約施比加沙", "亞哈瓦河", "亞哈隨魯", "亞撒細雅", "亞撒西雅", "亞比亞撒", "以利亞撒", "押沙龍柱", "約沙法谷",
     "耶希西家", "亞哈希", "亞哈拉", "亞哈拜", "亞哈瓦", "亞哈賽", "亞哈黑", "亞撒列", "亞撒利", "亞撒雅", "亞撒黑",
-    "以拉他", "以拉大", "以拉撒", "以拉谷", "以拉都", "押沙龍", "挪亞們", "耶戶巴")}
+    "以拉他", "以拉大", "以拉撒", "以拉谷", "以拉都", "押沙龍", "挪亞們", "耶戶巴")
+STORE_BLOCKERS = {OLD_LAYER: OLD_BLOCKERS, FIXED_LAYER: OLD_BLOCKERS}
 needs_store = pytest.mark.skipif(
-    not all(p.exists() for p in (STORE_LAYER, ROUTE_LEXICON, RUN_A / "items.json", CONFIRM / "items.json",
+    not all(p.exists() for p in (*STORE_LAYERS, ROUTE_LEXICON, RUN_A / "items.json", CONFIRM / "items.json",
                                  RUN_A / "ref_layer.json")),
     reason="experiment A records, the regnal layer or the route lexicon not in the store")
 
 
-@pytest.fixture(scope="module")
-def store_layer():
-    return with_lexicon(parse_layer(STORE_LAYER.read_bytes()), routing.load_lexicon(ROUTE_LEXICON))
+@pytest.fixture(scope="module", params=STORE_LAYERS, ids=lambda p: p.parent.name)
+def store_layer(request):
+    return with_lexicon(parse_layer(request.param.read_bytes()), routing.load_lexicon(ROUTE_LEXICON))
 
 
 def _items(run: Path) -> list[dict]:

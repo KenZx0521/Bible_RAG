@@ -1,0 +1,308 @@
+{
+ "layer_sha256": "252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11",
+ "lexicon_sha256": "2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e",
+ "cards": {
+  "confirm": {
+   "QI1s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "268a71c1cdbc9c708df7705c79370ec115501a9244491b330e94d6fdebbc1982",
+    "prompt_sha256": "d652275a17aa912ce112d074be253f1aa64e722f89ca8b927e44bca3d7f6ce8d"
+   },
+   "QI2s3a1": {
+    "seed_source": "rule",
+    "card_sha256": "2d25a34e847637e2c484f1dfba39502e6ce03e5660f262e006643df22e4b0e4d",
+    "prompt_sha256": "4ef342866f7828efcfe742eee557055a0e7481dd5c7e3ba354d6b7b0f54fc6e1"
+   },
+   "QI3s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "18fc367fba2567e9fcf34092f01d73c260add6a22c0328440a14f5e9bc2b5123",
+    "prompt_sha256": "f7daee8840fa9c73bd3d1c317709fe5c833ef3ddc4b17240995f52f408c4ed5d"
+   },
+   "QI4s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "2710a2170cfab545cb66146644258787735abec9a057db3fa80daeeabe2e10da",
+    "prompt_sha256": "8a1331c27dd98cae360dde216b869d91dcc833bc3cac9a4f18af55cc70616387"
+   },
+   "QI6s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "f322d2877e3eb6c2489ef917c11d592b59d8f84733726e3685d95ac85ccfe02e",
+    "prompt_sha256": "e8525efb03740b1de8e96e625f8ef3098d0cd922937b82af1ea7c26ec2cc5355"
+   },
+   "QI7s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "a5c1f02cdf6f117affe9340c79286cff66b9d6b50fc09dba4484880a72f79108",
+    "prompt_sha256": "ad788ec32201ef9161c56418463f30ac47d7ef184f870008bfbdc515fae92496"
+   },
+   "QI8s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "163daaad6af56030456fa985887ae56ffe50258190b7830a91fe841a74dd68e2",
+    "prompt_sha256": "bf68ab0a500130ebc6bb603a3fdd91355c071670ad6f1777164250b107f5cee7"
+   },
+   "QI9s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "464c5c5b0087cb9ff73f85bf329b8aae0404167e2d57079c7f1c80b951e1873b",
+    "prompt_sha256": "b27fdddb33b3a577884605af28d52aac47d808d0da7283423ec17e1c79cc6589"
+   },
+   "QJ2s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "d863435efa9905b0c96952691e002265845e664a0e43d967ecb73be5400cc166",
+    "prompt_sha256": "98d5588daaff62fd511f6ee73b27af6c79ed6af75acf903ed74a425a6d53f165"
+   },
+   "QJ1s2a2": {
+    "seed_source": "rule",
+    "card_sha256": "e7955d1eeeb9a1fcb1c0fa0887a0bf948e8215f68dfdf735e487672c7ce49801",
+    "prompt_sha256": "8b9923f69f98e0d41bbccf583be615c9f099e9c59538ef277f8b80b8901bf9f6"
+   },
+   "QJ5s1a2": {
+    "seed_source": "rule",
+    "card_sha256": "ccff42d69b0a313564e7bd4f02af6a0607436a34a09b53dac14a073edd7e7487",
+    "prompt_sha256": "7ce637f5b9c4b2920e5250831637969244c58373338c903540d2c0fdfa939fd4"
+   },
+   "QI1s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "2d25a34e847637e2c484f1dfba39502e6ce03e5660f262e006643df22e4b0e4d",
+    "prompt_sha256": "b43c536f58ce7d56abfc76938426712f60cc7897b12f1299083e40285d147e64"
+   },
+   "QI2s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "18fc367fba2567e9fcf34092f01d73c260add6a22c0328440a14f5e9bc2b5123",
+    "prompt_sha256": "e4350a67ebb221c49635dbc7de38f689ec56136c33e66c10f0038ae34a871eaa"
+   },
+   "QI3s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "2710a2170cfab545cb66146644258787735abec9a057db3fa80daeeabe2e10da",
+    "prompt_sha256": "df9491ddf73ab082d7c056b653b7604aff346fd58289ff17e8f91b46eb0e6d6d"
+   },
+   "QI4s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "7d3d80e1ec8ea4cc80a1280cf8796b14ea6b1e4e469ae206657fc2cfc8874b88",
+    "prompt_sha256": "1a03b34b67c534cbb2decd020642cf8b801e869aa6ad5e6ef6334eb354cfb657"
+   },
+   "QI5s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "7d3d80e1ec8ea4cc80a1280cf8796b14ea6b1e4e469ae206657fc2cfc8874b88",
+    "prompt_sha256": "9e2962f898eb63e0cb561984e2644a1b544d96b5480cc82780d5d79428560312"
+   },
+   "QI7s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "163daaad6af56030456fa985887ae56ffe50258190b7830a91fe841a74dd68e2",
+    "prompt_sha256": "7dd30998654808eff04585268349d901e7b380caa45cc92aca7e1a54846b4563"
+   },
+   "QI8s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "464c5c5b0087cb9ff73f85bf329b8aae0404167e2d57079c7f1c80b951e1873b",
+    "prompt_sha256": "2a8a12abcf1cb8d2e1b7bb17d18f203480e48a8e335b129fbadcd059ba0d0905"
+   },
+   "QI9s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "a4cd77bd77e74e34138e98be232ff78db7cf31953290c705817a51ba29a42376",
+    "prompt_sha256": "06a5d2e1f16517cd1963382d2e18996971f92602aa8c9558211e7ca0702e22ab"
+   },
+   "QJ1s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "8e9be0830a9de2a7857dcb19351dd77eb9b2594630cae164044e3d4f088734a2",
+    "prompt_sha256": "a1e7d3ef7c56b514b48cf8851cce5424b557784eb5bffb7b1523bc1db4bed2a2"
+   },
+   "QJ3s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "66eb1f3444bbc96afbda30c0d6a29eac36ef5a39c7f3afca3f721e2e62eb3a08",
+    "prompt_sha256": "1efd90da409eead65ab60dec98cec817ee4516c35868945ed055baba276c11d4"
+   },
+   "QJ4s1a1": {
+    "seed_source": "rule",
+    "card_sha256": "5b1638dec042081f386a76a61eb40d46ed627a9c9d15109174941e981f21f482",
+    "prompt_sha256": "68cb47eb6f0d120ee3c87ddf7db797b30018b49cf44074a02d39b06b928962d2"
+   },
+   "QI1s3a1": {
+    "seed_source": "rule",
+    "card_sha256": "268a71c1cdbc9c708df7705c79370ec115501a9244491b330e94d6fdebbc1982",
+    "prompt_sha256": "0250d66a1392074ee45c6f07fa8c61a9f37429fec4829762cc18b58aacb9cd97"
+   },
+   "QI2s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "2d25a34e847637e2c484f1dfba39502e6ce03e5660f262e006643df22e4b0e4d",
+    "prompt_sha256": "508c226f6c4780d5d3db87471cc71a00f8be2e42887547b1330cac509ba41a00"
+   },
+   "QI5s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "f322d2877e3eb6c2489ef917c11d592b59d8f84733726e3685d95ac85ccfe02e",
+    "prompt_sha256": "4d84437ead2a0bbf37370ebdcd21fe364a8a6092273430ebb15a19b2eabde173"
+   },
+   "QI7s3a1": {
+    "seed_source": "rule",
+    "card_sha256": "a5c1f02cdf6f117affe9340c79286cff66b9d6b50fc09dba4484880a72f79108",
+    "prompt_sha256": "92bd94096f451e6179e44b6ef24d6da4cd2810e66670c10acc168b8c2213ac0e"
+   },
+   "QI9s3a1": {
+    "seed_source": "rule",
+    "card_sha256": "464c5c5b0087cb9ff73f85bf329b8aae0404167e2d57079c7f1c80b951e1873b",
+    "prompt_sha256": "e6aa672bdbdf3f536d6ebaf6a8d10971c705a72f577c13514a1bd2a8c9951d42"
+   },
+   "QJ1s3a1": {
+    "seed_source": "rule",
+    "card_sha256": "8e9be0830a9de2a7857dcb19351dd77eb9b2594630cae164044e3d4f088734a2",
+    "prompt_sha256": "eebb341d1453b45f750a17829c8abff2bbda52cbedae419e2b49ed752e7e2068"
+   },
+   "QJ3s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "6aadef3bf17e5af39205c61b1657c2f28a063e1edc1c14c8a1f2f62de97a6b3f",
+    "prompt_sha256": "0b09327567e1bbb9b6aa20ba6a0311cb0552500a19bcb611f86eea63ea7daf51"
+   },
+   "QJ4s2a1": {
+    "seed_source": "rule",
+    "card_sha256": "ccff42d69b0a313564e7bd4f02af6a0607436a34a09b53dac14a073edd7e7487",
+    "prompt_sha256": "617ee8b7dee25cef25617f7e5034366c990b34df8cbf033fc919c706a58b6d1b"
+   },
+   "QJ5s2a2": {
+    "seed_source": "rule",
+    "card_sha256": "621a48125de7016be19f6cadaecd8a747b990b4a5c9ce480b36dfe819747e0bc",
+    "prompt_sha256": "8de8d2a79a9afee1b46d6a026c53fc4072105581c0afae1b6c611e42e5417645"
+   },
+   "QJ3s3a1": {
+    "seed_source": "rule",
+    "card_sha256": "5b1638dec042081f386a76a61eb40d46ed627a9c9d15109174941e981f21f482",
+    "prompt_sha256": "cd782900aaea723275a2944d8f4faf60ace86cc5b62dbe6384fa4932344ec270"
+   }
+  },
+  "dev": {
+   "SUC_01": null,
+   "SUC_02": {
+    "seed_source": "rule",
+    "card_sha256": "08fe6ade64d16673c58f71ebe4a4f80a1cb0979afdabc262712480cc11a31db4",
+    "prompt_sha256": "7aa8fa5491f3930d2a97fdad119bd21307eaf7348ada5d077917f8e0ce5a075a"
+   },
+   "N_SUC_01": null,
+   "N_SUC_05": {
+    "seed_source": "gemma",
+    "card_sha256": "66eb1f3444bbc96afbda30c0d6a29eac36ef5a39c7f3afca3f721e2e62eb3a08",
+    "prompt_sha256": "5403b29a409388fdf9725035ae9ed98abb1681ab55e01514230e4da07b5a1282"
+   },
+   "N_TO_08": {
+    "seed_source": "rule",
+    "card_sha256": "5b1638dec042081f386a76a61eb40d46ed627a9c9d15109174941e981f21f482",
+    "prompt_sha256": "1b8a0ad2964687c277fad8a190f4428b7ba26b7d17dc2b02d16567f40e4191d2"
+   },
+   "N_KIN_14": null,
+   "T_S1_01": {
+    "seed_source": "rule",
+    "card_sha256": "163daaad6af56030456fa985887ae56ffe50258190b7830a91fe841a74dd68e2",
+    "prompt_sha256": "8ffc512c1a01380a535afe13442eb4ef27b325d4d6987079cb5a48f728f9f00f"
+   },
+   "T_S1_02": {
+    "seed_source": "rule",
+    "card_sha256": "df9e3b156d7a03f31fc85c250d572144aecd6685063f1773127a8cce25cac2ee",
+    "prompt_sha256": "5d232574e987019ebc53c4d10181786a6396525b3358f82a2484a9f4e0063e88"
+   },
+   "T_S1_03": {
+    "seed_source": "rule",
+    "card_sha256": "cdcf1ba734a538ce270ea4a252e4b8dff296946d4ae21be7d9a21d9be89d74c9",
+    "prompt_sha256": "ab6bfc739e627a8e110b4d16a7a64ac57fd6592daa5ae60bce81483f0dfc3416"
+   },
+   "T_S1_04": {
+    "seed_source": "rule",
+    "card_sha256": "0bc3b61239b313577363ba1f3ef41daa94163b0ad348fea6bc3242d496ed0c2b",
+    "prompt_sha256": "9aa9cbb829fd218b56fec0a19c16df21254447a2d7b5e07d412be692367f2c73"
+   },
+   "T_S1_05": {
+    "seed_source": "rule",
+    "card_sha256": "304a019ca9afdf39639a510041452e5d5dc05406960133350e4d6b583401d9f3",
+    "prompt_sha256": "b0b99fc668674e5cce95ba8de57c912736043f386a3b08ad1eec607f7c1e60ce"
+   },
+   "T_S1_06": {
+    "seed_source": "rule",
+    "card_sha256": "7d3d80e1ec8ea4cc80a1280cf8796b14ea6b1e4e469ae206657fc2cfc8874b88",
+    "prompt_sha256": "24d4036e9f00aeb6d8ac43b3af3dc5313e642c94af28f45da8219f3c7036c5c8"
+   },
+   "T_S1_07": {
+    "seed_source": "rule",
+    "card_sha256": "b31483299e83efd44d74f4fcabf6fdf98bae334845f8f74f100850e1336e47f1",
+    "prompt_sha256": "b5dd608b3d4226ec5496c24396c9d44a38c15666194a43e0e31f0b48a37b2210"
+   },
+   "T_S1_08": {
+    "seed_source": "rule",
+    "card_sha256": "18fc367fba2567e9fcf34092f01d73c260add6a22c0328440a14f5e9bc2b5123",
+    "prompt_sha256": "ace69d2473294d48b160f005a433a38aac8de050340f5f9bfbed5af22d99fab1"
+   },
+   "T_S1_09": {
+    "seed_source": "rule",
+    "card_sha256": "e3ab87c29c9265ec1e17be68f927aec2af13bdcce6ab6024dc0d52f91d537e03",
+    "prompt_sha256": "b6663f77780343e553c6fe3ea05853464b9a0a954818399a37819099c4310710"
+   },
+   "T_S1_10": {
+    "seed_source": "rule",
+    "card_sha256": "a4cd77bd77e74e34138e98be232ff78db7cf31953290c705817a51ba29a42376",
+    "prompt_sha256": "9137d2cae4725fd9d971a0f09b0f63384819ac949dd4c482456c7d70d862e7f9"
+   },
+   "T_S1_11": {
+    "seed_source": "rule",
+    "card_sha256": "21d38ba2c3ed9817c8d037cb1e1b30a6ed2c905a0bb8d4169774fcc006f94f89",
+    "prompt_sha256": "1dcb3f7ba3fbf7d695eeca071b27132b27d378c8a2e888ced03bb59e98d90742"
+   },
+   "T_S1_12": {
+    "seed_source": "rule",
+    "card_sha256": "ccff42d69b0a313564e7bd4f02af6a0607436a34a09b53dac14a073edd7e7487",
+    "prompt_sha256": "4eee874c9ac3bc0294c33103e1b345f3b3a378be4e4dd115b080592f05a5209a"
+   },
+   "T_S1_13": {
+    "seed_source": "rule",
+    "card_sha256": "18fc367fba2567e9fcf34092f01d73c260add6a22c0328440a14f5e9bc2b5123",
+    "prompt_sha256": "719cad7d51fcd1f59d9016a0793fb29a17638665aa75dd8fc480ff520c3d0a01"
+   },
+   "T_S1_14": {
+    "seed_source": "rule",
+    "card_sha256": "464c5c5b0087cb9ff73f85bf329b8aae0404167e2d57079c7f1c80b951e1873b",
+    "prompt_sha256": "42c3ba4cef69ffa1b148df4bac8032a782674f05ca16c1b12a88464db5420467"
+   },
+   "T_S1_15": {
+    "seed_source": "rule",
+    "card_sha256": "da7ec54985440de118e5687ae234c148f695c2b37de0df99af8f295a17a56ff0",
+    "prompt_sha256": "6207c381d787a889c3072b5142a58f57a613436065e17c37753d5fd6b3619635"
+   },
+   "T_S1_16": {
+    "seed_source": "rule",
+    "card_sha256": "7d3d80e1ec8ea4cc80a1280cf8796b14ea6b1e4e469ae206657fc2cfc8874b88",
+    "prompt_sha256": "9e927bc3d360d8199ba13d95a2a73aac1b4a6645b4c6ec34aa394850621f4f0b"
+   },
+   "T_S1_17": {
+    "seed_source": "rule",
+    "card_sha256": "2710a2170cfab545cb66146644258787735abec9a057db3fa80daeeabe2e10da",
+    "prompt_sha256": "82895bcdb7a27a158543e9956acc91f55702542acee9b582e5e46f9fa2edfb4e"
+   },
+   "T_S1_18": {
+    "seed_source": "rule",
+    "card_sha256": "163daaad6af56030456fa985887ae56ffe50258190b7830a91fe841a74dd68e2",
+    "prompt_sha256": "08988a67da0ba28bdd66304d614282fefc6876fd1c2d6ed490f38b5f398865c3"
+   },
+   "T_S4_01": {
+    "seed_source": "rule",
+    "card_sha256": "df9e3b156d7a03f31fc85c250d572144aecd6685063f1773127a8cce25cac2ee",
+    "prompt_sha256": "8a9cb91b32af08570848a7d99f3390012aca65c5db353946e07f1c681b8b0889"
+   },
+   "T_S4_02": {
+    "seed_source": "rule",
+    "card_sha256": "ccff42d69b0a313564e7bd4f02af6a0607436a34a09b53dac14a073edd7e7487",
+    "prompt_sha256": "a1c687063c9abe92f76b6e57391b613fe0e1fdc1e1aa641e136439ca11a361a0"
+   },
+   "T_S4_03": {
+    "seed_source": "rule",
+    "card_sha256": "8e9be0830a9de2a7857dcb19351dd77eb9b2594630cae164044e3d4f088734a2",
+    "prompt_sha256": "b53fb70e7b30ff83e9a00d155f1195c7379665e45ecec84cba701847702b9387"
+   },
+   "T_S4_04": {
+    "seed_source": "rule",
+    "card_sha256": "b7d3832dc9cf9d3c7a605634b96f8933677b3284f5a98705d2530841c77c1403",
+    "prompt_sha256": "de1c1a1d5b3713f2e78ce9114c43d85c780535a8e8b8e8c03b379999d797f868"
+   },
+   "T_S4_05": {
+    "seed_source": "rule",
+    "card_sha256": "70f526463a18969bfc8949682a681c3dd1e1d94782725856bd0e42bf77cd9cd4",
+    "prompt_sha256": "0b0ec54309cac4532bece7c7a4ce690d3427a44095a15e9467453f9754825060"
+   },
+   "T_S4_06": {
+    "seed_source": "rule",
+    "card_sha256": "5b1638dec042081f386a76a61eb40d46ed627a9c9d15109174941e981f21f482",
+    "prompt_sha256": "f3f7c0d995d81adab4acaeca51394895eac7cc35986f529cb8471a7c04369ccf"
+   }
+  }
+ }
+}
