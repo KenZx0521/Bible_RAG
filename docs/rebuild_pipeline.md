@@ -104,7 +104,7 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 - `--rollback`：把該 env 最新一筆未回滾的紀錄標為已回滾，serving 改回它的前一筆；再跑一次就再退一筆。最新一筆和 serving 不一致時拒絕，不做任何修改。
 - 第一次 promote 的回滾（沒有前一筆）會刪掉該 env 的 serving 列，回到「沒有 build 在服務」；之後即可 unload 該 build。
 - `--env prod` 一律要加 `--yes-prod`，否則拒絕（promote 與 `--rollback` 都是）。
-- 2026-10-08 起 prod 服務 R1（`b20261008_6daa4f31`，映像 `bible_rag-backend:r1`）。legacy 已刪除，回滾只能翻回前一個 serving 配對。
+- prod 配對：2026-10-08 R1（`b20261008_6daa4f31`＋r1）→ 2026-10-09 R2（`b20261008_e05d3e55`＋r2）→ **2026-10-19 起 `b20261019_18aa84ad`＋`bible_rag-backend:r3`**（R2 各層加 relations 王朝層，年表卡）。legacy 已刪除，回滾只能翻回前一個 serving 配對。
 - **換 prod 容器**（promote 之後；只動 backend，不碰 postgres、qdrant、ollama）：先把 `docker-compose.yml` 的 `image` 改成要服務的 tag，再
   ```bash
   docker compose -p bible_rag -f docker-compose.yml up -d --no-deps --no-build --pull never --wait --wait-timeout 300 backend
@@ -113,6 +113,7 @@ $RAGDATA promote --env staging --rollback                             # 回到�
     http://localhost:8000 <build_id> ground_truth.v2.json <報告.json>
   ```
   回滾：`$RAGDATA promote --env prod --rollback --yes-prod`，把 `image` 改回前一個 tag，再跑同一個 `up`。不要 `docker compose build backend`、不要 `down`、不要 `--remove-orphans`。
+  - `up` 用 `--pull never`，所以回滾前先確認舊映像還在本機（`docker image inspect <tag>`）。Komodo 每天會 prune 沒有容器引用的映像；換容器後用一個不啟動的容器釘住舊映像（目前是 `docker create --name bible_rag_backend_r2_pin bible_rag-backend:r2 true`）。如果已經被刪，先 `zstd -dc /mnt/ollama-data/bible_rag_bak/20261008/images/bible_rag-backend_r2.tar.zst | docker load`。
 - staging backend（:8002）見 `docker-compose.staging.yml` 的 `backend-stg`，映像由 `STG_IMAGE` 指定。它的 restart 是 `"no"`：握手不符就停在 exited，不會反覆重載模型；主機重開機後要重跑該檔開頭的 `up` 指令。
 
 ## 7. 清理被取代的 build

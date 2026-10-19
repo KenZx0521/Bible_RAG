@@ -161,3 +161,18 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
 - 2026-10-19 審查修正後重建 r3（commit 3cadd72，digest `sha256:6168c213…`），staging 重新 promote（前一筆是同 build＋舊 r3），`backend-stg` 換上新映像，握手通過。
 - 2026-10-19 **A4 重跑（新 r3）：通過**（store `reports/regnal_card_20261019/a4_r3b/`）。32/32 有卡，key_score 平均 0.812（確認集 G-auto 0.802），0 錯誤、0 逾時；每題 17–27 秒，中位數 21 秒。Ollama 約 12 分鐘，開跑前 /api/ps 是空的。第一次 A4（舊 r3）的結果留在 `a4/`。
 - 驗收 A1–A6 全部通過。prod（:8000，r2＋`b20261008_e05d3e55`）到這裡都沒動；上 prod 等 Kay。
+- 2026-10-19 Kay：「上 prod」。
+  - 15:28 `docker-compose.yml` backend 改成 `bible_rag-backend:r3`（commit f0cfc71）；`ragdata promote --env prod --build b20261019_18aa84ad --image sha256:6168c213… --yes-prod`（前一筆：`b20261008_e05d3e55`＋r2 `sha256:c7926629…`）。
+  - 只換 backend 容器（`docker compose -p bible_rag -f docker-compose.yml up -d --no-deps --no-build --pull never --wait`），15:28:52 healthy；health：build `b20261019_18aa84ad`、handshake ok、無 mismatch；啟動 log：「Regnal layer 932d2242dc3f (chains {'I': 19, 'J': 20})」。切換前 Ollama 沒在用。
+  - smoke20：20/20 通過（store `reports/regnal_card_20261019/prod/smoke20.json`）。
+  - 確認集抽 5 題（四種題型都有）：5/5 有卡，4/5 答對；答錯的 QJ1s2a2（S1b）在確認集 G-auto 平均也只有 0.33（`prod/card5.json`）。請求只帶 question 與 include_context，沒有 `use_regnal_card`，走的是預設路徑；腳本是 a4_staging 的 post／score_line 在 shell 內直接呼叫，沒有另存。
+  - staging（`backend-stg`）已停；staging 的 serving 列仍指向新 build＋r3。
+  - 回滾：`ragdata promote --env prod --rollback --yes-prod`，compose 改回 r2，再跑同一個 `up`。r2 映像現在沒有容器引用，Komodo 24 小時內會 prune，到時先 `docker load` `/mnt/ollama-data/bible_rag_bak/20261008/images/bible_rag-backend_r2.tar.zst`。
+- 2026-10-19 **上線驗證（workflow，3 個唯讀代理）**：部署狀態、輸出、回滾三個角度都判定正確。
+  - 部署狀態逐項一致：compose、容器 image id、`rag_meta.serving`、`serving_history`、`rag_meta.builds`、contracts manifest、health 與啟動 log；啟動後 0 個 ERROR，45 個 POST 全部 200。
+  - smoke20 的一般題在 log 裡沒有觸發卡片；trigger 在 GT v1、v2 各 500 題都是 0。
+  - 處理掉的事：r2 映像沒有容器引用，會被 Komodo prune，已用 `bible_rag_backend_r2_pin`（不啟動的容器）釘住；r2 tar 的 sha 和 SHA256SUMS 相符；`rebuild_pipeline.md` §6 更新了 prod 配對，並補上 `docker load` 步驟。
+  - 已知、不修：
+    - 同一題每次的卡片可能不同：種子呼叫有隨機性，prod 和 staging 有 4/5 題抽到的王不一樣，分數相同。
+    - 少數回答的「答案：」不在最後一行行首（計分照樣抓得到）。
+    - 審過的層把所羅門算成猶大鏈的第一位，亞他利雅不在鏈上（stage-0 就知道的 38/39），所以「某王之前第 k 位」跨過這兩處時會差一位。
