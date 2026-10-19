@@ -31,7 +31,8 @@ from urllib.parse import quote, unquote
 from ragcommon import books
 
 NS_RAG = uuid.UUID("ef6733ee-5a28-5e83-9074-de6e229eb380")
-LAYERS = ("src", "text", "struct", "emb", "kg0", "events", "route", "identity", "relations")
+LAYERS = ("src", "text", "struct", "emb", "kg0", "events", "route", "identity", "relations",
+          "regnal")
 RELATION_TYPES = frozenset({"PARENT_OF", "SPOUSE_OF", "SUCCEEDED"})
 LEGACY_BUILD_ID = "legacy-20261004"
 

@@ -1,0 +1,14 @@
+# 王朝層（regnal）的期望值，G-REGNAL 逐項比對。Kay 2026-10-19 的 P5 窄例外只涵蓋這一份審過的層：
+# layer_sha256 就是實驗 A 的 layer_auto.json（store reports/kg_cards_20261018/A/；K0 抽 40 欄全對、
+# Kay 抽查 20 列 0 錯、盲集確認 H1/H2 皆過，見 evaluation/experiments/2026-10-18_kg_cards/confirm_A.md）。
+# text 層或 regex 一變，sha 就會變：先重做 K0 與抽查，再改這裡。不要只改數字讓閘門變綠。
+schema: ragdata.regnal_expect.v1
+inputs:
+  text: text@247eafe44b02
+layer_sha256: 932d2242dc3fdce8830112484c81bc0ea5364cc4caaf6978b12f8984790ee9ab
+chains:
+  I: [耶羅波安, 拿答, 巴沙, 以拉, 心利, 暗利, 亞哈, 亞哈謝, 約蘭, 耶戶, 約哈斯, 約阿施, 耶羅波安, 撒迦利雅,
+      沙龍, 米拿現, 比加轄, 比加, 何細亞]
+  J: [所羅門, 羅波安, 亞比央, 亞撒, 約沙法, 約蘭, 亞哈謝, 約阿施, 亞瑪謝, 亞撒利雅, 約坦, 亞哈斯, 希西家,
+      瑪拿西, 亞們, 約西亞, 約哈斯, 約雅敬, 約雅斤, 西底家]
+conflicts: 7

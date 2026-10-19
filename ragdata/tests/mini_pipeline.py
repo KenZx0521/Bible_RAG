@@ -13,12 +13,14 @@ Qdrant and a contract directory under ``root``.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import json
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+import yaml
 from qdrant_client import QdrantClient
 
 import fake_encoder
@@ -31,7 +33,9 @@ import ref_dirs
 from fake_pg import FakePg
 from ragdata import paths
 from ragdata.gates.base import GateResult
+from ragdata.gates.regnal import expectation_doc
 from ragdata.gates.runner import GateInputs, gate_layer
+from ragdata.kg.regnal_build import regnal_files
 from ragdata.gt.gate import GtReport
 from ragdata.loader.qdrant import QdrantDb
 from ragdata.loader.verify import VerifyInputs, verify
@@ -43,7 +47,7 @@ from ragdata.release.gating import ReleaseChecks, release_gates
 from ragdata.stages.result import BuildResult
 from ragdata.stages.s05_struct.build import StructInputs, build_struct
 from ragdata.stages.s05_struct.tokens import TokenCounter
-from ragdata.store import encode_jsonl, write_layer
+from ragdata.store import encode_jsonl, read_layer, write_layer
 
 DATE = "20261008"
 COUNTER = TokenCounter(mini_build.count_tokens, {"tokenizer": "mini"})
@@ -139,6 +143,16 @@ def _files(root: Path, text: str, struct: str) -> derived.DerivedFiles:
                                 gt_changes=root / "changes.jsonl")
 
 
+def _regnal_expect(root: Path, text: str) -> Path:
+    """G-REGNAL's expectation for the mini text layer (it holds no regnal formula)."""
+    layer = read_layer(root / "scratch" / "text" / text)
+    data = regnal_files(layer)["regnal_layer.json"]
+    doc = expectation_doc(json.loads(data), text, hashlib.sha256(data).hexdigest())
+    path = root / "regnal_expect.yaml"
+    path.write_text(yaml.safe_dump(doc, allow_unicode=True), encoding="utf-8")
+    return path
+
+
 def make(root: Path) -> Mini:
     ref = root / "ref"
     mini_release.build(ref)
@@ -147,7 +161,8 @@ def make(root: Path) -> Mini:
     files = _files(root, text, struct)
     gate = GateInputs(versification=mini_build.versification(), token_counter=COUNTER,
                       legacy_dir=legacy, compat_sample=mini_emb.SAMPLE, encoder=fake_encoder.make(),
-                      registries=root / "registries", kg0_counts=files.kg0_counts)
+                      registries=root / "registries", kg0_counts=files.kg0_counts,
+                      regnal_expect=_regnal_expect(root, text))
     sources = Sources(gate=gate, counts=mini_release.MINI_COUNTS, events_yaml=ref / "events.yaml")
     pg, qdrant = FakePg(), QdrantDb(QdrantClient(location=":memory:"))
     pg.close = qdrant.close = lambda: None

@@ -47,7 +47,8 @@ def release_step(store: Path, releases: Path, date: str,
                  checks: ReleaseChecks) -> Callable[[Built], tuple[rel.Release, bool]]:
     """S12 over the built layers; the release and whether its file was there already."""
     def assemble(built: Built) -> tuple[rel.Release, bool]:
-        release = rel.assemble(store, [built[k].version for k in rel.CORE], date, checks)
+        names = [*rel.CORE, *(k for k in rel.OPTIONAL if k in built)]
+        release = rel.assemble(store, [built[k].version for k in names], date, checks)
         existed = (Path(releases) / f"{release.build_id}.json").exists()
         rel.write_release(release, releases)
         return release, existed

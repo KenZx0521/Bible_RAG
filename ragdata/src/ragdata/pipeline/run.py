@@ -1,6 +1,6 @@
 """``ragdata pipeline run``: from the PDFs to a release, and optionally loaded and verified.
 
-Order: text (with src), struct, the derived-file check and G-GT, emb, kg0, events, route,
+Order: text (with src), struct, the derived-file check and G-GT, emb, kg0, events, route, regnal,
 then the release (S12), ``load`` into a new namespace (S13) and ``verify`` (S14, G-PROJ).
 Each layer is built and stored only when its build gates pass, then gated again with
 every gate it requires (``steps``). The first red gate, stale derived file or bad input

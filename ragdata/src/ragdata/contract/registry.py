@@ -9,7 +9,7 @@ from typing import Any
 from ragdata.contract import emb, kg, struct, text
 from ragdata.contract.fields import Record, parse
 
-LAYERS = ("text", "struct", "emb", "kg0", "events", "route")
+LAYERS = ("text", "struct", "emb", "kg0", "events", "route", "regnal")   # regnal holds no records
 # non-record files a layer's build writes beside its records (S3, S4 and the diff reports)
 XCHECK_REPORT = "xcheck_report.json"
 OVERLAY_REPORT = "overlay_report.json"
@@ -25,12 +25,15 @@ EVENTS_REPORT = "events_report.json"
 ROUTING_LEXICON = "routing_lexicon.json"       # the routing contract file (design §2.22)
 QUERY_ALIASES = "query_aliases.json"           # its external_query part, a contract of its own
 ROUTE_REPORT = "route_report.json"
+REGNAL_LAYER = "regnal_layer.json"             # the chronology card's contract file (2026-10-19)
+REGNAL_REPORT = "regnal_report.json"
 LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
                           DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,),
                  "emb": (EMB_REPORT, ENCODER_FINGERPRINT),
                  "kg0": (KG0_REPORT,),
                  "events": (EVENT_REGISTRY_V2, EVENTS_REPORT),
-                 "route": (ROUTING_LEXICON, QUERY_ALIASES, ROUTE_REPORT)}
+                 "route": (ROUTING_LEXICON, QUERY_ALIASES, ROUTE_REPORT),
+                 "regnal": (REGNAL_LAYER, REGNAL_REPORT)}
 
 
 @dataclass(frozen=True)

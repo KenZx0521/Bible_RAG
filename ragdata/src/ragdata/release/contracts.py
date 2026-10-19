@@ -5,6 +5,7 @@ there and the release pins their sha256s, so they must be a pure function of the
 layers. Layer files that already are contracts are copied byte for byte
 (the event registry, the routing lexicon and its query aliases, the encoder fingerprint,
 legacy_ids);
+and, when the release holds the regnal layer, ``regnal_layer.json``;
 the rest are canonical JSON over the text and struct rows:
 
 - ``books.json``: the text layer's book rows in canon order;
@@ -20,7 +21,7 @@ import json
 from typing import Any, Mapping
 
 from ragdata.contract.registry import (
-    ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, QUERY_ALIASES, ROUTING_LEXICON,
+    ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, QUERY_ALIASES, REGNAL_LAYER, ROUTING_LEXICON,
 )
 from ragdata.store import LayerData
 from ragdata.store.cas import sha256_bytes
@@ -32,8 +33,10 @@ COPIED = {
     "encoder_fingerprint.json": ("emb", ENCODER_FINGERPRINT),
     "legacy_ids.jsonl": ("struct", "legacy_ids.jsonl"),
 }
+# copied only when the release holds the (optional) layer
+COPIED_OPTIONAL = {"regnal_layer.json": ("regnal", REGNAL_LAYER)}
 DERIVED = ("books.json", "verse_index.json", "ref_aliases.json")
-CONTRACT_FILES = (*DERIVED, *COPIED)
+CONTRACT_FILES = (*DERIVED, *COPIED)          # every release's; optional ones come on top
 
 
 class ContractFileError(ValueError):
@@ -85,7 +88,8 @@ def _derived(layers: Mapping[str, LayerData]) -> dict[str, bytes]:
 
 def _copied(layers: Mapping[str, LayerData]) -> dict[str, bytes]:
     files = {}
-    for name, (layer_name, source) in COPIED.items():
+    optional = {k: v for k, v in COPIED_OPTIONAL.items() if v[0] in layers}
+    for name, (layer_name, source) in {**COPIED, **optional}.items():
         layer = layers[layer_name]
         if source not in layer.file_shas:
             raise ContractFileError(f"{layer.version} holds no {source}")

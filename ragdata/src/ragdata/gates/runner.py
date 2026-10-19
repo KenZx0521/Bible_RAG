@@ -42,7 +42,7 @@ from ragdata.contract.counts import (
 )
 from ragdata.contract.registry import (
     EMB_REPORT, ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, KG0_REPORT,
-    LAYER_REPORTS, QUERY_ALIASES, ROUTING_LEXICON, XCHECK_REPORT,
+    LAYER_REPORTS, QUERY_ALIASES, REGNAL_LAYER, REGNAL_REPORT, ROUTING_LEXICON, XCHECK_REPORT,
 )
 from ragdata.gates import emb_legacy, sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
@@ -52,6 +52,7 @@ from ragdata.gates.enc import REENCODE, EncOptions, StoredEncoding, run_enc
 from ragdata.gates.events import check_event
 from ragdata.gates.kg0 import check_kg0
 from ragdata.gates.prov import check_prov
+from ragdata.gates.regnal import REGNAL_EXPECT_PATH, check_regnal, load_regnal_expect
 from ragdata.gates.ref import check_ref
 from ragdata.gates.route import check_route
 from ragdata.gates.refint import check_refint
@@ -71,7 +72,7 @@ from ragdata.store import (
 REPORT_SCHEMA = "ragdata.gate_report.v1"
 REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {
     "text": (), "struct": ("text",), "emb": ("struct", "text"), "kg0": ("text", "struct"),
-    "events": ("text", "struct"), "route": ("text", "kg0", "events"),
+    "events": ("text", "struct"), "route": ("text", "kg0", "events"), "regnal": ("text",),
 }
 REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "text": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-CONSERVE", "G-XCHECK", "G-REF"),
@@ -80,6 +81,7 @@ REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "kg0": ("G-SCHEMA", "G-REFINT", "G-KG0", "G-PROV"),
     "events": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-EVENT", "G-PROV"),
     "route": ("G-SCHEMA", "G-COUNT", "G-ROUTE", "G-PROV"),
+    "regnal": ("G-REGNAL",),
 })
 NOT_IMPLEMENTED = "not implemented"
 UNLOADED_DEPS = frozenset({"src"})
@@ -103,6 +105,7 @@ class GateInputs:
     device: str | None = None                     # G-EMB/G-ENC: where BGE-M3 runs
     encoder: Encoder | None = None                # G-EMB/G-ENC: a stand-in encoder (tests only)
     kg0_counts: Path = KG0_COUNTS_PATH            # G-KG0: the per-surface expectations
+    regnal_expect: Path = REGNAL_EXPECT_PATH      # G-REGNAL: the audited layer's sha256 and chains
 
 
 @dataclass(frozen=True)
@@ -256,6 +259,13 @@ def _route_gate(ctx: GateContext) -> GateResult:
                        (ctx.target.path / QUERY_ALIASES).read_bytes())
 
 
+def _regnal_gate(ctx: GateContext) -> GateResult:
+    data = (ctx.target.path / REGNAL_LAYER).read_bytes() \
+        if REGNAL_LAYER in ctx.target.file_shas else None
+    return check_regnal(data, stored_json(ctx, REGNAL_REPORT), ctx.target.depends_on,
+                        load_regnal_expect(ctx.inputs.regnal_expect))
+
+
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-SCHEMA": lambda ctx: ctx.schema,
     "G-COUNT": _count_gate,
@@ -272,6 +282,7 @@ GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-EVENT": _event_gate,
     "G-ROUTE": _route_gate,
     "G-PROV": lambda ctx: check_prov(dict(ctx.target.rows)),
+    "G-REGNAL": _regnal_gate,
 })
 SOURCED = frozenset({"G-CONSERVE", "G-XCHECK"})  # gates that re-read the sources
 

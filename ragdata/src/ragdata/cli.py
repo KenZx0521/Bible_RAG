@@ -19,6 +19,7 @@
     python -m ragdata build events --text DIR --struct DIR [--events-yaml YAML] [--counts YAML]
     python -m ragdata build route --text DIR --kg0 DIR --events DIR [--registries DIR]
                                  [--counts YAML]
+    python -m ragdata build regnal --text DIR [--regnal-expect YAML]
     python -m ragdata gate LAYER LAYER_DIR [--dep DIR ...] [--pdf-dir DIR] [--counts YAML]
                                  [--source-expect YAML] [--registries DIR] [--tokenizer FILE]
                                  [--reranker-tokenizer FILE] [--legacy-dir DIR] [--device DEV]
@@ -82,8 +83,9 @@ from ragdata.contract import LAYERS
 from ragdata.contract.counts import KG0_COUNTS_PATH, PDF_COUNTS_PATH, CountsError
 from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
+from ragdata.gates.regnal import REGNAL_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
-from ragdata.kg import k0_build, k1_build, k4_build
+from ragdata.kg import k0_build, k1_build, k4_build, regnal_build
 from ragdata.loader import cli as loader_cli
 from ragdata.loader.config import ConfigError
 from ragdata.loader.plan import LoaderError
@@ -118,6 +120,7 @@ def _kg_inputs(parser: argparse.ArgumentParser) -> None:
     """Options the KG builds and gates share."""
     parser.add_argument("--kg0-counts", type=Path, default=KG0_COUNTS_PATH)
     parser.add_argument("--events-yaml", type=Path, default=paths.EVENTS_REGISTRY)
+    parser.add_argument("--regnal-expect", type=Path, default=REGNAL_EXPECT_PATH)
 
 
 def _build_parser(sub: Any) -> None:
@@ -243,9 +246,13 @@ def _build_route(args: argparse.Namespace) -> stages.BuildResult:
                                 args.counts)
 
 
+def _build_regnal(args: argparse.Namespace) -> stages.BuildResult:
+    return regnal_build.build_regnal(_need_dir(args.text, "--text"), args.store, args.regnal_expect)
+
+
 BUILDERS: dict[str, Callable[[argparse.Namespace], stages.BuildResult]] = {
     "text": _build_text, "struct": _build_struct, "emb": _build_emb, "kg0": _build_kg0,
-    "events": _build_events, "route": _build_route,
+    "events": _build_events, "route": _build_route, "regnal": _build_regnal,
 }
 
 
@@ -261,7 +268,8 @@ def gate_inputs(args: argparse.Namespace) -> GateInputs:
     return GateInputs(pdf_dir=args.pdf_dir, registries=args.registries,
                       source_expect=args.source_expect, tokenizer=args.tokenizer,
                       reranker_tokenizer=args.reranker_tokenizer, legacy_dir=args.legacy_dir,
-                      device=args.device, kg0_counts=args.kg0_counts)
+                      device=args.device, kg0_counts=args.kg0_counts,
+                      regnal_expect=args.regnal_expect)
 
 
 def _gate(args: argparse.Namespace) -> int:

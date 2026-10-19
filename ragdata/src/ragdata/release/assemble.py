@@ -1,7 +1,11 @@
 """S12: assemble a release (design §2.22, §4) from layer versions in the store.
 
 A release names one version of every core layer (text, struct, emb, kg0, events,
-route) and of every layer they were built on (src under text). The versions given
+route) and of every layer they were built on (src under text), and may name an
+optional layer (regnal, Kay's P5 exception of 2026-10-19: the chronology card's
+layer). An optional layer the release does not hold leaves no trace in its body, so a
+release assembled before the layer existed assembles to the same bytes; one that holds
+it is contract version 1.2.0 and carries its contract file. The versions given
 need not be all of them: the rest follow from each layer's ``depends_on``, and the
 closure must agree, by content hash, everywhere: a layer built on another version
 of a layer the release names is refused. Every layer is read through the store,
@@ -42,12 +46,14 @@ from ragdata.stages.errors import StageError
 from ragdata.store import LayerData, StoreError, layer_digest, read_layer
 from ragdata.store.cas import sha256_bytes
 
-__all__ = ["CORE", "NAMING", "Release", "ReleaseChecks", "ReleaseError", "assemble", "encode",
+__all__ = ["CORE", "NAMING", "OPTIONAL", "Release", "ReleaseChecks", "ReleaseError", "assemble", "encode",
            "git_date", "read_release", "resolve_layers", "sha256_bytes", "write_release"]
 
 RELEASE_SCHEMA = "ragdata.release.v1"
 CONTRACT_VERSION = "1.1.0"
+CONTRACT_VERSION_REGNAL = "1.2.0"       # with the optional regnal layer
 CORE = ("text", "struct", "emb", "kg0", "events", "route")
+OPTIONAL = ("regnal",)
 NAMING = ("build_id", "build_date", "release_sha")    # what the body's sha names
 
 
@@ -105,10 +111,10 @@ def resolve_layers(store_root: Path, versions: Sequence[str]) -> dict[str, Layer
             if dep not in loaded and version not in pending:
                 pending.append(version)
     missing = [layer for layer in CORE if layer not in loaded]
-    extra = sorted(set(loaded) - {*CORE, "src"})
+    extra = sorted(set(loaded) - {*CORE, *OPTIONAL, "src"})
     if missing or extra:
-        raise ReleaseError(f"a release holds the layers {list(CORE)} (and src under text); "
-                           f"missing {missing}, not supported {extra}")
+        raise ReleaseError(f"a release holds the layers {list(CORE)} (and src under text, "
+                           f"optionally {list(OPTIONAL)}); missing {missing}, not supported {extra}")
     return loaded
 
 
@@ -139,10 +145,11 @@ def _body(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> di
     template = _json_file(emb, EMB_REPORT).get("template", {}).get("template_id")
     if not template:
         raise ReleaseError(f"{emb.version}: {EMB_REPORT} declares no template_id")
+    version = CONTRACT_VERSION_REGNAL if "regnal" in layers else CONTRACT_VERSION
     return {
-        "schema": RELEASE_SCHEMA, "contract_version": CONTRACT_VERSION, "template_id": template,
+        "schema": RELEASE_SCHEMA, "contract_version": version, "template_id": template,
         "layers": {layer: (layers[layer].version if layer in layers else None)
-                   for layer in ids.LAYERS},
+                   for layer in ids.LAYERS if layer not in OPTIONAL or layer in layers},
         "layer_digests": {k: layer_digest(v.file_shas) for k, v in sorted(layers.items())},
         "depends_on": {k: dict(sorted(v.depends_on.items())) for k, v in sorted(layers.items())},
         "kg_enabled": False,
@@ -155,7 +162,7 @@ def _body(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> di
 def check_gates(layers: Mapping[str, LayerData], checks: ReleaseChecks) -> None:
     """Refuse layers a hard gate turns red now, or that cannot be gated."""
     try:
-        red = gating.red_gates(layers, CORE, checks)
+        red = gating.red_gates(layers, [*CORE, *(l for l in OPTIONAL if l in layers)], checks)
     except (GateInputError, StageError, StoreError) as exc:
         raise ReleaseError(f"the layers cannot be gated: {exc}") from None
     if red:
