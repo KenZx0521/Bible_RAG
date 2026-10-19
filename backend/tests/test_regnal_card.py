@@ -1,6 +1,7 @@
 """The chronology card (utils.regnal): the trigger takes only the confirmed question types,
 the ordinary prompt is untouched without a card (plan A2), the layer parses from its contract
-bytes, and /query attaches the card only when it is on and fires."""
+bytes, and /query attaches the card only when it is on and fires (rule seeds first, the seed
+call when they abstain; the rules themselves are in test_regnal_seeds)."""
 
 from __future__ import annotations
 
@@ -121,6 +122,7 @@ def test_the_layer_parses_its_contract_bytes_and_refuses_others(layer):
 def test_a_seed_output_becomes_the_engine_card(layer):
     card = card_mod.card_from_seeds(layer, "暗利之後的第二位王是哪一位？", "以色列｜暗利")
     assert card is not None and card.kings == ("A00",) and card.seeds == (("I", "暗利"),)
+    assert card.seed_source == "gemma"
     assert "依上列資料推算：" in card.text and "以色列王暗利之後第2位以色列王：亞哈謝" in card.text
     assert card.evidence[0] == "2ki.0.1" and card.layer_sha256 == layer.sha256
     assert card_mod.card_from_seeds(layer, "q", "猶大｜大衛") is None
@@ -157,8 +159,17 @@ def test_query_attaches_the_card_on_a_chronology_question(client):
     http, seen = client
     body = http.post("/api/v1/query", json={"question": "暗利之後的第二位王是哪一位？"}).json()
     assert body["aux_card"]["seeds"] == ["以色列｜暗利"] and body["aux_card"]["kings"] == ["A00"]
-    assert len(seen["chats"]) == 2 and seen["chats"][1][0]["content"] == generator.SYSTEM_PROMPT_AUX
-    assert body["aux_card"]["text"] in seen["chats"][1][1]["content"]
+    assert body["aux_card"]["seed_source"] == "rule"     # the rules named it: no seed call
+    assert len(seen["chats"]) == 1 and seen["chats"][0][0]["content"] == generator.SYSTEM_PROMPT_AUX
+    assert body["aux_card"]["text"] in seen["chats"][0][1]["content"]
+
+
+def test_query_asks_the_seed_call_when_the_rules_abstain(client):
+    http, seen = client
+    body = http.post("/api/v1/query", json={"question": "暗利的兒子之後的第二位王是哪一位？"}).json()
+    assert body["aux_card"]["seed_source"] == "gemma" and body["aux_card"]["kings"] == ["A00"]
+    assert len(seen["chats"]) == 2 and seen["chats"][0][0]["content"] == card_mod.SEED_SYSTEM
+    assert seen["chats"][1][0]["content"] == generator.SYSTEM_PROMPT_AUX
 
 
 @pytest.mark.parametrize("payload", [
@@ -185,7 +196,7 @@ def test_a_failed_seed_call_falls_back_to_the_ordinary_answer(client, monkeypatc
     async def boom(question, context):
         raise RuntimeError("ollama down")
     monkeypatch.setattr(card_mod, "seed_call", boom)
-    body = http.post("/api/v1/query", json={"question": "暗利之後的第二位王是哪一位？"}).json()
+    body = http.post("/api/v1/query", json={"question": "暗利的兒子之後的第二位王是哪一位？"}).json()
     assert body["aux_card"] is None and body["answer"] == "推理\n答案：亞哈謝"
 
 

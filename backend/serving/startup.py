@@ -113,13 +113,14 @@ async def _activate(build: build_mod.Build, parsed: Mapping[str, Any]) -> contex
     if missing:
         raise StartupError(f"event registry anchors missing from {build.pg_schema}.passages: "
                            f"{missing}")
-    regnal = parsed.get(REGNAL_FILE)
+    active = context.make_active(build, parsed["routing_lexicon.json"], registry, parsed.get(REGNAL_FILE))
+    regnal = active.regnal
     if regnal is None:
         logger.warning("Build %s has no %s: the chronology card is off", build.build_id, REGNAL_FILE)
     else:
-        logger.info("Regnal layer %s (chains %s): the chronology card is on when enabled",
-                    regnal.sha256[:12], regnal.chain_size())
-    return context.make_active(build, parsed["routing_lexicon.json"], registry, regnal)
+        logger.info("Regnal layer %s (chains %s, %d blockers from the routing lexicon): the chronology "
+                    "card is on when enabled", regnal.sha256[:12], regnal.chain_size(), len(regnal.blockers))
+    return active
 
 
 async def start(fingerprints: Mapping[str, Any]) -> tuple[context.Active | None, hs.Handshake]:
