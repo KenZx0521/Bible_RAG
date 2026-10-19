@@ -1,5 +1,7 @@
-"""Regnal-formula regexes of the regnal layer (K-regnal), verbatim from experiment A's layer_re.py
-(probe_C5 auto_layer.py). Changing one changes the layer and G-REGNAL's pinned sha256."""
+"""Regnal-formula regexes of the regnal layer (K-regnal), ported from experiment A's layer_re.py
+(probe_C5 auto_layer.py); fixed 2026-10-19: the patterns of rules R1b, R2, R3, R4, R5 and R10
+and the united-monarchy kingdom of R8 (``regnal_formulas``). Changing one changes the layer and
+G-REGNAL's pinned sha256."""
 import re
 
 C = '[一-鿿‧]'
@@ -26,9 +28,24 @@ P_USURP = re.compile(r'篡了(?:他的位|國位)')
 P_VERB = re.compile(r'背叛|殺了|擊殺|就進去|篡了')
 P_RENAME = re.compile(r'改名叫(?P<new>' + N1 + r')[，,。]')
 P_FN_ALIAS = re.compile(r'^(又名|就是)(' + C + r'{2,5})$')
+# R2: the death formula with a pronoun subject, after the verse's reign formula (1ki.14.20)
+P_SLEEP_PRON = re.compile(r'(?:，就|而死，)與(?:他)?列祖(?:以色列諸王)?(?:一同)?同睡')
+# R1b: a span right before the usurpation clause is the usurper's reign (2ki.11.3)
+P_USURP_SPAN = re.compile(r'(?P<v>' + NUM + r')(?P<u>年|個月|日)[；;，,](?P<n>' + N1 + r')篡了(?:他的位|國位)')
+# R3: the people make a named man king (1ki.16.16); the name is the lexicon suffix of pre
+P_PEOPLE = re.compile(r'(?:民|眾人)[^，。；]{0,8}?立(?P<pre>' + C + r'{2,6}?)作(?P<k>以色列|猶大)王')
+# R4: a named man rebels against a named king (2ki.9.14); both names are checked against the lexicons
+P_REBEL = re.compile(r'(?:(?P<uf>' + N1 + r')的兒子)?(?P<u>' + N1 + r')背叛(?:' + N1 + r'的兒子)?(?P<v>' + N1 +
+                     r')(?=[，,。；、]|$)')
+# R5: anointing a prince named by a pronoun (2ki.11.12); 立他作王 stays out, it also makes a rival (1ki.16.21)
+P_ANOINT = re.compile(r'膏(?:了)?他作王')
+# R10: a bare 作王N年 (no 共, 在, 登基 or kingdom) is a length only where the sentence ends or the king dies
+P_REIGN_END = re.compile(r'[。；]|，就與|而死|$')
 
 OPP = {'J': 'I', 'I': 'J'}
 KMAP = {'猶大王': 'J', '以色列王': 'I', '猶大': 'J', '以色列': 'I'}
+CHAIN_KINGDOMS = ('I', 'J')
+UNITED = 'U'   # R8: the united monarchy (a king of all Israel), on neither chain
 
 
 def zh2int(s):

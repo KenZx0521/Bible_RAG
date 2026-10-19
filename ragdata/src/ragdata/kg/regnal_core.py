@@ -1,5 +1,10 @@
-"""Layer store and inputs of the regnal layer build (experiment A's layer_core.py, verbatim but
-``inputs``, which reads the text layer's rows instead of the store files).
+"""Layer store and inputs of the regnal layer build, ported from experiment A's layer_core.py
+(``inputs`` reads the text layer's rows instead of the store files); fixed 2026-10-19:
+
+- R6: a later typed edge replaces a ``seat`` edge between the same two kings;
+- R8: an edge copies a kingdom only of Israel or Judah, never the united monarchy's 'U';
+- R11, R12: two names of one king as father, or a mother description inside the other, are
+  one value, not a field conflict.
 
 Scope: 1 Kings 11:41 on, 2 Kings, 2 Chronicles 9:29 on (the divided monarchy's regnal
 formulas). Footnote aliases are the text layer's 又名／就是 footnotes.
@@ -9,8 +14,10 @@ from __future__ import annotations
 import collections
 from typing import Any, Iterable, Mapping
 
-from ragdata.kg.regnal_rules import (P_ACC1, P_ACC_REV, P_ACC_SUCC_SYNC, P_COUP_SYNC, P_FN_ALIAS, P_MOTHER,
-                                     P_RENAME, P_REPL, P_SEAT, P_SLEEP, P_SUCC)
+from ragdata.kg.regnal_rules import (CHAIN_KINGDOMS, P_ACC1, P_ACC_REV, P_ACC_SUCC_SYNC, P_COUP_SYNC, P_FN_ALIAS,
+                                     P_MOTHER, P_RENAME, P_REPL, P_SEAT, P_SLEEP, P_SUCC)
+
+WEAK_EDGE = ("seat",)   # R6: 坐了他的位 says only who sat next (2ki.13.13); a typed formula replaces it
 
 
 def in_scope(r: Mapping[str, Any]) -> bool:
@@ -68,21 +75,35 @@ class Layer:
         if nd is None:
             return
         if f in nd["fields"]:
-            if nd["fields"][f][0] != val:
+            old = nd["fields"][f][0]
+            if old != val and not self.same_value(f, old, val):
                 self.conflicts.append((nd["id"], nd["name"], f, nd["fields"][f], (val, verse, src)))
             return
         nd["fields"][f] = (val, verse, src)
         if verse not in nd["evidence"]:
             nd["evidence"].append(verse)
 
+    def same_value(self, f, old, val):
+        """R11: two names of one king are one father (2ki.15.7, 2ki.15.32); R12: a mother
+        description inside the other is the same one (2ki.8.26, 2ch.22.2)."""
+        if f == "father":
+            return any({old, val} <= {nd["name"], *nd["aliases"]} for nd in self.nodes)
+        if f == "mother_desc":
+            return old in val or val in old
+        return False
+
     def add_edge(self, p, s, typ, verse):
         if p is None or s is None or p is s:
             return
-        if not any(e[0] == p["id"] and e[1] == s["id"] for e in self.edges):
+        i = next((i for i, e in enumerate(self.edges) if e[0] == p["id"] and e[1] == s["id"]), None)
+        if i is None:
             self.edges.append((p["id"], s["id"], typ, verse))
-        if s["kingdom"] is None and p["kingdom"]:
+        elif self.edges[i][2] in WEAK_EDGE and typ not in WEAK_EDGE:
+            self.edges[i] = (p["id"], s["id"], typ, verse)
+        # R8: Solomon's 'U' must not flow on (2ch.9.31 repeats his succession after Judah is known)
+        if s["kingdom"] is None and p["kingdom"] in CHAIN_KINGDOMS:
             s["kingdom"] = p["kingdom"]
-        if p["kingdom"] is None and s["kingdom"]:
+        if p["kingdom"] is None and s["kingdom"] in CHAIN_KINGDOMS:
             p["kingdom"] = s["kingdom"]
 
 

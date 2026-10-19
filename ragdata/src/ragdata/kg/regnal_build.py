@@ -8,7 +8,11 @@ Input: the text layer only (its verse units and footnotes; ``regnal_core.inputs`
 layer holds the contract file ``regnal_layer.json`` and ``regnal_report.json``. The
 contract file is serialized as experiment A wrote ``layer_auto.json``
 (``json.dumps(ensure_ascii=False, indent=1)``, no final newline), so its sha256 is the
-audited file's and G-REGNAL can pin it (``gates.regnal``).
+audited file's and G-REGNAL can pin it (``gates.regnal``). Since the rule fixes of
+2026-10-19 (R1a-R12, ``regnal_formulas``) the build is no longer experiment A's file but the
+fixed layer (store reports/regnal_fix_20261019/candidate/, made by
+``evaluation/experiments/2026-10-19_regnal_fix/candidate.py``); the store's
+relations@a04b67a301dc still holds experiment A's.
 """
 
 from __future__ import annotations
