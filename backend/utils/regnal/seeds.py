@@ -39,6 +39,10 @@ SEED_USER = """以下是經文段落：
 國別只寫「猶大」或「以色列」；王名用經文中的寫法。"""
 
 MAX_SEEDS = 2
+# backend only: a 「國別｜王名」 line is short; longer lines (a model stuck in a whitespace loop)
+# are skipped before _LINE, whose backtracking grows polynomially with the line's length.
+# Every recorded seed line of experiment A is far below this (test_regnal_parity).
+MAX_LINE_CHARS = 64
 _SEP = "｜|:："
 _LABEL = re.compile(r"(?:國別|王名|名字|國家)\s*[:：]")
 _ROW = re.compile(r"^\|(.*)\|$")
@@ -80,7 +84,10 @@ def parse_seeds(text: str) -> list[tuple[str, str]]:
     its first field, or without a 1–6 character name, is skipped."""
     out = []
     for raw in (text or "").splitlines():
-        m = _LINE.match(clean_line(raw))
+        line = clean_line(raw)
+        if len(line) > MAX_LINE_CHARS:
+            continue
+        m = _LINE.match(line)
         if not m:
             continue
         kd, nm = _kingdom(m.group("k")), _name(m.group("n"))

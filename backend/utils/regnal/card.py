@@ -44,8 +44,11 @@ async def seed_call(question: str, context: str) -> str:
 
 def card_from_seeds(layer: RegnalLayer, question: str, seed_text: str) -> Card | None:
     """The card of a seed call's output (arms_a.item_arms, G-auto); None when it abstains."""
+    return card_from_parsed(layer, question, parse_seeds(seed_text))
+
+
+def card_from_parsed(layer: RegnalLayer, question: str, seeds: list[tuple[str, str]]) -> Card | None:
     V = layer.view
-    seeds = parse_seeds(seed_text)
     ids = list(dict.fromkeys(x for x in (engine.resolve(V, kd, nm, question) for kd, nm in seeds) if x))
     if not ids:
         return None
@@ -73,8 +76,8 @@ async def chronology_card(question: str, context: str, layer: RegnalLayer | None
     except Exception as exc:  # noqa: BLE001 — no card, the ordinary answer still comes
         logger.warning("regnal card q=%s: seed call failed: %r", _qhash(question), exc)
         return None
-    card = card_from_seeds(layer, question, seed_text)
+    seeds = parse_seeds(seed_text)
+    card = card_from_parsed(layer, question, seeds)
     logger.info("regnal card q=%s cues=%s kings=%s seeds=%s card=%s", _qhash(question),
-                list(hit.cues), list(hit.kings), parse_seeds(seed_text),
-                f"{card.lines} lines" if card else "none")
+                list(hit.cues), list(hit.kings), seeds, f"{card.lines} lines" if card else "none")
     return card

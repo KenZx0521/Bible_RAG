@@ -28,6 +28,7 @@ async def query_rag(
     semantic_only: bool = False,
     include_context: bool = True,
     graph_strategies: list[str] | None = None,
+    use_regnal_card: bool | None = None,
 ) -> dict:
     """
     Send a question to POST /api/v1/query and return the parsed response.
@@ -43,6 +44,9 @@ async def query_rag(
         graph_strategies: Per-request override for which graph strategies run:
             ["event_registry"] (the only one the R1/R2 backend has) or [] for
             none. None = backend default.
+        use_regnal_card: Per-request override for the chronology card (backend
+            utils/regnal). None = backend default, which is off for
+            semantic_only and use_graph=False.
 
     Returns dict with keys: answer, sources, intent, retrieval_stats
     """
@@ -59,6 +63,8 @@ async def query_rag(
         payload["semantic_only"] = True
     if graph_strategies is not None:
         payload["graph_strategies"] = graph_strategies
+    if use_regnal_card is not None:
+        payload["use_regnal_card"] = use_regnal_card
     url = f"{settings.backend_url}/api/v1/query"
 
     own_client = client is None

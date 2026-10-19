@@ -25,7 +25,8 @@ class QueryRequest(BaseModel):
     )
     use_regnal_card: bool | None = Field(
         default=None,
-        description="覆寫 RAG_REGNAL_CARD 預設值(王朝年表卡,只在王朝年代題觸發);None 表示沿用 backend 設定",
+        description="覆寫王朝年表卡開關(只在王朝年代題觸發);None 表示沿用 RAG_REGNAL_CARD,"
+                    "但 semantic_only 或 use_graph=false 時預設關閉",
     )
     semantic_only: bool = Field(
         default=False,

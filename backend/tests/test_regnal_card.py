@@ -57,9 +57,11 @@ def layer():
     ("亞哈之後，第二位作王的是誰？", ("S1a",)),
     ("從暗利往前數第三位作王的是誰？", ("S1a",)),
     ("沙龍之前，往前數的第二位王是誰？", ("S1a",)),
-    ("希西家死後由兒子接續他作王，再下一位是誰？", ("S1a",)),
+    ("希西家死後由兒子接續他作王，再接續作王的是誰？", ("S1a",)),
+    ("亞哈死後繼位的是誰？", ("S1a",)),
     ("拿答到暗利之間王位交接了幾回？", ("S1b",)),
-    ("撒迦利雅以後，第二個篡位得國的是誰？", ("S1c",)),
+    ("撒迦利雅之後第二個篡位得國的是哪位？", ("S1c",)),
+    ("暗利之後，第一個背叛君王、殺王篡位的人是誰？", ("S1c",)),
     ("約西亞出生時，耶路撒冷的王是哪位？", ("S4",)),
     ("希西家出生那年誰在位？", ("S4",)),
 ])
@@ -74,6 +76,10 @@ def test_the_confirmed_types_take_the_card(question, cues):
     "希西家在位時國中有什麼改革？",                          # 在位時 is no cue
     "暗利一共作王多少年？",                                  # a reign length is no cue
     "大衛之後的第二位王是誰？",                              # David is not on the chain
+    "暗利繼位時幾歲？",                                      # an age, not a successor
+    "撒迦利雅被篡位後國中如何？",                            # what followed, no ordinal
+    "約西亞出生時有什麼預言？",                              # the events of a birth
+    "希西家死後兒子接續他作王，國家怎樣？",                  # events, not who
 ])
 def test_broad_words_and_unchained_kings_do_not(question):
     assert not trigger(question, NAMES).fired
@@ -181,3 +187,30 @@ def test_a_failed_seed_call_falls_back_to_the_ordinary_answer(client, monkeypatc
     monkeypatch.setattr(card_mod, "seed_call", boom)
     body = http.post("/api/v1/query", json={"question": "暗利之後的第二位王是哪一位？"}).json()
     assert body["aux_card"] is None and body["answer"] == "推理\n答案：亞哈謝"
+
+
+def test_a_malformed_layer_is_a_value_error_not_a_crash():
+    doc = _layer_doc()
+    doc["nodes"][0]["fields"] = []
+    with pytest.raises(ValueError):
+        parse_layer(json.dumps(doc).encode("utf-8"))
+    with pytest.raises(ValueError):
+        parse_layer(b"[]")
+
+
+def test_overlong_seed_lines_are_skipped_before_the_line_regex():
+    from utils.regnal.seeds import MAX_LINE_CHARS, parse_seeds
+    assert parse_seeds("猶大｜" + "\t" * 800 + "希西家" + "\t" * 800 + "x") == []
+    assert parse_seeds("1" + " " * 8000 + "z\n以色列｜暗利") == [("I", "暗利")]
+    assert len("國別：猶大｜王名：希西家") < MAX_LINE_CHARS
+
+
+@pytest.mark.parametrize("payload, card", [
+    ({"semantic_only": True}, False),
+    ({"use_graph": False}, False),
+    ({"use_graph": False, "use_regnal_card": True}, True),
+])
+def test_the_ablation_arms_are_card_free_unless_asked(client, payload, card):
+    http, _seen = client
+    body = http.post("/api/v1/query", json={"question": "暗利之後的第二位王是哪一位？", **payload}).json()
+    assert (body["aux_card"] is not None) == card

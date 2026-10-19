@@ -110,6 +110,19 @@ def test_g_regnal_wants_the_chains_and_report_it_was_given(files, expect):
     assert not check_regnal(None, None, {"text": "text@247eafe44b02"}, expect).passed
 
 
+@needs_text
+@pytest.mark.parametrize("data", [b"[]", b"{}", b'{"policy": "occ"}'])
+def test_g_regnal_turns_red_on_a_document_that_is_no_layer(expect, data):
+    gate = check_regnal(data, None, {"text": "text@247eafe44b02"}, expect)
+    assert not gate.passed and any("not a regnal layer" in d for d in gate.details), gate.details
+
+
+@needs_text
+def test_g_regnal_turns_red_on_malformed_fields(files, expect):
+    gate = _gate(_mutated(files, lambda d: d["nodes"][1].update(fields=[])), expect, report={})
+    assert not gate.passed
+
+
 def test_the_expectation_of_a_text_without_regnal_formulas_is_empty_chains():
     doc = {"policy": "occ", "fn_rule": "slot", "nodes": [], "edges": [], "fallback_edges": [],
            "syncs": [], "conflicts": [], "log": [], "occ_alias": [], "union_classes": None}

@@ -97,9 +97,12 @@ def check_regnal(layer_bytes: bytes | None, report: Mapping[str, Any] | None,
         out.append(f"{regnal.LAYER_FILE} sha256 {sha[:12]} is not the audited {str(expect['layer_sha256'])[:12]}")
     try:
         doc = json.loads(layer_bytes.decode("utf-8"))
+        if not isinstance(doc, dict):
+            raise TypeError(f"a {type(doc).__name__}, not an object")
         out += _structure(doc)
         chains = regnal.load(doc).chain_names()
-    except (UnicodeDecodeError, ValueError, KeyError, TypeError, IndexError) as exc:
+        restated = report_doc(doc, text or "", sha)
+    except (ValueError, KeyError, TypeError, IndexError, AttributeError) as exc:
         return GateResult(NAME, hard=True, passed=False, observed={"sha256": sha[:12]}, expected=want,
                           details=(f"{regnal.LAYER_FILE} is not a regnal layer: {exc!r}",))
     for kd in regnal.KINGDOMS:
@@ -107,7 +110,7 @@ def check_regnal(layer_bytes: bytes | None, report: Mapping[str, Any] | None,
             out.append(f"chain {kd} is {chains[kd]}, the expectation {expect['chains'].get(kd)}")
     if len(doc["conflicts"]) != expect["conflicts"]:
         out.append(f"{len(doc['conflicts'])} field conflicts, the expectation {expect['conflicts']}")
-    if report is None or report != report_doc(doc, text or "", sha):
+    if report is None or report != restated:
         out.append("regnal_report.json is missing or does not restate this layer")
     observed = {"text": text, "layer_sha256": sha[:12], "chains": {k: len(v) for k, v in chains.items()},
                 "conflicts": len(doc["conflicts"])}

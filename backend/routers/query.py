@@ -54,10 +54,18 @@ def _aux_card(card: Card | None) -> AuxCard | None:
                    layer_sha256=card.layer_sha256)
 
 
+def _card_on(req: QueryRequest) -> bool:
+    """``use_regnal_card`` when given; else RAG_REGNAL_CARD, but never in the dense-only or
+    graph-off arms (the card is a graph-side operation, so those ablations stay card-free)."""
+    if req.use_regnal_card is not None:
+        return req.use_regnal_card
+    use_graph = settings.rag_use_graph if req.use_graph is None else req.use_graph
+    return settings.rag_regnal_card and use_graph and not req.semantic_only
+
+
 async def _card(req: QueryRequest, results: list[dict]) -> Card | None:
     """The chronology card when it is on and the question is one it was confirmed for."""
-    on = settings.rag_regnal_card if req.use_regnal_card is None else req.use_regnal_card
-    if not on or req.retrieval_only or not results:
+    if not _card_on(req) or req.retrieval_only or not results:
         return None
     return await chronology_card(req.question, build_context(results), context.active().regnal)
 

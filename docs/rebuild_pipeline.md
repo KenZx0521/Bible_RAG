@@ -77,6 +77,10 @@ R2 的事件與路由層（R1 的轉換路徑已移除）：
 3. `$RAGDATA gt build --text-layer <text>`：重建 `ground_truth.v2.json`、`config/gold/gt_v2_changes.jsonl` 並重新凍結 `gt_v2_freeze.json`（slot_universe 指向新文字層）。
 4. commit 上述檔案，再跑一次 `pipeline run`；已完成的層會直接重用。
 
+文字層一變，`pipeline run` 也會停在 relations（G-REGNAL 釘著審過的 text 版本與 sha）。這是刻意的：不重審就不產出少了年表卡的 release。兩條出路擇一：
+- 重審：重做 K0 欄位抽查與 Kay 的 20 列抽查（實驗 A 的 `layer_check.py`、`kay_a.py` 流程），確認後改 `expectations/regnal_expect.yaml` 的 text、sha、鏈與衝突數，commit，再跑一次 `pipeline run`。
+- 刻意不帶：用 `$RAGDATA release <核心六層版本>` 手動組 release（contract 1.1.0），backend 讀不到 `regnal_layer.json` 就關年表卡，並記 warning。
+
 GT v2 的人工判斷寫在 `config/gold/gt_v2_curated.yaml`；errata 的字形裁決寫在 `config/registries/errata.yaml`（套用者 `decided_by: kay`）。改了這些檔，就照上面的順序重來。
 
 ## 5. 重跑、重用與 G-DET

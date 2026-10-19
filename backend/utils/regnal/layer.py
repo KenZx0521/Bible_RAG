@@ -26,7 +26,9 @@ def parse_layer(data: bytes) -> RegnalLayer:
     try:
         doc = json.loads(data.decode("utf-8"))
         view = regnal.load(doc)
-    except (UnicodeDecodeError, KeyError, TypeError, IndexError) as exc:
+    except ValueError:
+        raise
+    except (KeyError, TypeError, IndexError, AttributeError) as exc:
         raise ValueError(f"not a regnal layer: {exc!r}") from None
     if not all(view.chain.get(kd) for kd in regnal.KINGDOMS):
         raise ValueError("a regnal layer needs a chain for both kingdoms")
