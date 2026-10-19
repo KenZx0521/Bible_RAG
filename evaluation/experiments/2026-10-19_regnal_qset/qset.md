@@ -1,6 +1,6 @@
 # 問法集：年表卡在真實問法下的觸發召回（prereg）
 
-> **草稿，待主 session 審。** 審過後才 commit 成正式 prereg；正式版 commit 之前不准跑 `run_q.py gen／refill／label`，也不准跑 `score_q.py score`（`gt`、`regress` 只讀既有題，可以跑）。
+> **正式 prereg（2026-10-19 主 session 審過，§12 已決定）。** 本版 commit 之後才跑 `run_q.py gen／refill／label`；`score_q.py score` 要等 §10-5 把 r4 層 sha 寫進 `q_common.SCORE_LAYER_SHA256` 之後。
 
 標記：「實測」是用 CPU 或已跑的 probe 量到的數；「推估」是推算。公開 repo：本文不引經文，不引任何題目原文（王名、經節 key、題號可以）。
 
@@ -14,6 +14,7 @@
   - `spec.json` 寫入 store；
   - 2 次 probe 與釘版（§8）。帳本 0.039748 USD（實測）。
 - **還沒做**：正式出題（gen、label）、任何計分。
+- **預算**：Kay 2026-10-19 授權 ≤10 USD（§7-4），P1 召回 < 0.70 才放寬觸發。
 
 ## 1. 母體
 
@@ -282,10 +283,10 @@ S4 用寬的 13 位：
   - 用事蹟描述、不點名的起點王（記 f_start_unnamed，留在分母）。
 - **CLI 舊檔可能被清掉**：2.1.302 之後若被自動清掉，要用新版重新 probe，還要重查改派。
 
-## 12. 待主 session 決定
+## 12. 主 session 的決定（2026-10-19，看任何結果之前）
 
-1. 寫手是否混用 Sonnet。現在 spec 是各半；偵察報告建議混用，Kay 未裁決。只用 Opus 的話，要把 `WRITERS` 改成 1 個再重建 spec，sha 會變。
-2. 總召回 ≥0.70 但某一題型很低時，能不能只放寬那個題型；還是嚴格照 §6-1。
-3. 近似題門檻：P2 只有 13 題。要維持「各 ≤1 題」，還是加到約 25 題（推估多約 0.3 USD）。
-4. Kay 是否另寫 10–15 題，當人類問法錨點，併入 P2 一起計分。
-5. 計分用的 r4 層 sha：等層修正 session 定案後填入本文與 `q_common.SCORE_LAYER_SHA256`（同一個 commit）；r4 若不在 contract 目錄裡，也要寫明 `--lexicon` 用哪一份詞庫（及其 sha）。
+1. **寫手混用 Sonnet**：維持 spec 的 opus／sonnet 各半。理由：只用一種寫手時，召回會帶著那個模型的措辭習慣；混用是 §11 寫手偏差唯一的緩解。spec sha 不變（`ef7ee499…`）。
+2. **只放寬某一題型**：不行，嚴格照 §6-1，只看 P1 總 R_trig。分題型數字照 §5 另報，不當放寬依據（Kay 的裁決是「P1 召回 < 0.7 才放寬」）。
+3. **近似題**：維持 P1 15、P2 13 題，門檻維持「各 ≤1 題」。P2 13 題約是 50 題正例的 26%，符合 Kay 授權的「另 25% 近似題」。它只當煙霧偵測器（§6 統計限制），不加題。
+4. **人類問法錨點**：不請 Kay 另寫題（精簡流程）。這一條留在 §11 的限制：所有題都是 Claude 寫的。
+5. **計分層**：r4 層 sha 等王朝層 K0-1′ 與 Kay 抽查定案、`ragdata build relations` 建出之後，另開一個 commit 寫進本節與 `q_common.SCORE_LAYER_SHA256`，必須在 `score_q.py score --set p1` 之前；`--lexicon` 用 r4 release 的 contract 目錄裡的 routing_lexicon.json，sha 一併寫進本節。
