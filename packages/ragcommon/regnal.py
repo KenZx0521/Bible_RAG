@@ -3,9 +3,10 @@
 The regnal layer is the kings of Israel and Judah from 1 Kings 11:41 on, as the
 regnal formulas name them (``ragdata.kg.regnal_formulas``): nodes with their
 fields and evidence verses, succession edges, order-fallback edges and accession
-synchronisms. Its contract file ``regnal_layer.json`` is the experiment-A layer
-byte for byte (``reports/kg_cards_20261018/A/layer_auto.json``), so this view is
-the experiment's ``regnal.load_auto`` and the chain walk under it, unchanged:
+synchronisms. ``load`` (but for ``View.alts``) and ``born_under`` are experiment A's
+``regnal.load_auto`` and the chain walk under it, unchanged (on relations@a04b67a301dc the contract file
+``regnal_layer.json`` is the experiment-A layer byte for byte,
+``reports/kg_cards_20261018/A/layer_auto.json``):
 
 - a node with neither an accession formula nor a reign length is a mention only and
   is left out (a ghost node);
@@ -13,28 +14,38 @@ the experiment's ``regnal.load_auto`` and the chain walk under it, unchanged:
   fallback edges, roots first, children in node order;
 - a node's primary synchronism is its first ``acc`` synchronism.
 
+Added after the experiment (S4 guard, 2026-10-19): ``View.alts``, the other book's
+accession ages and reign lengths from the layer's conflicts, and ``born_guard``, which
+passes a born_under answer only when it is safe to state. Experiment A had no guard.
+
 One reader serves the K-stage gate (G-REGNAL) and the backend's chronology card.
 """
 
 from __future__ import annotations
 
 import collections
+import copy
 from typing import Any, Mapping
 
 KINGDOMS = ("I", "J")
 KINGDOM_NAMES = {"I": "以色列", "J": "猶大"}
 LAYER_FILE = "regnal_layer.json"
+ALT_FIELDS = ("age", "reign")      # the conflicts born_guard reads
+MIN_BORN_MARGIN = 1.0              # years the birth point must keep from either end of the reign
+_NO_KING = ("UNKNOWN_REIGN", "BEFORE_CHAIN")
 
 
 class View:
     """nodes[id] = dict(kingdom, name, aliases, reign, age, mother, mother_desc, father, death,
-    has_acc, order, prov{field: verse}, evidence[verse])."""
+    has_acc, order, prov{field: verse}, evidence[verse]); alts[(id, field)] = the conflicting
+    values of an age or reign the layer kept the first value of (Kings before Chronicles)."""
 
     def __init__(self) -> None:
         self.nodes: dict[str, dict[str, Any]] = {}
         self.chain: dict[str, list[str]] = {"I": [], "J": []}
         self.syncs: list[tuple[str, str, int, str, bool]] = []   # (node, other, year, verse, primary)
         self.edge_type: dict[tuple[str, str], str] = {}           # (pred, succ) -> type
+        self.alts: dict[tuple[str, str], list[Any]] = {}          # (node, age|reign) -> other values
 
     def idx(self, x: str) -> int | None:
         k = self.nodes[x]["kingdom"]
@@ -108,6 +119,9 @@ def load(doc: Mapping[str, Any], use_fallback: bool = True) -> View:
             if p:
                 primary.add(nid)
             V.syncs.append((nid, other, year, verse, p))
+    for (nid, _name, field, _kept, other) in doc["conflicts"]:
+        if nid in real and field in ALT_FIELDS:
+            V.alts.setdefault((nid, field), []).append(other[0])
     return V
 
 
@@ -128,6 +142,38 @@ def born_under(V: View, x: str) -> tuple[tuple[str, Any] | None, list[str]]:
             return (y, min(rem, r - rem)), read
         rem -= r
     return ("BEFORE_CHAIN", None), read
+
+
+def _with(V: View, x: str, field: str, value: Any) -> View:
+    """A view like V whose node x has ``field`` = value; V itself is not changed."""
+    W = copy.copy(V)
+    W.nodes = {**V.nodes, x: {**V.nodes[x], field: value}}
+    return W
+
+
+def born_guard(V: View, x: str) -> str | None:
+    """Why born_under's answer for x is not to be stated, or None when it may be (S4 guard).
+
+    - ``'no_king'``: born_under names no king;
+    - ``'margin'`` (G1): the birth point lies under MIN_BORN_MARGIN years from an end of
+      that king's reign;
+    - ``'alt:<node>:<field>'`` (G3): an alternative value of x's age, or of the reign of a
+      king the walk read, put in one at a time, names another king or keeps under
+      MIN_BORN_MARGIN years.
+
+    Only ``View.alts`` (ages and reigns) is read; the other conflicts are not."""
+    bu, walked = born_under(V, x)
+    if not bu or bu[0] in _NO_KING:
+        return "no_king"
+    king, margin = bu
+    if margin < MIN_BORN_MARGIN:
+        return "margin"
+    for node, field in [(x, "age")] + [(w, "reign") for w in walked]:
+        for value in V.alts.get((node, field), ()):
+            alt, _read = born_under(_with(V, node, field, value), x)
+            if not alt or alt[0] != king or alt[1] < MIN_BORN_MARGIN:
+                return f"alt:{node}:{field}"
+    return None
 
 
 def acc_sync(V: View, x: str) -> list[tuple[str, int, str]]:
