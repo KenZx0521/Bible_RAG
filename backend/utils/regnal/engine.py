@@ -13,6 +13,12 @@ when ``ragcommon.regnal.born_guard`` passes it: the birth point keeps ≥1 year 
 the reign, and each of the layer's alternative values for the seed's age or a walked reign, put
 in one at a time, names the same king with that margin. A blocked seed loses that one line; the
 rows its walk read stay, and the other lines are unchanged.
+
+The guard takes the layer's age and reign conflicts for real readings, so it serves only the fixed
+layer (rule R10: a regnal-year dating is no reign length). On experiment A's layer
+(relations@a04b67a301dc) 約西亞's dating stands as a reign conflict and the guard takes off right
+lines (約哈斯's, 約雅敬's): it ships in one image and release with the fixed layer, never with that
+one (``docs/records/2026-10-19_regnal_card_integration_plan.md`` §6).
 """
 from __future__ import annotations
 

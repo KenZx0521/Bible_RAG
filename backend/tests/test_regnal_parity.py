@@ -5,8 +5,8 @@ recorded seed output and passages go through the backend (parse_seeds, engine wi
 ``guard=False``, generator) and must give the G-auto arm's recorded system and user prompts
 exactly; where the arm abstained, the backend makes no card. The seed prompts must hash to the
 run's recorded prompts_sha256. The guard (on by default, 2026-10-19) is recorded on the same
-cards: it takes off born lines only, on the items GUARDED names. Reads the store's experiment
-records; skipped where they are absent.
+cards: it takes off born lines only, on the items and for the reasons GUARDED names. Reads the
+store's experiment records; skipped where they are absent.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pytest
 
+from ragcommon.regnal import born_guard
 from utils import generator
 from utils.regnal import engine
 from utils.regnal.card import card_from_seeds
@@ -29,14 +30,19 @@ RUNS = {"confirm": STORE / "reports/kg_cards_20261018/A_confirm",
         "dev": STORE / "reports/kg_cards_20261018/A"}
 pytestmark = pytest.mark.skipif(not LAYER.is_file() or not all(d.is_dir() for d in RUNS.values()),
                                 reason="experiment A records or the regnal layer not in the store")
-# The S4 guard on this layer: item -> seeds whose born line it takes off. A record, not a set-up to
-# serve (the guard ships with the fixed layer): this layer's reign conflicts of 亞撒 (A04) and
-# 約西亞 (A36) are regnal-year datings, so 約哈斯 (A37) and 約雅敬 (A38) lose their lines here
-# besides 亞哈謝 (A15) and 約雅斤 (A39).
-GUARDED = {"confirm": {"QJ1s2a2": ["A15"], "QJ3s2a1": ["A15"], "QJ4s1a1": ["A37"], "QJ4s2a1": ["A37", "A38"],
-                       "QJ5s1a2": ["A38"], "QJ5s2a2": ["A39"]},
-           "dev": {"N_TO_08": ["A37", "A38"], "T_S1_02": ["A15"], "T_S1_05": ["A37"], "T_S1_12": ["A38"],
-                   "T_S1_15": ["A15"], "T_S4_02": ["A38"], "T_S4_05": ["A39"]}}
+# The S4 guard on this layer: item -> {seed whose born line it takes off: born_guard's reason}. A
+# record, not a set-up to serve. 約西亞's reign conflict here (A36, 18) is a regnal-year dating
+# (fixed by the layer rule R10), so 約哈斯 (A37) and 約雅敬 (A38) lose right lines besides 亞哈謝
+# (A15) and 約雅斤 (A39); dev T_S4_02's is one the G-auto arm answered 2/2. 亞撒's dating (A04, 39)
+# moves no king. The guard ships only with the fixed layer, in one image and release (integration
+# plan §6), never with this one.
+GUARD_A36 = "alt:A36:reign"
+GUARDED = {"confirm": {"QJ1s2a2": {"A15": "alt:A15:age"}, "QJ3s2a1": {"A15": "alt:A15:age"},
+                       "QJ4s1a1": {"A37": GUARD_A36}, "QJ4s2a1": {"A37": GUARD_A36, "A38": GUARD_A36},
+                       "QJ5s1a2": {"A38": GUARD_A36}, "QJ5s2a2": {"A39": "alt:A39:age"}},
+           "dev": {"N_TO_08": {"A37": GUARD_A36, "A38": GUARD_A36}, "T_S1_02": {"A15": "alt:A15:age"},
+                   "T_S1_05": {"A37": GUARD_A36}, "T_S1_12": {"A38": GUARD_A36}, "T_S1_15": {"A15": "alt:A15:age"},
+                   "T_S4_02": {"A38": GUARD_A36}, "T_S4_05": {"A39": "alt:A39:age"}}}
 
 
 def _jsonl(path: Path) -> list[dict]:
@@ -112,5 +118,5 @@ def test_the_s4_guard_takes_off_born_lines_only_on_the_recorded_items(run, layer
         assert on["lines"] == [ln for ln, t in zip(off["lines"], off["tags"]) if t in on["tags"]], f"{name} {it['id']}"
         assert set(off["rows"]) <= set(on["rows"]), f"{name} {it['id']}"
         if lost:
-            blocked[it["id"]] = [t[1] for t in lost]
+            blocked[it["id"]] = {t[1]: born_guard(layer.view, t[1]) for t in lost}
     assert blocked == GUARDED[name]
