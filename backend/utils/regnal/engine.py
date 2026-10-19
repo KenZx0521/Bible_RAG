@@ -1,16 +1,23 @@
-"""The chronology card's engine: experiment A's engine.py (arm G-auto), verbatim but its imports.
+"""The chronology card's engine: experiment A's engine.py (arm G-auto) and the S4 guard.
 
-From the resolved seeds only (never the question type) the engine reads the chain rows of
-seed ±3 and the rows walked back by born_under, and writes derivation lines: k-th successor
-(k=±1..±3), n-th usurper after the seed (within +3), king at the seed's birth, and the reigns
-between two same-kingdom seeds. No contemporaries, no king_at_other_year. Rows and lines share
-one ≤900-char budget; rows farthest from the seeds go first. A card with no derivation line is
-no card (the caller answers without one).
+With ``guard=False`` this is the arm's engine verbatim but its imports. From the resolved seeds
+only (never the question type) the engine reads the chain rows of seed ±3 and the rows walked
+back by born_under, and writes derivation lines: k-th successor (k=±1..±3), n-th usurper after
+the seed (within +3), king at the seed's birth, and the reigns between two same-kingdom seeds.
+No contemporaries, no king_at_other_year. Rows and lines share one ≤900-char budget; rows
+farthest from the seeds go first. A card with no derivation line is no card (the caller answers
+without one).
+
+The S4 guard (on by default, 2026-10-19; experiment A had none) writes a seed's born line only
+when ``ragcommon.regnal.born_guard`` passes it: the birth point keeps ≥1 year from both ends of
+the reign, and each of the layer's alternative values for the seed's age or a walked reign, put
+in one at a time, names the same king with that margin. A blocked seed loses that one line; the
+rows its walk read stay, and the other lines are unchanged.
 """
 from __future__ import annotations
 
 from ragcommon.regnal import KINGDOM_NAMES as KNAME
-from ragcommon.regnal import acc_sync, born_under, fmt_reign
+from ragcommon.regnal import acc_sync, born_guard, born_under, fmt_reign
 
 CAP_CHARS = 900
 EDGE_LABEL = {"son": "子繼父", "brother": "兄弟繼位", "usurp": "篡位", "queen_usurp": "篡位",
@@ -57,8 +64,9 @@ def row_text(V, x) -> str:
     return head + "：" + "；".join(parts)
 
 
-def derive(V, seeds: list[str]) -> tuple[list[str], list[tuple[str, str]], list[list]]:
-    """(rows read, in read order; derivation lines as (head, payload); line tags [rel, seed, k])."""
+def derive(V, seeds: list[str], guard: bool = True) -> tuple[list[str], list[tuple[str, str]], list[list]]:
+    """(rows read, in read order; derivation lines as (head, payload); line tags [rel, seed, k]).
+    ``guard``: a born line only where born_guard passes it."""
     read, lines, tags = [], [], []
 
     def touch(y):
@@ -88,7 +96,7 @@ def derive(V, seeds: list[str]) -> tuple[list[str], list[tuple[str, str]], list[
         bu, walked = born_under(V, x)
         for y in walked:
             touch(y)
-        if bu and bu[0] not in FAILED:
+        if bu and bu[0] not in FAILED and (not guard or born_guard(V, x) is None):
             lines.append((f"{desc(V, x)}出生時在位的{kd}王（依登基{V.nodes[x]['age']}歲往回累加前任在位年數）",
                           V.nodes[bu[0]]["name"]))
             tags.append(["born", x, None])
@@ -131,9 +139,10 @@ def fit(V, rows, lines, seeds, cap=CAP_CHARS):
     return rows, lines, dropped
 
 
-def cards(V, seeds: list[str]) -> dict:
-    """G (rows + lines) and T-rows (same kept rows) blocks for one layer; G None = abstain."""
-    read, lines, tags = derive(V, seeds)
+def cards(V, seeds: list[str], guard: bool = True) -> dict:
+    """G (rows + lines) and T-rows (same kept rows) blocks for one layer; G None = abstain.
+    ``guard=False``: no S4 guard, experiment A's cards."""
+    read, lines, tags = derive(V, seeds, guard)
     rows = chain_order(V, read, seeds)
     g_rows, g_lines, dropped = fit(V, rows, lines, seeds)
     t_rows = g_rows if lines else fit(V, rows, [], seeds)[0]
