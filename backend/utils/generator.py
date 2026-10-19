@@ -80,9 +80,13 @@ def build_context_blocks(sources: list[dict]) -> list[str]:
     return blocks
 
 
-def build_context(sources: list[dict]) -> str:
-    """The passages as the generator (and the chronology card's seed call) read them."""
+def _build_context(sources: list[dict]) -> str:
+    """Build context string from retrieved sources."""
     return "\n\n".join(build_context_blocks(sources))
+
+
+# the passages as the generator (and the chronology card's seed call) read them
+build_context = _build_context
 
 
 def build_messages(question: str, context: str, aux_block: str | None = None) -> list[dict]:
@@ -114,7 +118,7 @@ async def generate_answer(question: str, sources: list[dict], aux_block: str | N
     try:
         llm = get_llm_client()
         answer = await llm.chat(
-            messages=build_messages(question, build_context(sources), aux_block),
+            messages=build_messages(question, _build_context(sources), aux_block),
             temperature=settings.llm_temperature,
             max_tokens=settings.llm_max_tokens,
         )

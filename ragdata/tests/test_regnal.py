@@ -1,4 +1,5 @@
-"""The regnal layer (Kay's P5 exception, 2026-10-19): its build reproduces the audited
+"""The relations layer, which holds only the regnal formulas (Kay's P5 exception, 2026-10-19):
+its build reproduces the audited
 experiment-A layer, G-REGNAL pins it, and a release may carry it as an optional layer
 without changing the bytes of a release that does not."""
 
@@ -127,7 +128,7 @@ def stored(tmp_path_factory):
     (root / "text" / TEXT.name).symlink_to(TEXT)
     result = build_regnal(TEXT, root)
     assert result.passed, [g.to_json() for g in result.gates]
-    return root, result.layers["regnal"]
+    return root, result.layers["relations"]
 
 
 def test_build_stores_the_layer_and_the_stored_layer_passes_its_gates(stored):
@@ -135,17 +136,17 @@ def test_build_stores_the_layer_and_the_stored_layer_passes_its_gates(stored):
     data = read_layer(layer.path)
     assert data.depends_on == {"text": "text@247eafe44b02"}
     assert set(data.file_shas) >= {"regnal_layer.json", "regnal_report.json"}
-    report = gate_layer(layer.path, "regnal", [TEXT], inputs=GateInputs())
+    report = gate_layer(layer.path, "relations", [TEXT], inputs=GateInputs())
     assert report.passed, report.to_json()
     again = build_regnal(TEXT, root)
-    assert again.layers["regnal"].version == layer.version
+    assert again.layers["relations"].version == layer.version
 
 
 @needs_r2
 def test_a_release_without_the_optional_layer_keeps_its_bytes():
     again = rel.read_release(R2, STORE / "layers", default_checks())
     assert again.build_id == "b20261008_e05d3e55"
-    assert "regnal" not in again.doc["layers"] and again.doc["contract_version"] == "1.1.0"
+    assert again.doc["layers"]["relations"] is None and again.doc["contract_version"] == "1.1.0"
 
 
 @needs_r2
@@ -164,10 +165,10 @@ def test_a_release_with_the_regnal_layer_carries_its_contract_file(stored, tmp_p
     versions = [v for k, v in r2["layers"].items() if v and k != "src"] + [layer.version]
     release = rel.assemble(root, versions, r2["build_date"], default_checks())
     assert release.doc["contract_version"] == "1.2.0"
-    assert release.doc["layers"]["regnal"] == layer.version
+    assert release.doc["layers"]["relations"] == layer.version
     assert release.doc["contracts"]["regnal_layer.json"] == load_regnal_expect()["layer_sha256"]
     assert {k: v for k, v in release.doc["contracts"].items() if k != "regnal_layer.json"} \
         == r2["contracts"]
-    assert {k: v for k, v in release.doc["layer_digests"].items() if k != "regnal"} \
+    assert {k: v for k, v in release.doc["layer_digests"].items() if k != "relations"} \
         == r2["layer_digests"]
     assert release.build_id != r2["build_id"]

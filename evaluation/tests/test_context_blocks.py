@@ -153,3 +153,20 @@ def test_quick_tool_n_decomposed_ignores_strict_extras():
     assert n_decomposed([{"verdict": 1}, {"verdict": 0}, {"verdict": None, "strict_verdict": 0}]) == 2
     assert n_decomposed([{"verdict": None, "strict_verdict": 0}]) == 1
     assert n_decomposed([]) == 0
+
+
+def test_the_chronology_card_is_one_more_judge_block_under_the_generators_label():
+    from src.context_blocks import AUX_LABEL, aux_context_block
+
+    assert aux_context_block(None) == [] and aux_context_block({"text": ""}) == []
+    assert aux_context_block({"text": "列\n依上列資料推算：…"}) == [f"{AUX_LABEL}\n列\n依上列資料推算：…"]
+
+
+def test_a_transitional_item_rebuilds_its_card_block_after_the_passages():
+    from src.context_blocks import AUX_LABEL, contexts_from_raw_item
+
+    item = {"sources": [{"context": "[1] 列王紀下 第8章\n經文"}], "aux_card": {"text": "卡"}}
+    assert contexts_from_raw_item(item) == ["[1] 列王紀下 第8章\n經文", f"{AUX_LABEL}\n卡"]
+    tagged = {"context_source": "backend", "contexts": ["[1] a", f"{AUX_LABEL}\n卡"],
+              "sources": [{"id": "x"}], "aux_card": {"text": "卡"}}
+    assert contexts_from_raw_item(tagged) == ["[1] a", f"{AUX_LABEL}\n卡"]

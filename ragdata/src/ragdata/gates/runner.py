@@ -72,7 +72,7 @@ from ragdata.store import (
 REPORT_SCHEMA = "ragdata.gate_report.v1"
 REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {
     "text": (), "struct": ("text",), "emb": ("struct", "text"), "kg0": ("text", "struct"),
-    "events": ("text", "struct"), "route": ("text", "kg0", "events"), "regnal": ("text",),
+    "events": ("text", "struct"), "route": ("text", "kg0", "events"), "relations": ("text",),
 }
 REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "text": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-CONSERVE", "G-XCHECK", "G-REF"),
@@ -81,7 +81,7 @@ REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "kg0": ("G-SCHEMA", "G-REFINT", "G-KG0", "G-PROV"),
     "events": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-EVENT", "G-PROV"),
     "route": ("G-SCHEMA", "G-COUNT", "G-ROUTE", "G-PROV"),
-    "regnal": ("G-REGNAL",),
+    "relations": ("G-REGNAL",),   # the regnal formulas only (P5 exception)
 })
 NOT_IMPLEMENTED = "not implemented"
 UNLOADED_DEPS = frozenset({"src"})

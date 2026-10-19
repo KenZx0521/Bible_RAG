@@ -5,7 +5,7 @@ there and the release pins their sha256s, so they must be a pure function of the
 layers. Layer files that already are contracts are copied byte for byte
 (the event registry, the routing lexicon and its query aliases, the encoder fingerprint,
 legacy_ids);
-and, when the release holds the regnal layer, ``regnal_layer.json``;
+and, when the release holds the relations layer (the regnal formulas), ``regnal_layer.json``;
 the rest are canonical JSON over the text and struct rows:
 
 - ``books.json``: the text layer's book rows in canon order;
@@ -34,7 +34,7 @@ COPIED = {
     "legacy_ids.jsonl": ("struct", "legacy_ids.jsonl"),
 }
 # copied only when the release holds the (optional) layer
-COPIED_OPTIONAL = {"regnal_layer.json": ("regnal", REGNAL_LAYER)}
+COPIED_OPTIONAL = {"regnal_layer.json": ("relations", REGNAL_LAYER)}
 DERIVED = ("books.json", "verse_index.json", "ref_aliases.json")
 CONTRACT_FILES = (*DERIVED, *COPIED)          # every release's; optional ones come on top
 

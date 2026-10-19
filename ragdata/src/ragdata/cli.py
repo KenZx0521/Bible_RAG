@@ -19,7 +19,8 @@
     python -m ragdata build events --text DIR --struct DIR [--events-yaml YAML] [--counts YAML]
     python -m ragdata build route --text DIR --kg0 DIR --events DIR [--registries DIR]
                                  [--counts YAML]
-    python -m ragdata build regnal --text DIR [--regnal-expect YAML]
+    python -m ragdata build relations --text DIR [--regnal-expect YAML]
+        (the relations layer holds only the regnal formulas: Kay's P5 exception, 2026-10-19)
     python -m ragdata gate LAYER LAYER_DIR [--dep DIR ...] [--pdf-dir DIR] [--counts YAML]
                                  [--source-expect YAML] [--registries DIR] [--tokenizer FILE]
                                  [--reranker-tokenizer FILE] [--legacy-dir DIR] [--device DEV]
@@ -252,7 +253,7 @@ def _build_regnal(args: argparse.Namespace) -> stages.BuildResult:
 
 BUILDERS: dict[str, Callable[[argparse.Namespace], stages.BuildResult]] = {
     "text": _build_text, "struct": _build_struct, "emb": _build_emb, "kg0": _build_kg0,
-    "events": _build_events, "route": _build_route, "regnal": _build_regnal,
+    "events": _build_events, "route": _build_route, "relations": _build_regnal,
 }
 
 

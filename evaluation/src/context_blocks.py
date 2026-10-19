@@ -2,7 +2,7 @@
 Context blocks: the exact text the generator saw for each retrieved source.
 
 The backend generator builds ``[i] 書卷 第N章 - 標題 (節)`` + passage text
-(``backend/utils/generator.py:build_context``). The judge must see the same
+(``backend/utils/generator.py:_build_context``). The judge must see the same
 block — headerless passages made RAGAS faithfulness reject every citation
 sentence the prompt itself demands (2026-09-10 audit,
 ``docs/records/2026-09-10_faithfulness_audit.md``).
@@ -10,6 +10,10 @@ sentence the prompt itself demands (2026-09-10 audit,
 Preferred path: the backend returns the block per source (``include_context``);
 fallback (legacy sources only): rebuild it here from source metadata +
 PostgreSQL content, keeping the header format byte-identical to the generator.
+
+A chronology card (the response's ``aux_card``, backend ``utils.regnal``) is part of
+what the generator read, so the judge gets it too: one more block after the passages,
+under the generator's own label (``aux_context_block``).
 """
 
 from __future__ import annotations
@@ -28,6 +32,15 @@ CONTEXT_SOURCE_BACKEND = "backend"
 CONTEXT_SOURCE_REBUILT = "rebuilt"
 CONTEXT_SOURCE_LEGACY = "legacy_headerless"
 GENERATOR_CONTEXT_SOURCES = (CONTEXT_SOURCE_BACKEND, CONTEXT_SOURCE_REBUILT)
+# backend utils/generator.py AUX_LABEL: the label the card's block carries in the prompt
+AUX_LABEL = "以下是輔助資料（依經文整理）："
+
+
+def aux_context_block(aux_card: dict | None) -> list[str]:
+    """The chronology card as a judge context block ([] without a card)."""
+    if not aux_card or not aux_card.get("text"):
+        return []
+    return [f"{AUX_LABEL}\n{aux_card['text']}"]
 
 
 def format_context_header(index: int, source: SourceInfo) -> str:
@@ -104,5 +117,5 @@ def contexts_from_raw_item(item: dict) -> list[str] | None:
         return list(item.get("contexts") or [])  # a zero-source sample keeps its tag
     sources = item.get("sources") or []
     if sources and all(s.get("context") for s in sources):
-        return [s["context"] for s in sources]
+        return [s["context"] for s in sources] + aux_context_block(item.get("aux_card"))
     return None

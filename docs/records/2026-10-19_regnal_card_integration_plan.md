@@ -126,7 +126,7 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
 
 ## 執行紀錄
 
-- 2026-10-19 13:35 王朝層進 store：`regnal@a04b67a301dc`（`ragdata build regnal`），G-REGNAL 通過；契約檔 `regnal_layer.json` sha `932d2242…`，就是審過的 `layer_auto.json`，兩國鏈 19／20、衝突 7（commit b27e4f5）。
+- 2026-10-19 13:35 王朝層進 store（G-REGNAL 通過；層的種類見下面「層名更正」）；契約檔 `regnal_layer.json` sha `932d2242…`，就是審過的 `layer_auto.json`，兩國鏈 19／20、衝突 7（commit b27e4f5）。
   - release 改成可帶選用層：沒有 regnal 的 R2 release（`b20261008_e05d3e55`）用新程式重組，位元組不變；帶 regnal 時 contract_version 1.2.0，多一個契約檔，其他契約與各層 digest 與 R2 相同（`test_regnal.py`）。
   - 另外發現：R1 release（`b20261008_6daa4f31`）在未改動的 HEAD 上就重組不過（R1 的 events 層有 `anchor_changes.jsonl`，現行閘門不收），與這次無關；回滾目標是 R2。
 - 2026-10-19 backend 接線（commit 1efcc85）。
@@ -136,3 +136,7 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
 - 2026-10-19 **A3 觸發清單：通過。**500 題中點名鏈上王的有 21 題，觸發 0 題，誤觸 0。
   - 確認集召回（只描述）：26/32。漏掉的 6 題全是 S1a，問法是「之後，第二位作…王」（中間有逗號）或「往前數第二位」。
   - **事後修正（揭露）**：看了這 6 題之後，把 S1a 線索改成容許中間的標點、並收「往前數／往後數」。改後確認集 32/32（樣本內，不當證據）、開發集 27/30 不變、500 題仍觸發 0。修正只放寬標點與數法，題型範圍沒變。
+- 2026-10-19 **層名更正**：原本新增層種類 `regnal`，要改 `ragcommon/ids.py`。但 `metric_version` 是把 ids.py 等檔案的內容雜湊起來算的，一改就從 `4d0826bb8d14` 變掉，GD／QD／BA 三個已結案實驗的完整性檢查會拒跑（evaluation 測試多出 20 個失敗、4 個 error），之後的新結果也都會被工具判成不能和舊結果比。
+  - 改用 ids 裡本來就為 L3「規則關係層」預留的 `relations`（設計 §13.1；ids 的關係型別也預留了 SUCCEEDED）。ids.py 不動，`metric_version` 維持 `4d0826bb8d14`。
+  - 內容仍只限王朝公式（P5 窄例外）；其他關係照樣不做。層是 `relations@a04b67a301dc`（digest 只看檔案內容，和原本相同）；建法 `ragdata build relations --text …`。原本的 `layers/regnal/` 目錄已刪，release 帶它時 `layers.relations` 有值、contract_version 1.2.0；不帶時 `relations` 照舊是 null，位元組不變。
+  - 同時把 `generator._build_context` 的名字改回來（BA 實驗驅動程式依賴它），另外加一個公開別名 `build_context`。

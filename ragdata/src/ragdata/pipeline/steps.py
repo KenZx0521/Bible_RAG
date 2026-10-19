@@ -27,7 +27,7 @@ from ragdata.stages.s05_struct.build import StructInputs, build_struct
 from ragdata.stages.s06_emb.build import EmbInputs, build_emb
 from ragdata.store import StoredLayer
 
-ORDER = ("text", "struct", "emb", "kg0", "events", "route", "regnal")
+ORDER = ("text", "struct", "emb", "kg0", "events", "route", "relations")
 GATE_DEPS: Mapping[str, tuple[str, ...]] = {**REQUIRED_DEPS, "text": ("src",)}
 Built = Mapping[str, StoredLayer]
 
@@ -103,7 +103,7 @@ def _regnal(built: Built, store: Path, s: Sources) -> BuildResult:
 
 BUILDERS: Mapping[str, Callable[[Built, Path, Sources], BuildResult]] = {
     "text": _text, "struct": _struct, "emb": _emb, "kg0": _kg0, "events": _events,
-    "route": _route, "regnal": _regnal,
+    "route": _route, "relations": _regnal,
 }
 
 

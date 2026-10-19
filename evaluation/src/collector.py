@@ -19,6 +19,7 @@ from .config import settings
 from .context_blocks import (
     CONTEXT_SOURCE_BACKEND,
     CONTEXT_SOURCE_REBUILT,
+    aux_context_block,
     contexts_from_raw_item,
 )
 from .models import EvalSample, GroundTruthItem, MetricResult, SourceInfo
@@ -157,6 +158,8 @@ async def collect_responses(
                                        gt.question_id)
                     contexts = await fetch_context_blocks(pool, sources)
                     context_source = CONTEXT_SOURCE_REBUILT
+                aux_card = resp.get("aux_card")
+                contexts = [*contexts, *aux_context_block(aux_card)]
                 logger.info("[%s] RAG done: %d sources, %d contexts (%s), answer_len=%d",
                             gt.question_id, len(sources), len(contexts), context_source, len(answer))
 
@@ -196,6 +199,7 @@ async def collect_responses(
                     "strategy_errors": strategy_errors,
                     "use_graph": stats.get("use_graph", True),
                     "graph_strategies": stats.get("graph_strategies"),
+                    "aux_card": aux_card,
                 })
                 _save_responses(collected_raw)
 

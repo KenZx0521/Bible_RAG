@@ -1,11 +1,11 @@
 """S12: assemble a release (design §2.22, §4) from layer versions in the store.
 
 A release names one version of every core layer (text, struct, emb, kg0, events,
-route) and of every layer they were built on (src under text), and may name an
-optional layer (regnal, Kay's P5 exception of 2026-10-19: the chronology card's
-layer). An optional layer the release does not hold leaves no trace in its body, so a
-release assembled before the layer existed assembles to the same bytes; one that holds
-it is contract version 1.2.0 and carries its contract file. The versions given
+route) and of every layer they were built on (src under text), and may name the
+optional relations layer (L3, which holds only the regnal formulas: Kay's P5 exception
+of 2026-10-19, the chronology card's layer). A release without it is what it was
+(``relations`` stays null, contract version 1.1.0, the same bytes); one with it is
+contract version 1.2.0 and carries ``regnal_layer.json``. The versions given
 need not be all of them: the rest follow from each layer's ``depends_on``, and the
 closure must agree, by content hash, everywhere: a layer built on another version
 of a layer the release names is refused. Every layer is read through the store,
@@ -51,9 +51,9 @@ __all__ = ["CORE", "NAMING", "OPTIONAL", "Release", "ReleaseChecks", "ReleaseErr
 
 RELEASE_SCHEMA = "ragdata.release.v1"
 CONTRACT_VERSION = "1.1.0"
-CONTRACT_VERSION_REGNAL = "1.2.0"       # with the optional regnal layer
+CONTRACT_VERSION_REGNAL = "1.2.0"       # with the optional relations (regnal) layer
 CORE = ("text", "struct", "emb", "kg0", "events", "route")
-OPTIONAL = ("regnal",)
+OPTIONAL = ("relations",)
 NAMING = ("build_id", "build_date", "release_sha")    # what the body's sha names
 
 
@@ -145,11 +145,11 @@ def _body(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> di
     template = _json_file(emb, EMB_REPORT).get("template", {}).get("template_id")
     if not template:
         raise ReleaseError(f"{emb.version}: {EMB_REPORT} declares no template_id")
-    version = CONTRACT_VERSION_REGNAL if "regnal" in layers else CONTRACT_VERSION
+    version = CONTRACT_VERSION_REGNAL if "relations" in layers else CONTRACT_VERSION
     return {
         "schema": RELEASE_SCHEMA, "contract_version": version, "template_id": template,
         "layers": {layer: (layers[layer].version if layer in layers else None)
-                   for layer in ids.LAYERS if layer not in OPTIONAL or layer in layers},
+                   for layer in ids.LAYERS},
         "layer_digests": {k: layer_digest(v.file_shas) for k, v in sorted(layers.items())},
         "depends_on": {k: dict(sorted(v.depends_on.items())) for k, v in sorted(layers.items())},
         "kg_enabled": False,

@@ -1,4 +1,8 @@
-"""Build the regnal layer (Kay's P5 exception, 2026-10-19) and store it if G-REGNAL passes.
+"""Build the relations layer and store it if G-REGNAL passes.
+
+The relations layer (L3, design §13.1: rule-based relations; ``ids.LAYERS`` reserves the
+name) holds only the regnal formulas: Kay's P5 exception of 2026-10-19 lets this one
+narrow use in, the chronology card, and every other relation stays unbuilt.
 
 Input: the text layer only (its verse units and footnotes; ``regnal_core.inputs``). The
 layer holds the contract file ``regnal_layer.json`` and ``regnal_report.json``. The
@@ -50,6 +54,6 @@ def build_regnal(text_dir: Path, store_root: Path,
     stored: dict[str, StoredLayer] = {}
     if gates_pass(gates):
         with clock.lap("store"):
-            stored["regnal"] = write_layer(store_root, "regnal", files, depends_on=depends,
-                                           exist_ok=True)
+            stored["relations"] = write_layer(store_root, "relations", files, depends_on=depends,
+                                              exist_ok=True)
     return BuildResult(MappingProxyType(stored), tuple(gates), MappingProxyType(clock.laps))

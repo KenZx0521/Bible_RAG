@@ -9,7 +9,7 @@ from typing import Any
 from ragdata.contract import emb, kg, struct, text
 from ragdata.contract.fields import Record, parse
 
-LAYERS = ("text", "struct", "emb", "kg0", "events", "route", "regnal")   # regnal holds no records
+LAYERS = ("text", "struct", "emb", "kg0", "events", "route", "relations")   # relations: no records
 # non-record files a layer's build writes beside its records (S3, S4 and the diff reports)
 XCHECK_REPORT = "xcheck_report.json"
 OVERLAY_REPORT = "overlay_report.json"
@@ -33,7 +33,7 @@ LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CA
                  "kg0": (KG0_REPORT,),
                  "events": (EVENT_REGISTRY_V2, EVENTS_REPORT),
                  "route": (ROUTING_LEXICON, QUERY_ALIASES, ROUTE_REPORT),
-                 "regnal": (REGNAL_LAYER, REGNAL_REPORT)}
+                 "relations": (REGNAL_LAYER, REGNAL_REPORT)}
 
 
 @dataclass(frozen=True)

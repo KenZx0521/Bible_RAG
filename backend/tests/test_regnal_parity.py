@@ -21,7 +21,7 @@ from utils.regnal.layer import parse_layer
 from utils.regnal.seeds import SEED_SYSTEM, seed_user
 
 STORE = Path("/mnt/ollama-data/bible_rag_store")
-LAYER = STORE / "layers/regnal/regnal@a04b67a301dc/regnal_layer.json"
+LAYER = STORE / "layers/relations/relations@a04b67a301dc/regnal_layer.json"
 RUNS = {"confirm": STORE / "reports/kg_cards_20261018/A_confirm",
         "dev": STORE / "reports/kg_cards_20261018/A"}
 pytestmark = pytest.mark.skipif(not LAYER.is_file() or not all(d.is_dir() for d in RUNS.values()),
