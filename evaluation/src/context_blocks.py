@@ -2,7 +2,7 @@
 Context blocks: the exact text the generator saw for each retrieved source.
 
 The backend generator builds ``[i] 書卷 第N章 - 標題 (節)`` + passage text
-(``backend/utils/generator.py:_build_context``). The judge must see the same
+(``backend/utils/generator.py:build_context``). The judge must see the same
 block — headerless passages made RAGAS faithfulness reject every citation
 sentence the prompt itself demands (2026-09-10 audit,
 ``docs/records/2026-09-10_faithfulness_audit.md``).

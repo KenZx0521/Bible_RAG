@@ -6,12 +6,16 @@ import logging
 
 from fastapi import APIRouter
 
+from ragcommon.regnal import KINGDOM_NAMES
+
+from config import settings
 from models.request import QueryRequest
-from models.response import QueryResponse, Source, IntentInfo, RetrievalStats
+from models.response import AuxCard, QueryResponse, Source, IntentInfo, RetrievalStats
 from serving import context
 from utils.intent_classifier import classify_intent
+from utils.regnal.card import Card, chronology_card
 from utils.retrieval.router import retrieve_and_rerank
-from utils.generator import build_context_blocks, generate_answer
+from utils.generator import build_context, build_context_blocks, generate_answer
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +46,22 @@ def _sources(req: QueryRequest, results: list[dict]) -> list[Source]:
     return [_source(r, block, build_id) for r, block in zip(results, blocks)]
 
 
+def _aux_card(card: Card | None) -> AuxCard | None:
+    if card is None:
+        return None
+    return AuxCard(text=card.text, seeds=[f"{KINGDOM_NAMES[kd]}｜{nm}" for kd, nm in card.seeds],
+                   kings=list(card.kings), lines=card.lines, evidence=list(card.evidence),
+                   layer_sha256=card.layer_sha256)
+
+
+async def _card(req: QueryRequest, results: list[dict]) -> Card | None:
+    """The chronology card when it is on and the question is one it was confirmed for."""
+    on = settings.rag_regnal_card if req.use_regnal_card is None else req.use_regnal_card
+    if not on or req.retrieval_only or not results:
+        return None
+    return await chronology_card(req.question, build_context(results), context.active().regnal)
+
+
 @router.post(
     "/query",
     response_model=QueryResponse,
@@ -51,7 +71,8 @@ async def rag_query(req: QueryRequest):
     """
     主 RAG 查詢端點。
 
-    流程: 經文引用偵測 → 意圖分類 → 路由檢索 → 去重 → 重排序 → 上下文組裝 → 回答生成。
+    流程: 經文引用偵測 → 意圖分類 → 路由檢索 → 去重 → 重排序 → 上下文組裝 →
+    （王朝年代題）年表卡 → 回答生成。
     """
     context.active()  # 503 before any work when no build is served
     if req.semantic_only:
@@ -66,7 +87,9 @@ async def rag_query(req: QueryRequest):
         use_graph=req.use_graph, semantic_only=req.semantic_only,
         fusion_alpha=req.fusion_alpha, graph_strategies=req.graph_strategies,
     )
-    answer = "" if req.retrieval_only else await generate_answer(req.question, results)
+    card = await _card(req, results)
+    answer = "" if req.retrieval_only else await generate_answer(
+        req.question, results, card.text if card else None)
     return QueryResponse(
         answer=answer,
         sources=_sources(req, results),
@@ -74,4 +97,5 @@ async def rag_query(req: QueryRequest):
                           verse_refs=[ref.display for ref in intent["verse_refs"]],
                           rejected_refs=intent.get("rejected_refs", [])),
         retrieval_stats=RetrievalStats(**stats),
+        aux_card=_aux_card(card),
     )

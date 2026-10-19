@@ -65,11 +65,24 @@ class RetrievalStats(BaseModel):
     event_registry_events: list[str] = []
 
 
+class AuxCard(BaseModel):
+    """The chronology card the generator answered with (utils.regnal); text is the block
+    exactly as the prompt held it, evidence the verse keys its rows rest on."""
+    kind: str = "regnal"
+    text: str
+    seeds: list[str] = []          # 「國別｜王名」 as the seed call named them
+    kings: list[str] = []          # regnal layer node ids
+    lines: int = 0                 # derivation lines
+    evidence: list[str] = []
+    layer_sha256: str
+
+
 class QueryResponse(BaseModel):
     answer: str
     sources: list[Source] = []
     intent: IntentInfo
     retrieval_stats: RetrievalStats
+    aux_card: AuxCard | None = None
 
 
 class MidHeading(BaseModel):

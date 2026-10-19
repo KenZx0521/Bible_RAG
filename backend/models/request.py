@@ -23,6 +23,10 @@ class QueryRequest(BaseModel):
         default=None,
         description="覆寫 RAG_GRAPH_STRATEGIES:只接受 ['event_registry'] 或 [];None 沿用 backend 設定",
     )
+    use_regnal_card: bool | None = Field(
+        default=None,
+        description="覆寫 RAG_REGNAL_CARD 預設值(王朝年表卡,只在王朝年代題觸發);None 表示沿用 backend 設定",
+    )
     semantic_only: bool = Field(
         default=False,
         description="僅用 dense 檢索,bypass R1-R6 routing、SQL 與 event_registry",

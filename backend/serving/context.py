@@ -1,7 +1,8 @@
 """The build this process serves, installed once at startup and never switched.
 
 ``active()`` is what request handlers read: the build row, the contract's routing
-lexicon and event registry. When the handshake failed (and STRICT_BUILD_CHECK is
+lexicon and event registry, and its regnal layer (None for a build without one: the
+chronology card is then off). When the handshake failed (and STRICT_BUILD_CHECK is
 off) nothing is active and every handler that needs data answers 503.
 """
 
@@ -14,6 +15,7 @@ from typing import Mapping, Optional
 from ragcommon.routing import RoutingLexicon
 from serving.build import Build
 from serving.handshake import Handshake
+from utils.regnal.layer import RegnalLayer
 from utils.retrieval.event_registry import RegistryEvent
 
 
@@ -27,6 +29,7 @@ class Active:
     lexicon: RoutingLexicon
     registry: tuple[RegistryEvent, ...]
     book_ids: Mapping[str, str]          # routing full book name -> book_id
+    regnal: Optional[RegnalLayer] = None  # contract regnal_layer.json (contract 1.2.0 on)
 
     @property
     def book_names(self) -> tuple[str, ...]:
@@ -35,10 +38,10 @@ class Active:
         return self.lexicon.full_names
 
 
-def make_active(build: Build, lexicon: RoutingLexicon,
-                registry: tuple[RegistryEvent, ...]) -> Active:
+def make_active(build: Build, lexicon: RoutingLexicon, registry: tuple[RegistryEvent, ...],
+                regnal: Optional[RegnalLayer] = None) -> Active:
     names = {b.full_name: b.book_id for b in lexicon.books}
-    return Active(build, lexicon, registry, MappingProxyType(names))
+    return Active(build, lexicon, registry, MappingProxyType(names), regnal)
 
 
 _active: Optional[Active] = None

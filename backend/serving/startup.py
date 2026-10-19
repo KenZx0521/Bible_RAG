@@ -7,8 +7,10 @@ schema's build_info names it; its Qdrant collection exists with
 and every file hashes to the manifest (and agrees with the build row); it is not
 a KG build (no Neo4j driver exists in this backend); the encoder probes equal
 the contract fingerprint; the routing lexicon (v2), the query-alias table and the
-event registry (variant R2) parse. A contract that fails to parse is a mismatch
-like any other, so an R1 build is refused through the handshake.
+event registry (variant R2) parse, and so does the regnal layer when the build has
+one (contract 1.2.0; without it the chronology card is off and startup says so). A
+contract that fails to parse is a mismatch like any other, so an R1 build is refused
+through the handshake.
 
 Any mismatch: /api/v1/health answers 503 with the list, no data is served, and
 with STRICT_BUILD_CHECK (the default) startup fails. A build that passes still
@@ -27,6 +29,8 @@ from serving import build as build_mod
 from serving import context
 from serving import contracts as contracts_mod
 from serving import handshake as hs
+from utils.regnal.layer import LAYER_FILE as REGNAL_FILE
+from utils.regnal.layer import parse_layer as parse_regnal
 from utils.retrieval import event_registry
 
 logger = logging.getLogger(__name__)
@@ -84,6 +88,11 @@ def _parsed_contracts(found: contracts_mod.Contracts) -> tuple[dict[str, Any], l
             parsed[name] = parse(found.json(name))
         except ValueError as exc:  # JSON, encoding and contract errors alike
             problems.append(f"contracts: {name}: {exc}")
+    if REGNAL_FILE in found.files:   # optional: only a contract 1.2.0 build has one
+        try:
+            parsed[REGNAL_FILE] = parse_regnal(found.files[REGNAL_FILE])
+        except ValueError as exc:
+            problems.append(f"contracts: {REGNAL_FILE}: {exc}")
     return parsed, problems
 
 
@@ -104,7 +113,13 @@ async def _activate(build: build_mod.Build, parsed: Mapping[str, Any]) -> contex
     if missing:
         raise StartupError(f"event registry anchors missing from {build.pg_schema}.passages: "
                            f"{missing}")
-    return context.make_active(build, parsed["routing_lexicon.json"], registry)
+    regnal = parsed.get(REGNAL_FILE)
+    if regnal is None:
+        logger.warning("Build %s has no %s: the chronology card is off", build.build_id, REGNAL_FILE)
+    else:
+        logger.info("Regnal layer %s (chains %s): the chronology card is on when enabled",
+                    regnal.sha256[:12], regnal.chain_size())
+    return context.make_active(build, parsed["routing_lexicon.json"], registry, regnal)
 
 
 async def start(fingerprints: Mapping[str, Any]) -> tuple[context.Active | None, hs.Handshake]:

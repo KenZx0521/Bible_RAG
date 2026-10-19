@@ -89,6 +89,11 @@ class Settings(BaseSettings):
     # default since 2026-10-04) or []. Env value is a JSON array.
     rag_graph_strategies: list[GraphStrategyName] = ["event_registry"]
 
+    # Chronology card (utils.regnal): on dynasty-chronology questions the generator gets the
+    # regnal layer's derivation card (Kay 2026-10-19: on by default). Needs a build with
+    # regnal_layer.json; overridable per request via `use_regnal_card`.
+    rag_regnal_card: bool = True
+
     # Event registry auxiliary lane: how many curated anchors may be appended
     # after the top-k. The 2026-10 simulation found no gain from a second slot.
     rag_event_registry_slots: int = 1
