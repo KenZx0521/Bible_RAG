@@ -73,7 +73,7 @@ def layer_bytes(rows):
                       "aliases": [a[0] for a in r["aliases"]], "fields": f, "evidence": [], "order": n,
                       "has_acc": True})
     edges = [[ids[r["pred"][0]], ids[r["id"]], r["pred"][1], "x.1.1"] for r in rows if r["pred"] and r["pred"][0]]
-    doc = {"nodes": nodes, "edges": edges, "fallback_edges": [], "syncs": []}
+    doc = {"nodes": nodes, "edges": edges, "fallback_edges": [], "syncs": [], "conflicts": []}
     return json.dumps(doc, ensure_ascii=False).encode("utf-8"), ids
 
 
@@ -412,9 +412,15 @@ def test_every_scorer_command_needs_an_explicit_layer(cmd, capsys):
     assert "--layer" in capsys.readouterr().err
 
 
-def test_load_rules_without_a_lexicon_taking_layer_calls_the_two_argument_trigger(tmp_path):
+def test_load_rules_without_a_lexicon_taking_layer_calls_the_two_argument_trigger(tmp_path, monkeypatch):
+    """A checkout from before the rule-seed change: no with_lexicon, a two-argument trigger."""
     data, _ = layer_bytes(SYN_ROWS)
     (tmp_path / "regnal_layer.json").write_bytes(data)
+    fake = SimpleNamespace(trigger=SimpleNamespace(trigger=lambda question, names: REG.trigger.trigger(question, names)),
+                           engine=REG.engine, seeds=SimpleNamespace(),
+                           layer=SimpleNamespace(parse_layer=REG.layer.parse_layer),
+                           routing=REG.routing, files_sha256=dict(REG.files_sha256))
+    monkeypatch.setattr(SC, "regnal", lambda: fake)
     rules = SC.load_rules(tmp_path / "regnal_layer.json")
     assert rules.provenance["lexicon"] is None and rules.fire("拿答之後的第二位王是誰？").fired
     assert "ragcommon/routing.py" in rules.provenance["files_sha256"]
