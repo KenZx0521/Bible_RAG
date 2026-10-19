@@ -158,3 +158,6 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
      - 改後的觸發數：500 題（v1、v2）都是 0；開發集 27/30；確認集 32/32（樣本內）。收緊後確認集一度是 29/32，漏的 3 題是序數和「篡」中間隔了「背叛君王、殺王」，所以放寬到 12 字。
   4. 壞掉的層檔會讓 backend 啟動或 G-REGNAL 直接拋例外：改成 handshake mismatch 或紅燈。
   5. semantic_only 與 use_graph=false 的消融臂原本會有卡片：改成預設關閉，請求帶 `use_regnal_card` 才開；evaluation 的 `rag_client` 也加了這個開關。
+- 2026-10-19 審查修正後重建 r3（commit 3cadd72，digest `sha256:6168c213…`），staging 重新 promote（前一筆是同 build＋舊 r3），`backend-stg` 換上新映像，握手通過。
+- 2026-10-19 **A4 重跑（新 r3）：通過**（store `reports/regnal_card_20261019/a4_r3b/`）。32/32 有卡，key_score 平均 0.812（確認集 G-auto 0.802），0 錯誤、0 逾時；每題 17–27 秒，中位數 21 秒。Ollama 約 12 分鐘，開跑前 /api/ps 是空的。第一次 A4（舊 r3）的結果留在 `a4/`。
+- 驗收 A1–A6 全部通過。prod（:8000，r2＋`b20261008_e05d3e55`）到這裡都沒動；上 prod 等 Kay。
