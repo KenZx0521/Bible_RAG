@@ -44,8 +44,9 @@ REF_V2_DERIVED_SHA256 = "e39e04f227f1b558300dd85662d7dbdaf76e73252ddf732ef1f6aab
 LAYER_PROD = STORE / "contracts" / "b20261019_18aa84ad" / "regnal_layer.json"   # 932d2242…, before the fix
 LAYER_PRE_FIX_SHA256 = "932d2242dc3fdce8830112484c81bc0ea5364cc4caaf6978b12f8984790ee9ab"   # describe only
 # the r4 layer every formal score uses (qset.md §5, §12-5), pinned with the formal prereg; while None
-# P2 is not scored and P1 takes any layer but the pre-fix one (score_q.score_layer_check)
-SCORE_LAYER_SHA256: str | None = None
+# P2 is not scored and P1 takes any layer but the pre-fix one (score_q.score_layer_check). Pinned
+# 2026-10-19: relations@ee8e78c043d2, in release b20261019_a86f2b06 (contracts/…/regnal_layer.json)
+SCORE_LAYER_SHA256: str | None = "252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11"
 LEXICON_FILE = "routing_lexicon.json"   # the build's routing lexicon, next to its regnal_layer.json
 DEV_ITEMS = STORE / "reports" / "kg_cards_20261018" / "A" / "items.json"         # 30 dev questions (in-sample)
 CONFIRM_FROZEN = STORE / "reports" / "kg_cards_20261018" / "A_confirm" / "questions_frozen.json"  # 32 (in-sample)

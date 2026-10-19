@@ -290,3 +290,4 @@ S4 用寬的 13 位：
 3. **近似題**：維持 P1 15、P2 13 題，門檻維持「各 ≤1 題」。P2 13 題約是 50 題正例的 26%，符合 Kay 授權的「另 25% 近似題」。它只當煙霧偵測器（§6 統計限制），不加題。
 4. **人類問法錨點**：不請 Kay 另寫題（精簡流程）。這一條留在 §11 的限制：所有題都是 Claude 寫的。
 5. **計分層**：r4 層 sha 等王朝層 K0-1′ 與 Kay 抽查定案、`ragdata build relations` 建出之後，另開一個 commit 寫進本節與 `q_common.SCORE_LAYER_SHA256`，必須在 `score_q.py score --set p1` 之前；`--lexicon` 用 r4 release 的 contract 目錄裡的 routing_lexicon.json，sha 一併寫進本節。
+   - **已釘（2026-10-19 晚，Kay 抽查 14 項全部同意之後、`score --set p1` 之前）**：r4 release `b20261019_a86f2b06`；計分層 `contracts/b20261019_a86f2b06/regnal_layer.json`（＝`layers/relations/relations@ee8e78c043d2`），sha256 `252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11`；`--lexicon` 用 `contracts/b20261019_a86f2b06/routing_lexicon.json`，sha256 `2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e`（＝`layers/route/route@c31c88e4681e`，和 b20261019_18aa84ad 的同一份）。
