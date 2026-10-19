@@ -54,7 +54,11 @@ Hit = HO.Hit
 # the literal fragments of trigger.CUES (S1a: 之後/之前/以後/以前, 往前數/往後數, 接續…作王, 繼位;
 # S1b: 交接, 相隔; S1c: 篡; S4: 出生時/出生的時/出生那年 … 在位/作…王)
 CUE_LITERALS = ("之後", "之前", "以後", "以前", "往前數", "往後數", "接續", "作王", "繼位", "交接", "相隔", "篡",
-                "出生時", "出生的時", "出生那年", "在位")
+                "出生時", "出生的時", "出生那年", "在位",
+                # the 2026-10-19 relaxation (trigger.py group ``new``), after P1 and P2 were written
+                "往前", "往後", "往下", "隔", "下一任", "上一任", "上上任", "下下任", "繼任", "接任", "接著", "更迭",
+                "更替", "換手", "換王", "幾次", "謀反", "弒", "殺王", "政變", "奪位", "出生", "誕生", "做王", "當王", "執政",
+                "統治", "掌權")
 Q_PROMPT_TERMS = ("觸發", "召回", "年表", "線索", "誤觸", "近似", "問法集", "分母", "規則種子", "標註器", "鎖住",
                   "trigger", "recall", "regex", "cue", "cues", "regnal", "P1", "P2", "near miss", "near-miss")
 Q_MEMORY_MARKERS = ("trigger.py", "trigger.CUES", "_KTH", "utils.regnal", "regnal_layer", "aux_card",

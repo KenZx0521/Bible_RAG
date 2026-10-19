@@ -134,11 +134,11 @@ def top_level_branches(pattern):
     return out + [cur]
 
 
-CUE_EXAMPLES = {
-    "S1a": ["約西亞之後第二位", "往前數第三位", "接續他作王的是誰", "繼位的是誰"],
-    "S1b": ["王位交接幾次", "相隔幾代"],
-    "S1c": ["第二個篡位"],
-    "S4": ["出生時在位的王"],
+CUE_EXAMPLES = {   # the last of S1a, S1b, S1c and S4: the 2026-10-19 relaxation's group ``new``
+    "S1a": ["約西亞之後第二位", "往前數第三位", "接續他作王的是誰", "繼位的是誰", "往前推兩任"],
+    "S1b": ["王位交接幾次", "相隔幾代", "王位更迭了幾次"],
+    "S1c": ["第二個篡位", "之後，第二個靠謀反登基"],
+    "S4": ["出生時在位的王", "出生那一年，誰在做王"],
 }
 
 
@@ -154,6 +154,38 @@ def test_every_cue_branch_has_a_literal_on_the_banned_list():
             essential = [w for w in B.CUE_LITERALS if w in example
                          and not re.search(branch, example.replace(w, "ㄅ" * len(w)))]
             assert essential, (qtype, branch, example)
+
+
+# one example per alternative of the relaxation's group ``new`` (trigger._S1A_NEW … _S4_NEW, the k = ±1
+# and reversed-birth groups split too), in order
+NEW_EXAMPLES = {
+    "S1a": ["之後再往下數第三個王是誰", "往前倒推兩位是誰", "之後，隔兩任的王是誰", "之後兩任王是誰",
+            "的下一任是誰", "的上上任是誰", "的繼任者是誰", "死後，接著作王的是誰"],
+    "S1b": ["中間換手了幾次", "王位一共傳了幾次", "換了幾次王", "經歷了幾次更迭"],
+    "S1c": ["之後，第二個靠謀反登基的是誰", "以後，殺王奪位的人裡面，第二個是誰"],
+    "S4": ["出生那一年，誰在做王", "出生於哪一位王在位期間", "是在哪位王在位時出生的"],
+}
+
+
+def _leaf_branches(pattern: str) -> list[str]:
+    out = []
+    for b in top_level_branches(pattern):
+        m = re.fullmatch(r"\(\?P<adj\d?>(.*)\)", b)
+        out.extend(top_level_branches(m.group(1)) if m else [b])
+    return out
+
+
+def test_every_relaxation_alternative_has_a_literal_on_the_banned_list():
+    """Inside group ``new`` too: an alternative added without a literal in CUE_LITERALS fails here."""
+    t = REG.trigger
+    for qtype, src in (("S1a", t._S1A_NEW), ("S1b", t._S1B_NEW), ("S1c", t._S1C_NEW), ("S4", t._S4_NEW)):
+        leaves = _leaf_branches(src)
+        assert len(leaves) == len(NEW_EXAMPLES[qtype]), qtype
+        for leaf, example in zip(leaves, NEW_EXAMPLES[qtype]):
+            assert re.search(leaf, example), (qtype, leaf, example)
+            essential = [w for w in B.CUE_LITERALS if w in example
+                         and not re.search(leaf, example.replace(w, "ㄅ" * len(w)))]
+            assert essential, (qtype, example)
 
 
 def test_banned_check_catches_cues_literals_terms_and_markers():

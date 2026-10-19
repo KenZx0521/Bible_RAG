@@ -46,7 +46,8 @@ from typing import NamedTuple
 from ragcommon.regnal import KINGDOMS
 
 from utils.regnal.layer import RegnalLayer
-from utils.regnal.trigger import Mention, find_names, first_cue
+from utils.regnal.trigger import REFERRING as _REFERRING
+from utils.regnal.trigger import Mention, cue_kinds, find_names, first_cue
 
 # experiment A's cards_common.strip_parens (bracketed text, innermost first)
 _PARENS = re.compile(r"（[^（）]*）|\([^()]*\)|【[^【】]*】|\[[^\[\]]*\]")
@@ -156,7 +157,6 @@ _KINGDOM = re.compile(r"(?:猶大|以色列)國?")
 _NO_ONE = re.compile(r"[他她其祂位個們人]$")
 _RELATIVE = re.compile(r"(?:的|之)(?:兒子|女兒|孫子|曾孫|長子|次子|子孫|後裔|妻子|妻|王后|太后|父親|母親|祖父|祖母"
                        r"|兄弟|弟弟|哥哥|姊妹|姐妹)|之(?:子|女|父|母)")
-_REFERRING = re.compile(r"這位|那位|此王|該王|這王|那王|這個王|那個王")
 _BRACKETED = re.compile(r"\([^()]*\)")
 _OPENERS, _CLOSERS = "(【[", ")】]"
 _SPAN = re.compile(r"(?:從|由|自)(?P<a>[^,;。?!到至]{1,16}?)(?:到|至)(?P<b>[^,;。?!]{1,16})")
@@ -301,7 +301,7 @@ def rule_seeds(layer: RegnalLayer, question: str) -> RuleSeeds:
     fathers = {x: f.name for f, x in markers.items()}
     cue = first_cue(q, found)
     if cue is None:
-        return RuleSeeds((), "no cue" if first_cue(q) is None else "every cue holds a name")
+        return RuleSeeds((), "every cue holds a name" if cue_kinds(q, found) else "no cue")
     kind, at = cue
     bracketed = _in_brackets(q)
     before = [m for m in found if m not in markers and m.end <= at and not bracketed[m.start]]

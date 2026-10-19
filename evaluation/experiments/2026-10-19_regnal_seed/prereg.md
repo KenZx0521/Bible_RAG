@@ -31,12 +31,14 @@ backend 檔案 sha256（int/regnal-r4；ragcommon/regnal.py 在 f986020 只改�
 | backend/utils/regnal/card.py | f6f463ef149554ac98b110d066fcc198092736bc5fc473a993cfbde2f1632247 |
 | backend/utils/regnal/engine.py | a04d58774ee4fabbf4278f19f175d53eabfcb9e314cbdfe6363e9921e4864a95 |
 | backend/utils/regnal/layer.py | e293e1f324f67eae4dc9dba17e65aeeaee3d207c1458171a27668f20aa26bf82 |
-| backend/utils/regnal/seeds.py | c574d76d55f5b351b4ddb4cef4eb972ca6a304639f476be093843e25eec8bb87 |
-| backend/utils/regnal/trigger.py | 90e6b528dc86d616a01c113025fc49803e72d41f7783f0caa76b24784b845cd0 |
+| backend/utils/regnal/seeds.py | 66cbff39f2b54ebcd09c640319ae1ccee1400d4afb458efcfa14fddc4f7fd1f8 |
+| backend/utils/regnal/trigger.py | 0fd58e6ba0c976927fda8fde61d5c0f6f9549817ddf319df0c2d7e14c636937a |
 | packages/ragcommon/regnal.py | ada1a5a1d12517e677d743d7af40607444343275f730c9ee0103741743e0d40b |
 | packages/ragcommon/routing.py | dfffe5f424c8643aa7bd7f7851534bf25e3d91b9c52e5eaa5cc331b2a4d95490 |
 
-七檔合併 sha（`rs_common.backend().sha256`）：`c80b44e97fa63c563a16a76cb8e21a9b0a0606266c8edaa7bfaf376611b0ff97`。
+七檔合併 sha（`rs_common.backend().sha256`）：`8b6b0d93d3a0533a2e000fc860673a44bcfa834a65d4ae2a879dc421a20ca58f`。
+
+- trigger.py、seeds.py 在定稿（5a7943c）之後、任何 Ollama 呼叫之前改過一次：問法集 P1 召回 0.367 < 0.70，照 qset.md §6 放寬觸發（seeds.py 只改了共用的代名詞清單與一個棄權理由的標籤）。舊規則觸發的題，觸發、規則種子與棄權理由都不變；本回歸的 62 題，觸發集合、規則種子與卡片也都不變（`backend/tests/test_regnal_r4_cards.py` 逐題釘卡片與 prompt sha，放寬前後都過），所以 jobs 只有 backend 釘值不同。
 
 ## 2. 記錄的種子：檔案格式（實查）
 
