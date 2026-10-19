@@ -7,6 +7,11 @@
 # 前一版是實驗 A 的 layer_auto.json 932d2242…（K0 抽 40 欄全對、Kay 抽查 20 列 0 錯、盲集確認 H1/H2 皆過，
 # 見 evaluation/experiments/2026-10-18_kg_cards/confirm_A.md），store relations@a04b67a301dc 仍是那一版。
 # text 層或 regex 一變，sha 就會變：先重做 K0 與抽查，再改這裡。不要只改數字讓閘門變綠。
+# 改這裡的後果：release、load、verify 都用這份重跑 G-REGNAL（ragdata/src/ragdata/release/gating.py），所以現行 prod
+# release b20261019_18aa84ad（relations@a04b67a301dc，932d2242）組不回來，`ragdata load`／`ragdata verify` 會丟
+# ReleaseError（sha、J 鏈、衝突數三項不符，結構檢查仍過）。正在跑的 serving 與 `promote --rollback` 不讀這份檔；
+# 回滾目標 R2（b20261008_e05d3e55）沒有 relations 層，不受影響。合併進 main 前要先有取代 b20261019_18aa84ad 的新
+# release；舊 build 若還要能重驗，舊期望值在 git 26782cb 的這個檔，需另存一份並讓 load/verify 能指定（不在本分支）。
 schema: ragdata.regnal_expect.v1
 inputs:
   text: text@247eafe44b02

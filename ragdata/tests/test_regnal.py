@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from ragcommon import regnal
 from ragdata.gates.regnal import (
@@ -24,16 +25,19 @@ from ragdata.gates.runner import GateInputs, gate_layer
 from ragdata.kg.regnal_build import build_regnal, encode_layer, regnal_files
 from ragdata.kg.regnal_core import Layer
 from ragdata.release import assemble as rel
-from ragdata.release.gating import default_checks
+from ragdata.release.gating import default_checks, release_gates
 from ragdata.store import read_layer
 
 STORE = Path("/mnt/ollama-data/bible_rag_store")
 TEXT = STORE / "layers/text/text@247eafe44b02"
 R2 = STORE / "releases/b20261008_e05d3e55.json"
+SERVED = STORE / "layers/relations/relations@a04b67a301dc"   # experiment A's layer, in b20261019_18aa84ad
 AUDITED = STORE / "reports/regnal_fix_20261019/candidate/regnal_layer.json"
 REF_V2 = STORE / "reports/regnal_fix_20261019/ref_layer_v2.json"
 needs_text = pytest.mark.skipif(not TEXT.is_dir(), reason=f"{TEXT.name} not in the store")
 needs_r2 = pytest.mark.skipif(not R2.is_file(), reason=f"{R2.name} not in the store")
+needs_served = pytest.mark.skipif(not (TEXT.is_dir() and SERVED.is_dir()),
+                                  reason=f"{TEXT.name} or {SERVED.name} not in the store")
 needs_ref_v2 = pytest.mark.skipif(not (TEXT.is_dir() and REF_V2.is_file()),
                                   reason=f"{TEXT.name} or {REF_V2.name} not in the store")
 
@@ -347,6 +351,28 @@ def test_build_stores_the_layer_and_the_stored_layer_passes_its_gates(stored):
     assert report.passed, report.to_json()
     again = build_regnal(TEXT, root)
     assert again.layers["relations"].version == layer.version
+
+
+@needs_served
+def test_the_served_layer_is_red_under_the_fixed_expectation_and_green_under_its_own(tmp_path):
+    """Moving the expectation off 932d2242 means release, load and verify of b20261019_18aa84ad
+    (which carries relations@a04b67a301dc) refuse it: the release gates run G-REGNAL again with
+    this expectation (``release.gating``). It fails on the three pins alone (sha, chain J,
+    conflicts), so an expectation of its own keeps the old layer verifiable."""
+    report = gate_layer(SERVED, "relations", [TEXT], gates=release_gates("relations"), inputs=GateInputs())
+    (gate,) = [g for g in report.gates if g.name == "G-REGNAL"]
+    assert not gate.passed and len(gate.details) == 3, gate.details
+    assert gate.details[0].startswith("regnal_layer.json sha256 932d2242dc3f is not the audited")
+    assert gate.details[1].startswith("chain J is ['所羅門', '羅波安'")
+    assert gate.details[2] == "7 field conflicts, the expectation 3"
+    data = (SERVED / "regnal_layer.json").read_bytes()
+    own = expectation_doc(json.loads(data), TEXT.name, hashlib.sha256(data).hexdigest())
+    path = tmp_path / "regnal_expect_a04b67a301dc.yaml"
+    path.write_text(yaml.safe_dump(own, allow_unicode=True, sort_keys=False), encoding="utf-8")
+    again = gate_layer(SERVED, "relations", [TEXT], gates=release_gates("relations"),
+                       inputs=GateInputs(regnal_expect=path))
+    assert again.passed, again.to_json()
+    assert own["conflicts"] == 7 and own["chains"]["J"][0] == "所羅門"
 
 
 @needs_r2

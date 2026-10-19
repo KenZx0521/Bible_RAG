@@ -16,6 +16,13 @@ against the reference layer without Solomon, K0-1' and Kay's check
   Judah ('J') or the united monarchy ('U', on neither chain);
 - the succession chains read by ``ragcommon.regnal`` and the conflict count equal
   the expectation, and ``regnal_report.json`` restates the layer it sits beside.
+
+Moving the expectation turns a release that carries another relations layer red:
+``release``, ``load`` and ``verify`` gate it again with this file (``release.gating``),
+so once the fixed layer is pinned b20261019_18aa84ad (relations@a04b67a301dc,
+experiment A's layer) can no longer be assembled, loaded or verified. Serving and
+``promote --rollback`` do not read the file. The old layer fails on the three pins
+alone and passes with an expectation of its own (``--regnal-expect`` of ``gate``).
 """
 
 from __future__ import annotations
