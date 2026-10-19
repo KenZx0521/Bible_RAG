@@ -11,6 +11,8 @@ and writes store k0/k0r.json:
 - the field conflicts (target 3) beside the reference's alt fields;
 - synchronisms mapped to reference ids (target 31 the same, none missing);
 - field differences reign, age, father, mother per chain king (value, or only the verse);
+- provenance, data only: each chain king's death field and each chain edge's verse against the
+  reference (K0-1′ round 1, 2026-10-19: neither was compared, and two death verses were wrong);
 - S4 rows: each Judah king with an accession age, ``born_under`` and its margin, and every
   conflict alternative of his age and of the reigns on the walked path, put in one at a time
   and walked again. Data only: the S4 guard itself is another branch's.
@@ -86,6 +88,7 @@ def syncs(V, m: dict, ref: dict) -> dict:
     want = sorted((rid, o, y, v, kind == "primary") for rid, row in ref["rows"].items()
                   for (o, y, v, kind) in row["sync"])
     return {"layer": len(auto), "ref": len(want), "same": sum(1 for s in auto if s in want),
+            "complete": not [s for s in auto if s not in want] and not [s for s in want if s not in auto],
             "layer_not_in_ref": [list(s) for s in auto if s not in want],
             "ref_not_in_layer": [list(s) for s in want if s not in auto]}
 
@@ -105,6 +108,33 @@ def field_diffs(V, m: dict, ref: dict) -> list[dict]:
                 continue
             out.append({"kingdom": n["kingdom"], "name": n["name"], "id": x, "ref_id": rid, "field": f,
                         "kind": kind, "layer": [av, ap], "ref": [rv, rp]})
+    return out
+
+
+def death_diffs(doc: dict, m: dict, ref: dict) -> list[dict]:
+    """Each chain king's death [class, verse] against the reference's [class, killer, verse, cue]."""
+    nodes = {n["id"]: n for n in doc["nodes"]}
+    out = []
+    for x, rid in m.items():
+        d, rd = nodes[x]["fields"].get("death"), ref["rows"][rid].get("death")
+        layer, want = (d[:2] if d else None), ([rd[0], rd[2]] if rd else None)
+        if layer == want:
+            continue
+        kind = ("layer_only" if want is None else "ref_only" if layer is None
+                else "class" if layer[0] != want[0] else "verse")
+        out.append({"name": nodes[x]["name"], "id": x, "ref_id": rid, "kind": kind, "layer": layer, "ref": want})
+    return out
+
+
+def edge_verses(doc: dict, m: dict, ref: dict) -> list[dict]:
+    """Chain edges whose verse differs from the reference predecessor's verse (types are compared above)."""
+    names = {n["id"]: n["name"] for n in doc["nodes"]}
+    out = []
+    for a, b, typ, verse in doc["edges"]:
+        if a in m and b in m and (m[a], m[b]) in ref["edge"]:
+            rtyp, rverse = ref["edge"][(m[a], m[b])]
+            if verse != rverse:
+                out.append({"edge": [names[a], names[b]], "type": typ, "layer": verse, "ref": rverse})
     return out
 
 
@@ -180,15 +210,20 @@ def main() -> None:
         "ref_alts_not_conflicts": ref_alts_not_conflicts(doc, m, ref),
         "syncs": syncs(V, m, ref),
         "field_diffs": field_diffs(V, m, ref),
+        "death_diffs": death_diffs(doc, m, ref),
+        "edge_verses": edge_verses(doc, m, ref),
         "s4_rows": s4_rows(V, doc),
     }
     got = {"rows_differ": sum(r["differ"] + r["only_ref"] for r in rows.values()),
            "edge_type_differ": len(res["edge_types"]), "ghosts": len(ghosts),
            "fallback_edges": len(doc["fallback_edges"]), "conflicts": len(doc["conflicts"]),
-           "syncs_same": res["syncs"]["same"] if not res["syncs"]["ref_not_in_layer"] else -1}
+           "syncs_same": res["syncs"]["same"] if res["syncs"]["complete"] else -1}
     res["summary"] = {"target": TARGET, "observed": got, "met": {k: got[k] == v for k, v in TARGET.items()},
                       "rows": {kd: f"{r['differ']}/{r['rows']}" for kd, r in rows.items()},
                       "field_diffs": {k: sum(d["kind"] == k for d in res["field_diffs"]) for k in ("value", "verse")},
+                      "death_diffs": {k: sum(d["kind"] == k for d in res["death_diffs"])
+                                      for k in ("class", "verse", "layer_only", "ref_only")},
+                      "edge_verses": len(res["edge_verses"]),
                       "s4_rows": len(res["s4_rows"])}
     out = write_new(K0_DIR / "k0r.json", dump(res))
     print(json.dumps({"k0r": str(K0_DIR / "k0r.json"), "sha256": out, **res["summary"]}, ensure_ascii=False, indent=1))

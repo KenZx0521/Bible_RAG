@@ -19,6 +19,12 @@ Judah chain (docs/records/2026-10-19_kg_expansion_feasibility.md §6-1):
 - R9: a successor's pronoun predecessor defaults to the reigning king only if this or the
   previous verse names him, so a foreign king's son is no king of Judah (2ki.19.37);
 - R10: a bare 作王N年 that dates an event is no reign length (2ch.16.12, 2ch.35.19).
+- R14: a usurpation or rebellion verse is the victim's death only when it says he was killed
+  (殺): 2ki.9.14 is only Jehu's revolt, and 2ki.11.3 Athaliah's reign, not Ahaziah's death.
+
+A death field records formulas only: ``natural`` is the 同睡 formula (a king killed in the
+narrative before it keeps it, 1ki.22.40, 2ki.14.22), ``killed`` a usurpation verse that says so;
+other deaths are not read. No card reads the field.
 
 R6, R11 and R12 are in ``regnal_core``. The port's per-verse step order is kept (a fix adds a
 step, ``step_people``, or a pass after the verses, ``restored_edges``, and moves none), and so
@@ -296,7 +302,8 @@ class Builder:
         if victim["fields"].get("mother", [None])[0] == uname:
             typ = "queen_usurp"   # R1c: the king's own mother takes the throne (2ki.11.1-3)
         A.add_edge(victim, s, typ, uk)
-        A.setf(victim, "death", "killed", uk, "usurp")
+        if "殺" in t:   # R14
+            A.setf(victim, "death", "killed", uk, "usurp")
         s["has_acc"] = True   # R1a: taking the throne is the usurper's accession (pending ends after the verses)
         sp = P_USURP_SPAN.search(t)
         if sp and sp.group("n") == uname:   # R1b

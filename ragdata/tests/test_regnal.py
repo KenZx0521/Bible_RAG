@@ -119,6 +119,16 @@ def test_athaliah_has_her_accession_and_her_six_years(doc):
 
 
 @needs_text
+def test_a_usurpation_is_the_victims_death_only_where_the_verse_says_he_was_killed(doc):
+    """R14: 2ki.9.14 is only the revolt against Joram, 2ki.11.3 Athaliah's reign, not her son's
+    death; the rebellion that names the killing (1ki.15.27) is Nadab's."""
+    assert "death" not in _node(doc, "約蘭", "I")["fields"]
+    assert "death" not in _node(doc, "亞哈謝", "J")["fields"]
+    assert _node(doc, "拿答")["fields"]["death"] == ["killed", "1ki.15.27", "usurp"]
+    assert _node(doc, "以拉")["fields"]["death"] == ["killed", "1ki.16.10", "usurp"]
+
+
+@needs_text
 @pytest.mark.parametrize("kd, pred, succ, typ, verse", [
     ("I", "耶羅波安", "拿答", "son", "1ki.14.20"),           # R2: the death formula with a pronoun subject
     ("I", "心利", "暗利", "people", "1ki.16.16"),             # R3: the people make him king
