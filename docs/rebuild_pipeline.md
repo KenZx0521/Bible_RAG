@@ -57,7 +57,7 @@ R2 的事件與路由層（R1 的轉換路徑已移除）：
 - **G-ROUTE**：從 text、kg0、events 與註冊表重編一次詞表，逐位元比對，並要求 `ragcommon.routing` 接受詞表與 `query_aliases.json`。它不跟舊 backend 比對（R2 沒有 live 比對），release 組裝時也會跑。
 - **比對器**：只有 `ragcommon.routing` 一份，K4 閘門與 backend 共用。先遮全書名；其他書名寫法與詞一起掃。每個出現處都是候選，排除表否決的除外。由最長的先取，同長取最左，不與已取的重疊。
 - **relations（王朝層）**：ids 為 L3「規則關係層」預留的層名，目前只放王朝公式（Kay 2026-10-19 的 P5 窄例外，只供 backend 的王朝年表卡；其他關係照樣不做）。
-  - 建法是實驗 A 的 regex 逐字移植（`kg/regnal_*`），產出的 `regnal_layer.json` 就是審過的 `layer_auto.json`（sha `932d2242…`）。
+  - 建法由實驗 A 的 regex 移植（`kg/regnal_*`）。2026-10-19 起加上根治規則 R1a–R12、R14（亞她利雅入猶大鏈、所羅門記國別 U 不在鏈上、順序補邊 0、衝突 3），產出的 `regnal_layer.json` 不再等於實驗 A 的 `layer_auto.json`（`932d2242…`，relations@a04b67a301dc 那一版）；現在審過的 sha 寫在 `expectations/regnal_expect.yaml`。
   - G-REGNAL 釘住 text 版本、這個 sha、兩國的王位鏈與衝突數（`expectations/regnal_expect.yaml`）。text 層或 regex 一變，閘門就紅：先重做 K0 抽查與 Kay 抽查，再改期望檔。
   - release 的選用層：沒有它時 `layers.relations` 是 null、contract_version 1.1.0，位元組與加入前相同；有它時 contract_version 1.2.0，契約多一個 `regnal_layer.json`。backend 啟動時讀到就開年表卡，讀不到就關，並記 warning。
   - 單步建法：`$RAGDATA build relations --text <text 層目錄>`。
@@ -78,7 +78,11 @@ R2 的事件與路由層（R1 的轉換路徑已移除）：
 4. commit 上述檔案，再跑一次 `pipeline run`；已完成的層會直接重用。
 
 文字層一變，`pipeline run` 也會停在 relations（G-REGNAL 釘著審過的 text 版本與 sha）。這是刻意的：不重審就不產出少了年表卡的 release。兩條出路擇一：
-- 重審：重做 K0 欄位抽查與 Kay 的 20 列抽查（實驗 A 的 `layer_check.py`、`kay_a.py` 流程），確認後改 `expectations/regnal_expect.yaml` 的 text、sha、鏈與衝突數，commit，再跑一次 `pipeline run`。
+- 重審：用 `evaluation/experiments/2026-10-19_regnal_fix/` 的工具（只寫 store `reports/regnal_fix_20261019/`）：
+  1. `candidate.py` 在新 text 層上建候選層；`k0r.py` 對參考層 v2（`ref_v2.py`）比繼位行、邊型別、補邊、鬼節點、衝突、同步，並列出欄位、死因與邊經節的差異；`k0_diff.py` 列出對現行層的全部內容差異（附經文，只進 store）。
+  2. K0-1′：三位獨立的 Claude 核對者逐筆核對 `k0_diff.json`、反駁者對抗驗證，要 0 錯誤（2026-10-19 的做法與兩輪結果在 store `k0/`）；接著 Kay 抽查改動項。
+  3. 確認後用 `expect.py` 產生 `expectations/regnal_expect.yaml` 的本體（text、sha、鏈與衝突數），commit，再跑一次 `pipeline run`。
+  - 不要再跑實驗 A 的 `layer_check.py`：它建的是舊規則的層，main 還會寫入凍結的 store `kg_cards_20261018/A/`。
 - 刻意不帶：用 `$RAGDATA release <核心六層版本>` 手動組 release（contract 1.1.0），backend 讀不到 `regnal_layer.json` 就關年表卡，並記 warning。
 
 GT v2 的人工判斷寫在 `config/gold/gt_v2_curated.yaml`；errata 的字形裁決寫在 `config/registries/errata.yaml`（套用者 `decided_by: kay`）。改了這些檔，就照上面的順序重來。
