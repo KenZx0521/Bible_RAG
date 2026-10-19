@@ -2,7 +2,7 @@
 
 > **草稿，待主 session 審；正式版 commit 前不准叫 Ollama**
 >
-> `run_rs.py run` 會檢查本檔：還有這行草稿標記、還有層 sha 的佔位字、§1「王朝層」那一列沒寫 `--layer` 檔案的 sha256，或本檔沒 commit／commit 後又改過，就拒跑（實測：草稿狀態下 `run` 在任何 Ollama 呼叫前拒跑）。
+> `run_rs.py run` 會檢查本檔：還有這行草稿標記、還有層 sha 的佔位字、§1「王朝層」那一列沒寫 `--layer` 檔案的 sha256、「routing lexicon」那一列沒寫 `--lexicon` 檔案的 sha256、§1 backend 表任一列不是本 checkout 該檔的 sha256，或本檔沒 commit／commit 後又改過、harness 目錄（本目錄）有未 commit 的修改或未追蹤的檔，就在任何 Ollama 呼叫前拒跑（`test_regnal_seed_guards.py` 逐項測）。
 
 ## 0. 裁決與定位
 
@@ -67,10 +67,12 @@ backend 檔案 sha256（e3fa8be，本分支未改 backend）：
 - prompt 照 G-auto：`cards_common.SYSTEM_PROMPT`＋`cards_common.build_user(context, question, 卡片文字)`；context＝該題 items.json 的 `sources` 經 `cards_common.build_context`（＝G-auto 用的那份）。store 測試實測：在實驗 A 的層（932d2242）、守門關時，參考臂 (a) 組的 system／user prompt 與 A_confirm 記錄的 G-auto rep 1 **逐字相同（32/32）**。
 - 次數：確認集規則臂每題 3 次、參考臂三組卡各 1 次＝32×3＋32×3＝**192**；dev 觸發題兩臂各 3 次＝觸發題數×6（候選層上 27 題＝**162**）。
 - 同場配對：順序 rep → 集（確認集、dev）→ 題 → 臂，同一題兩臂相鄰、先後隨題序交替，不先跑完一臂。job id `RS|集|題號|臂|rep`。
-- 跑前：`/api/ps`（模型沒載入就 `/api/tags`）核對 digest＝§1 的值，不符或查不到就拒跑；跑完再查一次，全部記在 run_meta.json 的 `digest_checks`。
-- 呼叫：`cards_common.chat`（照 `cards_common.run_jobs` 的 fork：chat 由呼叫端給、沒有重試輪）。Ollama 例外或回應讀不出來（HTTP／解析錯誤）寫一行 error，**最終結果、不再跑**；連續 3 個錯誤就停。
-- 續跑：已有 answer 或 error 行的 job 略過。同一個輸出目錄只能對同一份 jobs（run_meta.json 的 jobs_sha256、options、模型不符就拒跑；有 gen.jsonl 沒 run_meta 也拒跑）。
-- 預估 Ollama 時間（**推估**）：A_confirm 的 run_meta_arms.json 477 次 3452 秒＝7.24 秒／次，A 的 270 次 1558 秒＝5.77 秒／次；192×7.24＋162×5.77 ≈ 2324 秒 ≈ **39 分鐘**。
+- 跑前：`/api/ps`（模型沒載入就 `/api/tags`）核對 digest＝§1 的值，不符或查不到就拒跑；跑完再查一次，全部記在 run_meta.json 的 `digest_checks`。digest 狀態（`rs_run.digest_state`）：ok；mismatch（有一次查到別的 digest）；unknown（最後的跑後檢查 Ollama 沒回）；unfinished（上次開始後還沒做跑後檢查：中斷、連續錯誤停下）。
+- 呼叫：`cards_common.chat`（照 `cards_common.run_jobs` 的 fork：chat 由呼叫端給、沒有重試輪）。Ollama 例外或回應讀不出來（URL／連線／HTTP 錯誤，含 `http.client` 的 IncompleteRead、BadStatusLine，與 JSON 解析錯誤）寫一行 error，**最終結果、不再跑**；連續 3 個錯誤就停。
+- 續跑：已有 answer 或 error 行的 job 略過。同一個輸出目錄只能對同一份 jobs、同一種跑法：run_meta.json 的 jobs_sha256、options、模型、pins（層、lexicon、backend、harness 檔的 sha）不符就拒跑；dry run 的目錄不接正式跑，正式跑的目錄也不接 dry run；有 gen.jsonl 沒 run_meta 也拒跑。unfinished、unknown 的跑在**原目錄**續跑（unknown 續跑時 0 次呼叫、重查 digest）。
+- 正式跑只開一次：同一份 jobs 或同一個層，在 store `reports/regnal_seed_20261019/`（任何深度）或新目錄的上一層已有正式跑（不論完成與否），新目錄就拒跑；唯一例外是 §6 的 `--rerun-of`。命令列的 `--out` 一律要在 `reports/regnal_seed_20261019/` 下（`repro` 可寫在該目錄本身），repo 裡一律不寫。
+- 每次正式跑把 harness 的 git HEAD、是否有未 commit 修改、各檔 sha256 記進 run_meta.json，`score` 也記進 verdict.json（`harness_same_as_run`）；命令列的 `score` 在 harness 有未 commit 修改時拒跑。
+- 預估 Ollama 時間（**推估**）：A_confirm 的 run_meta_arms.json 477 次 3452 秒＝7.24 秒／次，A 的 270 次 1558 秒＝5.77 秒／次；192×7.24＋162×5.77 ≈ 2324 秒 ≈ **39 分鐘**。這是全部臂的牆鐘平均（T-canon、B0 的 prompt 較長、較慢），偏高；只算帶卡的 G-auto／G-ref 每次呼叫的 elapsed_s（確認集 5.92、dev 5.21 秒，不含呼叫間空檔）是下界 ≈ 1980 秒 ≈ **33 分鐘**（也是推估）。
 
 ## 5. 計分
 
@@ -88,8 +90,9 @@ backend 檔案 sha256（e3fa8be，本分支未改 backend）：
 | R3 | 截斷 0、錯誤 0。截斷＝done_reason 為 length，或輸出達 num_predict（eval_count ≥ 10000），或 prompt＋輸出達 num_ctx；錯誤＝HTTP／解析錯誤（error 行） |
 
 - 邊界 −0.05 算過（浮點容差 1e-9）。三條都過才算過。
-- 有 job 沒跑（沒有 answer 也沒有 error 行）→「未完成」，續跑後再判，不算過也不算不過。
-- **重跑**：最多 1 次，而且只在 digest 不符時（跑前不符直接拒跑；跑後不符→判「作廢」，可在新目錄 `--rerun-of` 重跑同一份 jobs 一次，舊目錄記 `rerun_by`）；其他情況（錯誤、截斷、分數不好）**不重跑**。
+- 判定的先後：digest mismatch →「作廢」；unknown →「未判」，原目錄續跑補查 digest；已有錯誤或截斷 → R3 已確定不過（就算還有 job 沒跑，也判「未過」，R1／R2 不判）；有 job 沒跑（沒有 answer 也沒有 error 行）或還沒做跑後檢查 →「未完成」，原目錄續跑後再判，不算過也不算不過；其餘照 R1、R2、R3。
+- **重跑**：最多 1 次，而且只在 digest 不符（mismatch）時（跑前不符直接拒跑；跑後不符→判「作廢」，可在新目錄 `--rerun-of` 重跑同一份 jobs 一次，舊目錄在新跑通過跑前 digest 檢查後才記 `rerun_by`）；其他情況（中斷、錯誤、截斷、digest 查不到、分數不好）**不重跑**，也不能換目錄重開（§4）。
+- dry run（假 chat）的判定一律是 `dry_run`，`pass` 為 false，措辭以「（假 chat，分數無意義）」開頭；流程上會得到的結果只放在 `dry_judgment`。
 - **不過就停**，逐題看（verdict.json 有每題每臂的分數，只有題號與數字），**不改門檻**。
 - 結果一律標「樣本內」；報告要寫：此門檻只抓得到約 ≥0.10–0.15 的破壞，不能宣稱非劣性；H1／H2 的措辭只屬於舊版本（932d2242＋gemma 種子＋無守門）。
 
@@ -99,11 +102,11 @@ backend 檔案 sha256（e3fa8be，本分支未改 backend）：
 
 ## 8. A4′ 卡片逐字核對（`a4_card_check.py`）
 
-讀 staging A4′ 的 responses.jsonl（`2026-10-19_regnal_card/a4_staging.py` 產出，格式同 §2 (b)，新版多 `aux_card.seed_source`），對確認集 32 題用本 checkout 的規則種子在 `--layer`＋`--lexicon` 上算 CPU 規則卡，檢查：0 錯誤；CPU 有卡的題必須有 aux_card、`aux_card.text` 與 CPU 卡逐字相同、`seed_source`＝"rule"；規則棄權的題 `seed_source` 應為 "gemma"（文字不比）；CPU 無卡的題不該有卡；`aux_card.layer_sha256`（若有）＝層 sha。輸出 JSON 到 `--out`（store 只准 `reports/regnal_seed_20261019/` 下），stdout 只印題號、sha 與計數，不印卡片文字。格式自測（實測）：拿舊版 a4_r3b 的記錄跑，32 題都報 seed_source 缺、層 sha 不同、31 題文字不同——預期中的不過，表示讀檔與比對有在動（`a4_check_selftest_r3b.json`）。
+讀 staging A4′ 的 responses.jsonl（`2026-10-19_regnal_card/a4_staging.py` 產出，格式同 §2 (b)，新版多 `aux_card.seed_source`），對確認集 32 題用本 checkout 的規則種子在 `--layer`＋`--lexicon` 上算 CPU 規則卡，檢查：0 錯誤；CPU 有卡的題必須有 aux_card、`aux_card.text` 與 CPU 卡逐字相同、`seed_source`＝"rule"；規則棄權的題 `seed_source` 應為 "gemma"（文字不比）；CPU 無卡的題不該有卡；`aux_card.layer_sha256`（若有）＝層 sha。輸出 JSON 到 `--out`（一律要在 store 的 `reports/regnal_seed_20261019/` 下），stdout 只印題號、sha 與計數，不印卡片文字。格式自測（實測）：拿舊版 a4_r3b 的記錄跑，32 題都報 seed_source 缺、層 sha 不同、31 題文字不同——預期中的不過，表示讀檔與比對有在動（`a4_check_selftest_r3b.json`）。
 
 ## 9. dry run（假 chat，候選層，實測）
 
-候選層 `regnal_fix_20261019/candidate/regnal_layer.json` sha256 `252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11`（2026-10-19 19:24 的版本；這個檔在 dry run 前已改過一次，**不是正式值**）＋§1 的 lexicon，`run_rs.py dry-run` → store `reports/regnal_seed_20261019/dry_run/`。假 chat 照卡片第一行推導作答，分數無意義，只驗流程。
+候選層 `regnal_fix_20261019/candidate/regnal_layer.json` sha256 `252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11`（2026-10-19 19:24 的版本；這個檔在 dry run 前已改過一次，**不是正式值**）＋§1 的 lexicon，`run_rs.py dry-run` → store `reports/regnal_seed_20261019/dry_run/`（審查意見修正後在 commit 後的程式上重跑，jobs sha 與下表數字和修正前相同）。假 chat 照卡片第一行推導作答，分數無意義，只驗流程。
 
 | 項目 | 值 |
 |---|---|
@@ -113,15 +116,16 @@ backend 檔案 sha256（e3fa8be，本分支未改 backend）：
 | 兩臂卡片相同的題數 | 確認集 (a) 6、(b) 4、(c) 3、三組都同 1（/32）；dev 8/27（含 N_SUC_05 的備援） |
 | 規則卡 | 59 張，平均 478 字（規則種子卡 58 張平均 476 字）、平均 6.6 行推導；cap 截列 1 張共 3 列；守門擋 born 行 4 張 |
 | gemma 參考卡 | 123 個 slot 中 122 張（無卡 1：(b) 的 QI1s2a1），平均 677 字、11.7 行；cap 截列 23 張共 61 列；守門擋 born 行 11 張 |
-| 判定流程 | 14 單位、R1／R2／R3 都算得出、digest 兩次（假）都對 |
+| 判定流程 | 14 單位、R1／R2／R3 都算得出、digest 兩次（假）都對；判定 `dry_run`（`dry_judgment` pass，假 chat 的數字無意義） |
+| Ollama 時間（推估） | 牆鐘平均 2324 秒 ≈ 39 分；G 臂呼叫時間下界 1980 秒 ≈ 33 分（§4） |
 
 ## 10. 執行步驟（主 session）
 
 1. 審本檔；把 §1 的層 sha 換成 r4 層的 sha256，去掉檔頭草稿標記，commit。
-2. `python -B run_rs.py build --layer L --lexicon X --out <store>/reports/regnal_seed_20261019/<run>`（CPU，記數）。
-3. `python -B run_rs.py dry-run --layer L --lexicon X`（假 chat，覆寫 dry_run/）。
-4. Ollama 時窗內：`python -B run_rs.py run --layer L --lexicon X --out <同一目錄>`。
-5. `python -B run_rs.py score --out <同一目錄>` → scores.json、verdict.json。
+2. `python -B run_rs.py build --layer L --lexicon X --out <store>/reports/regnal_seed_20261019/<run>`（CPU，記數；只寫進還沒有 run 的目錄）。
+3. `python -B run_rs.py dry-run --layer L --lexicon X`（假 chat，覆寫 dry_run/；dry_run/ 只放 dry run）。
+4. Ollama 時窗內：`python -B run_rs.py run --layer L --lexicon X --out <步驟 2 的目錄>`（中斷或停下就對同一目錄再下一次，續跑）。
+5. `python -B run_rs.py score --out <同一目錄>` → scores.json、verdict.json（harness 要已 commit）。
 6. A4′ staging 跑完後：`python -B a4_card_check.py --responses R --layer L --lexicon X --out <store>/reports/regnal_seed_20261019/a4_check.json`。
 
 ## 11. 限制

@@ -1,22 +1,20 @@
-"""Rule-seed regression harness (evaluation/experiments/2026-10-19_regnal_seed/).
+"""Rule-seed regression harness (evaluation/experiments/2026-10-19_regnal_seed/): cards, jobs, scores.
 
-Ollama is never called: generation goes through fake chats and the model check through a fake
-/api/ps and /api/tags. The synthetic tests run on a small two-kingdom regnal layer and template
-questions built here (no scripture text, no question of experiment A's sets). The store-backed
-tests at the end read the candidate layer, the routing lexicon and experiment A's records; they
-skip when the store is not mounted, and they print no question or card text.
+Ollama is never called. The synthetic tests run on regnal_seed_helpers' small two-kingdom layer and
+template questions (no scripture text, no question of experiment A's sets). The store-backed tests at
+the end read the candidate layer, the routing lexicon and experiment A's records; they skip when the
+store is not mounted, and they print no question or card text. The runner's and the CLI's guards are
+in test_regnal_seed_guards.py.
 """
 
+import difflib
 import json
-import sys
-import urllib.error
 from pathlib import Path
 
 import pytest
-
-RS = Path(__file__).resolve().parents[1] / "experiments" / "2026-10-19_regnal_seed"
-if str(RS) not in sys.path:
-    sys.path.insert(0, str(RS))
+from regnal_seed_helpers import (CONFIRM, DEV, RAW_A, UNTAKEN, fake_api, gen_seed_rows, make_syn, response_rows,
+                                 write_jsonl)
+from regnal_seed_helpers import slot as _slot
 
 import a4_card_check as A4  # noqa: E402
 import rs_cards as K  # noqa: E402
@@ -28,6 +26,11 @@ import rs_score as S  # noqa: E402
 B = C.backend()
 cc = C.cc
 REPO = Path(__file__).resolve().parents[2]
+
+
+@pytest.fixture
+def syn(tmp_path):
+    return make_syn(tmp_path)
 
 
 def test_the_backend_modules_are_this_checkouts():
@@ -42,111 +45,15 @@ def test_the_backend_modules_are_this_checkouts():
     assert len(B.sha256) == 64
 
 
-# ---------------------------------------------------------------- synthetic layer, lexicon, items
-
-ISRAEL = ("耶羅波安", "拿答<耶羅波安", "巴沙", "以拉<巴沙", "心利", "暗利")
-JUDAH = ("羅波安", "亞比央<羅波安", "亞撒<亞比央", "約沙法<亞撒", "約蘭<約沙法", "亞哈謝<約蘭")
-# an alternative accession age for J06: the S4 guard takes its born line off
-CONFLICT = ["J06", "亞哈謝", "age", [33, "1ki.11.2", "ki"], [53, "2ch.22.2", "ch"]]
-
-
-def _node(nid, kd, spec, order):
-    nm, _, father = spec.partition("<")
-    fields = {"reign": [8 + order % 5, f"1ki.{order}.1", "ki"], "age": [30 + order % 4, f"1ki.{order}.2", "ki"]}
-    if father:
-        fields["father"] = [father, f"1ki.{order}.3", "succ"]
-    return {"id": nid, "kingdom": kd, "name": nm, "aliases": [], "fields": fields, "evidence": [f"1ki.{order}.1"],
-            "pending": False, "order": order, "created_by": "t", "has_acc": True}
-
-
-def layer_doc(conflicts=(CONFLICT,)):
-    nodes, edges = [], []
-    for kd, specs in (("I", ISRAEL), ("J", JUDAH)):
-        for i, spec in enumerate(specs, 1):
-            nodes.append(_node(f"{kd}{i:02d}", kd, spec, len(nodes)))
-            if i > 1:
-                edges.append([f"{kd}{i - 1:02d}", f"{kd}{i:02d}", "son", "1ki.1.1"])
-    return {"policy": "occ", "fn_rule": "slot", "nodes": nodes, "edges": edges, "fallback_edges": [], "syncs": [],
-            "conflicts": list(conflicts), "log": [], "occ_alias": [], "union_classes": None}
-
-
-def lexicon_doc():
-    from ragcommon.tests.lexicon_doc import document, name
-    return document(names=[name("掃羅", "nm:5b0000000001", "Person")])
-
-
-def _src(i):
-    return {"book_name": "列王紀上", "chapter_num": i, "title": "合成", "verse_range": "1-2",
-            "content": f"（合成段落 {i}）"}
-
-
-def _item(iid, question, unit=None):
-    it = {"id": iid, "question": question, "sources": [_src(1), _src(2)]}
-    return {**it, "unit": unit} if unit else it
-
-
-CONFIRM = [_item("Q1", "耶羅波安之後的第二位王是誰？", "U1"),       # rule I01; set a names two kings
-           _item("Q2", "亞撒之後的第三位王是誰？", "U1"),           # rule J03 = set a's card
-           _item("Q3", "亞比央的兒子之後的第一位王是誰？", "U2"),   # the rules abstain: gemma fallback
-           _item("Q4", "亞哈謝出生時在位的猶大王是誰？", "U2")]     # rule J06: the guard takes its born line
-DEV = [_item("D1", "巴沙之後的第二位王是誰？"),
-       _item("D2", "暗利是誰？"),                                  # no cue: not taken
-       _item("D3", "以拉的兒子之後的第二位王是誰？")]              # the rules abstain: gemma fallback
-
-RAW_A = {"Q1": "以色列｜耶羅波安\n以色列｜拿答", "Q2": "猶大｜亞撒", "Q3": "猶大｜亞比央", "Q4": "猶大｜亞哈謝"}
-AUX_B = {"Q1": ["以色列｜耶羅波安"], "Q2": None, "Q3": ["猶大｜亞比央"], "Q4": ["猶大｜亞哈謝"]}
-AUX_C = {"Q1": ["以色列｜耶羅波安", "以色列｜拿答"], "Q2": ["猶大｜亞撒"], "Q3": ["猶大｜亞比央"],
-         "Q4": ["猶大｜亞哈謝"]}
-RAW_DEV = {"D1": "以色列｜巴沙", "D2": "以色列｜暗利", "D3": "以色列｜以拉"}
-
-
-def _write_jsonl(path, rows):
-    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
-    return path
-
-
-def _gen_seed_rows(texts):
-    return [{"type": "answer", "job_id": f"A|{i}|seed|1", "item": i, "content": t, "done_reason": "stop",
-             "eval_count": 10, "prompt_eval_count": 10} for i, t in texts.items()]
-
-
-def _response_rows(seeds):
-    return [{"item": i, "error": None, "answer": "x",
-             "aux_card": None if s is None else {"kind": "regnal", "text": "t", "seeds": s, "kings": [],
-                                                  "lines": 1, "evidence": [], "layer_sha256": "0" * 64}}
-            for i, s in seeds.items()]
-
-
-@pytest.fixture
-def syn(tmp_path):
-    layer_p = tmp_path / "regnal_layer.json"
-    layer_p.write_text(json.dumps(layer_doc(), ensure_ascii=False), encoding="utf-8")
-    lex_p = tmp_path / "routing_lexicon.json"
-    lex_p.write_text(json.dumps(lexicon_doc(), ensure_ascii=False), encoding="utf-8")
-    lay, info = C.load_layer(layer_p, lex_p)
-    seeds = {"a": K.raw_seeds(_write_jsonl(tmp_path / "gen_seed_a.jsonl", _gen_seed_rows(RAW_A))),
-             "b": K.aux_seeds(_write_jsonl(tmp_path / "responses_b.jsonl", _response_rows(AUX_B))),
-             "c": K.aux_seeds(_write_jsonl(tmp_path / "responses_c.jsonl", _response_rows(AUX_C))),
-             "dev": K.raw_seeds(_write_jsonl(tmp_path / "gen_seed_dev.jsonl", _gen_seed_rows(RAW_DEV)))}
-    sets = {"confirm": K.SetSpec(CONFIRM, {k: seeds[k] for k in "abc"}, only_fired=False),
-            "dev": K.SetSpec(DEV, {"dev": seeds["dev"]}, only_fired=True)}
-    doc = K.build_cards(lay, info, sets)
-    return lay, info, doc, {"confirm": CONFIRM, "dev": DEV}
-
-
-def _slot(doc, set_, item, arm, rep):
-    return K.slot_map(doc)[(set_, item, arm, rep)]
-
-
 # ---------------------------------------------------------------- recorded seed formats
 
 def test_recorded_seeds_raw_and_parsed(tmp_path):
-    rows = _gen_seed_rows({"X": "猶大｜亞撒"}) + [dict(_gen_seed_rows({"Y": "猶大｜亞撒"})[0], done_reason="length")]
-    raw = K.raw_seeds(_write_jsonl(tmp_path / "s.jsonl", rows))
+    rows = gen_seed_rows({"X": "猶大｜亞撒"}) + [dict(gen_seed_rows({"Y": "猶大｜亞撒"})[0], done_reason="length")]
+    raw = K.raw_seeds(write_jsonl(tmp_path / "s.jsonl", rows))
     assert raw["X"] == {"kind": "raw", "text": "猶大｜亞撒", "truncated": False}
     assert raw["Y"] == {"kind": "raw", "text": "", "truncated": True}   # a truncated seed call: no seeds (A)
-    rows = _response_rows({"X": ["猶大｜亞撒", "以色列｜巴沙"], "Y": None})
-    aux = K.aux_seeds(_write_jsonl(tmp_path / "r.jsonl", rows))
+    rows = response_rows({"X": ["猶大｜亞撒", "以色列｜巴沙"], "Y": None})
+    aux = K.aux_seeds(write_jsonl(tmp_path / "r.jsonl", rows))
     assert aux["X"] == {"kind": "parsed", "pairs": [["J", "亞撒"], ["I", "巴沙"]], "no_aux_card": False}
     assert aux["Y"] == {"kind": "parsed", "pairs": [], "no_aux_card": True}
     with pytest.raises(ValueError):
@@ -215,9 +122,19 @@ def test_slots_record_the_guard_and_the_pins(syn):
     assert doc["header"]["layer_sha256"] == lay.sha256 and doc["header"]["backend_files_sha256"] == B.files_sha256
 
 
+def test_a_card_not_from_the_guarded_engine_is_refused(syn, monkeypatch):
+    lay, _info, _doc, _ = syn
+    card = B.card.card_from_rule(lay, ("J03",))
+    assert K.card_fields(lay, card)["text"] == card.text
+    cards = B.engine.cards
+    monkeypatch.setattr(B.engine, "cards", lambda V, seeds, **kw: {**cards(V, seeds, **kw), "g_block": "另一張"})
+    with pytest.raises(SystemExit, match="guarded engine"):
+        K.card_fields(lay, card)
+
+
 def test_an_untaken_confirm_question_gets_no_card_in_either_arm(tmp_path, syn):
     lay, info, _doc, _ = syn
-    items = [_item("Q9", "暗利是誰？", "U9")]
+    items = [UNTAKEN]
     sets = {"confirm": K.SetSpec(items, {k: {"Q9": {"kind": "raw", "text": "以色列｜暗利", "truncated": False}}
                                          for k in "abc"}, only_fired=False)}
     doc = K.build_cards(lay, info, sets)
@@ -254,161 +171,6 @@ def test_job_prompts_are_g_autos(syn):
     assert cc.AUX_LABEL not in nocard["user"]
 
 
-# ---------------------------------------------------------------- runner: digest, resume, errors
-
-EXPECTED = C.EXPECTED_DIGEST
-
-
-def fake_api(ps_digest=EXPECTED, tags_digest=None, ps_has_model=True):
-    def get(path):
-        if path == "/api/ps":
-            return {"models": [{"name": C.MODEL, "model": C.MODEL, "digest": ps_digest}] if ps_has_model else []}
-        if path == "/api/tags":
-            return {"models": [{"name": C.MODEL, "model": C.MODEL, "digest": tags_digest}] if tags_digest else []}
-        raise AssertionError(path)
-    return get
-
-
-class CountingChat:
-    def __init__(self, fail_after=None, error=None):
-        self.calls, self.fail_after, self.error = 0, fail_after, error
-
-    def __call__(self, system, user, options):
-        if self.error is not None:
-            self.calls += 1
-            raise self.error
-        if self.fail_after is not None and self.calls >= self.fail_after:
-            raise KeyboardInterrupt("simulated stop")
-        self.calls += 1
-        return R.fake_chat(system, user, options)
-
-
-def _small_jobs(n=6):
-    return [{"job_id": f"RS|dev|D{i}|rule|1", "exp": "RS", "set": "dev", "item": f"D{i}", "arm": "rule", "rep": 1,
-             "kind": "gen", "seed_source": "rule", "card_sha256": None, "system": "s", "user": f"u{i}"}
-            for i in range(n)]
-
-
-def test_digest_check(monkeypatch):
-    assert R.model_digest(fake_api()) == (EXPECTED, "ps")
-    assert R.model_digest(fake_api(ps_has_model=False, tags_digest=EXPECTED)) == (EXPECTED, "tags")
-    assert R.model_digest(fake_api(ps_has_model=False)) == (None, None)
-
-    def down(path):
-        raise urllib.error.URLError("refused")
-    assert R.model_digest(down) == (None, None)
-    before, after = {"when": "before", "digest": EXPECTED}, {"when": "after", "digest": EXPECTED}
-    assert R.digest_ok({"digest_checks": [before, after]})
-    assert not R.digest_ok({"digest_checks": [before]})                       # never checked after the run
-    assert not R.digest_ok({"digest_checks": [before, dict(after, digest="f" * 64)]})
-    fake = [dict(before, fake=True), dict(after, fake=True)]
-    assert not R.digest_ok({"digest_checks": fake}) and R.digest_ok({"digest_checks": fake, "dry_run": True})
-
-
-def test_a_wrong_digest_refuses_before_any_call(tmp_path):
-    chat = CountingChat()
-    with pytest.raises(SystemExit, match="digest"):
-        R.execute(_small_jobs(), tmp_path / "o", chat, fake_api(ps_digest="0" * 64))
-    with pytest.raises(SystemExit, match="digest"):
-        R.execute(_small_jobs(), tmp_path / "o", chat, fake_api(ps_has_model=False))
-    assert chat.calls == 0 and not (tmp_path / "o" / R.GEN).exists()
-
-
-def test_a_run_records_meta_and_resume_skips_done_jobs(tmp_path):
-    out, jobs = tmp_path / "o", _small_jobs()
-    with pytest.raises(KeyboardInterrupt):
-        R.execute(jobs, out, CountingChat(fail_after=4), fake_api())
-    assert len(R.done_ids(out / R.GEN)) == 4
-    chat = CountingChat()
-    meta = R.execute(jobs, out, chat, fake_api())
-    assert chat.calls == 2 and meta["n_done"] == 6 and meta["n_errors"] == 0
-    assert meta["jobs_sha256"] == J.jobs_sha256(jobs) and meta["options"] == C.OPTIONS
-    assert (meta["digest_before"], meta["digest_after"], meta["attempt"]) == (EXPECTED, EXPECTED, 1)
-    assert meta["resumed"]
-    again = CountingChat()
-    R.execute(jobs, out, again, fake_api())
-    assert again.calls == 0
-    recs = [json.loads(line) for line in (out / R.GEN).read_text(encoding="utf-8").splitlines()]
-    assert all(r["type"] == "answer" for r in recs) and {r["job_id"] for r in recs} == {j["job_id"] for j in jobs}
-
-
-def test_other_jobs_in_the_same_directory_are_refused(tmp_path):
-    out, jobs = tmp_path / "o", _small_jobs()
-    R.execute(jobs, out, CountingChat(), fake_api())
-    changed = [dict(jobs[0], user="other")] + jobs[1:]
-    with pytest.raises(SystemExit, match="jobs"):
-        R.execute(changed, out, CountingChat(), fake_api())
-    bare = tmp_path / "bare"
-    bare.mkdir()
-    (bare / R.GEN).write_text("", encoding="utf-8")
-    with pytest.raises(SystemExit, match="run_meta"):
-        R.execute(jobs, bare, CountingChat(), fake_api())
-
-
-def test_errors_are_recorded_never_retried_and_three_in_a_row_stop(tmp_path):
-    out, jobs = tmp_path / "o", _small_jobs()
-    chat = CountingChat(error=urllib.error.URLError("refused"))
-    with pytest.raises(SystemExit, match="consecutive"):
-        R.execute(jobs, out, chat, fake_api())
-    assert chat.calls == R.MAX_CONSECUTIVE_ERRORS
-    ok = CountingChat()
-    meta = R.execute(jobs, out, ok, fake_api())
-    assert ok.calls == len(jobs) - R.MAX_CONSECUTIVE_ERRORS      # the errored jobs are not run again
-    assert meta["n_errors"] == R.MAX_CONSECUTIVE_ERRORS
-    parse = CountingChat(error=ValueError("bad json"))
-    with pytest.raises(SystemExit):
-        R.execute(jobs, tmp_path / "p", parse, fake_api())
-    assert len(R.error_lines(tmp_path / "p" / R.GEN)) == R.MAX_CONSECUTIVE_ERRORS
-
-
-def test_a_rerun_only_once_and_only_after_a_digest_mismatch(tmp_path):
-    jobs = _small_jobs()
-    calls = {"n": 0}
-
-    def drifting(path):              # the expected digest before the run, another one after it
-        calls["n"] += 1
-        return fake_api(ps_digest=EXPECTED if calls["n"] == 1 else "f" * 64)(path)
-    first = R.execute(jobs, tmp_path / "r1", CountingChat(), drifting)
-    assert first["digest_after"] == "f" * 64 and not R.digest_ok(first) and first["attempt"] == 1
-    R.execute(jobs, tmp_path / "c1", CountingChat(), fake_api())
-    with pytest.raises(SystemExit, match="digest"):          # the clean run may not be redone
-        R.execute(jobs, tmp_path / "c2", CountingChat(), fake_api(), rerun_of=tmp_path / "c1")
-    with pytest.raises(SystemExit, match="jobs"):            # a rerun is the same jobs
-        R.execute(_small_jobs(5), tmp_path / "x", CountingChat(), fake_api(), rerun_of=tmp_path / "r1")
-    with pytest.raises(SystemExit, match="digest"):          # a void run is not resumed either
-        R.execute(jobs, tmp_path / "r1", CountingChat(), fake_api())
-    second = R.execute(jobs, tmp_path / "r2", CountingChat(), fake_api(), rerun_of=tmp_path / "r1")
-    assert (second["attempt"], second["rerun_of"]) == (2, str((tmp_path / "r1").resolve()))
-    assert R.digest_ok(second)
-    assert C.read_json(tmp_path / "r1" / R.RUN_META)["rerun_by"] == str((tmp_path / "r2").resolve())
-    R.execute(jobs, tmp_path / "r2", CountingChat(), fake_api(), rerun_of=tmp_path / "r1")   # resuming it is fine
-    with pytest.raises(SystemExit, match="once"):            # r1 was redone already
-        R.execute(jobs, tmp_path / "r3", CountingChat(), fake_api(), rerun_of=tmp_path / "r1")
-    with pytest.raises(SystemExit, match="once"):            # a rerun is never redone
-        R.execute(jobs, tmp_path / "r4", CountingChat(), fake_api(), rerun_of=tmp_path / "r2")
-
-
-def test_store_writes_only_go_to_the_new_directory(tmp_path):
-    assert C.writable(tmp_path / "x") == (tmp_path / "x").resolve()
-    assert C.writable(C.OUT_ROOT / "dry_run") == (C.OUT_ROOT / "dry_run").resolve()
-    for frozen in (C.STORE / "reports/kg_cards_20261018/A_confirm", C.STORE / "reports/regnal_card_20261019/a4x",
-                   C.STORE / "layers/x", C.STORE / "contracts/x", C.STORE / "releases/x", C.STORE / "reports/other"):
-        with pytest.raises(SystemExit):
-            C.writable(frozen)
-
-
-def test_the_prereg_gate():
-    sha = "1" * 64
-    draft = f"{C.DRAFT_MARK}\n層 {C.LAYER_SHA_PLACEHOLDER}"
-    assert C.prereg_problems(draft, sha) == ["draft", "placeholder", "layer sha"]
-    assert C.prereg_problems(f"正式版\n{C.LAYER_LINE} {sha} |", sha) == []
-    assert C.prereg_problems(f"正式版\n{C.LAYER_LINE} {'2' * 64} |\n§9 {sha}", sha) == ["layer sha"]   # §1 only
-    text = (RS / "prereg.md").read_text(encoding="utf-8")
-    assert C.DRAFT_MARK in text and C.LAYER_SHA_PLACEHOLDER in text      # the committed draft
-    assert sum(line.startswith(C.LAYER_LINE) for line in text.splitlines()) == 1
-    assert C.prereg_problems(text, sha)
-
-
 # ---------------------------------------------------------------- truncation, thresholds, verdict
 
 OPTS = C.OPTIONS
@@ -426,6 +188,9 @@ def test_r3_counts_truncation_and_errors():
     r3 = S.r3(recs, [{"type": "error", "job_id": "e"}], OPTS)
     assert (r3["truncated"], r3["errors"], r3["pass"]) == (3, 1, False)
     assert S.r3([_rec()], [], OPTS)["pass"]
+    errors_only = S.r3([_rec(), _rec()], [{"type": "error", "job_id": "e"}], OPTS)     # no truncation
+    assert (errors_only["truncated"], errors_only["errors"], errors_only["pass"]) == (0, 1, False)
+    assert errors_only["error_ids"] == ["e"]
 
 
 def test_the_threshold_boundary_passes():
@@ -443,18 +208,47 @@ def test_the_threshold_boundary_passes():
         == pytest.approx(-0.05)
 
 
+OK_R3 = {"truncated": 0, "errors": 0, "pass": True}
+ERR_R3 = {"truncated": 0, "errors": 3, "pass": False}
+
+
 def test_the_verdict_needs_every_rule_and_says_in_sample():
-    ok_r3 = {"truncated": 0, "errors": 0, "pass": True}
-    v = S.verdict(-0.05, -0.02, ok_r3, missing=[], digest_ok=True)
-    assert v["pass"] and v["R1"]["pass"] and v["R2"]["pass"] and "樣本內" in v["wording"]
+    v = S.verdict(-0.05, -0.02, OK_R3, missing=[], digest="ok")
+    assert v["result"] == "pass" and v["pass"] and v["R1"]["pass"] and v["R2"]["pass"] and "樣本內" in v["wording"]
     assert any("非劣性" in n for n in v["notes"]) and any("932d2242" in n for n in v["notes"])
-    assert not S.verdict(-0.06, 0.0, ok_r3, [], True)["pass"]
-    assert not S.verdict(0.0, -0.06, ok_r3, [], True)["pass"]
-    assert not S.verdict(0.0, 0.0, {"truncated": 1, "errors": 0, "pass": False}, [], True)["pass"]
-    assert S.verdict(0.0, 0.0, ok_r3, ["RS|dev|D1|rule|1"], True)["result"] == "incomplete"
-    assert S.verdict(0.0, 0.0, ok_r3, [], False)["result"] == "void_digest"
-    stop = S.verdict(-0.2, 0.0, ok_r3, [], True)
+    assert not S.verdict(-0.06, 0.0, OK_R3, [], "ok")["pass"]
+    assert not S.verdict(0.0, -0.06, OK_R3, [], "ok")["pass"]
+    assert not S.verdict(0.0, 0.0, {"truncated": 1, "errors": 0, "pass": False}, [], "ok")["pass"]
+    assert not S.verdict(0.0, 0.0, ERR_R3, [], "ok")["pass"]
+    stop = S.verdict(-0.2, 0.0, OK_R3, [], "ok")
     assert stop["result"] == "fail" and "停" in stop["wording"] and "樣本內" in stop["wording"]
+
+
+def test_the_verdict_on_an_unfinished_void_or_unknown_run():
+    left = ["RS|dev|D1|rule|1"]
+    inc = S.verdict(0.0, 0.0, OK_R3, left, "ok")
+    assert (inc["result"], inc["pass"]) == ("incomplete", False) and "續跑" in inc["wording"]
+    assert "重跑" not in inc["wording"]
+    # stopped before the after-check (interrupted, or three errors in a row): not void, resume it
+    unf = S.verdict(0.0, 0.0, OK_R3, [], "unfinished")
+    assert unf["result"] == "incomplete" and "續跑" in unf["wording"] and "重跑" not in unf["wording"]
+    # errors are final: R3 has failed already, the rest is not judged
+    err = S.verdict(None, None, ERR_R3, left, "unfinished")
+    assert (err["result"], err["pass"]) == ("fail", False) and "R3" in err["wording"] and "未判" in err["wording"]
+    assert "重跑" not in err["wording"]
+    void = S.verdict(0.0, 0.0, OK_R3, [], "mismatch")
+    assert (void["result"], void["pass"]) == ("void_digest", False) and "--rerun-of" in void["wording"]
+    assert S.verdict(0.0, 0.0, ERR_R3, left, "mismatch")["result"] == "void_digest"
+    unk = S.verdict(0.0, 0.0, OK_R3, [], "unknown")
+    assert (unk["result"], unk["pass"]) == ("digest_unknown", False) and "續跑" in unk["wording"]
+    assert "--rerun-of" not in unk["wording"]
+
+
+def test_a_dry_run_verdict_is_never_a_pass():
+    v = S.verdict(0.0, 0.0, OK_R3, [], "ok", dry_run=True)
+    assert (v["result"], v["pass"], v["dry_judgment"]) == ("dry_run", False, "pass")
+    assert v["wording"].startswith("（假 chat，分數無意義）")
+    assert S.verdict(-0.2, 0.0, OK_R3, [], "ok", dry_run=True)["dry_judgment"] == "fail"
 
 
 def test_fake_chat_answers_from_the_card():
@@ -605,11 +399,69 @@ def test_store_on_experiment_as_layer_unguarded_the_set_a_prompts_are_g_autos(mo
         assert (jobs[(item, 1)]["system"], jobs[(item, 1)]["user"]) == (rec["system"], rec["user"]), item
 
 
+def _mean(xs):
+    return sum(xs) / len(xs)
+
+
+@needs_store
+def test_store_score_run_wires_each_arm_into_its_delta(tmp_path, store_doc):
+    """Recorded calls with known scores through the runner and score_run: the rule arm takes experiment A's
+    G-auto calls, the gemma arm its B0 calls (dev reps 1, 2, 1); R1 and R2 must be the deltas computed here
+    from A's scores.json alone, per unit (confirm) and per question (dev)."""
+    _lay, doc, items = store_doc
+    jobs = J.build_jobs(doc, items)
+    recorded = {"confirm": C.cc.done_jobs(C.A_CONFIRM / "gen_arms.jsonl"),
+                "dev": C.cc.done_jobs(C.A_DEV / "gen_arms.jsonl")}
+    src_arm, dev_rep = {"rule": "G-auto", "gemma": "B0"}, {1: 1, 2: 2, 3: 1}
+
+    def source(j):
+        rep = j["rep"] if j["set"] == "confirm" else dev_rep[j["rep"]]
+        return recorded[j["set"]][f"A|{j['item']}|{src_arm[j['arm']]}|{rep}"]
+    feed = iter([source(j) for j in jobs])
+    keys = ("content", "thinking_chars", "prompt_eval_count", "eval_count", "done_reason", "elapsed_s")
+
+    def chat(system, user, options):
+        rec = next(feed)
+        return {k: rec.get(k) for k in keys}
+    out = tmp_path / "run"
+    R.execute(jobs, out, chat, fake_api(), log=lambda *_a: None)
+    _scores, v = S.score_run(out, doc, jobs, items)
+
+    sc = C.read_json(C.A_CONFIRM / "scores.json")["items"]
+    units: dict = {}
+    for it in items["confirm"]:
+        units.setdefault(it["unit"], []).append(sc[it["id"]]["mean"]["G-auto"] - sc[it["id"]]["mean"]["B0"])
+    want_r1 = _mean([_mean(d) for d in units.values()])
+    sd = C.read_json(C.A_DEV / "scores.json")["items"]
+    want_r2 = _mean([_mean([sd[i]["reps"][f"G-auto|{dev_rep[r]}"]["score"] for r in (1, 2, 3)])
+                     - _mean([sd[i]["reps"][f"B0|{dev_rep[r]}"]["score"] for r in (1, 2, 3)])
+                     for i in doc["items"]["dev"]])
+    assert abs(want_r1) > 0.05 and abs(want_r2) > 0.05 and abs(want_r1 - want_r2) > 0.01   # tells arms, sets apart
+    assert v["R1"]["delta"] == pytest.approx(want_r1) and v["R2"]["delta"] == pytest.approx(want_r2)
+    assert v["n_units"] == 14 and v["confirm_units_delta"] == pytest.approx({u: _mean(d) for u, d in units.items()})
+    assert v["R3"]["pass"] and v["missing"] == [] and v["dry_run"] is False
+    want = "pass" if S.threshold_pass(want_r1) and S.threshold_pass(want_r2) else "fail"
+    assert v["result"] == want
+
+
+@needs_store
+def test_store_synthetic_questions_are_not_store_questions():
+    store = [it["question"] for its in K.store_items().values() for it in its]
+    for it in [*CONFIRM, *DEV, UNTAKEN]:
+        best = max(difflib.SequenceMatcher(None, it["question"], q).ratio() for q in store)
+        assert best <= 0.8, it["id"]
+
+
 @needs_store
 def test_store_dry_run_end_to_end(tmp_path):
     rep = R.dry_run(CANDIDATE, LEXICON, tmp_path / "dry")
     assert rep["n_jobs"] == 32 * 3 * 2 + 27 * 3 * 2
-    assert rep["verdict"]["result"] in ("pass", "fail") and rep["verdict"]["R3"]["pass"]
-    assert rep["estimate"]["seconds"] > 0
+    v = rep["verdict"]
+    assert (v["result"], v["pass"]) == ("dry_run", False)       # a dry run is never a pass
+    assert v["dry_judgment"] in ("pass", "fail") and v["R3"]["pass"]
+    saved = C.read_json(tmp_path / "dry" / "verdict.json")
+    assert saved["result"] == "dry_run" and saved["wording"].startswith("（假 chat，分數無意義）")
+    est = rep["estimate"]
+    assert est["seconds"] > est["lower_bound"]["seconds"] > 0
     for name in ("cards.json", "jobs.json", R.GEN, R.RUN_META, "scores.json", "verdict.json"):
         assert (tmp_path / "dry" / name).is_file()

@@ -91,7 +91,7 @@ def main(argv=None) -> int:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--items", type=Path, default=C.A_CONFIRM / "items.json")
     args = ap.parse_args(argv)
-    out = C.writable(args.out)
+    out = C.cli_out(args.out)
     layer, info = C.load_layer(args.layer, args.lexicon)
     rep = check(layer, C.read_json(args.items)["items"], C.jsonl(args.responses))
     rep = {**rep, "responses": str(args.responses.resolve()), "responses_sha256": C.sha256_file(args.responses),

@@ -4,7 +4,8 @@ The backend's regnal modules (backend/utils/regnal) and ragcommon are imported f
 checked to resolve here (``backend()``); experiment A's cards_common, confirm/score_c, keys_a, score_a
 and analyze_c are imported unchanged. Store writes go to reports/regnal_seed_20261019/ only
 (``writable``); experiment A's, A4's, the layers', contracts' and releases' directories are read only.
-Nothing here calls Ollama, the backend or any LLM.
+Nothing is ever written inside the repository (it is public), and the command line writes only under
+reports/regnal_seed_20261019/ (``cli_out``). Nothing here calls Ollama, the backend or any LLM.
 """
 from __future__ import annotations
 
@@ -54,6 +55,9 @@ PREREG = HERE / "prereg.md"
 DRAFT_MARK = "草稿，待主 session 審；正式版 commit 前不准叫 Ollama"
 LAYER_SHA_PLACEHOLDER = "<r4 層 sha，待主 session 填>"
 LAYER_LINE = "| 王朝層（`--layer`） |"          # prereg §1: the row that must name the layer's sha256
+LEXICON_LINE = "| routing lexicon（`--lexicon`） |"   # prereg §1: the row that must name the lexicon's sha256
+# prereg §1's backend table: one row 「| file | sha256 |」 per BACKEND_FILES entry
+HARNESS_GLOBS = ("*.py", "prereg.md")          # the harness files pinned in run_meta and verdict
 
 BACKEND_FILES = ("backend/utils/regnal/card.py", "backend/utils/regnal/engine.py", "backend/utils/regnal/layer.py",
                  "backend/utils/regnal/seeds.py", "backend/utils/regnal/trigger.py",
@@ -91,12 +95,34 @@ def _under(p: Path, root: Path) -> bool:
     return p == root.resolve() or root.resolve() in p.parents
 
 
+@functools.lru_cache(maxsize=1)
+def repo_roots() -> tuple[Path, ...]:
+    """This checkout and, for a git worktree, the main checkout that holds it."""
+    roots = {REPO.resolve()}
+    common = subprocess.run(["git", "-C", str(REPO), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+                            capture_output=True, text=True)
+    if common.returncode == 0 and common.stdout.strip():
+        roots.add(Path(common.stdout.strip()).resolve().parent)
+    return tuple(sorted(roots))
+
+
 def writable(path: Path | str) -> Path:
-    """The resolved path, when writing there is allowed: anywhere off the store (tests, scratch), and in
-    the store only under reports/regnal_seed_20261019/."""
+    """The resolved path, when writing there is allowed: never inside the repository (public: no
+    question, card or answer text), in the store only under reports/regnal_seed_20261019/, and
+    anywhere else (tests, scratch)."""
     p = Path(path).resolve()
+    if any(_under(p, r) for r in repo_roots()):
+        raise SystemExit(f"{p}: nothing is written inside the repository")
     if any(_under(p, d) for d in READ_ONLY) or (_under(p, STORE) and not _under(p, OUT_ROOT)):
         raise SystemExit(f"{p}: the store is written only under {OUT_ROOT}")
+    return p
+
+
+def cli_out(path: Path | str, allow_root: bool = False) -> Path:
+    """A command-line output path: strictly under OUT_ROOT (OUT_ROOT itself only with allow_root)."""
+    p, root = writable(path), Path(OUT_ROOT).resolve()
+    if not (root in p.parents or (allow_root and p == root)):
+        raise SystemExit(f"{p}: the command line writes only under {root}")
     return p
 
 
@@ -140,24 +166,58 @@ def frozen_problems() -> list[str]:
     return c_common.frozen_mismatches()
 
 
-def prereg_problems(text: str, layer_sha: str) -> list[str]:
-    """Why prereg.md is not yet the formal version for this layer: the draft mark, the placeholder, or
-    the §1 layer row (LAYER_LINE) not naming the layer's sha256."""
+def prereg_problems(text: str, layer_sha: str, *, lexicon_sha: str, backend_files: dict[str, str]) -> list[str]:
+    """Why prereg.md is not yet the formal version for this run: the draft mark, the placeholder, §1's
+    layer row (LAYER_LINE) or lexicon row (LEXICON_LINE) not naming the run's sha256, or a row of §1's
+    backend table (「| file | sha256 |」) not naming the sha256 of that file of this checkout."""
     out = []
+    lines = text.splitlines()
     if DRAFT_MARK in text:
         out.append("draft")
     if LAYER_SHA_PLACEHOLDER in text:
         out.append("placeholder")
-    if not any(line.startswith(LAYER_LINE) and layer_sha in line for line in text.splitlines()):
+    if not any(line.startswith(LAYER_LINE) and layer_sha in line for line in lines):
         out.append("layer sha")
+    if not any(line.startswith(LEXICON_LINE) and lexicon_sha in line for line in lines):
+        out.append("lexicon sha")
+    for f, sha in backend_files.items():
+        if not any(line.startswith(f"| {f} |") and sha in line for line in lines):
+            out.append(f"backend sha {f}")
     return out
 
 
-def prereg_git_problems(path: Path = PREREG) -> list[str]:
-    """prereg.md must be committed and unchanged since (no Ollama call before the formal version)."""
-    rel = str(path.resolve().relative_to(REPO))
-    tracked = subprocess.run(["git", "-C", str(REPO), "ls-files", "--error-unmatch", rel], capture_output=True)
-    if tracked.returncode != 0:
-        return ["prereg.md not committed"]
-    dirty = subprocess.run(["git", "-C", str(REPO), "diff", "--quiet", "HEAD", "--", rel])
-    return ["prereg.md changed since the last commit"] if dirty.returncode != 0 else []
+def _git(cwd: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", str(cwd), *args], capture_output=True, text=True)
+
+
+def prereg_git_problems(path: Path | None = None, harness_dir: Path | None = None) -> list[str]:
+    """prereg.md must be committed and unchanged since, and so must every file of the harness directory
+    (no edit, no untracked file): no Ollama call before the formal version, and the code that runs is
+    the committed code."""
+    path = Path(path or PREREG).resolve()
+    harness_dir = Path(harness_dir or HERE).resolve()
+    out = []
+    if _git(path.parent, "ls-files", "--error-unmatch", path.name).returncode != 0:
+        out.append("prereg.md not committed")
+    elif _git(path.parent, "diff", "--quiet", "HEAD", "--", path.name).returncode != 0:
+        out.append("prereg.md changed since the last commit")
+    status = _git(harness_dir, "status", "--porcelain", "--untracked-files=all", "--", ".")
+    if status.returncode != 0 or status.stdout.strip():
+        out.append("harness files changed or untracked since the last commit")
+    return out
+
+
+def harness_files_sha256(harness_dir: Path | None = None) -> dict[str, str]:
+    d = Path(harness_dir or HERE)
+    return {p.name: sha256_file(p) for g in HARNESS_GLOBS for p in sorted(d.glob(g)) if p.is_file()}
+
+
+def harness_pins(harness_dir: Path | None = None) -> dict:
+    """The harness's own version: git HEAD, whether its directory differs from HEAD, its files' sha256."""
+    d = Path(harness_dir or HERE)
+    head = _git(d, "rev-parse", "HEAD")
+    status = _git(d, "status", "--porcelain", "--untracked-files=all", "--", ".")
+    files = harness_files_sha256(d)
+    return {"git_head": head.stdout.strip() if head.returncode == 0 else None,
+            "dirty": status.returncode != 0 or bool(status.stdout.strip()), "files_sha256": files,
+            "sha256": sha256_text(json.dumps(files, sort_keys=True))}
