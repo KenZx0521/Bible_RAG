@@ -23,11 +23,14 @@ card was never measured there. Matching is on the NFKC question text and reads n
 (押沙龍 as 沙龍, 以利亞撒 as 亞撒, 亞哈隨魯 as 亞哈, 以拉他 as 以拉), so with a cue such a
 question took the card. ``find_names`` now takes the chain names together with the blockers
 (the routing lexicon's person and place names that hold a chain name and are none,
-``layer.with_blockers``; not its events, 所羅門獻殿 does name the king), longest first, and
-drops a blocker's place; a name followed by 支派／族 is the tribe, not the king. This only
-removes false names, it widens nothing: on the 500-question GT (v1 and v2) the questions
-naming a chain king go 21 → 19 on layer 932d2242 and none takes the card, before or after;
-the blind and development sets fire as before (32/32, 27/30). The rule seeds
+``layer.with_lexicon``; not its events, 所羅門獻殿 does name the king), longest first, and
+drops a blocker's place; a name followed by 支派／族 is the tribe, not the king. It narrows
+only: on the 500-question GT (v1 and v2) the questions naming a chain king go 21 → 19 on
+layer 932d2242 and none takes the card, before or after; the blind and development sets fire
+as before (32/32, 27/30). Its known cost: a real king whose name runs into a character that
+makes a blocker (以拉 + 大約 reads as 以拉大, 28 blockers there, many a king's name and one
+character) is hidden too, so such a question loses the card or the rules abstain. The
+startup log prints the blockers and ``test_regnal_seeds`` pins them per layer. The rule seeds
 (``seeds.rule_seeds``) read the names with the same function.
 """
 
@@ -85,13 +88,23 @@ def find_names(question: str, names: tuple[str, ...], blockers: tuple[str, ...] 
                  if t.name in chain and not _TRIBE.match(question, t.end))
 
 
-def first_cue(question: str) -> tuple[str, int] | None:
-    """(type, start) of the earliest cue in the (NFKC) question; None without one."""
-    hits = [(m.start(), t) for t, p in CUES.items() if (m := p.search(question))]
-    if not hits:
-        return None
-    start, kind = min(hits)
-    return kind, start
+# a match of these holding a king's name is narrative, not the cue: S1c's room before 篡 also
+# takes a regnal year (亞撒第三年巴沙篡位). In the others a held name is the anchor (接續X作王)
+# or an answer candidate after the cue's start (X出生時，Y在位嗎).
+_NARRATIVE_ROOM = ("S1c",)
+
+
+def first_cue(question: str, found: tuple[Mention, ...] = ()) -> tuple[str, int] | None:
+    """(type, start) of the earliest cue in the (NFKC) question, skipping an S1c match that
+    overlaps one of ``found``; None without one. Every start is tried, so a skipped match hides
+    no later one; with ``found`` empty this is the earliest ``search`` of each cue."""
+    for i in range(len(question)):
+        for kind, p in CUES.items():
+            m = p.match(question, i)
+            if m and not (kind in _NARRATIVE_ROOM
+                          and any(n.start < m.end() and m.start() < n.end for n in found)):
+                return kind, i
+    return None
 
 
 def trigger(question: str, names: tuple[str, ...], blockers: tuple[str, ...] = ()) -> Trigger:

@@ -3,6 +3,9 @@
 On a small two-kingdom layer with the real chains' traps (cross- and same-kingdom homonyms,
 names inside names, aliases, a king off the chain): a father marker only splits homonyms, the
 anchor is the name nearest before the cue, the guards abstain, and only chain nodes come out.
+The review cases (2026-10-19) pin what the rules must not read as a seed: a pronoun or a title
+written as the father, a regnal year (第N年 … 篡) as the cue, a name in a bracket, a relative
+written with 之子／的女兒／的妻子／的長子; and the blockers' known cost (以拉 + 大約).
 Through /query: rule seeds make the card with no seed call, an abstention falls back to the
 gemma seed call, a question whose names are all blocked takes no card. The store-backed tests
 at the end replay experiment A's question sets and the 500-question GT; they are in-sample
@@ -29,7 +32,7 @@ from serving.handshake import Handshake
 from utils import generator
 from utils.regnal import card as card_mod
 from utils.regnal import engine
-from utils.regnal.layer import parse_layer, with_blockers
+from utils.regnal.layer import parse_layer, with_lexicon
 from utils.regnal.seeds import MAX_SEEDS, rule_seeds
 from utils.regnal.trigger import trigger
 
@@ -41,13 +44,15 @@ JUDAH = ("羅波安<所羅門", "亞比央|亞比雅<羅波安", "亞撒<亞比�
          "約阿施", "亞瑪謝<約阿施", "亞撒利雅|烏西雅<亞瑪謝", "約坦<亞撒利雅", "亞哈斯<約坦", "希西家<亞哈斯",
          "瑪拿西<希西家", "亞們<瑪拿西", "約西亞<亞們", "約哈斯<約西亞", "約雅敬|以利亞敬<約西亞", "約雅斤<約雅敬",
          "西底家")
-# the lexicon: names holding a chain name (blockers), one holding none, a chain name, and an
-# event naming a chain king (no blocker)
+# the lexicon: names holding a chain name (blockers; 以拉大 a king's name and one common
+# character), names holding none (fathers a question may write), a chain name, and an event
+# naming a chain king (no blocker)
 LEXICON = routing.parse_lexicon(document(
     names=[name(s, f"nm:5b00000000{i:02d}", "Person")
-           for i, s in enumerate(("押沙龍", "以利亞撒", "亞哈隨魯", "以拉他", "掃羅", "亞哈"))],
+           for i, s in enumerate(("押沙龍", "以利亞撒", "亞哈隨魯", "以拉他", "以拉大", "掃羅", "尼八", "亞比亞他",
+                                  "亞哈"))],
     events=[event("亞哈之戰", "ev0099", "亞哈之戰")], books=BOOK_TERMS))
-BUILD =Build("b20261019_0123abcd", "bb20261019_0123abcd", "passages__b", Path("/c"), False, 22)
+BUILD = Build("b20261019_0123abcd", "bb20261019_0123abcd", "passages__b", Path("/c"), False, 22)
 
 
 def _node(nid: str, kd: str, spec: str, order: int) -> dict:
@@ -76,7 +81,7 @@ def _layer_doc(unchained: str = "所羅門") -> dict:
 
 
 def _parse(doc: dict):
-    return with_blockers(parse_layer(json.dumps(doc, ensure_ascii=False).encode("utf-8")), LEXICON)
+    return with_lexicon(parse_layer(json.dumps(doc, ensure_ascii=False).encode("utf-8")), LEXICON)
 
 
 @pytest.fixture(scope="module")
@@ -84,8 +89,11 @@ def layer():
     return _parse(_layer_doc())
 
 
+BLOCKERS = ("亞哈隨魯", "以利亞撒", "以拉他", "以拉大", "押沙龍")
+
+
 def test_blockers_are_lexicon_words_holding_a_chain_name(layer):
-    assert layer.blockers == ("亞哈隨魯", "以利亞撒", "以拉他", "押沙龍")
+    assert layer.blockers == BLOCKERS
     assert parse_layer(json.dumps(_layer_doc(), ensure_ascii=False).encode("utf-8")).blockers == ()
 
 
@@ -124,6 +132,27 @@ def test_blockers_are_lexicon_words_holding_a_chain_name(layer):
     ("從亞撒到約沙法再到約蘭，王位交接了幾次？", ("J03", "J04")),
     ("羅波安和亞撒之間，王位交接了幾次？", ("J01", "J03")),         # no span: exactly two names
     ("亞撒和亞哈斯相隔幾代？", ("J03", "J11")),
+    # a father written as a pronoun or a title is no father: a unique name keeps its seed, 二世
+    # still splits, and 「F王的兒子」 is a father marker
+    ("希西家死了，他的兒子瑪拿西之後的第二位王是誰？", ("J13",)),
+    ("約阿施死後，他的兒子耶羅波安二世之後的第二位王是誰？", ("I12",)),
+    ("約哈斯王的兒子約阿施之後的第二位王是誰？", ("I11",)),
+    ("約阿施王的兒子耶羅波安之後的第二位王是誰？", ("I12",)),
+    # a regnal year (第N年 … 篡, an S1c match holding a king's name) is narrative: the anchor is
+    # bounded by the question's own cue
+    ("亞撒第三年巴沙篡位，巴沙之後的第二位王是誰？", ("I03",)),
+    ("猶大王亞撒第三年巴沙殺了拿答篡了位，拿答之前的第一位王是誰？", ("I02",)),
+    ("猶大王亞撒第三年，巴沙篡了位；巴沙之後第二個篡位的人是誰？", ("I03",)),
+    # ... S1c's only: in another cue a held name is the anchor or an answer candidate
+    ("亞撒死後，接續亞撒作王的是誰？", ("J03",)),
+    ("約西亞出生時，亞們在位嗎？", ("J15",)),
+    # a bracket's names are no anchor; 「(父親(是)F)」「(F王的兒子)」 after a name are father markers
+    ("約蘭（父親是亞哈）之後的第二位王是誰？", ("I08",)),
+    ("耶羅波安（父親約阿施）之後的第二位王是誰？", ("I12",)),
+    ("耶羅波安（約阿施王的兒子）之後的第二位王是誰？", ("I12",)),
+    ("以色列王耶羅波安二世(約阿施王的兒子)之後的第一位王是誰？", ("I12",)),
+    ("耶羅波安（父親是尼八）之後的第二位王是誰？", ("I01",)),
+    ("亞撒（亞比央）之後的第二位王是誰？", ("J03",)),
 ])
 def test_rule_seeds_pick_the_named_king(layer, question, ids):
     got = rule_seeds(layer, question)
@@ -144,6 +173,21 @@ def test_rule_seeds_pick_the_named_king(layer, question, ids):
     ("亞撒、約沙法和約蘭之間王位交接了幾次？", "S1b"),
     ("亞撒之後王位交接了幾次？", "S1b"),
     ("亞哈一共作王多少年？", "no cue"),
+    # a pronoun, a referring word or a kingdom written as the father splits no homonym
+    ("約阿施作以色列王十六年，他的兒子耶羅波安之後的第二位王是誰？", "homonym"),
+    ("約哈斯死了，他的兒子約阿施之後的第二位王是誰？", "homonym"),
+    ("那位王的兒子耶羅波安之後的第二位王是誰？", "homonym"),
+    ("以色列王的兒子耶羅波安之後的第二位王是誰？", "homonym"),
+    ("祭司的兒子約阿施之後的第二位王是誰？", "homonym"),            # an unknown word picks no fatherless one
+    ("祭司的兒子撒迦利雅之後的第二位王是誰？", "father contradicts the layer"),   # ... but contradicts
+    ("亞比亞他的兒子撒迦利雅之後的第二位王是誰？", "father contradicts the layer"),  # a known name ending in 他
+    ("亞撒第三年巴沙篡位了嗎？", "every cue holds a name"),           # the trigger fires; no anchor cue
+    ("這位王（亞哈）之後的第二位王是誰？", "no anchor before the cue"),  # a bracket's name is no anchor
+    ("亞哈之子之後的第二位王是誰？", "the anchor's relative"),
+    ("亞哈的女兒出生時在位的王是誰？", "the anchor's relative"),
+    ("亞哈的妻子出生時在位的王是誰？", "the anchor's relative"),
+    ("希西家的長子出生時在位的王是誰？", "the anchor's relative"),
+    ("從亞哈的兒子到耶戶，王位交接了幾次？", "the anchor's relative"),  # either end of S1b
 ])
 def test_rule_seeds_abstain(layer, question, reason):
     got = rule_seeds(layer, question)
@@ -160,9 +204,24 @@ def test_blocked_names_and_tribes_are_no_king_and_take_no_card(layer, question):
     assert rule_seeds(layer, question) == ((), "no chain name")
 
 
+def test_without_the_lexicon_a_father_off_the_chain_splits_no_homonym():
+    bare = parse_layer(json.dumps(_layer_doc(), ensure_ascii=False).encode("utf-8"))
+    assert rule_seeds(bare, "耶羅波安（尼八的兒子）以後第三任的王是誰？") == ((), "homonym: 耶羅波安")
+    assert rule_seeds(bare, "耶羅波安（約阿施的兒子）之前第三位王叫什麼？") == (("I12",), None)
+
+
 def test_without_blockers_the_trigger_reads_the_name_inside(layer):
     hit = trigger("押沙龍之後的第二位王是誰？", layer.names)
     assert hit.fired and hit.kings == ("沙龍",)
+
+
+def test_a_blocker_also_hides_the_king_it_holds(layer):
+    """The blockers' known cost: a king's name running into a character that makes a lexicon
+    word (以拉 + 大約 reads as 以拉大) is read as that word. The question then loses the card,
+    or the rules abstain; it gets no other king's card."""
+    q = "以拉大約作王兩年，他之後的第二位王是誰？"
+    assert trigger(q, layer.names).fired and not trigger(q, layer.names, layer.blockers).fired
+    assert rule_seeds(layer, "巴沙之子以拉大約作王兩年，他之後的第二位王是誰？") == ((), "the anchor's relative")
 
 
 def test_the_unchained_king_is_never_a_name_or_a_seed():
@@ -215,7 +274,7 @@ def client(monkeypatch):
 
 
 def test_the_active_build_attaches_the_lexicons_blockers(client):
-    assert context.active().regnal.blockers == ("亞哈隨魯", "以利亞撒", "以拉他", "押沙龍")
+    assert context.active().regnal.blockers == BLOCKERS
 
 
 def test_rule_seeds_make_the_card_without_a_seed_call(client):
@@ -262,9 +321,16 @@ ROUTE_LEXICON = STORE / "layers/route/route@c31c88e4681e/routing_lexicon.json"  
 RUN_A = STORE / "reports/kg_cards_20261018/A"
 CONFIRM = STORE / "reports/kg_cards_20261018/A_confirm"
 REPO = Path(__file__).resolve().parents[2]
+OLD_LAYER = "932d2242dc3fdce8830112484c81bc0ea5364cc4caaf6978b12f8984790ee9ab"
 # measured on the 500-question GT (v1 and v2 alike): questions naming a chain king without the
 # blockers, with them; and the blockers the lexicon gives that layer
-NAMED = {"932d2242dc3fdce8830112484c81bc0ea5364cc4caaf6978b12f8984790ee9ab": (21, 19, 28)}
+NAMED = {OLD_LAYER: (21, 19, 28)}
+# the blockers route@c31c88e4681e's lexicon gives each layer, pinned so a new route layer's
+# list is read before it serves (the startup log prints it too)
+STORE_BLOCKERS = {OLD_LAYER: (
+    "約施比加沙", "亞哈瓦河", "亞哈隨魯", "亞撒細雅", "亞撒西雅", "亞比亞撒", "以利亞撒", "押沙龍柱", "約沙法谷",
+    "耶希西家", "亞哈希", "亞哈拉", "亞哈拜", "亞哈瓦", "亞哈賽", "亞哈黑", "亞撒列", "亞撒利", "亞撒雅", "亞撒黑",
+    "以拉他", "以拉大", "以拉撒", "以拉谷", "以拉都", "押沙龍", "挪亞們", "耶戶巴")}
 needs_store = pytest.mark.skipif(
     not all(p.exists() for p in (STORE_LAYER, ROUTE_LEXICON, RUN_A / "items.json", CONFIRM / "items.json",
                                  RUN_A / "ref_layer.json")),
@@ -273,7 +339,7 @@ needs_store = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def store_layer():
-    return with_blockers(parse_layer(STORE_LAYER.read_bytes()), routing.load_lexicon(ROUTE_LEXICON))
+    return with_lexicon(parse_layer(STORE_LAYER.read_bytes()), routing.load_lexicon(ROUTE_LEXICON))
 
 
 def _items(run: Path) -> list[dict]:
@@ -299,6 +365,11 @@ def _named(V, ids) -> list[tuple[str, str, int]]:
         same = [y for y in V.chain[n["kingdom"]] if V.nodes[y]["name"] == n["name"]]
         out.append((n["kingdom"], n["name"], same.index(x)))
     return out
+
+
+@needs_store
+def test_store_blockers_are_pinned_per_layer(store_layer):
+    assert store_layer.blockers == STORE_BLOCKERS[store_layer.sha256]
 
 
 @needs_store

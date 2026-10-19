@@ -19,9 +19,11 @@ class RegnalLayer:
     view: regnal.View
     sha256: str
     names: tuple[str, ...]   # every chain king's name and alias, longest first
-    # lexicon names that hold a chain name and are none (押沙龍 holds 沙龍), longest first;
-    # attached from the build's routing lexicon (with_blockers), () until then
+    # attached from the build's routing lexicon (with_lexicon), empty until then: its names that
+    # hold a chain name and are none (押沙龍 holds 沙龍), longest first; and all its person and
+    # place names, the fathers a question may write (尼八, 亞比亞他)
     blockers: tuple[str, ...] = ()
+    lexicon_names: frozenset[str] = frozenset()
 
     def chain_size(self) -> dict[str, int]:
         return {kd: len(ids) for kd, ids in self.view.chain.items()}
@@ -51,8 +53,10 @@ def blockers_of(names: Iterable[str], surfaces: Iterable[str]) -> tuple[str, ...
     return tuple(sorted(found, key=lambda s: (-len(s), s)))
 
 
-def with_blockers(layer: RegnalLayer, lexicon: routing.RoutingLexicon) -> RegnalLayer:
-    """The layer with the blockers of the build's routing lexicon: its person and place names
-    (kinds name, dotless), not its events, whose surface does name the king (所羅門獻殿)."""
-    surfaces = (t.surface for t in lexicon.terms if t.kind in routing.CATEGORY_KINDS["names"])
-    return dataclasses.replace(layer, blockers=blockers_of(layer.names, surfaces))
+def with_lexicon(layer: RegnalLayer, lexicon: routing.RoutingLexicon) -> RegnalLayer:
+    """The layer with the build's routing lexicon attached: its person and place names (kinds
+    name, dotless), and the blockers among them; not its events, whose surface does name the
+    king (所羅門獻殿)."""
+    surfaces = frozenset(unicodedata.normalize("NFKC", t.surface) for t in lexicon.terms
+                         if t.kind in routing.CATEGORY_KINDS["names"])
+    return dataclasses.replace(layer, blockers=blockers_of(layer.names, surfaces), lexicon_names=surfaces)
