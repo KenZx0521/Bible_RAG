@@ -14,7 +14,7 @@
   - 選項：temperature 0.1、num_predict 10000、num_ctx 131072（P0 K0-3）；附加區塊上限 900 字。
 - **F1**（花任何出題 USD 之前；CLI 重測 0.36 USD 已花）：commit 本檔與 `A/confirm/`；`segments.json` `3d85f9c0…`、`alias_table.json` `810aaa61…`、出題 prompt `gen_a.md` `9d3890c7…`、稽核 prompt `audit_a.md` `60969cd1…`、`bt_guard.py` `a81cba6e…`（HO 原檔）、CLI 釘版 `cli_pin.json` `085eaa3a…`（2.1.302，帶 thinking 摘要）；全部逐檔 sha 在 store `A_confirm/f1_manifest.json` `8affe6eb…`；slot 計畫見 §2.4。
 - **F2**（Kay 抽查頁處理完、K-U2 通過、Ollama 夜之前）：`questions_frozen.json` `93ca70af…`；附錄 C 只列題號、段、題型、鍵型別。`ho_a/freeze_a.py` 把此 sha 寫進 `inputs_manifest.json` 的 `frozen`（並寫 `k_u2.json`）；`collect_ctx.py` 與 `run_c.py prepare` 只認這兩份紀錄。
-- **F3**（Ollama 夜收完 context、種子開跑前）：`contexts.json` 〈sha〉 寫進 run_meta。
+- **F3**（Ollama 夜收完 context、種子開跑前）：`contexts.json` `672f6e2c…` 寫進 run_meta（`items.json` `a601d13e…`）。
 - **順序**：CLI 重測（§8.3）→ F1 → pilot 12 題 → K1（CPU）→ 其餘出題與稽核 → 機械與 transcript 檢查 → Kay 抽查頁（§7）與修刪 → K-U2 → F2 → Ollama 夜（收 context → F3 → 種子 → 各臂）→ 計分與分析（CPU）→ 報告。
 
 ## 1. 分段（FP 確認集單位；D7）
@@ -239,3 +239,20 @@
 - 2026-10-19 09:57 修題第一次沒啟動：CLI 在 06:33 自動更新成 2.1.303，launch 的版本檢查拒絕（「claude --version is '2.1.303'; pinned 2.1.302」），沒有花費。2.1.302 執行檔仍在 `~/.local/share/claude/versions/2.1.302`（sha `60d7eb7f…`），改以 PATH 最前面放一個指向它的 `claude` 連結重跑；程式碼與釘版檔都沒改，版本檢查照常核對並通過。child PATH＝`<root>/bin`＋父程序 PATH，`<root>/bin` 只有 bt 包裝檔。
 - 2026-10-19 09:59 QI3s2a1 修題（0.19 USD）＋複驗 ok（0.18 USD），兩次都只有 claude-opus-5-5、0 次改派、transcript 0 違規。只補依據節，題目、答案、答案鍵不變；這題不是 pilot 題，K1 不重算。帳本 18.25 USD。
 - 2026-10-19 09:59 K-U2：凍結單位 n＝14 ≥ 12，通過。F2：`questions_frozen.json` `93ca70af…`（32 題），寫入 `inputs_manifest.json` 的 `frozen`；附錄 C 已填。之後不再改題。
+- 2026-10-19 10:00 Kay：「現在就跑」，授權白天跑 Ollama 夜（原預設晚上）。開跑前 /api/ps 沒有載入任何模型。
+- 2026-10-19 10:06 collect：32/32 題，每題 5 段，build_id 全是 `b20261008_e05d3e55`，逐塊 sha 核對通過，沒有重試。F3：`contexts.json` `672f6e2c…`。prepare：items 32、單位 14（`items.json` `a601d13e…`），code_confirm 記下；dry-run 合成集 prompt sha 全對。
+- 2026-10-19 10:06–10:09 種子：32/32，一輪完成，沒有重試（`gen_seed.jsonl` `19a87d42…`）。開跑時 /api/ps 已載入 gemma4:e4b-it-q8_0（collect 打 backend 時載入的，同一模型）。
+- 2026-10-19 10:09–11:06 各臂：canary（32 個種子＋前 30 個臂呼叫）10:12 通過：0 缺漏、0 錯誤、0 截斷（`canary.json` `c960ae26…`）。全部 477/477，一輪完成，沒有重試（`gen_arms.jsonl` `98e5916c…`）。477＝G-auto、T-canon、T-rows、B0 各 96，加 G-ref 93：G-ref 在 QJ4s1a1 棄權，依 §5 用 T-rows 替補，不出 job。G-auto 沒有棄權題。
+- 2026-10-19 11:07 canary 複查通過。截斷（`trunc_report.json`）：種子 0/32、各臂 0/477，done_reason＝length 0 次；prompt＋eval 最大 5,892，num_ctx 131,072。prepare 之後的程式修改 0 次。跑完 /api/ps 仍載著 gemma，是預設的 5 分鐘 keep-alive（11:11 到期），沒有手動卸載。Ollama 實際使用 10:00–11:07，約 67 分鐘。
+- 2026-10-19 11:07 score 一次：477 筆，缺漏 0（`scores.json` `bca7bdf4…`）。analyze 一次（`report.json` `aefbd6fe…`、`report.md` `57f9e27b…`）。
+- **判定：H1、H2 皆過。**寫死的措辭（§6）：「regex 可建的王朝鏈上，程式多步走訪與推算，在王朝年代題上顯著優於同流程的正典經文窗與層列平鋪」；範圍限定「只限王朝年代題（S1、S4 窄題型、出題前配額的盲題）」。
+  - H1 G-auto−T-canon：單位 n＝14，Δ̄＝+0.456，95% CI [+0.317, +0.599]，精確 sign-flip p＝0.00024，W:L:T 13:0:1。
+  - H2 G-auto−T-rows：單位 n＝14，Δ̄＝+0.266，95% CI [+0.075, +0.433]，精確 p＝0.01562，W:L:T 12:1:1。
+  - K3：錯答率 G-auto（含替補）0.198、T-canon 0.635，差 −0.438，未超過 +0.05。
+  - 描述（不進判定）：
+    - 題層平均：G-auto 0.802、G-ref 0.802、T-rows 0.521、T-canon 0.365、B0 0.208。
+    - G-auto−B0 +0.647（14:0:0）；G-ref−G-auto +0.008（2:2:10）。
+    - H2 配對在兩個分層的 CI 含 0：非 pilot 21 題 +0.153 [−0.153, +0.431]；S1a +0.190 [−0.012, +0.381]。
+    - 與開發題（種子, 答案）重疊 6 題；gemma 與 gold 種子解析一致率 0.250，但 a＝0.875。
+    - 陷阱規則用模板規則時，兩個配對都更大；沒有 `ref_disagree` 題。
+- 花費：claude 帳本 18.25 USD（上限 140），Ollama 這段 0 USD。不寫「圖譜有效」或「圖譜無效」；論文不動。
