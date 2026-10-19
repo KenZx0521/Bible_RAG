@@ -13,7 +13,10 @@ reserved with, so a crashed run is never cheaper than its cap. Before every laun
 taken and spent + this job's cap ≤ USD_CAP checked (probes also ≤ PROBE_TOTAL_USD, at most
 PROBE_MAX_RUNS). Infrastructure failures (no result, timeout, CLI error, model fallback) are rerun
 up to MAX_RETRIES; an agent limit (budget cap, structured-output retries) counts and is not rerun; a
-blinding error voids the job's output (its slots go to the refill round).
+blinding error voids the job's output (its slots go to the refill round). A job stopped before an
+agent ran (a budget refusal, a launch refused: /srv not empty, CLI sha or version, …) writes no
+draft and no label file: the next gen / label runs it again, and the one refill round stays for
+invalid questions (review 2026-10-19).
 P2 is locked: no command prints a p2 question, king or label; status and score give counts only.
 
     run_q.py probe --model opus|sonnet [--tools-mode none|bash_guard]
@@ -39,9 +42,9 @@ import mech_q as M
 import prompt_q as P
 import spec_q as S
 import transcript_q as TR
-from q_common import (CLAUDE_VERSION, EFFORT, JOB_CAP_USD, LABEL_BATCH, LABELLER, MAX_RETRIES, MODEL_IDS, PARALLEL,
-                      PROBE_MAX_RUNS, PROBE_TOTAL_USD, ROOT, SEED, SETS, USD_CAP, BudgetRefused, QError, counts,
-                      now, read_json, write_json)
+from q_common import (CLAUDE_VERSION, EFFORT, FLAGS, JOB_CAP_USD, LABEL_BATCH, LABELLER, MAX_RETRIES, MODEL_IDS,
+                      PARALLEL, PROBE_MAX_RUNS, PROBE_TOTAL_USD, ROOT, SEED, SETS, USD_CAP, BudgetRefused, QError,
+                      counts, now, read_json, write_json)
 
 LEDGER_SUBS = ("probe", *SETS)
 BUDGET_LOCK = threading.Lock()
@@ -160,6 +163,11 @@ def run_job(root: Path, job: Job, pin: CL.CliPin, cwd: Path = CL.AGENT_CWD,
     return {"runs": attempts, "output": None, "ok": False}
 
 
+def stopped(rec: Mapping[str, Any]) -> str | None:
+    """Why the job stopped before an agent ran (refused budget or launch); None when it ran to its end."""
+    return rec.get("refused") or rec.get("failed")
+
+
 # ---------------------------------------------------------------- context
 
 @dataclass(frozen=True)
@@ -203,19 +211,24 @@ def _write_draft(ctx: Ctx, job: Mapping[str, Any], rec: Mapping[str, Any], refil
                 "slots": [s["slot"] for s in job["slots"]], "refill_of": refill_of, "utc": now(), **rec}, ctx.root)
 
 
-def run_many(ctx: Ctx, jobs: Sequence[tuple[Mapping[str, Any], Job]], refill: bool = False) -> dict[str, int]:
-    """Writer jobs, at most PARALLEL at once, in the given order; drafts written as they finish."""
-    def one(pair) -> bool:
+def run_many(ctx: Ctx, jobs: Sequence[tuple[Mapping[str, Any], Job]], refill: bool = False) -> dict[str, Any]:
+    """Writer jobs, at most PARALLEL at once, in the given order; drafts written as they finish, none for a
+    job stopped before an agent ran (it stays to do)."""
+    def one(pair) -> tuple[str, str, str | None]:
         job, j = pair
         rec = run_job(ctx.root, j, ctx.pin)
+        why = stopped(rec)
+        if why:
+            return "stopped", job["job_id"], why
         _write_draft(ctx, job, rec, job["job_id"][:-2] if refill else None)
-        return bool(rec["ok"])
-    done: list[bool] = []
+        return ("ok" if rec["ok"] else "failed"), job["job_id"], None
+    done: list[tuple[str, str, str | None]] = []
     if jobs:
         with ThreadPoolExecutor(max_workers=min(PARALLEL, len(jobs))) as pool:
             done = list(pool.map(one, jobs))
     write_ledger(ctx.root)
-    return {"ok": sum(done), "failed": len(done) - sum(done)}
+    return {**{k: sum(1 for d in done if d[0] == k) for k in ("ok", "failed", "stopped")},
+            "stopped_why": {jid: why for k, jid, why in done if k == "stopped"}}
 
 
 # ---------------------------------------------------------------- items (mech_q rules)
@@ -301,7 +314,7 @@ def item_counts(items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             "refilled": sum(1 for i in items if i.get("refilled")),
             "labelled": sum(1 for i in valid if i.get("label")),
             "label_inconsistent": sum(1 for i in valid if i.get("label_consistent") is False),
-            "flags": {f: sum(1 for i in valid if f in i["flags"]) for f in ("f_start_unnamed", "f_between")},
+            "flags": {f: sum(1 for i in valid if f in i["flags"]) for f in FLAGS},
             "violations": counts(v["rule"] for i in items for v in i["violations"])}
 
 
@@ -337,7 +350,9 @@ def label_batches(items: Sequence[Mapping[str, Any]], side: str, seed: int = SEE
 
 
 def cmd_label(ctx: Ctx, sides: Sequence[str]) -> dict[str, Any]:
-    tally = {"started": 0, "ok": 0, "failed": 0}
+    """Labeller batches of the unlabelled valid items; a batch stopped before an agent ran writes no file
+    and ends the side's round (its items stay unlabelled for the next run)."""
+    tally = {"started": 0, "ok": 0, "failed": 0, "stopped": 0}
     for side in sides:
         items = assemble(ctx, side)
         done = len(list((ctx.root / side / "labels").glob("*.json")))
@@ -347,9 +362,13 @@ def cmd_label(ctx: Ctx, sides: Sequence[str]) -> dict[str, Any]:
             job = Job("label", side, f"label_{side}_b{n:02d}", system, user, schema, JOB_CAP_USD["label"],
                       ctx.pin.model(LABELLER), EFFORT["label"])
             rec = run_job(ctx.root, job, ctx.pin)
+            tally["started"] += 1
+            if stopped(rec):
+                tally["stopped"] += 1
+                tally.setdefault("stopped_why", {})[f"{side}-b{n:02d}"] = stopped(rec)
+                break
             write_json(ctx.root / side / "labels" / f"b{n:02d}.json", {"batch": n, "map": ids, "utc": now(), **rec},
                        ctx.root)
-            tally["started"] += 1
             tally["ok" if rec["ok"] else "failed"] += 1
         write_items(ctx, side)
     write_ledger(ctx.root)

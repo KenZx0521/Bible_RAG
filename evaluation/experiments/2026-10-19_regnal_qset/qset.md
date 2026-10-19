@@ -101,7 +101,8 @@ S4 用寬的 13 位：
 2. 線索字面清單：之後、之前、以後、以前、往前數、往後數、接續、作王、繼位、交接、相隔、篡、出生時、出生的時、出生那年、在位。
    - 測試對每個 CUES 分支各造一個標準例子，斷言例子含清單裡的詞，而且把那個詞換掉後該分支就不再命中。CUES 改了而清單沒跟上，測試就會失敗。
 3. HO `banned.py`（sha `d2226711…`）與 A `banned_a.py`（sha `54669928…`）的 PROMPT_TERMS，用 sha 釘住、以檔案路徑載入，不改原檔；再加本實驗的目的詞。
-4. MEMORY_MARKERS：HO＋A，加上 trigger.py、CUES、_KTH、regnal、aux_card、use_regnal_card、年表卡、ref_layer、layer_auto、regnal_qset 等。
+4. MEMORY_MARKERS：HO＋A，加上本實驗的程式形態標記：trigger.py、trigger.CUES、_KTH、utils.regnal、regnal_layer、aux_card、use_regnal_card、年表卡、ref_layer、layer_auto、regnal_qset 等。
+   - regnal、cues 是一般英文（regnal year），寫手的英文 thinking 會自然用到，所以只放在輸入端的目的詞：prompt 一律禁用，但 transcript 出現不算 t_memory（審查 2026-10-19）。
 
 **輸出端不限詞**：寫手寫出線索詞不是污染，不記任何違規。transcript 規則（`transcript_q`）只有這些：
 - t_init：cwd `/srv`、模型、tools ⊆ {StructuredOutput}、無 MCP、dontAsk；
@@ -120,11 +121,17 @@ S4 用寬的 13 位：
 - v_slot：題位與題數相符、非空、≤200 字；
 - v_simplified：沒有簡體專用字；
 - v_duplicate：同一邊內文字重複，NFKC 後去空白比對；
-- v_answer：S1a、S1c、S4 題點名答案王。和起點王共用的名字不算。
+- v_answer：S1a、S1c、S4 題點名答案王。和起點王共用的名字不算；起點王的**父名標記**裡的名字也不算（偵察 §2.6 的例外，見下）。
+
+**父名標記**：同名王的 note 要求寫手分清是哪一位，最自然的寫法就是寫父名，而起點王的父親有時正好是答案王（實測：S1a:I09-2、S1a:J08-2、S4:J17 三格，其中 S1a:J08-2、S4:J17 在 P1）。
+- 認定：F 是端點王 X 參考層父親的名字之一，寫成「F(王)的兒子X」「F(王)之子X」「X(F(王)的兒子)」「X(父親(是)F)」「X,父親(是)F」「X是F的兒子」（NFKC 後比對；形式取自規則種子的父名標記）。
+- 答案王只出現在父名標記裡：有效，記旗標 f_father_is_answer，留在分母另報。
+- 父名標記裡的中間王不記 f_between。
 
 **旗標**（只記錄，題目留在分母）：
 - f_start_unnamed：沒點名起點王；S1b 是沒點名兩端。
-- f_between：點名了中間的王。
+- f_between：點名了中間的王（父名標記裡的不算）。
+- f_father_is_answer：答案王只出現在起點王的父名標記裡。
 
 **標註器**（opus、effort high、每批 10 題、同一邊內依種子打亂）：
 - 只看題目文字。
@@ -137,7 +144,9 @@ S4 用寬的 13 位：
 ## 5. 量測定義（`score_q.py`，CPU）
 
 逐題累積，後一階段要前一階段成立：
-- **R_trig**：`trigger(question, layer.names)` 觸發。失敗分三類：king_miss（沒找到鏈上的王）、cue_miss（有王、沒線索）、king_and_cue_miss。
+- **R_trig**：`trigger(question, layer.names[, layer.blockers])` 觸發。失敗分三類：king_miss（沒找到鏈上的王）、cue_miss（有王、沒線索）、king_and_cue_miss。
+  - 層照 backend 的方式建：`parse_layer` 之後，本 checkout 的 layer 模組有 `with_lexicon`（規則種子那個改動）時，就像 `make_active` 一樣掛上 build 的 routing lexicon（`--lexicon`，預設是 `--layer` 旁邊的 routing_lexicon.json；找不到就拒跑），trigger 收 blockers 參數時就傳 `layer.blockers`。
+  - 實測（scratch 解出 feat/regnal-rule-seeds 的碼）：b20261019_18aa84ad 的詞庫給 28 個 blockers；1062 筆（兩版 GT＋開發集＋確認集）裡 6 筆的 kings 會因此不同（PERSON_QUESTION_010、015、027，v1、v2 各一），現行線索下觸發差 0。
 - **R_seed**：`seeds.rule_seeds(layer, question)` 的節點包含 gold 起點王；S1b 要包含兩端。
   - gold 從參考層 id 對到計分層 id，依國別、名字、同名順序。
   - backend 還沒有 `rule_seeds` 時記 n/a。
@@ -146,7 +155,7 @@ S4 用寬的 13 位：
 - **R_card_oracle**（描述）：已觸發的題改用 gold 種子組卡，只檢驗層與引擎本身。
 
 **分母**＝全部有效正例。標註不一致、未標註、有旗標的題都留在分母，另外再報（依挑錯報告更正）。
-- 另報：依題型、國別、寫手模型、persona 拆分；標註一致／不一致兩組；兩種旗標。
+- 另報：依題型、國別、寫手模型、persona 拆分；標註一致／不一致兩組；三種旗標（f_start_unnamed、f_between、f_father_is_answer）。
 - 95% CI 用 Wilson。
 
 **誤觸**：
@@ -155,13 +164,18 @@ S4 用寬的 13 位：
 
 **回歸**（樣本內，只看觸發）：實驗 A 的開發集 30 題、確認集 32 題，列出沒觸發的題號。
 
-**計分層**：P1、P2 都用層修正後的 r4 層計分（`--layer`）。
+**計分層**：P1、P2 都用層修正後的 r4 層計分。
+- `score`、`gt`、`regress` 都必須給 `--layer`，沒有預設層：`gt`、`regress` 也是放寬的採用門檻，層的名單不同結果就不同（實測：點名鏈上王的 GT 題，prod 層 21 題、候選層 1789c0de 15 題）。
+- r4 的 sha 在正式 prereg 時寫進 `q_common.SCORE_LAYER_SHA256`（§12-5）。`score`：
+  - 一律拒絕修正前的 prod 層 `932d2242…`（`contracts/b20261019_18aa84ad/regnal_layer.json`，只能用 `gt`、`regress` 描述）；
+  - 釘了之後，sha 不符就拒跑；
+  - 沒釘之前，P2 拒跑（P2 只跑一次，必須在事先登記的層上）。
 - 每次結果都記：
-  - 層 sha；
-  - 從本 checkout import 的 trigger.py、seeds.py、engine.py、layer.py、ragcommon/regnal.py 的 sha；
+  - 層 sha 與角色（score_pin／pre_fix／unpinned）；
+  - 詞庫的路徑、sha 與 blockers 數（沒有 `with_lexicon` 時記 null），trigger 有沒有收 blockers；
+  - 從本 checkout import 的 trigger.py、seeds.py、engine.py、layer.py、ragcommon/regnal.py、ragcommon/routing.py 的 sha；
   - spec 與 items 的 sha；
   - `rule_seeds` 有沒有。
-- 預設層 `contracts/b20261019_18aa84ad/regnal_layer.json`（`932d2242…`）是修正前的層，只能用來描述。
 
 **基線**（現行 trigger.py `161a5a98…`，prod 層 `932d2242…`）：
 - 500 題 v1 觸發 0/500、v2 觸發 0/500（實測）；
@@ -199,6 +213,7 @@ S4 用寬的 13 位：
   - 每跑一次附加一行到 `p2_runs.jsonl`，記錄規則 sha 與層 sha。
   - 第二次要加 `--again`，而且必須在報告揭露。
 - P2 只跑一次：新、舊規則在同一次用 `--compare-trigger` 一起輸出。
+- `score --set p2` 在 `SCORE_LAYER_SHA256` 釘好之前拒跑，層 sha 不符也拒跑（§5），所以漏給或給錯 `--layer` 不會用掉這一次。
 - 不加密、不加簽核：這是約定加上「只輸出彙總」的程式。
 
 ## 8. CLI 釘版與 probe 結果
@@ -238,6 +253,7 @@ S4 用寬的 13 位：
   - 標註約 14 批 × 0.02–0.05，約 0.3–0.7；
   - 合計約 1.5–2.2 USD，加上已花的 0.04。
 - 重跑：只有基礎設施失敗才重跑，每 job 最多 2 次。碰到代理上限（預算、structured output 重試）的 job 算數，不重跑。
+- 啟動前就停下的 job（預算拒跑；launch 被拒，例如 /srv 不空、CLI sha 或版本不符）不寫 draft、不寫標註檔，下一次 `gen`／`label` 會重跑；唯一一輪補出只留給無效題（審查 2026-10-19）。輸出的 `stopped_why` 列出 job 與原因。
 
 ## 10. 執行順序
 
@@ -245,9 +261,11 @@ S4 用寬的 13 位：
 2. probe ×2、`run_q.py pin`。已做。
 3. 主 session 審本文，commit 正式 prereg（把「草稿」改掉，記下 commit）。
 4. `run_q.py gen`（P1、P2 交錯）→ `mech` → `refill`（一輪）→ `mech` → `label` → `mech`。
-5. 層修正上線後，用 r4 層：`score_q.py score --set p1 --layer <r4 regnal_layer.json>`，並跑 `score_q.py gt` 與 `regress`。
+5. 層修正上線後，把 r4 的 sha 寫進 `q_common.SCORE_LAYER_SHA256`，用 r4 層：
+   - `score_q.py score --set p1 --layer <r4 regnal_layer.json> [--lexicon <r4 routing_lexicon.json>]`；
+   - `score_q.py gt --layer <r4> [--lexicon …]` 與 `score_q.py regress --layer <r4> [--lexicon …]`，結果的 `rules.layer.role` 必須是 score_pin。
 6. 依 §6 決定放寬與否。放寬的話，改 trigger.py 要另開 commit。
-7. `score_q.py score --set p2 --layer <r4> [--compare-trigger <舊 trigger.py>]`，只跑一次。
+7. `score_q.py score --set p2 --layer <r4> [--lexicon …] [--compare-trigger <舊 trigger.py>]`，只跑一次；放寬時也要用 r4 跑 `gt --compare-trigger` 與 `regress`（§6-3）。
 8. 結果寫進 `docs/records/` 與 memory。P2 只記彙總。
 
 ## 11. 限制與風險
@@ -270,4 +288,4 @@ S4 用寬的 13 位：
 2. 總召回 ≥0.70 但某一題型很低時，能不能只放寬那個題型；還是嚴格照 §6-1。
 3. 近似題門檻：P2 只有 13 題。要維持「各 ≤1 題」，還是加到約 25 題（推估多約 0.3 USD）。
 4. Kay 是否另寫 10–15 題，當人類問法錨點，併入 P2 一起計分。
-5. 計分用的 r4 層 sha：等層修正 session 定案後填入本文。
+5. 計分用的 r4 層 sha：等層修正 session 定案後填入本文與 `q_common.SCORE_LAYER_SHA256`（同一個 commit）；r4 若不在 contract 目錄裡，也要寫明 `--lexicon` 用哪一份詞庫（及其 sha）。

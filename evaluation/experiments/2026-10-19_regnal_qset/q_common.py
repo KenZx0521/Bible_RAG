@@ -42,6 +42,11 @@ REF_A = STORE / "reports" / "kg_cards_20261018" / "A" / "ref_layer.json"
 REF_A_SHA256 = "79d57efe451f675b6d2c1163d801b2a173a24a1a8b1ed0ba6a207f698ca16660"
 REF_V2_DERIVED_SHA256 = "e39e04f227f1b558300dd85662d7dbdaf76e73252ddf732ef1f6aab96cec576a"
 LAYER_PROD = STORE / "contracts" / "b20261019_18aa84ad" / "regnal_layer.json"   # 932d2242…, before the fix
+LAYER_PRE_FIX_SHA256 = "932d2242dc3fdce8830112484c81bc0ea5364cc4caaf6978b12f8984790ee9ab"   # describe only
+# the r4 layer every formal score uses (qset.md §5, §12-5), pinned with the formal prereg; while None
+# P2 is not scored and P1 takes any layer but the pre-fix one (score_q.score_layer_check)
+SCORE_LAYER_SHA256: str | None = None
+LEXICON_FILE = "routing_lexicon.json"   # the build's routing lexicon, next to its regnal_layer.json
 DEV_ITEMS = STORE / "reports" / "kg_cards_20261018" / "A" / "items.json"         # 30 dev questions (in-sample)
 CONFIRM_FROZEN = STORE / "reports" / "kg_cards_20261018" / "A_confirm" / "questions_frozen.json"  # 32 (in-sample)
 GT_FILES = (REPO / "ground_truth.json", REPO / "ground_truth.v2.json")
@@ -55,6 +60,7 @@ KD = {"以色列": "I", "猶大": "J"}
 SETS = ("p1", "p2")
 POS_TYPES = ("S1a", "S1b", "S1c", "S4")
 NEAR_FAMILIES = ("N1", "N2", "N3", "N4", "N5")
+FLAGS = ("f_start_unnamed", "f_between", "f_father_is_answer")   # mech_q: recorded, never dropped
 INTENT = {"S1a": "offset", "S1b": "handovers", "S1c": "usurper_n", "S4": "on_throne_at_birth",
           "N1": "attribute", "N2": "event", "N3": "sync", "N4": "contemporary", "N5": "kin"}
 POS_INTENTS = frozenset(INTENT[t] for t in POS_TYPES)
@@ -166,10 +172,11 @@ def split_evenly(total: int, parts: int) -> list[int]:
 
 @functools.lru_cache(maxsize=1)
 def regnal() -> SimpleNamespace:
-    """The backend's trigger, layer, engine and seeds modules from this checkout (sha recorded).
+    """The backend's trigger, layer, engine and seeds modules and ragcommon's regnal and routing from this
+    checkout (sha recorded).
 
-    ``seeds.rule_seeds`` is optional (the rule-seed change lands separately); callers treat its absence
-    as n/a."""
+    ``seeds.rule_seeds`` and ``layer.with_lexicon`` are optional (the rule-seed change lands separately);
+    callers treat their absence as n/a and as a layer without blockers."""
     for p in (str(PACKAGES), str(BACKEND)):
         if p not in sys.path:
             sys.path.insert(0, p)
@@ -180,11 +187,12 @@ def regnal() -> SimpleNamespace:
         if not under(path, BACKEND):
             raise QError(f"utils.regnal.{n} resolved to {path}, not this checkout's backend")
         files[f"{n}.py"] = sha256_file(path)
-    rc = importlib.import_module("ragcommon.regnal")
-    if not under(rc.__file__, PACKAGES):
-        raise QError(f"ragcommon.regnal resolved to {rc.__file__}, not this checkout's packages")
-    files["ragcommon/regnal.py"] = sha256_file(rc.__file__)
-    return SimpleNamespace(**mods, ragcommon=rc, files_sha256=files)
+    common = {n: importlib.import_module(f"ragcommon.{n}") for n in ("regnal", "routing")}
+    for n, m in common.items():
+        if not under(m.__file__, PACKAGES):
+            raise QError(f"ragcommon.{n} resolved to {m.__file__}, not this checkout's packages")
+        files[f"ragcommon/{n}.py"] = sha256_file(m.__file__)
+    return SimpleNamespace(**mods, ragcommon=common["regnal"], routing=common["routing"], files_sha256=files)
 
 
 def counts(values: Iterable[Any]) -> dict[str, int]:

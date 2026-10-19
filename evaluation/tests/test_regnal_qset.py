@@ -80,7 +80,8 @@ def layer_bytes(rows):
 def syn_rules(rule_seeds=None):
     data, _ = layer_bytes(SYN_ROWS)
     layer = REG.layer.parse_layer(data)
-    return SC.Rules(REG.trigger.trigger, rule_seeds, REG.engine, layer, {"layer": {"sha256": Q.sha256_bytes(data)}})
+    return SC.Rules(SC.make_fire(REG.trigger.trigger, layer), rule_seeds, REG.engine, layer,
+                    {"layer": {"sha256": Q.sha256_bytes(data)}})
 
 
 def item(iid, kind, qtype, kd, start, question, gold=None, k=None, n=None, other=None, valid=True, lc=True,
@@ -167,7 +168,16 @@ def test_banned_check_catches_cues_literals_terms_and_markers():
 def test_banned_lists_load_pinned_ho_and_a_files():
     assert set(B.HO.PROMPT_TERMS) <= set(B.PROMPT_TERMS)
     assert set(B.A.A_PROMPT_TERMS) <= set(B.PROMPT_TERMS)
-    assert {"trigger.py", "CUES", "_KTH", "年表卡", "ref_layer"} <= set(B.MEMORY_MARKERS)
+    assert {"trigger.py", "trigger.CUES", "_KTH", "utils.regnal", "年表卡", "ref_layer"} <= set(B.MEMORY_MARKERS)
+
+
+def test_plain_english_words_are_prompt_only_never_memory_markers():
+    """'regnal year' and 'cues' are ordinary English (a writer's English thinking may hold them): the
+    prompt check still bans them, a transcript does not void a job for them."""
+    assert not {"regnal", "cues", "cue"} & {t.lower() for t in B.MEMORY_MARKERS}
+    assert {"regnal", "cues"} <= {h.term.lower() for h in B.check_prompt_text("regnal cues")}
+    assert not B.memory_hits("in which regnal year of Asa; avoid giving CUES to the answer")
+    assert B.memory_hits("as utils.regnal and trigger.CUES say")
 
 
 def test_prompt_file_and_fixed_texts_pass_the_banned_check():
@@ -206,7 +216,7 @@ def test_label_prompt_allows_cue_words_in_questions_but_not_markers():
     assert "x01：約沙法之後第二位王是誰？" in user and not B.check_prompt_text(system)
     assert schema["properties"]["items"]["minItems"] == 2
     with pytest.raises(Q.QError, match="memory markers"):
-        P.label_prompt(pf, [("x01", "regnal 的問題")])
+        P.label_prompt(pf, [("x01", "regnal_layer 的問題")])
 
 
 @needs_store
@@ -380,6 +390,67 @@ def test_p2_records_aggregates_only_and_once(tmp_path):
     assert "run_index" not in p1 and len(list((tmp_path / "scores").glob("p1_*.json"))) == 1
 
 
+def test_score_layer_check_refuses_the_pre_fix_layer_and_p2_without_the_pin(monkeypatch):
+    monkeypatch.setattr(Q, "SCORE_LAYER_SHA256", None)
+    with pytest.raises(Q.QError, match="pre-fix"):
+        SC.score_layer_check(Q.LAYER_PRE_FIX_SHA256, "p1")
+    with pytest.raises(Q.QError, match="SCORE_LAYER_SHA256"):
+        SC.score_layer_check("ab" * 32, "p2")
+    SC.score_layer_check("ab" * 32, "p1")                      # P1 before the pin: allowed, sha recorded
+    monkeypatch.setattr(Q, "SCORE_LAYER_SHA256", "cd" * 32)
+    with pytest.raises(Q.QError, match="pinned"):
+        SC.score_layer_check("ab" * 32, "p1")
+    SC.score_layer_check("cd" * 32, "p2")
+    assert SC.layer_role("cd" * 32) == "score_pin" and SC.layer_role(Q.LAYER_PRE_FIX_SHA256) == "pre_fix"
+    assert SC.layer_role("ef" * 32) == "unpinned"
+
+
+@pytest.mark.parametrize("cmd", (["score", "--set", "p1"], ["gt"], ["regress"]))
+def test_every_scorer_command_needs_an_explicit_layer(cmd, capsys):
+    with pytest.raises(SystemExit):
+        SC.main(cmd)
+    assert "--layer" in capsys.readouterr().err
+
+
+def test_load_rules_without_a_lexicon_taking_layer_calls_the_two_argument_trigger(tmp_path):
+    data, _ = layer_bytes(SYN_ROWS)
+    (tmp_path / "regnal_layer.json").write_bytes(data)
+    rules = SC.load_rules(tmp_path / "regnal_layer.json")
+    assert rules.provenance["lexicon"] is None and rules.fire("拿答之後的第二位王是誰？").fired
+    assert "ragcommon/routing.py" in rules.provenance["files_sha256"]
+    with pytest.raises(Q.QError, match="no routing lexicon"):
+        SC.load_rules(tmp_path / "regnal_layer.json", lexicon_path=tmp_path / "x.json")
+
+
+def test_load_rules_attaches_the_lexicon_and_passes_blockers_like_the_backend(tmp_path, monkeypatch):
+    """A checkout whose layer module has with_lexicon (the rule-seed change): the scorer builds the layer
+    as make_active does and calls trigger(question, names, blockers); a missing lexicon refuses."""
+    data, _ = layer_bytes(SYN_ROWS)
+    (tmp_path / "regnal_layer.json").write_bytes(data)
+    (tmp_path / "routing_lexicon.json").write_text("{}", encoding="utf-8")
+    seen = []
+
+    def trig(question, names, blockers=()):
+        seen.append(blockers)
+        return REG.trigger.trigger(question, names)
+
+    def with_lexicon(layer, lex):
+        assert lex == "LEX"
+        return SimpleNamespace(view=layer.view, names=layer.names, sha256=layer.sha256, blockers=("押沙龍",),
+                               chain_size=layer.chain_size)
+    fake = SimpleNamespace(trigger=SimpleNamespace(trigger=trig), engine=REG.engine, seeds=SimpleNamespace(),
+                           layer=SimpleNamespace(parse_layer=REG.layer.parse_layer, with_lexicon=with_lexicon),
+                           routing=SimpleNamespace(load_lexicon=lambda p: "LEX"), files_sha256={})
+    monkeypatch.setattr(SC, "regnal", lambda: fake)
+    rules = SC.load_rules(tmp_path / "regnal_layer.json")
+    assert rules.fire("拿答之後的第二位王是誰？").fired and seen == [("押沙龍",)]
+    lex = rules.provenance["lexicon"]
+    assert lex["sha256"] == Q.sha256_bytes(b"{}") and lex["blockers"] == 1 and rules.provenance["blockers_passed"]
+    (tmp_path / "routing_lexicon.json").unlink()
+    with pytest.raises(Q.QError, match="--lexicon"):
+        SC.load_rules(tmp_path / "regnal_layer.json")
+
+
 def test_paired_old_new_and_wilson():
     new = [{"id": "a", "kind": "pos", "fired": True}, {"id": "b", "kind": "pos", "fired": False},
            {"id": "c", "kind": "near", "fired": True}]
@@ -394,6 +465,7 @@ def test_paired_old_new_and_wilson():
 @needs_store
 def test_gt_and_regression_on_the_prod_layer():
     rules = SC.load_rules(Q.LAYER_PROD)
+    assert rules.provenance["layer"]["role"] == "pre_fix"
     assert {k: v["fired"] for k, v in SC.gt_check(rules).items()} == {"ground_truth.json": 0, "ground_truth.v2.json": 0}
     reg = SC.regression(rules)
     assert reg["confirm"]["fired"] == 32 and reg["dev"]["fired"] == 27
@@ -469,8 +541,11 @@ def test_transcript_rules_allow_cue_words_in_output_but_not_markers():
     ok = TR.check_events(events(output={"items": [{"slot": "q1", "question": "拿答之後第二個篡位的是誰"}]}),
                          prompts, "claude-opus-5-5", "none")
     assert not [v for v in ok if v.level == "error"]
-    leak = TR.check_events(events(text="I recall the regnal layer"), prompts, "claude-opus-5-5", "none")
+    leak = TR.check_events(events(text="I recall utils.regnal"), prompts, "claude-opus-5-5", "none")
     assert {"t_memory"} <= {v.rule for v in TR.blinding(leak)}
+    think = {"type": "thinking", "thinking": "Ask in which regnal year of Asa he began; avoid cues to the answer."}
+    plain = TR.check_events(events(calls=[think]), prompts, "claude-opus-5-5", "none")
+    assert not TR.blinding(plain)
     tools = TR.check_events(events(tools=("Bash", "StructuredOutput")), prompts, "claude-opus-5-5", "none")
     assert "t_init" in {v.rule for v in tools}
     call = {"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": "ls"}}
@@ -572,6 +647,37 @@ def test_hard_cap_and_probe_allowance(tmp_path, monkeypatch):
         RQ.check_cap(tmp_path, 0.05, probe=True)
 
 
+def synthetic_ctx(tmp_path):
+    slot = dict(slot="q1", item_id="p1-x01", kind="pos", qtype="S1a", intent="offset", kingdom="J", start="J04",
+                other=None, k=-2, n=None, gold="J02", cell="S1a:J04--2")
+    jb = {"job_id": "p1-j00", "set": "p1", "writer": "opus", "persona": "casual", "slots": [slot]}
+    return RQ.Ctx(tmp_path, {"jobs": [jb], "order": ["p1-j00"]}, S.Chains(SYN_ROWS), P.load_prompts(), PIN)
+
+
+def test_a_job_stopped_before_launch_writes_no_draft_and_gen_reruns_it(tmp_path, monkeypatch):
+    ctx = synthetic_ctx(tmp_path)
+
+    def refuse(*a, **k):
+        raise Q.QError("agent cwd /srv is not empty")
+    monkeypatch.setattr(CL, "launch", refuse)
+    out = RQ.cmd_gen(ctx, ("p1",))
+    assert out["started"] == 1 and out["stopped"] == 1 and out["ok"] == 0 and out["failed"] == 0
+    assert "not empty" in out["stopped_why"]["p1-j00"]
+    assert not RQ.draft_path(tmp_path, "p1", "p1-j00").exists() and RQ.ledger(tmp_path)["total_usd"] == 0
+    monkeypatch.setattr(CL, "launch", FakeLauncher([{"items": [{"slot": "q1", "question": "約沙法的事蹟"}]}]))
+    again = RQ.cmd_gen(ctx, ("p1",))
+    assert again["started"] == 1 and again["ok"] == 1 and RQ.draft_path(tmp_path, "p1", "p1-j00").is_file()
+
+
+def test_a_budget_refusal_writes_no_draft(tmp_path, monkeypatch):
+    ctx = synthetic_ctx(tmp_path)
+    monkeypatch.setattr(RQ, "USD_CAP", 0.1)
+    monkeypatch.setattr(CL, "launch", FakeLauncher([]))
+    out = RQ.cmd_gen(ctx, ("p1",))
+    assert out["stopped"] == 1 and "硬上限" in out["stopped_why"]["p1-j00"]
+    assert not RQ.draft_path(tmp_path, "p1", "p1-j00").exists()
+
+
 def test_writes_outside_the_root_are_refused(tmp_path):
     with pytest.raises(Q.QError, match="outside"):
         Q.write_json(tmp_path / ".." / "x.json", {}, tmp_path)
@@ -596,6 +702,44 @@ def test_item_checks_answer_simplified_and_flags():
     s1b = dict(kind="pos", qtype="S1b", start="J01", other="J04", gold=3, kingdom="J")
     assert M.item_checks(ch, f, s1b, "羅波安到約沙法換了幾次王？") == ([], [])
     assert M.item_checks(ch, f, s1b, "羅波安到後來換了幾次王？")[1] == ["f_start_unnamed"]
+
+
+FATHER_ROWS = SYN_ROWS + [ref_row("J06", "J", "亞她利雅", "J05", "queen_usurp", 6),
+                          ref_row("J07", "J", "約阿施", "J06", "son", 40, father="約蘭")]
+
+
+@pytest.mark.parametrize("question", ("猶大王約阿施（約蘭的兒子）往前數第二位王是誰？", "約蘭的兒子約阿施之前第二位王是誰？",
+                                      "約蘭王之子約阿施之前第二位王是誰？", "約阿施，父親是約蘭，往前數第二位王是誰？",
+                                      "約阿施(父親約蘭)之前第二位王是誰？", "約阿施是約蘭的兒子，他之前第二位王是誰？"))
+def test_a_father_marker_naming_the_answer_is_no_leak(question):
+    """The start king's father written to tell homonyms apart may be the answer (qset scouting §2.6):
+    valid, flagged f_father_is_answer, and it stays in the denominator."""
+    ch = S.Chains(FATHER_ROWS)
+    s1a = dict(kind="pos", qtype="S1a", start="J07", other=None, gold="J05", kingdom="J", k=-2)
+    assert M.item_checks(ch, M.NameFinder(ch), s1a, question) == ([], ["f_father_is_answer"])
+
+
+def test_the_answer_named_outside_a_father_marker_or_as_a_non_father_is_still_a_leak():
+    ch = S.Chains(FATHER_ROWS)
+    f = M.NameFinder(ch)
+    s1a = dict(kind="pos", qtype="S1a", start="J07", other=None, gold="J05", kingdom="J", k=-2)
+    for q in ("約蘭的兒子約阿施之前第二位王是不是約蘭？", "約蘭的孫子約阿施之前第二位王是誰？", "約阿施和約蘭之間隔了誰？"):
+        assert [v.rule for v in M.item_checks(ch, f, s1a, q)[0]] == ["v_answer"], q
+    s3 = dict(kind="pos", qtype="S1a", start="J07", other=None, gold="J04", kingdom="J", k=-3)
+    assert [v.rule for v in M.item_checks(ch, f, s3, "約沙法的兒子約阿施之前第三位王是誰？")[0]] == ["v_answer"]
+    # the father between the start and the answer, written as the marker, is no f_between
+    assert M.item_checks(ch, f, s3, "約蘭的兒子約阿施之前第三位王是誰？") == ([], [])
+    assert M.item_checks(ch, f, s3, "約阿施、約蘭之前第三位王是誰？") == ([], ["f_between"])
+
+
+@needs_store
+def test_father_markers_on_the_reference_cells_of_the_review():
+    ch = S.Chains(S.load_ref().rows)
+    f = M.NameFinder(ch)
+    j08 = dict(kind="pos", qtype="S1a", start="J08", other=None, gold="J06", kingdom="J", k=-2)
+    assert M.item_checks(ch, f, j08, "猶大王約阿施（亞哈謝的兒子）往前數第二位王是誰？") == ([], ["f_father_is_answer"])
+    j17 = dict(kind="pos", qtype="S4", start="J17", other=None, gold="J16", kingdom="J")
+    assert M.item_checks(ch, f, j17, "約哈斯（約西亞的兒子）出生時誰在位？") == ([], ["f_father_is_answer"])
 
 
 def test_slot_violations_and_dedupe():
@@ -680,12 +824,12 @@ def test_gen_mech_label_score_flow_with_a_fake_launcher(tmp_path, monkeypatch):
     CL.write_pin(tmp_path, pin)
     monkeypatch.setattr(CL, "launch", FlowLauncher())
     ctx = RQ.context(tmp_path)
-    assert RQ.cmd_gen(ctx, ("p1",)) == {"started": 28, "ok": 28, "failed": 0}
+    assert RQ.cmd_gen(ctx, ("p1",)) == {"started": 28, "ok": 28, "failed": 0, "stopped": 0, "stopped_why": {}}
     assert RQ.cmd_gen(ctx, ("p1",))["started"] == 0                      # drafts are not redone
     got = RQ.write_items(ctx, "p1")
     assert got["slots"] == 75 and got["valid"] == 75
     assert RQ.cmd_refill(ctx, ("p1",))["started"] == 0
-    assert RQ.cmd_label(ctx, ("p1",))["ok"] == 8
+    assert RQ.cmd_label(ctx, ("p1",)) == {"started": 8, "ok": 8, "failed": 0, "stopped": 0}
     doc = Q.read_json(tmp_path / "p1" / "items.json")
     pos = [i for i in doc["items"] if i["kind"] == "pos"]
     assert all(i["label_consistent"] is False for i in pos) and len(pos) == 60

@@ -1,8 +1,14 @@
 """Scorer of the question set (qset.md §5–§7, CPU): how often the chronology card's path takes the questions.
 
+The layer is built as the backend builds it: ``parse_layer``, then, when this checkout's layer module
+has ``with_lexicon`` (the rule-seed change), the build's routing lexicon attached as ``make_active``
+does (--lexicon, default the routing_lexicon.json next to --layer; refused when missing), and the
+trigger gets ``layer.blockers`` when it takes them. Without that the scorer's R_trig and R_seed
+would part from prod silently (review 2026-10-19).
+
 Per positive question, cumulatively (each stage needs the one before):
-  R_trig  ``trigger(question, layer.names)`` fires; a miss is split into king_miss (no chain king found),
-          cue_miss (a king, no cue) and king_and_cue_miss;
+  R_trig  ``trigger(question, layer.names[, layer.blockers])`` fires; a miss is split into king_miss
+          (no chain king found), cue_miss (a king, no cue) and king_and_cue_miss;
   R_seed  the rule seeds (``backend/utils/regnal/seeds.py`` rule_seeds(layer, question), when the
           module has it; n/a otherwise) include the gold start king (S1b: both ends), mapped from the
           reference to the scored layer by kingdom, name and homonym order;
@@ -15,20 +21,25 @@ denominator was corrected).
 False triggers: near misses by family (labeller-gray ones apart), and the 500-question GT v1 / v2.
 Regression (in-sample, trigger only): the 30 dev and 32 confirmation questions of experiment A.
 
-Every result records the layer sha and the sha of trigger.py, seeds.py, engine.py, layer.py and
-ragcommon/regnal.py as imported from this checkout, the spec and items sha. P2 is locked: its run
+Every result records the layer sha and role (score_pin: q_common.SCORE_LAYER_SHA256, the r4 layer;
+pre_fix: 932d2242…, describe only; unpinned), the lexicon sha and blocker count, the sha of
+trigger.py, seeds.py, engine.py, layer.py, ragcommon/regnal.py and ragcommon/routing.py as imported
+from this checkout, the spec and items sha. Every command needs --layer (no default: the adoption
+gates gt and regress depend on the layer's names too). ``score`` refuses the pre-fix layer, any layer
+but the pinned one once SCORE_LAYER_SHA256 is set, and P2 while it is not. P2 is locked: its run
 prints and appends (p2_runs.jsonl, one line per run) aggregates only; a second run needs --again
 and must be disclosed. ``--compare-trigger FILE`` scores the same items under another trigger.py too
 (old vs new rule, paired).
 
-    score_q.py score --set p1|p2 [--layer FILE] [--compare-trigger FILE] [--again]
-    score_q.py gt [--layer FILE] [--compare-trigger FILE]
-    score_q.py regress [--layer FILE]
+    score_q.py score --set p1|p2 --layer FILE [--lexicon FILE] [--compare-trigger FILE] [--again]
+    score_q.py gt --layer FILE [--lexicon FILE] [--compare-trigger FILE]
+    score_q.py regress --layer FILE [--lexicon FILE]
 """
 from __future__ import annotations
 
 import argparse
 import importlib.util
+import inspect
 import json
 import math
 import re
@@ -37,10 +48,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
+import q_common
 import spec_q as S
-from q_common import (CONFIRM_FROZEN, DEV_ITEMS, GT_FILES, KINGDOMS, LAYER_PROD, POS_TYPES, NEAR_FAMILIES, ROOT,
-                      QError, append_jsonl, counts, now, read_json, read_jsonl, regnal, sha256_bytes, sha256_file,
-                      write_json)
+from q_common import (CONFIRM_FROZEN, DEV_ITEMS, FLAGS, GT_FILES, KINGDOMS, LAYER_PRE_FIX_SHA256, LEXICON_FILE,
+                      POS_TYPES, NEAR_FAMILIES, ROOT, QError, append_jsonl, counts, now, read_json, read_jsonl, regnal,
+                      sha256_bytes, sha256_file, write_json)
 
 P2_RUNS = "p2_runs.jsonl"
 Z95 = 1.959963984540054
@@ -48,7 +60,7 @@ Z95 = 1.959963984540054
 
 @dataclass(frozen=True)
 class Rules:
-    trigger: Callable[[str, tuple], Any]
+    fire: Callable[[str], Any]                 # trigger on one question, the layer's names (and blockers) bound
     rule_seeds: Callable[[Any, str], Any] | None
     engine: Any
     layer: Any
@@ -63,21 +75,64 @@ def _module_from(path: Path, name: str):
     return mod
 
 
-def load_rules(layer_path: Path = LAYER_PROD, trigger_file: Path | None = None) -> Rules:
-    """The checkout's regnal modules on a layer file; ``trigger_file`` swaps in another trigger.py."""
+def layer_role(sha: str) -> str:
+    pin = q_common.SCORE_LAYER_SHA256           # read at call time: one source, set with the formal prereg
+    if pin and sha == pin:
+        return "score_pin"
+    return "pre_fix" if sha == LAYER_PRE_FIX_SHA256 else "unpinned"
+
+
+def score_layer_check(sha: str, side: str) -> None:
+    """``score`` only on the r4 layer: never the pre-fix one; the pinned one once pinned; P2 needs the pin."""
+    pin = q_common.SCORE_LAYER_SHA256
+    if sha == LAYER_PRE_FIX_SHA256:
+        raise QError(f"layer {sha[:12]} is the pre-fix prod layer (describe only, gt / regress): score on r4")
+    if pin and sha != pin:
+        raise QError(f"layer {sha[:12]} is not the pinned score layer {pin[:12]}")
+    if side == "p2" and not pin:
+        raise QError("P2 is scored once, on the pinned r4 layer: set q_common.SCORE_LAYER_SHA256 first")
+
+
+def make_fire(trig: Callable[..., Any], layer: Any) -> Callable[[str], Any]:
+    """The trigger bound to the layer: its blockers passed when the trigger takes them (card.py's call)."""
+    if "blockers" in inspect.signature(trig).parameters:
+        blockers = tuple(getattr(layer, "blockers", ()))
+        return lambda q: trig(q, layer.names, blockers)
+    return lambda q: trig(q, layer.names)
+
+
+def _attach_lexicon(R: Any, layer: Any, layer_path: Path, lexicon_path: Path | None) -> tuple[Any, dict | None]:
+    attach = getattr(R.layer, "with_lexicon", None)
+    if attach is None:
+        if lexicon_path is not None:
+            raise QError("this checkout's layer module takes no routing lexicon (no with_lexicon)")
+        return layer, None
+    path = Path(lexicon_path) if lexicon_path is not None else Path(layer_path).with_name(LEXICON_FILE)
+    if not path.is_file():
+        raise QError(f"this checkout's layer takes the build's routing lexicon (with_lexicon): no {path}, "
+                     "give --lexicon")
+    layer = attach(layer, R.routing.load_lexicon(path))
+    return layer, {"path": str(path), "sha256": sha256_file(path), "blockers": len(layer.blockers)}
+
+
+def load_rules(layer_path: Path, trigger_file: Path | None = None, lexicon_path: Path | None = None) -> Rules:
+    """The checkout's regnal modules on a layer file (lexicon attached as the backend does);
+    ``trigger_file`` swaps in another trigger.py."""
     R = regnal()
     data = Path(layer_path).read_bytes()
-    layer = R.layer.parse_layer(data)
+    layer, lex = _attach_lexicon(R, R.layer.parse_layer(data), Path(layer_path), lexicon_path)
     trig = R.trigger.trigger
     files = dict(R.files_sha256)
     if trigger_file is not None:
         trig = _module_from(Path(trigger_file), f"qset_trigger_{sha256_file(trigger_file)[:12]}").trigger
         files["trigger.py"] = sha256_file(trigger_file)
     fn = getattr(R.seeds, "rule_seeds", None)
-    prov = {"layer": {"path": str(layer_path), "sha256": sha256_bytes(data), "chains": layer.chain_size()},
+    sha = sha256_bytes(data)
+    prov = {"layer": {"path": str(layer_path), "sha256": sha, "role": layer_role(sha), "chains": layer.chain_size()},
+            "lexicon": lex, "blockers_passed": "blockers" in inspect.signature(trig).parameters,
             "files_sha256": files, "rule_seeds": fn is not None,
             "trigger_file": str(trigger_file) if trigger_file else None}
-    return Rules(trig, fn, R.engine, layer, prov)
+    return Rules(make_fire(trig, layer), fn, R.engine, layer, prov)
 
 
 # ---------------------------------------------------------------- reference → layer
@@ -152,7 +207,7 @@ def rule_seed_ids(rules: Rules, question: str) -> tuple[list[str] | None, str | 
 
 
 def score_item(rules: Rules, item: Mapping[str, Any], ch: S.Chains, idmap: Mapping[str, str | None]) -> dict[str, Any]:
-    t = rules.trigger(item["question"], rules.layer.names)
+    t = rules.fire(item["question"])
     row = {"id": item["item_id"], "kind": item["kind"], "qtype": item["qtype"], "kingdom": item["kingdom"],
            "writer": item["writer"], "persona": item["persona"], "fired": bool(t.fired), "cues": list(t.cues),
            "kings_found": len(t.kings), "label_consistent": item.get("label_consistent"),
@@ -204,7 +259,7 @@ def aggregate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                       "label_inconsistent": _pos_block([r for r in pos if r["label_consistent"] is False]),
                       "unlabelled": sum(1 for r in pos if r["label_consistent"] is None),
                       "flagged": {f: _pos_block([r for r in pos if f in r["flags"]])
-                                  for f in ("f_start_unnamed", "f_between")}},
+                                  for f in FLAGS}},
         "near": {"n": len(near), "fired": sum(r["fired"] for r in near),
                  "by_family": {f: {"n": sum(1 for r in near if r["qtype"] == f),
                                    "fired": sum(1 for r in near if r["qtype"] == f and r["fired"])}
@@ -227,7 +282,7 @@ def paired(new: Sequence[Mapping[str, Any]], old: Sequence[Mapping[str, Any]]) -
 # ---------------------------------------------------------------- sets
 
 def _fired(rules: Rules, questions: Sequence[tuple[str, str]]) -> dict[str, Any]:
-    hits = [qid for qid, q in questions if rules.trigger(q, rules.layer.names).fired]
+    hits = [qid for qid, q in questions if rules.fire(q).fired]
     return {"n": len(questions), "fired": len(hits), "ids": hits}
 
 
@@ -284,8 +339,9 @@ def record(root: Path, out: Mapping[str, Any], rows: Sequence[Mapping[str, Any]]
     return out
 
 
-def score_set(root: Path, side: str, layer: Path = LAYER_PROD, compare_trigger: Path | None = None,
-              again: bool = False) -> dict[str, Any]:
+def score_set(root: Path, side: str, layer: Path, compare_trigger: Path | None = None,
+              again: bool = False, lexicon: Path | None = None) -> dict[str, Any]:
+    score_layer_check(sha256_file(layer), side)
     spec = S.load_spec(root)
     ref = S.load_ref()
     if ref.sha256 != spec["ref"]["sha256"]:
@@ -296,8 +352,8 @@ def score_set(root: Path, side: str, layer: Path = LAYER_PROD, compare_trigger: 
         raise QError(f"{side}/items.json was assembled from another spec")
     if side == "p2" and read_jsonl(Path(root) / P2_RUNS) and not again:
         raise QError("P2 was scored already; rerun only with --again (and disclose it)")
-    compare = load_rules(layer, compare_trigger) if compare_trigger is not None else None
-    out, rows = score_doc(load_rules(layer), doc["items"], S.Chains(ref.rows), side, compare)
+    compare = load_rules(layer, compare_trigger, lexicon) if compare_trigger is not None else None
+    out, rows = score_doc(load_rules(layer, lexicon_path=lexicon), doc["items"], S.Chains(ref.rows), side, compare)
     out.update(spec_sha256=S.spec_sha(spec), items_sha256=sha256_file(path), ref_sha256=ref.sha256)
     return record(root, out, rows, again)
 
@@ -307,21 +363,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("cmd", choices=("score", "gt", "regress"))
     ap.add_argument("--root", type=Path, default=ROOT)
     ap.add_argument("--set", choices=("p1", "p2"))
-    ap.add_argument("--layer", type=Path, default=LAYER_PROD)
+    ap.add_argument("--layer", type=Path, required=True,
+                    help="regnal_layer.json to score on (formal scores: the r4 layer, qset.md §5)")
+    ap.add_argument("--lexicon", type=Path, default=None,
+                    help="routing_lexicon.json (default: next to --layer; used when the layer takes one)")
     ap.add_argument("--compare-trigger", type=Path, default=None)
     ap.add_argument("--again", action="store_true")
     a = ap.parse_args(argv)
     if a.cmd == "score":
         if not a.set:
             raise QError("score needs --set p1|p2")
-        out: Any = score_set(a.root, a.set, a.layer, a.compare_trigger, a.again)
+        out: Any = score_set(a.root, a.set, a.layer, a.compare_trigger, a.again, a.lexicon)
     elif a.cmd == "gt":
-        rules = load_rules(a.layer)
+        rules = load_rules(a.layer, lexicon_path=a.lexicon)
         out = {"rules": rules.provenance, "gt": gt_check(rules)}
         if a.compare_trigger:
-            out["compare_gt"] = gt_check(load_rules(a.layer, a.compare_trigger))
+            cmp_rules = load_rules(a.layer, a.compare_trigger, a.lexicon)
+            out["compare_gt"] = gt_check(cmp_rules)
+            out["compare_rules"] = cmp_rules.provenance
     else:
-        rules = load_rules(a.layer)
+        rules = load_rules(a.layer, lexicon_path=a.lexicon)
         out = {"rules": rules.provenance, "regression": regression(rules)}
     print(json.dumps(out, ensure_ascii=False))
     return 0

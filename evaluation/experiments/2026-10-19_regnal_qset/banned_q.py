@@ -11,7 +11,10 @@ phrasings instead of real ones. Every rendered prompt (system, user, schema) mus
 * HO's and experiment A's prompt terms (ho_tools/banned.py and ho_a/banned_a.py, loaded by path with
   their sha pinned, never changed) plus Q_PROMPT_TERMS (this tool's purpose words);
 * MEMORY_MARKERS: HO + A + Q_MEMORY_MARKERS (names only this project's code and memory use). In a
-  transcript a marker anywhere is a blinding error (t_memory), output included.
+  transcript a marker anywhere is a blinding error (t_memory), output included, so Q's markers are
+  code forms only (trigger.py, utils.regnal, regnal_layer …): words a writer may well think in plain
+  English ("regnal year", "cues") are prompt-only terms (Q_PROMPT_TERMS), banned from every prompt
+  but never voiding a job (review 2026-10-19).
 
 ASCII terms match case-insensitively on word boundaries, CJK terms as substrings (HO rule).
 """
@@ -53,9 +56,10 @@ Hit = HO.Hit
 CUE_LITERALS = ("之後", "之前", "以後", "以前", "往前數", "往後數", "接續", "作王", "繼位", "交接", "相隔", "篡",
                 "出生時", "出生的時", "出生那年", "在位")
 Q_PROMPT_TERMS = ("觸發", "召回", "年表", "線索", "誤觸", "近似", "問法集", "分母", "規則種子", "標註器", "鎖住",
-                  "trigger", "recall", "regex", "cue", "cues", "P1", "P2", "near miss", "near-miss")
-Q_MEMORY_MARKERS = ("trigger.py", "CUES", "_KTH", "regnal", "aux_card", "use_regnal_card", "年表卡", "ref_layer",
-                    "layer_auto", "regnal_qset", "qset", "rule_seeds", "chronology_card")
+                  "trigger", "recall", "regex", "cue", "cues", "regnal", "P1", "P2", "near miss", "near-miss")
+Q_MEMORY_MARKERS = ("trigger.py", "trigger.CUES", "_KTH", "utils.regnal", "regnal_layer", "aux_card",
+                    "use_regnal_card", "年表卡", "ref_layer", "layer_auto", "regnal_qset", "qset", "rule_seeds",
+                    "chronology_card")
 PROMPT_TERMS = tuple(dict.fromkeys(A.PROMPT_TERMS + Q_PROMPT_TERMS + CUE_LITERALS))
 MEMORY_MARKERS = tuple(dict.fromkeys(A.MEMORY_MARKERS + Q_MEMORY_MARKERS))
 
