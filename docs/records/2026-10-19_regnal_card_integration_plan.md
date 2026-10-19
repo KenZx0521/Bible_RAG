@@ -123,3 +123,16 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
 - 不做跨國年份推導。
 - 不改 500 題。
 - 論文等架構定案後再跟你談。
+
+## 執行紀錄
+
+- 2026-10-19 13:35 王朝層進 store：`regnal@a04b67a301dc`（`ragdata build regnal`），G-REGNAL 通過；契約檔 `regnal_layer.json` sha `932d2242…`，就是審過的 `layer_auto.json`，兩國鏈 19／20、衝突 7（commit b27e4f5）。
+  - release 改成可帶選用層：沒有 regnal 的 R2 release（`b20261008_e05d3e55`）用新程式重組，位元組不變；帶 regnal 時 contract_version 1.2.0，多一個契約檔，其他契約與各層 digest 與 R2 相同（`test_regnal.py`）。
+  - 另外發現：R1 release（`b20261008_6daa4f31`）在未改動的 HEAD 上就重組不過（R1 的 events 層有 `anchor_changes.jsonl`，現行閘門不收），與這次無關；回滾目標是 R2。
+- 2026-10-19 backend 接線（commit 1efcc85）。
+  - **A1 對等：通過。**用 store 記錄的種子輸出與 contexts，backend 組出的卡片 prompt 與實驗 G-auto 的 system／user 逐位元相同：確認集 32/32、開發集 30/30；種子 prompt 的 sha 也與兩次 run 記錄的 `prompts_sha256` 相同（`test_regnal_parity.py`）。
+  - **A2 未觸發不變：通過。**沒有卡片時 messages 等於原本的 SYSTEM_PROMPT／CONTEXT_TEMPLATE，兩者 sha 與改動前相同（`test_regnal_card.py`）。
+  - 觸發規則只依題型定義與開發集定案（開發集 27/30 觸發；沒觸發的 3 題：一題問親屬、兩題沒點名王），在量 A3 之前 commit。
+- 2026-10-19 **A3 觸發清單：通過。**500 題中點名鏈上王的有 21 題，觸發 0 題，誤觸 0。
+  - 確認集召回（只描述）：26/32。漏掉的 6 題全是 S1a，問法是「之後，第二位作…王」（中間有逗號）或「往前數第二位」。
+  - **事後修正（揭露）**：看了這 6 題之後，把 S1a 線索改成容許中間的標點、並收「往前數／往後數」。改後確認集 32/32（樣本內，不當證據）、開發集 27/30 不變、500 題仍觸發 0。修正只放寬標點與數法，題型範圍沒變。
