@@ -4,9 +4,10 @@ The regnal layer is the kings of Israel and Judah from 1 Kings 11:41 on, as the
 regnal formulas name them (``ragdata.kg.regnal_formulas``): nodes with their
 fields and evidence verses, succession edges, order-fallback edges and accession
 synchronisms. ``load`` (but for ``View.alts``) and ``born_under`` are experiment A's
-``regnal.load_auto`` and the chain walk under it, unchanged (on relations@a04b67a301dc the contract file
-``regnal_layer.json`` is the experiment-A layer byte for byte,
-``reports/kg_cards_20261018/A/layer_auto.json``):
+``regnal.load_auto`` and the chain walk under it, unchanged. On relations@a04b67a301dc the
+contract file ``regnal_layer.json`` is the experiment-A layer byte for byte
+(``reports/kg_cards_20261018/A/layer_auto.json``); the layer fixed on 2026-10-19 is not, and
+Solomon is a node of 'U' there, on no chain:
 
 - a node with neither an accession formula nor a reign length is a mention only and
   is left out (a ghost node);
