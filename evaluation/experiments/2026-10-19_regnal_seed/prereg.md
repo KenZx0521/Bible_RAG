@@ -1,8 +1,8 @@
 # 年表卡「規則種子」的樣本內回歸（prereg）
 
-> **草稿，待主 session 審；正式版 commit 前不准叫 Ollama**
+> **正式版（2026-10-19 晚，主 session 審過、§1 已填 r4 層；本版 commit 之後才叫 Ollama）**
 >
-> `run_rs.py run` 會檢查本檔：還有這行草稿標記、還有層 sha 的佔位字、§1「王朝層」那一列沒寫 `--layer` 檔案的 sha256、「routing lexicon」那一列沒寫 `--lexicon` 檔案的 sha256、§1 backend 表任一列不是本 checkout 該檔的 sha256，或本檔沒 commit／commit 後又改過、harness 目錄（本目錄）有未 commit 的修改或未追蹤的檔，就在任何 Ollama 呼叫前拒跑（`test_regnal_seed_guards.py` 逐項測）。
+> `run_rs.py run` 會檢查本檔：還有草稿標記、還有層 sha 的佔位字、§1「王朝層」那一列沒寫 `--layer` 檔案的 sha256、「routing lexicon」那一列沒寫 `--lexicon` 檔案的 sha256、§1 backend 表任一列不是本 checkout 該檔的 sha256，或本檔沒 commit／commit 後又改過、harness 目錄（本目錄）有未 commit 的修改或未追蹤的檔，就在任何 Ollama 呼叫前拒跑（`test_regnal_seed_guards.py` 逐項測）。
 
 ## 0. 裁決與定位
 
@@ -10,13 +10,14 @@
 - 結果一律標「**樣本內**」：規則是讀過實驗 A 的 62 題（確認集 32、dev 30）之後寫的（`seeds.py` docstring），兩組都不是盲集。
 - 這**不是非劣性檢定**。門檻 −0.05 在這個題數下只抓得到約 ≥0.10–0.15 的破壞；不能寫「不劣於」。
 - H1／H2 的措辭（「顯著優於正典經文窗與層列平鋪」）**只屬於舊版本**：層 932d2242＋gemma 種子＋無 S4 守門。本回歸過了也不延伸到規則種子版本。
+- 層已定案：Kay 2026-10-19 抽查 14 項（鏈與邊型別 L1–L8、刪除 D1–D3、守門 S1、預設 P1–P2）全部同意，沒有備註；r4 release `b20261019_a86f2b06` 已 load、verify 全綠。
 
 ## 1. 釘版
 
 | 項目 | 值 |
 |---|---|
-| 王朝層（`--layer`） | `<r4 層 sha，待主 session 填>`（dry run 用的候選層見 §9，不是正式值） |
-| routing lexicon（`--lexicon`） | `contracts/b20261019_18aa84ad/routing_lexicon.json`，sha256 `2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e`（＝`layers/route/route@c31c88e4681e`） |
+| 王朝層（`--layer`） | `contracts/b20261019_a86f2b06/regnal_layer.json`（r4 release；＝`layers/relations/relations@ee8e78c043d2`），sha256 `252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11` |
+| routing lexicon（`--lexicon`） | `contracts/b20261019_a86f2b06/routing_lexicon.json`，sha256 `2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e`（＝`layers/route/route@c31c88e4681e`；和 b20261019_18aa84ad 的同一份） |
 | backend 程式 | 整合分支 `int/regnal-r4` 的 checkout（含 feat/regnal-seed-regress），執行時記錄 7 檔 sha（下表） |
 | 實驗 A 程式 | 只 import、不改；`cards_common.py` ae9dc16c…（＝confirm_A.md §0 凍結值），`run_rs.py` 跑前呼叫 `c_common.frozen_mismatches()`，有不符就拒跑 |
 | 模型 | `gemma4:e4b-it-q8_0`，digest `9dcc35808b42e8975f1e9dd9d7866925a8d0704b6bb3613525323f355dde3923`（A_confirm/night_run.log 跑前跑後 /api/ps） |
@@ -108,6 +109,8 @@ backend 檔案 sha256（int/regnal-r4；ragcommon/regnal.py 在 f986020 只改�
 
 候選層 `regnal_fix_20261019/candidate/regnal_layer.json` sha256 `252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11`（2026-10-19 19:24 的版本；這個檔在 dry run 前已改過一次，**不是正式值**）＋§1 的 lexicon，`run_rs.py dry-run` → store `reports/regnal_seed_20261019/dry_run/`（審查意見修正後在 commit 後的程式上重跑，jobs sha 與下表數字和修正前相同）。假 chat 照卡片第一行推導作答，分數無意義，只驗流程。
 
+r4 層（§1）和這個候選檔逐位元相同（同一個 sha256），所以下表的卡片與 jobs 數字也是 r4 層的；正式跑前照 §10 步驟 3 在 r4 的 contract 路徑上、本 checkout 再跑一次 dry run，jobs sha 與下表不同就停下來查，不叫 Ollama。
+
 | 項目 | 值 |
 |---|---|
 | 確認集 | 32/32 觸發、規則 32/32 有卡、0 棄權 |
@@ -121,7 +124,7 @@ backend 檔案 sha256（int/regnal-r4；ragcommon/regnal.py 在 f986020 只改�
 
 ## 10. 執行步驟（主 session）
 
-1. 審本檔；把 §1 的層 sha 換成 r4 層的 sha256，去掉檔頭草稿標記，commit。
+1. 審本檔；把 §1 的層 sha 換成 r4 層的 sha256，去掉檔頭草稿標記，commit。（2026-10-19 已做）
 2. `python -B run_rs.py build --layer L --lexicon X --out <store>/reports/regnal_seed_20261019/<run>`（CPU，記數；只寫進還沒有 run 的目錄）。
 3. `python -B run_rs.py dry-run --layer L --lexicon X`（假 chat，覆寫 dry_run/；dry_run/ 只放 dry run）。
 4. Ollama 時窗內：`python -B run_rs.py run --layer L --lexicon X --out <步驟 2 的目錄>`（中斷或停下就對同一目錄再下一次，續跑）。

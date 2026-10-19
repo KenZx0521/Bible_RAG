@@ -276,22 +276,26 @@ def test_the_prereg_gate_checks_the_layer_the_lexicon_and_the_backend():
     files = dict(h["backend_files_sha256"], **{C.BACKEND_FILES[0]: "f" * 64})
     assert _problems(formal_prereg(_header(backend_files_sha256=files)), h) == [f"backend sha {C.BACKEND_FILES[0]}"]
     text = (RS / "prereg.md").read_text(encoding="utf-8")
-    assert C.DRAFT_MARK in text and C.LAYER_SHA_PLACEHOLDER in text      # the committed draft
+    assert C.DRAFT_MARK not in text and C.LAYER_SHA_PLACEHOLDER not in text   # the committed formal version
     for line in (C.LAYER_LINE, C.LEXICON_LINE):
         assert sum(row.startswith(line) for row in text.splitlines()) == 1
     assert _problems(text, h)
 
 
-LEXICON = C.STORE / "contracts/b20261019_18aa84ad/routing_lexicon.json"
+# the r4 release's contract files (prereg §1, 2026-10-19)
+R4 = C.STORE / "contracts/b20261019_a86f2b06"
+LAYER, LEXICON = R4 / "regnal_layer.json", R4 / "routing_lexicon.json"
 
 
-@pytest.mark.skipif(not LEXICON.is_file(), reason="the routing lexicon not in the store")
-def test_the_prereg_pins_this_checkouts_backend_and_the_lexicon():
-    """Only the layer row is left to fill: §1's lexicon row and backend table are this checkout's."""
+@pytest.mark.skipif(not (LAYER.is_file() and LEXICON.is_file()), reason="the r4 contract files not in the store")
+def test_the_prereg_pins_the_r4_layer_the_lexicon_and_this_checkouts_backend():
+    """§1's layer and lexicon rows are the r4 release's files, its backend table this checkout's."""
     text = (RS / "prereg.md").read_text(encoding="utf-8")
-    here = {"layer_sha256": "a" * 64, "lexicon_sha256": C.sha256_file(LEXICON),
+    here = {"layer_sha256": C.sha256_file(LAYER), "lexicon_sha256": C.sha256_file(LEXICON),
             "backend_files_sha256": C.backend().files_sha256}
-    assert _problems(text, here) == ["draft", "placeholder", "layer sha"]
+    assert here["layer_sha256"] == "252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11"
+    assert _problems(text, here) == []
+    assert _problems(text, dict(here, layer_sha256="a" * 64)) == ["layer sha"]
 
 
 def _git(repo, *args):
