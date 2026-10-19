@@ -1,15 +1,19 @@
 """G-REGNAL: the regnal layer is the audited one (Kay's P5 exception, 2026-10-19).
 
-The regnal layer exists for one use, the backend's chronology card, and it was
-accepted as a specific file: experiment A's ``layer_auto.json`` (K0 field
-precision 40/40, Kay's check 0/20 rows wrong, the blind confirmation set; see
-``evaluation/experiments/2026-10-18_kg_cards/confirm_A.md``). So the gate pins it:
+The regnal layer exists for one use, the backend's chronology card, and it is
+accepted as a specific file. It was first experiment A's ``layer_auto.json`` (K0
+field precision 40/40, Kay's check 0/20 rows wrong, the blind confirmation set; see
+``evaluation/experiments/2026-10-18_kg_cards/confirm_A.md``); since the rule fixes of
+2026-10-19 (R1a-R12, ``kg.regnal_formulas``) it is the fixed layer, audited by K0-R
+against the reference layer without Solomon, K0-1' and Kay's check
+(``evaluation/experiments/2026-10-19_regnal_fix/``). So the gate pins it:
 
 - the layer was built on the text layer ``expectations/regnal_expect.yaml`` names,
   and ``regnal_layer.json`` hashes to its ``layer_sha256`` (a new text layer or a
   changed rule means a new audit before the expectation may move);
-- the document is the occ/slot policy with no name union, every id is unique and
-  every edge and synchronism names a node;
+- the document is the occ/slot policy with no name union, every id is unique,
+  every edge and synchronism names a node, and a king's kingdom is Israel ('I'),
+  Judah ('J') or the united monarchy ('U', on neither chain);
 - the succession chains read by ``ragcommon.regnal`` and the conflict count equal
   the expectation, and ``regnal_report.json`` restates the layer it sits beside.
 """
@@ -31,6 +35,7 @@ EXPECT_SCHEMA = "ragdata.regnal_expect.v1"
 REPORT_SCHEMA = "ragdata.regnal_report.v1"
 REGNAL_EXPECT_PATH = Path(__file__).resolve().parents[1] / "contract" / "expectations" / "regnal_expect.yaml"
 EXPECT_KEYS = ("schema", "inputs", "layer_sha256", "chains", "conflicts")
+LAYER_KINGDOMS = (*regnal.KINGDOMS, "U")   # 'U': all Israel (R8); a mention-only node may also have None
 
 
 def load_regnal_expect(path: Path | str = REGNAL_EXPECT_PATH) -> Mapping[str, Any]:
@@ -77,6 +82,8 @@ def _structure(doc: Mapping[str, Any]) -> list[str]:
     out += [f"sync {s[0]}~{s[1]} names no node" for s in doc["syncs"] if not {s[0], s[1]} <= known]
     out += [f"node {n['id']} ({n['name']}) has accession evidence but no kingdom"
             for n in doc["nodes"] if (n["has_acc"] or "reign" in n["fields"]) and n["kingdom"] is None]
+    out += [f"node {n['id']} ({n['name']}) has kingdom {n['kingdom']!r}: want one of {list(LAYER_KINGDOMS)}"
+            for n in doc["nodes"] if n["kingdom"] is not None and n["kingdom"] not in LAYER_KINGDOMS]
     return out
 
 
