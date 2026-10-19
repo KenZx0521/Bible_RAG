@@ -17,13 +17,13 @@
 |---|---|
 | 王朝層（`--layer`） | `<r4 層 sha，待主 session 填>`（dry run 用的候選層見 §9，不是正式值） |
 | routing lexicon（`--lexicon`） | `contracts/b20261019_18aa84ad/routing_lexicon.json`，sha256 `2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e`（＝`layers/route/route@c31c88e4681e`） |
-| backend 程式 | 本分支 `feat/regnal-seed-regress`（基於 int/regnal-r4 的 e3fa8be）的 checkout，執行時記錄 7 檔 sha（下表） |
+| backend 程式 | 整合分支 `int/regnal-r4` 的 checkout（含 feat/regnal-seed-regress），執行時記錄 7 檔 sha（下表） |
 | 實驗 A 程式 | 只 import、不改；`cards_common.py` ae9dc16c…（＝confirm_A.md §0 凍結值），`run_rs.py` 跑前呼叫 `c_common.frozen_mismatches()`，有不符就拒跑 |
 | 模型 | `gemma4:e4b-it-q8_0`，digest `9dcc35808b42e8975f1e9dd9d7866925a8d0704b6bb3613525323f355dde3923`（A_confirm/night_run.log 跑前跑後 /api/ps） |
 | 生成參數 | temperature 0.1、num_predict 10000、num_ctx 131072（`c_common.OPTIONS`） |
 | 計分用參考層 | 實驗 A 的 `A/ref_layer.json`（79d57efe…，與 G-auto 計分同一份；**不**換 `regnal_fix_20261019/ref_layer_v2.json`，否則計分器重現不了 scores.json） |
 
-backend 檔案 sha256（e3fa8be，本分支未改 backend）：
+backend 檔案 sha256（int/regnal-r4；ragcommon/regnal.py 在 f986020 只改了 docstring）：
 
 | 檔案 | sha256 |
 |---|---|
@@ -32,10 +32,10 @@ backend 檔案 sha256（e3fa8be，本分支未改 backend）：
 | backend/utils/regnal/layer.py | e293e1f324f67eae4dc9dba17e65aeeaee3d207c1458171a27668f20aa26bf82 |
 | backend/utils/regnal/seeds.py | c574d76d55f5b351b4ddb4cef4eb972ca6a304639f476be093843e25eec8bb87 |
 | backend/utils/regnal/trigger.py | 90e6b528dc86d616a01c113025fc49803e72d41f7783f0caa76b24784b845cd0 |
-| packages/ragcommon/regnal.py | dbcbfeb1780f7f2f055a699a3d8609df617d5428e4994ba1efb7c9a0be74ea02 |
+| packages/ragcommon/regnal.py | ada1a5a1d12517e677d743d7af40607444343275f730c9ee0103741743e0d40b |
 | packages/ragcommon/routing.py | dfffe5f424c8643aa7bd7f7851534bf25e3d91b9c52e5eaa5cc331b2a4d95490 |
 
-七檔合併 sha（`rs_common.backend().sha256`）：`e5fffc0adfd6b1568573db4ae9387e18aec6adbfc6f8d5ab59945230ec8747a6`。
+七檔合併 sha（`rs_common.backend().sha256`）：`c80b44e97fa63c563a16a76cb8e21a9b0a0606266c8edaa7bfaf376611b0ff97`。
 
 ## 2. 記錄的種子：檔案格式（實查）
 
