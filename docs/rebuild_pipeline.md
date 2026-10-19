@@ -32,7 +32,7 @@ RAGDATA="env PYTHONPATH=ragdata/src:packages scripts/.venv/bin/python -m ragdata
 $RAGDATA pipeline run [--date YYYYMMDD] [--load] [--verify] [--report pipeline.json]
 ```
 
-- 依序：text（含 src）→ struct →〔推導檔檢查、G-GT〕→ emb → kg0 → events → route → release →（`--load`）→（`--verify`）。
+- 依序：text（含 src）→ struct →〔推導檔檢查、G-GT〕→ emb → kg0 → events → route → relations → release →（`--load`）→（`--verify`）。
 - 每層先跑 build 閘門，全綠才寫入 store；寫入後立刻用該層**全部** required 閘門再驗一次。
 - 任何紅燈立即停止：stderr 印出停在哪一層（含版本）、哪個閘門與前幾筆細節；stdout／`--report` 是完整 JSON 報告。
 - 結束碼：0 全綠；1 硬閘門紅燈；2 輸入錯誤或推導檔過期；3 程式錯誤（附 traceback，不寫報告）。
@@ -49,12 +49,18 @@ $RAGDATA pipeline run [--date YYYYMMDD] [--load] [--verify] [--report pipeline.j
 | kg0（K0） | text、struct、K0 註冊表、`kg0_counts.yaml` | names、extra_spans、parallel_links | G-SCHEMA、G-REFINT、G-KG0、G-PROV | 同左 |
 | events（K1） | text、struct、`events.yaml`（R2 人工註冊表，以 pericope 宣告錨點） | events、event_registry_v2.json、events_report.json | G-SCHEMA、G-COUNT、G-REFINT、G-EVENT、G-PROV | 同左 |
 | route（K4） | text、kg0、events、kg0 綁定的 `divine_refs`／`name_normalization`、`query_aliases.yaml`、`ragcommon` 書名 | routing_terms、routing_lexicon.json（v2）、query_aliases.json、route_report.json | G-SCHEMA、G-COUNT、G-ROUTE、G-PROV | 同左 |
+| relations（王朝層，選用） | text（列王紀上 11:41 起、列王紀下、歷代志下 9:29 起的經節與又名／就是註腳）、`regnal_expect.yaml` | regnal_layer.json、regnal_report.json（沒有記錄檔） | G-REGNAL | 同左 |
 
 R2 的事件與路由層（R1 的轉換路徑已移除）：
 - **K1**：`events.yaml` v2 是人工註冊表本體，不再從舊 backend 的事件註冊表轉換。錨點以 pericope 宣告，建置時展開成它的全部 passage，證據取 pericope 標題；觸發詞只有 `pdf_terms`（附 PDF 位置）與 `external_aliases`；併掉的 id 列在 `retired`（`merged_into`）。契約只剩一份 `event_registry.json`（variant R2）。
 - **K4**：詞表是 PDF 各層與註冊表的聯集（kg0 名與省略「‧」的寫法、divine_refs、查詢別名、事件觸發詞、書名）。每個詞帶全部候選目標、route 型別、可否路由與其規則、來源。
 - **G-ROUTE**：從 text、kg0、events 與註冊表重編一次詞表，逐位元比對，並要求 `ragcommon.routing` 接受詞表與 `query_aliases.json`。它不跟舊 backend 比對（R2 沒有 live 比對），release 組裝時也會跑。
 - **比對器**：只有 `ragcommon.routing` 一份，K4 閘門與 backend 共用。先遮全書名；其他書名寫法與詞一起掃。每個出現處都是候選，排除表否決的除外。由最長的先取，同長取最左，不與已取的重疊。
+- **relations（王朝層）**：ids 為 L3「規則關係層」預留的層名，目前只放王朝公式（Kay 2026-10-19 的 P5 窄例外，只供 backend 的王朝年表卡；其他關係照樣不做）。
+  - 建法是實驗 A 的 regex 逐字移植（`kg/regnal_*`），產出的 `regnal_layer.json` 就是審過的 `layer_auto.json`（sha `932d2242…`）。
+  - G-REGNAL 釘住 text 版本、這個 sha、兩國的王位鏈與衝突數（`expectations/regnal_expect.yaml`）。text 層或 regex 一變，閘門就紅：先重做 K0 抽查與 Kay 抽查，再改期望檔。
+  - release 的選用層：沒有它時 `layers.relations` 是 null、contract_version 1.1.0，位元組與加入前相同；有它時 contract_version 1.2.0，契約多一個 `regnal_layer.json`。backend 啟動時讀到就開年表卡，讀不到就關，並記 warning。
+  - 單步建法：`$RAGDATA build relations --text <text 層目錄>`。
 - **契約握手**：R2 的 backend 映像不接受 R1 build（詞表 v1、registry variant R1、沒有 `query_aliases.json`）。R1 映像也讀不了 v2 詞表。
 
 之後：
@@ -119,20 +125,21 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 - `scripts/tests/run.sh` 自己建暫存 shim。
 
 ```bash
-# ragdata＋packages：2,485 passed、5 skipped（PG 整合測試，要設 RAGDATA_TEST_PG_DSN），約 1.5 分鐘
+# ragdata＋packages：2,502 passed、5 skipped（PG 整合測試，要設 RAGDATA_TEST_PG_DSN），約 3 分鐘
+# （test_regnal 會用 store 的真實層組兩次 release，佔約 2 分鐘）
 env HF_HOME=/mnt/ollama-data/huggingface HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
   scripts/.venv/bin/python -m pytest ragdata/tests packages/ragcommon/tests -q
-# backend：219 passed（含 test_integration：暫時 PG 容器、資料目錄用 tmpfs）
+# backend：250 passed（含 test_integration：暫時 PG 容器、資料目錄用 tmpfs）
 PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
   backend/.venv/bin/python -m pytest backend/tests -q
 # scripts：12 passed（只剩 derive_ragcommon_data 與 harness）
 scripts/tests/run.sh -q
-# evaluation：482 passed
+# evaluation：1,472 passed（2026-10-19；test_idlint、test_qd_common 各 1 個舊失敗）
 evaluation/.venv/bin/python -m pytest evaluation/tests -q
 ```
 
-- 上面的數字是 2026-10-08 的結果。
+- 上面的數字是 2026-10-19 的結果（scripts 仍是 12 passed）。
 - ragdata 的測試會讀 store 的 `reference/`（bible_md、canonical_full）、repo 的 6 卷 PDF，以及離線的 BGE-M3 tokenizer。
 - backend 的 `test_integration.py` 用本機 `pgvector/pgvector:pg15` 映像起一個用完即刪的 PG（資料目錄是 tmpfs，不留匿名 volume；沒有映像就整檔 skip），載入 `backend/tests/fixtures/mini_build/`。這份 build 由 `backend/tests/fixtures/make_mini_build.py` 從 ragdata 的 mini release 產生；契約一變就要重產，否則 ragdata 的 `test_backend_mini_build.py` 會失敗。
 - `test_staging_compose_restart.py`（staging compose 的 backend 服務一律 restart "no"）在 backend 套件裡。

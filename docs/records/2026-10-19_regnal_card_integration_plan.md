@@ -140,3 +140,11 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
   - 改用 ids 裡本來就為 L3「規則關係層」預留的 `relations`（設計 §13.1；ids 的關係型別也預留了 SUCCEEDED）。ids.py 不動，`metric_version` 維持 `4d0826bb8d14`。
   - 內容仍只限王朝公式（P5 窄例外）；其他關係照樣不做。層是 `relations@a04b67a301dc`（digest 只看檔案內容，和原本相同）；建法 `ragdata build relations --text …`。原本的 `layers/regnal/` 目錄已刪，release 帶它時 `layers.relations` 有值、contract_version 1.2.0；不帶時 `relations` 照舊是 null，位元組不變。
   - 同時把 `generator._build_context` 的名字改回來（BA 實驗驅動程式依賴它），另外加一個公開別名 `build_context`。
+- 2026-10-19 release `b20261019_18aa84ad`（各層＝R2，加 `relations@a04b67a301dc`），load（34,058 點）。**A6 通過**：verify 的 G-SCHEMA.pg、G-PROJ C1–C6 全綠，contracts 目錄 10 個檔，含 `regnal_layer.json`。
+- 2026-10-19 映像 `bible_rag-backend:r3`（commit e61f579；`docker build --build-context uvcache=…`），digest `sha256:7998a43a…`。`ragdata promote --env staging` 到新 build（前一筆是 R2＋r2），`backend-stg`（:8002）用 r3 起來，握手通過，啟動 log：「Regnal layer 932d2242dc3f (chains {'I': 19, 'J': 20})」。prod（:8000，r2）沒動。
+- 2026-10-19 **A4 staging 端到端：通過**（`evaluation/experiments/2026-10-19_regnal_card/a4_staging.py`，結果在 store `reports/regnal_card_20261019/a4/`）。
+  - 確認集 32 題各打 1 次 `/query`：0 錯誤、0 逾時，build_id 全是新 build；每題 17–34 秒（含意圖分類、檢索、種子、生成）。
+  - 31 題有卡，有卡題 key_score 平均 0.742 ≥ 0.70；同 31 題在確認集的 G-auto 平均 0.796（這次只跑 1 次）。全部 32 題平均 0.719。
+  - 沒卡的 1 題（QI1s2a1）：觸發有過，但這次種子呼叫抽到「以色列｜耶羅波安」，以色列鏈上有兩位耶羅波安，引擎分不開就棄權，改走原路徑（沒有「答案：」行，記 0）。確認集那次抽到的是另一位王。
+  - Ollama：開跑前 /api/ps 是空的，約 12 分鐘，跑完 gemma 照預設 keep-alive 自動卸載。
+- **A5**：500 題觸發 0 題，沒有觸發題要逐題比；未觸發題由 A2 在構造上不變。
