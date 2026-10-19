@@ -13,7 +13,7 @@
   - prompt：生成 system `f58c03fa…`、user 模板 `677e91e5…`、種子 system `5405fbb0…`、種子 user `dd00c3df…`。
   - 選項：temperature 0.1、num_predict 10000、num_ctx 131072（P0 K0-3）；附加區塊上限 900 字。
 - **F1**（花任何出題 USD 之前；CLI 重測 0.36 USD 已花）：commit 本檔與 `A/confirm/`；`segments.json` `3d85f9c0…`、`alias_table.json` `810aaa61…`、出題 prompt `gen_a.md` `9d3890c7…`、稽核 prompt `audit_a.md` `60969cd1…`、`bt_guard.py` `a81cba6e…`（HO 原檔）、CLI 釘版 `cli_pin.json` `085eaa3a…`（2.1.302，帶 thinking 摘要）；全部逐檔 sha 在 store `A_confirm/f1_manifest.json` `8affe6eb…`；slot 計畫見 §2.4。
-- **F2**（Kay 抽查頁處理完、K-U2 通過、Ollama 夜之前）：`questions_frozen.json` 〈sha〉；附錄 C 只列題號、段、題型、鍵型別。`ho_a/freeze_a.py` 把此 sha 寫進 `inputs_manifest.json` 的 `frozen`（並寫 `k_u2.json`）；`collect_ctx.py` 與 `run_c.py prepare` 只認這兩份紀錄。
+- **F2**（Kay 抽查頁處理完、K-U2 通過、Ollama 夜之前）：`questions_frozen.json` `93ca70af…`；附錄 C 只列題號、段、題型、鍵型別。`ho_a/freeze_a.py` 把此 sha 寫進 `inputs_manifest.json` 的 `frozen`（並寫 `k_u2.json`）；`collect_ctx.py` 與 `run_c.py prepare` 只認這兩份紀錄。
 - **F3**（Ollama 夜收完 context、種子開跑前）：`contexts.json` 〈sha〉 寫進 run_meta。
 - **順序**：CLI 重測（§8.3）→ F1 → pilot 12 題 → K1（CPU）→ 其餘出題與稽核 → 機械與 transcript 檢查 → Kay 抽查頁（§7）與修刪 → K-U2 → F2 → Ollama 夜（收 context → F3 → 種子 → 各臂）→ 計分與分析（CPU）→ 報告。
 
@@ -186,7 +186,42 @@
 
 ## 附錄 C（F2 時填入）
 
-題號、段、題型、鍵型別、`questions_frozen.json` 〈sha〉。
+`questions_frozen.json` `93ca70af9f1266b58f2cb7ccbd67f6e6851852d9e7a65e9c839e4186ea9822be`（32 題，14 段；清單 `questions_frozen_manifest.json`）。各段題數：I1 3、I2 3、I3 2、I4 2、I5 2、I6 1、I7 3、I8 2、I9 3、J1 3、J2 1、J3 3、J4 2、J5 2；題型：S1a 24、S1b 2、S1c 4、S4 2。空 slot：J2 的 S1b、J2 的 S4、J4 的 S4（三次嘗試用完）。
+
+| 題號 | 段 | 題型 | 鍵型別 | pilot |
+|---|---|---|---|---|
+| QI1s1a1 | I1 | S1a | name | 是 |
+| QI2s3a1 | I2 | S1c | name | 是 |
+| QI3s1a1 | I3 | S1a | name | 是 |
+| QI4s1a1 | I4 | S1a | name | 是 |
+| QI6s1a1 | I6 | S1a | name | 是 |
+| QI7s1a1 | I7 | S1a | name | 是 |
+| QI8s1a1 | I8 | S1a | name | 是 |
+| QI9s1a1 | I9 | S1a | name | 是 |
+| QJ2s1a1 | J2 | S1a | name | 是 |
+| QJ1s2a2 | J1 | S1b | number | 是 |
+| QJ5s1a2 | J5 | S1a | name | 是 |
+| QI1s2a1 | I1 | S1a | name |  |
+| QI2s1a1 | I2 | S1a | name |  |
+| QI3s2a1 | I3 | S1a | name |  |
+| QI4s2a1 | I4 | S1a | name |  |
+| QI5s1a1 | I5 | S1a | name |  |
+| QI7s2a1 | I7 | S1a | name |  |
+| QI8s2a1 | I8 | S1a | name |  |
+| QI9s2a1 | I9 | S1a | name |  |
+| QJ1s1a1 | J1 | S1a | name |  |
+| QJ3s1a1 | J3 | S1a | name |  |
+| QJ4s1a1 | J4 | S1a | name |  |
+| QI1s3a1 | I1 | S1c | name |  |
+| QI2s2a1 | I2 | S1a | name |  |
+| QI5s2a1 | I5 | S1a | name |  |
+| QI7s3a1 | I7 | S1c | name |  |
+| QI9s3a1 | I9 | S1c | name |  |
+| QJ1s3a1 | J1 | S4 | name |  |
+| QJ3s2a1 | J3 | S1b | number |  |
+| QJ4s2a1 | J4 | S1a | name |  |
+| QJ5s2a2 | J5 | S1a | name |  |
+| QJ3s3a1 | J3 | S4 | name |  |
 
 ## 執行紀錄
 
@@ -196,3 +231,11 @@
   - 依 §8「其他任何一條不過：停止，先修基礎設施」修完後重測。
 - 2026-10-19 00:47 CLI 重測第 2 次（verdict_2，0.10 USD）：5 條全過（3 次都由 claude-opus-5-5 回答、沒有改派；現場 `ls` 與離線 4 條都被拒；thinking 摘要非空；第一個請求 prompt 2,667 token；有 structured_output）。釘 2.1.302、thinking_display＝true。帳本 0.36 USD。
 - F1：本檔、`A/confirm/`、測試（123 passed）一起 commit；之後才開始 pilot 出題。
+- 2026-10-19 00:58 pilot 完成（帳本 6.10 USD；pilot 5.74）：12 slot 通過 11（J4 的 S4 三次嘗試都沒出成，留空），0 次模型改派，transcript 盲化 0 違規。K1（`k1.json`）＝11/11＝1.000 ≥0.80，通過；G-ref 版本也是 11/11（描述）。重估（一次）：每題平均 0.52 USD，剩 23 slot，預估總額 18.1 USD，action＝none，不取消任何 slot。
+- 2026-10-19 01:27 出題完成（帳本 17.89 USD）：35 slot 通過 32，14 段都有題；空著的 3 個 slot（J2 S1b、J2 S4、J4 S4）都是 3 次嘗試用完。共 86 個 job，0 次模型改派，transcript 盲化 0 違規。
+- 2026-10-19 01:28 Kay 抽查頁（`ho/kay/kay_page.html`，sha `2c9821d7…`；抽樣紀錄 `kay_sample.json`）：層 20 列、題 10 題，等 Kay 決定。
+- 2026-10-19 09:16 Kay 要求改發私人網頁。`ho/kay/build_kay_artifact.py`（sha `5b288b94…`）把 `kay_page.html` 的 body 內容逐字包進新頁 `ho/kay/kay_check.html`（sha `19737b94…`；腳本先核 `2c9821d7…`，再斷言內容子串原樣出現），只換外觀與決定控制項。決定自動存到 artifact db `decisions/kay`，格式同 `kay_a.py apply` 的輸入；`kay_a.py apply` 要求每列都有決定；未選的列依給 Kay 的回覆說明（沒提到的當「對」與 accept）在轉 D.json 時明寫補上，並記錄補了哪幾列。網頁只有 Kay 能開，store 只放副本。
+- 2026-10-19 09:57 Kay 回傳決定（`ho/kay/kay_decisions.json` `5679f6bc…`；與網頁存的 `decisions/kay` 逐欄相同，沒有空白列，不必補預設）。`kay_a.py apply`：K0-1b＝0/20 列錯，通過；9 題 accept；QI3s2a1 revise（在「暗利」一步的依據補王上16:21）；無 drop。
+- 2026-10-19 09:57 修題第一次沒啟動：CLI 在 06:33 自動更新成 2.1.303，launch 的版本檢查拒絕（「claude --version is '2.1.303'; pinned 2.1.302」），沒有花費。2.1.302 執行檔仍在 `~/.local/share/claude/versions/2.1.302`（sha `60d7eb7f…`），改以 PATH 最前面放一個指向它的 `claude` 連結重跑；程式碼與釘版檔都沒改，版本檢查照常核對並通過。child PATH＝`<root>/bin`＋父程序 PATH，`<root>/bin` 只有 bt 包裝檔。
+- 2026-10-19 09:59 QI3s2a1 修題（0.19 USD）＋複驗 ok（0.18 USD），兩次都只有 claude-opus-5-5、0 次改派、transcript 0 違規。只補依據節，題目、答案、答案鍵不變；這題不是 pilot 題，K1 不重算。帳本 18.25 USD。
+- 2026-10-19 09:59 K-U2：凍結單位 n＝14 ≥ 12，通過。F2：`questions_frozen.json` `93ca70af…`（32 題），寫入 `inputs_manifest.json` 的 `frozen`；附錄 C 已填。之後不再改題。
