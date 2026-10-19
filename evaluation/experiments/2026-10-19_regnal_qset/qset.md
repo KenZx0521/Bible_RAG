@@ -291,3 +291,28 @@ S4 用寬的 13 位：
 4. **人類問法錨點**：不請 Kay 另寫題（精簡流程）。這一條留在 §11 的限制：所有題都是 Claude 寫的。
 5. **計分層**：r4 層 sha 等王朝層 K0-1′ 與 Kay 抽查定案、`ragdata build relations` 建出之後，另開一個 commit 寫進本節與 `q_common.SCORE_LAYER_SHA256`，必須在 `score_q.py score --set p1` 之前；`--lexicon` 用 r4 release 的 contract 目錄裡的 routing_lexicon.json，sha 一併寫進本節。
    - **已釘（2026-10-19 晚，Kay 抽查 14 項全部同意之後、`score --set p1` 之前）**：r4 release `b20261019_a86f2b06`；計分層 `contracts/b20261019_a86f2b06/regnal_layer.json`（＝`layers/relations/relations@ee8e78c043d2`），sha256 `252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11`；`--lexicon` 用 `contracts/b20261019_a86f2b06/routing_lexicon.json`，sha256 `2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e`（＝`layers/route/route@c31c88e4681e`，和 b20261019_18aa84ad 的同一份）。
+
+## 13. 結果（2026-10-19 深夜～10-20）
+
+全部在 r4 層（`252e0955…`，score_pin）與 `contracts/b20261019_a86f2b06/routing_lexicon.json` 上算。檔案在 store `reports/regnal_qset_20261019/`：`scores/p1_20261019T152751.json`（放寬前）、`scores/p1_20261019T164001.json`（放寬後，附舊規則配對）、`scores/gt_after_relax.json`、`scores/regress_after_relax.json`、`p2_runs.jsonl`（第 1 次、也是唯一一次）；舊規則檔 `rules/trigger_pre_relax_90e6b528.py`。
+
+1. **P1，放寬前**（trigger.py `90e6b528…`）：R_trig 22/60＝0.367（Wilson 95% CI 0.256–0.493），R_seed、R_card 18/60；38 題沒觸發全是 cue_miss；近似題 0/15。依 §6-1 放寬。
+2. **放寬**（trigger.py `0fd58e6b…`，commit aa0201c；只看 P1 與開發集沒觸發的 3 題）：
+   - 三份草稿（minimal、grammar、precision）在另寫的保留探測集上比較。保留集 72 正例、72 近似題，照題型定義寫，寫的人沒看 P1、開發集、確認集或任何草稿。
+   - 取誤觸最少的 precision 稿，再經四個角度的審查修掉錨點移位、指代被藏、別國／外邦次數、非王的下一任、受害者題與一個指數回溯。細節見 trigger.py docstring。
+   - 保留集是用來選稿與審查的，不算正式量測。
+3. **P1，放寬後**（樣本內）：R_trig 58/60＝0.967（0.886–0.991），R_seed、R_card 49/60（其餘 9 題棄權，退回 gemma，0 題錯種子）；近似題 0/15；配對：舊規則觸發的 22 題新規則全觸發、新增 36、兩邊都沒觸發 2。
+4. **P2，唯一一次**（樣本外；新舊規則同場配對）：
+   - R_trig 45/50＝0.90（0.786–0.957），舊規則 22/50＝0.44；
+   - R_seed、R_card 44/50＝0.88，舊規則 21/50；R_card_oracle 45/50；
+   - 沒觸發 5 題，全是 cue_miss；
+   - 分題型（新／舊，分母）：S1a 21／11（24）、S1b 9／5（10）、S1c 7／2（8）、S4 8／4（8）；
+   - 近似題：新、舊都是 0/13；
+   - 配對：舊規則觸發而新規則沒觸發 0 題，新增 23 題。
+5. **§6-3 採用門檻**：
+   - GT v1、v2 觸發 0（新、舊都是）；
+   - P1、P2 近似題各 0 題，P2 新規則誤觸不多於舊規則；
+   - P2 R_trig 新 45 ≥ 舊 22；
+   - 開發集 27/30（沒觸發的仍是 N_KIN_14、N_SUC_01、SUC_01），確認集 32/32。
+   - 全部成立，採用放寬。
+6. 限制照 §11：所有題都是 Claude 寫的。P2 的近似題只有 13 題，0/13 的單側 95% 上界是 0.206，只能當煙霧偵測器。保留集與審查題也都是 Claude 寫的。
