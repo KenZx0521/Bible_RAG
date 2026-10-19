@@ -18,6 +18,20 @@ card (繼位時幾歲, 篡位後做了什麼), so every cue now asks for the con
 ordinal, or who took the throne, or who reigned at a birth. Broad words (年間, 在位時, 先後順序, a reign length)
 are no cue: a question about the events of a reign is not a chronology question, and the
 card was never measured there. Matching is on the NFKC question text and reads nothing else.
+
+2026-10-19, blockers: a chain name inside a longer name off the chain was read as the king
+(押沙龍 as 沙龍, 以利亞撒 as 亞撒, 亞哈隨魯 as 亞哈, 以拉他 as 以拉), so with a cue such a
+question took the card. ``find_names`` now takes the chain names together with the blockers
+(the routing lexicon's person and place names that hold a chain name and are none,
+``layer.with_lexicon``; not its events, 所羅門獻殿 does name the king), longest first, and
+drops a blocker's place; a name followed by 支派／族 is the tribe, not the king. It narrows
+only: on the 500-question GT (v1 and v2) the questions naming a chain king go 21 → 19 on
+layer 932d2242 and none takes the card, before or after; the blind and development sets fire
+as before (32/32, 27/30). Its known cost: a real king whose name runs into a character that
+makes a blocker (以拉 + 大約 reads as 以拉大, 28 blockers there, many a king's name and one
+character) is hidden too, so such a question loses the card or the rules abstain. The
+startup log prints the blockers and ``test_regnal_seeds`` pins them per layer. The rule seeds
+(``seeds.rule_seeds``) read the names with the same function.
 """
 
 from __future__ import annotations
@@ -42,6 +56,10 @@ CUES = {
 }
 
 
+# 瑪拿西支派, 瑪拿西半支派: the tribe, not the king
+_TRIBE = re.compile(r"半?支派|族")
+
+
 @dataclass(frozen=True)
 class Trigger:
     fired: bool
@@ -49,18 +67,48 @@ class Trigger:
     cues: tuple[str, ...]      # the types whose cue matched
 
 
-def _kings(question: str, names: tuple[str, ...]) -> tuple[str, ...]:
-    """Names found, longest first, none inside one already taken."""
-    taken: list[tuple[int, int, str]] = []
-    for name in names:
+@dataclass(frozen=True)
+class Mention:
+    start: int
+    end: int
+    name: str                  # a chain name or alias, as the layer spells it
+
+
+def find_names(question: str, names: tuple[str, ...], blockers: tuple[str, ...] = ()) -> tuple[Mention, ...]:
+    """Chain names in the (NFKC) question, in order of appearance: chain names and blockers
+    together, longest first, none inside one already taken; a blocker's place and a name
+    followed by 支派／族 are dropped."""
+    chain = set(names)
+    taken: list[Mention] = []
+    for name in sorted(chain | set(blockers), key=lambda n: (-len(n), n)):
         for m in re.finditer(re.escape(name), question):
-            if not any(m.start() < e and s < m.end() for s, e, _ in taken):
-                taken.append((m.start(), m.end(), name))
-    return tuple(n for _, _, n in sorted(taken))
+            if not any(m.start() < t.end and t.start < m.end() for t in taken):
+                taken.append(Mention(m.start(), m.end(), name))
+    return tuple(t for t in sorted(taken, key=lambda t: t.start)
+                 if t.name in chain and not _TRIBE.match(question, t.end))
 
 
-def trigger(question: str, names: tuple[str, ...]) -> Trigger:
+# a match of these holding a king's name is narrative, not the cue: S1c's room before 篡 also
+# takes a regnal year (亞撒第三年巴沙篡位). In the others a held name is the anchor (接續X作王)
+# or an answer candidate after the cue's start (X出生時，Y在位嗎).
+_NARRATIVE_ROOM = ("S1c",)
+
+
+def first_cue(question: str, found: tuple[Mention, ...] = ()) -> tuple[str, int] | None:
+    """(type, start) of the earliest cue in the (NFKC) question, skipping an S1c match that
+    overlaps one of ``found``; None without one. Every start is tried, so a skipped match hides
+    no later one; with ``found`` empty this is the earliest ``search`` of each cue."""
+    for i in range(len(question)):
+        for kind, p in CUES.items():
+            m = p.match(question, i)
+            if m and not (kind in _NARRATIVE_ROOM
+                          and any(n.start < m.end() and m.start() < n.end for n in found)):
+                return kind, i
+    return None
+
+
+def trigger(question: str, names: tuple[str, ...], blockers: tuple[str, ...] = ()) -> Trigger:
     q = unicodedata.normalize("NFKC", question)
-    kings = _kings(q, names)
+    kings = tuple(m.name for m in find_names(q, names, blockers))
     cues = tuple(t for t, p in CUES.items() if p.search(q))
     return Trigger(bool(kings) and bool(cues), kings, cues)

@@ -2,8 +2,9 @@
 
 ``active()`` is what request handlers read: the build row, the contract's routing
 lexicon and event registry, and its regnal layer (None for a build without one: the
-chronology card is then off). When the handshake failed (and STRICT_BUILD_CHECK is
-off) nothing is active and every handler that needs data answers 503.
+chronology card is then off) with the blockers of that lexicon attached. When the
+handshake failed (and STRICT_BUILD_CHECK is off) nothing is active and every handler that
+needs data answers 503.
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ from typing import Mapping, Optional
 from ragcommon.routing import RoutingLexicon
 from serving.build import Build
 from serving.handshake import Handshake
-from utils.regnal.layer import RegnalLayer
+from utils.regnal.layer import RegnalLayer, with_lexicon
 from utils.retrieval.event_registry import RegistryEvent
 
 
@@ -40,7 +41,12 @@ class Active:
 
 def make_active(build: Build, lexicon: RoutingLexicon, registry: tuple[RegistryEvent, ...],
                 regnal: Optional[RegnalLayer] = None) -> Active:
+    """The regnal layer gets the lexicon (``with_lexicon``): the chronology card's trigger and
+    rule seeds skip its blockers (names holding a chain king's name that are none, 押沙龍 for
+    沙龍), and the rule seeds trust a written father that ends in one of its names."""
     names = {b.full_name: b.book_id for b in lexicon.books}
+    if regnal is not None:
+        regnal = with_lexicon(regnal, lexicon)
     return Active(build, lexicon, registry, MappingProxyType(names), regnal)
 
 

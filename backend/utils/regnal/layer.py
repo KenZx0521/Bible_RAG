@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
+import unicodedata
 from dataclasses import dataclass
+from typing import Iterable
 
-from ragcommon import regnal
+from ragcommon import regnal, routing
 
 LAYER_FILE = regnal.LAYER_FILE
 
@@ -16,6 +19,11 @@ class RegnalLayer:
     view: regnal.View
     sha256: str
     names: tuple[str, ...]   # every chain king's name and alias, longest first
+    # attached from the build's routing lexicon (with_lexicon), empty until then: its names that
+    # hold a chain name and are none (押沙龍 holds 沙龍), longest first; and all its person and
+    # place names, the fathers a question may write (尼八, 亞比亞他)
+    blockers: tuple[str, ...] = ()
+    lexicon_names: frozenset[str] = frozenset()
 
     def chain_size(self) -> dict[str, int]:
         return {kd: len(ids) for kd, ids in self.view.chain.items()}
@@ -35,3 +43,20 @@ def parse_layer(data: bytes) -> RegnalLayer:
     on_chain = {x for ids in view.chain.values() for x in ids}
     names = sorted({n for x in on_chain for n in view.names(x) if len(n) >= 2}, key=lambda n: (-len(n), n))
     return RegnalLayer(view, hashlib.sha256(data).hexdigest(), tuple(names))
+
+
+def blockers_of(names: Iterable[str], surfaces: Iterable[str]) -> tuple[str, ...]:
+    """The (NFKC) surfaces that hold a chain name and are none, longest first."""
+    chain = set(names)
+    found = {s for s in (unicodedata.normalize("NFKC", w) for w in surfaces)
+             if s not in chain and any(n in s for n in chain)}
+    return tuple(sorted(found, key=lambda s: (-len(s), s)))
+
+
+def with_lexicon(layer: RegnalLayer, lexicon: routing.RoutingLexicon) -> RegnalLayer:
+    """The layer with the build's routing lexicon attached: its person and place names (kinds
+    name, dotless), and the blockers among them; not its events, whose surface does name the
+    king (所羅門獻殿)."""
+    surfaces = frozenset(unicodedata.normalize("NFKC", t.surface) for t in lexicon.terms
+                         if t.kind in routing.CATEGORY_KINDS["names"])
+    return dataclasses.replace(layer, blockers=blockers_of(layer.names, surfaces), lexicon_names=surfaces)

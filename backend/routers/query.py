@@ -51,7 +51,7 @@ def _aux_card(card: Card | None) -> AuxCard | None:
         return None
     return AuxCard(text=card.text, seeds=[f"{KINGDOM_NAMES[kd]}｜{nm}" for kd, nm in card.seeds],
                    kings=list(card.kings), lines=card.lines, evidence=list(card.evidence),
-                   layer_sha256=card.layer_sha256)
+                   layer_sha256=card.layer_sha256, seed_source=card.seed_source)
 
 
 def _card_on(req: QueryRequest) -> bool:
