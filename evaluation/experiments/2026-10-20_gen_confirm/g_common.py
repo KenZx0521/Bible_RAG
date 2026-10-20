@@ -138,3 +138,100 @@ def stage0() -> SimpleNamespace:
         if Path(m.__file__).resolve().parent != STAGE0_DIR.resolve():
             raise SystemExit(f"{name} resolved to {m.__file__}, not stage-0's folder")
     return SimpleNamespace(**mods)
+
+
+# ================================================================ batch 3: appended after F0 (integration)
+# prereg §3.9: every amount, attempt / rerun count, stop threshold, path and store root, sub-root or file name of
+# the GEN modules is defined here once; a module reads GC.<name> (a module-level alias is the same object). The F0
+# names above and their values never change; this block only adds names.
+
+# repository files and folders
+PREREG = HERE / "prereg.md"
+TESTS_DIR = REPO / "evaluation/tests"
+EVAL_DIR = REPO / "evaluation"
+GENCARD_DIR = HERE / "gencard"
+GEN_PROMPT = HERE / "gen_g.md"                       # the writer and fixer prompts (prompts_g)
+AUDIT_PROMPT = HERE / "audit_g.md"                   # the value-blind auditor prompts (prompts_g)
+QSET_PROMPT = HERE / "prompts_qg.md"                 # the P1/P2 writer prompts (prompt_qg)
+GT_FILES = (REPO / "ground_truth.json", REPO / "ground_truth.v2.json")      # §5.6's GT nail
+HO_TOOLS_DIR = REPO / "evaluation/experiments/2026-10-14_graph_gd/ho_tools"
+BT_GUARD = HO_TOOLS_DIR / "bt_guard.py"              # HO's original hook, run or loaded by path (sha pinned)
+HO_BANNED = HO_TOOLS_DIR / "banned.py"               # HO's word lists, loaded by path (sha pinned)
+A_BANNED = REPO / "evaluation/experiments/2026-10-18_kg_cards/A/confirm/ho_a/banned_a.py"   # read as literals
+
+# outside the repository and the out root
+AGENT_CWD = Path("/srv")                             # every agent's cwd: empty, outside and not above the repo
+CLI_VERSIONS_DIR = Path.home() / ".local/share/claude/versions"           # the CLI's own install (probe copies it)
+TEXT_LAYER = STORE / "layers/text/text@247eafe44b02"  # bt_g keeps its own copy: it imports nothing of this folder
+ROUTING_LEXICON = R4_LAYER.with_name("routing_lexicon.json")              # the r4 contract's lexicon
+STAGE0_RUN_META = STAGE0_OUT / "formal/run_meta.json"  # stage-0's formal run (its harness, §4.5)
+
+# §4.3, §4.5: prod's dynasty trigger (F2 step 3) loads these besides backend_pins()'s trigger.py, layer.py and
+# ragcommon/regnal.py; trigger_pins() keys them as backend_pins() does, TRIGGER_PINS_SHA256 keeps their sha256
+PROD_TRIGGER_FILES = ("backend/utils/regnal/trigger.py", "backend/utils/regnal/layer.py",
+                      "packages/ragcommon/regnal.py")
+TRIGGER_PIN_FILES = ("packages/ragcommon/__init__.py", "packages/ragcommon/routing.py", "packages/ragcommon/books.py",
+                     "packages/ragcommon/ids.py", "packages/ragcommon/data/books.json")
+TRIGGER_PINS_SHA256 = {
+    "packages/ragcommon/__init__.py": "6282eea8e619210ce1792b5b23156f7300e20d671e2d517ca3dfe8c964d1e973",
+    "packages/ragcommon/routing.py": "dfffe5f424c8643aa7bd7f7851534bf25e3d91b9c52e5eaa5cc331b2a4d95490",
+    "packages/ragcommon/books.py": "e153e8098007897f8efafdf1b0a7e0daf3a6d0c6678bbe37d24654cb8b85b7c2",
+    "packages/ragcommon/ids.py": "64d90cd5a7cc05c0b4ab377d84bd5c98da95624ab71e77ffc8b1af9915e38dd7",
+    "packages/ragcommon/data/books.json": "e553f0880622e83d81ff5d97656e9393670fd23975c0e6d1d47adf00c333a3bc",
+    str(ROUTING_LEXICON.relative_to(STORE)): "2a172575e3d474ee22c099fcc99fda9f11eeaeba14aa69cde8bf53d9e65b991e"}
+OLLAMA_OPTIONS = {"temperature": 0.1, "num_predict": 10000, "num_ctx": 131072}    # §4.3 (stage-0's OPTIONS)
+
+# the store under OUT_ROOT
+PROBE_ROOT = OUT_ROOT / "probe"                      # one sub-root <n>/ per CLI probe invocation
+CLI_DIR = OUT_ROOT / "cli"                           # the pinned CLI copies (§3.1: versions/ gets cleaned)
+CLI_PIN = OUT_ROOT / "cli_pin.json"                  # the one pin file of HO and qset
+HARNESS_RECORD = OUT_ROOT / "harness_record.json"    # K0's harness record and its logged changes (§4.5)
+K0_FILE = OUT_ROOT / "k0.json"                       # the K0 result (§3.9, §8.1-1)
+K0_ATTEMPTS = OUT_ROOT / "k0_attempts"              # the failed K0 attempts, one file each (k0_g)
+F2_FILE = OUT_ROOT / "f2.json"                       # F2 steps 5–7
+VOID_FILE = OUT_ROOT / "void.json"                   # the one void record (prompt parity, a truncated smoke)
+RUN_ROOT = OUT_ROOT / "run"                          # the Ollama runs (run_g)
+LEDGER_LOCK, LEDGER_SNAPSHOT = "ledger.lock", "ledger.json"                    # in OUT_ROOT (ledger_g)
+HO_SUB_ROOTS = ("pilot", "main", "kay")              # run sub-roots of HO_ROOT
+HO_STATE, HO_LOCK, KP_FILE, KAY_FILE, REPINS_FILE = "state.json", "state.lock", "kp.json", "kay.json", "repins.json"
+FREEZE_FILE, K_GOLD_FILE = "freeze.json", "k_gold.json"                       # in HO_ROOT
+KAY_PAGE, KAY_SAMPLE = "kay_page.html", "kay_sample.json"                     # in HO_ROOT/kay
+QSET_SETS = ("p1", "p2")                             # set roots of QSET_ROOT
+QSET_SPEC, QSET_DRAFTS, QSET_LOCK, QSET_ITEMS = "spec.json", "drafts", "run.lock", "items.json"   # in a set root
+QSET_GEN_DONE, QSET_REFILL_DONE, QSET_SCORE_DONE = "gen_done.json", "refill_done.json", "score.json"  # P2's records
+P1_SCORES, P1_ROWS = "scores.jsonl", "score_rows.json"                         # in QSET_ROOT/p1
+G1_FILE, P2_NEAR_FILE = "g1.json", "p2_near_miss.json"                        # P2's results, in QSET_ROOT
+G1_RESULT, P2_NEAR_MISS = QSET_ROOT / G1_FILE, QSET_ROOT / P2_NEAR_FILE
+RUN_KINDS = ("dry_run", "smoke", "formal")           # run directories of RUN_ROOT
+RUN_ITEMS, RUN_CARDS, RUN_JOBS, RUN_ARMS_META = "items.json", "cards.json", "jobs.json", "arms_meta.json"
+RUN_DATA_FILES = (RUN_ITEMS, RUN_CARDS, RUN_JOBS, RUN_ARMS_META)              # the F3 build, in RUN_ROOT
+RUN_F3, RUN_META, RUN_GEN, RUN_TORN, RUN_LOCK = "f3.json", "run_meta.json", "gen_arms.jsonl", "gen_arms.torn.jsonl", \
+    "run.lock"
+RUN_SMOKE, RUN_CANARY, SMOKE_HISTORY, SMOKE_SET_ASIDE = "smoke.json", "canary.json", "smoke_history.json", \
+    "smoke_set_aside"
+RUN_SCORES, RUN_REPORT, RUN_REPORT_MD, DRY_RUN_REPORT = "scores.json", "report.json", "report.md", "dry_run_report.json"
+
+# amounts, counts and stop thresholds
+SPEND_LIMIT_USD = USD_CAP - START_MARGIN_USD         # 49: spent + a job's cap must fit (§3.9)
+KIND_JOB_CAP_USD = {"probe": PROBE_CAP_USD, "qset": max(QSET_JOB_CAP_USD.values()), "ho": max(JOB_CAP_USD.values())}
+PROBE_REPS_BT = 3                                    # mode-bt runs of one probe invocation
+PROBE_RUN_CAP_USD = {"bt": 0.12, "none_opus": 0.06, "none_sonnet": 0.04}    # per probe run (probe_g's docstring)
+PROBE_INVOCATION_CAP_USD = round(PROBE_REPS_BT * PROBE_RUN_CAP_USD["bt"] + PROBE_RUN_CAP_USD["none_opus"]
+                                 + PROBE_RUN_CAP_USD["none_sonnet"], 6)     # 0.46: two fit in PROBE_CAP_USD
+P2_RESERVE_USD = 1.5                                 # of QSET_CAP_USD, kept free for P2 while P1 runs
+P1_LIMIT_USD = QSET_CAP_USD - P2_RESERVE_USD
+CLI_VERSION_TRIES = 2                                # `claude --version` tries before CliUnavailable
+UNAVAILABLE_WAVES = 3                                # HO waves in a row in which every job met CliUnavailable: stop
+K_KAY_STOP = 3                                       # §3.7: K-Kay stops at ≥ 3 drops among KAY_QUESTIONS
+N_POS, N_NEAR, N_DEV, QSET_JOB_SIZE = 50, 20, 14, 3  # §5.4: positives and near misses per set, dev slots, job size
+G1_N = 53                                            # §5.6: G1's n = power_g.N_PLAN (58 slots × A's 32/35)
+SMOKE_PER_ARM, CANARY_CALLS = 2, 30                  # §4.4: smoke prompts per arm; the canary's first calls
+TRUNC_ARM_MAX, TRUNC_GAP_MAX = 2, 2                  # §4.5 void: an arm truncated ≥ 2 times; G and T-rows ≥ 2 apart
+
+
+def trigger_pins() -> dict:
+    """sha256 now of the files prod's dynasty trigger loads besides backend_pins(): ragcommon's __init__, routing,
+    books, ids and data/books.json, and the r4 contract's routing lexicon (keyed as backend_pins() keys its items)."""
+    out = {f: sha256_file(REPO / f) for f in TRIGGER_PIN_FILES}
+    out[str(ROUTING_LEXICON.relative_to(STORE))] = sha256_file(ROUTING_LEXICON)
+    return out

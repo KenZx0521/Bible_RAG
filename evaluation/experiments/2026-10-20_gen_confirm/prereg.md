@@ -1087,3 +1087,101 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
   - `test_gen_confirm_core.py`：`d5e01039c0bb8f0742412e45c89d7e9139b1283da70c2b0a703bfbab3c9e051a`
 - store：`pool.json` `3426c5929d827b9e0cdeef8973263f1fffe838841afc2d631097d8b1aaa06604`；`power/power_g_tables.json` `bca48a2cb3bbab7693640e63ed7e7061efaf9b0f84e41b05c5121100c31ea816`（numpy 2.4.2，`power_g_sha256` 與上面相同）。
 - 測試：`test_gen_confirm_core.py` 32/32；全套另有 2 項舊的失敗（`test_idlint` 抓舊實驗檔、`test_qd_common` 跟執行順序有關），與本實驗無關。
+
+### 2026-10-21 CPU 實作與 K0（還沒有任何 LLM 或 Ollama 呼叫，0 USD）
+
+- §11 第 2 步的 CPU 實作完成，分四批，每批都是實作 → 對抗式審查（含突變測試）→ 修正，再由主線程重驗：
+  - 第 1 批：`gencard/`、`names_g.py`（store `gen_names.json` `9e622e30…`）、`banned_g`、`prompts_g`、`mech_g`、`gen_g.md`、`audit_g.md`。
+  - 第 2a 批：基礎設施（`hog_common`、`claude_g`、`ledger_g`、`transcript_g`、`probe_g`、`bt_g`）與執行端（`arms_g`、`run_g`、`score_g`、`analyze_g`、`f1_g`、`f2_g`）。
+  - 第 2b 批：HO 出題執行器（`state_g`、`runs_g`、`run_ho_g`、`kay_g`、`freeze_g`）與 qset P1/P2（`spec_qg`、`prompt_qg`、`prompts_qg.md`、`mech_qg`、`run_qg`、`f1a_g`）。
+  - 第 3 批：K0（`k0_g`）、§3.9 的 sys.modules 測試，以及下面「第 3 批」的整合。
+- 以下讀法與偏離都在任何資料出現之前定案。
+
+**第 1 批的實作偏離**（F1a 前；多半只增加棄權）
+
+- 洪水自成事件族，讓 F3 的釘子棄權。
+- 加生育者檢查。
+- 辨識詞的標的必須是種子（G1）。
+- 死後又活、死亡相隔、沒有名字的親屬詞，一律棄權（G3）。
+- 辨識詞容許中間有空白（G2）。
+- 修正「代上」與「以拿」的誤判（G4）。
+- 「他拉」加擋字（G8）。
+- §3.6 第三列（出題者＝稽核者≠程式）一律走爭議區並關閉題位（M4 讀法）。
+- `mech_g` 的 `extra_name` 也抓地名。
+- 留到 P1 再定：
+  - G5「Y是在X幾歲時出生的」目前棄權；
+  - 「嗎」的位置在 `mech_g` 與 `gencard` 之間不一致（M13b）。
+
+**第 2a 批的讀法**
+
+- D1：CLI 釘 2.1.302（已知 sha `60d7eb7f…`），與 A、qset 相同。
+- D2：被改派又同時碰到金額上限，算基礎設施重跑（§2.3 字面；A 的 `runs_a` 算成出題者自己的結果）。
+- D3：G-ref 計入「某臂截斷 ≥2」（§4.5 字面）。
+- D4：「3 輪後仍缺 job」以每次執行計（A 與 stage-0 的做法）。
+- D5：smoke 截斷時，只有查到基礎設施原因、修好、且 §4.3 的 Ollama 選項不變，才可用 `smoke --redo 錨點` 重做；否則用 `smoke --void-truncated 錨點` 判「作廢（截斷），不構成任何方向的證據」。
+- D6：prompt 對等不過而只能靠改 `cards_common` 或 prod 修時，用 §9 的作廢句型「作廢（prompt 對等）」，原因取自 §8.1-10.7。
+- D7：`--infra-fix` 改到計分或分析檔時，只列在 `changed_since_run`，不另設關卡。
+- D8：基礎設施模組不進 F1a 與 F1 manifest，由 K0 的 harness 紀錄釘住。
+- D9：每次 claude 呼叫都用 effort xhigh。
+
+**第 2b 批的讀法**
+
+- D10：爭議（修改代理回 `no_change` 附理由、稽核對 mech 衝突、§3.6 第三列）送 Kay 頁的爭議區，並關閉該題位的新嘗試。
+  - Kay 選「留」：只續做那一次嘗試。
+  - 「稽核對 mech 衝突」只在 mech 那一輪用掉之後、剩下的 mech 錯全是稽核修改弄壞的規則時才算；否則這次嘗試照常結束、計入次數。
+  - 「留」下的稽核對 mech 衝突：Kay 否決 mech，修改稿要重新稽核且直接通過，再做三方比對。
+- D11：基礎設施失敗的 run（有錯誤、沒碰到 agent 上限），沒有 init、沒有 result、或改派後 init 寫的是另一個模型，都不算盲化違規。其他規則照算違規，違規永遠不重跑。F2 第 1 步的重核用同一個例外。
+- D12：CLI 中途換版（§3.1）：
+  - 重做 probe 受 F0 的上限約束（probe 總共 1 USD、2 次，含開頭那次）；放不下就以基礎設施原因停。
+  - 新的釘版用 `run_ho_g.py repin --anchor 錨點` 記在 store `ho/repins.json`。F1 manifest 與 `order.json` 永遠不改寫。
+- D13：一個 job 的基礎設施重跑用完時，runner 停下；之後要 `--infra-fix 錨點` 才能續跑（每個記錄在案的修正最多 1＋`MAX_INFRA_RETRIES` 次）。
+- D14：Kay 要求的修改被預算擋下時算 Kay 刪，計入 K-Kay（保守）。
+- D15：prod 王朝觸發還依賴 `backend_pins()` 沒列的檔：ragcommon 的 `__init__.py`、`routing.py`、`books.py`、`ids.py`、`data/books.json` 與契約的 `routing_lexicon.json`。這些放進 `g_common` 新增的 `trigger_pins()`，進 F1 manifest，§4.5 與 F2 第 3 步一起核。`backend_pins()` 是 F0 的值，不改。
+- D16：§3.8「P2 有效性檢查的 sha」＝store `f1a_pins.json` 的 `files`（`gencard/*`、`gen_names.json`、`mech_g.py`、`mech_qg.py`）加上 `p2_files`（`prompts_g.py`、`banned_g.py`、`transcript_g.py`、`run_qg.py`、`spec_qg.py`、`prompt_qg.py`、`prompts_qg.md` 與兩個 GT 檔）。
+- D17：P2 近似題補出一輪後仍無效的，算誤觸發（保守）；實際的拆分（有效誤觸發、無效）在 P2 的 sha 旁一起記。
+- D18：G1 只因 GT 觸發不過時，停止句照 §9 句型：「依事先規則停止（G1＝GT 觸發 m 次）…；盲集未出題」。
+- D19：`spec_qg` 寫死該隱線與創 12 章以後的人名對、兩卷書名（路加福音、歷代志上）。這些是公開的名字，不是題目；建置時逐一對 `gen_names` 與文字層核過。
+- D20：P1 的近似題不用題池的人名對；`yes_no` 族改用「Y 出生時 X 還在世」的對。P2 的近似題可以落在題池的對上（P2 不調任何規則），且不重複 P1 用過的近似題（讀 store 的 P1 spec，記其 sha）。
+- D21：P1 的 50 個正例照題池的層比例（F1c5 12、F1c11 10、F5c5 23、F5c11 5），開發題位依 sid 輪用。每 job 3 個題位、每組 24 個 job，出題者 Opus／Sonnet 交替，五種 persona 輪替。
+- D22：近似題只做四項通用檢查（盲化、`v_slot`、`v_simplified`、`v_duplicate`），因為九項題目規則正好會擋掉各族要問的形式。重複題照 qset.md 算無效、補出。
+- D23：qset 的金額：P1 上限 1.5 USD，另留 1.5 給 P2（共 3，§5.4）。
+- D24：「3 次都失敗」只指 3 次嘗試用盡；爭議後或 Kay 之後的嘗試沒過，分開列（`freeze.json` 的 `failed_by_why`）。`questions_frozen.json` 的六個 attrition 鍵不變。
+
+**第 3 批：整合**
+
+- 金額、次數、路徑與 store 檔名的常數都搬進 `g_common` 新增的區塊（只新增名稱，F0 的值不改，§3.9）。各模組的別名都是 `g_common` 的同一個物件，另有原始碼掃描。root 底下的子目錄與檔名（`transcripts`、`prompts`、`reserve`、`verdict_<n>.json` 等）只在本實驗自己的 root 底下組出來，留在原模組。
+- D15 的實作：`GC.trigger_pins()`。F1 manifest 記 `backend_pins()` 加 `trigger_pins()`，`g_common.py` 也進 F1 manifest。寫 F1 時，觸發檔或 r4 層不是保留的 sha 就拒寫；否則 F2 第 3 步會永久不過。
+- 禁用詞的檔名表補上本實驗所有檔名（§3.3）；HO 的工具檔表補上 HO 執行器與 qset 的檔。
+- `f2_g.frozen_group()` 只取 `gencard/*.py` 與 `gen_names.json`。
+- D25：`g_common.py` 也進 `f1a_pins.json` 的 `p2_files`，因為 P2 的題數、G1 的 n 與 qset 的檔名現在都在 `g_common`。所以 `g_common` 從 F1a 起就凍結，不再新增名稱。
+- D5 的實作：smoke 拆成 `smoke_g.py`。
+  - `smoke --redo 錨點`：錨點要比 K0 與先前每次重做都新，而且截斷的 smoke 用的是 §4.3 的選項。
+  - `smoke --void-truncated 錨點`：只在截斷的 smoke 已跑完、用的是 §4.3 的選項、又沒有別的作廢原因時才可用；否則先修好再 `--redo`。
+  - 作廢只有一份紀錄 `void.json`，prompt 對等與 smoke 截斷共用。之後 smoke、run、score、dry-run 一律拒跑，分析只寫作廢句。
+- D24 的標籤：「3 次都失敗」只指 3 次嘗試用盡；另列「Kay 之後沒過」「爭議後沒過」「Kay 之後又起爭議」，不為 0 才列。
+- D18 的實作：G1 只因 GT 觸發不過時，停止句的值是兩個 GT 檔的觸發總數。
+- D26：`run_g` 的 Ollama 選項改讀 `GC.OLLAMA_OPTIONS`（與 stage-0 的值相同，有測試）。`run_g` 仍綁 stage-0 的 `x_common`，但只用來呼叫 stage-0 的函式（釘子、jsonl 讀取、A 的 `frozen_mismatches`），不讀常數；K0 的靜態掃描會擋。
+
+**第 3 批：K0 的規則**（`k0_g.py`）
+
+- 項目照 §8.1-1：
+  - 題池重算：K0-gold、K0-lines、K0-card 與最大 G 區塊；
+  - 七個 pytest 選集：gencard ≡ engine_x、§5.3 的釘子、mech 題庫與 §3.4 的釘子、§3.3 的盲化、§4.5 的釘子與 metric_version、`g_common` 與帳本、各組的 sys.modules 測試；
+  - §3.9 的 sys.modules 測試。
+- 選集只有在 passed > 0、而且沒有 failed、error、skipped、xfailed、xpassed 時才算過。
+- 每一項都在 store 的前後快照之間跑；store 有任何檔案增、改、刪，該項就不過。
+- 順序是：各項 → harness 紀錄（`f1_g.record_k0`，裡面跑全套測試）→ `k0.json`。
+  - `k0.json` 只寫一次，而且只寫通過的 K0。
+  - 沒過的寫成 `k0_attempts/<n>.json`，修好後再跑（§8.1-1「任何失敗都要修好」）。
+- D27：K0-gold 或 K0-lines 低於總數只算 K-gold 候選；要 CPU 追查到層才停（§3.6、§8.1-1）。
+- D28：所有花錢的指令先過 K0 關卡：`probe_g run`、`run_qg gen`／`refill`、`run_ho_g pilot`／`main`／`kay`。條件是：
+  - 有通過的 `k0.json`；
+  - 它的 harness sha 等於 harness 紀錄裡 K0 的 sha；
+  - 現在的 harness 等於紀錄。
+
+**基礎設施事件**
+
+- 開發第 3 批時，一個測試兩次把合成的 `void.json` 寫進正式 store；當時 `void_g` 的預設路徑指向 store。
+  - 兩次都是合成的測試紀錄，都已刪除。當時 store 只有 `pool.json`、`gen_names.json` 與 `power/`，還沒有任何資料。
+  - 現在每個作廢路徑都要明寫，測試把 store 後續的檔案都導到暫存目錄，K0 也用快照擋。
+- 測試：`test_gen_confirm_*` 全套 1031 項全過；`k0_g.py check` 在正式 store 上每一項都過（不寫檔）。
