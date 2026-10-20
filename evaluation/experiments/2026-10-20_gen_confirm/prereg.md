@@ -1185,3 +1185,17 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
   - 兩次都是合成的測試紀錄，都已刪除。當時 store 只有 `pool.json`、`gen_names.json` 與 `power/`，還沒有任何資料。
   - 現在每個作廢路徑都要明寫，測試把 store 後續的檔案都導到暫存目錄，K0 也用快照擋。
 - 測試：`test_gen_confirm_*` 全套 1031 項全過；`k0_g.py check` 在正式 store 上每一項都過（不寫檔）。
+
+### 2026-10-21 K0（還沒有任何 LLM 或 Ollama 呼叫，0 USD）
+
+- 在 commit `5482395`（乾淨的樹）上跑 `k0_g.py run`：每一項都過，沒有失敗的嘗試。
+  - 題池：K0-gold 58/58、K0-lines 96/96、K0-card 58/58，最大 G 區塊 338 字（上限 900）。重算出的 `pool.json` 與 store 逐位元組相同。沒有 K-gold 候選。
+  - pytest 選集全過、0 skip：gencard ≡ engine_x 3 項、§5.3 的釘子 154、mech 題庫 206、§3.3 的盲化 99、§4.5 的釘子與 metric_version 20、`g_common` 與帳本 141、各組的 sys.modules 測試 8。
+  - §3.9 的 sys.modules 測試：39 個模組都與原樣 import 的基線相同。基線是 A/confirm 的 `analyze_c`、`c_common`、`guards_c`；kg_cards 其他位置與 stage-0 的 18 個模組也相同。靜態掃描 0 個問題。
+  - harness 紀錄（`f1_g.record_k0`）裡跑的全套測試通過，store 前後不變。
+- sha256：
+  - store `k0.json`：`ece470889cc318fa1a27a5bce083236199af72de72d44af2b2af6b15bbeccbe4`
+  - store `harness_record.json`：`e390657b2e8ef45ecb6c55e9d1d5785e82936d4ee511d9ce22f74312a21d5c41`
+  - harness：`1ee685c71e383e2ca3faa30fcf7d33d04d13f48f5264b79002a60bdb88d6de4c`
+  - `g_common.py` 的最終 sha：`3bb2f1de7427b19205dfbbe93378f62e2b1db5e87cadd4971ff60f296fa839db`（F1 manifest 會再記一次）
+- 之後照 §8.1 的順序，第一步是 CLI probe（≤1 USD）。
