@@ -1,6 +1,6 @@
 # 創世記年歲推導卡確認集：事前登記（2026-10-20）
 
-> **草稿，待 Kay 審。** 本檔 commit 時還沒有花任何 USD，也沒有叫過 Ollama 或任何 LLM。Kay 審過、去掉本行並 commit（F0）之後，才開始 0 USD 的 CPU 實作；K0 全過之後才花第一筆 USD。
+> **正式版（F0）。** Kay 2026-10-21 審過，§10.1 五項全照建議。本檔 commit 時還沒有花任何 USD，也沒有叫過 Ollama 或任何 LLM。接著做 0 USD 的 CPU 實作；K0 全過之後才花第一筆 USD。
 
 依據：
 - stage-0 事前登記 `evaluation/experiments/2026-10-20_arith_stage0/prereg.md`（b960221，下稱 S0）。
@@ -21,6 +21,7 @@
 
 ## 0. 裁決與定位
 
+- **Kay 2026-10-21**：§10.1 五項全照建議（題位單位與只到題池的主張；F1／F5、不收 F3、開發題位留出、58 個普查；章 pericope 當基底 context；審過放行至多 50 USD；檢定力 ≥0.7 只在 (ii) 點值上成立），開始 CPU 實作。
 - **Kay 2026-10-20**：先寫確認集登記，0 USD。登記要做到四件事：
   1. 補上創世記的觸發線索與種子規則，含種子正確率的量法 → §5.2（規則）、§5.4–5.5（量法）；
   2. 重新定義單位 → §1；
@@ -1074,4 +1075,15 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
 
 ## 執行紀錄
 
-（尚無。）
+### 2026-10-21 F0（還沒有任何 LLM 或 Ollama 呼叫，0 USD）
+
+- Kay 審過，§10.1 五項全照建議。去掉草稿標記後 commit。
+- 本檔「執行紀錄」以上文字的 sha256：`892618cfc48fead168681124a918ec0fce84ee3a56d08c97bafc565ec9080d09`。
+- F0 檔案 sha256：
+  - `g_common.py`：`8606d450cbb0b7c5aaea0f3e341df4558f949bca7d19a5337149ac8f96eb7e97`
+  - `pool_g.py`：`b9d62aa6c2188831ef1a364f715cd63107e4666d958b231bd3aca7e477b3ce01`
+  - `power_g.py`：`f60be84eb9850ce4232a0e57d76a558c6e964459f28e326a0c3e2a01f82e5acf`
+  - `order_g.py`：`324d6ed67b464a34d84e76403e7fc428773338c5e9e2cd2a128fa9b0e9fac731`
+  - `test_gen_confirm_core.py`：`d5e01039c0bb8f0742412e45c89d7e9139b1283da70c2b0a703bfbab3c9e051a`
+- store：`pool.json` `3426c5929d827b9e0cdeef8973263f1fffe838841afc2d631097d8b1aaa06604`；`power/power_g_tables.json` `bca48a2cb3bbab7693640e63ed7e7061efaf9b0f84e41b05c5121100c31ea816`（numpy 2.4.2，`power_g_sha256` 與上面相同）。
+- 測試：`test_gen_confirm_core.py` 32/32；全套另有 2 項舊的失敗（`test_idlint` 抓舊實驗檔、`test_qd_common` 跟執行順序有關），與本實驗無關。
