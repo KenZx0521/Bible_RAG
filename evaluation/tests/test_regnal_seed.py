@@ -424,7 +424,9 @@ def test_store_score_run_wires_each_arm_into_its_delta(tmp_path, store_doc):
         rec = next(feed)
         return {k: rec.get(k) for k in keys}
     out = tmp_path / "run"
-    R.execute(jobs, out, chat, fake_api(), log=lambda *_a: None)
+    # these are the real jobs on the real layer: the store's formal run of them (r4_run1) must not
+    # refuse this replay, so the one-formal-run registry is looked up in tmp_path only
+    R.execute(jobs, out, chat, fake_api(), log=lambda *_a: None, runs_root=tmp_path)
     _scores, v = S.score_run(out, doc, jobs, items)
 
     sc = C.read_json(C.A_CONFIRM / "scores.json")["items"]
