@@ -1220,3 +1220,29 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
   - 修改後重新計分：n_v 50、R_trig 50、R_seed 50、R_card 50、R_wrong 0；近似題誤觸發 0；GT 觸發 0。只有上面 3 題的結果改變。
 - 留到 P1 決定的兩項：P1 沒有任何題用到「Y是在X幾歲時出生的」或句中的「嗎」，所以 G5 與 M13b 都不改，照舊棄權。
 - 測試：`test_gen_confirm_*` 全套 1037 項全過。
+
+### 2026-10-21 F1a（0 USD）
+
+- harness 變更已登記（`run_g.py harness-change`，錨點是上一條的規則修改行）：harness `6dedf4007354eb43c16c0eb4ec2b014ed77e3ea6ea5296c307c5ee8411de85bc`。
+- `f1a_g.py` 在 commit `7c95a02` 上寫出 store `f1a_pins.json`：`22845a2e762e807d4c7c965ed643fb36270abf07faf4b4ad1489e5dfdfea4a94`。釘子、mech 題庫與 qset 測試 408 項全過，0 skip。
+- F1a 群組（此後不再改）：
+  - `gencard/__init__.py`：`e5ba9ddcf1bcd1c5459c9d09d278f59f5447ad621cb76c89002976bae8fd1c13`
+  - `gencard/card.py`：`a8e7d51e2c72c424a4668418d39c36fd9f62a1bd942f1bb015fa0ed72ce9dc54`
+  - `gencard/engine.py`：`f1fe597866d06ae5a2551a648bf01504b895eccf9fa2b3e592ed06c746323ccb`
+  - `gencard/names.py`：`ee42b2c3c0c21592e3524dbc6fd3bb87110d4e6fa4346190408dda2615c6e1a7`
+  - `gencard/seeds.py`：`460ba6cba16c6622f2c1e7f68ebd0281176b9d8dfcb57987519e34f9ce9f99b4`
+  - `gencard/trigger.py`：`becf154400b8f5077c699fb286307d4b6665254a153249809b5446cabce36530`
+  - store `gen_names.json`：`9e622e309615729011c8afa83beab739e5b68945bde10532bbf23f1738d0fe2d`
+  - `mech_g.py`：`f6726f8422f34a75ca0be487eb8b9bb25d1e42f4ab0db7c3db5664089b9a39b7`
+  - `mech_qg.py`：`c0c8bd2fb5f8c4c57a7efd674c8399d8d90b1161ab20ebbb1de5f1ec80487a46`
+- P2 路徑（F1a 到 P2 計分之間不改）：
+  - `prompts_g.py`：`ae2caa8f74196a85b7c9a8d7f0b014b116b48e29f6f62bfb1b707408379ac82c`
+  - `banned_g.py`：`6b9cd142d0fb11f43c22cac894cfc225d04c3ce6f21c0945d80bb8db9ff5c2dc`
+  - `transcript_g.py`：`55be97b80a21761cc5c497c545b5b66cc681909f3263d792cb2ff2d5302dc2f7`
+  - `run_qg.py`：`437ef1b631590491abdb1bf8435e03be8e4d4c22c48de62ba6087c2991d19771`
+  - `spec_qg.py`：`02c9e3d517878fb1187e0923be84d634cd823a6d73476ec763ebfc3f13b54228`
+  - `prompt_qg.py`：`009c2dd54e8ab4f2342551e1188dc91c9d59d6435b7b0150be737ad0f4a27f6c`
+  - `prompts_qg.md`：`9c9c483feb8af8ea3b33bb162407f3700334d565f5cf9f84075dd7ccb59f4a89`
+  - `g_common.py`：`3bb2f1de7427b19205dfbbe93378f62e2b1db5e87cadd4971ff60f296fa839db`
+  - `ground_truth.json`：`e4336ddd0d8180afda60d7632fd8ff7aa116b4e41221ee85559d84f839173348`
+  - `ground_truth.v2.json`：`7280bb42af869ee18d34230b296f302132eb82dbf5203391e07882fd3691b2f1`
