@@ -1246,3 +1246,15 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
   - `g_common.py`：`3bb2f1de7427b19205dfbbe93378f62e2b1db5e87cadd4971ff60f296fa839db`
   - `ground_truth.json`：`e4336ddd0d8180afda60d7632fd8ff7aa116b4e41221ee85559d84f839173348`
   - `ground_truth.v2.json`：`7280bb42af869ee18d34230b296f302132eb82dbf5203391e07882fd3691b2f1`
+
+### 2026-10-21 P2 與 G1（累計 1.31 USD）
+
+- P2 spec：`0f29aaf91c7894fe68ee18d791963c4c1135fc869b2fea40c327554ce455b873`（50 個不同的題池題位、20 個近似題）。
+- 只跑一次：24 個 job 全部成功，70 題全部有效，不用補出，花 0.52878 USD。
+- **G1 通過**：R_card 48、R_wrong 0、n_v 50、g1 0.8009（≥ 0.70；R_wrong 0 時門檻是 R_card ≥ 36）；GT 觸發 0（v1 0、v2 0）。主線程用 `power_g.g1` 獨立重算，結果相同。
+- 近似題 20 題，誤觸發 0：有效 20、無效 0（D17 的拆分：有效而誤觸發 0、無效 0）。
+- sha256：
+  - `qset/g1.json`：`50625bff7540b30de0a5224abf7fbe4abe85c35a84ea6fc86bd486bb91262c4a`
+  - `qset/p2_near_miss.json`：`4b0cd0022abec3c1f0e164cd33d2043ac8cfb5883a4f9f7671956a6fec809e3f`
+  - `qset/p2/score.json`：`9fdf80d90b7be6ff9a5eb623f666f6bccba4a3383d5977ccc141bd08ac78c10c`
+  - P2 計分時的 `f1a_pins.json` 與 P2 路徑都與 F1a 那條的值相同。
