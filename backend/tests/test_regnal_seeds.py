@@ -99,14 +99,14 @@ def test_blockers_are_lexicon_words_holding_a_chain_name(layer):
 
 @pytest.mark.parametrize("question, ids", [
     ("耶羅波安（約阿施的兒子）之前第三位王叫什麼？", ("I12",)),     # a chain-name father: no seed, it splits
-    ("約阿施的兒子耶羅波安之後的第二位王是誰？", ("I12",)),
-    ("耶羅波安，父親約阿施，之後的第二位王是誰？", ("I12",)),
+    ("約阿施的兒子耶羅波安之後的第四位王是誰？", ("I12",)),
+    ("耶羅波安，父親約阿施，之後的第四位王是誰？", ("I12",)),
     ("耶羅波安（尼八的兒子）以後第三任的王是誰？", ("I01",)),       # a father off the chain: the fatherless one
     ("耶羅波安(約阿施的兒子)之前第三位王叫什麼?", ("I12",)),        # half-width, as NFKC makes it
     ("耶羅波安(尼八的兒子)以後第三任的王是誰?", ("I01",)),
-    ("耶羅波安二世之後的第一位王是誰？", ("I12",)),
-    ("猶大王約蘭之後的第二位王是誰？", ("J05",)),                    # the kingdom prefix binds
-    ("以色列王約蘭之後的第二位王是誰？", ("I08",)),
+    ("耶羅波安二世之後的第四位王是誰？", ("I12",)),
+    ("猶大王約蘭之後的第四位王是誰？", ("J05",)),                    # the kingdom prefix binds
+    ("以色列王約蘭之後的第四位王是誰？", ("I08",)),
     ("約蘭之後第三位猶大王叫什麼？", ("J05",)),                      # the question's one kingdom word splits
     ("猶大王約沙法在位時，亞哈之後的第二位王是誰？", ("I06",)),      # ... but never moves a unique name
     ("亞哈的兒子約蘭之後的第二位王是誰？", ("I08",)),               # a father marker splits across kingdoms
@@ -116,14 +116,14 @@ def test_blockers_are_lexicon_words_holding_a_chain_name(layer):
     ("約沙法的兒子耶戶之後的第三位王是誰？", ("I09",)),             # 2ki.9.2: that 約沙法 is no seed
     ("亞哈斯之後的第二位王是誰？", ("J11",)),                        # names inside names: the longest
     ("以色列王亞哈謝之後的第二位王是誰？", ("I07",)),
-    ("比加轄之前的第二位王是誰？", ("I16",)),
+    ("比加轄之前的第四位王是誰？", ("I16",)),
     ("比加之前的第二位王是誰？", ("I17",)),
     ("亞撒利雅之後的第二位王是誰？", ("J09",)),
     ("亞撒之後的第二位王是誰？", ("J03",)),
     ("羅波安之後的第二位王是誰？", ("J01",)),
     ("烏西雅之後的第二位王是誰？", ("J09",)),                        # an alias
-    ("亞哈之後的第二位王是約蘭嗎？", ("I06",)),                      # a name after the cue is no seed
-    ("約蘭是不是亞哈之後的第二位王？", ("I06",)),                    # the nearest name before the cue
+    ("亞哈之後的第四位王是約蘭嗎？", ("I06",)),                      # a name after the cue is no seed
+    ("約蘭是不是亞哈之後的第四位王？", ("I06",)),                    # the nearest name before the cue
     ("猶大王亞撒在位時，以色列王巴沙作王；巴沙之後的第二位王是誰？", ("I03",)),
     ("從猶大王亞撒到猶大王約蘭，王位交接了幾次？", ("J03", "J05")),  # S1b: the span's two ends, in order
     ("從亞比央到亞哈謝，猶大的王位交接了幾次？", ("J02", "J06")),
@@ -135,23 +135,23 @@ def test_blockers_are_lexicon_words_holding_a_chain_name(layer):
     # a father written as a pronoun or a title is no father: a unique name keeps its seed, 二世
     # still splits, and 「F王的兒子」 is a father marker
     ("希西家死了，他的兒子瑪拿西之後的第二位王是誰？", ("J13",)),
-    ("約阿施死後，他的兒子耶羅波安二世之後的第二位王是誰？", ("I12",)),
+    ("約阿施死後，他的兒子耶羅波安二世之後的第四位王是誰？", ("I12",)),
     ("約哈斯王的兒子約阿施之後的第二位王是誰？", ("I11",)),
-    ("約阿施王的兒子耶羅波安之後的第二位王是誰？", ("I12",)),
+    ("約阿施王的兒子耶羅波安之後的第四位王是誰？", ("I12",)),
     # a regnal year (第N年 … 篡, an S1c match holding a king's name) is narrative: the anchor is
     # bounded by the question's own cue
-    ("亞撒第三年巴沙篡位，巴沙之後的第二位王是誰？", ("I03",)),
-    ("猶大王亞撒第三年巴沙殺了拿答篡了位，拿答之前的第一位王是誰？", ("I02",)),
-    ("猶大王亞撒第三年，巴沙篡了位；巴沙之後第二個篡位的人是誰？", ("I03",)),
+    ("亞撒在位的第三年巴沙篡位，巴沙之後的第三位王是誰？", ("I03",)),
+    ("猶大王亞撒在位的第三年，巴沙篡奪拿答的王位，拿答之前的第一位王是誰？", ("I02",)),
+    ("猶大王亞撒在位的第三年，巴沙篡位；巴沙之後第二個篡位的人是誰？", ("I03",)),
     # ... S1c's only: in another cue a held name is the anchor or an answer candidate
     ("亞撒死後，接續亞撒作王的是誰？", ("J03",)),
     ("約西亞出生時，亞們在位嗎？", ("J15",)),
     # a bracket's names are no anchor; 「(父親(是)F)」「(F王的兒子)」 after a name are father markers
     ("約蘭（父親是亞哈）之後的第二位王是誰？", ("I08",)),
-    ("耶羅波安（父親約阿施）之後的第二位王是誰？", ("I12",)),
-    ("耶羅波安（約阿施王的兒子）之後的第二位王是誰？", ("I12",)),
-    ("以色列王耶羅波安二世(約阿施王的兒子)之後的第一位王是誰？", ("I12",)),
-    ("耶羅波安（父親是尼八）之後的第二位王是誰？", ("I01",)),
+    ("耶羅波安（父親約阿施）之後的第四位王是誰？", ("I12",)),
+    ("耶羅波安（約阿施王的兒子）之後的第四位王是誰？", ("I12",)),
+    ("以色列王耶羅波安二世(約阿施王的兒子)之後的第四位王是誰？", ("I12",)),
+    ("耶羅波安（父親是尼八）之後的第四位王是誰？", ("I01",)),
     ("亞撒（亞比央）之後的第二位王是誰？", ("J03",)),
 ])
 def test_rule_seeds_pick_the_named_king(layer, question, ids):
@@ -162,9 +162,9 @@ def test_rule_seeds_pick_the_named_king(layer, question, ids):
 
 @pytest.mark.parametrize("question, reason", [
     ("耶羅波安之後第三位以色列王叫什麼？", "homonym"),             # same kingdom, no father
-    ("約蘭之後的第二位王是誰？", "homonym"),                        # two kingdoms, no kingdom word
+    ("約蘭之後的第四位王是誰？", "homonym"),                        # two kingdoms, no kingdom word
     ("猶大王耶戶之後的第二位王是誰？", "no node"),                  # the prefix is a hard condition
-    ("亞哈的兒子之後的第二位王是誰？", "the anchor's relative"),
+    ("亞哈的兒子之後的第四位王是誰？", "the anchor's relative"),
     ("亞哈斯在位時有一位先知；這位王之後的第二位王是誰？", "a referring phrase"),
     ("之後的第二位王是誰？從亞哈算起。", "no anchor before the cue"),
     ("希勒家的兒子以利亞敬出生時在位的王是誰？", "father contradicts the layer"),
@@ -174,16 +174,16 @@ def test_rule_seeds_pick_the_named_king(layer, question, ids):
     ("亞撒之後王位交接了幾次？", "S1b"),
     ("亞哈一共作王多少年？", "no cue"),
     # a pronoun, a referring word or a kingdom written as the father splits no homonym
-    ("約阿施作以色列王十六年，他的兒子耶羅波安之後的第二位王是誰？", "homonym"),
+    ("約阿施在位十六年，他的兒子耶羅波安之後的第四位王是誰？", "homonym"),
     ("約哈斯死了，他的兒子約阿施之後的第二位王是誰？", "homonym"),
-    ("那位王的兒子耶羅波安之後的第二位王是誰？", "homonym"),
-    ("以色列王的兒子耶羅波安之後的第二位王是誰？", "homonym"),
-    ("祭司的兒子約阿施之後的第二位王是誰？", "homonym"),            # an unknown word picks no fatherless one
+    ("那位王的兒子耶羅波安之後的第四位王是誰？", "homonym"),
+    ("以色列王的兒子耶羅波安之後的第四位王是誰？", "homonym"),
+    ("祭司的兒子約阿施之後的第四位王是誰？", "homonym"),            # an unknown word picks no fatherless one
     ("祭司的兒子撒迦利雅之後的第二位王是誰？", "father contradicts the layer"),   # ... but contradicts
     ("亞比亞他的兒子撒迦利雅之後的第二位王是誰？", "father contradicts the layer"),  # a known name ending in 他
-    ("亞撒第三年巴沙篡位了嗎？", "every cue holds a name"),           # the trigger fires; no anchor cue
-    ("這位王（亞哈）之後的第二位王是誰？", "no anchor before the cue"),  # a bracket's name is no anchor
-    ("亞哈之子之後的第二位王是誰？", "the anchor's relative"),
+    ("亞撒在位的第三年巴沙篡位了嗎？", "every cue holds a name"),           # the trigger fires; no anchor cue
+    ("這位王（亞哈）之後的第四位王是誰？", "no anchor before the cue"),  # a bracket's name is no anchor
+    ("亞哈之子之後的第四位王是誰？", "the anchor's relative"),
     ("亞哈的女兒出生時在位的王是誰？", "the anchor's relative"),
     ("亞哈的妻子出生時在位的王是誰？", "the anchor's relative"),
     ("希西家的長子出生時在位的王是誰？", "the anchor's relative"),
@@ -195,7 +195,7 @@ def test_rule_seeds_abstain(layer, question, reason):
 
 
 @pytest.mark.parametrize("question", [
-    "亞哈隨魯之後的第二位王是誰？", "押沙龍出生的時候，在位的王是誰？", "以利亞撒之後的第二位王是誰？",
+    "亞哈隨魯之後的第四位王是誰？", "押沙龍出生的時候，在位的王是誰？", "以利亞撒之後的第二位王是誰？",
     "以拉他之後的第二位王是誰？", "瑪拿西支派的人出生時在位的王是誰？", "瑪拿西半支派之後的第二位王是誰？",
     "所羅門之後的第二位王是誰？",                                   # off the chain (kingdom U)
 ])
@@ -211,7 +211,7 @@ def test_without_the_lexicon_a_father_off_the_chain_splits_no_homonym():
 
 
 def test_without_blockers_the_trigger_reads_the_name_inside(layer):
-    hit = trigger("押沙龍之後的第二位王是誰？", layer.names)
+    hit = trigger("押沙龍之後的第四位王是誰？", layer.names)
     assert hit.fired and hit.kings == ("沙龍",)
 
 
@@ -237,7 +237,7 @@ def test_rule_seeds_are_deterministic_and_call_no_llm(layer, monkeypatch):
     def no_llm():
         raise AssertionError("the rule path called an LLM")
     monkeypatch.setattr(card_mod, "get_llm_client", no_llm)
-    q = "約阿施的兒子耶羅波安之後的第二位王是誰？"
+    q = "約阿施的兒子耶羅波安之後的第四位王是誰？"
     cards = [asyncio.run(card_mod.chronology_card(q, "[1] 經文", layer)) for _ in range(3)]
     assert cards[0] == cards[1] == cards[2] and cards[0].seed_source == "rule"
     assert cards[0].seeds == (("I", "耶羅波安"),) and cards[0].kings == ("I12",)
@@ -263,7 +263,7 @@ def client(monkeypatch):
     class FakeLlm:
         async def chat(self, messages, temperature, max_tokens):
             seen["chats"].append(messages)
-            return "以色列｜亞哈" if messages[0]["content"] == card_mod.SEED_SYSTEM else "推理\n答案：約蘭"
+            return "以色列｜亞哈" if messages[0]["content"] == card_mod.SEED_SYSTEM else "推理\n答案：（假）"
 
     monkeypatch.setattr(query, "classify_intent", intent)
     monkeypatch.setattr(query, "retrieve_and_rerank", retrieve)
@@ -301,11 +301,11 @@ def test_a_failed_fallback_seed_call_answers_the_ordinary_way(client, monkeypatc
         raise RuntimeError("ollama down")
     monkeypatch.setattr(card_mod, "seed_call", boom)
     body = http.post("/api/v1/query", json={"question": "亞哈的兒子之後的第二位王是哪一位？"}).json()
-    assert body["aux_card"] is None and body["answer"] == "推理\n答案：約蘭"
+    assert body["aux_card"] is None and body["answer"] == "推理\n答案：（假）"
     assert len(seen["chats"]) == 1 and seen["chats"][0][0]["content"] == generator.SYSTEM_PROMPT
 
 
-@pytest.mark.parametrize("question", ["押沙龍之後的第二位王是誰？", "所羅門之後的第二位王是誰？"])
+@pytest.mark.parametrize("question", ["押沙龍之後的第四位王是誰？", "所羅門之後的第二位王是誰？"])
 def test_blocked_or_unchained_names_take_no_card_and_no_seed_call(client, question):
     http, seen = client
     body = http.post("/api/v1/query", json={"question": question}).json()
@@ -316,7 +316,8 @@ def test_blocked_or_unchained_names_take_no_card_and_no_seed_call(client, questi
 # --- store-backed (in-sample) -------------------------------------------------------------
 
 STORE = Path("/mnt/ollama-data/bible_rag_store")
-# the layer b20261019_18aa84ad serves, and the fixed one (R1a–R12, R14) of b20261019_a86f2b06
+# the layer of b20261019_18aa84ad (prod until 2026-10-20, now the rollback pair with r3), and the
+# fixed one (R1a–R12, R14) of b20261019_a86f2b06 (prod since 2026-10-20)
 STORE_LAYERS = (STORE / "layers/relations/relations@a04b67a301dc/regnal_layer.json",
                 STORE / "layers/relations/relations@ee8e78c043d2/regnal_layer.json")
 ROUTE_LEXICON = STORE / "layers/route/route@c31c88e4681e/routing_lexicon.json"   # b20261019_18aa84ad's

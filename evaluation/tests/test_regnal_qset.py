@@ -135,7 +135,7 @@ def top_level_branches(pattern):
 
 
 CUE_EXAMPLES = {   # the last of S1a, S1b, S1c and S4: the 2026-10-19 relaxation's group ``new``
-    "S1a": ["約西亞之後第二位", "往前數第三位", "接續他作王的是誰", "繼位的是誰", "往前推兩任"],
+    "S1a": ["約西亞之後第四位", "往前數第三位", "接續他作王的是誰", "繼位的是誰", "往前推兩任"],
     "S1b": ["王位交接幾次", "相隔幾代", "王位更迭了幾次"],
     "S1c": ["第二個篡位", "之後，第二個靠謀反登基"],
     "S4": ["出生時在位的王", "出生那一年，誰在做王"],
@@ -189,7 +189,7 @@ def test_every_relaxation_alternative_has_a_literal_on_the_banned_list():
 
 
 def test_banned_check_catches_cues_literals_terms_and_markers():
-    terms = {h.term for h in B.check_prompt_text("請問約西亞之後第二位王")}
+    terms = {h.term for h in B.check_prompt_text("請問約西亞之後第四位王")}
     assert {"CUES:S1a", "之後"} <= terms
     assert {"召回"} <= {h.term for h in B.check_prompt_text("量召回")}
     assert {"regnal"} <= {h.term for h in B.check_prompt_text("see regnal layer")}

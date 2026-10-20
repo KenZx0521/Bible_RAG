@@ -32,11 +32,11 @@ backend 檔案 sha256（int/regnal-r4；ragcommon/regnal.py 在 f986020 只改�
 | backend/utils/regnal/engine.py | a04d58774ee4fabbf4278f19f175d53eabfcb9e314cbdfe6363e9921e4864a95 |
 | backend/utils/regnal/layer.py | e293e1f324f67eae4dc9dba17e65aeeaee3d207c1458171a27668f20aa26bf82 |
 | backend/utils/regnal/seeds.py | 66cbff39f2b54ebcd09c640319ae1ccee1400d4afb458efcfa14fddc4f7fd1f8 |
-| backend/utils/regnal/trigger.py | 0fd58e6ba0c976927fda8fde61d5c0f6f9549817ddf319df0c2d7e14c636937a |
+| backend/utils/regnal/trigger.py | 0fd58e6ba0c976927fda8fde61d5c0f6f9549817ddf319df0c2d7e14c636937a（正式跑 r4_run1 與 prod 映像 r4 用的）；ba7f9d96daa3de99424a42466a25011fdc4f02f0d8d30f5680ae101fcfe8fc03（2026-10-20 push 前只改註解與 docstring，去掉一句經文引文；去掉 docstring 後 AST 相同） |
 | packages/ragcommon/regnal.py | ada1a5a1d12517e677d743d7af40607444343275f730c9ee0103741743e0d40b |
 | packages/ragcommon/routing.py | dfffe5f424c8643aa7bd7f7851534bf25e3d91b9c52e5eaa5cc331b2a4d95490 |
 
-七檔合併 sha（`rs_common.backend().sha256`）：`8b6b0d93d3a0533a2e000fc860673a44bcfa834a65d4ae2a879dc421a20ca58f`。
+七檔合併 sha（`rs_common.backend().sha256`）：`8b6b0d93d3a0533a2e000fc860673a44bcfa834a65d4ae2a879dc421a20ca58f`。上面那次只改註解之後，本 checkout 的合併 sha 是 `68ef62e42ab40a79f8418937ccceff837e66c6d4b612709fc49c8fdc6c270cfc`；正式跑的 verdict.json 記的是 8b6b0d93…，harness pins 記的是改這行之前的 prereg（git 96843f0）。
 
 - trigger.py、seeds.py 在定稿（5a7943c）之後、任何 Ollama 呼叫之前改過一次：問法集 P1 召回 0.367 < 0.70，照 qset.md §6 放寬觸發（seeds.py 只改了共用的代名詞清單與一個棄權理由的標籤）。舊規則觸發的題，觸發、規則種子與棄權理由都不變；本回歸的 62 題，觸發集合、規則種子與卡片也都不變（`backend/tests/test_regnal_r4_cards.py` 逐題釘卡片與 prompt sha，放寬前後都過），所以 jobs 只有 backend 釘值不同。
 

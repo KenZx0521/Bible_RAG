@@ -60,11 +60,11 @@ def item(iid, question, unit=None):
     return {**it, "unit": unit} if unit else it
 
 
-CONFIRM = [item("Q1", "耶羅波安之後的第二位王是誰？", "U1"),       # rule I01; set a names two kings
+CONFIRM = [item("Q1", "耶羅波安之後的第四位王是誰？", "U1"),       # rule I01; set a names two kings
            item("Q2", "亞撒之後的第三位王是誰？", "U1"),           # rule J03 = set a's card
            item("Q3", "亞比央的兒子之後的第一位王是誰？", "U2"),   # the rules abstain: gemma fallback
            item("Q4", "亞哈謝出生那年，作王的是哪一位？", "U2")]   # rule J06: the guard takes its born line
-DEV = [item("D1", "巴沙之後的第二位王是誰？"),
+DEV = [item("D1", "巴沙之後的第四位王是誰？"),
        item("D2", "暗利是誰？"),                                  # no cue: not taken
        item("D3", "以拉的兒子之後的第二位王是誰？")]              # the rules abstain: gemma fallback
 UNTAKEN = item("Q9", "暗利是誰？", "U9")

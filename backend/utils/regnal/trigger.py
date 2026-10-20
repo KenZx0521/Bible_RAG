@@ -58,7 +58,7 @@ needs a king, a who or a throne verb after it (前面第三位書記官 is none)
 who (往上數三代 is an ancestor, 第二個王朝 no king), a bare count (兩任) a who or a throne verb; a who
 is not 哪一年 or 是誰的兒子; 傳 and 換 count the throne only with 王位 before or 王 after; the usurper
 needs an ordinal after 之後 and then a killing or a seizing of the throne, with no 被, 遭 or 死 in the
-rooms (第一位被殺的王, 死於政變的王 are the victims; 亞哈死後摩押背叛以色列 is no usurper); the birth's
+rooms (第一位被殺的王, 死於政變的王 are the victims; a nation that 背叛 a kingdom is no usurper); the birth's
 room holds no other kingdom, nation, prophet or parent, its throne word no year count after it (作王第
 幾年 is a synchronism), and 出生於… asks which king (出生在西拿基立統治的年代嗎 does not).
 
@@ -141,7 +141,7 @@ _S1B_NEW = (
     rf"|{_TALLY}(?:的)?(?:王位)?(?:{_HANDS}|易手|轉手|換王|傳承|交接)"          # 經歷了幾次更迭
 )
 # an ordinal after 之後 (the count runs from the named king), then the throne taken by killing or
-# conspiracy: 背叛 and 叛變 alone are no core (亞哈死後摩押背叛以色列); no 被, 遭 or 死 in the rooms
+# conspiracy: 背叛 and 叛變 alone are no core (a nation's revolt is none); no 被, 遭 or 死 in the rooms
 # (第一位被殺的王, 死於政變的王 are the victims)
 _USURP = (r"(?:篡|弒|謀反|政變|殺(?:王|君)|殺(?:掉|害|死)?(?:了)?(?:前任|在位|當時)?(?:國王|君王|君主)"
           r"|奪(?:得|取)?(?:了)?(?:王位|國位|政權)|奪位|奪權)")

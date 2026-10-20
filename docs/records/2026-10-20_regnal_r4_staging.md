@@ -1,10 +1,10 @@
-# 王朝年表卡 r4：層修正、規則種子、觸發放寬，staging 驗收（2026-10-19 晚～10-20）
+# 王朝年表卡 r4：層修正、規則種子、觸發放寬，staging 驗收與上 prod（2026-10-19 晚～10-20）
 
-接續 `2026-10-19_kg_expansion_feasibility.md` §7-1～4（Kay 全照建議）與 `2026-10-19_regnal_card_integration_plan.md`。prod 還沒動，仍是 `b20261019_18aa84ad`＋`bible_rag-backend:r3`。
+接續 `2026-10-19_kg_expansion_feasibility.md` §7-1～4（Kay 全照建議）與 `2026-10-19_regnal_card_integration_plan.md`。2026-10-20 08:53 起 prod 是 `b20261019_a86f2b06`＋`bible_rag-backend:r4`（§8），回滾目標是 `b20261019_18aa84ad`＋r3。
 
 ## 1. 現況
 
-| 項目 | prod（未動） | staging（:8002） |
+| 項目 | 回滾目標（10-20 前的 prod） | prod（10-20 起）與 staging（:8002） |
 |---|---|---|
 | release | `b20261019_18aa84ad` | `b20261019_a86f2b06`（只差 relations） |
 | relations 層 | `relations@a04b67a301dc`（層 sha 932d2242） | `relations@ee8e78c043d2`（層 sha 252e0955） |
@@ -14,7 +14,7 @@
 | 觸發 | 舊規則（`90e6b528…`） | 放寬（`0fd58e6b…`） |
 
 - **不要把 r4 配 `b20261019_18aa84ad`**：r4 的守門與規則種子只對修正層審過。回滾一律 r3＋`b20261019_18aa84ad` 一起回。
-- 分支：全部在 `int/regnal-r4`。main 還在 26782cb；併入 main 時，G-REGNAL 的期望值跟著換成 252e0955，舊 release 就不能重組。
+- 分支：在 `int/regnal-r4` 整合，prod 換好之後 fast-forward 併入 main。G-REGNAL 的期望值換成 252e0955 之後，舊 release 就不能重組；回滾不受影響。
 
 ## 2. 王朝層
 
@@ -87,7 +87,7 @@
 - `backend/tests/test_regnal_trigger_time.py`：最壞耗時。每個字面詞，以及每個選項範例的每個前綴，後面接重複分隔符到 500 字；審查用的兩種回溯突變都會失敗。
 - `evaluation/tests/test_regnal_qset.py`：每個觸發選項（含 group new 的子選項）都有範例和出題禁用詞。
 
-## 7. 上 prod（等 Kay 說「上 prod」）
+## 7. 上 prod 的步驟
 
 1. `docker create --name bible_rag_backend_r3_pin bible_rag-backend:r3 true`（釘住 r3，防 Komodo prune）。
 2. `docker-compose.yml` 的 backend `image` 改成 `bible_rag-backend:r4`，commit。
@@ -95,3 +95,17 @@
 4. `docker compose -p bible_rag -f docker-compose.yml up -d --no-deps --no-build --pull never --wait --wait-timeout 300 backend`。
 5. smoke20，再抽確認集 5 題。
 6. 回滾：`promote --env prod --rollback --yes-prod`，compose 改回 r3，再跑同一個 `up`。
+
+## 8. 上 prod（2026-10-20，Kay：「上 prod」）
+
+- 08:53：照 §7 的步驟換成 `b20261019_a86f2b06`＋r4，前一筆是 `b20261019_18aa84ad`＋r3（commit 6390c69）。只換 backend 容器，postgres、qdrant、ollama 都沒動。
+- health：build `b20261019_a86f2b06`，handshake ok，沒有 mismatch。啟動 log 顯示層 252e09559cb0、鏈 19／20、28 個 blockers。
+- smoke20：20/20（store `reports/regnal_card_20261019/prod_r4/smoke20.json`）。
+- 確認集 32 題全跑（`a4_staging.py --url :8000`，store `prod_r4/a4/`）：32/32 有卡，0 錯誤、0 逾時，key_score 0.906。`a4_card_check.py` 的結果是卡片文字 32/32 逐字相同，seed_source 都是 rule（store `reports/regnal_seed_20261019/a4_check_prod.json`）。
+- 切換後 log 裡 0 個 ERROR。staging（`backend-stg`，r4）還開著。
+
+## 9. push 前的清理（公開 repo）
+
+- trigger.py 的 docstring 與註解拿掉一整節經文引文。只改註解，去掉 docstring 後 AST 相同；prod 映像 r4 裡的 trigger.py 仍是 0fd58e6b…，種子回歸 prereg §1 兩個 sha 並列。
+- 測試裡的題目改掉了和確認集撞題的序數（同王、同序數、同方向，30 處）、一題帶答案的是非題，以及 3 個貼近經文的字串。測試要測的結構沒變，預期值沒變。
+

@@ -109,7 +109,7 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
 - **層的狀況**：記錄了 7 筆欄位衝突，處理方式是保留第一個值；K0 抽 40 欄的精確率是 1.0，Kay 抽查 20 列 0 錯。
 - **確認集的弱點照搬過來**：H2 在非 pilot 21 題上是 +0.153，CI 含 0；有 6 題與開發題重疊。
 - **主數字不會動**：500 題主數字預期不變，價值只看得到回歸集和真實使用者的王朝年代題。
-- **S4 守門的上線順序**（2026-10-19 加，分支 `feat/regnal-s4-guard`，還沒上線）：
+- **S4 守門的上線順序**（2026-10-19 加，分支 `feat/regnal-s4-guard`；2026-10-20 隨 r4 上線）：
   - 守門預設開，而且直接採信層裡 age／reign 衝突的替代值。
   - 舊層 `relations@a04b67a301dc`（`932d2242…`）把約西亞的「作王第 N 年」記成 reign 衝突（約西亞的替代值是 18）。守門開在這一層上時：
     - 62 張卡改了 13 張（確認集 6、開發集 7，實測）；
@@ -124,9 +124,9 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
 - **回滾**有三種，由輕到重：
   1. 請求參數關掉；
   2. 改 settings 後重建容器；
-  3. `ragdata promote --env prod --rollback` 回到 R2 build＋r2 映像；R2 build 沒有 `regnal_layer.json`，卡片自動關。
+  3. `ragdata promote --env prod --rollback` 回到前一個 serving 配對，compose 的 image 一起改回。2026-10-20 起一次回滾是 `b20261019_18aa84ad`＋r3（舊層、無守門、gemma 種子），再一次才是 R2 build＋r2（沒有 `regnal_layer.json`，卡片自動關）。
 
-  換掉容器後，r2 映像沒有容器引用，Komodo 會在 24 小時內 prune。tar 已經在 `/mnt/ollama-data/bible_rag_bak/20261008/images/bible_rag-backend_r2.tar.zst`，回滾前先 `docker load`。
+  r3 映像由不啟動的容器 `bible_rag_backend_r3_pin` 釘住，r2 由 `bible_rag_backend_r2_pin` 釘住，Komodo 不會 prune。r2 另有 tar（`/mnt/ollama-data/bible_rag_bak/20261008/images/bible_rag-backend_r2.tar.zst`）；r3 沒有 tar。
 
 ## 7. 這次不做
 
@@ -191,4 +191,4 @@ prereg D1 寫明「上 prod 另需 500 題答案層非劣性」。本計畫要�
 - 2026-10-19 晚～10-20 **r4（層修正＋S4 守門＋規則種子＋觸發放寬）上 staging，驗收全過**，詳見 `2026-10-20_regnal_r4_staging.md`。
   - release `b20261019_a86f2b06`，和 prod 的 `b20261019_18aa84ad` 只差 relations 一層（`relations@ee8e78c043d2`，檔 sha `252e0955…`）；映像 `bible_rag-backend:r4`（`sha256:ea94bd5e…`，commit 96843f0）。
   - r4 的處理方式和確認版不同：層修正、S4 守門、規則種子優先、觸發放寬。H1／H2 的措辭只屬於確認版，也就是 932d2242＋gemma 種子＋無守門。r4 只用樣本內回歸與 A4′ 驗收。
-  - prod 仍是 `b20261019_18aa84ad`＋r3，上 prod 等 Kay。
+  - 2026-10-20 Kay：「上 prod」。08:53 換成 `b20261019_a86f2b06`＋r4，前一筆是 `b20261019_18aa84ad`＋r3。smoke20 20/20；確認集 32/32 有卡，key_score 0.906；卡片和 CPU 規則卡逐字相同 32/32；切換後 log 0 個 ERROR。r3 由 `bible_rag_backend_r3_pin` 釘住。
