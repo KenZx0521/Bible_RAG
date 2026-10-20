@@ -14,7 +14,9 @@
    whose marker is on the path); exactly one -> the seeds (A, B), else abstain.
 6. a marker phrase stating a father and son the layer does not -> abstain.
 7. cues: an age word or a year count, and exactly one event family (birth, written 出生 or 生了;
-   death; 洪水 is a family of its own the rule never takes), or with no event the F1 form 「X比Y大
+   death; 洪水 is a family of its own the rule never takes; a birth word right after 自/從/由 and at most
+   a pronoun, 「自其出生起」, is how the age is counted, no event; 生下來 is a birth, or a begetting when a
+   name follows it), or with no event the F1 form 「X比Y大
    (幾|多少)歲」. Shape F5 for death, or for birth followed by 「(又|還)活了?(多少|幾)年」; F1 otherwise.
    A death with 「(又|還)活」 asks Y's years after X's death, a death with a span word (相隔 …) the gap of
    two deaths: neither is on the card, so both abstain.

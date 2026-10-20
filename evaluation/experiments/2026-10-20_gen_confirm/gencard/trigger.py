@@ -37,7 +37,7 @@ from .names import Layer, nfkc
 AGE_WORDS = ("幾歲", "多少歲", "多大", "年紀", "年齡", "歲數", "高齡", "多老", "年歲")
 SPAN_WORDS = ("相隔", "相差", "間隔", "相距", "隔了", "差了")    # optional before (多少|幾)年
 YEAR_WORDS = ("多少年", "幾年", "多久")
-BIRTH_WORDS = ("出生", "誕生", "出世", "降生", "來到世上")       # the born: the nearest name before
+BIRTH_WORDS = ("出生", "誕生", "出世", "降生", "來到世上", "生下來")   # the born: the nearest name before
 BEGET_WORDS = ("生了", "生下", "生出", "得了")                    # the born: the nearest name after
 DEATH_WORDS = ("去世", "過世", "離世", "逝世", "辭世", "死", "壽終", "離開人世")   # the dying: nearest before
 FLOOD_WORDS = ("洪水",)                                           # F3's family: never taken
@@ -57,6 +57,10 @@ FAMILY = {**{w: "birth" for w in BIRTH_WORDS}, **{w: "beget" for w in BEGET_WORD
           **{w: "death" for w in DEATH_WORDS}, **{w: "flood" for w in FLOOD_WORDS}}
 _EVENT = re.compile("|".join(map(re.escape, sorted(FAMILY, key=lambda w: (-len(w), w)))))
 _LIVED_ON = re.compile(r"(?:又|還)活了?(?:多少|幾)年")
+# 「自其出生起」: a birth word right after 自/從/由 (and at most a pronoun) names nobody; it is how the age is counted
+# (the writers' rule 9), not an event (P1, 執行紀錄)
+_COUNT_FROM = re.compile(r"(?:自|從|由)(?:其|他|她)?\s*$")
+BORN_DOWN = "生下來"                                              # a beget word when a name follows it (「X生下來Y」)
 _TRIBE = re.compile(r"半?支派|族")
 _KIN = re.compile("的(?:" + "|".join(KIN_WORDS) + ")|之(?:子|父|孫)")
 CLAUSE_ENDS = frozenset(",.?!;:。")                                  # NFKC: ，？！；： are ASCII
@@ -248,13 +252,24 @@ def _older(q: str, mentions: tuple[Mention, ...]) -> tuple[tuple[str, str], ...]
     return tuple(out)
 
 
+def _counting_from(q: str, m: re.Match) -> bool:
+    return FAMILY[m.group(0)] == "birth" and bool(_COUNT_FROM.search(q[:m.start()]))
+
+
+def _family(q: str, m: re.Match, mentions: tuple[Mention, ...]) -> str:
+    """The cue's family; 生下來 followed by a name is the begetting 「X生下來Y」 (the born: that name)."""
+    if m.group(0) == BORN_DOWN and (n := nearest_after(mentions, m.end())) is not None and not q[m.end():n.start].strip():
+        return "beget"
+    return FAMILY[m.group(0)]
+
+
 def read(question: str, L: Layer) -> Reading:
     q = nfkc(question)
     tokens = scan(q, L)
     chain = counted(q, L, tokens)
     claims, mentions = markers(q, L, chain)
-    events = tuple(Cue(m.start(), m.end(), FAMILY[m.group(0)]) for m in _EVENT.finditer(q)
-                   if not _inside(m.start(), m.end(), tokens))
+    events = tuple(Cue(m.start(), m.end(), _family(q, m, mentions)) for m in _EVENT.finditer(q)
+                   if not _inside(m.start(), m.end(), tokens) and not _counting_from(q, m))
     age = [s for s in _spans(q, AGE_WORDS + YEAR_WORDS) if not _inside(*s, tokens)]
     kin_named, kin_unnamed = kin(q, mentions)
     return Reading(q=q, other_book=_book_named(q, L.other_books),
