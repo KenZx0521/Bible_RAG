@@ -1264,3 +1264,9 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
 - 凍結前核過：出題 prompt `gen_g.md` 的第 6 條已寫明數字限制也適用於計數說明（P1 的 6 題 v_number 來自 qset 的 prompt，那裡沒有這句），所以 F1 前不改任何 prompt。
 - F1 manifest（store `f1_manifest.json`）在 commit `9aab92e` 上寫出：27 個檔，`files_digest` `136e552a81d84735e037f82aa7d069e2f587cb06724f3aacd7358c4b34fcc00f`，sha256 `d72327344a40f622c41e2e863c29a9aa1bab7d069cabfcaff8af9f580686d5ae`。prod 的觸發檔與 r4 層都等於 `g_common` 保留的 sha。
 - `order.json`：`fa816cf6f83f9a1e9032a2c62a3aa53f63eb0d48a62bb5c7966ed9bbbec940e3`（種子取自上面的 `files_digest`）。pilot 12 個題位：F1c5 3、F1c11 3、F5c5 5、F5c11 1。
+
+### 2026-10-21 pilot 與 K-P（累計 2.82 USD）
+
+- pilot（第 1–12 位）：12 個題位全部通過（mech、稽核、三方比對），每題 1 次嘗試，共 25 次執行，全部由 Opus 5.5 本身回答（沒有改派）。花 1.510705 USD，平均每個開出題位 0.125892 USD。
+- **K-P 判 go**：預估花費 2.822901＋46×0.125892＝8.61 USD（≤ 47），所以 n_target 58；n_KP＝min(12/12, 0.914)×58，四捨五入為 53；`g1(48, 0, 50, n＝53)`＝0.8009（≥ 0.70）；K-gold 不成立。
+- store `ho/kp.json`：`7db19f197188283eb80dafe5ea295ac4e7356f19549d224b87410f8de2ccec7f`
