@@ -1300,3 +1300,13 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
 - §4.3 prompt 對等：G 與 T-rows 共 288 個 job（48 題 × 2 臂 × 3 次）全部逐位元相同，不相同 0；`backend_pins()` 前後都等於 F1 manifest。build 共 492 個 job，prompts sha256 `30fc5f8ab40aee3ba97acb77edab22f83ba4bd693879c350caa014f5650a4b14`。
 - 主線程用 CPU 獨立重算：直接用 `gencard.card` 與 `Card.covers` 在凍結題上算出 a、w 與棄權理由，再呼叫 `power_g.gate`。結果與 f2.json 逐項相同，棄權的題位也相同。
 - store `f2.json`：`120affbe7650630080222a070d3ed1e4d34f6087b2a2b628b643a6ae99f2c93a`
+
+### 2026-10-21 F3 build 與 dry-run（0 USD，還沒有 Ollama 呼叫）
+
+- `run_g.py build`：58 題、492 個 job（B0 58×3＝174；G 與 T-rows 48×2×3＝288；規則棄權的 10 題跑 G-ref，10×3＝30）。F3 檢查全過（card_problems、job_problems 都空），prompts sha256 等於 F2 對等測試的那組。
+  - store `run/f3.json`：`03581cdd5e8f298bc499e63b5223b87e923846abee25b92f0ed6e779637a23d0`
+  - `run/items.json`：`d52474c2d6d6f40cf2d0311df334adb5c918f2ef294d90cd3a98cc0941734fe5`
+  - `run/cards.json`：`084a38d6d9e8cc1321b45e07ae8880b92ab2e5d24b19b1190e2be32a72955969`
+  - `run/jobs.json`：`f072dcc8a4ea82f8f96a50b955790460718b68da90f52d8742c33865142cdea5`
+  - `run/arms_meta.json`：`b5cf3ac8ec7300354bb5bdb595c571dc4ef190aa00b3ab5b6485f9b75be84f4d`
+- `run_g.py dry-run`（假 chat）：492 次假呼叫，缺 0，score 與 analyze 走完（分數無意義，只驗流程）。
