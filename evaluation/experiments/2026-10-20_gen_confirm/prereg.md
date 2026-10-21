@@ -1292,3 +1292,11 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
 - `freeze_g.py`（F2 第 1–4 步）：mech 與 transcript 重查全過；Kay 的決定與各題位終態一致；prod 王朝觸發在 58 題上觸發 0 題；凍結 58 題，各種流失都是 0。分層：F1c5 14、F1c11 12、F5c5 26、F5c11 6；同名端點 14；需辨識詞 6。主線程用 CPU 獨立核對：58 題的題目文字都等於該題位通過的那份稿，題目都不含數字，sid 不重複且依序。
   - store `questions_frozen.json`：`27e73bedc73121645870fd4a3f7cdfcc50bd07705e36d860fac68e40ce703058`（此後不再刪題）
   - store `ho/freeze.json`：`1ca59a5b42283e0e2ef6188c04880d60bd450b90c8d9a5840d602e0cbbe68ab6`
+
+### 2026-10-21 F2 第 5–7 步與 K-a（累計 8.32 USD）
+
+- `f2_g.py`：第一次在 58 題凍結題上跑 `gencard`。出卡 48 題，每張卡都有一行等於 gold：**a_meas＝48/58（24/29），w_meas＝0**；R_trig、R_seed 也都是 48/58。棄權 10 題：「事件族不只一個」6 題、「出生者不是後代」4 題。
+- **K-a 通過**：`gate(凍結的 58 個題位, a＝0.8276, w＝max(0, 0.05))`（M1，nsim 10,000，seed 20261018），pow_H1_and_H2＝0.8047（≥ 0.70；mc_se 0.004），pow_H1 0.9711。
+- §4.3 prompt 對等：G 與 T-rows 共 288 個 job（48 題 × 2 臂 × 3 次）全部逐位元相同，不相同 0；`backend_pins()` 前後都等於 F1 manifest。build 共 492 個 job，prompts sha256 `30fc5f8ab40aee3ba97acb77edab22f83ba4bd693879c350caa014f5650a4b14`。
+- 主線程用 CPU 獨立重算：直接用 `gencard.card` 與 `Card.covers` 在凍結題上算出 a、w 與棄權理由，再呼叫 `power_g.gate`。結果與 f2.json 逐項相同，棄權的題位也相同。
+- store `f2.json`：`120affbe7650630080222a070d3ed1e4d34f6087b2a2b628b643a6ae99f2c93a`
