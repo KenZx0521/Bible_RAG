@@ -300,3 +300,22 @@
   - 直接呼叫的作廢規則、配對重跑與順序。
   
   已全部改進本稿。不成立的 3 條（18aa84ad 措辭、OFF 跑 3 次、ON 的整段計分）只做了措辭調整。
+
+- 2026-10-21 實作（`wf_11277065-32a`）：三條分支各自在 worktree 先寫測試再實作，再做 A7 唯讀審查與修正，之後併成 `int/gen-card`（1d17687）。
+  - A7 成立的問題：
+    - ragdata 3 條：build 時的 G-GEN 沒有測試；舊形詞表的 route 層報成程式錯誤；runbook §6 沒寫。
+    - backend 2 條：store 測試的計數 assert 失敗時會印出題目；GEN mismatch 沒點名是哪個檔。
+    - 評估端 6 條：ctx_on 的接法沒測；Δ 讀錯臂沒測；8 字窗漏掃 `gen_fakes.py`；calls.jsonl 用 splitlines 切；一處計數 assert；換完後的 GT `aux_card` 檢查沒做，已補 `a4_g.py gt-check`。
+  - 全部已修。只有一處沒修：凍結的 `gencard.parse` 同時讀兩個檔時拋的錯，仍只標 `gen_*.json`。
+  - 合併後的測試：ragdata＋packages 2,612 passed、5 skipped；backend 448 passed；evaluation 3,164 passed、12 skipped、2 failed。evaluation 的 2 個失敗是已知的 test_idlint 與 test_qd_common。
+  - 凍結路徑沒動；`metric_version` 重算仍是 4d0826bb8d14；`backend/utils/gencard/` 6 檔 sha 等於 F1 manifest。
+- 2026-10-21 資料層：
+  - `ragdata build relations --text text@247eafe44b02 --route route@c31c88e4681e` 產出 `relations@ce442299b9c0`，G-REGNAL、G-GEN 全綠。
+    - 層的依賴是 {text, route}。
+    - `regnal_layer.json` 是 252e0955…，沒變；`gen_layer.json` 是 46d87abb…、8,252 B；`gen_names.json` 是 9e622e30…、4,463 B。兩個 GEN 檔都等於釘值。
+  - release `b20261021_dfa1e3e3`（release_sha dfa1e3e3…）和 `b20261019_a86f2b06` 只差三處：relations 層、contract_version 1.3.0、契約多 `gen_layer.json` 與 `gen_names.json`。
+- 2026-10-21 映像 r5：`sha256:31bb9d09e185140f4592ea432ff5160b8a303be3085edd84053ee9aa7949db05`，程式來自 1d17687。已建 `bible_rag_backend_r4_pin` 與 `bible_rag_backend_r5_pin`，防 Komodo prune。
+- 2026-10-21 load 失敗（基礎設施）：Qdrant 回 `Too many open files (os error 24)`。
+  - PG 已回滾，沒有留下 schema、builds 列、collection 或 contracts 目錄；prod 健康。
+  - 原因：qdrant 容器的開檔軟上限是 1024，已載入 4 個 build 時用了 921 個 fd，一個 collection 約佔 230 個。
+  - 照 §3.0 屬於修好再跑。修法是卸載 R1（`b20261008_6daa4f31`，r1 映像已不在，不在回滾鏈上），或調高 qdrant 的 `ulimits.nofile`（要重啟 qdrant）。兩者都會動共用資源，等 Kay 決定。

@@ -72,6 +72,7 @@ R2 的事件與路由層（R1 的轉換路徑已移除）：
 之後：
 - **release（S12）**：寫 `releases/{build_id}.json`（唯讀，同內容重寫是 no-op）；組裝時各層記錄閘門再跑一次（重讀 PDF 的 G-CONSERVE、G-XCHECK 與要 GPU 的 G-ENC 除外）。
 - **load（S13）**：寫入新命名空間——PG schema `b{build_id}`、`rag_meta.builds` 一列、Qdrant `passages__{build_id}`、`contracts/{build_id}/`。目標已存在就拒絕；同一份 release 已登記則標 `reused`，不重載。
+  - Qdrant 容器（v1.13.2）的開檔軟上限是 1024，一個 collection 約佔 230 個 fd。2026-10-21 已載入 4 個 build 時 qdrant 用了 921 個，第 5 個 load 失敗（`Too many open files (os error 24)`，PG 回滾、不留 collection）。要多載一個 build，先 unload 一個不在 serving 與回滾配對裡的 build（§7），或調高 qdrant 的 `ulimits.nofile`（要重啟 qdrant）。
 - **verify（S14）**：G-PROJ C1–C6 與 G-SCHEMA.pg，全部從三庫讀回比對；C6 要求凍結的 GT v2 指向本 release 的文字層。
 
 ## 4. 文字層改變時：推導檔
@@ -127,6 +128,7 @@ $RAGDATA promote --env staging --rollback                             # 回到�
   PYTHONPATH=packages scripts/.venv/bin/python evaluation/experiments/2026-10-08_r1/smoke20.py \
     http://localhost:8000 <build_id> ground_truth.v2.json <報告.json>
   ```
+  GEN 卡上線時另跑 `evaluation/.venv/bin/python -B evaluation/experiments/2026-10-21_gen_card/a4_g.py gt-check --build <build_id>`（smoke20 的 20 題 GT 都沒有 `aux_card`）與 `a4_g.py prod-check --build <build_id>`（確認集 58 題 ON 各 1 次，卡片對等 58/58）。
   回滾：`$RAGDATA promote --env prod --rollback --yes-prod`，把 `image` 改回前一個 tag，再跑同一個 `up`。不要 `docker compose build backend`、不要 `down`、不要 `--remove-orphans`。
   - `up` 用 `--pull never`，所以回滾前先確認舊映像還在本機（`docker image inspect <tag>`）。Komodo 每天會 prune 沒有容器引用的映像；換容器後用一個不啟動的容器釘住舊映像（目前是 `docker create --name bible_rag_backend_r3_pin bible_rag-backend:r3 true`；r2 仍由 `bible_rag_backend_r2_pin` 釘住）。r2 若已被刪，先 `zstd -dc /mnt/ollama-data/bible_rag_bak/20261008/images/bible_rag-backend_r2.tar.zst | docker load`；r3 沒有 tar，只靠 `bible_rag_backend_r3_pin`，不要刪它（必要時可由 commit 3cadd72 重建）。r4 也沒有 tar：staging 或 prod 第一次換 r5 之前，先 `docker create --name bible_rag_backend_r4_pin bible_rag-backend:r4 true`，之後不要刪它。
 - staging backend（:8002）見 `docker-compose.staging.yml` 的 `backend-stg`，映像由 `STG_IMAGE` 指定（預設是 `bible_rag-backend:r2`；GEN 卡的 staging 要明確傳 `STG_IMAGE=bible_rag-backend:r5`）。它的 restart 是 `"no"`：握手不符就停在 exited，不會反覆重載模型；主機重開機後要重跑該檔開頭的 `up` 指令。

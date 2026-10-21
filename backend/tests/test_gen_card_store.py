@@ -108,7 +108,12 @@ def test_the_files_are_build_a86f2b06s_gen_layer(gen):
 # ---------------------------------------------------------------- A1 (c), (d): the confirmation set
 @pytest.fixture(scope="module")
 def confirm(gen, regnal):
-    """{sid: (aux_card, generator messages, item)} of the 58 frozen questions through /api/v1/query."""
+    return through_query(R4.BUILD, R4.LAYER.read_bytes(), R4.LEXICON, gen)
+
+
+def through_query(build, regnal_layer: bytes, lexicon: Path, gen) -> dict:
+    """{sid: (aux_card, generator messages, item)} of the 58 frozen questions through /api/v1/query,
+    serving ``build`` with this regnal layer, lexicon and GEN layer (test_gen_card_release reuses it)."""
     frozen = _read(GENC / "questions_frozen.json")["questions"]
     items = {it["sid"]: it for it in _read(GENC / "run/items.json")["items"]}
     n, same = len(frozen), sum(items[q["sid"]]["question"] == q["question"] for q in frozen)
@@ -133,9 +138,9 @@ def confirm(gen, regnal):
         mp.setattr(card_mod, "get_llm_client", lambda: RecordingLlm())
         mp.setattr(generator, "get_llm_client", lambda: RecordingLlm())
         # make_active attaches the lexicon to the regnal layer itself
-        context.install(context.make_active(R4.BUILD, routing.load_lexicon(R4.LEXICON), (),
-                                            parse_layer(R4.LAYER.read_bytes()), gen),
-                        Handshake(R4.BUILD.build_id, (), True))
+        context.install(context.make_active(build, routing.load_lexicon(lexicon), (),
+                                            parse_layer(regnal_layer), gen),
+                        Handshake(build.build_id, (), True))
         try:
             http = TestClient(main.app)
             for q in frozen:
@@ -151,6 +156,11 @@ def confirm(gen, regnal):
 
 
 def test_the_cards_are_the_confirmation_runs_g_cards(confirm):
+    assert g_outcome(confirm) == {"card": 48, "none": 10}
+
+
+def g_outcome(confirm: dict) -> Counter:
+    """Each question's card against run/cards.json's ``g``: "card", "none", or a message naming the sid."""
     cards = _read(GENC / "run/cards.json")["cards"]
     outcome = Counter()
     for sid, (aux, _msgs, _it) in confirm.items():
@@ -163,7 +173,7 @@ def test_the_cards_are_the_confirmation_runs_g_cards(confirm):
             outcome["card"] += 1
         else:
             outcome[f"{sid}: not the g card"] += 1
-    assert outcome == {"card": 48, "none": 10}
+    return outcome
 
 
 def test_the_stage0_gen_items_f1_f5_cards_and_f3_none(gen):
