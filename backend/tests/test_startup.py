@@ -356,14 +356,19 @@ def test_gen_files_that_are_not_this_builds_gen_layer_are_one_mismatch_not_a_cra
     assert problem.startswith("contracts: gen_*.json: ") and message in problem
 
 
-@pytest.mark.parametrize("name", ["gen_layer.json", "gen_names.json"])
-def test_a_gen_file_that_is_not_json_is_one_mismatch(stores, monkeypatch, name):
+@pytest.mark.parametrize("name, data, message", [
+    ("gen_layer.json", b"{not json", "Expecting"),
+    ("gen_names.json", b"{not json", "Expecting"),
+    ("gen_layer.json", b"\xff", "can't decode"),
+    ("gen_names.json", b"\xff", "can't decode"),
+])
+def test_a_gen_file_that_is_not_json_is_one_mismatch_that_names_it(stores, monkeypatch, name, data, message):
     _gen(stores)
-    _rewrite(stores, name, b"{not json")
+    _rewrite(stores, name, data)
 
     problem = _one_mismatch(monkeypatch)
 
-    assert problem.startswith("contracts: gen_*.json: ") and "Expecting" in problem
+    assert problem.startswith(f"contracts: gen_*.json: {name}: ") and message in problem
 
 
 def test_a_gen_file_of_another_sha_is_verifys_mismatch_alone(stores, monkeypatch):

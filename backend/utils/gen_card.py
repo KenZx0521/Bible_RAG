@@ -42,9 +42,17 @@ def chain_size(layer: Layer) -> dict[int, int]:
     return {ch: len(ids) for ch, ids in layer.chains.items()}
 
 
+def _json(name: str, data: bytes):
+    """The file's JSON document; ValueError naming the file when it is not UTF-8 JSON."""
+    try:
+        return json.loads(data.decode("utf-8"))
+    except ValueError as exc:                    # JSONDecodeError and UnicodeDecodeError alike
+        raise ValueError(f"{name}: {exc}") from None
+
+
 def _read(layer_data: bytes, names_data: bytes) -> tuple[Layer, dict]:
-    names = json.loads(names_data.decode("utf-8"))
-    layer = parse(json.loads(layer_data.decode("utf-8")), names)
+    names = _json(NAMES_FILE, names_data)
+    layer = parse(_json(LAYER_FILE, layer_data), names)
     evidence(layer, layer.order)                 # every row a card can hold has its verse keys
     sha = hashlib.sha256(layer_data).hexdigest()
     if layer.gen_layer_sha256 != sha:            # parse copies it from the names file unchecked
