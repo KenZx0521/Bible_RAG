@@ -73,6 +73,12 @@ services:
     image: qdrant/qdrant:v1.13.2
     container_name: bible_rag_qdrant
     restart: unless-stopped
+    # One loaded build's collection holds ~230 files open; the default soft limit of 1024
+    # stopped a fifth build's load (2026-10-21, "Too many open files").
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 524288
     ports:
       - "${QDRANT_HTTP_PORT:-6333}:6333"
       - "${QDRANT_GRPC_PORT:-6334}:6334"

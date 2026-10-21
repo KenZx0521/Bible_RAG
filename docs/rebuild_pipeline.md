@@ -72,7 +72,7 @@ R2 的事件與路由層（R1 的轉換路徑已移除）：
 之後：
 - **release（S12）**：寫 `releases/{build_id}.json`（唯讀，同內容重寫是 no-op）；組裝時各層記錄閘門再跑一次（重讀 PDF 的 G-CONSERVE、G-XCHECK 與要 GPU 的 G-ENC 除外）。
 - **load（S13）**：寫入新命名空間——PG schema `b{build_id}`、`rag_meta.builds` 一列、Qdrant `passages__{build_id}`、`contracts/{build_id}/`。目標已存在就拒絕；同一份 release 已登記則標 `reused`，不重載。
-  - Qdrant 容器（v1.13.2）的開檔軟上限是 1024，一個 collection 約佔 230 個 fd。2026-10-21 已載入 4 個 build 時 qdrant 用了 921 個，第 5 個 load 失敗（`Too many open files (os error 24)`，PG 回滾、不留 collection）。要多載一個 build，先 unload 一個不在 serving 與回滾配對裡的 build（§7），或調高 qdrant 的 `ulimits.nofile`（要重啟 qdrant）。
+  - 一個 build 的 Qdrant collection 約開 200–230 個檔。qdrant 容器原本用預設的開檔軟上限 1024：2026-10-21 已載入 4 個 build 時用了 921 個，第 5 個 load 失敗（`Too many open files (os error 24)`，PG 回滾、不留 collection）。Kay 裁決後卸載了 R1（`b20261008_6daa4f31`），並在 `docker-compose.yml` 把 qdrant 的 `ulimits.nofile` 設成 65536／524288、重建 qdrant 容器（prod 中斷約 11 秒）。
 - **verify（S14）**：G-PROJ C1–C6 與 G-SCHEMA.pg，全部從三庫讀回比對；C6 要求凍結的 GT v2 指向本 release 的文字層。
 
 ## 4. 文字層改變時：推導檔
