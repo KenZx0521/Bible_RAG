@@ -257,6 +257,18 @@ def test_an_interrupted_run_resumes_without_repeating_a_valid_call(tmp_path):
     assert rep["state"] == "valid" and len(meta(tmp_path)["sessions"]) == 2
 
 
+def test_a_torn_last_line_is_moved_aside_and_its_call_redone(tmp_path):
+    items, cards = world(2)
+    with pytest.raises(KeyboardInterrupt):
+        run(tmp_path, items, cards, interrupted(make_io(items, cards), 2))
+    torn = '{"type": "call", "sid": "S0'
+    with (tmp_path / "run" / A.CALLS).open("a", encoding="utf-8") as f:
+        f.write(torn)
+    rep = run(tmp_path, items, cards, make_io(items, cards))
+    assert (tmp_path / "run" / A.TORN).read_text(encoding="utf-8") == torn + "\n"
+    assert rep["state"] == "valid" and meta(tmp_path)["sessions"][-1]["torn_bytes"] == len(torn)
+
+
 # ---------------------------------------------------------------- checks before and after a session
 @pytest.mark.parametrize("env, why", [
     (["LLM_TEMPERATURE=0.2", "LLM_MAX_TOKENS=10000", f"OLLAMA_MODEL={A.MODEL}"], "options"),

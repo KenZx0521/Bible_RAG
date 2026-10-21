@@ -29,8 +29,8 @@ RAG_GEN_CARD unset or true; only these four values are kept) and the Ollama dige
 rule, written here: /api/ps, else /api/tags). The run's code (this folder, score_g.py, keys_x.py, cards_common.py)
 must be the run's at every session. Outputs: the store's reports/gen_card_20261021/<run>/ only (``Writer`` refuses
 any other path; a dry run writes DIR, never in the store or the repository): run_meta.json, calls.jsonl (every
-attempt, append-only; answers and contexts stay there) and report.json. Resumable per call; a session holds
-run.lock. Prints ids, numbers and sha256 only.
+attempt, append-only; answers and contexts stay there) and report.json. Resumable per call (a last line cut by a
+kill moves to calls.torn.jsonl and its call is redone); a session holds run.lock. Prints ids, numbers and sha256 only.
 """
 from __future__ import annotations
 
@@ -71,7 +71,7 @@ QUERY_TIMEOUT_S = 300
 SLOW_S = SG.SLOW_S                                  # 120 s: the backend's Ollama client timeout
 MAX_RERUNS, BACKOFF_S = 2, 5
 RUN_VOIDS = ("build_id",)                           # a per-call check that voids the whole run
-RUN_META, CALLS, REPORT, LOCK = "run_meta.json", "calls.jsonl", "report.json", "run.lock"
+RUN_META, CALLS, REPORT, LOCK, TORN = "run_meta.json", "calls.jsonl", "report.json", "run.lock", "calls.torn.jsonl"
 GUARDED = ("mode", "dry_run", "url", "build", "arms", "reps", "inputs_sha256", "code_sha256", "options", "model")
 CHECK_ERRORS = (OSError, ValueError, http.client.HTTPException, AttributeError)
 CALL_ERRORS = (urllib.error.URLError, TimeoutError, OSError, ValueError, http.client.HTTPException)
@@ -440,6 +440,20 @@ def resume_meta(old: dict | None, new: dict) -> dict:
     return old
 
 
+def repair_tail(w: Writer) -> int:
+    """A last line cut by a kill (no final newline) moves to calls.torn.jsonl and is cut off: its call is redone."""
+    p = w.path(CALLS)
+    raw = p.read_bytes() if p.is_file() else b""
+    if not raw or raw.endswith(b"\n"):
+        return 0
+    head, nl, tail = raw.rpartition(b"\n")
+    with w.path(TORN).open("ab") as f:
+        f.write(tail + b"\n")
+    with p.open("r+b") as f:
+        f.truncate(len(head) + len(nl))
+    return len(tail)
+
+
 @contextlib.contextmanager
 def run_lock(w: Writer):
     p = w.path(LOCK)
@@ -507,10 +521,11 @@ def run(mode: Mode, w: Writer, items: list[dict], cards: dict, build: str, io: I
     units = plan(items, cards, mode)
     with run_lock(w):
         meta = resume_meta(w.read_json(RUN_META), fresh_meta(mode, build, dry))
+        torn = repair_tail(w)
         closed = not meta["sessions"] or "t_end" in meta["sessions"][-1]
         if closed and finals(w.jsonl(CALLS), units) is not None:
             return write_report(mode, w, items, cards, meta, units)       # nothing to call: report again
-        sess, bad = {"t_start": now(), "ps": []}, health_problems(io, mode.url, build)
+        sess, bad = {"t_start": now(), "ps": [], "torn_bytes": torn}, health_problems(io, mode.url, build)
         if mode.staging:
             sess["env"] = env_check(io.inspect(STAGING_CONTAINER))
             sess["before"] = ollama_check(io.ollama, "before")
