@@ -82,4 +82,4 @@ report.md 的呈現有三處缺漏：沒有 `score_any` 那一行、p 印成 0.0
 
 ## 7. Kay 的裁決
 
-- **2026-10-21**：（待決定）要不要開創世記卡的整合計畫。
+- **2026-10-21**：Kay「開整合計畫，照建議做」。計畫另寫 `docs/records/2026-10-21_gen_card_integration_plan.md`，照 §5 的三件事做，D1–D7 照計畫的建議採用。其中 D1（`gen_names.json` 也進 relations 層）與 D2（relations 多依賴 route 層）超出 §9 的範圍，是揭露的擴充。上 prod 仍要 Kay 另外說。
