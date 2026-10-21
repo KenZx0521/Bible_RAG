@@ -1,7 +1,10 @@
 """Run the data gates of one stored layer and collect them into a JSON report.
 
 A layer is gated together with the record layers it depends on (struct needs
-text); each must be the exact version the layer's manifest declares. A ``src``
+text); each must be the exact version the layer's manifest declares. A layer
+declares all of its ``REQUIRED_DEPS`` and may declare some of its ``OPTIONAL_DEPS``
+(relations built on route for the GEN files, without it before them); it is gated
+with exactly what it declares (``gate_deps``). A ``src``
 dependency (the PDFs as extracted) holds no records: it may be given like any
 dependency (``--dep``) and is then verified, not loaded, and G-CONSERVE re-reads
 it; G-XCHECK re-reads the PDFs (``GateInputs.pdf_dir``). A gate whose input is
@@ -23,7 +26,9 @@ its report, fingerprint and ``vectors`` attachment, and the pinned encoder
 (``GateInputs``: tokenizer files, device, the store's copy of the old ``output/``
 for the legacy check); an encoder that does not load fails both closed. G-ROUTE
 compiles the lexicon again from the text, kg0 and events layers and the registries
-(``GateInputs.registries``: divine_refs, name_normalization, query_aliases).
+(``GateInputs.registries``: divine_refs, name_normalization, query_aliases). G-GEN
+compares the route layer's lexicon by the sha256 its verified manifest lists
+(``GateContext.dep_files``), so no gate reads a dependency's files.
 """
 
 from __future__ import annotations
@@ -41,7 +46,7 @@ from ragdata.contract.counts import (
     KG0_COUNTS_PATH, PDF_COUNTS_PATH, load_counts, load_kg0_counts,
 )
 from ragdata.contract.registry import (
-    EMB_REPORT, ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, KG0_REPORT,
+    EMB_REPORT, ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, GEN_LAYER, GEN_NAMES, KG0_REPORT,
     LAYER_REPORTS, QUERY_ALIASES, REGNAL_LAYER, REGNAL_REPORT, ROUTING_LEXICON, XCHECK_REPORT,
 )
 from ragdata.gates import emb_legacy, sourced
@@ -50,6 +55,7 @@ from ragdata.gates.counts import check_counts
 from ragdata.gates.emb import EmbFiles, check_emb
 from ragdata.gates.enc import REENCODE, EncOptions, StoredEncoding, run_enc
 from ragdata.gates.events import check_event
+from ragdata.gates.gen import GEN_EXPECT_PATH, check_gen, load_gen_expect
 from ragdata.gates.kg0 import check_kg0
 from ragdata.gates.prov import check_prov
 from ragdata.gates.regnal import REGNAL_EXPECT_PATH, check_regnal, load_regnal_expect
@@ -74,6 +80,7 @@ REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {
     "text": (), "struct": ("text",), "emb": ("struct", "text"), "kg0": ("text", "struct"),
     "events": ("text", "struct"), "route": ("text", "kg0", "events"), "relations": ("text",),
 }
+OPTIONAL_DEPS: Mapping[str, tuple[str, ...]] = {"relations": ("route",)}   # GEN: the lexicon
 REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "text": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-TEXT", "G-CONSERVE", "G-XCHECK", "G-REF"),
     "struct": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-STRUCT"),
@@ -81,7 +88,7 @@ REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "kg0": ("G-SCHEMA", "G-REFINT", "G-KG0", "G-PROV"),
     "events": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-EVENT", "G-PROV"),
     "route": ("G-SCHEMA", "G-COUNT", "G-ROUTE", "G-PROV"),
-    "relations": ("G-REGNAL",),   # the regnal formulas only (P5 exception)
+    "relations": ("G-REGNAL", "G-GEN"),   # the regnal formulas and the GEN card's files (P5)
 })
 NOT_IMPLEMENTED = "not implemented"
 UNLOADED_DEPS = frozenset({"src"})
@@ -106,6 +113,7 @@ class GateInputs:
     encoder: Encoder | None = None                # G-EMB/G-ENC: a stand-in encoder (tests only)
     kg0_counts: Path = KG0_COUNTS_PATH            # G-KG0: the per-surface expectations
     regnal_expect: Path = REGNAL_EXPECT_PATH      # G-REGNAL: the audited layer's sha256 and chains
+    gen_expect: Path = GEN_EXPECT_PATH            # G-GEN: the audited files' sha256s
 
 
 @dataclass(frozen=True)
@@ -130,6 +138,7 @@ class GateContext:
     src: Mapping[str, bytes] | None
     inputs: GateInputs
     emb: EmbContext | None = None
+    dep_files: Mapping[str, Mapping[str, str]] = MappingProxyType({})   # record deps' file sha256s
 
 
 def missing_input(name: str, what: str) -> GateResult:
@@ -266,6 +275,14 @@ def _regnal_gate(ctx: GateContext) -> GateResult:
                         load_regnal_expect(ctx.inputs.regnal_expect))
 
 
+def _gen_gate(ctx: GateContext) -> GateResult:
+    stored = {name: (ctx.target.path / name).read_bytes() if name in ctx.target.file_shas else None
+              for name in (GEN_LAYER, GEN_NAMES)}
+    return check_gen(stored[GEN_LAYER], stored[GEN_NAMES], ctx.target.file_shas.get(REGNAL_LAYER),
+                     ctx.target.depends_on, ctx.dep_files.get("route", {}).get(ROUTING_LEXICON),
+                     load_gen_expect(ctx.inputs.gen_expect))
+
+
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-SCHEMA": lambda ctx: ctx.schema,
     "G-COUNT": _count_gate,
@@ -283,6 +300,7 @@ GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-ROUTE": _route_gate,
     "G-PROV": lambda ctx: check_prov(dict(ctx.target.rows)),
     "G-REGNAL": _regnal_gate,
+    "G-GEN": _gen_gate,
 })
 SOURCED = frozenset({"G-CONSERVE", "G-XCHECK"})  # gates that re-read the sources
 
@@ -356,13 +374,15 @@ def _load_deps(target: LayerData, deps: Sequence[Path | str]
     if len(given) != len(loaded):
         raise GateInputError("each dependency layer may be given once")
     required = set(REQUIRED_DEPS[target.layer])
+    allowed = required | set(OPTIONAL_DEPS.get(target.layer, ()))
     declared = {layer: v for layer, v in target.depends_on.items() if layer not in UNLOADED_DEPS}
     if not set(declared) <= set(LAYERS):
         raise GateInputError(f"{target.layer} declares dependencies "
                              f"{sorted(set(declared) - set(LAYERS))} that hold no records")
-    if set(given) != required or set(declared) != required:
-        raise GateInputError(f"{target.layer} needs dependencies {sorted(required)}; manifest "
-                             f"declares {sorted(declared)}, given {sorted(given)}")
+    if not required <= set(declared) <= allowed or set(given) != set(declared):
+        raise GateInputError(f"{target.layer} needs dependencies {sorted(required)} (may have "
+                             f"{sorted(allowed - required)}); manifest declares {sorted(declared)}, "
+                             f"given {sorted(given)}")
     for layer, version in given.items():
         if declared[layer] != version:
             raise GateInputError(f"{target.layer} was built on {declared[layer]}, given {version}")
@@ -371,6 +391,13 @@ def _load_deps(target: LayerData, deps: Sequence[Path | str]
             if layer in given and given[layer] != version:
                 raise GateInputError(f"{dep.version} was built on {version}, given {given[layer]}")
     return loaded, _load_src(target, src)
+
+
+def gate_deps(layer: str, depends_on: Mapping[str, str]) -> tuple[str, ...]:
+    """The record layers a stored ``layer`` is gated with: those of its required and optional
+    dependencies that its ``depends_on`` declares (``_load_deps`` refuses any other shape)."""
+    return tuple(dep for dep in (*REQUIRED_DEPS[layer], *OPTIONAL_DEPS.get(layer, ()))
+                 if dep in depends_on)
 
 
 def _check_layer_files(data: LayerData) -> None:
@@ -420,6 +447,7 @@ def gate_layer(layer_dir: Path | str, layer: str, deps: Sequence[Path | str] = (
     loaded = [*record_deps, target]
     schema, snapshot = check_schema(merge_files(loaded), [d.layer for d in loaded])
     emb = emb_context(target, inputs) if layer == "emb" else None
-    ctx = GateContext(layer, schema, snapshot, counts_path, target, src, inputs, emb)
+    dep_files = MappingProxyType({d.layer: d.file_shas for d in record_deps})
+    ctx = GateContext(layer, schema, snapshot, counts_path, target, src, inputs, emb, dep_files)
     results = tuple(GATES[n](ctx) if n in GATES else not_implemented(n) for n in names)
     return GateReport(layer, target.version, target.depends_on, results, REQUIRED_GATES[layer])

@@ -1,0 +1,15 @@
+# 創世記年歲推導卡（GEN）兩個契約檔的期望值，G-GEN（ragdata/src/ragdata/gates/gen.py）逐項比對。
+# 依據：docs/records/2026-10-21_gen_card_integration_plan.md §2.1、D1、D2、D7。兩個 sha 是 GEN 確認集
+# （evaluation/experiments/2026-10-20_gen_confirm/prereg.md，H1、H2 皆過）凍結時審過的檔：store
+# reports/arith_stage0_20261020/gen_layer.json 與 reports/gen_confirm_20261020/gen_names.json。ragdata 的移植
+# （kg/gen_layer.py、kg/gen_names.py）在 text@247eafe44b02＋route@c31c88e4681e 上逐位元重建出這兩份。
+# text 層、route 層的詞表或建法一變，sha 就會變：先重審，再改這裡。不要只改數字讓閘門變綠。
+# absent_ok_regnal：GEN 之前就有的 relations 層的 regnal_layer.json sha。只有依賴正好是 {text}、regnal sha 在這份
+# 清單裡的層，才可以沒有 GEN 檔：252e0955… 是 relations@ee8e78c043d2（b20261019_a86f2b06），932d2242… 是
+# relations@a04b67a301dc（b20261019_18aa84ad；只為讓它用自己的 regnal 期望值照樣能 gate）。
+schema: ragdata.gen_expect.v1
+gen_layer_sha256: 46d87abb29000d1210d0ee6fd5e045f7bf6ac08a2f1c034374a61c5e9c1aead5
+gen_names_sha256: 9e622e309615729011c8afa83beab739e5b68945bde10532bbf23f1738d0fe2d
+absent_ok_regnal:
+- 252e09559cb0041155b3e64b895b8284ace59450eb3b9becf1b649aba395cd11
+- 932d2242dc3fdce8830112484c81bc0ea5364cc4caaf6978b12f8984790ee9ab

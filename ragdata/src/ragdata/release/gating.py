@@ -2,7 +2,8 @@
 
 A layer was gated when it was built, but the store keeps every version and the gates
 move on: kg0@3151851bc84f passed G-KG0 when it was built and fails it now. So a
-release runs, for each core layer with the layers it depends on, every gate that reads
+release runs, for each core layer with the layers it declares (``runner.gate_deps``: a
+relations layer from before GEN has no route), every gate that reads
 only the layers and the repository (``runner.record_gates``: not G-CONSERVE and
 G-XCHECK, which re-read the PDFs) but G-ENC, which needs BGE-M3 on a GPU and stays with
 the layer's own ``ragdata gate`` report. G-ROUTE compiles the lexicon again from the
@@ -61,7 +62,7 @@ def red_gates(layers: Mapping[str, LayerData], names: Sequence[str],
     inputs = _with_token_encoder(checks.inputs)
     red: list[str] = []
     for name in names:
-        deps = [layers[dep].path for dep in runner.REQUIRED_DEPS[name]]
+        deps = [layers[dep].path for dep in runner.gate_deps(name, layers[name].depends_on)]
         report = runner.gate_layer(layers[name].path, name, deps, checks.counts_path,
                                    gates=release_gates(name), inputs=inputs)
         red += [f"{report.layer_version} {g.name}: {list(g.details[:DETAILS])}"

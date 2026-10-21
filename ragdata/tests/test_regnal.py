@@ -18,6 +18,7 @@ import pytest
 import yaml
 
 from ragcommon import regnal
+from ragdata.gates.gen import load_gen_expect
 from ragdata.gates.regnal import (
     check_regnal, expectation_doc, load_regnal_expect, report_doc,
 )
@@ -30,6 +31,7 @@ from ragdata.store import read_layer
 
 STORE = Path("/mnt/ollama-data/bible_rag_store")
 TEXT = STORE / "layers/text/text@247eafe44b02"
+ROUTE = STORE / "layers/route/route@c31c88e4681e"   # the GEN files' lexicon (test_gen.py)
 R2 = STORE / "releases/b20261008_e05d3e55.json"
 SERVED = STORE / "layers/relations/relations@a04b67a301dc"   # experiment A's layer, in b20261019_18aa84ad
 AUDITED = STORE / "reports/regnal_fix_20261019/candidate/regnal_layer.json"
@@ -342,24 +344,26 @@ def test_a_typed_edge_replaces_a_seat_edge_and_the_united_kingdom_flows_nowhere(
 
 @pytest.fixture(scope="module")
 def stored(tmp_path_factory):
-    if not TEXT.is_dir():
-        pytest.skip(f"{TEXT.name} not in the store")
+    if not (TEXT.is_dir() and ROUTE.is_dir()):
+        pytest.skip(f"{TEXT.name} or {ROUTE.name} not in the store")
     root = tmp_path_factory.mktemp("regnal_store")
     (root / "text").mkdir()
     (root / "text" / TEXT.name).symlink_to(TEXT)
-    result = build_regnal(TEXT, root)
+    result = build_regnal(TEXT, root, route_dir=ROUTE)
     assert result.passed, [g.to_json() for g in result.gates]
     return root, result.layers["relations"]
 
 
 def test_build_stores_the_layer_and_the_stored_layer_passes_its_gates(stored):
+    """The served text holds Genesis 5 and 11, so the layer also carries the GEN files and
+    depends on route (test_gen.py)."""
     root, layer = stored
     data = read_layer(layer.path)
-    assert data.depends_on == {"text": "text@247eafe44b02"}
+    assert data.depends_on == {"text": "text@247eafe44b02", "route": "route@c31c88e4681e"}
     assert set(data.file_shas) >= {"regnal_layer.json", "regnal_report.json"}
-    report = gate_layer(layer.path, "relations", [TEXT], inputs=GateInputs())
+    report = gate_layer(layer.path, "relations", [TEXT, ROUTE], inputs=GateInputs())
     assert report.passed, report.to_json()
-    again = build_regnal(TEXT, root)
+    again = build_regnal(TEXT, root, route_dir=ROUTE)
     assert again.layers["relations"].version == layer.version
 
 
@@ -407,10 +411,14 @@ def test_a_release_with_the_regnal_layer_carries_its_contract_file(stored, tmp_p
         (root / "emb" / vectors.name).symlink_to(vectors)
     versions = [v for k, v in r2["layers"].items() if v and k != "src"] + [layer.version]
     release = rel.assemble(root, versions, r2["build_date"], default_checks())
-    assert release.doc["contract_version"] == "1.2.0"
+    assert release.doc["contract_version"] == "1.3.0"       # with the GEN files (1.2.0: regnal only)
     assert release.doc["layers"]["relations"] == layer.version
     assert release.doc["contracts"]["regnal_layer.json"] == load_regnal_expect()["layer_sha256"]
-    assert {k: v for k, v in release.doc["contracts"].items() if k != "regnal_layer.json"} \
+    gen = load_gen_expect()
+    assert (release.doc["contracts"]["gen_layer.json"], release.doc["contracts"]["gen_names.json"]) \
+        == (gen["gen_layer_sha256"], gen["gen_names_sha256"])
+    relations = {"regnal_layer.json", "gen_layer.json", "gen_names.json"}
+    assert {k: v for k, v in release.doc["contracts"].items() if k not in relations} \
         == r2["contracts"]
     assert {k: v for k, v in release.doc["layer_digests"].items() if k != "relations"} \
         == r2["layer_digests"]

@@ -33,6 +33,7 @@ import ref_dirs
 from fake_pg import FakePg
 from ragdata import paths
 from ragdata.gates.base import GateResult
+from ragdata.gates.gen import load_gen_expect
 from ragdata.gates.regnal import expectation_doc
 from ragdata.gates.runner import GateInputs, gate_layer
 from ragdata.kg.regnal_build import regnal_files
@@ -153,6 +154,17 @@ def _regnal_expect(root: Path, text: str) -> Path:
     return path
 
 
+def _gen_expect(root: Path, text: str) -> Path:
+    """G-GEN's expectation for the mini text layer: it holds no Genesis, so its relations layer
+    has no GEN file, which G-GEN lets through for its regnal layer only."""
+    layer = read_layer(root / "scratch" / "text" / text)
+    doc = {**load_gen_expect(), "absent_ok_regnal": [
+        hashlib.sha256(regnal_files(layer)["regnal_layer.json"]).hexdigest()]}
+    path = root / "gen_expect.yaml"
+    path.write_text(yaml.safe_dump(doc, sort_keys=False), encoding="utf-8")
+    return path
+
+
 def make(root: Path) -> Mini:
     ref = root / "ref"
     mini_release.build(ref)
@@ -162,7 +174,7 @@ def make(root: Path) -> Mini:
     gate = GateInputs(versification=mini_build.versification(), token_counter=COUNTER,
                       legacy_dir=legacy, compat_sample=mini_emb.SAMPLE, encoder=fake_encoder.make(),
                       registries=root / "registries", kg0_counts=files.kg0_counts,
-                      regnal_expect=_regnal_expect(root, text))
+                      regnal_expect=_regnal_expect(root, text), gen_expect=_gen_expect(root, text))
     sources = Sources(gate=gate, counts=mini_release.MINI_COUNTS, events_yaml=ref / "events.yaml")
     pg, qdrant = FakePg(), QdrantDb(QdrantClient(location=":memory:"))
     pg.close = qdrant.close = lambda: None

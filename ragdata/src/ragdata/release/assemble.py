@@ -2,10 +2,11 @@
 
 A release names one version of every core layer (text, struct, emb, kg0, events,
 route) and of every layer they were built on (src under text), and may name the
-optional relations layer (L3, which holds only the regnal formulas: Kay's P5 exception
-of 2026-10-19, the chronology card's layer). A release without it is what it was
-(``relations`` stays null, contract version 1.1.0, the same bytes); one with it is
-contract version 1.2.0 and carries ``regnal_layer.json``. The versions given
+optional relations layer (L3, which holds only the data of two cards: the regnal formulas,
+Kay's P5 exception of 2026-10-19, and the GEN card's files of 2026-10-21). A release
+without it is what it was (``relations`` stays null, contract version 1.1.0, the same
+bytes); one with it is contract version 1.2.0 and carries ``regnal_layer.json``, and 1.3.0
+when it also carries ``gen_layer.json`` and ``gen_names.json``. The versions given
 need not be all of them: the rest follow from each layer's ``depends_on``, and the
 closure must agree, by content hash, everywhere: a layer built on another version
 of a layer the release names is refused. Every layer is read through the store,
@@ -37,7 +38,7 @@ from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
 from ragcommon import ids
-from ragdata.contract.registry import EMB_REPORT, ENCODER_FINGERPRINT, record_type_for_file
+from ragdata.contract.registry import EMB_REPORT, ENCODER_FINGERPRINT, GEN_LAYER, record_type_for_file
 from ragdata.gates.base import GateInputError
 from ragdata.release import gating
 from ragdata.release.contracts import ContractFileError, contract_files, encode
@@ -52,6 +53,7 @@ __all__ = ["CORE", "NAMING", "OPTIONAL", "Release", "ReleaseChecks", "ReleaseErr
 RELEASE_SCHEMA = "ragdata.release.v1"
 CONTRACT_VERSION = "1.1.0"
 CONTRACT_VERSION_REGNAL = "1.2.0"       # with the optional relations (regnal) layer
+CONTRACT_VERSION_GEN = "1.3.0"          # whose contract files include the GEN card's
 CORE = ("text", "struct", "emb", "kg0", "events", "route")
 OPTIONAL = ("relations",)
 NAMING = ("build_id", "build_date", "release_sha")    # what the body's sha names
@@ -140,12 +142,18 @@ def _counts(layers: Mapping[str, LayerData]) -> dict[str, int]:
             for name, rows in layer.rows.items() if record_type_for_file(name) is not None}
 
 
+def _contract_version(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> str:
+    if GEN_LAYER in contracts:
+        return CONTRACT_VERSION_GEN
+    return CONTRACT_VERSION_REGNAL if "relations" in layers else CONTRACT_VERSION
+
+
 def _body(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> dict[str, Any]:
     emb = layers["emb"]
     template = _json_file(emb, EMB_REPORT).get("template", {}).get("template_id")
     if not template:
         raise ReleaseError(f"{emb.version}: {EMB_REPORT} declares no template_id")
-    version = CONTRACT_VERSION_REGNAL if "relations" in layers else CONTRACT_VERSION
+    version = _contract_version(layers, contracts)
     return {
         "schema": RELEASE_SCHEMA, "contract_version": version, "template_id": template,
         "layers": {layer: (layers[layer].version if layer in layers else None)

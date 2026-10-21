@@ -7,8 +7,9 @@ import json
 import pytest
 
 import mini_release
+from ragdata.contract.registry import GEN_LAYER, GEN_NAMES, REGNAL_LAYER
 from ragdata.release import contracts
-from ragdata.store import read_layer
+from ragdata.store import read_layer, write_layer
 
 
 @pytest.fixture(scope="module")
@@ -76,3 +77,13 @@ def test_a_slot_whose_unit_has_no_index_row_is_refused(built):
                                                struct.depends_on, struct.file_shas, rows)}
     with pytest.raises(contracts.ContractFileError, match="psa.42.1"):
         contracts.contract_files(broken)
+
+
+@pytest.mark.parametrize("held", [(REGNAL_LAYER,), (REGNAL_LAYER, GEN_LAYER, GEN_NAMES)],
+                         ids=["before-gen", "with-gen"])
+def test_a_relations_file_is_copied_when_the_layer_holds_it(built, tmp_path, held):
+    _, layers, files = built
+    data = {name: f'{{"file": "{name}"}}\n'.encode() for name in held}
+    relations = read_layer(write_layer(tmp_path, "relations", data).path)
+    copied = contracts.contract_files({**layers, "relations": relations})
+    assert {k: v for k, v in copied.items() if k not in files} == data

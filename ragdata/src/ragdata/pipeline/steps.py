@@ -13,22 +13,26 @@ reference copies (bible_md, the old ``output/``) and encoder.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable, Mapping
 
 from ragdata import paths, stages
 from ragdata.contract.counts import PDF_COUNTS_PATH
-from ragdata.gates.runner import REQUIRED_DEPS, GateInputs, GateReport, gate_layer
+from ragdata.gates.runner import OPTIONAL_DEPS, REQUIRED_DEPS, GateInputs, GateReport, gate_layer
 from ragdata.kg import k0_build, k1_build, k4_build, regnal_build
 from ragdata.stages.errors import StageError
 from ragdata.stages.result import BuildResult
 from ragdata.stages.s05_struct.build import StructInputs, build_struct
 from ragdata.stages.s06_emb.build import EmbInputs, build_emb
-from ragdata.store import StoredLayer
+from ragdata.store import MANIFEST, StoredLayer
 
 ORDER = ("text", "struct", "emb", "kg0", "events", "route", "relations")
-GATE_DEPS: Mapping[str, tuple[str, ...]] = {**REQUIRED_DEPS, "text": ("src",)}
+# what a stored layer may be gated with; it gets those its manifest declares
+GATE_DEPS: Mapping[str, tuple[str, ...]] = {
+    **{layer: (*deps, *OPTIONAL_DEPS.get(layer, ())) for layer, deps in REQUIRED_DEPS.items()},
+    "text": ("src",)}
 Built = Mapping[str, StoredLayer]
 
 
@@ -52,9 +56,17 @@ class Step:
     gate: Callable[[Built], GateReport]
 
 
+def _declared(path: Path) -> Mapping[str, str]:
+    try:
+        return json.loads((Path(path) / MANIFEST).read_text(encoding="utf-8")).get("depends_on") or {}
+    except (OSError, ValueError, AttributeError):
+        return {}  # gate_layer reports the broken manifest
+
+
 def gate_stored(layer: str, built: Built, sources: Sources) -> GateReport:
     """Every required gate of the stored ``layer``, with the layers it was built on."""
-    deps = [built[dep].path for dep in GATE_DEPS[layer]]
+    declared = _declared(built[layer].path)
+    deps = [built[dep].path for dep in GATE_DEPS[layer] if dep in declared]
     return gate_layer(built[layer].path, layer, deps, sources.counts, inputs=sources.gate)
 
 
@@ -98,7 +110,8 @@ def _route(built: Built, store: Path, s: Sources) -> BuildResult:
 
 
 def _regnal(built: Built, store: Path, s: Sources) -> BuildResult:
-    return regnal_build.build_regnal(built["text"].path, store, s.gate.regnal_expect)
+    return regnal_build.build_regnal(built["text"].path, store, s.gate.regnal_expect,
+                                     route_dir=built["route"].path, gen_expect=s.gate.gen_expect)
 
 
 BUILDERS: Mapping[str, Callable[[Built, Path, Sources], BuildResult]] = {
