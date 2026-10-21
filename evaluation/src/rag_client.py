@@ -29,6 +29,7 @@ async def query_rag(
     include_context: bool = True,
     graph_strategies: list[str] | None = None,
     use_regnal_card: bool | None = None,
+    use_gen_card: bool | None = None,
 ) -> dict:
     """
     Send a question to POST /api/v1/query and return the parsed response.
@@ -46,6 +47,9 @@ async def query_rag(
             none. None = backend default.
         use_regnal_card: Per-request override for the chronology card (backend
             utils/regnal). None = backend default, which is off for
+            semantic_only and use_graph=False.
+        use_gen_card: Per-request override for the Genesis age card (backend
+            utils/gen_card). None = backend default, which is off for
             semantic_only and use_graph=False.
 
     Returns dict with keys: answer, sources, intent, retrieval_stats
@@ -65,6 +69,8 @@ async def query_rag(
         payload["graph_strategies"] = graph_strategies
     if use_regnal_card is not None:
         payload["use_regnal_card"] = use_regnal_card
+    if use_gen_card is not None:
+        payload["use_gen_card"] = use_gen_card
     url = f"{settings.backend_url}/api/v1/query"
 
     own_client = client is None
