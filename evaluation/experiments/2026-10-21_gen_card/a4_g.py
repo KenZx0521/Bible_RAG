@@ -142,8 +142,10 @@ class Writer:
         return GC.read_json(p) if p.is_file() else None
 
     def jsonl(self, name: str) -> list[dict]:
+        """A record per "\\n"-ended line (repair_tail's rule): splitlines() would also split at U+2028, U+2029 or
+        U+0085, which json.dumps(ensure_ascii=False) leaves as they are in an answer or a context."""
         p = self.path(name)
-        return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()] if p.is_file() else []
+        return [json.loads(x) for x in p.read_text(encoding="utf-8").split("\n") if x.strip()] if p.is_file() else []
 
 
 def load_inputs(root: Path = GC.RUN_ROOT) -> tuple[list[dict], dict]:

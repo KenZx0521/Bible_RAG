@@ -4,6 +4,7 @@ Ollama, no docker. Synthetic items, cards and answers (made-up ids, numbers and 
 """
 from __future__ import annotations
 
+import ast
 import json
 import sys
 import urllib.error
@@ -42,8 +43,19 @@ def world(n: int = 4, abstain: tuple[str, ...] = ("S01",)) -> tuple[list[dict], 
     return items, cards
 
 
+def generator_join() -> str:
+    """The separator backend/utils/generator.py's _build_context joins its blocks with (read as source, no import,
+    as test_context_blocks reads AUX_LABEL)."""
+    tree = ast.parse((A.REPO / "backend/utils/generator.py").read_text(encoding="utf-8"))
+    fn = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_build_context")
+    seps = [n.func.value.value for n in ast.walk(fn) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+            and n.func.attr == "join" and isinstance(n.func.value, ast.Constant)]
+    assert len(seps) == 1
+    return seps[0]
+
+
 class Backend:
-    """/query: one source per call whose context names the call; ON carries the card; answers the gold unless
+    """/query: two sources per call whose contexts name the call; ON carries the card; answers the gold unless
     ``values`` says otherwise; ``faults`` {(sid, arm, nth call): kind} breaks one call."""
 
     def __init__(self, items: list[dict], cards: dict, build: str = BUILD):
@@ -60,10 +72,11 @@ class Backend:
             return None, "HTTPError 500", 1.0
         g = self.cards[sid]["g"] if arm == "ON" else None
         aux = None if g is None else {"kind": "gen", "text": g["g_block"], "layer_sha256": SC.GEN_LAYER_SHA256}
-        src = {"id": "ck:other", "context": f"[1] X\nctx-{sid}-{arm}-{k}", "build_id": self.build,
+        src = {"id": "ck:other", "context": f"[1] X\nctx-{sid}-{arm}-{k}-a", "build_id": self.build,
                "strategy": "hybrid_hybrid", "passage_id": it["context_from"] if k % 2 else "ps:other",
                "split_passage_ids": []}
-        data = {"answer": f"step\n答案：{self.values.get((sid, arm), it['gold'])}歲", "sources": [src], "aux_card": aux,
+        src2 = {**src, "id": "ck:second", "context": f"[2] Y\nctx-{sid}-{arm}-{k}-b", "passage_id": "ps:second"}
+        data = {"answer": f"step\n答案：{self.values.get((sid, arm), it['gold'])}歲", "sources": [src, src2], "aux_card": aux,
                 "intent": {"type": "t"}, "retrieval_stats": {"strategy_errors": {}}}
         sec = 130.0 if fault == "slow" else 1.0
         if fault == "gen_error":
@@ -163,17 +176,25 @@ def test_a_full_run_calls_in_plan_order_and_pairs_every_direct_call_with_its_on_
     assert [(x["rep"], x["sid"], x["arm"]) for x in xs] == [(r, it["sid"], a) for r, it, arms in
                                                             A.plan(items, cards, A.MODES["a4"]) for a in arms]
     on = {(x["sid"], x["rep"]): x for x in xs if x["arm"] == "ON"}
+    assert {len(o["sources"]) for o in on.values()} == {2}
     for x in xs:
         if x["arm"] in SC.DIRECT:
             o = on[x["sid"], x["rep"]]
             block = None if x["arm"] == "B0-prod" else cards[x["sid"]]["g"]["t_block"]
-            want = cc.build_user(A.ctx_on(o["sources"]), items[int(x["sid"][1:])]["question"], block)
+            joined = generator_join().join(s["context"] for s in o["sources"])
+            want = cc.build_user(joined, items[int(x["sid"][1:])]["question"], block)
             assert (x["on_attempt"], x["ctx_sha256"], x["user_sha256"]) == (o["attempt"], o["ctx_sha256"], SC.sha(want))
     assert all(c["system"] == cc.SYSTEM_PROMPT and c["options"] == {"temperature": 0.1, "num_predict": 10000}
                for c in io.chat.calls)
     g = rep["gates"]
     assert rep["state"] == "valid" and rep["judged"] and g["wiring"]["pass"] and g["quality"]["pass"]
     assert g["stop"]["stop"] and not g["propose_prod"]          # every arm answers the gold: Δ 0, CI low 0
+
+
+def test_ctx_on_joins_the_source_contexts_as_the_generator_joins_its_blocks():
+    sources = [{"context": "[1] A\nca"}, {"context": "[2] B\ncb"}, {"context": "[3] C\ncc"}]
+    assert A.ctx_on(sources) == generator_join().join(["[1] A\nca", "[2] B\ncb", "[3] C\ncc"])
+    assert A.ctx_on(sources[:1]) == "[1] A\nca"
 
 
 def test_on_sends_no_card_flag_and_off_sends_false():
@@ -372,6 +393,24 @@ def test_the_quality_gate_and_the_stop_rule(tmp_path):
     assert rep["judged"] and rep["sentence"] is not None
 
 
+@pytest.mark.parametrize("wrong", ["B0-prod", "T-rows-prod"])
+def test_the_stop_rule_and_the_sentence_read_on_minus_b0_prod_first(tmp_path, wrong):
+    """Δ1 and Δ2 apart: the arm that is wrong on every item has Δ 1 (CI [1, 1]), the other Δ 0 (CI [0, 0])."""
+    items, cards = world(4, abstain=())
+    io = make_io(items, cards)
+    for it in items:
+        io.chat.values[(it["sid"], wrong)] = 1
+    rep = run(tmp_path, items, cards, io)
+    one, zero = (1.0, [1.0, 1.0], "+1.000", "[+1.000, +1.000]"), (0.0, [0.0, 0.0], "+0.000", "[+0.000, +0.000]")
+    a, b = (one, zero) if wrong == "B0-prod" else (zero, one)
+    got = [(rep["delta"][k]["delta"], rep["delta"][k]["ci95"]) for k in ("ON-B0-prod", "ON-T-rows-prod")]
+    assert got == [a[:2], b[:2]]
+    g, stop = rep["gates"], wrong != "B0-prod"
+    assert rep["judged"] and g["wiring"]["pass"] and g["quality"]["pass"]
+    assert (g["stop"]["stop"], g["propose_prod"]) == (stop, not stop)
+    assert rep["sentence"] == SC.SENTENCE.format(d1=a[2], ci1=a[3], d2=b[2], ci2=b[3])
+
+
 @pytest.mark.parametrize("fault, arm", [("card", "ON"), ("off_card", "OFF")])
 def test_a_wiring_failure_stops_the_run_at_once(tmp_path, fault, arm):
     items, cards = world(2)
@@ -433,6 +472,14 @@ def test_the_writer_refuses_every_other_path(tmp_path):
     assert not (tmp_path / "ok").exists()
 
 
+def test_a_record_holding_a_unicode_line_break_reads_back_as_one_record(tmp_path):
+    w = A.Writer(tmp_path / "w", dry=True)
+    recs = [{"answer": "a\u2028b\u2029c\x85d\x0be"}, {"answer": "f"}]
+    for r in recs:
+        w.append(A.CALLS, r)
+    assert w.jsonl(A.CALLS) == recs and A.repair_tail(w) == 0
+
+
 def test_nothing_printed_or_reported_holds_a_question_card_or_answer(tmp_path, capsys):
     items, cards = world(3)
     io = make_io(items, cards)
@@ -451,8 +498,9 @@ def test_nothing_printed_or_reported_holds_a_question_card_or_answer(tmp_path, c
 @needs_store
 def test_the_pinned_inputs_load_as_58_items_48_fired():
     items, cards = A.load_inputs()
+    n_units = len(A.plan(items, cards, A.MODES["a4"]))        # bound first: a failing assert prints no item
     assert (len(items), sum(SC.fired(cards, it["sid"]) for it in items)) == (58, 48)
-    assert [it["sid"] for it in items] == sorted(cards) and len(A.plan(items, cards, A.MODES["a4"])) == 174
+    assert [it["sid"] for it in items] == sorted(cards) and n_units == 174
     assert sum(len(a) for _r, _i, a in A.plan(items, cards, A.MODES["a4"])) == 3 * (58 * 3 + 48)
 
 
