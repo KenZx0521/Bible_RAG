@@ -331,3 +331,44 @@
   - handshake ok；啟動日誌顯示王朝層 252e0955、GEN 層 46d87abb（chains {5: 10, 11: 9}，60 個 blocker）都已載入。
   - 容器 env：LLM_TEMPERATURE 0.1、LLM_MAX_TOKENS 10000、OLLAMA_MODEL gemma4:e4b-it-q8_0，RAG_GEN_CARD 沒設。Ollama 0.32.5，gemma digest 9dcc3580。
   - 13:58 開始跑 A4（`a4_g.py a4 --build b20261021_dfa1e3e3`，store `reports/gen_card_20261021/a4/`）。
+- 2026-10-21 A4 跑完（13:58–16:36，store `reports/gen_card_20261021/a4/`）：這是第一次完整有效的一輪，也是唯一的一輪。
+  - 666/666 次有效（ON 174、B0-prod 174、T-rows-prod 144、OFF 174），沒有作廢、沒有重跑。
+    - 直接呼叫的 done_reason 都是 stop，截斷 0 次。
+    - 兩次 `/api/ps` 都是 gemma4:e4b-it-q8_0、context_length 131072。
+    - digest 9dcc3580…、Ollama 0.32.5，跑前跑後相同。
+  - 接線：過。
+    - ON 卡片對等 58/58：48 題共 144 次是 GEN 卡，10 題沒有卡，也沒有王朝卡。
+    - OFF 58/58 都沒有卡。
+  - 品質：ON 在出卡 48 題的平均是 11/12＝0.917（門檻 0.80），過。
+  - 停止條件：Δ(ON − B0-prod) 的 95% CI 下界是 +0.483，大於 0，不停。
+  - 結果句：「staging（新 build＋r5）prod 檢索下，確認集同一批 58 題（盲寫；題目寫出兩人的層名、只在必要時加一個不在路徑上的辨識詞、不含數字、點名創世記），gemma4:e4b：ON − B0-prod Δ̄＝+0.598（棄權記 0），95% CI [+0.483, +0.707]；ON − T-rows-prod Δ̄＝+0.316，95% CI [+0.218, +0.420]；描述性，題目不是新樣本；Δ 固定實驗的 prompt 格式，不等於使用者看到的 ON − OFF 差」
+  - W:L:T 是 42:0:16 與 28:2:28，兩個 p 都是 5.0e-05。
+  - 各臂平均：
+    - B0-prod：出卡 48 題 7/36＝0.194，全部 58 題 6/29＝0.207。
+    - T-rows-prod：出卡 48 題 77/144＝0.535，全部 58 題 85/174＝0.489。
+    - 這兩臂的嚴格與寬鬆計分相同。
+    - OFF 嚴格計分 174 次都是格式 0。
+  - 整段寬鬆計分：OFF 14/87、B0-prod 13/87、ON 在棄權 10 題 7/30、OFF 在棄權 10 題 2/15。
+  - 檢索分層：58 題都在「3 次都有」，「部分有」與「都沒有」都是 0 題。
+  - 耗時中位數：ON 15.7 s、OFF 17.2 s、B0-prod 11.0 s、T-rows-prod 10.3 s；最長的一次 32.0 s。
+- 2026-10-21 A4 獨立驗證（`wf_19511e79-235`）分四個角度：
+  - 不 import a4_score 重算；
+  - 接線與作廢；
+  - prompt 與模型設定對等；
+  - 檢索分層。
+
+  四個都確認。report.json 的每個數字、每題的列與結果句都逐一相符。
+  - prompt：用 generator.py 本身，拿實際的 ctx_on、題目與卡重組。
+    - 出卡的 144 次 ON，messages 都等於 [cards_common.SYSTEM_PROMPT, cc.build_user(ctx_on, q, g_block)]。
+    - 拿掉卡片區塊就等於 B0-prod 的 prompt（144/144）。
+    - Ollama 選項兩邊相同：temperature 0.1、num_predict 10000，都不送 num_ctx 或 think；thinking 兩邊都開。
+    - T-rows-prod 用的是 t_block（144/144）。
+  - 以下各點不影響門檻與結果句，只記下來：
+    - 整段寬鬆計分照 a4_score 的讀法：各行正規化後用「;」接成一行，再判 gold_written。這不是嚴格計分的超集，B0-prod 有 10 次嚴格計分對、整段計分卻是 0。如果改用「有任何一行寫出 gold」的讀法，OFF 與 B0-prod 的大小方向會反過來（0.161＞0.149 變成 0.167＜0.207）。計畫沒有寫死接法，所以這組 OFF 對 B0-prod 的比較不拿來區分 prompt 格式與檢索的影響。
+    - 檢索分層退化：174 次 ON 都在第 0 名取到 context_from，ON 與 OFF 的 sources 每題都相同，分層沒有資訊。實際資料裡 split_passage_ids 都是空的。
+    - 兩個 p 都落在 Monte Carlo 下限 1/20001。
+    - 棄權 10 題記 0 是事先定的慣例。如果改用 ON 的實際分數（格式 0），Δ(ON − B0-prod)＝+0.552，CI [+0.420, +0.684]，下界仍大於 0。這只是敏感度參考。
+    - A2(5) 的 backend 測試（`backend/tests/test_gen_card.py` 102–111 行）比的是 generator 自己的 build_messages 與 SYSTEM_PROMPT_AUX，沒有直接比 cards_common。和 cards_common 的對等由三處撐住：`test_regnal_card.py` 的釘值字串、確認集的 F2 對等，以及這次的 144/144 重組。
+    - intent 分類每次都可能不同：51 題的 intent.type 在 6 次 /query 之間有變。但每題 6 次的 sources 都相同，不影響 ctx_on 與配對。這是管線既有的性質。
+    - 沒有直接比對 r5 映像裡的程式。r5 建自 1d17687；相關 backend 檔在 1d17687 與 HEAD 的 sha 相同，觀察到的行為也與程式相符。
+  - 依 §3.2，A4 全部過關，接下來請 Kay 決定是否「上 prod」。
