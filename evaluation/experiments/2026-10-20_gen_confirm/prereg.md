@@ -1279,3 +1279,16 @@ nsim＝10,000，seed 20261019。「誤主張」＝p < 0.05 且 Δ̄ ≥ +0.10。
   - store `ho/kay/kay_sample.json`：`7014375ebfef66b3d9917c0d8fc4c6c779ec0005295de19be10ea814069387a1`
   - store `ho/kay/kay_page.html`：`3ed2375cb428100a4c508e941c4d566bd6eca77e6a00748fadbcb459b866cf69`
 - 下一步等 Kay 的決定（K-Kay：10 題刪 ≥ 3 就停；K-gold）。
+
+### 2026-10-21 Kay 決定與 F2 第 1–4 步（累計 8.32 USD）
+
+- 應 Kay 要求另發私人網頁 https://claude.ai/artifact/6xMMkmWpwYaKz5r5XFv2mc 。題目內容與 `kay_page.html` 逐字相同，建頁腳本先核原頁 sha 才產生頁面；決定自動存進 artifact db `decisions/kay`。副本在 store `ho/kay/`：
+  - `kay_check.html`：`cd3f4b71748eda07a00c4b324b6730152dce8870ee7215f6609a72548c92b2bb`
+  - `build_kay_artifact.py`：`15f1d7ce83738f4e8229f57da6a854cb54cc0334a71d88b565d0287934043683`
+- Kay 的決定（從 db 讀回，存檔標記完成，`source_sha256` 等於 `kay_page.html`）：10 題全部 accept，0 題勾程式 gold 錯，沒有意見；爭議 0 件。
+  - store `ho/kay/kay_decisions.json`：`c4db6dbb5d98a85d5035390f747f2759f258301f9868772909073f220c96fbb4`
+- `kay_g.py apply`：刪除 0/10，沒有修改。**K-Kay 不成立（0 < 3）、K-gold 不成立**（CPU 追查也是 0）。`run_ho_g.py kay` 沒有要跑的題，帳本不變。
+  - store `ho/kay.json`：`1a4dcb914300c0ee88f3ce68e920125fb9bfba43c625ca4b3593b37c944f4c25`（final、無 stop）
+- `freeze_g.py`（F2 第 1–4 步）：mech 與 transcript 重查全過；Kay 的決定與各題位終態一致；prod 王朝觸發在 58 題上觸發 0 題；凍結 58 題，各種流失都是 0。分層：F1c5 14、F1c11 12、F5c5 26、F5c11 6；同名端點 14；需辨識詞 6。主線程用 CPU 獨立核對：58 題的題目文字都等於該題位通過的那份稿，題目都不含數字，sid 不重複且依序。
+  - store `questions_frozen.json`：`27e73bedc73121645870fd4a3f7cdfcc50bd07705e36d860fac68e40ce703058`（此後不再刪題）
+  - store `ho/freeze.json`：`1ca59a5b42283e0e2ef6188c04880d60bd450b90c8d9a5840d602e0cbbe68ab6`
