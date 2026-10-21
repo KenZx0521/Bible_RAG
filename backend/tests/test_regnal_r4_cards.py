@@ -116,7 +116,8 @@ def serve(name: str, layer, gen_layer=None) -> dict:
                 body = http.post("/api/v1/query", json={"question": it["question"], "include_sources": False}).json()
                 seed_chats = [m for m in now["chats"] if m[0]["content"] == SEED_SYSTEM]
                 gen = [m for m in now["chats"] if m[0]["content"] != SEED_SYSTEM]
-                assert len(gen) == 1, f"{name} {it['id']}: {len(gen)} generator calls"
+                calls = len(gen)            # bound: a failing len(gen) == 1 would print the messages
+                assert calls == 1, f"{name} {it['id']}: {calls} generator calls"
                 out[it["id"]] = (body["aux_card"], gen[0], seed_chats, it)
         finally:
             context.reset()

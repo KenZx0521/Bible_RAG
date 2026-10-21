@@ -18,8 +18,9 @@ were read from). The served build is b20261019_a86f2b06 with its regnal layer an
   question sets p1/p2 and stage-0's dynasty items; the regnal trigger on none of the GEN confirm 58, P1,
   P2 and stage-0 GEN items; so no question takes both.
 
-Question and card text stay in the store: assertions compare counts, ids and sha256 only. Skipped where
-the store is absent. No LLM: the generator's is a fake that records its messages.
+Question and card text stay in the store: assertions compare counts, ids and sha256 only, a count bound
+to a name first (pytest prints the collection under a failing ``len(...) == n``). Skipped where the
+store is absent. No LLM: the generator's is a fake that records its messages.
 """
 
 from __future__ import annotations
@@ -110,7 +111,8 @@ def confirm(gen, regnal):
     """{sid: (aux_card, generator messages, item)} of the 58 frozen questions through /api/v1/query."""
     frozen = _read(GENC / "questions_frozen.json")["questions"]
     items = {it["sid"]: it for it in _read(GENC / "run/items.json")["items"]}
-    assert len(frozen) == 58 and sum(items[q["sid"]]["question"] == q["question"] for q in frozen) == 58
+    n, same = len(frozen), sum(items[q["sid"]]["question"] == q["question"] for q in frozen)
+    assert (n, same) == (58, 58)
     now: dict = {}
 
     async def intent(question):
@@ -140,7 +142,8 @@ def confirm(gen, regnal):
                 it = items[q["sid"]]
                 now.update(sources=it["sources"], chats=[])
                 body = http.post("/api/v1/query", json={"question": it["question"], "include_sources": False}).json()
-                assert len(now["chats"]) == 1, f"{q['sid']}: {len(now['chats'])} LLM calls"
+                calls = len(now["chats"])
+                assert calls == 1, f"{q['sid']}: {calls} LLM calls"
                 out[q["sid"]] = (body["aux_card"], now["chats"][0], it)
         finally:
             context.reset()
@@ -179,7 +182,8 @@ def test_the_stage0_gen_items_f1_f5_cards_and_f3_none(gen):
 
 def test_the_prompts_are_build_messages_and_the_runs_g_prompts(confirm):
     jobs = {j["item"]: j for j in _read(GENC / "run/jobs.json") if j["arm"] == "G" and j["rep"] == 1}
-    assert len(jobs) == 48
+    n_jobs = len(jobs)
+    assert n_jobs == 48
     built = equal = 0
     for sid, (aux, msgs, it) in confirm.items():
         want = generator.build_messages(it["question"], generator.build_context(it["sources"]),

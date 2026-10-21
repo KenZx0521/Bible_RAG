@@ -84,7 +84,8 @@ def _cases(L):
 
 
 def test_the_example_takes_the_card(layer):
-    assert trigger(_example(layer), layer).fired
+    fired = trigger(_example(layer), layer).fired      # bound: unbound, a failure prints question and layer
+    assert fired
 
 
 def test_the_literals_are_read_from_the_code():
