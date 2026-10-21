@@ -319,3 +319,15 @@
   - PG 已回滾，沒有留下 schema、builds 列、collection 或 contracts 目錄；prod 健康。
   - 原因：qdrant 容器的開檔軟上限是 1024，已載入 4 個 build 時用了 921 個 fd，一個 collection 約佔 230 個。
   - 照 §3.0 屬於修好再跑。修法是卸載 R1（`b20261008_6daa4f31`，r1 映像已不在，不在回滾鏈上），或調高 qdrant 的 `ulimits.nofile`（要重啟 qdrant）。兩者都會動共用資源，等 Kay 決定。
+- 2026-10-21 Kay 裁決「卸 R1＋調高上限」：
+  - 卸載 `b20261008_6daa4f31`：Qdrant 的 fd 從 921 降到 728。
+  - qdrant 的 `ulimits.nofile` 調成 65536／524288 並重建容器（503a6e8）。prod 中斷約 11 秒（13:35:09–13:35:20），之後 3 個 collection 都是 green，prod 健康，retrieval_only 查詢正常。
+- 2026-10-21 重跑 load：`b20261021_dfa1e3e3` 載入 34,058 點。
+  - verify：G-SCHEMA.pg、G-PROJ C1–C6 全綠。
+  - contracts 對 `b20261019_a86f2b06`：10 個檔逐位元相同，多出 `gen_layer.json`（46d87abb…）與 `gen_names.json`（9e622e30…）；manifest 只差 build 名稱、relations 層與這兩個檔的列。
+  - A1(c) 改從新 contracts 讀層（`test_gen_card_release.py`）：3 passed，確認集 48 卡＋10 無、stage-0 14＋4。
+  - A6 全過：verify 全綠；除 relations 外各層 digest 不變；regnal 位元組不變；兩個 GEN 檔等於釘值；a86f2b06 在新程式上重組位元組相同；test_pipeline、test_pipeline_cli、test_regnal 都綠；只有 regnal 檔的 {text, route} 層是紅燈。
+- 2026-10-21 staging：`promote --env staging --build b20261021_dfa1e3e3 --image sha256:31bb9d09…`，`STG_IMAGE=bible_rag-backend:r5` 起 `backend-stg`。
+  - handshake ok；啟動日誌顯示王朝層 252e0955、GEN 層 46d87abb（chains {5: 10, 11: 9}，60 個 blocker）都已載入。
+  - 容器 env：LLM_TEMPERATURE 0.1、LLM_MAX_TOKENS 10000、OLLAMA_MODEL gemma4:e4b-it-q8_0，RAG_GEN_CARD 沒設。Ollama 0.32.5，gemma digest 9dcc3580。
+  - 13:58 開始跑 A4（`a4_g.py a4 --build b20261021_dfa1e3e3`，store `reports/gen_card_20261021/a4/`）。
