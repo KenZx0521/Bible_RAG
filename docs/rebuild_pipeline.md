@@ -119,6 +119,7 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 - 第一次 promote 的回滾（沒有前一筆）會刪掉該 env 的 serving 列，回到「沒有 build 在服務」；之後即可 unload 該 build。
 - `--env prod` 一律要加 `--yes-prod`，否則拒絕（promote 與 `--rollback` 都是）。
 - prod 配對：2026-10-08 R1（`b20261008_6daa4f31`＋r1）→ 2026-10-09 R2（`b20261008_e05d3e55`＋r2）→ 2026-10-19 `b20261019_18aa84ad`＋`bible_rag-backend:r3`（R2 各層加 relations 王朝層，年表卡）→ **2026-10-20 起 `b20261019_a86f2b06`＋`bible_rag-backend:r4`**（relations 換成修正層 `relations@ee8e78c043d2`；r4 帶 S4 守門、規則種子與放寬的觸發，見 `docs/records/2026-10-20_regnal_r4_staging.md`）。r4 不可配 `b20261019_18aa84ad`：回滾時 r3 與 `b20261019_18aa84ad` 一起回。G-REGNAL 的期望值已換成新層，`b20261019_18aa84ad` 不能再 release／load／verify，但 `promote --rollback` 不受影響。legacy 已刪除，回滾只能翻回前一個 serving 配對。
+- GEN 卡（`docs/records/2026-10-21_gen_card_integration_plan.md` §6；Kay 說「上 prod」才做）：配對是新 build（relations 換成依賴 {text, route}、帶兩個 GEN 檔的層，其他各層與 `b20261019_a86f2b06` 相同）＋`bible_rag-backend:r5`。回滾仍是映像與 build 一起回：新 build＋r5 → `b20261019_a86f2b06`＋r4 → `b20261019_18aa84ad`＋r3。交叉配對比王朝卡寬鬆（r4 配新 build 會忽略 GEN 檔；r5 配 `b20261019_a86f2b06` 沒有 GEN 檔，GEN 卡自動關、王朝卡不變），但不當回滾路徑用。
 - **換 prod 容器**（promote 之後；只動 backend，不碰 postgres、qdrant、ollama）：先把 `docker-compose.yml` 的 `image` 改成要服務的 tag，再
   ```bash
   docker compose -p bible_rag -f docker-compose.yml up -d --no-deps --no-build --pull never --wait --wait-timeout 300 backend
@@ -127,8 +128,8 @@ $RAGDATA promote --env staging --rollback                             # 回到�
     http://localhost:8000 <build_id> ground_truth.v2.json <報告.json>
   ```
   回滾：`$RAGDATA promote --env prod --rollback --yes-prod`，把 `image` 改回前一個 tag，再跑同一個 `up`。不要 `docker compose build backend`、不要 `down`、不要 `--remove-orphans`。
-  - `up` 用 `--pull never`，所以回滾前先確認舊映像還在本機（`docker image inspect <tag>`）。Komodo 每天會 prune 沒有容器引用的映像；換容器後用一個不啟動的容器釘住舊映像（目前是 `docker create --name bible_rag_backend_r3_pin bible_rag-backend:r3 true`；r2 仍由 `bible_rag_backend_r2_pin` 釘住）。r2 若已被刪，先 `zstd -dc /mnt/ollama-data/bible_rag_bak/20261008/images/bible_rag-backend_r2.tar.zst | docker load`；r3 沒有 tar，只靠 `bible_rag_backend_r3_pin`，不要刪它（必要時可由 commit 3cadd72 重建）。
-- staging backend（:8002）見 `docker-compose.staging.yml` 的 `backend-stg`，映像由 `STG_IMAGE` 指定。它的 restart 是 `"no"`：握手不符就停在 exited，不會反覆重載模型；主機重開機後要重跑該檔開頭的 `up` 指令。
+  - `up` 用 `--pull never`，所以回滾前先確認舊映像還在本機（`docker image inspect <tag>`）。Komodo 每天會 prune 沒有容器引用的映像；換容器後用一個不啟動的容器釘住舊映像（目前是 `docker create --name bible_rag_backend_r3_pin bible_rag-backend:r3 true`；r2 仍由 `bible_rag_backend_r2_pin` 釘住）。r2 若已被刪，先 `zstd -dc /mnt/ollama-data/bible_rag_bak/20261008/images/bible_rag-backend_r2.tar.zst | docker load`；r3 沒有 tar，只靠 `bible_rag_backend_r3_pin`，不要刪它（必要時可由 commit 3cadd72 重建）。r4 也沒有 tar：staging 或 prod 第一次換 r5 之前，先 `docker create --name bible_rag_backend_r4_pin bible_rag-backend:r4 true`，之後不要刪它。
+- staging backend（:8002）見 `docker-compose.staging.yml` 的 `backend-stg`，映像由 `STG_IMAGE` 指定（預設是 `bible_rag-backend:r2`；GEN 卡的 staging 要明確傳 `STG_IMAGE=bible_rag-backend:r5`）。它的 restart 是 `"no"`：握手不符就停在 exited，不會反覆重載模型；主機重開機後要重跑該檔開頭的 `up` 指令。
 
 ## 7. 清理被取代的 build
 
@@ -144,7 +145,7 @@ $RAGDATA promote --env staging --rollback                             # 回到�
 - `scripts/tests/run.sh` 自己建暫存 shim。
 
 ```bash
-# ragdata＋packages：2,608 passed、6 skipped（其中 5 個是 PG 整合測試，要設 RAGDATA_TEST_PG_DSN），約 5.5 分鐘
+# ragdata＋packages：2,611 passed、6 skipped（其中 5 個是 PG 整合測試，要設 RAGDATA_TEST_PG_DSN），約 5.5 分鐘
 # （test_regnal 與 test_gen 會用 store 的真實層組三次 release，佔約 3 分鐘）
 env HF_HOME=/mnt/ollama-data/huggingface HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   PYTHONPATH=/mnt/ollama-data/bible_rag_store/tools/pytest_shim \
