@@ -372,3 +372,14 @@
     - intent 分類每次都可能不同：51 題的 intent.type 在 6 次 /query 之間有變。但每題 6 次的 sources 都相同，不影響 ctx_on 與配對。這是管線既有的性質。
     - 沒有直接比對 r5 映像裡的程式。r5 建自 1d17687；相關 backend 檔在 1d17687 與 HEAD 的 sha 相同，觀察到的行為也與程式相符。
   - 依 §3.2，A4 全部過關，接下來請 Kay 決定是否「上 prod」。
+- 2026-10-21 Kay「上 prod」：
+  - `promote --env prod --build b20261021_dfa1e3e3 --image sha256:31bb9d09… --yes-prod`；前一筆是 `b20261019_a86f2b06`＋r4（ea94bd5e…）。
+  - `docker-compose.yml` 的 backend 映像改成 r5，`up --no-deps` 從 17:19:51 重建到 17:20:02 healthy。
+    - handshake ok、strict，0 個 mismatch。
+    - 啟動日誌顯示王朝層 252e0955、GEN 層 46d87abb（chains {5: 10, 11: 9}，60 個 blocker）都已載入。
+  - 換完後的檢查：
+    - smoke20：20/20 通過。
+    - `a4_g.py gt-check`：20 題 GT 都沒有 `aux_card`。
+    - `a4_g.py prod-check`：確認集 58 題 ON 各 1 次，卡片對等 58/58，出卡 48/48 都是 GEN 卡。
+    - 報告在 store `reports/gen_card_20261021/{gt_check,prod_check}/`。
+  - 回滾：`promote --env prod --rollback --yes-prod`，把 `image` 改回 r4（由 `bible_rag_backend_r4_pin` 釘住），再跑同一個 `up`。
