@@ -1,7 +1,8 @@
 """The chronology card (utils.regnal): the trigger takes only the confirmed question types,
 the ordinary prompt is untouched without a card (plan A2), the layer parses from its contract
 bytes, and /query attaches the card only when it is on and fires (rule seeds first, the seed
-call when they abstain; the rules themselves are in test_regnal_seeds)."""
+call when they abstain; the rules themselves are in test_regnal_seeds). With a GEN layer served
+too, the GEN rule never runs where the regnal trigger fires (plan 2026-10-21 D3)."""
 
 from __future__ import annotations
 
@@ -12,13 +13,14 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+import gen_fakes
 import main
 from router_fakes import LEXICON
 from routers import query
 from serving import context
 from serving.build import Build
 from serving.handshake import Handshake
-from utils import generator
+from utils import gen_card, generator
 from utils.regnal import card as card_mod
 from utils.regnal.layer import parse_layer
 from utils.regnal.trigger import trigger
@@ -225,3 +227,23 @@ def test_the_ablation_arms_are_card_free_unless_asked(client, payload, card):
     http, _seen = client
     body = http.post("/api/v1/query", json={"question": "暗利之後的第二位王是哪一位？", **payload}).json()
     assert (body["aux_card"] is not None) == card
+
+
+def test_the_gen_card_is_never_computed_where_the_regnal_trigger_fires(client, layer, monkeypatch):
+    """D3: with a GEN layer served too, a question the regnal trigger takes never reaches the GEN
+    rule, whether or not a chronology card is built; one it does not take does."""
+    http, seen = client
+    gen = gen_card.parse_files(*gen_fakes.files())
+    context.install(context.make_active(BUILD, LEXICON, (), layer, gen), Handshake(BUILD.build_id, (), True))
+
+    def computed(*args, **kwargs):
+        raise AssertionError("the GEN rule ran")
+    monkeypatch.setattr(gen_card, "trigger", computed)
+    monkeypatch.setattr(gen_card, "card", computed)
+    body = http.post("/api/v1/query", json={"question": "暗利之後的第二位王是哪一位？"}).json()
+    assert body["aux_card"]["kind"] == "regnal"
+    body = http.post("/api/v1/query", json={"question": "暗利之後的第二位王是哪一位？",
+                                            "use_regnal_card": False}).json()
+    assert body["aux_card"] is None and seen["chats"][-1][0]["content"] == generator.SYSTEM_PROMPT
+    with pytest.raises(AssertionError, match="the GEN rule ran"):
+        http.post("/api/v1/query", json={"question": "暗利一共作王多少年？"})

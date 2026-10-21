@@ -8,9 +8,11 @@ and every file hashes to the manifest (and agrees with the build row); it is not
 a KG build (no Neo4j driver exists in this backend); the encoder probes equal
 the contract fingerprint; the routing lexicon (v2), the query-alias table and the
 event registry (variant R2) parse, and so does the regnal layer when the build has
-one (contract 1.2.0; without it the chronology card is off and startup says so). A
-contract that fails to parse is a mismatch like any other, so an R1 build is refused
-through the handshake.
+one (contract 1.2.0; without it the chronology card is off and startup says so), and
+the Genesis layer when it has one (contract 1.3.0: gen_layer.json and gen_names.json
+together, of this build's text layer and routing lexicon; without them the GEN card is
+off). A contract that fails to parse is a mismatch like any other, so an R1 build is
+refused through the handshake.
 
 Any mismatch: /api/v1/health answers 503 with the list, no data is served, and
 with STRICT_BUILD_CHECK (the default) startup fails. A build that passes still
@@ -29,6 +31,7 @@ from serving import build as build_mod
 from serving import context
 from serving import contracts as contracts_mod
 from serving import handshake as hs
+from utils import gen_card
 from utils.regnal.layer import LAYER_FILE as REGNAL_FILE
 from utils.regnal.layer import parse_layer as parse_regnal
 from utils.retrieval import event_registry
@@ -93,6 +96,11 @@ def _parsed_contracts(found: contracts_mod.Contracts) -> tuple[dict[str, Any], l
             parsed[REGNAL_FILE] = parse_regnal(found.files[REGNAL_FILE])
         except ValueError as exc:
             problems.append(f"contracts: {REGNAL_FILE}: {exc}")
+    try:                             # optional too: only a contract 1.3.0 build has the pair
+        if (gen := gen_card.load(found.manifest, found.files)) is not None:
+            parsed[gen_card.LAYER_FILE] = gen
+    except ValueError as exc:
+        problems.append(f"contracts: gen_*.json: {exc}")
     return parsed, problems
 
 
@@ -113,14 +121,20 @@ async def _activate(build: build_mod.Build, parsed: Mapping[str, Any]) -> contex
     if missing:
         raise StartupError(f"event registry anchors missing from {build.pg_schema}.passages: "
                            f"{missing}")
-    active = context.make_active(build, parsed["routing_lexicon.json"], registry, parsed.get(REGNAL_FILE))
-    regnal = active.regnal
+    active = context.make_active(build, parsed["routing_lexicon.json"], registry, parsed.get(REGNAL_FILE),
+                                 parsed.get(gen_card.LAYER_FILE))
+    regnal, gen = active.regnal, active.gen
     if regnal is None:
         logger.warning("Build %s has no %s: the chronology card is off", build.build_id, REGNAL_FILE)
     else:
         logger.info("Regnal layer %s (chains %s, %d blockers from the routing lexicon %s): the "
                     "chronology card is on when enabled", regnal.sha256[:12], regnal.chain_size(),
                     len(regnal.blockers), "、".join(regnal.blockers))
+    if gen is None:
+        logger.warning("Build %s has no %s and %s: GEN card off", build.build_id, *gen_card.FILES)
+    else:
+        logger.info("GEN layer %s (chains %s, %d blockers): the Genesis age card is on when enabled",
+                    gen.gen_layer_sha256[:12], gen_card.chain_size(gen), len(gen.blockers))
     return active
 
 

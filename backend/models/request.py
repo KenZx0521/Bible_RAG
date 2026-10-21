@@ -28,6 +28,11 @@ class QueryRequest(BaseModel):
         description="覆寫王朝年表卡開關(只在王朝年代題觸發);None 表示沿用 RAG_REGNAL_CARD,"
                     "但 semantic_only 或 use_graph=false 時預設關閉",
     )
+    use_gen_card: bool | None = Field(
+        default=None,
+        description="覆寫創世記年歲卡開關(只在創世記家譜年歲題觸發,王朝卡觸發時不算);"
+                    "None 表示沿用 RAG_GEN_CARD,但 semantic_only 或 use_graph=false 時預設關閉",
+    )
     semantic_only: bool = Field(
         default=False,
         description="僅用 dense 檢索,bypass R1-R6 routing、SQL 與 event_registry",

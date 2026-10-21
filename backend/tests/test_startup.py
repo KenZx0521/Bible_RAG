@@ -4,18 +4,22 @@ A wrong build (unknown, or a schema holding another one), a point count that
 differs, a contract file whose sha differs or that does not parse (an R1 build
 among them), an encoder probe that differs, a KG build: each is a mismatch;
 strict startup raises, non-strict startup serves no data. Missing event-registry
-anchors fail startup either way.
+anchors fail startup either way. The GEN card's two files (gen_fakes) are served
+together or not at all: one alone, or a pair that is not this build's Genesis layer,
+is one mismatch; neither is a build served with the GEN card off.
 """
 
 import asyncio
 import hashlib
 import json
+import logging
 import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pytest
 
+import gen_fakes
 from config import settings
 from serving import context, startup
 from utils.retrieval import event_registry
@@ -303,3 +307,89 @@ def test_the_r2_image_refuses_an_r1_build(stores, monkeypatch):
         "contracts: routing_lexicon.json: schema must be ragdata.routing_lexicon.v2, "
         "got 'ragdata.routing_lexicon.v1'",
         "contracts: event_registry.json: registry variant must be R2, got 'R1'")
+
+
+# ---------------------------------------------------------------- the GEN card's two contract files
+MANIFEST = json.loads((FIXTURE / "contracts" / BUILD_ID / "manifest.json").read_text(encoding="utf-8"))
+TEXT_DIGEST = MANIFEST["layers"]["text"].partition("@")[2] + "0" * 52   # read from the mini build's text layer
+LEXICON_SHA = MANIFEST["files"]["routing_lexicon.json"]
+
+
+def _gen(stores, text_digest=TEXT_DIGEST, only=None, **edits) -> bytes:
+    """Add gen_fakes' two GEN files of this build to its contracts (only one of them with ``only``);
+    the gen_layer.json bytes."""
+    data = dict(zip(("gen_layer.json", "gen_names.json"), gen_fakes.files(text_digest, LEXICON_SHA, **edits)))
+    for name in data:
+        if only in (None, name):
+            _rewrite(stores, name, data[name])
+    return data["gen_layer.json"]
+
+
+def _one_mismatch(monkeypatch) -> str:
+    monkeypatch.setattr(settings, "strict_build_check", False)
+    handshake = asyncio.run(startup.run(GOOD_FP))
+    assert not handshake.ok and len(handshake.mismatches) == 1
+    return handshake.mismatches[0]
+
+
+@pytest.mark.parametrize("gen, message", [
+    ({"only": "gen_layer.json"}, "the manifest lists gen_layer.json without gen_names.json"),
+    ({"only": "gen_names.json"}, "the manifest lists gen_names.json without gen_layer.json"),
+    ({"names_edit": lambda d: d.update(schema="gen_confirm.gen_names.v0")}, "schema is not"),
+    ({"layer_edit": lambda d: d.pop("nodes")}, "KeyError"),
+    ({"layer_edit": lambda d: d.update(nodes=None)}, "TypeError"),
+    ({"layer_edit": lambda d: d.update(edges=[[]])}, "IndexError"),
+    ({"layer_edit": lambda d: d["nodes"][0].update(fields=None)}, "AttributeError"),
+    ({"layer_edit": lambda d: d["nodes"][0].pop("evidence")}, "KeyError"),
+    ({"names_edit": lambda d: d.update(gen_layer_sha256="0" * 64)}, "is not gen_names.json's gen_layer_sha256"),
+    ({"text_digest": "b" * 64}, "read from text@bbbbbbbbbbbb, the build's text layer is text@"),
+    ({"names_edit": lambda d: d["sources"].update({gen_fakes.LEXICON_KEY: "0" * 64})}, "routing lexicon"),
+    ({"names_edit": lambda d: d["sources"].pop(gen_fakes.LEXICON_KEY)}, "routing lexicon"),
+    ({"names_edit": lambda d: d["sources"].update({"other/routing_lexicon.json": LEXICON_SHA})}, "routing lexicon"),
+])
+def test_gen_files_that_are_not_this_builds_gen_layer_are_one_mismatch_not_a_crash(stores, monkeypatch, gen,
+                                                                                   message):
+    _gen(stores, **gen)
+
+    problem = _one_mismatch(monkeypatch)
+
+    assert problem.startswith("contracts: gen_*.json: ") and message in problem
+
+
+@pytest.mark.parametrize("name", ["gen_layer.json", "gen_names.json"])
+def test_a_gen_file_that_is_not_json_is_one_mismatch(stores, monkeypatch, name):
+    _gen(stores)
+    _rewrite(stores, name, b"{not json")
+
+    problem = _one_mismatch(monkeypatch)
+
+    assert problem.startswith("contracts: gen_*.json: ") and "Expecting" in problem
+
+
+def test_a_gen_file_of_another_sha_is_verifys_mismatch_alone(stores, monkeypatch):
+    _gen(stores)
+    path = stores.contracts / "gen_names.json"
+    path.write_bytes(path.read_bytes() + b" ")
+
+    assert _one_mismatch(monkeypatch).startswith("contracts: gen_names.json sha256 ")
+
+
+def test_a_build_with_both_gen_files_serves_the_gen_layer(stores, caplog):
+    caplog.set_level(logging.INFO, logger="serving.startup")
+    sha = hashlib.sha256(_gen(stores)).hexdigest()
+
+    active, handshake = _start()
+
+    assert handshake.ok and active.gen.gen_layer_sha256 == sha
+    assert [r.getMessage() for r in caplog.records if "GEN" in r.getMessage()] == [
+        f"GEN layer {sha[:12]} (chains {{5: 5, 11: 3}}, 1 blockers): the Genesis age card is on when enabled"]
+
+
+def test_a_build_without_gen_files_is_served_with_the_gen_card_off(stores, caplog):
+    caplog.set_level(logging.INFO, logger="serving.startup")
+
+    active, handshake = _start()
+
+    assert handshake.ok and active.gen is None
+    [record] = [r for r in caplog.records if "GEN" in r.getMessage()]
+    assert record.levelno == logging.WARNING and record.getMessage().endswith(": GEN card off")

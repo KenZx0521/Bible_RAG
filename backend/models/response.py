@@ -66,15 +66,16 @@ class RetrievalStats(BaseModel):
 
 
 class AuxCard(BaseModel):
-    """The chronology card the generator answered with (utils.regnal); text is the block
-    exactly as the prompt held it, evidence the verse keys its rows rest on."""
+    """The card the generator answered with: kind "regnal", the chronology card (utils.regnal),
+    or "gen", the Genesis age card (utils.gen_card). text is the block exactly as the prompt held
+    it, evidence the verse keys its rows rest on."""
     kind: str = "regnal"
     text: str
-    seeds: list[str] = []          # 「國別｜王名」: the seed call's, or the rule-seeded nodes'
-    kings: list[str] = []          # regnal layer node ids
+    seeds: list[str] = []          # 「國別｜王名」 (the seed call's, or the rule-seeded nodes'); gen: the two names
+    kings: list[str] = []          # chain node ids: the regnal layer's, or the Genesis layer's (G05.xx, G11.xx)
     lines: int = 0                 # derivation lines
     evidence: list[str] = []
-    layer_sha256: str
+    layer_sha256: str              # regnal_layer.json's sha256, or gen_layer.json's
     seed_source: str | None = None  # "rule" (seeds read from the question) or "gemma" (the seed call)
 
 
