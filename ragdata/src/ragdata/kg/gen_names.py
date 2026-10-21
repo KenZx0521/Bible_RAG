@@ -113,6 +113,10 @@ def build(gen_layer: bytes, text: LayerData, route: LayerData) -> dict[str, Any]
     spans = surfaces_by_verse(text.rows["name_spans.jsonl"])
     chain = chain_of(gen)
     names = {c["name"] for c in chain}
+    try:
+        blockers = lexicon_blockers(json.loads(lexicon), names)
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:   # e.g. R1's v1 lexicon has no names
+        raise StageError(f"{route.path / ROUTING_LEXICON}: not a v2 routing lexicon ({exc!r})") from None
     cain = (_forms(s for c, _v, s in spans if c == CAIN_CHAPTER) | _forms(CAIN_REQUIRED)) - names
     abram = (_forms(s for c, v, s in spans if c == ABRAM_CHAPTER and v in ABRAM_VERSES)
              | _forms(ABRAM_REQUIRED)) - names
@@ -122,5 +126,5 @@ def build(gen_layer: bytes, text: LayerData, route: LayerData) -> dict[str, Any]
     return {"schema": SCHEMA, "text_digest": digest, "gen_layer_sha256": _sha(gen_layer), "chain": chain,
             "cain_line": sorted(cain), "abram_family": sorted(abram), "extra_persons": sorted(extra),
             "other_books": other_books(text.rows["books.jsonl"]),
-            "lexicon_blockers": lexicon_blockers(json.loads(lexicon), names),
+            "lexicon_blockers": blockers,
             "sources": dict(zip(SOURCES, read))}

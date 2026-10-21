@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 import fake_encoder
 import mini_build
@@ -139,9 +140,13 @@ def test_the_audited_pair_passes_k0_2_and_names_the_bytes_it_was_built_from(file
 
 
 @needs_layers
-def test_a_text_with_genesis_needs_the_route_layer(text):
-    with pytest.raises(StageError, match="--route"):
-        gen_files(text, None)
+@pytest.mark.parametrize("route_dir, needle", [(None, "--route"), (R1_ROUTE, "not a v2 routing lexicon")],
+                         ids=["no-route", "r1-lexicon"])
+def test_a_text_with_genesis_needs_a_route_layer_with_a_v2_lexicon(text, route_dir, needle):
+    if route_dir is not None and not route_dir.is_dir():
+        pytest.skip(f"{route_dir.name} not in the store")
+    with pytest.raises(StageError, match=needle):
+        gen_files(text, route_dir and read_layer(route_dir))
 
 
 # ---------------------------------------------------------------- G-GEN
@@ -228,6 +233,33 @@ def test_the_built_layer_depends_on_text_and_route_and_holds_the_four_files(stor
     assert report.passed, [g.name for g in report.gates if not g.passed]
     with pytest.raises(GateInputError, match="given"):
         gate_layer(stored.path, "relations", [TEXT])
+
+
+def _gen_expect(root: Path, **pins) -> Path:
+    """The repository's G-GEN expectation with ``pins`` changed."""
+    path = root / "gen_expect.yaml"
+    path.write_text(yaml.safe_dump({**load_gen_expect(), **pins}, sort_keys=False), encoding="utf-8")
+    return path
+
+
+def _stored_nothing_red_on_g_gen(result, store: Path) -> None:
+    assert [g.name for g in result.gates if not g.passed] == ["G-GEN"]
+    assert not result.passed and "relations" not in result.layers and not store.exists()
+
+
+@needs_layers
+def test_the_build_stores_no_layer_whose_gen_files_are_not_the_audited_ones(tmp_path):
+    result = build_regnal(TEXT, tmp_path / "out", route_dir=ROUTE,
+                          gen_expect=_gen_expect(tmp_path, gen_layer_sha256="0" * 64))
+    _stored_nothing_red_on_g_gen(result, tmp_path / "out")
+
+
+def test_the_build_stores_no_layer_without_gen_files_that_is_not_from_before_gen(tmp_path):
+    mini = mini_pipeline.make(tmp_path)
+    text = tmp_path / "scratch" / "text" / mini.text_version
+    # the repository's absent_ok_regnal does not hold the mini text's regnal layer
+    result = build_regnal(text, tmp_path / "out", mini.sources.gate.regnal_expect)
+    _stored_nothing_red_on_g_gen(result, tmp_path / "out")
 
 
 def _variant(root: Path, files: dict, keep: tuple, deps: dict) -> Path:
