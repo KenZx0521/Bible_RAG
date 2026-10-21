@@ -1,10 +1,12 @@
 """Plan A4's runner and scorer (evaluation/experiments/2026-10-21_gen_card/, plan §3.2) with fakes: no network, no
 Ollama, no docker. Synthetic items, cards and answers (made-up ids, numbers and strings); every run writes tmp_path
-(a dry-run Writer). The store-backed tests at the end read the pinned inputs and assert counts only.
+(a dry-run Writer). The GT check's pick is compared with smoke20's by question id on the repository's GT v2. The
+store-backed tests at the end read the pinned inputs and assert counts only.
 """
 from __future__ import annotations
 
 import ast
+import importlib.util
 import json
 import sys
 import urllib.error
@@ -492,6 +494,68 @@ def test_nothing_printed_or_reported_holds_a_question_card_or_answer(tmp_path, c
     for s in ["QQ-", "CARD-", "step", "ctx-"]:
         assert s not in shown and s not in kept, s
     assert "QQ-" not in (root / A.CALLS).read_text(encoding="utf-8")       # the question is never stored either
+
+
+# ---------------------------------------------------------------- the post-switch GT check
+def gt_items(n: int = 3) -> list[dict]:
+    return [{"question_id": f"GT{i}", "question": f"QQ-GT{i}-synthetic-question", "question_type": "t"} for i in range(n)]
+
+
+def gt_file(tmp_path, qs: list[dict]) -> Path:
+    p = tmp_path / "gt.json"
+    p.write_text(json.dumps({"questions": qs}), encoding="utf-8")
+    return p
+
+
+def gt_io(post, **kw) -> A.Io:
+    return make_io([], {}, post=post, chat=lambda *a: pytest.fail("the GT check calls no Ollama"),
+                   ollama=lambda p: pytest.fail("the GT check reads no Ollama"),
+                   inspect=lambda n: pytest.fail("the GT check inspects no container"), **kw)
+
+
+def test_the_gt_questions_are_smoke20s(monkeypatch):
+    monkeypatch.syspath_prepend(str(A.REPO / "packages"))          # smoke20 imports ragcommon
+    spec = importlib.util.spec_from_file_location("smoke20_r1", A.REPO / "evaluation/experiments/2026-10-08_r1/smoke20.py")
+    sm = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sm)
+    want, got = [q["question_id"] for q in sm.pick(A.GT_V2)], [q["question_id"] for q in A.gt_questions()]
+    assert got == want and len(got) == 20
+
+
+def test_the_gt_check_sends_smoke20s_full_request_to_prod_and_passes_without_a_card(tmp_path):
+    qs, bodies = gt_items(), []
+
+    def post(url, body, timeout):
+        bodies.append((url, body))
+        return {"answer": "x", "sources": [{"id": "ck:a", "build_id": BUILD}], "aux_card": None}, None, 1.0
+    rep = A.gt_check(A.Writer(tmp_path / "gt", dry=True), BUILD, gt_io(post), gt_file(tmp_path, qs))
+    assert bodies == [(A.MODES["prod-check"].url, {"question": q["question"], "top_k": 5}) for q in qs]
+    assert (rep["n"], rep["errors"], rep["aux_cards"], rep["pass"]) == (3, [], {}, True)
+    assert "QQ-" not in (tmp_path / "gt" / A.REPORT).read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("fault, errors, cards", [("card", [], {"GT1": "regnal"}), ("http", ["GT1"], {})],
+                         ids=["card", "http"])
+def test_a_gt_question_with_a_card_or_without_an_answer_fails_the_gt_check_which_is_never_redone(tmp_path, fault,
+                                                                                                  errors, cards):
+    qs = gt_items()
+
+    def post(url, body, timeout):
+        hit = body["question"] == qs[1]["question"]
+        if hit and fault == "http":
+            return None, "HTTPError 500", 1.0
+        return {"answer": "x", "sources": [], "aux_card": {"kind": "regnal", "text": "x"} if hit else None}, None, 1.0
+    rep = A.gt_check(A.Writer(tmp_path / "gt", dry=True), BUILD, gt_io(post), gt_file(tmp_path, qs))
+    assert (rep["errors"], rep["aux_cards"], rep["pass"]) == (errors, cards, False)
+    with pytest.raises(SystemExit, match="new --run"):
+        A.gt_check(A.Writer(tmp_path / "gt", dry=True), BUILD, gt_io(post), gt_file(tmp_path, qs))
+
+
+@pytest.mark.parametrize("build, health", [(A.OLD_BUILD, healthy), (BUILD, lambda u: {"status": "ok", "build_id": "b_x"})])
+def test_the_gt_check_refuses_the_old_build_or_another_served_one_before_any_call(tmp_path, build, health):
+    with pytest.raises(SystemExit):
+        A.gt_check(A.Writer(tmp_path / "gt", dry=True), build, gt_io(lambda *a: pytest.fail("no call"), health=health),
+                   gt_file(tmp_path, gt_items()))
 
 
 # ---------------------------------------------------------------- the store inputs (counts only)

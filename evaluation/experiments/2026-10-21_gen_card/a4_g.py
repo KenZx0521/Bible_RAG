@@ -3,6 +3,7 @@ confirmation set's 58 questions through /query under prod retrieval. Host python
 
     python -B a4_g.py a4 --build B [--run a4]                   # staging :8002, four arms × 3 reps (Ollama ≈ 3 h)
     python -B a4_g.py prod-check --build B [--run prod_check]   # prod :8000, ON × 1, card parity
+    python -B a4_g.py gt-check --build B [--run gt_check]       # prod :8000, smoke20's 20 GT v2 questions: no card
     python -B a4_g.py dry-run --out DIR [--build B]             # a4 with fake /query, Ollama, /health and docker
 
 Arms: ON = /query without use_gen_card (the deployed default path); OFF = /query with use_gen_card false; B0-prod
@@ -31,6 +32,9 @@ must be the run's at every session. Outputs: the store's reports/gen_card_202610
 any other path; a dry run writes DIR, never in the store or the repository): run_meta.json, calls.jsonl (every
 attempt, append-only; answers and contexts stay there) and report.json. Resumable per call (a last line cut by a
 kill moves to calls.torn.jsonl and its call is redone); a session holds run.lock. Prints ids, numbers and sha256 only.
+gt-check (§3.2 after the switch, beside smoke20): smoke20's GT v2 questions (4 per type) through prod's full /query as
+smoke20 sends them, one call each, after the same /api/v1/health check; it passes when every call answers and none
+carries an aux_card. Its report.json (ids, counts and card kinds) is never redone in place.
 """
 from __future__ import annotations
 
@@ -61,6 +65,8 @@ OUT_ROOT = STORE / "reports/gen_card_20261021"
 INPUT_SHA256 = {GC.RUN_ITEMS: "d52474c2d6d6f40cf2d0311df334adb5c918f2ef294d90cd3a98cc0941734fe5",
                 GC.RUN_CARDS: "084a38d6d9e8cc1321b45e07ae8880b92ab2e5d24b19b1190e2be32a72955969"}
 OLD_BUILD = "b20261019_a86f2b06"                   # prod before the switch: never "the new build"
+GT_V2, GT_RUN = REPO / "ground_truth.v2.json", "gt_check"
+GT_PER_TYPE, GT_TOP_K = 4, 5                        # smoke20's pick and its full request
 DRY_BUILD = "b_dry_run"
 STAGING_CONTAINER = "bible_rag_backend_stg"
 MODEL = cc.MODEL
@@ -566,6 +572,45 @@ def run(mode: Mode, w: Writer, items: list[dict], cards: dict, build: str, io: I
         return write_report(mode, w, items, cards, meta, units)
 
 
+# ---------------------------------------------------------------- the post-switch GT check
+def gt_questions(path: Path = GT_V2) -> list[dict]:
+    """smoke20.pick's rule, written here (smoke20 imports ragcommon, which this venv lacks): the first GT_PER_TYPE
+    questions of each question_type in file order, the types in the order they first appear."""
+    chosen: dict[str, list[dict]] = {}
+    for q in GC.read_json(path)["questions"]:
+        group = chosen.setdefault(q["question_type"], [])
+        if len(group) < GT_PER_TYPE:
+            group.append(q)
+    return [q for group in chosen.values() for q in group]
+
+
+def gt_check(w: Writer, build: str, io: Io, gt: Path = GT_V2) -> dict:
+    """One call per GT question, no rerun: the error or the aux_card's kind of each."""
+    url = MODES["prod-check"].url
+    if build == OLD_BUILD:
+        raise SystemExit(f"--build {build} is the old prod build, not the new one")
+    if w.path(REPORT).is_file():
+        raise SystemExit(f"{w.root}: a GT check is never redone in place; a rerun goes to a new --run")
+    if bad := health_problems(io, url, build):
+        raise SystemExit(f"refused before any call: {bad}")
+    rows = []
+    for q in gt_questions(gt):
+        data, err, sec = io.post(url, {"question": q["question"], "top_k": GT_TOP_K}, QUERY_TIMEOUT_S)
+        ok = isinstance(data, dict)
+        aux = data.get("aux_card") if ok else None
+        kind = None if aux is None else str(aux.get("kind")) if isinstance(aux, dict) else "?"
+        rows.append({"question_id": q["question_id"], "elapsed_s": sec,
+                     "error": err or (None if ok else "not a JSON object"), "aux_card": kind})
+        io.log(f"[{len(rows)}] {q['question_id']} {sec}s {'error' if rows[-1]['error'] else kind or 'ok'}")
+    errors = [r["question_id"] for r in rows if r["error"]]
+    cards = {r["question_id"]: r["aux_card"] for r in rows if r["aux_card"] is not None}
+    rep = {"schema": "gen_card.gt_check_report.v1", "run": w.root.name, "mode": "gt-check", "build": build, "url": url,
+           "t": now(), "gt": gt.name, "gt_sha256": GC.sha256_file(gt), "n": len(rows), "errors": errors,
+           "aux_cards": cards, "pass": bool(rows) and not errors and not cards, "rows": rows}
+    w.write_json(REPORT, rep)
+    return rep
+
+
 # ---------------------------------------------------------------- dry run (fakes)
 class FakeBackend:
     """/query from the item's gold: ON with a card answers the gold, every other call gold + 1 (OFF without an answer
@@ -630,7 +675,7 @@ def dry_run(out: Path, build: str = DRY_BUILD) -> dict:
 
 def summary(rep: dict) -> dict:
     keys = ("run", "mode", "state", "judged", "first_judged_run", "n_planned", "n_attempts", "voids", "void", "pass",
-            "card_parity", "gen_cards", "n_items", "n_fired")
+            "card_parity", "gen_cards", "n_items", "n_fired", "n", "errors", "aux_cards")
     out = {k: rep[k] for k in keys if k in rep}
     if "gates" in rep:
         out["gates"] = {k: v if k == "propose_prod" else v.get("pass", v.get("stop")) for k, v in rep["gates"].items()}
@@ -640,9 +685,9 @@ def summary(rep: dict) -> dict:
 
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description="GEN 卡 A4（計畫 docs/records/2026-10-21_gen_card_integration_plan.md §3.2）")
-    ap.add_argument("mode", choices=("a4", "prod-check", "dry-run"))
-    ap.add_argument("--build", default=None, help="a4／prod-check：新 build 的 id（每個 source 的 build_id 都要是它）")
-    ap.add_argument("--run", default=None, help="a4／prod-check：store reports/gen_card_20261021/ 下的 run 目錄名")
+    ap.add_argument("mode", choices=("a4", "prod-check", "gt-check", "dry-run"))
+    ap.add_argument("--build", default=None, help="a4／prod-check／gt-check：新 build 的 id（每個 source 的 build_id 都要是它）")
+    ap.add_argument("--run", default=None, help="a4／prod-check／gt-check：store reports/gen_card_20261021/ 下的 run 目錄名")
     ap.add_argument("--out", type=Path, default=None, help="dry-run：寫入的目錄（不可在 store 或 repo 裡）")
     args = ap.parse_args(argv)
     if args.mode == "dry-run":
@@ -652,9 +697,12 @@ def main(argv=None) -> None:
     else:
         if not args.build or args.out:
             ap.error(f"{args.mode} takes --build (and no --out)")
-        mode = MODES[args.mode]
-        items, cards = load_inputs()
-        rep = run(mode, Writer(OUT_ROOT / (args.run or mode.run)), items, cards, args.build, real_io())
+        if args.mode == "gt-check":
+            rep = gt_check(Writer(OUT_ROOT / (args.run or GT_RUN)), args.build, real_io())
+        else:
+            mode = MODES[args.mode]
+            items, cards = load_inputs()
+            rep = run(mode, Writer(OUT_ROOT / (args.run or mode.run)), items, cards, args.build, real_io())
     print(json.dumps(summary(rep), ensure_ascii=False))
 
 
