@@ -78,7 +78,13 @@ def layer():
 @pytest.fixture(scope="module", params=sorted(RUNS))
 def served(request, layer):
     """(set, {item: (aux_card, generator messages, seed-call messages, item)}) through /api/v1/query."""
-    d = RUNS[request.param]
+    return request.param, serve(request.param, layer)
+
+
+def serve(name: str, layer, gen_layer=None) -> dict:
+    """One set's {item: (aux_card, generator messages, seed-call messages, item)}, with a GEN layer
+    served too when given (test_gen_card_store)."""
+    d = RUNS[name]
     items = json.loads((d / "items.json").read_text(encoding="utf-8"))["items"]
     seeds = {r["item"]: r.get("content") or "" for r in _jsonl(d / "gen_seed.jsonl") if r.get("type") == "answer"}
     now: dict = {}
@@ -100,7 +106,7 @@ def served(request, layer):
         mp.setattr(query, "retrieve_and_rerank", retrieve)
         mp.setattr(card_mod, "get_llm_client", lambda: RecordingLlm())
         mp.setattr(generator, "get_llm_client", lambda: RecordingLlm())
-        context.install(context.make_active(BUILD, routing.load_lexicon(LEXICON), (), layer),
+        context.install(context.make_active(BUILD, routing.load_lexicon(LEXICON), (), layer, gen_layer),
                         Handshake(BUILD.build_id, (), True))
         try:
             http = TestClient(main.app)
@@ -110,11 +116,12 @@ def served(request, layer):
                 body = http.post("/api/v1/query", json={"question": it["question"], "include_sources": False}).json()
                 seed_chats = [m for m in now["chats"] if m[0]["content"] == SEED_SYSTEM]
                 gen = [m for m in now["chats"] if m[0]["content"] != SEED_SYSTEM]
-                assert len(gen) == 1, f"{request.param} {it['id']}: {len(gen)} generator calls"
+                calls = len(gen)            # bound: a failing len(gen) == 1 would print the messages
+                assert calls == 1, f"{name} {it['id']}: {calls} generator calls"
                 out[it["id"]] = (body["aux_card"], gen[0], seed_chats, it)
         finally:
             context.reset()
-    return request.param, out
+    return out
 
 
 def pins_of(served) -> dict:

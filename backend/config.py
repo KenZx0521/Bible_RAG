@@ -94,6 +94,12 @@ class Settings(BaseSettings):
     # regnal_layer.json; overridable per request via `use_regnal_card`.
     rag_regnal_card: bool = True
 
+    # Genesis age card (utils.gen_card): on the Genesis 5/11 age questions its rule takes, and only
+    # where the chronology card's trigger does not fire, the generator gets the Genesis layer's card
+    # (plan 2026-10-21 D5: on by default). Needs a build with gen_layer.json and gen_names.json;
+    # overridable per request via `use_gen_card`.
+    rag_gen_card: bool = True
+
     # Event registry auxiliary lane: how many curated anchors may be appended
     # after the top-k. The 2026-10 simulation found no gain from a second slot.
     rag_event_registry_slots: int = 1

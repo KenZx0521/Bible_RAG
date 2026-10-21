@@ -12,8 +12,10 @@ from config import settings
 from models.request import QueryRequest
 from models.response import AuxCard, QueryResponse, Source, IntentInfo, RetrievalStats
 from serving import context
+from utils import gen_card
 from utils.intent_classifier import classify_intent
 from utils.regnal.card import Card, chronology_card
+from utils.regnal.trigger import trigger as regnal_trigger
 from utils.retrieval.router import retrieve_and_rerank
 from utils.generator import build_context, build_context_blocks, generate_answer
 
@@ -46,21 +48,41 @@ def _sources(req: QueryRequest, results: list[dict]) -> list[Source]:
     return [_source(r, block, build_id) for r, block in zip(results, blocks)]
 
 
-def _aux_card(card: Card | None) -> AuxCard | None:
+def _aux_card(card: Card | gen_card.Card | None) -> AuxCard | None:
     if card is None:
         return None
+    if isinstance(card, gen_card.Card):
+        gen = context.active().gen
+        return AuxCard(kind="gen", text=card.g_block, seeds=[gen.name[x] for x in card.seeds],
+                       kings=list(card.seeds), lines=len(card.lines),
+                       evidence=list(gen_card.evidence(gen, card.rows)), layer_sha256=gen.gen_layer_sha256,
+                       seed_source="rule")
     return AuxCard(text=card.text, seeds=[f"{KINGDOM_NAMES[kd]}｜{nm}" for kd, nm in card.seeds],
                    kings=list(card.kings), lines=card.lines, evidence=list(card.evidence),
                    layer_sha256=card.layer_sha256, seed_source=card.seed_source)
 
 
-def _card_on(req: QueryRequest) -> bool:
-    """``use_regnal_card`` when given; else RAG_REGNAL_CARD, but never in the dense-only or
-    graph-off arms (the card is a graph-side operation, so those ablations stay card-free)."""
-    if req.use_regnal_card is not None:
-        return req.use_regnal_card
+def _aux_block(card: Card | gen_card.Card | None) -> str | None:
+    if isinstance(card, gen_card.Card):
+        return card.g_block
+    return card.text if card else None
+
+
+def _on(asked: bool | None, default: bool, req: QueryRequest) -> bool:
+    """``asked`` when given; else ``default``, but never in the dense-only or graph-off arms (a
+    card is a graph-side operation, so those ablations stay card-free)."""
+    if asked is not None:
+        return asked
     use_graph = settings.rag_use_graph if req.use_graph is None else req.use_graph
-    return settings.rag_regnal_card and use_graph and not req.semantic_only
+    return default and use_graph and not req.semantic_only
+
+
+def _card_on(req: QueryRequest) -> bool:
+    return _on(req.use_regnal_card, settings.rag_regnal_card, req)
+
+
+def _gen_card_on(req: QueryRequest) -> bool:
+    return _on(req.use_gen_card, settings.rag_gen_card, req)
 
 
 async def _card(req: QueryRequest, results: list[dict]) -> Card | None:
@@ -68,6 +90,19 @@ async def _card(req: QueryRequest, results: list[dict]) -> Card | None:
     if not _card_on(req) or req.retrieval_only or not results:
         return None
     return await chronology_card(req.question, build_context(results), context.active().regnal)
+
+
+def _gen_card(req: QueryRequest, results: list[dict]) -> gen_card.Card | None:
+    """The Genesis age card when it is on and its rule takes the question; never where the regnal
+    trigger fires, whether or not a chronology card was built (D3: the GEN confirmation set's
+    population is the questions it does not take)."""
+    active = context.active()
+    if active.gen is None or not _gen_card_on(req) or req.retrieval_only or not results:
+        return None
+    regnal = active.regnal
+    if regnal is not None and regnal_trigger(req.question, regnal.names, regnal.blockers).fired:
+        return None
+    return gen_card.card_of(req.question, active.gen)
 
 
 @router.post(
@@ -80,7 +115,7 @@ async def rag_query(req: QueryRequest):
     主 RAG 查詢端點。
 
     流程: 經文引用偵測 → 意圖分類 → 路由檢索 → 去重 → 重排序 → 上下文組裝 →
-    （王朝年代題）年表卡 → 回答生成。
+    （王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡 → 回答生成。
     """
     context.active()  # 503 before any work when no build is served
     if req.semantic_only:
@@ -95,9 +130,8 @@ async def rag_query(req: QueryRequest):
         use_graph=req.use_graph, semantic_only=req.semantic_only,
         fusion_alpha=req.fusion_alpha, graph_strategies=req.graph_strategies,
     )
-    card = await _card(req, results)
-    answer = "" if req.retrieval_only else await generate_answer(
-        req.question, results, card.text if card else None)
+    card = await _card(req, results) or _gen_card(req, results)
+    answer = "" if req.retrieval_only else await generate_answer(req.question, results, _aux_block(card))
     return QueryResponse(
         answer=answer,
         sources=_sources(req, results),

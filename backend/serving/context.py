@@ -1,8 +1,9 @@
 """The build this process serves, installed once at startup and never switched.
 
 ``active()`` is what request handlers read: the build row, the contract's routing
-lexicon and event registry, and its regnal layer (None for a build without one: the
-chronology card is then off) with the blockers of that lexicon attached. When the
+lexicon and event registry, its regnal layer (None for a build without one: the
+chronology card is then off) with the blockers of that lexicon attached, and its
+Genesis layer (utils.gen_card; None without one: the GEN card is then off). When the
 handshake failed (and STRICT_BUILD_CHECK is off) nothing is active and every handler that
 needs data answers 503.
 """
@@ -16,6 +17,7 @@ from typing import Mapping, Optional
 from ragcommon.routing import RoutingLexicon
 from serving.build import Build
 from serving.handshake import Handshake
+from utils.gencard import Layer as GenLayer
 from utils.regnal.layer import RegnalLayer, with_lexicon
 from utils.retrieval.event_registry import RegistryEvent
 
@@ -31,6 +33,7 @@ class Active:
     registry: tuple[RegistryEvent, ...]
     book_ids: Mapping[str, str]          # routing full book name -> book_id
     regnal: Optional[RegnalLayer] = None  # contract regnal_layer.json (contract 1.2.0 on)
+    gen: Optional[GenLayer] = None        # contract gen_layer.json + gen_names.json (contract 1.3.0 on)
 
     @property
     def book_names(self) -> tuple[str, ...]:
@@ -40,14 +43,14 @@ class Active:
 
 
 def make_active(build: Build, lexicon: RoutingLexicon, registry: tuple[RegistryEvent, ...],
-                regnal: Optional[RegnalLayer] = None) -> Active:
+                regnal: Optional[RegnalLayer] = None, gen: Optional[GenLayer] = None) -> Active:
     """The regnal layer gets the lexicon (``with_lexicon``): the chronology card's trigger and
     rule seeds skip its blockers (names holding a chain king's name that are none, 押沙龍 for
     沙龍), and the rule seeds trust a written father that ends in one of its names."""
     names = {b.full_name: b.book_id for b in lexicon.books}
     if regnal is not None:
         regnal = with_lexicon(regnal, lexicon)
-    return Active(build, lexicon, registry, MappingProxyType(names), regnal)
+    return Active(build, lexicon, registry, MappingProxyType(names), regnal, gen)
 
 
 _active: Optional[Active] = None
