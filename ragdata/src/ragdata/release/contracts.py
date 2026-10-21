@@ -5,8 +5,9 @@ there and the release pins their sha256s, so they must be a pure function of the
 layers. Layer files that already are contracts are copied byte for byte
 (the event registry, the routing lexicon and its query aliases, the encoder fingerprint,
 legacy_ids);
-and, when the release holds the relations layer (the regnal formulas), ``regnal_layer.json``;
-the rest are canonical JSON over the text and struct rows:
+and, each when the release's relations layer holds it, ``regnal_layer.json`` (the regnal
+formulas), ``gen_layer.json`` and ``gen_names.json`` (the GEN card; a relations layer from
+before GEN has neither); the rest are canonical JSON over the text and struct rows:
 
 - ``books.json``: the text layer's book rows in canon order;
 - ``verse_index.json``: every slot (canon order) with its status, unit, variant
@@ -21,7 +22,8 @@ import json
 from typing import Any, Mapping
 
 from ragdata.contract.registry import (
-    ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, QUERY_ALIASES, REGNAL_LAYER, ROUTING_LEXICON,
+    ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, GEN_LAYER, GEN_NAMES, QUERY_ALIASES, REGNAL_LAYER,
+    ROUTING_LEXICON,
 )
 from ragdata.store import LayerData
 from ragdata.store.cas import sha256_bytes
@@ -33,8 +35,11 @@ COPIED = {
     "encoder_fingerprint.json": ("emb", ENCODER_FINGERPRINT),
     "legacy_ids.jsonl": ("struct", "legacy_ids.jsonl"),
 }
-# copied only when the release holds the (optional) layer
-COPIED_OPTIONAL = {"regnal_layer.json": ("relations", REGNAL_LAYER)}
+# copied only when the release holds the (optional) layer and the layer holds the file
+# (G-REGNAL wants regnal_layer.json, G-GEN both GEN files or neither)
+COPIED_OPTIONAL = {"regnal_layer.json": ("relations", REGNAL_LAYER),
+                   "gen_layer.json": ("relations", GEN_LAYER),
+                   "gen_names.json": ("relations", GEN_NAMES)}
 DERIVED = ("books.json", "verse_index.json", "ref_aliases.json")
 CONTRACT_FILES = (*DERIVED, *COPIED)          # every release's; optional ones come on top
 
@@ -88,7 +93,8 @@ def _derived(layers: Mapping[str, LayerData]) -> dict[str, bytes]:
 
 def _copied(layers: Mapping[str, LayerData]) -> dict[str, bytes]:
     files = {}
-    optional = {k: v for k, v in COPIED_OPTIONAL.items() if v[0] in layers}
+    optional = {k: v for k, v in COPIED_OPTIONAL.items()
+                if v[0] in layers and v[1] in layers[v[0]].file_shas}
     for name, (layer_name, source) in {**COPIED, **optional}.items():
         layer = layers[layer_name]
         if source not in layer.file_shas:

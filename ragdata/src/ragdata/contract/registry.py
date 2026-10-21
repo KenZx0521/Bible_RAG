@@ -27,13 +27,15 @@ QUERY_ALIASES = "query_aliases.json"           # its external_query part, a cont
 ROUTE_REPORT = "route_report.json"
 REGNAL_LAYER = "regnal_layer.json"             # the chronology card's contract file (2026-10-19)
 REGNAL_REPORT = "regnal_report.json"
+GEN_LAYER = "gen_layer.json"                   # the GEN card's contract files (2026-10-21)
+GEN_NAMES = "gen_names.json"
 LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
                           DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,),
                  "emb": (EMB_REPORT, ENCODER_FINGERPRINT),
                  "kg0": (KG0_REPORT,),
                  "events": (EVENT_REGISTRY_V2, EVENTS_REPORT),
                  "route": (ROUTING_LEXICON, QUERY_ALIASES, ROUTE_REPORT),
-                 "relations": (REGNAL_LAYER, REGNAL_REPORT)}
+                 "relations": (REGNAL_LAYER, REGNAL_REPORT, GEN_LAYER, GEN_NAMES)}
 
 
 @dataclass(frozen=True)

@@ -19,12 +19,16 @@
     python -m ragdata build events --text DIR --struct DIR [--events-yaml YAML] [--counts YAML]
     python -m ragdata build route --text DIR --kg0 DIR --events DIR [--registries DIR]
                                  [--counts YAML]
-    python -m ragdata build relations --text DIR [--regnal-expect YAML]
-        (the relations layer holds only the regnal formulas: Kay's P5 exception, 2026-10-19)
+    python -m ragdata build relations --text DIR [--route DIR] [--regnal-expect YAML]
+                                 [--gen-expect YAML]
+        (the relations layer holds only the regnal formulas and the GEN card's files: Kay's
+        P5 exception, 2026-10-19, and the GEN plan of 2026-10-21; a text with Genesis 5 and 11
+        needs --route, whose routing lexicon gen_names.json reads)
     python -m ragdata gate LAYER LAYER_DIR [--dep DIR ...] [--pdf-dir DIR] [--counts YAML]
                                  [--source-expect YAML] [--registries DIR] [--tokenizer FILE]
                                  [--reranker-tokenizer FILE] [--legacy-dir DIR] [--device DEV]
-                                 [--kg0-counts YAML] [--report FILE]
+                                 [--kg0-counts YAML] [--regnal-expect YAML] [--gen-expect YAML]
+                                 [--report FILE]
     python -m ragdata det FIRST_DIR SECOND_DIR [--report FILE]
     python -m ragdata gt {build,gate} ...   (GT v2; see ragdata.gt.cli)
     python -m ragdata release VERSION... [--store DIR] [--releases DIR] [--date YYYYMMDD]
@@ -57,7 +61,8 @@ again (about a minute in all); with ``--device cpu`` it encodes a sample and
 reports ``sampled: true``. ``det`` on two emb layers also
 compares their vectors and probe vectors within G-DET's tolerance. kg0 and events
 are built from, and gated with, text and struct; route with text, kg0 and events, and
-the registries kg0 was built with plus ``query_aliases.yaml`` (``--registries``).
+the registries kg0 was built with plus ``query_aliases.yaml`` (``--registries``); relations
+with text, and route when it was built on it (``gate relations DIR --dep TEXT --dep ROUTE``).
 ``release``, ``load`` and ``verify`` gate every layer of the release again (all but
 G-ENC, G-CONSERVE and G-XCHECK) and refuse it (status 2) when one is red.
 
@@ -84,6 +89,7 @@ from ragdata.contract import LAYERS
 from ragdata.contract.counts import KG0_COUNTS_PATH, PDF_COUNTS_PATH, CountsError
 from ragdata.gates import check_det
 from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
+from ragdata.gates.gen import GEN_EXPECT_PATH
 from ragdata.gates.regnal import REGNAL_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
 from ragdata.kg import k0_build, k1_build, k4_build, regnal_build
@@ -122,6 +128,7 @@ def _kg_inputs(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--kg0-counts", type=Path, default=KG0_COUNTS_PATH)
     parser.add_argument("--events-yaml", type=Path, default=paths.EVENTS_REGISTRY)
     parser.add_argument("--regnal-expect", type=Path, default=REGNAL_EXPECT_PATH)
+    parser.add_argument("--gen-expect", type=Path, default=GEN_EXPECT_PATH)
 
 
 def _build_parser(sub: Any) -> None:
@@ -133,6 +140,8 @@ def _build_parser(sub: Any) -> None:
                        help="the struct layer to build on (emb, kg0, events)")
     build.add_argument("--kg0", type=Path, help="the kg0 layer to build on (route)")
     build.add_argument("--events", type=Path, help="the events layer to build on (route)")
+    build.add_argument("--route", type=Path,
+                       help="the route layer to build on (relations: the GEN card's lexicon)")
     build.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
                        help="copy of the old output/: legacy_ids (struct), vectors (emb)")
     build.add_argument("--tokenizer", type=Path, help="BGE-M3 tokenizer.json (struct, emb)")
@@ -248,7 +257,9 @@ def _build_route(args: argparse.Namespace) -> stages.BuildResult:
 
 
 def _build_regnal(args: argparse.Namespace) -> stages.BuildResult:
-    return regnal_build.build_regnal(_need_dir(args.text, "--text"), args.store, args.regnal_expect)
+    route = None if args.route is None else _need_dir(args.route, "--route")
+    return regnal_build.build_regnal(_need_dir(args.text, "--text"), args.store, args.regnal_expect,
+                                     route_dir=route, gen_expect=args.gen_expect)
 
 
 BUILDERS: dict[str, Callable[[argparse.Namespace], stages.BuildResult]] = {
@@ -270,7 +281,7 @@ def gate_inputs(args: argparse.Namespace) -> GateInputs:
                       source_expect=args.source_expect, tokenizer=args.tokenizer,
                       reranker_tokenizer=args.reranker_tokenizer, legacy_dir=args.legacy_dir,
                       device=args.device, kg0_counts=args.kg0_counts,
-                      regnal_expect=args.regnal_expect)
+                      regnal_expect=args.regnal_expect, gen_expect=args.gen_expect)
 
 
 def _gate(args: argparse.Namespace) -> int:
