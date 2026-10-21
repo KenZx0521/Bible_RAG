@@ -1,9 +1,10 @@
 """The GEN card integration's files share no 8-character window with scripture, a real question or a real card
 (plan docs/records/2026-10-21_gen_card_integration_plan.md §2.3: repo 不放任何經節字串、真實題目與卡片).
 
-Scanned (globs, so a file another branch adds is covered once merged): the backend wrapper and its tests, the ragdata
-GEN builders and their tests, the A4 folder, these evaluation tests and the plan's records. A .py file's text and its
-string constants (ast: implicit concatenation and escapes resolved), a .md file's text, each as written and NFKC.
+Scanned (globs, so a file another branch adds is covered once merged): the backend wrapper, its tests and fakes and
+test_startup.py (which the GEN startup tests extend), the ragdata GEN builders and their tests, the A4 folder, these
+evaluation tests and the plan's records. A .py file's text and its string constants (ast: implicit concatenation and
+escapes resolved), a .md file's text, each as written and NFKC.
 Against: the text layer's verses, GT v1/v2, A's frozen confirm questions, stage-0's items, the GEN confirm set's
 frozen questions, the qset P1/P2 items, and the confirm and stage-0 cards' g_block / t_block. A window counts when it
 holds a CJK character (test_gen_confirm_ho_edges' scan, whose frozen file is not edited). Store-backed: skips when
@@ -24,9 +25,15 @@ STORE = Path("/mnt/ollama-data/bible_rag_store")
 REPORTS = STORE / "reports"
 VERSES = STORE / "layers/text/text@247eafe44b02/verse_units.jsonl"
 WINDOW = 8
-SCANNED = ("backend/utils/gen_card.py", "backend/tests/test_gen*.py", "ragdata/src/ragdata/**/gen*.py",
-           "ragdata/tests/*gen*.py", "evaluation/experiments/2026-10-21_gen_card/**/*.py",
-           "evaluation/tests/test_gen_card*.py", "docs/records/2026-10-21_gen_card*.md")
+SCANNED = ("backend/utils/gen_card.py", "backend/tests/*gen*.py", "backend/tests/test_startup.py",
+           "ragdata/src/ragdata/**/gen*.py", "ragdata/tests/*gen*.py",
+           "evaluation/experiments/2026-10-21_gen_card/**/*.py", "evaluation/tests/test_gen_card*.py",
+           "docs/records/2026-10-21_gen_card*.md")
+# what int/gen-card-backend and int/gen-card-ragdata add or extend with GEN text: each must be scanned
+BRANCH_FILES = ("backend/utils/gen_card.py", "backend/tests/gen_fakes.py", "backend/tests/test_gen_card.py",
+                "backend/tests/test_gen_card_store.py", "backend/tests/test_gen_trigger_time.py",
+                "backend/tests/test_startup.py", "ragdata/src/ragdata/kg/gen_layer.py",
+                "ragdata/src/ragdata/kg/gen_names.py", "ragdata/src/ragdata/gates/gen.py", "ragdata/tests/test_gen.py")
 # sha256 of a shared window that is allowed: stage-0's GEN question template opens with this clause (its book named),
 # a synthetic question may open the same way
 ALLOWED = {"8bebbc80b51baab0e6ce75bab0139fc98eff1db773ca6d279ab4a951c046c16f": "stage-0 GEN template's opening clause"}
@@ -54,8 +61,8 @@ def read_json(p: Path):
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-def scanned_files() -> list[Path]:
-    return sorted({p for g in SCANNED for p in REPO.glob(g) if p.is_file()})
+def scanned_files(root: Path = REPO) -> list[Path]:
+    return sorted({p for g in SCANNED for p in root.glob(g) if p.is_file()})
 
 
 def file_windows(p: Path) -> dict[str, int]:
@@ -101,6 +108,13 @@ def test_the_scan_covers_this_file_the_a4_folder_and_the_plan():
     assert {"evaluation/tests/test_gen_card_windows.py", "evaluation/tests/test_gen_card_a4.py",
             "evaluation/experiments/2026-10-21_gen_card/a4_g.py", "evaluation/experiments/2026-10-21_gen_card/a4_score.py",
             "docs/records/2026-10-21_gen_card_integration_plan.md"} <= files
+
+
+def test_the_scan_covers_the_backend_and_ragdata_branches_gen_files(tmp_path):
+    for rel in BRANCH_FILES:
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).touch()
+    assert {p.relative_to(tmp_path).as_posix() for p in scanned_files(tmp_path)} == set(BRANCH_FILES)
 
 
 def test_windows_hold_a_cjk_character_and_see_through_nfkc():
