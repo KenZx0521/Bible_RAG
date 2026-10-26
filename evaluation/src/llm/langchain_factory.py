@@ -20,10 +20,11 @@ def create_langchain_llm():
         from langchain_anthropic import ChatAnthropic
 
         logger.info("[LangChain] Creating ChatAnthropic model=%s", settings.eval_claude_model)
+        # No `temperature`: Claude 4.7+ models (Haiku 5.5 included) reject it
+        # with a 400; ragas_eval also stops RAGAS from setting one per call.
         return ChatAnthropic(
             model=settings.eval_claude_model,
             anthropic_api_key=settings.anthropic_api_key,
-            temperature=0.0,
             max_tokens=settings.llm_max_tokens,
         )
 

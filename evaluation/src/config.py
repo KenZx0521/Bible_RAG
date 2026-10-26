@@ -38,7 +38,7 @@ class Settings(BaseSettings):
 
     # Anthropic
     anthropic_api_key: str = ""
-    eval_claude_model: str = "claude-haiku-4-5"
+    eval_claude_model: str = "claude-haiku-5-5"
 
     # OpenAI
     openai_api_key: str = ""

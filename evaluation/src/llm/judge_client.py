@@ -43,19 +43,25 @@ async def _claude_completion(prompt: str, max_tokens: int, temperature: float) -
     logger.info("[Claude API] POST messages  model=%s", settings.eval_claude_model)
     t0 = time.perf_counter()
 
+    # `temperature` is not sent: Claude 4.7+ models (Haiku 5.5 included)
+    # reject it with a 400 and sample only at their default.
     raw_resp = await client.messages.with_raw_response.create(
         model=settings.eval_claude_model,
         max_tokens=max_tokens,
-        temperature=temperature,
         messages=[{"role": "user", "content": prompt}],
     )
     elapsed = time.perf_counter() - t0
     resp = raw_resp.parse()
-    text = resp.content[0].text.strip()
+    # Adaptive thinking (on by default on Haiku 5.5) puts `thinking` blocks
+    # before the answer, so read the text blocks rather than content[0].
+    text = "".join(b.text for b in resp.content if b.type == "text").strip()
 
-    logger.info("[Claude API] %d  %.2fs  usage: in=%d out=%d",
-                raw_resp.status_code, elapsed,
+    logger.info("[Claude API] %d  %.2fs  stop=%s  usage: in=%d out=%d",
+                raw_resp.status_code, elapsed, resp.stop_reason,
                 resp.usage.input_tokens, resp.usage.output_tokens)
+    if not text:
+        # max_tokens spent on thinking, or a refusal: a judge failure, not an empty verdict.
+        raise RuntimeError(f"Claude judge returned no text (stop_reason={resp.stop_reason})")
     return text
 
 

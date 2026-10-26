@@ -16,7 +16,9 @@ judges); the other metrics' reasoning is extracted from RAGAS traces
 
 Judge temperature: RAGAS 0.4.3 overrides the LangChain model temperature on
 every call (0.01 for single completions), so the value set in
-``langchain_factory`` never reaches the judge.
+``langchain_factory`` never reaches the judge. Claude is the exception: its
+4.7+ models (Haiku 5.5 included) reject `temperature`, so the override is
+bypassed (``_wrap_judge_llm``) and the judge samples at the model default.
 """
 
 from __future__ import annotations
@@ -139,6 +141,21 @@ def build_run_config():
     )
 
 
+def _wrap_judge_llm(llm, run_config):
+    """The judge as evaluate() would wrap it, minus RAGAS's temperature override for Claude.
+
+    RAGAS sets temperature=0.01 on every async call, which Claude 4.7+ models
+    (Haiku 5.5 included) reject with a 400.
+    """
+    from ragas.llms import LangchainLLMWrapper
+
+    return LangchainLLMWrapper(
+        llm,
+        run_config=run_config,
+        bypass_temperature=settings.eval_llm_provider.lower() == "claude",
+    )
+
+
 def build_ragas_dataset(samples: list[EvalSample]):
     """RAGAS EvaluationDataset over samples that have an answer and contexts."""
     from ragas import EvaluationDataset, SingleTurnSample
@@ -205,7 +222,7 @@ def _run_ragas(
         result = evaluate(
             dataset=dataset,
             metrics=metrics,
-            llm=llm,
+            llm=_wrap_judge_llm(llm, run_config),
             embeddings=embeddings,
             run_config=run_config,
         )
