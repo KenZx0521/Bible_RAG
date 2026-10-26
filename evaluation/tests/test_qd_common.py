@@ -181,8 +181,17 @@ def test_kg0_hubs_are_the_14_names_over_300():
     assert len(occ) == 2926 and len(hubs) == 14 and "以色列" in hubs and "非利士" in hubs
 
 
+@pytest.fixture
+def fresh_gold_caches():
+    """it_host.assert_no_gold_loaded() reads a filled GD set-loader cache as "the arm builder read
+    gold". run_qd.sh runs each step in its own process, where that holds; in one pytest process the
+    test_graph_gd_* tests fill the same caches first, so start from a fresh process's state."""
+    for loader in (qd.H.gd.load_new82, qd.H.gd.load_old31):
+        loader.cache_clear()
+
+
 @needs_store
-def test_new82_c5_matches_the_it_host_c5():
+def test_new82_c5_matches_the_it_host_c5(fresh_gold_caches):
     inp = qd.load_step1_inputs()
     assert len(inp.c5) == 82
     assert inp.c5["N_KIN_01"] == ("ps:num.16.1", "ps:1ch.23.2", "ps:num.26.1", "ps:exo.6.14", "ps:num.4.34")
