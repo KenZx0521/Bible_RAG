@@ -71,7 +71,8 @@ class Settings(BaseSettings):
 
     # Ground truth the runners score with when no --gt is given: v1
     # (ground_truth.json) or v2 (ground_truth.v2.json, frozen; data_loader).
-    eval_gt_version: Literal["v1", "v2"] = "v1"
+    # v2 by default: v1 scores only legacy-20261004, which no backend serves.
+    eval_gt_version: Literal["v1", "v2"] = "v2"
     # Artifact store holding contracts/{build_id}/ (each build's verse_index.json
     # maps its sources to slots; slot_coverage).
     rag_store: Path = Path("/mnt/ollama-data/bible_rag_store")

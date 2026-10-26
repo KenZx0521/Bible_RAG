@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from src import data_loader, gt_v2
+from src.config import Settings
 from src.gt_v2 import GroundTruthItemV2, GtV2Error
 
 _REPO = Path(__file__).resolve().parents[2]
@@ -28,6 +29,12 @@ def test_v2_is_the_frozen_file_with_slots():
     assert gt.meta() == {"gt_version": "v2", "gt_sha": freeze["sha256"]}
     assert gt.slot_universe == freeze["slot_universe"]
     assert all(isinstance(item, GroundTruthItemV2) for item in gt.items)
+
+
+def test_the_default_is_v2():
+    # v1 scores only legacy-20261004, which no backend serves any more; make_context
+    # refuses v1 for every other build, so a v1 default only fails.
+    assert Settings.model_fields["eval_gt_version"].default == "v2"
 
 
 def test_the_setting_picks_the_version_when_none_is_given(monkeypatch):

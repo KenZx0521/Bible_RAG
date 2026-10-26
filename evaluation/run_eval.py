@@ -17,7 +17,7 @@ Usage:
 
     --graph runs only the backend's RAG_GRAPH_STRATEGIES; the R1/R2 backend has
     one graph strategy, the event_registry auxiliary lane (default). Round 3's
-    results_graph/ ran the legacy strategies (graph_event, 'all', ...), which
+    archives (archive/round3_2026-09/) ran the legacy strategies (graph_event, 'all', ...), which
     that backend rejects; the legacy image alone reproduces them.
     A pre-2026-10 archive in the output dir is never overwritten: move it first.
 

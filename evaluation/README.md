@@ -42,7 +42,8 @@ evaluation/
 ├── results/                     # 預設輸出目錄(無 --graph/--no-graph)
 ├── results_graph/               # --graph 模式輸出(--no-graph → results_no_graph/)
 ├── results_*_answer/            # 生成端 LLM 對照組(claude/gemma × graph/semantic)
-└── results_quick/               # quick_retrieval_eval.py / quick_faithfulness_eval.py 輸出
+├── results_quick/               # quick_retrieval_eval.py / quick_faithfulness_eval.py 輸出
+└── archive/round3_2026-09/      # Round 3 三組態 500 題存檔(legacy build;d248f18)
 ```
 
 ## 前置條件
@@ -96,7 +97,7 @@ uv run python run_eval.py
 ```
 
 > **2026-10 起 `--graph` 不再等於「全部圖譜策略」**:backend 預設 `RAG_GRAPH_STRATEGIES=["event_registry"]`(2026-10-04 起;只在 top-k 後附加 curated 事件錨點,之前是 `["graph_event"]`)。附加軌會讓部分題的 sources 多一段,檢索指標要用 `--metric-k 6` 並以 `ab_compare.py --control-ext` 對 k 對齊的 dense 比較。
-> R1/R2 的 backend 只有 `event_registry` 這一條圖譜策略:`--graph-strategies event_registry` 指定它,只寫 `--graph-strategies` 不帶值 = 全關;`all`、`graph_event` 等舊策略會被拒絕。Round 3 的 `results_graph/`(全開)只能用 legacy 映像重現。
+> R1/R2 的 backend 只有 `event_registry` 這一條圖譜策略:`--graph-strategies event_registry` 指定它,只寫 `--graph-strategies` 不帶值 = 全關;`all`、`graph_event` 等舊策略會被拒絕。Round 3 的三組態存檔(全開,2026-09)已搬到 `archive/round3_2026-09/`,只能用 legacy 映像重現。
 > 輸出目錄裡若有 2026-10 前的存檔(記錄沒有 `graph_strategies` 欄位),collector 會拒絕覆寫,請先移走或 commit。
 > 每筆 `raw_responses.json` 記錄另帶 `graph_strategies`(backend 實際生效的策略;缺欄位 = 舊版全開)。
 
@@ -146,7 +147,7 @@ uv run python quick_retrieval_eval.py --from-raw results_graph/raw_responses.jso
 uv run python quick_retrieval_eval.py --compare results_quick/a.json results_quick/b.json
 ```
 
-**GT 版本與 build。** `--gt v1|v2` 選 GT(預設讀設定 `EVAL_GT_VERSION`,未設為 v1);v2 一律經 `gt_v2.py` 的 sha256 與 `config/gold/gt_v2_freeze.json` 檢查。backend 的 `/api/v1/health` 決定受測 build:沒回 `build_id` 的就是 `legacy-20261004`,編碼指紋取 health 的 `encoder`(沒有記 null)。legacy 以外的 build 只能用 `--gt v2`。GT v2 下 `verse_recall_at_k` / `anchor_coverage_at_k` 改在 GT 檔頭的 `slot_universe` 上算:gold 直接讀 `gold_slots`(缺號槽不算 gold),兩臂都以實際節位集合計算;legacy 來源依舊編號對到節位(幽靈節落在缺號槽),新 build 的來源讀 `$RAG_STORE/contracts/<build_id>/verse_index.json`(`--contracts-dir` 可指定,manifest 的 build_id 與 sha256 須相符),有 `start_key`/`end_key` 就依序取區間,合併節整個 unit 計入。`--contracts-dir` 只有在 `/health` 完全沒回 `build_id` 時才能替 run 命名 build;`/health` 或 checkpoint 的 `run_meta.json` 已寫明 build(包括明確的 `legacy-20261004`)時,指到別的 build 一律拒絕。兩臂互不收對方的來源:標成 legacy 的 run 遇到新 build 形狀的來源(有 `kind`、`start_key`/`end_key` 或合乎 ragcommon.ids 的 id)會報錯,標成新 build 的 run 遇到 legacy 形狀的來源也會報錯(多半是 `BACKEND_URL` 還指著 legacy prod);hit_rate、MRR 等單位指標與 `source_detail` 的 `gold` 也改為「來源含 gold 節位」(NDCG 的分級仍依 reference)。每份輸出的 `meta` 記 `data_build_id`、`gt_version`、`gt_sha`、`encoder_fingerprint`;`--from-raw` 從 checkpoint 旁的 `run_meta.json` 讀 build(沒有此檔即 legacy)。完整管線 `run_eval.py` 也有 `--gt` / `--contracts-dir`,收集時寫 `run_meta.json`,`evaluation_results.json` 的 meta 記同樣四個欄位。
+**GT 版本與 build。** `--gt v1|v2` 選 GT(預設讀設定 `EVAL_GT_VERSION`,未設為 v2;v1 只能評 legacy-20261004);v2 一律經 `gt_v2.py` 的 sha256 與 `config/gold/gt_v2_freeze.json` 檢查。backend 的 `/api/v1/health` 決定受測 build:沒回 `build_id` 的就是 `legacy-20261004`,編碼指紋取 health 的 `encoder`(沒有記 null)。legacy 以外的 build 只能用 `--gt v2`。GT v2 下 `verse_recall_at_k` / `anchor_coverage_at_k` 改在 GT 檔頭的 `slot_universe` 上算:gold 直接讀 `gold_slots`(缺號槽不算 gold),兩臂都以實際節位集合計算;legacy 來源依舊編號對到節位(幽靈節落在缺號槽),新 build 的來源讀 `$RAG_STORE/contracts/<build_id>/verse_index.json`(`--contracts-dir` 可指定,manifest 的 build_id 與 sha256 須相符),有 `start_key`/`end_key` 就依序取區間,合併節整個 unit 計入。`--contracts-dir` 只有在 `/health` 完全沒回 `build_id` 時才能替 run 命名 build;`/health` 或 checkpoint 的 `run_meta.json` 已寫明 build(包括明確的 `legacy-20261004`)時,指到別的 build 一律拒絕。兩臂互不收對方的來源:標成 legacy 的 run 遇到新 build 形狀的來源(有 `kind`、`start_key`/`end_key` 或合乎 ragcommon.ids 的 id)會報錯,標成新 build 的 run 遇到 legacy 形狀的來源也會報錯(多半是 `BACKEND_URL` 還指著 legacy prod);hit_rate、MRR 等單位指標與 `source_detail` 的 `gold` 也改為「來源含 gold 節位」(NDCG 的分級仍依 reference)。每份輸出的 `meta` 記 `data_build_id`、`gt_version`、`gt_sha`、`encoder_fingerprint`;`--from-raw` 從 checkpoint 旁的 `run_meta.json` 讀 build(沒有此檔即 legacy)。完整管線 `run_eval.py` 也有 `--gt` / `--contracts-dir`,收集時寫 `run_meta.json`,`evaluation_results.json` 的 meta 記同樣四個欄位。
 
 ```bash
 # legacy 在 GT v2 量尺下的基線

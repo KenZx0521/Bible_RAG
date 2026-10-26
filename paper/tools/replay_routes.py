@@ -11,7 +11,8 @@
    graph run: route changes, classifier-fed strategy invocations, and
    graph-configuration retrieval.
 
-Archived runs are read from git history; Round 3 from the working tree.
+Archived runs are read from git history, Round 3 at the commit that
+recorded it (d248f18; the files now sit in evaluation/archive/round3_2026-09/).
 The event keyword added in the fusion round (commit 046040a) is removed
 when replaying Rounds 0-1.
 
@@ -44,10 +45,10 @@ RUNS = (
     ("Round 1 (P0)", HEAD, "evaluation/results_graph_p0_after", True),
     ("Round 2 (fusion)", "d85c7eb", "evaluation/results_graph", False),
     ("July 15, 500 q.", "5a45393", "evaluation/results_graph", False),
-    ("Round 3, graph", None, "evaluation/results_graph", False),
+    ("Round 3, graph", "d248f18", "evaluation/results_graph", False),
 )
 JULY15 = ("5a45393", "evaluation/results_graph")
-ROUND3 = (None, "evaluation/results_graph")
+ROUND3 = ("d248f18", "evaluation/results_graph")
 
 
 def read_json(rev: str | None, path: str):
