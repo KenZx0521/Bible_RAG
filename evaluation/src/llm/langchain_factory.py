@@ -12,10 +12,20 @@ from ..config import settings
 logger = logging.getLogger(__name__)
 
 
-def create_langchain_llm():
-    """Create a LangChain ChatModel for the configured eval LLM provider."""
-    provider = settings.eval_llm_provider.lower()
+def create_langchain_llm(callbacks: list | None = None):
+    """Create a LangChain ChatModel for the configured eval LLM provider.
 
+    ``callbacks`` are attached to the model (ragas_eval passes ServedModelCallback).
+    """
+    provider = settings.eval_llm_provider.lower()
+    model = _create(provider)
+    if callbacks:
+        model.callbacks = list(callbacks)
+    return model
+
+
+def _create(provider: str):
+    """The provider's ChatModel with the eval settings."""
     if provider == "claude":
         from langchain_anthropic import ChatAnthropic
 

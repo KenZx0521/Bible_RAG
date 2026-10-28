@@ -35,6 +35,12 @@ Usage:
     --results-dir replaces results*/ for this run (relative = under evaluation/)
     and a collection never replaces its raw_responses.json without --overwrite.
     Collecting calls no LLM judge.
+
+    Audit trail (2026-10-28): run_meta.json v2 beside the checkpoint records the
+    collection (mode, argv, ids file sha256, start/finish), the evaluation code's git
+    state, the backend container's image and allowlisted env (never a secret), the
+    generator model and the /health handshake; evaluation_results.json meta records
+    invalid_counts / invalid_ids, eval_run and that run_meta. See README.
 """
 
 from __future__ import annotations
@@ -42,6 +48,8 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import sys
+from dataclasses import replace
 from pathlib import Path
 
 from rich.console import Console
@@ -164,14 +172,17 @@ def _print_banner(args: argparse.Namespace, results_dir: Path) -> None:
 
 
 def _run_context(args: argparse.Namespace, live: bool):
-    """GT + build: from the backend's /health when collecting, else the checkpoint's run_meta."""
+    """GT + build: from the backend's /health when collecting, else the checkpoint's run_meta.
+
+    A live context keeps the /health body (run_meta.json backend_health).
+    """
     from src.config import settings
     from src.data_loader import load_gt
     from src.provenance import fetch_health, from_health, make_context, read_run_meta
 
-    provenance = (from_health(fetch_health(settings.backend_url)) if live
-                  else read_run_meta(settings.results_dir))
-    ctx = make_context(load_gt(args.gt), provenance, args.contracts_dir)
+    health = fetch_health(settings.backend_url) if live else None
+    provenance = from_health(health) if live else read_run_meta(settings.results_dir)
+    ctx = replace(make_context(load_gt(args.gt), provenance, args.contracts_dir), health=health)
     console.print(f"[dim]Run meta: {ctx.meta()}[/dim]")
     return ctx
 
@@ -183,7 +194,8 @@ def _collect(args: argparse.Namespace, ctx):
     try:
         return asyncio.run(run_collection(ctx, use_graph=args.graph, semantic_only=args.semantic,
                                           graph_strategies=args.graph_strategies,
-                                          question_ids=args.ids))
+                                          question_ids=args.ids, ids_file=args.ids_file,
+                                          argv=sys.argv))
     except IdsFileError as exc:
         raise SystemExit(f"--ids-file {args.ids_file}: {exc}") from None
 

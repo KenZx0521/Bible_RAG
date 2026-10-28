@@ -22,14 +22,17 @@ evaluation/
 │   ├── reference_parser.py      # 解析中文經文引用(ragcommon.refs strict)
 │   ├── book_names.py            # 來源書名 → book_id(ragcommon.books)
 │   ├── slot_coverage.py         # GT v2 節位覆蓋量尺(slot_universe、兩臂來源 → slot)
-│   ├── provenance.py            # 結果 meta:data_build_id、gt_version、gt_sha、編碼指紋
+│   ├── provenance.py            # 結果 meta:data_build_id、gt_version、gt_sha、編碼指紋;run_meta.json 讀寫
+│   ├── run_record.py            # run_meta.json v2:收集紀錄、eval 程式 git 狀態、backend 容器快照(白名單 env)
+│   ├── result_audit.py          # evaluation_results.json 稽核 meta:invalid_counts/ids、eval_run、run_meta
 │   ├── relevance_judge.py       # 檢索相關性判斷
 │   ├── rag_client.py            # httpx 呼叫 RAG API
 │   ├── context_blocks.py        # 生成器同款 context 區塊格式 + 經節/pericope id 判別
 │   ├── content_fetcher.py       # asyncpg 重建生成器同款 context(舊後端 / 舊 checkpoint)
-│   ├── collector.py             # 回應收集 (支援中斷續傳)
+│   ├── collector.py             # 回應收集(每次從頭收集、逐題落檔;沒有續收)
 │   ├── evaluator.py             # 主要協調器
 │   ├── visualizer.py            # Plotly 視覺化
+│   ├── llm/served_models.py     # judge API 實際回報的模型名稱計數
 │   └── metrics/
 │       ├── retrieval.py         # 7 個檢索指標
 │       ├── ragas_eval.py        # RAGAS 框架指標
@@ -108,10 +111,14 @@ uv run python run_eval.py
 diff <(cut -d, -f1-10 results_graph/evaluation_results.csv) \
      <(cut -d, -f1-10 results_no_graph/evaluation_results.csv)
 
-# 確認模式正確標記
-jq '[.[] | .use_graph] | unique' results_graph/raw_responses.json    # → [true]
-jq '[.[] | .use_graph] | unique' results_no_graph/raw_responses.json # → [false]
+# 確認模式正確標記(mode = 收集時的 CLI 旗標,是權威的臂標記)
+jq '[.[] | .mode] | unique' results_graph/raw_responses.json     # → ["graph"]
+jq '[.[] | .mode] | unique' results_no_graph/raw_responses.json  # → ["no_graph"]
+jq '[.[] | .mode] | unique' results_semantic/raw_responses.json  # → ["semantic"]
+jq '.collection.mode' results_graph/run_meta.json                 # → "graph"
 ```
+
+> `use_graph` 是 backend 回報的 per-request graph 開關,不是臂標記:`--semantic` 的請求不帶 `use_graph`,backend 就回報 `RAG_USE_GRAPH`(true),所以不論新舊 checkpoint,semantic 臂的 `use_graph` 都是 true(10-26 的 `results_semantic` 500/500 為 true),不能拿來分臂。分臂一律看 `mode`;2026-10-28 前的 checkpoint 沒有 `mode`,只能靠輸出目錄分臂。
 
 **閘道規則**(`--no-graph` 時跳過):
 - R3 person → 略過 `graph_person`，保留 semantic + SQL supplement
@@ -121,7 +128,7 @@ jq '[.[] | .use_graph] | unique' results_no_graph/raw_responses.json # → [fals
 - R6 place → 略過 `graph_place`
 - R1/R2/fallback 不受影響(本來就沒用 Neo4j)
 
-每筆 `raw_responses.json` 記錄會帶 `use_graph: bool` 欄位標記實際執行模式。
+每筆 `raw_responses.json` 記錄帶 `mode`(graph / no_graph / semantic / default,依 CLI 旗標)標記這次收集的臂,`use_graph` 則是 backend 回報的值(見下節「事後稽核紀錄」)。
 
 > **首次部署**：backend 需要重建一次以載入 `use_graph` payload 處理邏輯：
 > `docker compose up -d --build backend`
@@ -310,12 +317,79 @@ RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` �
 ## 結果
 
 評估完成後，在輸出目錄(預設 `results/`，依 `--graph/--no-graph` 切換為 `results_graph/` 或 `results_no_graph/`)會產生：
-- `raw_responses.json` — RAG 原始回應(含 `use_graph` 欄位標記模式)
+- `raw_responses.json` — RAG 原始回應(含 `mode` 臂標記、intent、檢索統計、收集時間與耗時)
+- `run_meta.json` — 這次收集的紀錄(build、編碼指紋;v2 起另有收集參數、程式版本、backend 容器快照)
 - `evaluation_results.json` — 完整評估結果
 - `evaluation_results.csv` — 每題逐筆指標(可用試算表打開)
 - `dashboard.html` — 互動式視覺化儀表板
 
 開啟 `<輸出目錄>/dashboard.html` 查看互動式報告。
+
+## 事後稽核紀錄（2026-10-28 起）
+
+目標:每次 run 事後不靠 `docker inspect`、容器 log 或 git 考古就能還原「用什麼系統、什麼設定、judge 怎麼判」。舊 checkpoint 一律照讀,新欄位都是選填(沒有就記 null),`--eval-only` 不會因此被擋。
+
+### raw_responses.json 每題新增欄位
+
+| 欄位 | 來源 | 說明 |
+|------|------|------|
+| `mode` | CLI 旗標 | `graph` / `no_graph` / `semantic` / `default`;**權威的臂標記** |
+| `use_graph` | backend `retrieval_stats.use_graph` | 原樣記錄,缺欄位記 null(不再預設 true);請求失敗的題記 null。**semantic 臂會是 true**(請求不帶 `use_graph`,backend 回報 `RAG_USE_GRAPH`),不能分臂 |
+| `intent` | backend `intent` | `{type, entities, verse_refs, rejected_refs}` 原樣 |
+| `fusion_alpha`、`total_candidates`、`reranked_top_k`、`event_registry_events` | backend `retrieval_stats` | 原樣,缺欄位記 null |
+| `collected_at` | collector | ISO 8601,含時區 |
+| `latency_ms` | collector | 該題請求耗時(含重試與重試間的等待) |
+| `request_attempts` | collector | 第幾次請求成功(失敗題 = 3) |
+
+### run_meta.json v2
+
+既有的 `data_build_id`、`encoder_fingerprint` 語意不變。收集開始時寫一次(`finished_at` 為 null),結束時補 `finished_at` 與題數;中途中斷時至少 `started_at` 已落檔。寫檔走暫存檔再 rename,不會留下半個檔。
+
+| 欄位 | 說明 |
+|------|------|
+| `run_meta_version` | 2 |
+| `collection` | `started_at`、`finished_at`、`mode`、`argv`、`top_k`、`graph_strategies_requested`、`ids_file` 與 `ids_file_sha256`、`n_questions`、`n_collected`、`n_request_failures`、`resumed`(collector 每次從頭收集,沒有續收,恆為 `[]`) |
+| `eval_code` | `git_head`、`git_dirty`、`dirty_paths`(`git status --porcelain` 在 evaluation/ 底下的路徑,最多 50 條)、`n_dirty_paths`;未追蹤的 `results*/` 輸出目錄會列出但不算 dirty |
+| `backend_runtime` | `docker inspect`(唯讀)backend 容器:`container`、`image`(Config.Image)、`image_id`、`started_at`、`env`(白名單,見下) |
+| `generator` | `provider`、`model`;`LLM_PROVIDER=ollama` 時另查 `OLLAMA_BASE_URL/api/tags` 記 `digest`、`size`(回應形狀不對時記 error) |
+| `backend_health` | `/health` 的 `status`、`services` 與 handshake 摘要 `ok`、`strict`、`mismatches` |
+
+每個探測都是盡力而為:docker 不可用、容器不存在、逾時(5 秒)、Ollama 不通或回應形狀不對、不是 git checkout,或任何預期外的例外時,該段記 `{"error": "..."}` 並記 warning,收集照常進行。容器名用 `EVAL_BACKEND_CONTAINER`(預設 `bible_rag_backend`)。
+
+**backend env 的秘密白名單規則**(`src/run_record.py` `safe_env`):名稱一律轉大寫再比對(backend 的 pydantic settings 讀 env 不分大小寫),只記
+1. 明列的名稱:`LLM_PROVIDER`、`OLLAMA_MODEL`、`CLAUDE_MODEL`、`OPENAI_MODEL`、`GEMINI_MODEL`、`LLM_TEMPERATURE`、`LLM_MAX_TOKENS`、`RAG_RANK_FUSION_ALPHA`、`RAG_USE_GRAPH`、`RAG_GRAPH_STRATEGIES`、`RAG_ENTITY_QUERY_TOP_K`、`STRICT_BUILD_CHECK`、`HYBRID_SEARCH_ENABLED`、`HYBRID_FUSION_METHOD`、`HYBRID_PREFETCH_LIMIT`;
+2. 其他 `RAG_` 開頭、且名稱不含 `KEY`/`SECRET`/`TOKEN`/`PASSWORD`/`PASS`/`PWD`/`AUTH`/`CRED`/`DSN`/`PRIVATE`/`CERT` 的變數。
+
+其餘一律不記(API key、`POSTGRES_PASSWORD`、`NEO4J_PASSWORD`、`GPG_KEY`、`PATH` …)。留下的值再遮兩層:含帳密的 URL(`scheme://user:pass@host`)把 `://` 到最後一個 `@` 之間改成 `***`(密碼含 `/`、`@` 也遮得到);值本身像金鑰(`sk-`、`ghp_`、`github_pat_`、`AKIA`、`AIza`、`xoxb-`、`hf_` 等開頭,或 24 字元以上、字母數字混合、無分隔的字串,例如 hex digest、base64)時整個改成 `***`。新增白名單名稱前先確認它不可能放秘密(`tests/test_run_record.py` 驗證含 `ANTHROPIC_API_KEY`、`POSTGRES_PASSWORD` 的 env 不會進 run_meta)。
+
+### evaluation_results.json / .csv
+
+`meta` 新增:
+
+| 欄位 | 說明 |
+|------|------|
+| `invalid_counts` / `invalid_ids` | 每個指標的無效題數與題號(經過與平均相同的 infra 失敗處理);原因在各題的 `rationale.errors`(RAGAS)、`rationale.coverage_error`(coverage)、`strategy_errors`(基礎設施)。這次應評的指標(RAGAS 各指標與 `answer_coverage`)即使沒有任何分數也會列出 |
+| `unscored_ids` | 每個指標「完全沒有分數」的題號(既非有效也非無效):RAGAS 會跳過沒有答案或沒有 contexts 的題,整個 RAGAS run 失敗時則全部沒有分數(原因在 `rationale.errors.ragas`)。該指標的實際分母 = 題數 − `unscored_ids` − `invalid_ids` |
+| `eval_run` | `started_at`、`finished_at`、`argv`、`git_head`、`git_dirty`、`dirty_paths`(取不到 git 時另有 `git_error`) |
+| `run_meta` | checkpoint 旁 run_meta.json 的 v2 各段原樣嵌入(`run_meta_version`、`collection`、`eval_code`、`backend_runtime`、`generator`、`backend_health`);沒有 run_meta.json 記 null,舊版檔各段記 null |
+| `judge_served_models` | judge API 回覆裡實際寫的模型名稱與次數(coverage 的 `judge_completion` 與 RAGAS 經 LangChain 的呼叫都算);沒有任何回覆帶模型名稱時不加這欄 |
+
+每題 `samples[]` 新增 `intent`、`mode`(從 raw 讀,舊 checkpoint 為 null),`strategy_errors` 改為帶入該題實際值;`rationale` 新增:
+
+- `coverage_points`:`[{index, point, verdict, reason}]`,每個應涵蓋重點的 judge 判定(`verdict` 為 null = judge 沒給合法判定)。
+- `coverage_error`:coverage 無效的原因 —— `no_expected_points`、`unparseable`、`incomplete_verdicts: ...`(列出缺判定的重點與回覆的毛病)、`judge_error: <例外>`、`internal_error: <例外>`(該題處理時的預期外錯誤;只有該題無效,其他題照常計分)。
+- `coverage_raw`:無效時,或雖然計分但回覆有毛病時(`coverage_problems` 非空),judge 的最後一次原始回覆(截斷 8000 字元);乾淨的有效回覆記 null。
+- `coverage_attempts`:judge 呼叫次數(0 = 沒送 judge:沒有重點或空答案)。
+- `coverage_problems`:最後一次回覆的毛病,計分的題也記(同一 index 出現兩次、以後者為準;多出超出範圍的項目;壞 JSON 改用樣式讀取……)。
+- `coverage_salvaged`:最後一次回覆是壞 JSON、逐項用樣式讀出 index 與 verdict。
+- `coverage_retry`:有重問時 `{why, same_reply}`:第一次回覆為何要重問,以及重問拿到的回覆是否與第一次一字不差(`same_reply` 為 null = 重問那次丟例外)。
+- `errors`:RAGAS 指標無效的原因 `{"ragas_<指標>": "TimeoutError: ..."}`(沒有例外卻是 NaN 也會註明);整個 RAGAS run 失敗時是 `{"ragas": "evaluate() failed: ..."}`。
+
+**coverage 判定規則**:judge 回覆若有任何重點沒有合法判定(缺 index、index 不是整數或超出範圍、判定不是 covered/partial/missing),或整段無法解析,先重問一次;重問的 prompt 會在最後附上「上一次缺第幾點/不是合法 JSON,請輸出全部 N 項」,避免 temperature 0 的 judge(例如本機 gemma)原樣重複同一段回覆。重問後仍不完整,該題 coverage 記無效並保存原始回覆,不再把缺的重點默默當 missing 計 0。judge 呼叫丟例外則直接記無效並保存例外訊息。壞 JSON 時逐項(`{` 到 `{`)用樣式讀 index 與 verdict 配對,判定掛在 judge 寫的 index 上,不再依出現順序;沒有自己 index 的 verdict 不填任何重點 —— 和合法 JSON 缺 index 的處理一致。完整、合法的回覆計分與過去完全相同(covered 1 / partial 0.5 / missing 0 平均,四捨五入到 4 位)。`quick_faithfulness_eval.py --coverage` 的每列也有同樣的 `coverage_*` 欄位;qfe 每列另有 `judge_errors`(faithfulness judge 失敗的原因,同 `rationale.errors`)。
+
+`src/metrics/coverage_eval.py` 的 `_parse_verdicts` 保留 2026-10-28 前的回傳形狀(`list[str]`,缺的重點補 `missing`),只給 store 封存的重判腳本重現舊分數用;評估管線改用 `_read_verdicts`。
+
+`evaluation_results.csv` 在最後加 `intent_type`、`mode` 兩欄,原有欄位順序不變。
 
 ## 結果解讀
 

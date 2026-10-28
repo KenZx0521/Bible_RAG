@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 import time
+from typing import Any, Mapping
 
 import httpx
 
@@ -13,6 +14,11 @@ from .config import settings
 from .models import SourceInfo
 
 logger = logging.getLogger(__name__)
+
+# backend/models/response.py RetrievalStats fields the collector keeps per question
+# (route_used, strategies_used, strategy_errors, use_graph, graph_strategies are kept already).
+RETRIEVAL_AUDIT_FIELDS = ("fusion_alpha", "total_candidates", "reranked_top_k",
+                          "event_registry_events")
 
 # uvicorn closes an idle connection after 5 s and httpx keeps one for 5 s, so a
 # reused connection can be closed under a request (httpx.ReadError mid-run, R1
@@ -100,6 +106,16 @@ async def query_rag(
     finally:
         if own_client:
             await client.aclose()
+
+
+def response_audit_fields(resp: Mapping[str, Any]) -> dict[str, Any]:
+    """What /api/v1/query said about a question beyond answer and sources, kept as returned.
+
+    ``intent`` is the backend's IntentInfo ({type, entities, verse_refs, rejected_refs});
+    the rest are RetrievalStats fields. A field the backend did not send is None.
+    """
+    stats = resp.get("retrieval_stats") or {}
+    return {"intent": resp.get("intent"), **{k: stats.get(k) for k in RETRIEVAL_AUDIT_FIELDS}}
 
 
 def parse_sources(raw_sources: list[dict]) -> list[SourceInfo]:

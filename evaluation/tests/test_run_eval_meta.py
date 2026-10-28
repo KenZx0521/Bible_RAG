@@ -44,8 +44,10 @@ def test_collection_asks_the_runs_gt_and_records_the_build_beside_the_checkpoint
     samples, _ = asyncio.run(evaluator.run_collection(ctx))
 
     assert isinstance(samples[0].ground_truth, GroundTruthItemV2)
-    assert json.loads((tmp_path / "run_meta.json").read_text()) == {
+    meta = json.loads((tmp_path / "run_meta.json").read_text())
+    assert {k: meta[k] for k in ("data_build_id", "encoder_fingerprint")} == {
         "data_build_id": "legacy-20261004", "encoder_fingerprint": FINGERPRINT}
+    assert meta["run_meta_version"] == 2 and meta["collection"]["n_questions"] == 1
 
 
 def test_report_meta_records_build_gt_and_encoder_and_scores_v2_on_slots(monkeypatch, tmp_path):
@@ -55,8 +57,8 @@ def test_report_meta_records_build_gt_and_encoder_and_scores_v2_on_slots(monkeyp
                         question_type=gt.question_type, ground_truth=gt,
                         sources=[SourceInfo(id="jhn:5:0", book="約翰福音", chapter=5,
                                             verse_range="4")])
-    for name in ("compute_semantic_similarity", "compute_coverage_metrics"):
-        monkeypatch.setattr(evaluator, name, lambda samples: {})
+    monkeypatch.setattr(evaluator, "compute_semantic_similarity", lambda samples: {})
+    monkeypatch.setattr(evaluator, "compute_coverage", lambda samples: ({}, {}))
     monkeypatch.setattr(evaluator, "compute_ragas_metrics", lambda samples: ({}, {}))
     monkeypatch.setattr(evaluator, "_save_results", lambda report: tmp_path / "r.json")
 

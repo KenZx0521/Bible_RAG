@@ -14,11 +14,16 @@ A full-pipeline checkpoint keeps the backend's part in run_meta.json beside
 raw_responses.json; a checkpoint without one predates the record and came
 from the legacy build. Any build other than legacy-20261004 is scored only
 against the frozen GT v2, whose ruler (slot_coverage) every run then carries.
+
+run_meta.json v2 (2026-10-28) adds the sections src/run_record.py builds
+(collection, eval_code, backend_runtime, generator, backend_health) beside the two
+fields above, whose meaning is unchanged; every section is optional on read.
 """
 
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, replace
 from pathlib import Path
 from types import MappingProxyType
@@ -33,6 +38,9 @@ from .slot_coverage import SlotRuler, build_ruler
 
 LEGACY_BUILD_ID = ids.LEGACY_BUILD_ID
 RUN_META = "run_meta.json"
+# run_meta.json v2 sections (src/run_record.py); absent from older files.
+RUN_META_SECTIONS = ("run_meta_version", "collection", "eval_code", "backend_runtime",
+                     "generator", "backend_health")
 
 
 class ProvenanceError(ValueError):
@@ -74,10 +82,26 @@ def fetch_health(backend_url: str) -> dict[str, Any]:
     return response.json()
 
 
-def write_run_meta(directory: Path, provenance: Provenance) -> None:
+def write_run_meta(directory: Path, provenance: Provenance,
+                   record: Mapping[str, Any] | None = None) -> None:
+    """Write run_meta.json: the build and encoder, plus the v2 sections of ``record`` if given.
+
+    Only RUN_META_SECTIONS are taken from ``record``, so it never relabels the build.
+    Written to a temporary file and renamed, so a crash leaves the previous file whole.
+    """
     directory.mkdir(parents=True, exist_ok=True)
-    (directory / RUN_META).write_text(json.dumps(provenance.meta(), ensure_ascii=False, indent=2),
-                                      encoding="utf-8")
+    sections = {k: v for k, v in (record or {}).items() if k in RUN_META_SECTIONS}
+    tmp = directory / f"{RUN_META}.tmp"
+    tmp.write_text(json.dumps({**provenance.meta(), **sections}, ensure_ascii=False, indent=2),
+                   encoding="utf-8")
+    os.replace(tmp, directory / RUN_META)
+
+
+def _load_run_meta(path: Path) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProvenanceError(f"cannot read {path}: {exc}") from None
 
 
 def read_run_meta(directory: Path) -> Provenance:
@@ -88,12 +112,21 @@ def read_run_meta(directory: Path) -> Provenance:
     path = directory / RUN_META
     if not path.exists():
         return Provenance(LEGACY_BUILD_ID)
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ProvenanceError(f"cannot read {path}: {exc}") from None
+    data = _load_run_meta(path)
     return from_health({"build_id": data.get("data_build_id"),
                         "encoder": data.get("encoder_fingerprint")})
+
+
+def read_run_record(directory: Path) -> dict[str, Any] | None:
+    """The v2 sections of a checkpoint's run_meta.json, each None when the file predates it.
+
+    None when the checkpoint has no run_meta.json at all.
+    """
+    path = directory / RUN_META
+    if not path.exists():
+        return None
+    data = _load_run_meta(path)
+    return {k: data.get(k) for k in RUN_META_SECTIONS}
 
 
 @dataclass(frozen=True)
@@ -101,6 +134,8 @@ class RunContext:
     gt: GroundTruthSet
     provenance: Provenance
     ruler: SlotRuler | None      # GT v2 only
+    # The /health body a live run was bound to (run_meta backend_health); None otherwise.
+    health: Mapping[str, Any] | None = None
 
     def meta(self) -> dict[str, Any]:
         prov = self.provenance.meta()

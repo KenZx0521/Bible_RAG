@@ -14,6 +14,21 @@ if str(_EVAL_ROOT) not in sys.path:
 NEW_BUILD = "b20261008_0000abcd"
 
 
+@pytest.fixture(autouse=True)
+def _no_external_probes(monkeypatch):
+    """Run records probe git, docker and Ollama (src.run_record); no test reaches them.
+
+    A test that needs a probe's answer fakes ``_run`` / ``_get_json`` itself.
+    """
+    from src import run_record
+
+    def refuse(*args, **kwargs):
+        raise RuntimeError("external probe disabled in tests")
+
+    monkeypatch.setattr(run_record, "_run", refuse)
+    monkeypatch.setattr(run_record, "_get_json", refuse)
+
+
 @pytest.fixture
 def write_contracts():
     """Write a build's contracts directory: manifest naming the build + a one-slot verse_index."""

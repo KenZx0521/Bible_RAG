@@ -14,6 +14,12 @@ Faithfulness rationale comes from our own verdict log (every statement, both
 judges); the other metrics' reasoning is extracted from RAGAS traces
 (https://github.com/explodinggradients/ragas/issues/2296).
 
+Failures: RAGAS catches whatever a metric raises for a row (judge timeout, an
+unparseable reply, ...), only logs it, and scores the row NaN, which becomes
+valid=False here. ``metric_errors`` keeps each such exception per row, so the
+question's rationale.errors says why ({"ragas_<metric>": "TimeoutError: ..."}; a
+NaN without an exception is named as such). Valid scores are untouched.
+
 Judge temperature: RAGAS 0.4.3 overrides the LangChain model temperature on
 every call (0.01 for single completions), so the value set in
 ``langchain_factory`` never reaches the judge. Claude is the exception: its
@@ -25,13 +31,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import typing as t
 
 from rich.console import Console
 
 from ..config import settings
 from ..models import EvalSample, MetricResult, Rationale
 from ..llm import create_langchain_llm
+from ..llm.served_models import ServedModelCallback
 from .faithfulness_zh import (
+    STRICT_METRIC_NAME,
+    ZH_METRIC_NAME,
     FaithfulnessStrict,
     FaithfulnessZh,
     build_faithfulness_rationale,
@@ -42,6 +52,46 @@ from .faithfulness_zh import (
 
 console = Console()
 logger = logging.getLogger(__name__)
+
+_ERROR_LIMIT = 500
+NAN_WITHOUT_EXCEPTION = ("NaN without an exception: the metric returned no score "
+                         "(e.g. nothing to judge, such as no statements decomposed)")
+NO_SCORE_COLUMN = "no score: RAGAS returned no column for this metric"
+
+
+class MetricErrorLog:
+    """Per-row exceptions each metric raised, keyed like faithfulness_zh's verdict log."""
+
+    def __init__(self) -> None:
+        self._log: dict[t.Hashable, dict[str, str]] = {}
+
+    def reset(self) -> None:
+        self._log = {}
+
+    def record(self, metric_name: str, key: t.Hashable, exc: BaseException) -> None:
+        self._log.setdefault(key, {})[metric_name] = f"{type(exc).__name__}: {exc}"[:_ERROR_LIMIT]
+
+    def errors_for(self, question: str, answer: str, contexts: list[str]) -> dict[str, str]:
+        return dict(self._log.get(log_key(question, answer, list(contexts)), {}))
+
+    def watch(self, metric):
+        """Wrap ``metric.single_turn_ascore`` (what RAGAS's executor calls per row) to record
+        an exception before re-raising it; returns the metric."""
+        inner = metric.single_turn_ascore
+
+        async def single_turn_ascore(sample, *args, **kwargs):
+            try:
+                return await inner(sample, *args, **kwargs)
+            except BaseException as exc:
+                key = log_key(sample.user_input, sample.response, list(sample.retrieved_contexts or []))
+                self.record(metric.name, key, exc)
+                raise
+
+        metric.single_turn_ascore = single_turn_ascore
+        return metric
+
+
+metric_errors = MetricErrorLog()
 
 
 def _extract_reason_from_trace(trace: dict, metric_key: str) -> str:
@@ -113,6 +163,16 @@ def _extract_reason_from_trace(trace: dict, metric_key: str) -> str:
     # Deduplicate and limit length
     unique_reasons = list(dict.fromkeys(reasons))  # preserve order, remove duplicates
     return " | ".join(unique_reasons[:5]) if unique_reasons else ""  # limit to 5 reasons
+
+
+# compute_ragas_metrics scores these beside faithfulness (zh, and strict per settings).
+OTHER_RAGAS_METRICS = ("answer_relevancy", "context_recall", "answer_correctness")
+
+
+def expected_metric_names() -> list[str]:
+    """Every ragas_* metric compute_ragas_metrics scores (the audit's per-metric denominators)."""
+    faith = [ZH_METRIC_NAME, *([STRICT_METRIC_NAME] if settings.eval_faithfulness_strict else [])]
+    return [f"ragas_{name}" for name in (*faith, *OTHER_RAGAS_METRICS)]
 
 
 def faithfulness_metrics() -> list:
@@ -188,6 +248,23 @@ def _faithfulness_rationale_fields(sample: EvalSample) -> dict:
     }
 
 
+def _metric_result(name: str, val, errors: dict[str, str], sample_errors: dict[str, str]) -> MetricResult:
+    """One RAGAS score; NaN / missing is invalid and its reason goes into ``errors``."""
+    is_nan = isinstance(val, float) and val != val
+    is_valid = val is not None and not is_nan
+    if not is_valid:
+        errors[f"ragas_{name}"] = sample_errors.get(name) or (
+            NO_SCORE_COLUMN if val is None else NAN_WITHOUT_EXCEPTION)
+    return MetricResult(name=f"ragas_{name}", value=round(float(val), 4) if is_valid else 0.0,
+                        category="llm_judge", valid=is_valid)
+
+
+def _run_failed(valid_ids: list[str], error: BaseException) -> tuple[dict, dict[str, Rationale]]:
+    """No scores; every question RAGAS was given says why in rationale.errors."""
+    message = f"evaluate() failed: {error!r}"[:_ERROR_LIMIT]
+    return {}, {qid: Rationale(errors={"ragas": message}) for qid in valid_ids}
+
+
 def _run_ragas(
     samples: list[EvalSample],
     metrics: list,
@@ -199,7 +276,7 @@ def _run_ragas(
 
     provider = settings.eval_llm_provider
     logger.info("[RAGAS] Initializing LangChain LLM (provider=%s)", provider)
-    llm = create_langchain_llm()
+    llm = create_langchain_llm(callbacks=[ServedModelCallback()])
 
     dataset, valid_ids = build_ragas_dataset(samples)
     if dataset is None:
@@ -217,11 +294,12 @@ def _run_ragas(
     # metrics; the verdict log feeds the rationale. Both are per-run state.
     statement_cache.reset()
     verdict_log.reset()
+    metric_errors.reset()
 
     try:
         result = evaluate(
             dataset=dataset,
-            metrics=metrics,
+            metrics=[metric_errors.watch(m) for m in metrics],
             llm=_wrap_judge_llm(llm, run_config),
             embeddings=embeddings,
             run_config=run_config,
@@ -231,7 +309,7 @@ def _run_ragas(
         # timeout cancels a shared coroutine; treat it like any judge failure.
         logger.error("[RAGAS] Evaluation failed: %r", e, exc_info=True)
         console.print(f"[red]RAGAS evaluation failed: {e!r}[/red]")
-        return {}, {}
+        return _run_failed(valid_ids, e)
 
     df = result.to_pandas()
     all_columns = list(df.columns)
@@ -253,26 +331,19 @@ def _run_ragas(
         if i >= len(df):
             break
         row = df.iloc[i]
+        sample = by_id[qid]
 
         # Timeout / LLM failure surfaces as NaN in the DataFrame; tag those with
-        # valid=False so aggregation can skip them instead of coercing to 0.0.
-        metric_results = []
-        for name in metric_names:
-            val = row.get(name, None)
-            is_nan = isinstance(val, float) and val != val
-            is_valid = val is not None and not is_nan
-            metric_results.append(
-                MetricResult(
-                    name=f"ragas_{name}",
-                    value=round(float(val), 4) if is_valid else 0.0,
-                    category="llm_judge",
-                    valid=is_valid,
-                )
-            )
+        # valid=False so aggregation can skip them instead of coercing to 0.0,
+        # and keep why (the exception the metric raised, if any).
+        sample_errors = metric_errors.errors_for(sample.question, sample.rag_answer, sample.contexts)
+        errors: dict[str, str] = {}
+        metric_results = [_metric_result(name, row.get(name, None), errors, sample_errors)
+                          for name in metric_names]
         results[qid] = metric_results
 
         trace = traces[i] if i < len(traces) else {}
-        fields = _faithfulness_rationale_fields(by_id[qid])
+        fields = _faithfulness_rationale_fields(sample)
         if not fields["faithfulness"]:
             fields["faithfulness"] = (
                 get_df_reason(row, "faithfulness")
@@ -282,6 +353,7 @@ def _run_ragas(
             relevance=get_df_reason(row, "answer_relevancy") or _extract_reason_from_trace(trace, "answer_relevancy"),
             context=get_df_reason(row, "context_recall") or _extract_reason_from_trace(trace, "context_recall"),
             overall=get_df_reason(row, "answer_correctness") or _extract_reason_from_trace(trace, "answer_correctness"),
+            errors=errors,
             **fields,
         )
         logger.info("[RAGAS] %s => %s", qid, {m.name: m.value for m in metric_results})
@@ -317,7 +389,7 @@ def compute_ragas_metrics(
 
     faith = faithfulness_metrics()
     metrics = [*faith, ResponseRelevancy(), LLMContextRecall(), AnswerCorrectness()]
-    metric_names = [m.name for m in faith] + ["answer_relevancy", "context_recall", "answer_correctness"]
+    metric_names = [m.name for m in faith] + list(OTHER_RAGAS_METRICS)
     return _run_ragas(samples, metrics, metric_names, embeddings=embeddings)
 
 

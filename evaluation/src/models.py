@@ -1,8 +1,15 @@
 """
 Pydantic data models for the evaluation pipeline.
+
+Every field is declared: these models ignore undeclared keys (pydantic's default
+extra='ignore'), which once dropped GT ``family`` silently, so a field the results must
+keep is added here and covered by a round-trip test (tests/test_eval_results_audit.py).
 """
 
 from __future__ import annotations
+
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -68,6 +75,11 @@ class EvalSample(BaseModel):
     route_used: str = ""
     strategies_used: list[str] = []
     strategy_errors: dict[str, str] = {}
+    # The backend's IntentInfo for the question ({type, entities, verse_refs,
+    # rejected_refs}) and the arm it was collected under (graph / no_graph /
+    # semantic / default); None for checkpoints collected before 2026-10-28.
+    intent: dict[str, Any] | None = None
+    mode: str | None = None
 
 
 class MetricResult(BaseModel):
@@ -87,6 +99,24 @@ class Rationale(BaseModel):
     # Full audit trail: one entry per statement with both metrics' verdicts
     # {statement, verdict, reason, strict_verdict, strict_reason}
     faithfulness_statements: list[dict] = []
+    # answer_coverage audit (metrics/coverage_eval.py): one entry per expected point
+    # {index, point, verdict, reason} (verdict None = the judge gave none); why the
+    # score is invalid (no_expected_points / unparseable / incomplete_verdicts: ... /
+    # judge_error: ... / internal_error: ...), the judge's last raw reply when invalid
+    # or scored with problems (<= 8000 chars), how many judge calls were made (0 = not
+    # judged: no points or an empty answer), what was wrong with the last reply even
+    # when it was scored (a repeated index, an extra item, ...), whether it was invalid
+    # JSON read by pattern, and why the judge was asked again {why, same_reply}.
+    coverage_points: list[dict] = []
+    coverage_error: str | None = None
+    coverage_raw: str | None = None
+    coverage_attempts: int = 0
+    coverage_problems: list[str] = []
+    coverage_salvaged: bool = False
+    coverage_retry: dict[str, Any] | None = None
+    # Why a RAGAS metric is invalid for this question: {"ragas_<metric>": message};
+    # {"ragas": message} when the whole RAGAS run failed.
+    errors: dict[str, str] = {}
 
 
 class EvalReport(BaseModel):
@@ -98,12 +128,15 @@ class EvalReport(BaseModel):
     route_used: str = ""
     strategies_used: list[str] = []
     strategy_errors: dict[str, str] = {}
+    intent: dict[str, Any] | None = None    # as EvalSample
+    mode: str | None = None
 
 
 class AggregatedReport(BaseModel):
     overall: dict[str, float] = Field(default_factory=dict)
     by_type: dict[str, dict[str, float]] = Field(default_factory=dict)
     by_family: dict[str, dict[str, float]] = Field(default_factory=dict)
-    # Run provenance: judge model, ragas version, timestamp, k, n_samples.
+    # Run provenance: judge model, ragas version, timestamp, k, n_samples; the build
+    # and GT; invalid_counts / invalid_ids, eval_run, run_meta, judge_served_models.
     meta: dict = Field(default_factory=dict)
     samples: list[EvalReport] = []

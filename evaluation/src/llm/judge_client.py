@@ -1,6 +1,9 @@
 """
 Unified LLM completion for evaluation judge tasks.
 Supports Claude, OpenAI, Gemini, and Ollama providers.
+
+Each reply's served model (the name the API returns) is counted in
+``served_models`` (meta.judge_served_models); a reply naming none is not counted.
 """
 
 from __future__ import annotations
@@ -9,6 +12,7 @@ import logging
 import time
 
 from ..config import settings
+from .served_models import served_models
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +59,7 @@ async def _claude_completion(prompt: str, max_tokens: int, temperature: float) -
     # Adaptive thinking (on by default on Haiku 5.5) puts `thinking` blocks
     # before the answer, so read the text blocks rather than content[0].
     text = "".join(b.text for b in resp.content if b.type == "text").strip()
+    served_models.add(getattr(resp, "model", None))
 
     logger.info("[Claude API] %d  %.2fs  stop=%s  usage: in=%d out=%d",
                 raw_resp.status_code, elapsed, resp.stop_reason,
@@ -80,6 +85,7 @@ async def _openai_completion(prompt: str, max_tokens: int, temperature: float) -
     )
     elapsed = time.perf_counter() - t0
     text = resp.choices[0].message.content or ""
+    served_models.add(getattr(resp, "model", None))
 
     logger.info("[OpenAI API] %.2fs  usage: in=%d out=%d",
                 elapsed,
@@ -106,6 +112,7 @@ async def _gemini_completion(prompt: str, max_tokens: int, temperature: float) -
     )
     elapsed = time.perf_counter() - t0
     text = resp.text or ""
+    served_models.add(getattr(resp, "model_version", None))
 
     logger.info("[Gemini API] %.2fs", elapsed)
     return text.strip()
@@ -133,7 +140,9 @@ async def _ollama_completion(prompt: str, max_tokens: int, temperature: float) -
         )
         resp.raise_for_status()
         elapsed = time.perf_counter() - t0
-        text = resp.json().get("response", "")
+        body = resp.json()
+        text = body.get("response", "")
+        served_models.add(body.get("model"))
 
     logger.info("[Ollama API] %.2fs", elapsed)
     return text.strip()

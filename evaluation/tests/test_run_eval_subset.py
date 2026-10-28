@@ -122,8 +122,10 @@ def test_collects_only_the_subset_into_the_results_dir_with_context_blocks(
     assert [p["question"] for p in seen["posted"]] == [gt[r["question_id"]].question for r in raw]
     assert all(p["include_context"] is True for p in seen["posted"])
     assert all(r["contexts"] == [BLOCK] and r["context_source"] == "backend" for r in raw)
-    assert json.loads((out / "run_meta.json").read_text()) == {
+    meta = json.loads((out / "run_meta.json").read_text())
+    assert {k: meta[k] for k in ("data_build_id", "encoder_fingerprint")} == {
         "data_build_id": BUILD, "encoder_fingerprint": FINGERPRINT}
+    assert meta["collection"]["n_collected"] == len(SUBSET)
     assert seen["judged"] == []      # collect-only reaches no LLM judge
 
 

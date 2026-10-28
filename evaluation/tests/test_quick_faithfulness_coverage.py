@@ -74,7 +74,7 @@ def _without_coverage(report):
     meta = {k: v for k, v in report["meta"].items()
             if k not in ("timestamp", "coverage_enabled", "n_coverage_scored")}
     overall = {k: v for k, v in report["overall"].items() if k != "coverage"}
-    rows = [{k: v for k, v in r.items() if k != "coverage"} for r in report["samples"]]
+    rows = [{k: v for k, v in r.items() if not k.startswith("coverage")} for r in report["samples"]]
     return {**report, "meta": meta, "overall": overall, "samples": rows}
 
 
@@ -91,6 +91,24 @@ def test_coverage_is_added_per_row_and_overall_leaving_every_other_field(monkeyp
     assert covered["overall"]["coverage"] == 1.0
     assert covered["meta"]["coverage_enabled"] is True
     assert covered["meta"]["n_coverage_scored"] == 2
+
+
+def test_each_row_keeps_the_coverage_points_the_judge_gave(monkeypatch, tmp_path):
+    _stub_judges(monkeypatch, failing=("VERSE_LOOKUP_002",))
+
+    out = _main(monkeypatch, tmp_path, "--coverage")
+
+    rows = {r["question_id"]: r for r in out["samples"]}
+    points = GT["VERSE_LOOKUP_001"].expected_answer_points
+    assert rows["VERSE_LOOKUP_001"]["coverage_points"] == [
+        {"index": i, "point": p, "verdict": "covered", "reason": ""} for i, p in enumerate(points, 1)]
+    assert rows["VERSE_LOOKUP_001"]["coverage_error"] is None
+    assert rows["VERSE_LOOKUP_001"]["coverage_attempts"] == 1
+    failed = rows["VERSE_LOOKUP_002"]
+    assert failed["coverage"] is None and failed["coverage_attempts"] == 1
+    assert failed["coverage_error"] == "judge_error: RuntimeError: judge down"
+    plain = _main(monkeypatch, tmp_path)
+    assert not any(k.startswith("coverage") for k in plain["samples"][0])
 
 
 def test_coverage_judges_the_gt_v2_answer_points(monkeypatch, tmp_path):
@@ -158,3 +176,24 @@ def test_bad_ids_files_exit_non_zero(monkeypatch, tmp_path, content, extra):
     with pytest.raises(SystemExit) as exited:
         _main(monkeypatch, tmp_path, "--ids-file", ids, *extra)
     assert exited.value.code != 0
+
+
+def test_each_row_says_why_a_faithfulness_judge_failed(monkeypatch, tmp_path):
+    from src.models import Rationale
+
+    _stub_judges(monkeypatch)
+
+    def faith(samples):
+        ok = [MetricResult(name="ragas_faithfulness", value=1.0, category="llm_judge")]
+        failed = [MetricResult(name="ragas_faithfulness", value=0.0, category="llm_judge", valid=False)]
+        return ({"VERSE_LOOKUP_001": ok, "VERSE_LOOKUP_002": failed},
+                {"VERSE_LOOKUP_002": Rationale(errors={"ragas_faithfulness": "TimeoutError: "})})
+
+    monkeypatch.setattr(qfe, "_judge", faith)
+
+    out = _main(monkeypatch, tmp_path)
+
+    rows = {r["question_id"]: r for r in out["samples"]}
+    assert rows["VERSE_LOOKUP_002"]["ragas_faithfulness"] is None
+    assert rows["VERSE_LOOKUP_002"]["judge_errors"] == {"ragas_faithfulness": "TimeoutError: "}
+    assert rows["VERSE_LOOKUP_001"]["judge_errors"] == {}

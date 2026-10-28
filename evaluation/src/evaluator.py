@@ -5,7 +5,7 @@ Coordinates:
   1. RAG response collection + inline Claude evaluation (per-question)
   2. Batch metric computations (retrieval, reference, RAGAS, semantic)
   3. Aggregation by question_type and overall
-  4. Saving results to JSON
+  4. Saving results to JSON (meta audit fields: src/result_audit.py)
 """
 
 from __future__ import annotations
@@ -26,12 +26,15 @@ from .data_loader import GroundTruthSet, load_gt
 from .collector import collect_responses
 from .id_selection import select_questions
 from .provenance import RunContext
+from .run_record import CollectionInputs, now_iso
+from .result_audit import audit_meta, with_coverage_audit
+from .llm.served_models import served_models
 from .validity import invalidate_infra_failures
 
 from .metrics.retrieval import compute_retrieval_metrics
-from .metrics.ragas_eval import compute_ragas_metrics
+from .metrics.ragas_eval import compute_ragas_metrics, expected_metric_names
 from .metrics.semantic_similarity import compute_semantic_similarity
-from .metrics.coverage_eval import compute_coverage_metrics
+from .metrics.coverage_eval import compute_coverage
 
 console = Console()
 
@@ -74,6 +77,9 @@ def _aggregate(
             metrics=all_metrics.get(sample.question_id, []),
             route_used=sample.route_used,
             strategies_used=sample.strategies_used,
+            strategy_errors=sample.strategy_errors,
+            intent=sample.intent,
+            mode=sample.mode,
         )
         if rationales and sample.question_id in rationales:
             report.rationale = rationales[sample.question_id]
@@ -258,6 +264,8 @@ async def run_collection(
     semantic_only: bool = False,
     graph_strategies: list[str] | None = None,
     question_ids: Sequence[str] | None = None,
+    ids_file: Path | None = None,
+    argv: Sequence[str] | None = None,
 ) -> tuple[list[EvalSample], dict[str, list[MetricResult]]]:
     """
     Step 1: Collect RAG responses. No LLM judge runs here: the inline
@@ -275,15 +283,18 @@ async def run_collection(
         question_ids: Ask only these questions, in GT order (--ids-file).
             None = every GT question; an id the GT lacks raises IdsFileError
             before anything is asked or written.
+        ids_file, argv: the --ids-file path and the CLI argv, for run_meta.json v2
+            (with ctx.health, the /health body the run was bound to).
 
     Returns: (samples, inline_metrics)
     """
     questions = select_questions(ctx.gt.items, question_ids)
     console.print(f"[bold]Loaded {len(questions)} of {len(ctx.gt.items)} ground truth "
                   f"questions (GT {ctx.gt.version}).[/bold]")
+    inputs = CollectionInputs(argv=tuple(argv or ()), ids_file=ids_file, health=ctx.health)
     return await collect_responses(
         questions, use_graph=use_graph, semantic_only=semantic_only,
-        graph_strategies=graph_strategies, provenance=ctx.provenance,
+        graph_strategies=graph_strategies, provenance=ctx.provenance, inputs=inputs,
     )
 
 
@@ -301,6 +312,8 @@ def run_evaluation(
     answer_point_coverage was removed for cost reduction.
     """
     console.print("[bold]Starting batch evaluation pipeline...[/bold]")
+    started_at = now_iso()
+    served_models.reset()
     question_ids = [s.question_id for s in samples]
 
     # 1. Retrieval metrics (fast, no LLM)
@@ -317,7 +330,7 @@ def run_evaluation(
 
     # 4. Answer coverage (LLM judge) - recall over expected_answer_points
     console.print("\n[bold cyan]4/4 Answer Coverage[/bold cyan]")
-    coverage = compute_coverage_metrics(samples)
+    coverage, coverage_outcomes = compute_coverage(samples)
 
     # Merge all metrics
     all_metrics = _merge_metrics(
@@ -335,9 +348,11 @@ def run_evaluation(
     else:
         console.print("[yellow]No rationales found in RAGAS traces.[/yellow]")
 
-    # Aggregate
-    report = _aggregate(samples, all_metrics, rationales)
-    report.meta = {**_build_meta(len(samples), samples), **ctx.meta()}
+    # Aggregate (each rationale also carries its question's coverage audit)
+    report = _aggregate(samples, all_metrics, with_coverage_audit(rationales, coverage_outcomes))
+    report.meta = {**_build_meta(len(samples), samples), **ctx.meta(),
+                   **audit_meta(report.samples, started_at, settings.results_dir,
+                                expected=[*expected_metric_names(), "answer_coverage"])}
     _print_summary(report)
 
     # Save
@@ -474,6 +489,7 @@ def load_samples_from_checkpoint(
         qid = item["question_id"]
         gt = gt_items[qid]
         contexts, context_source = _resolve_checkpoint_contexts(item, blocks, rebuilt.get(pos))
+        intent = item.get("intent")
         samples.append(EvalSample(
             question_id=qid,
             question=gt.question,
@@ -487,6 +503,9 @@ def load_samples_from_checkpoint(
             route_used=item.get("route_used", ""),
             strategies_used=item.get("strategies_used", []),
             strategy_errors=item.get("strategy_errors", {}),
+            # null for checkpoints collected before 2026-10-28
+            intent=intent if isinstance(intent, dict) else None,
+            mode=item.get("mode"),
         ))
 
     return samples
@@ -507,9 +526,10 @@ def export_csv(report: AggregatedReport) -> Path:
                 all_metric_names.append(m.name)
                 seen.add(m.name)
 
+    # intent_type / mode go last (2026-10-28) so every earlier column keeps its position.
     fieldnames = [
         "question_id", "question_type", "family", "route_used", "strategies_used",
-    ] + all_metric_names
+    ] + all_metric_names + ["intent_type", "mode"]
 
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -527,6 +547,8 @@ def export_csv(report: AggregatedReport) -> Path:
             }
             for name in all_metric_names:
                 row[name] = metric_map.get(name, "")
+            row["intent_type"] = (sample.intent or {}).get("type") or ""
+            row["mode"] = sample.mode or ""
             writer.writerow(row)
 
     return out_path

@@ -17,13 +17,21 @@ are used as given. --ids-file is a JSON list or one id per line.
 Samples whose answer cannot be judged get null scores and leave every mean:
 infrastructure failures and the backend's generation-error answers
 (src/validity.py answer_failure). Per-row "invalid" says why ("infra",
-"generation", or null); meta "invalid_samples" lists them.
+"generation", or null); meta "invalid_samples" lists them. Per-row
+"judge_errors" says why a faithfulness judge gave no score
+({"ragas_faithfulness": "TimeoutError: ..."}; {"ragas": ...} when the whole
+RAGAS run failed; {} otherwise).
 
 --coverage also judges answer coverage (metrics/coverage_eval.py: recall over
 the --gt's expected_answer_points) on the same samples with the same judge
 provider and model; invalid samples get none. It adds per-row
 "coverage" (float or null), overall "coverage" and meta "coverage_enabled" /
 "n_coverage_scored"; every other field is what the run without it writes.
+Each row also keeps the judge's audit trail (2026-10-28): "coverage_points"
+([{index, point, verdict, reason}]), "coverage_error" (why it is invalid),
+"coverage_raw" (the judge's reply when invalid or scored with problems),
+"coverage_attempts", "coverage_problems", "coverage_salvaged" and
+"coverage_retry" (README「事後稽核紀錄」).
 
 The build comes from run_meta.json beside the checkpoint (none = legacy-20261004);
 a new build's checkpoint is judged only with --gt v2. The output meta records
@@ -168,26 +176,38 @@ def _judge(samples: list) -> tuple[dict, dict]:
     return compute_faithfulness_only(samples)
 
 
-def _coverage(samples: list) -> dict[str, float | None]:
+def _coverage_run(samples: list) -> tuple[dict[str, float | None], dict[str, dict]]:
     """Answer coverage per question, None where it is not valid (judge failure, no points,
-    infrastructure or generation failure, as faithfulness)."""
-    from src.metrics.coverage_eval import compute_coverage_metrics
+    infrastructure or generation failure, as faithfulness), and each question's judge
+    audit fields (coverage_points, coverage_error, coverage_raw, coverage_attempts)."""
+    from src.metrics.coverage_eval import compute_coverage
     from src.validity import invalidate_answer_failures
 
-    metrics = invalidate_answer_failures(samples, compute_coverage_metrics(samples))
-    return {s.question_id: next((m.value for m in metrics.get(s.question_id, [])
-                                 if m.name == "answer_coverage" and m.valid), None)
-            for s in samples}
+    metrics, outcomes = compute_coverage(samples)
+    metrics = invalidate_answer_failures(samples, metrics)
+    scores = {s.question_id: next((m.value for m in metrics.get(s.question_id, [])
+                                   if m.name == "answer_coverage" and m.valid), None)
+              for s in samples}
+    return scores, {qid: o.rationale_fields() for qid, o in outcomes.items()}
 
 
-def _with_coverage(report: dict, coverage: dict[str, float | None]) -> dict:
-    """The report plus per-row and overall "coverage"; every existing field unchanged."""
+def _coverage(samples: list) -> dict[str, float | None]:
+    """The scores of _coverage_run (experiments/2026-10-15_book_anchor/ba_cov.py calls this)."""
+    return _coverage_run(samples)[0]
+
+
+def _with_coverage(report: dict, coverage: dict[str, float | None],
+                   audit: dict[str, dict] | None = None) -> dict:
+    """The report plus per-row and overall "coverage" and per-row judge audit fields;
+    every existing field unchanged."""
     scored = [v for v in coverage.values() if v is not None]
+    audit = audit or {}
     return {
         **report,
         "meta": {**report["meta"], "coverage_enabled": True, "n_coverage_scored": len(scored)},
         "overall": {**report["overall"], "coverage": _mean(scored)},
-        "samples": [{**row, "coverage": coverage.get(row["question_id"])}
+        "samples": [{**row, "coverage": coverage.get(row["question_id"]),
+                     **audit.get(row["question_id"], {})}
                     for row in report["samples"]],
     }
 
@@ -239,6 +259,7 @@ def _row(s, family: str, vals: dict, rationale, stored: dict[str, float],
         "ragas_faithfulness_strict": vals.get("ragas_faithfulness_strict"),
         "n_statements": n_decomposed(rationale.faithfulness_statements) if rationale else 0,
         "statements": rationale.faithfulness_statements if rationale else [],
+        "judge_errors": dict(rationale.errors) if rationale else {},
     }
 
 
@@ -301,7 +322,7 @@ def main() -> None:
     tally = _tally(samples, metrics, rationales, _load_stored_faithfulness(results_dir))
     report = _report(results_dir, samples, tally, ctx.meta())
     if args.coverage:
-        report = _with_coverage(report, _coverage(samples))
+        report = _with_coverage(report, *_coverage_run(samples))
     out_path = _save(report, args.out)
     console.print(f"[bold green]Saved {out_path}[/bold green]")
 
