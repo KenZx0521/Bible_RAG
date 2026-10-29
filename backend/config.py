@@ -72,13 +72,16 @@ class Settings(BaseSettings):
     semantic_search_top_k: int = 20
     reranker_top_k: int = 5
 
-    # Route weights per route type (the keys the routes read).
+    # Route weights per route type (the keys the routes read). Each only raises a
+    # candidate's weight to its floor: a "semantic" above the dense arm's 0.65 for a
+    # non-verse hit would flatten the arm's verse prior (0.70 / 0.65; R3/R4/R6 ran
+    # 0.7 until 2026-10-29).
     route_weights: dict = {
         "R2": {"sql": 0.9, "semantic": 0.6},
-        "R3": {"semantic": 0.7, "sql": 0.5},
-        "R4": {"semantic": 0.7, "sql": 0.5},
+        "R3": {"semantic": 0.65, "sql": 0.5},
+        "R4": {"semantic": 0.65, "sql": 0.5},
         "R5": {"semantic": 0.65, "sql_chapter": 0.85, "sql": 0.4},
-        "R6": {"semantic": 0.7, "sql": 0.5},
+        "R6": {"semantic": 0.65, "sql": 0.5},
     }
 
     # Graph toggle. With Neo4j gone it gates only the event_registry lane;

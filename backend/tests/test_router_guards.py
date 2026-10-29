@@ -148,3 +148,14 @@ def test_r5_asks_for_chapters_only_when_the_question_names_one(active, monkeypat
 
     assert asked == [] and "sql_chapter" not in strategies and errors == {}
     assert len(pool) == 5
+
+
+def test_r3_r4_r6_keep_the_dense_arm_s_verse_prior(active, monkeypatch):
+    """route_weights.semantic only raises weights: above 0.65 it would flatten 0.70 / 0.65."""
+    fake_dense(monkeypatch, hits=[cand("ps:act.9.1", weight=0.70), cand("ps:act.10.1", weight=0.65)])
+    no_supplement(monkeypatch)
+
+    for route in ("R3", "R4", "R6"):
+        pool, _, _ = asyncio.run(routes._dense_route(
+            routes.RouteInput("q", [], QuerySignals(route=route)), route))
+        assert [c["weight"] for c in pool] == [0.70, 0.65]

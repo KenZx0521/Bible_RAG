@@ -7,6 +7,8 @@ returned its id (provenance only: it never decides which copy is kept).
 
 from __future__ import annotations
 
+from database.content import key_order
+
 
 def labels_of(c: dict) -> list[str]:
     """Strategies already known to have returned candidate ``c``."""
@@ -64,3 +66,14 @@ def book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
         if c.get("book_id") and c.get("chapter_num") is not None:
             pairs.setdefault((c["book_id"], int(c["chapter_num"])), None)
     return list(pairs)
+
+
+def shares_verse(a: dict, b: dict) -> bool:
+    """Whether two candidates hold a common verse (same chapter, intersecting key ranges)."""
+    if (a.get("book_id"), a.get("chapter_num")) != (b.get("book_id"), b.get("chapter_num")):
+        return False
+    try:
+        a0, a1, b0, b1 = (key_order(c[k]) for c in (a, b) for k in ("start_key", "end_key"))
+    except (KeyError, TypeError, ValueError):
+        return False
+    return a0 <= b1 and b0 <= a1

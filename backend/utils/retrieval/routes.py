@@ -1,6 +1,7 @@
 """The route handlers R1–R6 and fallback: each gathers a candidate pool.
 
-R1 exact verses (falls back to R2 when empty); R2 chapter passages + dense;
+R1 exact verses, their passages, then dense to fill k (falls back to R2 when
+empty); R2 chapter passages + dense;
 R5 dense + chapter passages (multi-book or cross-reference questions); R3/R4/R6
 and fallback dense alone. Every route but R1/R2 adds book anchors when the
 question names books, and R3–R6 a SQL supplement from the pool's first chapters.
@@ -18,7 +19,7 @@ from database import postgres
 from utils.retrieval import candidates as cands
 from utils.retrieval.dense import ROUTE_ARM, SEMANTIC_ARM, retrieve_dense
 from utils.retrieval.pins import BOOK_ANCHOR
-from utils.retrieval.verse_retriever import retrieve_by_verse_refs
+from utils.retrieval.verse_retriever import OWNER, owner_candidates, retrieve_by_verse_refs
 from utils.signal_detector import QuerySignals
 from utils.verse_parser import VerseRef
 
@@ -135,19 +136,39 @@ async def _book_anchor(inp: RouteInput, route: str, pool: list[dict], strategies
     return new
 
 
+async def _owners(found: list[dict], errors: dict[str, str]) -> list[dict]:
+    try:
+        return await owner_candidates(found)
+    except Exception as exc:  # noqa: BLE001
+        _error(errors, "R1", OWNER, exc)
+        return []
+
+
 async def route_r1(inp: RouteInput) -> Pool:
-    """R1: exact verse references → SQL lookup (no rerank); R2 when it finds nothing."""
+    """R1: exact verse references → SQL lookup, their passages, dense; R2 when it finds nothing.
+
+    The verse records lead, then the passages they belong to (verse_owner); the
+    route's dense arm (no book anchor, no supplement) fills the rest of the top-k
+    after rerank and fusion (router._rank keeps the first two in front).
+    """
     errors: dict[str, str] = {}
     try:
         found = await retrieve_by_verse_refs(inp.verse_refs)
     except Exception as exc:  # noqa: BLE001
         _error(errors, "R1", "verse_direct", exc)
         found = []
-    if found:
-        return found, ["verse_direct"], errors
-    logger.info("R1 empty, falling back to R2")
-    pool, strategies, r2_errors = await route_r2(inp)
-    return pool, strategies, {**errors, **r2_errors}
+    if not found:
+        logger.info("R1 empty, falling back to R2")
+        pool, strategies, r2_errors = await route_r2(inp)
+        return pool, strategies, {**errors, **r2_errors}
+    strategies = ["verse_direct"]
+    owners = await _owners(found, errors)
+    if owners:
+        strategies.append(OWNER)
+    dense = await _dense(inp, "R1", errors)
+    if dense:
+        strategies.append("semantic")
+    return cands.dedup(found + owners + (dense or [])), strategies, errors
 
 
 async def route_r2(inp: RouteInput) -> Pool:

@@ -13,6 +13,7 @@ from models.request import QueryRequest
 from models.response import AuxCard, QueryResponse, Source, IntentInfo, RetrievalStats
 from serving import context
 from utils import gen_card
+from utils.citations import fix_block_chapters
 from utils.intent_classifier import classify_intent
 from utils.regnal.card import Card, chronology_card
 from utils.regnal.trigger import trigger as regnal_trigger
@@ -48,6 +49,15 @@ def _sources(req: QueryRequest, results: list[dict]) -> list[Source]:
     return [_source(r, block, build_id) for r, block in zip(results, blocks)]
 
 
+def _evidence(card: Card | gen_card.Card | None) -> tuple[str, ...]:
+    """The verse keys the card's rows rest on."""
+    if card is None:
+        return ()
+    if isinstance(card, gen_card.Card):
+        return gen_card.evidence(context.active().gen, card.rows)
+    return tuple(card.evidence)
+
+
 def _aux_card(card: Card | gen_card.Card | None) -> AuxCard | None:
     if card is None:
         return None
@@ -55,11 +65,19 @@ def _aux_card(card: Card | gen_card.Card | None) -> AuxCard | None:
         gen = context.active().gen
         return AuxCard(kind="gen", text=card.g_block, seeds=[gen.name[x] for x in card.seeds],
                        kings=list(card.seeds), lines=len(card.lines),
-                       evidence=list(gen_card.evidence(gen, card.rows)), layer_sha256=gen.gen_layer_sha256,
+                       evidence=list(_evidence(card)), layer_sha256=gen.gen_layer_sha256,
                        seed_source="rule")
     return AuxCard(text=card.text, seeds=[f"{KINGDOM_NAMES[kd]}｜{nm}" for kd, nm in card.seeds],
-                   kings=list(card.kings), lines=card.lines, evidence=list(card.evidence),
+                   kings=list(card.kings), lines=card.lines, evidence=list(_evidence(card)),
                    layer_sha256=card.layer_sha256, seed_source=card.seed_source)
+
+
+async def _answer(req: QueryRequest, results: list[dict], card: Card | gen_card.Card | None) -> str:
+    """The generated answer, block numbers cited as chapters put right (utils.citations)."""
+    if req.retrieval_only:
+        return ""
+    answer = await generate_answer(req.question, results, _aux_block(card))
+    return fix_block_chapters(answer, results, req.question, _evidence(card))
 
 
 def _aux_block(card: Card | gen_card.Card | None) -> str | None:
@@ -115,7 +133,7 @@ async def rag_query(req: QueryRequest):
     主 RAG 查詢端點。
 
     流程: 經文引用偵測 → 意圖分類 → 路由檢索 → 去重 → 重排序 → 上下文組裝 →
-    （王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡 → 回答生成。
+    （王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡 → 回答生成 → 段號誤當章號的引用改正。
     """
     context.active()  # 503 before any work when no build is served
     if req.semantic_only:
@@ -131,7 +149,7 @@ async def rag_query(req: QueryRequest):
         fusion_alpha=req.fusion_alpha, graph_strategies=req.graph_strategies,
     )
     card = await _card(req, results) or _gen_card(req, results)
-    answer = "" if req.retrieval_only else await generate_answer(req.question, results, _aux_block(card))
+    answer = await _answer(req, results, card)
     return QueryResponse(
         answer=answer,
         sources=_sources(req, results),

@@ -98,16 +98,113 @@ def test_graph_strategies_accept_only_the_event_lane():
 
 # --- routes ----------------------------------------------------------------------------
 
-def test_r1_returns_verses_unranked_with_provenance(active, monkeypatch, scores):
-    async def verses(refs):
-        return [_c("vs:jhn.3.16", "verse_direct", 1.0, book="jhn", chapter=3, kind="verse")]
-    monkeypatch.setattr(routes, "retrieve_by_verse_refs", verses)
+JHN_3_16 = VerseRef("jhn", "約翰福音", 3, 16, 16)
 
-    ranked, stats = _run(query="約翰福音3:16", verse_refs=[VerseRef("jhn", "約翰福音", 3, 16, 16)])
 
-    assert [c["id"] for c in ranked] == ["vs:jhn.3.16"]
-    assert ranked[0]["found_by"] == ["verse_direct"] and "rerank_score" not in ranked[0]
-    assert stats["route_used"] == "R1" and stats["fusion_alpha"] is None
+def _verse_lookup(monkeypatch, verses, owners):
+    async def lookup(refs):
+        return [dict(c) for c in verses]
+
+    async def owner_candidates(found):
+        return [dict(c) for c in owners]
+    monkeypatch.setattr(routes, "retrieve_by_verse_refs", lookup)
+    monkeypatch.setattr(routes, "owner_candidates", owner_candidates)
+
+
+def _verse(cid, book="jhn", chapter=3, start=16, end=16, passage="ps:jhn.3.16"):
+    return _c(cid, "verse_direct", 1.0, book=book, chapter=chapter, kind="verse",
+              start_key=f"{book}.{chapter}.{start}", end_key=f"{book}.{chapter}.{end}",
+              passage_id=passage, split_passage_ids=[])
+
+
+def _owner(cid, book="jhn", chapter=3, start=16, end=21):
+    return _c(cid, "verse_owner", 1.0, book=book, chapter=chapter,
+              start_key=f"{book}.{chapter}.{start}", end_key=f"{book}.{chapter}.{end}")
+
+
+def test_r1_leads_with_the_verse_and_its_passage_and_ranks_dense_for_the_rest(
+        active, monkeypatch, scores):
+    _verse_lookup(monkeypatch, [_verse("vs:jhn.3.16")], [_owner("ps:jhn.3.16")])
+    calls = _dense(monkeypatch, hits=[
+        _c("ps:jhn.3.16", book="jhn", chapter=3, start_key="jhn.3.16", end_key="jhn.3.21"),
+        _c("ck:jhn.3.18~jhn.3.21", book="jhn", chapter=3, start_key="jhn.3.18",
+           end_key="jhn.3.21", passage_id="ps:jhn.3.16"),
+        *[_c(f"ps:rom.{i}.1", book="rom", chapter=i, start_key=f"rom.{i}.1",
+             end_key=f"rom.{i}.9") for i in range(1, 6)]])
+    scores.update({"ck:jhn.3.18~jhn.3.21": 0.99, "ps:jhn.3.16": 0.0,
+                   **{f"ps:rom.{i}.1": 0.1 * i for i in range(1, 6)}})
+
+    ranked, stats = _run(query="約翰福音3:16", verse_refs=[JHN_3_16], top_k=5)
+
+    assert [c["id"] for c in ranked] == ["vs:jhn.3.16", "ps:jhn.3.16", "ps:rom.5.1",
+                                         "ps:rom.4.1", "ps:rom.3.1"]
+    assert [c["source_strategy"] for c in ranked[:2]] == ["verse_direct", "verse_owner"]
+    assert "rerank_score" not in ranked[0] and "rerank_score" not in ranked[1]
+    assert ranked[1]["found_by"] == ["verse_owner", "hybrid_hybrid"]
+    assert calls == [("hybrid_hybrid", None, None)]  # the route's dense arm, no book anchor
+    assert stats["route_used"] == "R1" and stats["fusion_alpha"] == settings.rag_rank_fusion_alpha
+    assert stats["strategies_used"] == ["verse_direct", "verse_owner", "semantic"]
+
+
+def test_r1_with_k_verse_records_returns_just_those(active, monkeypatch, scores):
+    verses = [_verse(f"vs:jhn.3.{v}", start=v, end=v) for v in range(14, 18)]
+    _verse_lookup(monkeypatch, verses, [_owner("ps:jhn.3.14", start=14)])
+    _dense(monkeypatch, hits=[_c("ps:rom.1.1", book="rom", chapter=1)])
+
+    ranked, _ = _run(query="約翰福音3:14-17", verse_refs=[JHN_3_16], top_k=3)
+
+    assert [c["id"] for c in ranked] == ["vs:jhn.3.14", "vs:jhn.3.15", "vs:jhn.3.16"]
+
+
+def test_r1_keeps_its_verse_and_passage_when_dense_fails(active, monkeypatch, scores):
+    _verse_lookup(monkeypatch, [_verse("vs:jhn.3.16")], [_owner("ps:jhn.3.16")])
+
+    async def broken(query, arm, top_k=None, book_ids=None):
+        raise ConnectionError("qdrant down")
+    monkeypatch.setattr(routes, "retrieve_dense", broken)
+
+    ranked, stats = _run(query="約翰福音3:16", verse_refs=[JHN_3_16])
+
+    assert [c["id"] for c in ranked] == ["vs:jhn.3.16", "ps:jhn.3.16"]
+    assert stats["strategies_used"] == ["verse_direct", "verse_owner"]
+    assert set(stats["strategy_errors"]) == {"semantic"}
+
+
+@pytest.mark.parametrize("owners", [
+    pytest.param([], id="an omitted verse: no owner"),
+    pytest.param(None, id="the owner lookup failed")])
+def test_r1_without_an_owner_keeps_the_passage_dense_found(active, monkeypatch, scores, owners):
+    """Only passages in the lead exclude; a bare verse record does not."""
+    _verse_lookup(monkeypatch, [_verse("vr:jhn.3.16~jhn.3.16", passage=None)], owners or [])
+    if owners is None:
+        async def broken(found):
+            raise LookupError("no passage")
+        monkeypatch.setattr(routes, "owner_candidates", broken)
+    _dense(monkeypatch, hits=[
+        _c("ps:jhn.3.16", book="jhn", chapter=3, start_key="jhn.3.16", end_key="jhn.3.21"),
+        _c("ps:rom.1.1", book="rom", chapter=1, start_key="rom.1.1", end_key="rom.1.9")])
+    scores.update({"ps:jhn.3.16": 0.99, "ps:rom.1.1": 0.1})
+
+    ranked, stats = _run(query="約翰福音3:16", verse_refs=[JHN_3_16], top_k=3)
+
+    assert [c["id"] for c in ranked] == ["vr:jhn.3.16~jhn.3.16", "ps:jhn.3.16", "ps:rom.1.1"]
+    assert ranked[1]["source_strategy"] == "hybrid_hybrid" and "rerank_score" in ranked[1]
+    assert set(stats["strategy_errors"]) == (set() if owners == [] else {"verse_owner"})
+
+
+def test_r1_falls_back_to_r2_ranked_like_r2(active, monkeypatch, scores):
+    async def failing(refs):
+        raise LookupError("no slot")
+    monkeypatch.setattr(routes, "retrieve_by_verse_refs", failing)
+    _dense(monkeypatch, hits=[_c("ps:jhn.3.1", book="jhn", chapter=3),
+                              _c("ps:rom.1.1", book="rom", chapter=1)])
+    scores.update({"ps:jhn.3.1": 0.1, "ps:rom.1.1": 0.9})
+
+    ranked, stats = _run(query="約翰福音3:16", verse_refs=[JHN_3_16])
+
+    assert stats["route_used"] == "R1"
+    assert [c["id"] for c in ranked] == ["ps:rom.1.1", "ps:jhn.3.1"]  # reranked, not cut
+    assert all("fused_score" in c for c in ranked)
 
 
 def test_r1_falls_back_to_r2_and_keeps_both_errors(active, monkeypatch, scores):

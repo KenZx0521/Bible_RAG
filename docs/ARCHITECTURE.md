@@ -226,11 +226,11 @@ flowchart TD
 
 | 路由 | 條件 | 候選組合（weight，`backend/config.py`） |
 |---|---|---|
-| R1 | 有「書＋章＋節」 | `verse_direct`（PG 直查，不重排）；查無結果時改走 R2 |
+| R1 | 有「書＋章＋節」 | `verse_direct`（PG 直查）＋所屬段落 `verse_owner` ＋ dense 補滿 k；查無結果時改走 R2 |
 | R5 | 有章引用且點名多卷 | 同下方 R5 |
 | R2 | 有「書＋章」、沒有節 | `sql_chapter`（0.9）＋ dense（0.6） |
 | R5 | 點名多卷，或意圖是 cross_reference | dense（0.65）＋只有章的引用時加 `sql_chapter`（0.85）＋ `book_anchor` ＋ `sql_supplement`（0.4） |
-| R3 | 兩個以上人物 | dense（0.7）＋ `book_anchor` ＋ `sql_supplement`（0.5） |
+| R3 | 兩個以上人物 | dense（0.65，不拉平 dense 臂的先驗）＋ `book_anchor` ＋ `sql_supplement`（0.5） |
 | R4 | 事件觸發詞 | 同 R3，另外啟用事件附加槽 |
 | R6 | 地名 | 同 R3 |
 | fallback | 以上皆無 | dense ＋ `book_anchor` |
@@ -254,7 +254,8 @@ flowchart TD
 - 多卷問題每卷最多保留一個 book_anchor。
 - chapter pin：使用者點名「某書 N 章」時，保證該章至少 2 段留在 top-k。只有 weight ≥ 0.85 的候選合格；章範圍只取第一章。
 - book_anchor pin：單卷問題無條件 pin 該卷的段落；多卷問題只 pin 排名中缺席的書卷，每卷一段。最多 2 段。
-- R1 不重排、不融合、不 pin。reranker 失敗時改依 weight 排序，錯誤記在 `strategy_errors`。
+- R1 查到經節時，`verse_direct` 與所屬段落固定排在最前面，不重排、不 pin；其餘候選去掉和它們同節的之後才重排、融合、補滿 k。R1 查無結果改走 R2 時照 R2 排序。reranker 失敗時改依 weight 排序，錯誤記在 `strategy_errors`。
+- `route_weights` 只會把候選 weight 提高到該值；R3/R4/R6 的 dense 設 0.65，不再把 dense 臂 verse 命中 0.70／其他 0.65 的差距抹平（2026-10-29 前是 0.7）。
 - 舊的 EQ-pin、graph uncertainty pin、keyword-exact event pin 都隨 Neo4j 移除。
 
 ### 6.5 事件註冊表附加槽
@@ -279,6 +280,8 @@ flowchart TD
 ### 6.6 生成與其他端點
 
 - **生成**：top-k 段落排成 `[N] 書名 第N章 - 標題 (節)` 加經文。系統提示要求只依提供的段落作答、標出處、用繁體中文。無檢索結果時直接回覆找不到。
+- **R1 的詩篇篇題**：查詩篇首段（從第 1 節開始的段落）的經節時，`verse_direct` 的內文第一行是該篇篇題（`chapter_texts` 的 superscription），和首段段落本身的寫法一致；其他段落的經節不加。這只用於檢索 context，`/verse` 照舊不回篇題。
+- **生成後處理**：Ollama client 把字面印出的 `<0xNN>` byte token 串解回 UTF-8（gemma4 的 byte token 型別是 NORMAL）；`utils.citations` 把被寫成章號的段號改回該段的章（例如段 [3] 是約翰福音 14 章，「約翰福音 3:16」改成 14:16）。只有該書該章不在任何段落、卡片證據或問題中，且段 [N] 是同一卷、含那一節時才改。
 - **請求旗標**：
   - `retrieval_only`：跳過生成；
   - `include_context`：每個 source 附上生成器看到的區塊；

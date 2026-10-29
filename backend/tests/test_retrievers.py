@@ -166,3 +166,94 @@ def test_split_passages_are_listed_when_a_result_spans_several(pg, monkeypatch):
     [c] = _lookup(VerseRef("eph", "以弗所書", 6, 1, 3))
 
     assert c["passage_id"] == "ps:eph.6.1" and c["split_passage_ids"] == ["ps:eph.6.1", "ps:eph.6.3b"]
+
+
+# --- psalm superscriptions and owner passages (R1) -------------------------------------
+
+PSALM_TEXTS = {  # chapter_texts rows as PG orders them (kind, id): a division sorts first
+    "psa.23": [{"id": "sp:psa.23", "kind": "superscription", "text": "大衛的詩。", "order": 0}],
+    "psa.90": [{"id": "dv:psa.90", "kind": "book_division", "text": "詩、篇、卷、四", "order": 0},
+               {"id": "sp:psa.90", "kind": "superscription", "text": "神人摩西的祈禱。", "order": 1}],
+    "psa.137": [],
+    "psa.19": [{"id": "sp:psa.19", "kind": "superscription", "text": "大衛的詩，交與伶長。", "order": 0}],
+}
+
+
+@pytest.fixture
+def psalms(pg, monkeypatch):
+    p = verse_retriever.postgres
+    asked = []
+
+    async def verse_slots(slots):
+        return [content.VersePiece(s, s.split(".")[-1], int(s.split(".")[-1]),
+                                   int(s.split(".")[-1]), "present", f"text of {s}")
+                for s in slots]
+
+    async def owner_passages(units):  # passages psa.N.1 (verses 1-6) and psa.N.7 (from 7)
+        def owner(u):
+            chapter, verse = u.rsplit(".", 1)
+            return f"ps:{chapter}.{1 if int(verse) < 7 else 7}"
+        return {u: {"passage_id": owner(u), "split_passage_ids": []} for u in units}
+
+    async def fetch_sources(passage_ids, chunk_ids=()):
+        return {pid: {"title": f"title of {pid}", "start_key": pid[3:]} for pid in passage_ids}
+
+    async def chapter_texts(chapter_key):
+        asked.append(chapter_key)
+        return PSALM_TEXTS[chapter_key]
+
+    async def book_name(book_id):
+        return {"psa": "詩篇", "eph": "以弗所書", "mat": "馬太福音"}[book_id]
+
+    for name, fn in (("verse_slots", verse_slots), ("owner_passages", owner_passages),
+                     ("fetch_sources", fetch_sources), ("chapter_texts", chapter_texts),
+                     ("book_name", book_name)):
+        monkeypatch.setattr(p, name, fn)
+    return asked
+
+
+@pytest.mark.parametrize("chapter, first_line", [
+    (23, "大衛的詩。"), (90, "神人摩西的祈禱。"), (137, "1. text of psa.137.1")])
+def test_a_psalm_verse_starts_with_its_superscription_only(psalms, chapter, first_line):
+    [c] = _lookup(VerseRef("psa", "詩篇", chapter, 1, 1))
+
+    assert c["content"].split("\n")[0] == first_line
+    assert c["content"].endswith(f"1. text of psa.{chapter}.1")
+    assert c["id"] == f"vs:psa.{chapter}.1" and c["verse_range"] == "1"
+    assert "詩、篇、卷" not in c["content"]
+
+
+def test_a_verse_after_the_first_passage_gets_no_superscription(psalms):
+    """The superscription heads the psalm's first passage only, as in the passage text."""
+    [c] = _lookup(VerseRef("psa", "詩篇", 19, 7, 7))
+
+    assert c["content"] == "7. text of psa.19.7" and c["passage_id"] == "ps:psa.19.7"
+    assert psalms == []
+
+
+def test_only_psalms_read_chapter_texts(psalms):
+    _lookup(VerseRef("eph", "以弗所書", 6, 1, 1), VerseRef("psa", "詩篇", 23, 1, 1))
+
+    assert psalms == ["psa.23"]
+
+
+def test_owner_candidates_list_main_then_split_passages_once(monkeypatch):
+    fetched = []
+
+    async def fetch_sources(passage_ids, chunk_ids=()):
+        fetched.append(list(passage_ids))
+        return {pid: _source(pid) for pid in passage_ids}
+    monkeypatch.setattr(verse_retriever.postgres, "fetch_sources", fetch_sources)
+    found = [{"id": "ps:luk.12.1", "kind": "passage"},
+             {"id": "vr:luk.12.13~luk.12.34", "kind": "verse", "passage_id": "ps:luk.12.13",
+              "split_passage_ids": ["ps:luk.12.13", "ps:luk.12.22"]},
+             {"id": "vs:luk.12.2", "kind": "verse", "passage_id": "ps:luk.12.1",
+              "split_passage_ids": []},
+             {"id": "vr:mat.18.3~mat.18.3", "kind": "verse", "passage_id": None,
+              "split_passage_ids": []}]
+
+    owners = asyncio.run(verse_retriever.owner_candidates(found))
+
+    assert fetched == [["ps:luk.12.13", "ps:luk.12.22"]]
+    assert [(c["id"], c["source_strategy"], c["weight"]) for c in owners] == [
+        ("ps:luk.12.13", "verse_owner", 1.0), ("ps:luk.12.22", "verse_owner", 1.0)]

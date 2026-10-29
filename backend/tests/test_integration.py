@@ -165,22 +165,37 @@ def test_a_merged_verse_returns_its_whole_unit(backend):
     assert verse["status"] == "merged" and verse["text"].startswith("「要孝敬父母")
     assert verse["passage_id"] == verse["pericope_id"] == "ps:eph.6.1"
     assert verse["build_id"] == BUILD_ID
-    [source] = sources
+    source, owner, *rest = sources
     assert (source["id"], source["kind"], source["verse_range"]) == ("vs:eph.6.2-3", "verse", "2-3")
     assert (source["start_key"], source["end_key"]) == ("eph.6.2", "eph.6.3")
     assert source["strategy"] == "verse_direct" and source["book"] == "以弗所書"
+    assert (owner["id"], owner["kind"], owner["strategy"]) == ("ps:eph.6.1", "passage", "verse_owner")
+    assert len(sources) == 5 and "ps:eph.6.1" not in {s["id"] for s in rest}
 
 
 def test_an_omitted_verse_says_it_is_absent_with_its_footnote(backend):
     with TestClient(main.app) as client:
         verse = client.get("/api/v1/verse/mat/18/3").json()
-        [source] = _ask(client, "馬太福音18:3-4", include_context=True)["sources"]
+        source, owner, *_ = _ask(client, "馬太福音18:3-4", include_context=True)["sources"]
 
     assert verse["status"] == "omitted_variant" and verse["text"] == "本譯本此節從缺"
     assert verse["footnote"] == "有古卷加：3人子來，為要拯救失喪的人。"
     assert source["id"] == "vr:mat.18.3~mat.18.4" and source["passage_id"] == "ps:mat.18.1"
     assert ids.parse(source["id"]).kind == "verse_range"
     assert "3. 本譯本此節從缺（有古卷加：3人子來，為要拯救失喪的人。）" in source["context"]
+    assert (owner["id"], owner["strategy"]) == ("ps:mat.18.1", "verse_owner")
+
+
+def test_a_psalm_verse_starts_with_the_superscription_not_the_book_division(backend):
+    with TestClient(main.app) as client:
+        verse = client.get("/api/v1/verse/psa/42/2").json()
+        source, *_ = _ask(client, "詩篇42:2說什麼？", include_context=True)["sources"]
+
+    header, first, second = source["context"].split("\n")[:3]
+    assert source["id"] == "vs:psa.42.2" and header.startswith("[1] 詩篇 第42章")
+    assert first == "可拉後裔的訓誨詩，交給聖詠團長。" and second.startswith("2. ")
+    assert "卷二" not in source["context"]
+    assert "可拉後裔" not in verse["text"]  # /verse leaves the superscription out (design §2.23)
 
 
 def test_a_verse_cut_by_a_heading_lists_the_heading_and_both_passages(backend):

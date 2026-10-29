@@ -2,7 +2,8 @@
 Multi-strategy retrieval router with 6-route signal-driven architecture.
 
 Routes (utils.retrieval.routes):
-    R1: Exact verse reference (book+chapter+verse) → SQL direct lookup
+    R1: Exact verse reference (book+chapter+verse) → SQL direct lookup, the owning
+        passages, dense to fill k
     R2: Chapter + dense (book+chapter, no verse) → chapter passages + dense
     R3: ≥2 persons → dense + book anchors + SQL supplement
     R4: Event keyword → dense + book anchors + SQL supplement
@@ -13,7 +14,9 @@ Routes (utils.retrieval.routes):
 Then rerank (bge-reranker-v2-m3), rank fusion, the chapter and book-anchor pins,
 and on R4/R5 the event registry auxiliary lane, which appends one curated anchor
 AFTER the finished top-k when use_graph is on and "event_registry" is among the
-graph strategies (the default). R1 has no Neo4j-backed strategy (D-09).
+graph strategies (the default). A verse lookup (R1 that found its verses) keeps
+the verse records and their passages in front, unranked and unpinned, and ranks
+only the rest. R1 has no Neo4j-backed strategy (D-09).
 """
 
 import logging
@@ -24,7 +27,7 @@ from database import postgres
 from serving import context
 from utils import reranker as reranker_mod
 from utils.retrieval import candidates as cands
-from utils.retrieval import event_registry, routes
+from utils.retrieval import event_registry, routes, verse_retriever
 from utils.retrieval.dense import SEMANTIC_ARM, retrieve_dense
 from utils.retrieval.pins import (cap_book_anchor_entries, fuse_and_rank,
                                   pin_book_anchor_candidates, pin_chapter_candidates)
@@ -34,6 +37,8 @@ from utils.verse_parser import VerseRef
 logger = logging.getLogger(__name__)
 
 AUXILIARY_STRATEGIES = frozenset({"event_registry"})
+# R1's verse records and the passages they belong to: ahead of every ranked candidate
+_VERSE_LEAD = (verse_retriever.SOURCE, verse_retriever.OWNER)
 _EVENT_REGISTRY_ROUTES = ("R4", "R5")
 
 
@@ -68,6 +73,11 @@ class Gathered:
     def multi_book(self) -> bool:
         return self.signals is not None and len(self.signals.detected_book_names) > 1
 
+    @property
+    def verse_lookup(self) -> bool:
+        """R1 found its verses (an R1 that fell back to R2 is ranked like R2)."""
+        return any(c["source_strategy"] == verse_retriever.SOURCE for c in self.candidates)
+
 
 async def _semantic_only(query: str) -> Gathered:
     errors: dict[str, str] = {}
@@ -91,29 +101,48 @@ async def _gather(query: str, verse_refs: list[VerseRef], intent_type: str,
     return Gathered(signals.route, signals, pool, strategies, errors)
 
 
-def _rank(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
-    if g.route == "R1":
-        return g.candidates[:k]
-    if not g.candidates:
-        return []
+def _ranked(query: str, pool: list[dict], g: Gathered, k: int, fusion: Fusion) -> list[dict]:
     try:
         if not fusion.active:
-            return reranker_mod.rerank(query, g.candidates, top_k=k, text_key="content")
+            return reranker_mod.rerank(query, pool, top_k=k, text_key="content")
         # score the whole pool, then blend each rerank_score with the strategy prior
-        scored = reranker_mod.rerank(query, g.candidates, top_k=len(g.candidates),
-                                     text_key="content")
+        scored = reranker_mod.rerank(query, pool, top_k=len(pool), text_key="content")
         ranked = fuse_and_rank(scored, top_k=len(scored), alpha=fusion.alpha)
         return (cap_book_anchor_entries(ranked) if g.multi_book else ranked)[:k]
     except Exception as exc:  # noqa: BLE001
         logger.warning("Reranker failed, falling back to weight-based sorting: %s", exc)
         g.errors["rerank"] = repr(exc)[:200]
-        return sorted(g.candidates, key=lambda x: x.get("weight", 0), reverse=True)[:k]
+        return sorted(pool, key=lambda x: x.get("weight", 0), reverse=True)[:k]
+
+
+def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
+    """The verse records and their passages, then the best of the rest that repeats none
+    of those passages' verses (a chunk of an owning passage would).
+
+    Only passages exclude: an owner covers its verse records, and a verse with no owner
+    (an omitted verse, a failed owner lookup) keeps the passage dense found eligible.
+    """
+    lead = [c for c in g.candidates if c["source_strategy"] in _VERSE_LEAD]
+    held = [c for c in lead if c.get("kind") != "verse"]
+    rest = [c for c in g.candidates if c["source_strategy"] not in _VERSE_LEAD
+            and not any(cands.shares_verse(c, x) for x in held)]
+    if len(lead) >= k or not rest:
+        return lead[:k]
+    return lead + _ranked(query, rest, g, k - len(lead), fusion)
+
+
+def _rank(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
+    if not g.candidates:
+        return []
+    if g.verse_lookup:
+        return _rank_verse_lookup(query, g, k, fusion)
+    return _ranked(query, g.candidates, g, k, fusion)
 
 
 def _pin(ranked: list[dict], g: Gathered, verse_refs: list[VerseRef], k: int,
          fusion: Fusion) -> list[dict]:
-    """Chapter pin (A書N章), then book-anchor pin; not on R1 or semantic_only."""
-    if g.route in ("R1", "semantic_only") or not ranked:
+    """Chapter pin (A書N章), then book-anchor pin; not on a verse lookup or semantic_only."""
+    if g.verse_lookup or g.route == "semantic_only" or not ranked:
         return ranked
     ranked = pin_chapter_candidates(ranked, g.candidates, verse_refs, top_k=k, min_pins=2,
                                     score_key=fusion.score_key)
@@ -165,7 +194,7 @@ def _stats(g: Gathered, total: int, reranked: int, use_graph: bool,
         "route_used": g.route, "strategy_errors": g.errors, "use_graph": use_graph,
         "graph_strategies": (sorted(allowed) if use_graph and g.route != "semantic_only"
                              else []),
-        "fusion_alpha": fusion.alpha if (fusion.active and g.route != "R1") else None,
+        "fusion_alpha": fusion.alpha if fusion.active else None,
         "event_registry_events": events,
     }
 
