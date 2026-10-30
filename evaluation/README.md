@@ -350,11 +350,11 @@ RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` �
 | `run_meta_version` | 2 |
 | `collection` | `started_at`、`finished_at`、`mode`、`argv`、`top_k`、`graph_strategies_requested`、`ids_file` 與 `ids_file_sha256`、`n_questions`、`n_collected`、`n_request_failures`、`resumed`(collector 每次從頭收集,沒有續收,恆為 `[]`) |
 | `eval_code` | `git_head`、`git_dirty`、`dirty_paths`(`git status --porcelain` 在 evaluation/ 底下的路徑,最多 50 條)、`n_dirty_paths`;未追蹤的 `results*/` 輸出目錄會列出但不算 dirty |
-| `backend_runtime` | `docker inspect`(唯讀)backend 容器:`container`、`image`(Config.Image)、`image_id`、`started_at`、`env`(白名單,見下) |
+| `backend_runtime` | `docker inspect`(唯讀)backend 容器:`container`、`container_from`(容器名從哪來:`BACKEND_URL` 或 `EVAL_BACKEND_CONTAINER`)、`image`(Config.Image)、`image_id`、`started_at`、`env`(白名單,見下) |
 | `generator` | `provider`、`model`;`LLM_PROVIDER=ollama` 時另查 `OLLAMA_BASE_URL/api/tags` 記 `digest`、`size`(回應形狀不對時記 error) |
 | `backend_health` | `/health` 的 `status`、`services` 與 handshake 摘要 `ok`、`strict`、`mismatches` |
 
-每個探測都是盡力而為:docker 不可用、容器不存在、逾時(5 秒)、Ollama 不通或回應形狀不對、不是 git checkout,或任何預期外的例外時,該段記 `{"error": "..."}` 並記 warning,收集照常進行。容器名用 `EVAL_BACKEND_CONTAINER`(預設 `bible_rag_backend`)。
+每個探測都是盡力而為:docker 不可用、容器不存在、逾時(5 秒)、Ollama 不通或回應形狀不對、不是 git checkout,或任何預期外的例外時,該段記 `{"error": "..."}` 並記 warning,收集照常進行。容器名用 `EVAL_BACKEND_CONTAINER`;沒設時(預設)取本機正在發布 `BACKEND_URL` 那個 port 的容器(`docker ps --filter publish=<port>`,唯讀),所以收 staging(`BACKEND_URL=http://localhost:8002`)會記到 staging 容器。找不到或不只一個、或 `BACKEND_URL` 不在本機時記 error。2026-10-29 前預設寫死 `bible_rag_backend`,收 staging 的 run_meta 會記成 prod 容器。
 
 **backend env 的秘密白名單規則**(`src/run_record.py` `safe_env`):名稱一律轉大寫再比對(backend 的 pydantic settings 讀 env 不分大小寫),只記
 1. 明列的名稱:`LLM_PROVIDER`、`OLLAMA_MODEL`、`CLAUDE_MODEL`、`OPENAI_MODEL`、`GEMINI_MODEL`、`LLM_TEMPERATURE`、`LLM_MAX_TOKENS`、`RAG_RANK_FUSION_ALPHA`、`RAG_USE_GRAPH`、`RAG_GRAPH_STRATEGIES`、`RAG_ENTITY_QUERY_TOP_K`、`STRICT_BUILD_CHECK`、`HYBRID_SEARCH_ENABLED`、`HYBRID_FUSION_METHOD`、`HYBRID_PREFETCH_LIMIT`;

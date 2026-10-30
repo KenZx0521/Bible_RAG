@@ -328,6 +328,7 @@ def test_an_odd_ollama_tags_body_does_not_stop_the_collection(monkeypatch, tmp_p
     inspect = [{"Config": {"Image": "bible_rag-backend:r5",
                            "Env": ["LLM_PROVIDER=ollama", "OLLAMA_MODEL=gemma4:e4b"]},
                 "Image": "sha256:img", "State": {"StartedAt": "t"}}]
+    monkeypatch.setattr(rr.settings, "eval_backend_container", "bible_rag_backend")
     monkeypatch.setattr(rr, "_run", lambda cmd, timeout: json.dumps(inspect) if cmd[0] == "docker"
                         else (_ for _ in ()).throw(RuntimeError("no git")))
     monkeypatch.setattr(rr, "_get_json", lambda url, timeout: [])

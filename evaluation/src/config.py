@@ -65,8 +65,10 @@ class Settings(BaseSettings):
     # Backend RAG API
     backend_url: str = "http://localhost:8000"
     # The backend's docker container, inspected (read only) for run_meta.json's
-    # backend_runtime: image and an allowlist of its env (src/run_record.py).
-    eval_backend_container: str = "bible_rag_backend"
+    # backend_runtime: image and an allowlist of its env (src/run_record.py). Empty:
+    # the running container publishing BACKEND_URL's port (a fixed name recorded the
+    # prod container for staging runs until 2026-10-29).
+    eval_backend_container: str = ""
 
     # Evaluation settings
     top_k: int = 5

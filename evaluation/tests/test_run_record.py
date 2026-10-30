@@ -33,12 +33,28 @@ TAGS = {"models": [{"name": "gemma3:latest", "model": "gemma3:latest", "digest":
                    {"name": "gemma4:26b", "model": "gemma4:26b", "digest": "d1", "size": 2}]}
 
 
+PS_PROD = ["docker", "ps", "--filter", "publish=8000", "--format", "{{.Names}}"]
+
+
+@pytest.fixture(autouse=True)
+def _prod_url(monkeypatch):
+    """BACKEND_URL is prod's and EVAL_BACKEND_CONTAINER unset, whatever the local .env says."""
+    monkeypatch.setattr(rr.settings, "backend_url", "http://localhost:8000")
+    monkeypatch.setattr(rr.settings, "eval_backend_container", "")
+
+
 def _fake_run(monkeypatch, outputs: dict, calls: list | None = None):
-    """_run answering by command head ("docker", "git rev-parse", "git status")."""
+    """_run answering by command head ("docker ps", "docker" for inspect, "git rev-parse",
+    "git status"); docker ps names prod's container unless told otherwise."""
+    outputs = {"docker ps": "bible_rag_backend\n", **outputs}
+
     def run(cmd, timeout):
         if calls is not None:
             calls.append((cmd, timeout))
-        head = cmd[0] if cmd[0] == "docker" else f"git {next(a for a in cmd if a in ('rev-parse', 'status'))}"
+        if cmd[0] == "docker":
+            head = "docker ps" if cmd[1] == "ps" else "docker"
+        else:
+            head = f"git {next(a for a in cmd if a in ('rev-parse', 'status'))}"
         out = outputs[head]
         if isinstance(out, BaseException):
             raise out
@@ -64,7 +80,7 @@ def test_backend_runtime_records_image_start_and_the_allowlisted_env(monkeypatch
 
     runtime = rr.backend_runtime()
 
-    assert runtime["container"] == "bible_rag_backend"
+    assert (runtime["container"], runtime["container_from"]) == ("bible_rag_backend", "BACKEND_URL")
     assert (runtime["image"], runtime["image_id"], runtime["started_at"]) == (
         "bible_rag-backend:r5", "sha256:img", "2026-10-21T08:00:00Z")
     assert runtime["env"] == {
@@ -72,7 +88,8 @@ def test_backend_runtime_records_image_start_and_the_allowlisted_env(monkeypatch
         "LLM_TEMPERATURE": "0.1", "LLM_MAX_TOKENS": "4096", "STRICT_BUILD_CHECK": "true",
         "RAG_RANK_FUSION_ALPHA": "0.3", "RAG_USE_GRAPH": "true", "RAG_ENTITY_QUERY_TOP_K": "8",
         "RAG_ENV": "prod", "RAG_DATABASE_URL": "postgresql://***@db:5432/x"}
-    assert calls == [(["docker", "inspect", "--type", "container", "bible_rag_backend"], 5.0)]
+    assert calls == [(PS_PROD, 5.0),
+                     (["docker", "inspect", "--type", "container", "bible_rag_backend"], 5.0)]
 
 
 def test_no_secret_reaches_run_meta(monkeypatch, tmp_path):
@@ -98,13 +115,52 @@ def test_the_allowlist_and_the_rag_prefix_rule(name, kept):
     assert (name in rr.safe_env([f"{name}=v"])) is kept
 
 
-def test_the_container_name_comes_from_the_setting(monkeypatch):
+def test_the_container_is_the_one_publishing_the_backend_url_port(monkeypatch):
+    """A staging run once recorded prod's image: the name was fixed, not BACKEND_URL's."""
+    calls = []
+    _fake_run(monkeypatch, {"docker ps": "bible_rag_backend_stg\n", "docker": json.dumps(INSPECT)},
+              calls)
+    monkeypatch.setattr(rr.settings, "backend_url", "http://localhost:8002")
+
+    runtime = rr.backend_runtime()
+
+    assert (runtime["container"], runtime["container_from"]) == ("bible_rag_backend_stg", "BACKEND_URL")
+    assert [c for c, _ in calls] == [
+        ["docker", "ps", "--filter", "publish=8002", "--format", "{{.Names}}"],
+        ["docker", "inspect", "--type", "container", "bible_rag_backend_stg"]]
+
+
+def test_the_container_name_comes_from_the_setting_when_set(monkeypatch):
     calls = []
     _fake_run(monkeypatch, {"docker": json.dumps(INSPECT)}, calls)
     monkeypatch.setattr(rr.settings, "eval_backend_container", "rb_backend")
 
-    assert rr.backend_runtime()["container"] == "rb_backend"
-    assert calls[0][0][-1] == "rb_backend"
+    runtime = rr.backend_runtime()
+
+    assert (runtime["container"], runtime["container_from"]) == ("rb_backend", "EVAL_BACKEND_CONTAINER")
+    assert [c for c, _ in calls] == [["docker", "inspect", "--type", "container", "rb_backend"]]
+
+
+@pytest.mark.parametrize("ps_out", ["", "bible_rag_backend\nother_backend\n"], ids=["none", "two"])
+def test_no_single_container_on_the_port_is_an_error_entry(monkeypatch, ps_out):
+    calls = []
+    _fake_run(monkeypatch, {"docker ps": ps_out, "docker": json.dumps(INSPECT)}, calls)
+
+    runtime = rr.backend_runtime()
+
+    assert runtime["container"] is None and "publish port 8000" in runtime["error"]
+    assert [c for c, _ in calls] == [PS_PROD]
+
+
+def test_a_backend_url_off_this_host_is_an_error_entry_without_docker(monkeypatch):
+    calls = []
+    _fake_run(monkeypatch, {"docker": json.dumps(INSPECT)}, calls)
+    monkeypatch.setattr(rr.settings, "backend_url", "http://10.0.0.5:8000")
+
+    runtime = rr.backend_runtime()
+
+    assert runtime["container"] is None and "EVAL_BACKEND_CONTAINER" in runtime["error"]
+    assert calls == []
 
 
 @pytest.mark.parametrize("failure", [

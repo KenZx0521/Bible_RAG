@@ -10,7 +10,8 @@ needs to be audited later without docker inspect, container logs or git archaeol
   so ``resumed`` stays []; the field is where a resumed run would list its restarts.
 * ``eval_code``: the evaluation code's git HEAD and its uncommitted paths.
 * ``backend_runtime``: the backend container's image and an allowlist of its
-  environment. No secret is ever recorded (:func:`safe_env`): names are matched
+  environment. The container is EVAL_BACKEND_CONTAINER when set, else the running one
+  publishing BACKEND_URL's port (``container_from`` says which). No secret is ever recorded (:func:`safe_env`): names are matched
   case-insensitively (the backend's settings read them so), secret-shaped names are
   dropped, and URL credentials and secret-shaped values are masked.
 * ``generator``: the generator model, with its digest and size when it runs on Ollama.
@@ -32,6 +33,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -64,6 +66,8 @@ _URL_CREDENTIALS = re.compile(r"([a-z][a-z0-9+.-]*://)\S*@", re.I)
 _SECRET_VALUE_PREFIX = re.compile(r"(sk-|sk_|ghp_|gho_|ghs_|github_pat_|AKIA|ASIA|AIza|xox[abprs]-|hf_)")
 _OPAQUE_RUN = re.compile(r"[A-Za-z0-9+=]{24,}")
 MASK = "***"
+# BACKEND_URL hosts that mean "a container publishing this port here"
+_LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "0.0.0.0"})
 _MODEL_VAR = {"ollama": "OLLAMA_MODEL", "claude": "CLAUDE_MODEL",
               "openai": "OPENAI_MODEL", "gemini": "GEMINI_MODEL"}
 
@@ -174,22 +178,43 @@ def safe_env(env: Sequence[str]) -> dict[str, str]:
     return dict(sorted(kept.items()))
 
 
+def backend_container(url: str) -> str:
+    """The one running container publishing ``url``'s port on this host (docker ps, read only)."""
+    parts = urlsplit(url)
+    if parts.hostname not in _LOCAL_HOSTS:
+        raise LookupError(f"{url} is not on this host; set EVAL_BACKEND_CONTAINER")
+    port = parts.port or (443 if parts.scheme == "https" else 80)
+    out = _run(["docker", "ps", "--filter", f"publish={port}", "--format", "{{.Names}}"],
+               PROBE_TIMEOUT_S)
+    names = out.split()
+    if len(names) != 1:
+        raise LookupError(f"{len(names)} running containers publish port {port}: {names}")
+    return names[0]
+
+
 def backend_runtime(container: str | None = None) -> dict[str, Any]:
-    """Image, start time and allowlisted env of the backend container (docker inspect, read only)."""
+    """Image, start time and allowlisted env of the backend container (docker inspect, read only).
+
+    The container is ``container``, else EVAL_BACKEND_CONTAINER, else the one serving
+    BACKEND_URL (:func:`backend_container`).
+    """
     name = container or settings.eval_backend_container
+    source = "argument" if container else "EVAL_BACKEND_CONTAINER" if name else "BACKEND_URL"
     try:
+        name = name or backend_container(settings.backend_url)
         out = _run(["docker", "inspect", "--type", "container", name], PROBE_TIMEOUT_S)
         info = json.loads(out)[0]
         config = info.get("Config") or {}
         return {
             "container": name,
+            "container_from": source,
             "image": config.get("Image"),
             "image_id": info.get("Image"),
             "started_at": (info.get("State") or {}).get("StartedAt"),
             "env": safe_env(config.get("Env") or []),
         }
     except Exception as exc:  # noqa: BLE001 - docker missing / no container / timeout: recorded
-        return {"container": name, **_error(f"docker inspect {name}", exc)}
+        return {"container": name or None, **_error(f"backend container ({source})", exc)}
 
 
 # --- generator ----------------------------------------------------------------------------
