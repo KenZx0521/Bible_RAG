@@ -41,6 +41,40 @@ def test_other_citations_are_left_alone(answer):
     assert fix_block_chapters(answer, SOURCES) == answer
 
 
+@pytest.mark.parametrize("answer, fixed", [
+    ("見約翰福音 第3章 16-17節。", "見約翰福音 第14章 16-17節。"),            # a verse range
+    ("見約翰福音 第3章 第16-18節。", "見約翰福音 第14章 第16-18節。"),
+    ("見約翰福音 第3章 16、18、20節。", "見約翰福音 第14章 16、18、20節。"),  # a verse list
+    ("見約翰福音 第3章：16。", "見約翰福音 第14章：16。"),                    # 第N章：V
+    ("見約翰福音 第3章:16。", "見約翰福音 第14章:16。"),
+    ("（約翰福音 第1章 1節；第3章 16節）", "（約翰福音 第1章 1節；第14章 16節）"),  # the book carried over
+    ("（約翰福音 第1章 1節；第3章 16-17節）", "（約翰福音 第1章 1節；第14章 16-17節）"),
+    ("（約翰福音 1:1；3:16）", "（約翰福音 1:1；14:16）"),
+    ("（約翰福音 1:1，3:16-18）", "（約翰福音 1:1，14:16-18）"),
+    ("（約翰福音 1:1、第3章 16節）", "（約翰福音 1:1、第14章 16節）"),
+    ("（約翰福音 1:1； 第3章：17）", "（約翰福音 1:1； 第14章：17）"),
+    ("見約翰福音 第3章 16節至4章2節。", "見約翰福音 第14章 16節至4章2節。"),  # 4章2節 names no book
+])
+def test_ranges_lists_colons_and_a_carried_over_book_are_rewritten(answer, fixed):
+    assert fix_block_chapters(answer, SOURCES) == fixed
+
+
+@pytest.mark.parametrize("answer", [
+    "見約翰福音 第3章 16-30節。",            # verse 30 is not in block 3 (15-21)
+    "見約翰福音 第3章 16、30節。",
+    "見約翰福音 第3章：30。",
+    "（約翰福音 1:1；3:30）",
+    "（約翰福音 1:1；3:16-30）",
+    "（羅馬書 5:1；3:16）",                  # the carried-over book is not block 3's
+    "（羅馬書 第5章 1節；第3章 16節）",
+    "約翰福音提到，耶穌在第3章 16節說",       # no separator right before 第N章
+    "（約翰福音 1:1；第3章）",               # no verse to check
+    "（3:16；第3章 17節）",                  # no book named before
+])
+def test_new_forms_still_need_the_book_and_the_verse_to_match_the_block(answer):
+    assert fix_block_chapters(answer, SOURCES) == answer
+
+
 def test_chapters_the_question_or_the_card_names_are_left_alone():
     answer = "見約翰福音 3:17。"
 

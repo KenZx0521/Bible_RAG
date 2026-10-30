@@ -4,13 +4,15 @@ The generator sometimes cites passage block ``[N]`` as chapter N: block ``[3] �
 第14章 (15-21節)`` comes back as 「約翰福音 3:16」. A chapter citation is rewritten to
 block N's chapter only when all of these hold:
 
-- it names a book (``書 第N章第V節``, ``書 N:V``; an abbreviation counts for the
-  colon form), or is a bare ``[N:V]`` in square brackets (other bare forms are
-  left alone);
+- it names a book (``書 第N章第V節``, ``書 第N章 V-W節``, ``書 第N章 V、W節``,
+  ``書 第N章：V``, ``書 N:V``; an abbreviation counts for the ``N:V`` form), is a
+  bare ``[N:V]`` in square brackets, or carries the last book named over right
+  after 「；，、」 (``；第N章 V節``, ``；N:V``); other bare forms are left alone;
 - (book, N) is no chapter of the passages, of the auxiliary card's evidence, or of
   the question;
-- block N is that book (a bare citation: block N's book, unless the last book named
-  before it is another), and it holds verse V.
+- block N is that book (a bare ``[N:V]``: block N's book, unless the last book named
+  before it is another), and it holds verse V. Every verse of a range or list
+  must be in block N, except in ``書 N:V-W``, where only V is read.
 
 Only the chapter digits change. Every passage is one chapter (design §2.23), so a
 legitimate cross-chapter citation never matches.
@@ -25,6 +27,10 @@ from typing import Iterable
 from ragcommon import books, refs
 
 _SPAN = re.compile(r"^(\d+)(?:-(\d+))?$")
+# the verses before 節 (V, V-W, V、W) and after a colon (V, V-W)
+_VERSES = r"\d+(?:\s*[-–—~～至到、，,]\s*\d+)*"
+_COLON_VERSES = r"\d+(?:\s*[-–—~～]\s*\d+)?"
+_SEPARATORS = "；;，,、"
 _QUESTION_CHAPTER = re.compile(r"第\s*(\d+)\s*[章篇]|(\d+)\s*[:：]")
 
 
@@ -34,10 +40,13 @@ def _names() -> tuple[dict[str, str], re.Pattern[str]]:
     names = books.default_books().names_longest_first()
     full = "|".join(re.escape(n.text) for n in names if not n.is_abbreviation)
     every = "|".join(re.escape(n.text) for n in names)
+    verses = rf"(?:\s*第?\s*(?P<v{{0}}>{_VERSES})\s*節|\s*[:：]\s*(?P<w{{0}}>{_COLON_VERSES}))"
     pattern = re.compile(
-        rf"(?P<b1>{full})\s*第?\s*(?P<c1>\d+)\s*[章篇](?:\s*第?\s*(?P<v1>\d+)\s*節)?"
+        rf"(?P<b1>{full})\s*第?\s*(?P<c1>\d+)\s*[章篇]{verses.format(1)}?"
         rf"|(?P<b2>{every})\s*(?P<c2>\d+)\s*[:：]\s*(?P<v2>\d+)"
         rf"|[\[［]\s*(?P<c3>\d+)\s*[:：]\s*(?P<v3>\d+)"
+        rf"|(?<=[{_SEPARATORS}])\s*(?:第\s*(?P<c4>\d+)\s*[章篇]{verses.format(4)}"
+        rf"|(?P<c5>\d+)\s*[:：]\s*(?P<v5>{_COLON_VERSES}))"
         rf"|(?P<bk>{full})")
     return {n.text: n.book_id for n in names}, pattern
 
@@ -79,6 +88,13 @@ def _evidence_chapters(evidence: Iterable[str]) -> set[tuple[str, int]]:
     return out
 
 
+def _verse_numbers(m: re.Match[str], group: str) -> list[int]:
+    """The verses citation ``m`` names: every one of a range or list (only V of ``書 N:V-W``)."""
+    names = ("v" + group, "w" + group)
+    text = next((m.group(g) for g in names if g in m.re.groupindex and m.group(g)), None)
+    return [int(v) for v in re.findall(r"\d+", text)] if text else []
+
+
 def fix_block_chapters(answer: str, sources: list[dict], question: str = "",
                        evidence: Iterable[str] = ()) -> str:
     """``answer`` with each citation of block N as chapter N given block N's chapter."""
@@ -94,17 +110,17 @@ def fix_block_chapters(answer: str, sources: list[dict], question: str = "",
         if m.group("bk"):
             last = by_name[m.group("bk")]
             continue
-        group = "1" if m.group("c1") else "2" if m.group("c2") else "3"
-        n, verse = int(m.group("c" + group)), m.group("v" + group)
-        named = by_name[m.group("b" + group)] if group != "3" else None
+        group = next(g for g in "12345" if m.group("c" + g))
+        n, verses = int(m.group("c" + group)), _verse_numbers(m, group)
+        named = by_name[m.group("b" + group)] if group in "12" else None
         last = named or last
         block = blocks.get(n)
-        if block is None or verse is None:
+        if block is None or not verses or (group in "45" and last is None):
             continue
         book, chapter, span = block
         if (named or last or book) != book:
             continue
-        if (book, n) in allowed or span is None or not span[0] <= int(verse) <= span[1]:
+        if (book, n) in allowed or span is None or not all(span[0] <= v <= span[1] for v in verses):
             continue
         edits.append((m.start("c" + group), m.end("c" + group), str(chapter)))
     for start, end, text in reversed(edits):
