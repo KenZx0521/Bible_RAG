@@ -13,7 +13,8 @@ from collections import defaultdict
 
 from ragcommon import ids
 
-SOURCE_KINDS = {"passage", "chunk", "verse_record", "verse_range"}
+# chapter: R2/R5 chapter blocks (B-lite, utils/retrieval/chapter_blocks.py, 2026-10-29)
+SOURCE_KINDS = {"passage", "chunk", "verse_record", "verse_range", "chapter"}
 VERSE_RANGE = re.compile(r"[1-9][0-9]*(-[1-9][0-9]*)?")
 
 
