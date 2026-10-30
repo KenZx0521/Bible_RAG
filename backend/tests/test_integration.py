@@ -241,6 +241,27 @@ def test_dense_hits_become_passages_and_chunks_with_their_text(backend):
     assert {s["build_id"] for s in body["sources"]} == {BUILD_ID}
 
 
+def test_a_chapter_range_comes_back_as_one_block_per_chapter(backend):
+    with TestClient(main.app) as client:
+        body = _ask(client, "使徒行傳9-10章記載了什麼？", include_context=True)
+
+    stats = body["retrieval_stats"]
+    acts9, acts10, *rest = body["sources"]
+    assert stats["route_used"] == "R2" and stats["strategies_used"][-1] == "chapter_block"
+    assert (acts9["id"], acts9["kind"], acts9["strategy"]) == ("act.9", "chapter", "chapter_block")
+    assert ids.parse(acts9["id"]).kind == "chapter" and acts9["passage_id"] is None
+    assert acts9["member_ids"] == ["ps:act.9.1", "ps:act.9.3b"]
+    assert (acts9["start_key"], acts9["end_key"], acts9["verse_range"]) == (
+        "act.9.1", "act.9.3b", "1-3")
+    assert acts9["context"].startswith("[1] 使徒行傳 第9章 (1-3節)\n【掃羅歸主－在路上】\n**1** ")
+    assert acts9["context"].endswith("\n\n【天上的光】\n**3** 忽然有光四面照着他。")
+    assert (acts10["id"], acts10["member_ids"], acts10["verse_range"]) == (
+        "act.10", ["ps:act.10.1"], "1")
+    assert acts10["context"].startswith("[2] 使徒行傳 第10章 (1節)\n【天上的光】\n")
+    assert rest and all((s["book"], s["chapter"]) not in {("使徒行傳", 9), ("使徒行傳", 10)}
+                        for s in rest)
+
+
 def test_an_event_question_appends_the_registry_anchor_after_the_top_k(backend):
     backend.scores.update({"ps:psa.42.1": 0.9, "ps:sng.1.1": 0.8})
 

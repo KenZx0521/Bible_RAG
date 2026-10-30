@@ -223,7 +223,11 @@ def test_r1_falls_back_to_r2_and_keeps_both_errors(active, monkeypatch, scores):
 def test_r2_pins_the_named_chapter(active, monkeypatch, scores):
     async def chapter(refs):
         return [_c(f"ps:mat.6.{i}", weight=1.0, book="mat", chapter=6) for i in (1, 5)]
+
+    async def chapter_passages(book_id, chapter):  # the chapter-block check: both are in
+        return [_c(f"ps:mat.6.{i}", "x", 0.0, book="mat", chapter=6) for i in (1, 5)]
     monkeypatch.setattr(routes, "retrieve_by_verse_refs", chapter)
+    monkeypatch.setattr(routes.postgres, "chapter_passages", chapter_passages)
     _dense(monkeypatch, hits=[_c(f"ps:luk.{i}.1", book="luk", chapter=i) for i in range(1, 8)])
     scores.update({f"ps:luk.{i}.1": 0.99 for i in range(1, 8)})
     scores.update({"ps:mat.6.1": 0.0, "ps:mat.6.5": 0.0})
@@ -232,6 +236,7 @@ def test_r2_pins_the_named_chapter(active, monkeypatch, scores):
                          top_k=5)
 
     assert stats["route_used"] == "R2" and stats["strategies_used"] == ["sql_chapter", "semantic"]
+    assert stats["strategy_errors"] == {}
     assert {c["id"] for c in ranked[:2]} == {"ps:mat.6.1", "ps:mat.6.5"}
     assert all(c["source_strategy"] == "sql_chapter" for c in ranked[:2])
 

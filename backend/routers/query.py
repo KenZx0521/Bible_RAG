@@ -35,7 +35,8 @@ def _source(r: dict, block: str | None, build_id: str) -> Source:
         score=fused if fused is not None else r.get("rerank_score"),
         strategy=r.get("source_strategy"), rerank_score=r.get("rerank_score"),
         found_by=r.get("found_by"), context=block,
-        split_passage_ids=list(r.get("split_passage_ids") or []), build_id=build_id,
+        split_passage_ids=list(r.get("split_passage_ids") or []),
+        member_ids=list(r.get("member_ids") or []), build_id=build_id,
         **{f: r.get(f) for f in SOURCE_FIELDS},
     )
 

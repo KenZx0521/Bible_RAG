@@ -12,11 +12,14 @@ Routes (utils.retrieval.routes):
     Fallback: dense + book anchors
 
 Then rerank (bge-reranker-v2-m3), rank fusion, the chapter and book-anchor pins,
-and on R4/R5 the event registry auxiliary lane, which appends one curated anchor
-AFTER the finished top-k when use_graph is on and "event_registry" is among the
-graph strategies (the default). A verse lookup (R1 that found its verses) keeps
-the verse records and their passages in front, unranked and unpinned, and ranks
-only the rest. R1 has no Neo4j-backed strategy (D-09).
+on R2/R5 the chapter blocks (utils.retrieval.chapter_blocks: a named chapter, or
+each chapter of a range of at most 3, served whole ahead of the ranked rest when
+the range or the top-k's gaps call for it), and on R4/R5 the event registry
+auxiliary lane, which appends one curated anchor AFTER the finished top-k when
+use_graph is on and "event_registry" is among the graph strategies (the default).
+A verse lookup (R1 that found its verses) keeps the verse records and their
+passages in front, unranked and unpinned, and ranks only the rest. R1 has no
+Neo4j-backed strategy (D-09).
 """
 
 import logging
@@ -27,10 +30,10 @@ from database import postgres
 from serving import context
 from utils import reranker as reranker_mod
 from utils.retrieval import candidates as cands
-from utils.retrieval import event_registry, routes, verse_retriever
+from utils.retrieval import chapter_blocks, event_registry, routes, verse_retriever
 from utils.retrieval.dense import SEMANTIC_ARM, retrieve_dense
-from utils.retrieval.pins import (cap_book_anchor_entries, fuse_and_rank,
-                                  pin_book_anchor_candidates, pin_chapter_candidates)
+from utils.retrieval.pins import (cap_book_anchor_entries, chapter_targets, fuse_and_rank,
+                                  pin_book_anchor_candidates, pin_chapters)
 from utils.signal_detector import QuerySignals, detect_signals
 from utils.verse_parser import VerseRef
 
@@ -40,6 +43,7 @@ AUXILIARY_STRATEGIES = frozenset({"event_registry"})
 # R1's verse records and the passages they belong to: ahead of every ranked candidate
 _VERSE_LEAD = (verse_retriever.SOURCE, verse_retriever.OWNER)
 _EVENT_REGISTRY_ROUTES = ("R4", "R5")
+_CHAPTER_BLOCK_ROUTES = ("R2", "R5")
 
 
 def resolve_graph_strategies(requested: list[str] | None) -> frozenset[str]:
@@ -139,15 +143,54 @@ def _rank(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
     return _ranked(query, g.candidates, g, k, fusion)
 
 
-def _pin(ranked: list[dict], g: Gathered, verse_refs: list[VerseRef], k: int,
-         fusion: Fusion) -> list[dict]:
-    """Chapter pin (A書N章), then book-anchor pin; not on a verse lookup or semantic_only."""
+def _pin(ranked: list[dict], pool: list[dict], targets: list[tuple[str, int]], g: Gathered,
+         k: int, fusion: Fusion, present_books: list[str] | None = None) -> list[dict]:
+    """Chapter pin (the targets: A書N章), then book-anchor pin; not on a verse lookup or
+    semantic_only. ``present_books`` count as present for the multi-book gate."""
     if g.verse_lookup or g.route == "semantic_only" or not ranked:
         return ranked
-    ranked = pin_chapter_candidates(ranked, g.candidates, verse_refs, top_k=k, min_pins=2,
-                                    score_key=fusion.score_key)
-    return pin_book_anchor_candidates(ranked, g.candidates, top_k=k, max_pins=2,
-                                      score_key=fusion.score_key, book_gate=g.multi_book)
+    ranked = pin_chapters(ranked, pool, targets, top_k=k, min_pins=2, score_key=fusion.score_key)
+    return pin_book_anchor_candidates(ranked, pool, top_k=k, max_pins=2,
+                                      score_key=fusion.score_key, book_gate=g.multi_book,
+                                      present_books=present_books or ())
+
+
+async def _chapter_passages(chapters: list[tuple[str, int]], g: Gathered
+                            ) -> dict[tuple[str, int], list[dict]] | None:
+    try:
+        return {ch: await postgres.chapter_passages(*ch) for ch in chapters}
+    except Exception as exc:  # noqa: BLE001 — recorded in strategy_errors
+        logger.warning("chapter_block lookup failed: %s", exc)
+        g.errors[chapter_blocks.SOURCE] = repr(exc)[:200]
+        return None
+
+
+async def _scope_chapters(query: str, ranked: list[dict], g: Gathered,
+                          verse_refs: list[VerseRef], k: int, fusion: Fusion) -> list[dict]:
+    """R2/R5: chapter blocks first, then the rest ranked and pinned again without their
+    chapters (utils.retrieval.chapter_blocks); ``ranked`` itself when nothing triggers."""
+    if g.route not in _CHAPTER_BLOCK_ROUTES:
+        return ranked
+    scope = chapter_blocks.scoped_chapters(verse_refs, k)
+    passages = await _chapter_passages(scope, g) if scope else None
+    if not passages or not chapter_blocks.triggered(verse_refs, ranked, passages):
+        return ranked
+    blocks, too_long = chapter_blocks.plan(passages)
+    if not blocks and not too_long:
+        return ranked
+    g.strategies.append(chapter_blocks.SOURCE)
+    logger.info("chapter_block: %s, too long: %s", [b["id"] for b in blocks], too_long)
+    blocked = {(b["book_id"], b["chapter_num"]) for b in blocks}
+    pool = chapter_blocks.with_fallbacks(
+        [c for c in g.candidates if (c.get("book_id"), c.get("chapter_num")) not in blocked],
+        too_long, passages)
+    rest_k = k - len(blocks)
+    if rest_k <= 0 or not pool:
+        return blocks
+    rest = _pin(_ranked(query, pool, g, rest_k, fusion), pool,
+                chapter_blocks.pin_targets(verse_refs, blocked, too_long), g, rest_k, fusion,
+                chapter_blocks.present_books(blocks))
+    return blocks + rest
 
 
 async def _aux_candidate(anchor: str, event: tuple[str, str], pool: dict[str, dict],
@@ -172,11 +215,12 @@ async def _append_event_registry(query: str, ranked: list[dict], g: Gathered, sl
     Triggers are registry words literally in the question (book names masked),
     never LLM keywords. Events are reported by ev id (via_event_id too); their
     legacy ids are only logged. Appended passages carry no rerank/fused score.
+    A chapter block covers its member passages.
     """
     events = event_registry.match_events(query, active.registry, active.book_names)
     if not events:
         return [], []
-    core = [c.get("passage_id") or c["id"] for c in ranked]
+    core = [p for c in ranked for p in cands.passage_ids(c)]
     names = {e.id: e.name for e in events}
     pool = {c["id"]: c for c in g.candidates}
     aux = [c for event_id, anchor in event_registry.select_aux_anchors(events, core, slots)
@@ -205,7 +249,8 @@ async def retrieve_and_rerank(
     semantic_only: bool = False, fusion_alpha: float | None = None,
     graph_strategies: list[str] | None = None,
 ) -> tuple[list[dict], dict]:
-    """Route, rerank, pin and (R4/R5) append event anchors; returns (results, stats).
+    """Route, rerank, pin, (R2/R5) serve chapter blocks and (R4/R5) append event anchors;
+    returns (results, stats).
 
     use_graph / graph_strategies / fusion_alpha override the settings for one
     request (fusion_alpha forces fusion on); semantic_only skips routing.
@@ -220,7 +265,9 @@ async def retrieve_and_rerank(
          await _gather(query, verse_refs, intent_type, entity_names, keywords, active))
     for c in g.candidates:
         c.setdefault("found_by", cands.labels_of(c))
-    ranked = _pin(_rank(query, g, k, fusion), g, verse_refs, k, fusion)
+    ranked = _pin(_rank(query, g, k, fusion), g.candidates, chapter_targets(verse_refs), g, k,
+                  fusion)
+    ranked = await _scope_chapters(query, ranked, g, verse_refs, k, fusion)
     reranked, events = len(ranked), []
     if (g.route in _EVENT_REGISTRY_ROUTES and len(ranked) >= k and use
             and "event_registry" in allowed):

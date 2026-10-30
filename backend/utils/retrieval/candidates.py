@@ -68,6 +68,11 @@ def book_chapters(candidates: list[dict]) -> list[tuple[str, int]]:
     return list(pairs)
 
 
+def passage_ids(c: dict) -> list[str]:
+    """The passages candidate ``c`` holds: a chapter block's members, else its passage."""
+    return list(c.get("member_ids") or [c.get("passage_id") or c["id"]])
+
+
 def shares_verse(a: dict, b: dict) -> bool:
     """Whether two candidates hold a common verse (same chapter, intersecting key ranges)."""
     if (a.get("book_id"), a.get("chapter_num")) != (b.get("book_id"), b.get("chapter_num")):

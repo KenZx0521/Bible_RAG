@@ -4,7 +4,8 @@
 - ``cap_book_anchor_entries``: multi-book questions keep one book_anchor per book
   in the fused order; the rest sink to the tail.
 - ``pin_chapter_candidates``: a chapter the user named (A書N章; a range by its
-  first chapter) keeps at least ``min_pins`` of its passages in the top-k.
+  first chapter) keeps at least ``min_pins`` of its passages in the top-k
+  (``pin_chapters`` on explicit targets, for the R2/R5 chapter blocks).
 - ``pin_book_anchor_candidates``: a book the user named is represented
   (unconditionally for one book; only absent books for several).
 
@@ -15,6 +16,7 @@ never parsed.
 from __future__ import annotations
 
 import logging
+from typing import Iterable
 
 from database.content import key_order
 from utils.verse_parser import VerseRef
@@ -92,20 +94,34 @@ def _chapter_pins(ranked: list[dict], candidates: list[dict], targets: list[tupl
     return pinned
 
 
+def chapter_targets(verse_refs: list[VerseRef]) -> list[tuple[str, int]]:
+    """One target per chapter-only reference (a chapter range: its first chapter), in order."""
+    return list(dict.fromkeys((r.book_id, r.chapter) for r in verse_refs
+                              if r.verse_start is None))
+
+
 def pin_chapter_candidates(ranked: list[dict], candidates: list[dict], verse_refs: list[VerseRef],
                            top_k: int, min_pins: int = 2, score_key: str = "rerank_score"
                            ) -> list[dict]:
     """Guarantee chapter-specified passages survive rerank by pinning them into top-k.
 
     One target per chapter-only reference (a chapter range is served by its first
-    chapter, as legacy read it), pinned in the order the user wrote them; the
-    result keeps at most ``top_k`` (the first-written chapters win), and the
-    reranker still orders every slot the pins leave. Only pool candidates with
-    weight >= PIN_WEIGHT_FLOOR are eligible. Pinned entries get a synthetic
-    ``score_key`` just above the current max.
+    chapter, as legacy read it), pinned in the order the user wrote them; see
+    ``pin_chapters``.
     """
-    targets = list(dict.fromkeys((r.book_id, r.chapter) for r in verse_refs
-                                 if r.verse_start is None))
+    return pin_chapters(ranked, candidates, chapter_targets(verse_refs), top_k, min_pins,
+                        score_key)
+
+
+def pin_chapters(ranked: list[dict], candidates: list[dict], targets: list[tuple[str, int]],
+                 top_k: int, min_pins: int = 2, score_key: str = "rerank_score") -> list[dict]:
+    """Pin up to ``min_pins`` pool passages of each (book, chapter) target into the top-k.
+
+    The result keeps at most ``top_k`` (the first targets win), and the reranker
+    still orders every slot the pins leave. Only pool candidates with weight >=
+    PIN_WEIGHT_FLOOR are eligible. Pinned entries get a synthetic ``score_key``
+    just above the current max.
+    """
     if not targets or not ranked:
         return ranked
     pinned = _chapter_pins(ranked, candidates, targets, top_k, min_pins)
@@ -134,12 +150,14 @@ def _book_anchor_order(eligible: list[dict], book_gate: bool) -> list[dict]:
 
 def pin_book_anchor_candidates(ranked: list[dict], candidates: list[dict], top_k: int,
                                max_pins: int = 2, score_key: str = "rerank_score",
-                               book_gate: bool = False) -> list[dict]:
+                               book_gate: bool = False, present_books: Iterable[str] = ()
+                               ) -> list[dict]:
     """Pin book_anchor candidates so a named book is represented in the top-k.
 
     Single-book questions pin unconditionally (measured neutral); multi-book
-    questions (``book_gate``) pin only books absent from the ranking, one per book
-    (2026-07-13 A/B: a pin for a book already present only evicted gold).
+    questions (``book_gate``) pin only books absent from the ranking and from
+    ``present_books`` (books already served outside it: chapter blocks), one per
+    book (2026-07-13 A/B: a pin for a book already present only evicted gold).
     """
     if not ranked or not candidates:
         return ranked
@@ -147,7 +165,7 @@ def pin_book_anchor_candidates(ranked: list[dict], candidates: list[dict], top_k
     eligible = [c for c in candidates
                 if c.get("source_strategy") == BOOK_ANCHOR and c["id"] not in existing]
     if book_gate:
-        present = {c["book_id"] for c in ranked}
+        present = {c["book_id"] for c in ranked} | set(present_books)
         eligible = [c for c in eligible if c["book_id"] not in present]
     to_pin = _book_anchor_order(eligible, book_gate)[:max_pins]
     if not to_pin:

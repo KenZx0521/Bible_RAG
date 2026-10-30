@@ -7,9 +7,10 @@ from pydantic import BaseModel
 
 class Source(BaseModel):
     # The record's id in the build's grammar; every one parses with
-    # ragcommon.ids.parse: a passage (ps:), a chunk (ck:), or for a verse lookup
+    # ragcommon.ids.parse: a passage (ps:), a chunk (ck:), for a verse lookup
     # the verse record (vs:{unit}) when it is one unit, else its slot range
-    # (vr:{start_key}~{end_key}). Read `kind` and start_key/end_key for the span.
+    # (vr:{start_key}~{end_key}), or for an R2/R5 chapter block the chapter key
+    # (rom.8). Read `kind` and start_key/end_key for the span.
     id: str
     book: str
     chapter: int | None = None
@@ -27,7 +28,8 @@ class Source(BaseModel):
     # Exact context block fed to the generator for this source
     # (`[i] 書卷 第N章 - 標題 (節)` + text). Only when include_context=true.
     context: str | None = None
-    # passage | chunk | verse
+    # passage | chunk | verse | chapter (a chapter block: the chapter's passages,
+    # each under its 【title】, as one source; see member_ids)
     kind: str | None = None
     # first and last verse key covered ("act.9.19b" marks a second half)
     start_key: str | None = None
@@ -37,6 +39,9 @@ class Source(BaseModel):
     # every passage the record spans, when more than one (a verse a mid-verse
     # heading cuts, or a verse range crossing passages)
     split_passage_ids: list[str] = []
+    # a chapter block's passages in canonical order (empty for every other kind);
+    # count a block through them wherever a source must be one passage (MRR, gold slots)
+    member_ids: list[str] = []
     build_id: str | None = None
 
 

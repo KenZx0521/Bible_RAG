@@ -204,7 +204,8 @@ flowchart TD
     RR --> FUSE["排序融合<br/>fused = 0.7·rerank + 0.3·weight"]
     FUSE --> PIN["chapter pin、book_anchor pin"]
     PIN --> TOPK["top-k（預設 5）"]
-    TOPK --> AUX["R4／R5：事件註冊表附加槽<br/>在 top-k 之後最多附加 1 段"]
+    TOPK --> BLK["R2／R5：章級 block（B-lite）<br/>觸發時整章排最前，其餘重排"]
+    BLK --> AUX["R4／R5：事件註冊表附加槽<br/>在 top-k 之後最多附加 1 段"]
     AUX --> GEN["LLM 依 context 生成"]
 ```
 
@@ -228,8 +229,8 @@ flowchart TD
 |---|---|---|
 | R1 | 有「書＋章＋節」 | `verse_direct`（PG 直查）＋所屬段落 `verse_owner` ＋ dense 補滿 k；查無結果時改走 R2 |
 | R5 | 有章引用且點名多卷 | 同下方 R5 |
-| R2 | 有「書＋章」、沒有節 | `sql_chapter`（0.9）＋ dense（0.6） |
-| R5 | 點名多卷，或意圖是 cross_reference | dense（0.65）＋只有章的引用時加 `sql_chapter`（0.85）＋ `book_anchor` ＋ `sql_supplement`（0.4） |
+| R2 | 有「書＋章」、沒有節 | `sql_chapter`（設定 0.9，實際 1.0）＋ dense（0.6）；再依 §6.4 換成章級 block |
+| R5 | 點名多卷，或意圖是 cross_reference | dense（0.65）＋只有章的引用時加 `sql_chapter`（設定 0.85，實際 1.0）＋ `book_anchor` ＋ `sql_supplement`（0.4）；再依 §6.4 換成章級 block |
 | R3 | 兩個以上人物 | dense（0.65，不拉平 dense 臂的先驗）＋ `book_anchor` ＋ `sql_supplement`（0.5） |
 | R4 | 事件觸發詞 | 同 R3，另外啟用事件附加槽 |
 | R6 | 地名 | 同 R3 |
@@ -240,6 +241,7 @@ flowchart TD
 - **策略標籤**：路由的 dense 臂標成 `hybrid_hybrid`（verse 命中 0.70、其他 0.65）；semantic_only 基線與 book_anchor 標成 `semantic`。兩者搜尋同一個 collection。`hybrid_hybrid` 只是沿用舊標籤，讓 E0a 能逐位比對，沒有 sparse。
 - **book_anchor**：問題點名書卷時，每卷各做一次限定該卷的 dense 搜尋。
 - **sql_supplement**：從候選池的前三章補抓同章的 passage。
+- **sql_chapter 的權重**：章查詢的候選本身帶 weight 1.0，`route_weights` 只會往上調，所以表中的 0.9／0.85 從未生效。
 
 ### 6.3 sparse／hybrid 已退役
 
@@ -252,11 +254,29 @@ flowchart TD
 
 - 融合開啟（`RAG_RANK_FUSION_ENABLED=true`）時，先對**整個候選池**重排，再依 `fused = (1−α)·rerank + α·weight`（α=0.3）排序。
 - 多卷問題每卷最多保留一個 book_anchor。
-- chapter pin：使用者點名「某書 N 章」時，保證該章至少 2 段留在 top-k。只有 weight ≥ 0.85 的候選合格；章範圍只取第一章。
+- chapter pin：使用者點名「某書 N 章」時，保證該章至少 2 段留在 top-k。只有 weight ≥ 0.85 的候選合格；章範圍只取第一章（R2／R5 的 ≤3 章範圍改由章級 block 處理，見下）。
 - book_anchor pin：單卷問題無條件 pin 該卷的段落；多卷問題只 pin 排名中缺席的書卷，每卷一段。最多 2 段。
 - R1 查到經節時，`verse_direct` 與所屬段落固定排在最前面，不重排、不 pin；其餘候選去掉和它們同節的之後才重排、融合、補滿 k。R1 查無結果改走 R2 時照 R2 排序。reranker 失敗時改依 weight 排序，錯誤記在 `strategy_errors`。
 - `route_weights` 只會把候選 weight 提高到該值；R3/R4/R6 的 dense 設 0.65，不再把 dense 臂 verse 命中 0.70／其他 0.65 的差距抹平（2026-10-29 前是 0.7）。
 - 舊的 EQ-pin、graph uncertainty pin、keyword-exact event pin 都隨 Neo4j 移除。
+
+**章級 block（B-lite，`utils/retrieval/chapter_blocks.py`，2026-10-29）**：只在 R2／R5。
+
+- 範圍：只有章的引用，且跨 ≤3 章（單章或「書 a-b 章」，b−a ≤ 2）。超過 3 章的範圍照舊（只 pin 第一章）。
+- 觸發：上面算完的 top-k 之後，只要有一個範圍內的引用是章範圍，或某個單章有段落不在 top-k，就觸發；沒觸發時 top-k 逐位不變。
+- 觸發後：範圍內每一章（最多 k 章）換成一個 block，排在最前，不重排、不 pin。其餘 k−（block 數）格從去掉這些章的候選池重新排序與 pin。block 的書卷算進多卷 book_anchor gate 的已出現書卷。
+- 單章內文超過 4,000 字時不做 block：它的段落以 `sql_chapter`、weight 1.0 進池，由 chapter pin 保 2 段。
+- 不做跨章 block（B2）：標頭只能寫一章。
+- block：
+  - id 是章 key（`rom.8`，`ragcommon.ids` 的 chapter）；
+  - `kind="chapter"`，`strategy="chapter_block"`；
+  - `member_ids` 依正典順序列出成員段；
+  - `start_key`／`end_key` 是首段起點到末段終點，可能是半節（`1co.12.31b`），所以不用 `vr:`；
+  - 內文是各段「【標題】＋經文」以空行接起；
+  - 標頭是 `[i] 書 第N章 (首節-末節節)`，不帶標題。
+- 觸發時 `strategies_used` 多一個 `chapter_block`。PG 查章失敗時記在 `strategy_errors["chapter_block"]`，top-k 不變。
+- R1 也讀只有章的引用（verse_retriever），但不經過這一步；semantic_only 也不經過。
+- 評估：slot 類指標（vrec、anchor coverage）照 start_key／end_key 對到整章，等於成員段聯集，量尺碼與 metric_version 都不變（仍是 4d0826bb8d14）。MRR、hit 等以 source 為單位的指標會把 block 當一段算，要先用 `member_ids` 拆回成員段。
 
 ### 6.5 事件註冊表附加槽
 
@@ -269,7 +289,7 @@ flowchart TD
 
 行為：
 
-- 觸發後，在 top-k **之後**附加最多 `RAG_EVENT_REGISTRY_SLOTS`（預設 1）個不在 top-k 的錨點 passage。
+- 觸發後，在 top-k **之後**附加最多 `RAG_EVENT_REGISTRY_SLOTS`（預設 1）個不在 top-k 的錨點 passage。章級 block 的成員段算在 top-k 內。
 - 附加段標成 `strategy="event_registry"`，沒有 rerank 或 fused 分數。
 - `retrieval_stats.event_registry_events` 回報觸發的事件 ev id。
 - top-k 本身與關閉附加槽時逐位相同。
@@ -279,7 +299,7 @@ flowchart TD
 
 ### 6.6 生成與其他端點
 
-- **生成**：top-k 段落排成 `[N] 書名 第N章 - 標題 (節)` 加經文。系統提示要求只依提供的段落作答、標出處、用繁體中文。無檢索結果時直接回覆找不到。
+- **生成**：top-k 段落排成 `[N] 書名 第N章 - 標題 (節)` 加經文；章級 block 是 `[N] 書名 第N章 (節)`，各段標題在內文裡。系統提示要求只依提供的段落作答、標出處、用繁體中文。無檢索結果時直接回覆找不到。
 - **R1 的詩篇篇題**：查詩篇首段（從第 1 節開始的段落）的經節時，`verse_direct` 的內文第一行是該篇篇題（`chapter_texts` 的 superscription），和首段段落本身的寫法一致；其他段落的經節不加。這只用於檢索 context，`/verse` 照舊不回篇題。
 - **生成後處理**：Ollama client 把字面印出的 `<0xNN>` byte token 串解回 UTF-8（gemma4 的 byte token 型別是 NORMAL）；`utils.citations` 把被寫成章號的段號改回該段的章（例如段 [3] 是約翰福音 14 章，「約翰福音 3:16」改成 14:16）。只有該書該章不在任何段落、卡片證據或問題中，且段 [N] 是同一卷、含那一節時才改。
 - **請求旗標**：
@@ -296,7 +316,7 @@ flowchart TD
 
 R1 與 R2 都保留這兩項：
 
-- 章範圍只取第一章；
+- 章範圍只取第一章（R2／R5 只剩超過 3 章的範圍如此，§6.4）；
 - 策略標籤 `hybrid_hybrid`。
 
 R1 另保留 legacy 凍結詞表，R2 已把它換成 PDF 版詞表（§6.1）。其餘每項要在後續 release 各自用 A/B 量測後再改。
