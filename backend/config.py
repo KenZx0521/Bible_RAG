@@ -39,8 +39,12 @@ class Settings(BaseSettings):
     qdrant_http_port: int = 6333
     qdrant_grpc_port: int = 6334
 
-    # LLM Provider: ollama | claude | openai | gemini
-    llm_provider: str = "ollama"
+    # LLM Provider: vllm | ollama | claude | openai | gemini
+    llm_provider: str = "vllm"
+
+    # vLLM (docker-compose.yml's vllm service; the model is its --served-model-name)
+    vllm_base_url: str = "http://localhost:8010"
+    vllm_model: str = "google/gemma-4-E4B-it"
 
     # Ollama
     ollama_base_url: str = "http://localhost:11434"

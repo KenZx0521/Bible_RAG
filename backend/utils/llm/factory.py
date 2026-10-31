@@ -15,7 +15,13 @@ def get_llm_client() -> LLMClient:
 
     provider = settings.llm_provider.lower()
 
-    if provider == "ollama":
+    if provider == "vllm":
+        from .vllm_client import VLLMClient
+        _instance = VLLMClient(
+            base_url=settings.vllm_base_url,
+            model=settings.vllm_model,
+        )
+    elif provider == "ollama":
         from .ollama_client import OllamaClient
         _instance = OllamaClient(
             base_url=settings.ollama_base_url,
@@ -41,6 +47,6 @@ def get_llm_client() -> LLMClient:
         )
     else:
         raise ValueError(f"Unknown LLM provider: {provider!r}. "
-                         f"Choose from: ollama, claude, openai, gemini")
+                         f"Choose from: vllm, ollama, claude, openai, gemini")
 
     return _instance

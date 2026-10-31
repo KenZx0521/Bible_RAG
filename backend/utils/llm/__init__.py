@@ -1,6 +1,6 @@
 """
 LLM client abstraction layer.
-Supports Ollama, Claude, OpenAI, and Gemini providers.
+Supports vLLM, Ollama, Claude, OpenAI, and Gemini providers.
 """
 
 from .base import LLMClient
