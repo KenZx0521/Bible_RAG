@@ -13,7 +13,7 @@ Kay：「接下來模型不想用 ollama 部署，改成用 vllm，模型一樣�
 | 取樣預設 | Modelfile：top_k 64、top_p 0.95 | `generation_config.json`：top_k 64、top_p 0.95（請求端 temperature 0.1 兩邊相同） |
 | 模板 | Ollama 內建 renderer（字串 content） | HF `chat_template.jinja`；`--chat-template-content-format string`（自動偵測成 openai 時，每個 system turn 結尾會多一個空白 token） |
 | 其他 | `<0xNN>` byte token 要在 client 端合併 | HF tokenizer 解碼，沒有 `<0xNN>`；`--language-model-only`（不載入視覺、音訊塔） |
-| GPU | 用到才載入，閒置 5 分鐘卸載（約 6–10 GB） | 常駐 `--gpu-memory-utilization 0.30`（EngineCore 約 25.6 GB；KV 350,654 tokens） |
+| GPU | 用到才載入，閒置 5 分鐘卸載（約 6–10 GB） | 常駐 `--gpu-memory-utilization 0.30`＝0.30 × 94.97 GiB＝28.49 GiB：權重 14.29 GiB（文字部分 7.5B 參數，BF16）、activation 峰值 1.6 GiB、CUDA graph 0.24 GiB，其餘 11.45 GiB 全數預配成 KV cache（567,055 tokens，約 21 KB／token，可同時容納 4.3 個 131k 請求）；nvidia-smi 看 EngineCore 約 29.3 GiB（加 CUDA context）。數字取自 2026-10-31 01:37 啟動的 log |
 
 程式：`backend/utils/llm/vllm_client.py`（新 provider `vllm`）、`factory.py`、`config.py`（預設 provider 改 `vllm`）；`evaluation/src/run_record.py` 的 generator 段在 vLLM 下記 `root`（snapshot 路徑，含 revision）、`max_model_len`、`server_version` 與 vLLM 容器的映像與啟動參數。r9 與 r8 的映像內容只差 `config.py`、`factory.py`、`llm/__init__.py`、`vllm_client.py` 與一個測試檔。
 
@@ -97,4 +97,4 @@ curl -s localhost:8000/api/v1/health    # handshake.ok 且 services.llm=true
 ## 4. 之後的評估
 
 - 10-31 以前的分數都是 Ollama Q8_0 generator 量的；r9 之後的分數不能直接和它們比 generator 相關的指標（coverage、faithfulness）。run_meta 的 `generator` 段會標出是哪一個。
-- ollama 容器仍在跑（compose 已把它放進 profile `ollama`，`up` 不會再啟動它），只是 prod 與 staging 都不再用到；`/mnt/ollama-data/ollama` 的模型沒刪。
+- ollama 容器 2026-10-31 已停（`docker stop`，沒刪：`ollama/ollama:latest` 只靠它引用；restart 是 unless-stopped，重開機也不會自己起來；compose 已把它放進 profile `ollama`，`up` 不會啟動它）；回滾 r8 時照 §3 先起 profile；`/mnt/ollama-data/ollama` 的模型沒刪。
