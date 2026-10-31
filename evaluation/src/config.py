@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     eval_ollama_model: str = "gemma3:4b"
 
+    # The backend generator's vLLM as the host reaches it (run_meta's generator probe)
+    vllm_base_url: str = "http://localhost:8010"
+
     # LLM generation settings (shared with backend via root .env)
     llm_max_tokens: int = 10000
 

@@ -14,11 +14,14 @@ needs to be audited later without docker inspect, container logs or git archaeol
   publishing BACKEND_URL's port (``container_from`` says which). No secret is ever recorded (:func:`safe_env`): names are matched
   case-insensitively (the backend's settings read them so), secret-shaped names are
   dropped, and URL credentials and secret-shaped values are masked.
-* ``generator``: the generator model, with its digest and size when it runs on Ollama.
+* ``generator``: the generator model, with its digest and size when it runs on Ollama, or,
+  on vLLM, the weights it serves (``root``: the HF snapshot path, so its revision), its
+  context length, the server version and the vLLM container's image and command line
+  (the flags that shape the output: dtype, reasoning parser, chat template format, ...).
 * ``backend_health``: the /health handshake summary (ok, strict, mismatches).
 
 Every probe is best effort: one that fails (docker missing, container gone, timeout,
-Ollama down or answering an odd body, not a git checkout, or any unexpected error)
+Ollama or vLLM down or answering an odd body, not a git checkout, or any unexpected error)
 records ``{"error": ...}``, logs a warning, and the collection goes on.
 """
 
@@ -48,7 +51,7 @@ EVAL_ROOT = Path(__file__).resolve().parent.parent
 
 # Backend env recorded by name (compared upper-cased). Reviewed by hand: none holds a secret.
 ENV_ALLOWLIST = frozenset({
-    "LLM_PROVIDER", "OLLAMA_MODEL", "CLAUDE_MODEL", "OPENAI_MODEL", "GEMINI_MODEL",
+    "LLM_PROVIDER", "VLLM_MODEL", "OLLAMA_MODEL", "CLAUDE_MODEL", "OPENAI_MODEL", "GEMINI_MODEL",
     "LLM_TEMPERATURE", "LLM_MAX_TOKENS", "RAG_RANK_FUSION_ALPHA", "RAG_USE_GRAPH",
     "RAG_GRAPH_STRATEGIES", "RAG_ENTITY_QUERY_TOP_K", "STRICT_BUILD_CHECK",
     # retrieval switches the README's ablation tables name
@@ -68,7 +71,7 @@ _OPAQUE_RUN = re.compile(r"[A-Za-z0-9+=]{24,}")
 MASK = "***"
 # BACKEND_URL hosts that mean "a container publishing this port here"
 _LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "0.0.0.0"})
-_MODEL_VAR = {"ollama": "OLLAMA_MODEL", "claude": "CLAUDE_MODEL",
+_MODEL_VAR = {"vllm": "VLLM_MODEL", "ollama": "OLLAMA_MODEL", "claude": "CLAUDE_MODEL",
               "openai": "OPENAI_MODEL", "gemini": "GEMINI_MODEL"}
 
 
@@ -237,20 +240,86 @@ def _ollama_model(model: str) -> dict[str, Any]:
     return _error("ollama model", LookupError(f"{model} is not among {url}'s models"))
 
 
+def _vllm_model(model: str) -> dict[str, Any]:
+    """Weights path and context length of ``model`` as the evaluation's vLLM (settings.vllm_base_url) serves it."""
+    url = f"{settings.vllm_base_url}/v1/models"
+    try:
+        served = _get_json(url, PROBE_TIMEOUT_S)
+    except Exception as exc:  # noqa: BLE001 - vLLM down: recorded
+        return _error(url, exc)
+    models = served.get("data") if isinstance(served, Mapping) else None
+    if not isinstance(models, list):
+        return _error(url, TypeError(f"not a /v1/models body: {str(served)[:200]}"))
+    for entry in models:
+        if isinstance(entry, Mapping) and entry.get("id") == model:
+            return {"root": entry.get("root"), "max_model_len": entry.get("max_model_len"),
+                    **_vllm_server()}
+    return _error("vllm model", LookupError(f"{model} is not among {url}'s models"))
+
+
+def _secret_flag(arg: str) -> bool:
+    name = arg.lstrip("-").upper().replace("-", "_")
+    return arg.startswith("-") and any(marker in name for marker in _SECRET_MARKERS)
+
+
+def safe_args(args: Sequence[str]) -> list[str]:
+    """A command line as recordable: the value of a secret-shaped flag (``--api-key K``,
+    ``--hf-token=K``) masked, URL credentials masked. Other values stay whole: they are the
+    flags and paths being recorded (an opaque-looking snapshot revision is no secret)."""
+    kept, hide_next = [], False
+    for arg in args:
+        flag, eq, _ = arg.partition("=")
+        if hide_next:
+            kept.append(MASK)
+            hide_next = False
+        elif _secret_flag(flag):
+            kept.append(f"{flag}={MASK}" if eq else arg)
+            hide_next = not eq
+        else:
+            kept.append(_URL_CREDENTIALS.sub(rf"\1{MASK}@", arg))
+    return kept
+
+
+def _vllm_server() -> dict[str, Any]:
+    """The vLLM server's version (GET /version) and its container (the one publishing
+    settings.vllm_base_url's port): image, image id and command line."""
+    url = f"{settings.vllm_base_url}/version"
+    try:
+        version = _get_json(url, PROBE_TIMEOUT_S)
+        record: dict[str, Any] = {"server_version": version.get("version")}
+    except Exception as exc:  # noqa: BLE001 - vLLM down or an odd body: recorded
+        record = {"server_version": _error(url, exc)}
+    try:
+        name = backend_container(settings.vllm_base_url)
+        info = json.loads(_run(["docker", "inspect", "--type", "container", name], PROBE_TIMEOUT_S))[0]
+        config = info.get("Config") or {}
+        record["container"] = {"name": name, "image": config.get("Image"), "image_id": info.get("Image"),
+                               "args": safe_args(config.get("Cmd") or [])}
+    except Exception as exc:  # noqa: BLE001 - docker missing / no container / timeout: recorded
+        record["container"] = _error(f"vllm container ({settings.vllm_base_url})", exc)
+    return record
+
+
+# providers whose server is asked what it serves
+_MODEL_PROBE = {"ollama": _ollama_model, "vllm": _vllm_model}
+
+
 def generator_info(runtime: Mapping[str, Any]) -> dict[str, Any]:
-    """The backend's generator (provider, model; digest and size on Ollama), from its env."""
+    """The backend's generator (provider, model; what Ollama or vLLM serves), from its env."""
     env = runtime.get("env")
     if not isinstance(env, Mapping):
         return {"error": f"backend runtime unknown ({runtime.get('error', 'no env')})"}
     provider = env.get("LLM_PROVIDER")
     if not provider:
         return {"error": "LLM_PROVIDER is not in the backend env"}
-    model = env.get(_MODEL_VAR.get(provider.lower(), ""))
-    if provider.lower() != "ollama":
+    model_var = _MODEL_VAR.get(provider.lower(), "")
+    model = env.get(model_var)
+    probe = _MODEL_PROBE.get(provider.lower())
+    if probe is None:
         return {"provider": provider, "model": model}
     if not model:
-        return {"provider": provider, "error": "OLLAMA_MODEL is not in the backend env"}
-    return {"provider": provider, "model": model, **_ollama_model(model)}
+        return {"provider": provider, "error": f"{model_var} is not in the backend env"}
+    return {"provider": provider, "model": model, **probe(model)}
 
 
 # --- health and the record ----------------------------------------------------------------

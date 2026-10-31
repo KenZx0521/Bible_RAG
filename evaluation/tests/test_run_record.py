@@ -216,6 +216,94 @@ def test_a_generator_that_cannot_be_identified_is_an_error_entry(monkeypatch, ru
     assert "error" in rr.generator_info(runtime)
 
 
+VLLM_ROOT = "/root/.cache/huggingface/hub/models--google--gemma-4-E4B-it/snapshots/ee0e"
+SERVED = {"object": "list", "data": [
+    {"id": "google/gemma-4-31B-it", "root": "/elsewhere", "max_model_len": 8192},
+    {"id": "google/gemma-4-E4B-it", "root": VLLM_ROOT, "max_model_len": 131072}]}
+VLLM_RUNTIME = {"env": {"LLM_PROVIDER": "vllm", "VLLM_MODEL": "google/gemma-4-E4B-it"}}
+
+
+VLLM_CMD = [VLLM_ROOT, "--served-model-name", "google/gemma-4-E4B-it", "--reasoning-parser",
+            "gemma4", "--api-key", "sk-vllm-secret", "--hf-token=hf_abcdefghijklmnopqrstuvwxyz12"]
+VLLM_INSPECT = [{"Config": {"Image": "vllm/vllm-openai:nightly-8e2beaa3bff595577a069d49d96bde9074294ec2",
+                            "Cmd": VLLM_CMD}, "Image": "sha256:vimg"}]
+
+
+def _fake_vllm(monkeypatch, models=SERVED, version=None, seen=None):
+    def get(url, timeout):
+        if seen is not None:
+            seen.append(url)
+        body = version if url.endswith("/version") else models
+        if isinstance(body, BaseException):
+            raise body
+        return body
+    monkeypatch.setattr(rr, "_get_json", get)
+    monkeypatch.setattr(rr.settings, "vllm_base_url", "http://localhost:8010")
+
+
+def test_a_vllm_generator_records_the_served_weights_the_server_and_its_flags(monkeypatch):
+    seen, calls = [], []
+    _fake_vllm(monkeypatch, version={"version": "0.32.1rc1.dev197+g8e2beaa3b"}, seen=seen)
+    _fake_run(monkeypatch, {"docker ps": "bible_rag_vllm\n", "docker": json.dumps(VLLM_INSPECT)}, calls)
+
+    gen = rr.generator_info(VLLM_RUNTIME)
+
+    assert gen == {
+        "provider": "vllm", "model": "google/gemma-4-E4B-it", "root": VLLM_ROOT, "max_model_len": 131072,
+        "server_version": "0.32.1rc1.dev197+g8e2beaa3b",
+        "container": {"name": "bible_rag_vllm", "image": VLLM_INSPECT[0]["Config"]["Image"],
+                      "image_id": "sha256:vimg",
+                      "args": [VLLM_ROOT, "--served-model-name", "google/gemma-4-E4B-it",
+                               "--reasoning-parser", "gemma4", "--api-key", "***", "--hf-token=***"]}}
+    assert seen == ["http://localhost:8010/v1/models", "http://localhost:8010/version"]
+    assert calls[0][0] == ["docker", "ps", "--filter", "publish=8010", "--format", "{{.Names}}"]
+    assert "sk-vllm-secret" not in json.dumps(gen) and "hf_abc" not in json.dumps(gen)
+
+
+def test_a_vllm_server_probe_that_fails_is_an_error_entry_beside_the_weights(monkeypatch):
+    _fake_vllm(monkeypatch, version=OSError("refused"))
+    _fake_run(monkeypatch, {"docker ps": ""})
+
+    gen = rr.generator_info(VLLM_RUNTIME)
+
+    assert gen["root"] == VLLM_ROOT
+    assert "error" in gen["server_version"] and "error" in gen["container"]
+
+
+@pytest.mark.parametrize("args, kept", [
+    (["--api-key", "k1", "--port", "8000"], ["--api-key", "***", "--port", "8000"]),
+    (["--API_KEY=k1"], ["--API_KEY=***"]),
+    (["--hf-token"], ["--hf-token"]),
+    (["--hf-overrides", "https://u:pw@host/x"], ["--hf-overrides", "https://***@host/x"]),
+    (["/root/.cache/huggingface/hub/models--g--m/snapshots/ee0ef6023621cff504d758262d4e04895a5af4a2"],
+     ["/root/.cache/huggingface/hub/models--g--m/snapshots/ee0ef6023621cff504d758262d4e04895a5af4a2"]),
+], ids=["flag_value", "flag_equals", "trailing_flag", "url_credentials", "revision_kept"])
+def test_safe_args_masks_secret_flag_values_and_url_credentials_only(args, kept):
+    assert rr.safe_args(args) == kept
+
+
+@pytest.mark.parametrize("runtime, served", [
+    ({"env": {"LLM_PROVIDER": "vllm", "VLLM_MODEL": "google/gemma-4-12B-it"}}, SERVED),
+    (VLLM_RUNTIME, OSError("refused")),
+    ({"env": {"LLM_PROVIDER": "vllm"}}, SERVED),
+    (VLLM_RUNTIME, {"models": []}),
+    (VLLM_RUNTIME, {"data": [None, "x"]}),
+    (VLLM_RUNTIME, []),
+], ids=["model_not_served", "vllm_down", "no_model_var", "ollama_body", "entries_not_objects",
+        "list"])
+def test_a_vllm_generator_that_cannot_be_identified_is_an_error_entry(monkeypatch, runtime, served):
+    _fake_tags(monkeypatch, served)
+
+    gen = rr.generator_info(runtime)
+
+    assert gen["provider"] == "vllm" and "error" in gen and "root" not in gen
+
+
+def test_the_vllm_model_variable_is_recorded():
+    assert rr.safe_env(["VLLM_MODEL=google/gemma-4-E4B-it"]) == {
+        "VLLM_MODEL": "google/gemma-4-E4B-it"}
+
+
 def test_an_api_generator_is_named_without_asking_ollama(monkeypatch):
     _fake_tags(monkeypatch, AssertionError("ollama must not be asked"))
 
