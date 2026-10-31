@@ -9,7 +9,7 @@ services:
   # a new tag with `docker build --build-context uvcache=$HOME/.cache/uv-bible-rag-backend
   # -t bible_rag-backend:<tag> .`, promote it, then point `image` at it.
   backend:
-    image: bible_rag-backend:r8
+    image: bible_rag-backend:r9
     pull_policy: never
     container_name: bible_rag_backend
     restart: unless-stopped
@@ -21,6 +21,11 @@ services:
       # Override hosts to use Docker service names
       POSTGRES_HOST: postgres
       QDRANT_HOST: qdrant
+      # The generator pairs with the image: r9 on serves through the vllm service
+      # (LLM_PROVIDER vllm); r8 and older only know ollama (and need the ollama profile up).
+      LLM_PROVIDER: vllm
+      VLLM_BASE_URL: http://vllm:8000
+      VLLM_MODEL: ${VLLM_MODEL:-google/gemma-4-E4B-it}
       OLLAMA_BASE_URL: http://ollama:11434
       # The build comes from rag_meta.serving's row for RAG_ENV (design §7.8);
       # its contract files from the read-only mount below.
@@ -34,7 +39,7 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_healthy
-      ollama:
+      vllm:
         condition: service_healthy
     volumes:
       - model_cache:/root/.cache
@@ -93,8 +98,72 @@ services:
       timeout: 5s
       retries: 5
 
-  # Ollama LLM inference server
+  # vLLM serving the generator: gemma-4-E4B-it, the model Ollama served as
+  # gemma4:e4b-it-q8_0, here as Google's BF16 safetensors (not the Q8_0 GGUF).
+  # Weights load from the shared HF cache only (`hf download google/gemma-4-E4B-it
+  # --revision <sha>` with HF_HOME=/mnt/ollama-data/huggingface); serving the
+  # snapshot path makes /v1/models' `root` name the revision run_record records.
+  # Thinking stays on as under Ollama: the backend asks for it per request and the
+  # gemma4 reasoning parser keeps the thought out of `content`.
+  vllm:
+    # The nightly ~/bifrost's vllm-jev also runs (commit 8e2beaa3, vLLM 0.32.1rc1).
+    image: vllm/vllm-openai:nightly-8e2beaa3bff595577a069d49d96bde9074294ec2
+    pull_policy: never
+    container_name: bible_rag_vllm
+    restart: unless-stopped
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "127.0.0.1:${VLLM_PORT:-8010}:8000"
+    environment:
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      VLLM_NO_USAGE_STATS: "1"
+    volumes:
+      - ${HF_HOME_HOST:-/mnt/ollama-data/huggingface}:/root/.cache/huggingface:ro
+      # torch.compile / CUDA graph cache: later starts skip the compile
+      - vllm_cache:/root/.cache/vllm
+    command:
+      - /root/.cache/huggingface/hub/models--google--gemma-4-E4B-it/snapshots/ee0ef6023621cff504d758262d4e04895a5af4a2
+      - --served-model-name
+      - ${VLLM_MODEL:-google/gemma-4-E4B-it}
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      # The model's full context, as Ollama ran it (`ollama ps`: 131072)
+      - --max-model-len
+      - "131072"
+      # The backend only sends text: the vision and audio towers are not loaded
+      - --language-model-only
+      - --reasoning-parser
+      - gemma4
+      # Render string content as strings: detected as "openai", every message becomes
+      # [{type: text}] and the template's list branch ends each system turn with a space
+      - --chat-template-content-format
+      - string
+      # The GPU is shared (~/bifrost's vLLMs, embedding jobs): BF16 weights ~16 GB
+      # plus KV cache. vLLM holds this much for as long as it runs.
+      - --gpu-memory-utilization
+      - "${VLLM_GPU_MEMORY_UTILIZATION:-0.30}"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      # The first start compiles (cached in vllm_cache afterwards)
+      start_period: 600s
+
+  # Ollama: kept only so the backend can roll back to r8 (LLM_PROVIDER=ollama).
+  # Not started by `up`; `docker compose --profile ollama up -d ollama` brings it back.
   ollama:
+    profiles: ["ollama"]
     image: ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
@@ -124,3 +193,4 @@ volumes:
   postgres_data:
   qdrant_data:
   model_cache:
+  vllm_cache:

@@ -19,7 +19,7 @@
 - **信號驅動路由**：R1–R6 加 fallback。路由詞表由 PDF 的名稱層、事件註冊表與查詢別名編出（R2）。
 - **檢索**：BGE-M3 dense 檢索，bge-reranker-v2-m3 重排，排序融合 α=0.3，加 chapter 與 book_anchor 兩種 pin。
 - **事件註冊表附加槽**：R4、R5 的問題命中事件觸發詞時，在 top-k 之後附加 1 段人工整理的事件錨點。
-- **多 LLM**：Ollama、Claude、OpenAI、Gemini。
+- **多 LLM**：vLLM、Ollama、Claude、OpenAI、Gemini。
 - **評估**：500 題五類型題庫（GT v1／v2），每份結果記錄 build、GT 版本與編碼指紋。
 
 服務端不使用 Neo4j，也沒有 sparse／hybrid 檢索；知識圖譜只到 L0 名稱與 L1 事件（見 [ARCHITECTURE §7](docs/ARCHITECTURE.md#7-kg-的範圍)）。
@@ -64,13 +64,13 @@ rag_meta.serving（env → build_id, 映像）─→ backend 啟動時讀取並�
 | 向量搜尋 | Qdrant v1.13.2（dense） |
 | 嵌入模型 | BAAI/bge-m3（1024 維） |
 | 重排序 | BAAI/bge-reranker-v2-m3 |
-| 生成模型 | Ollama（現役 gemma4:e4b-it-q8_0）／Claude／OpenAI／Gemini |
+| 生成模型 | vLLM（google/gemma-4-E4B-it，BF16；映像 r9 起）／Ollama（r8 以前：gemma4:e4b-it-q8_0）／Claude／OpenAI／Gemini |
 | 套件管理 | uv（`backend/`、`scripts/`、`evaluation/` 各一套） |
 | 容器化 | Docker Compose |
 
 ## Prerequisites
 
-- Docker 與 Docker Compose。compose 的 `ollama` 服務要用 NVIDIA GPU。
+- Docker 與 Docker Compose。compose 的 `vllm` 服務要用 NVIDIA GPU，權重要先下載到 `/mnt/ollama-data/huggingface`（見下）。
 - 一個已載入並 promote 的 build：
   - store（`RAG_STORE`，預設 `/mnt/ollama-data/bible_rag_store`）有 `contracts/{build_id}/`；
   - PG 與 Qdrant 有該 build 的資料；
@@ -119,7 +119,8 @@ docker compose up -d
 | backend | 8000 | FastAPI；契約目錄由 `${RAG_STORE}/contracts` 唯讀掛到 `/contracts` |
 | postgres | 5432 | PostgreSQL 15（pgvector 映像） |
 | qdrant | 6333／6334 | 向量資料庫 |
-| ollama | 11434 | 本地 LLM（GPU） |
+| vllm | 127.0.0.1:8010 | 本地 LLM（GPU）：vLLM 服務 google/gemma-4-E4B-it |
+| ollama | 11434 | 只留給回滾 r8；在 profile `ollama` 裡，`up` 不會啟動 |
 
 compose 已沒有 Neo4j；legacy 資料與 Neo4j 在 R1 上線後（2026-10-08）刪除，備份在 `/mnt/ollama-data/bible_rag_bak/20261007/`。
 
@@ -128,11 +129,14 @@ compose 已沒有 Neo4j；legacy 資料與 Neo4j 在 R1 上線後（2026-10-08�
 - 從 `rag_meta.builds` 取得該 build 的 PG schema、Qdrant collection 與契約目錄，然後握手。
 - 任一項不符時，`/api/v1/health` 回 503 並列出不符項。`STRICT_BUILD_CHECK=true`（預設）時啟動失敗。
 
-使用本地 LLM 時，在 ollama 服務拉好 `.env` 的 `OLLAMA_MODEL`：
+vllm 服務離線載入權重（`HF_HUB_OFFLINE=1`），revision 釘在 `docker-compose.yml`。第一次先下載到共用 HF 快取：
 
 ```bash
-docker exec ollama ollama pull gemma4:e4b-it-q8_0
+HF_HOME=/mnt/ollama-data/huggingface hf download google/gemma-4-E4B-it \
+  --revision ee0ef6023621cff504d758262d4e04895a5af4a2
 ```
+
+vllm 啟動時佔住 `--gpu-memory-utilization`（預設 0.30，約 29 GB）的 GPU 記憶體，直到停止；同一張卡上其他 vLLM 要把自己的比例調到不超過剩下的部分。
 
 ### 4. 確認服務健康
 
@@ -182,7 +186,7 @@ Bible_RAG/
 ├── figures/                    # 論文圖
 ├── ground_truth.json           # GT v1：500 題（5 類型 × 100）
 ├── ground_truth.v2.json        # GT v2：同 500 題，引用對齊重建後的文字層
-├── docker-compose.yml          # backend（prod，已建好的映像）、postgres、qdrant、ollama
+├── docker-compose.yml          # backend（prod，已建好的映像）、postgres、qdrant、vllm（ollama 在 profile 裡）
 ├── docker-compose.staging.yml  # staging backend（R1：:8002）
 ├── Dockerfile                  # backend 映像
 └── .env.example                # 環境變數範例
@@ -301,7 +305,9 @@ Bible_RAG/
 
 | 變數 | 說明 | 預設值 |
 |------|------|--------|
-| `LLM_PROVIDER` | `ollama`／`claude`／`openai`／`gemini` | `ollama` |
+| `LLM_PROVIDER` | `vllm`／`ollama`／`claude`／`openai`／`gemini`（compose 的 backend 由 `environment` 指定） | `vllm` |
+| `VLLM_BASE_URL` | vLLM 位址（compose 覆寫為 `http://vllm:8000`） | `http://localhost:8010` |
+| `VLLM_MODEL` | vllm 服務的 `--served-model-name` | `google/gemma-4-E4B-it` |
 | `OLLAMA_BASE_URL` | Ollama 位址（compose 覆寫為 `http://ollama:11434`） | `http://localhost:11434` |
 | `OLLAMA_MODEL` | Ollama 模型（`.env.example` 為 `gemma4:e4b-it-q8_0`） | `gemma3:4b` |
 | `ANTHROPIC_API_KEY`／`CLAUDE_MODEL` | Claude | —／`claude-haiku-4-5` |

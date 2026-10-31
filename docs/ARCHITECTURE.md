@@ -63,7 +63,7 @@ flowchart LR
 | 向量檢索 | Qdrant v1.13.2，只有 dense |
 | 嵌入 | BAAI/bge-m3，1024 維 |
 | 重排 | BAAI/bge-reranker-v2-m3（cross-encoder） |
-| 生成 LLM | 可切換：Ollama、Claude、OpenAI、Gemini；live `.env` 用 Ollama `gemma4:e4b-it-q8_0` |
+| 生成 LLM | 可切換：vLLM、Ollama、Claude、OpenAI、Gemini；映像 r9 起用 vLLM 服務 `google/gemma-4-E4B-it`（BF16，HF revision `ee0ef602`，thinking 開），r8 以前是 Ollama `gemma4:e4b-it-q8_0` |
 | Backend | FastAPI + uvicorn，Docker 容器 |
 | 評估 | `evaluation/`：檢索指標、faithfulness、coverage、RAGAS |
 
@@ -301,7 +301,7 @@ flowchart TD
 
 - **生成**：top-k 段落排成 `[N] 書名 第N章 - 標題 (節)` 加經文；章級 block 是 `[N] 書名 第N章 (節)`，各段標題在內文裡。系統提示要求只依提供的段落作答、標出處、用繁體中文。無檢索結果時直接回覆找不到。
 - **R1 的詩篇篇題**：查詩篇首段（從第 1 節開始的段落）的經節時，`verse_direct` 的內文第一行是該篇篇題（`chapter_texts` 的 superscription），和首段段落本身的寫法一致；其他段落的經節不加。這只用於檢索 context，`/verse` 照舊不回篇題。
-- **生成後處理**：Ollama client 把字面印出的 `<0xNN>` byte token 串解回 UTF-8（gemma4 的 byte token 型別是 NORMAL）；`utils.citations` 把被寫成章號的段號改回該段的章（例如段 [3] 是約翰福音 14 章，「約翰福音 3:16」改成 14:16）。只有該書該章不在任何段落、卡片證據或問題中，且段 [N] 是同一卷、含那一節時才改。
+- **生成後處理**：Ollama client 把字面印出的 `<0xNN>` byte token 串解回 UTF-8（gemma4 GGUF 的 byte token 型別是 NORMAL；vLLM 用 HF tokenizer 解碼，沒有這個問題）；`utils.citations` 把被寫成章號的段號改回該段的章（例如段 [3] 是約翰福音 14 章，「約翰福音 3:16」改成 14:16）。只有該書該章不在任何段落、卡片證據或問題中，且段 [N] 是同一卷、含那一節時才改。
 - **請求旗標**：
   - `retrieval_only`：跳過生成；
   - `include_context`：每個 source 附上生成器看到的區塊；
@@ -354,7 +354,7 @@ flowchart TB
         BE["backend :8000<br/>映像內含程式（沒有 code volume）"]
         PG[("postgres<br/>pgvector/pgvector:pg15 :5432")]
         QD[("qdrant v1.13.2<br/>:6333/:6334")]
-        OL["ollama :11434（GPU）"]
+        OL["vllm :8000（GPU）<br/>gemma-4-E4B-it"]
     end
     STORE["store contracts/<br/>唯讀掛載到 /contracts"] --> BE
     BE --> PG & QD & OL
