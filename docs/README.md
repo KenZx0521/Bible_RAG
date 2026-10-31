@@ -14,6 +14,7 @@
 
 | 紀錄 | 內容 |
 |------|------|
+| [records/2026-10-31_brute_force_audit.md](records/2026-10-31_brute_force_audit.md) | 架構暴力解稽核：四處暴力解（事件附加槽、book_anchor 釘選、B-lite 單章分支、2-C 段號改寫）、Δ 的效度問題、建議 |
 | [records/2026-10-08_rebuild_handoff.md](records/2026-10-08_rebuild_handoff.md) | 分層重建的交接：Kay 的決定、資料與服務現況、已驗證結果、下一步、陷阱。新 session 從這裡開始 |
 | [records/2026-10-07_e0_notes.md](records/2026-10-07_e0_notes.md) | E0a（sparse 退役）與 E0b（查詢端 tokenizer 修正） |
 | [records/2026-10-03_graph_auxiliary_review.md](records/2026-10-03_graph_auxiliary_review.md) | 圖譜輔助化審查：事件註冊表附加槽的依據 |
