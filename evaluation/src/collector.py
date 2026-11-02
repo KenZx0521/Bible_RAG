@@ -18,6 +18,7 @@ import asyncio
 import json
 import logging
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -33,7 +34,7 @@ from .context_blocks import (
 )
 from .graph_usage import report_lines, summarize
 from .models import EvalSample, GroundTruthItem, MetricResult
-from .provenance import Provenance, write_run_meta
+from .provenance import RUN_META, Provenance, write_run_meta
 from .rag_client import NO_KEEPALIVE, parse_sources, query_rag, response_audit_fields
 from .content_fetcher import get_pool, fetch_context_blocks
 from .run_record import (CollectionInputs, collection_mode, finish_record, now_iso,
@@ -50,10 +51,23 @@ def _raw_responses_path() -> Path:
     return settings.results_dir / "raw_responses.json"
 
 
-def _clear_previous_results() -> None:
-    """Delete previous run's checkpoint so we always start fresh.
+def _move_aside(path: Path) -> None:
+    """Rename a previous run's file beside the new one, named by when it was written."""
+    stamp = datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y%m%dT%H%M%S")
+    target = path.with_name(f"{path.stem}.before_{stamp}{path.suffix}")
+    n = 1
+    while target.exists():
+        target = path.with_name(f"{path.stem}.before_{stamp}_{n}{path.suffix}")
+        n += 1
+    path.rename(target)
+    logger.info("Kept the previous %s as %s", path.name, target.name)
 
-    Refuses to delete an archive written before per-strategy graph gating
+
+def _clear_previous_results() -> None:
+    """Move the previous run's checkpoint and run_meta aside so we always start fresh.
+
+    Results are untracked, so nothing else would keep them. Refuses to touch an archive written
+    before per-strategy graph gating
     (records carry no `graph_strategies`): those are the Round 3 run-of-record
     files, and the graph side no longer means every graph strategy, so a rerun would
     silently replace them with a different condition. Move or commit it first.
@@ -70,8 +84,10 @@ def _clear_previous_results() -> None:
             f"{path} predates graph_strategies (pre-2026-10 archive, every graph "
             "strategy on); move or commit it before collecting into this directory"
         )
-    path.unlink()
-    logger.info("Cleared previous raw_responses.json at %s", path)
+    _move_aside(path)
+    meta = settings.results_dir / RUN_META
+    if meta.exists():
+        _move_aside(meta)
 
 
 def _save_responses(collected: list[dict]) -> None:

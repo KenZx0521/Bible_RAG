@@ -76,6 +76,27 @@ def _has_tz(text):
     return datetime.fromisoformat(text).tzinfo is not None
 
 
+def test_a_new_collection_keeps_the_previous_run_beside_it(monkeypatch, tmp_path):
+    """Results are untracked, and a raw deleted once cost the 10-26 arm its checkpoint."""
+    async def query(*args, **kwargs):
+        return _answer()
+
+    _offline(monkeypatch, tmp_path, query)
+    (tmp_path / "raw_responses.json").write_text(json.dumps([
+        {"question_id": "OLD", "graph_strategies": ["event_registry"]}]), encoding="utf-8")
+    (tmp_path / "run_meta.json").write_text('{"old": true}', encoding="utf-8")
+
+    _collect(list(GT.items[:1]), use_graph=True)
+    _collect(list(GT.items[:1]), use_graph=True)
+
+    assert _raw(tmp_path)[0]["question_id"] == GT.items[0].question_id
+    kept = sorted(p.name for p in tmp_path.glob("raw_responses.before_*.json"))
+    assert len(kept) == 2
+    assert any(json.loads((tmp_path / name).read_text(encoding="utf-8"))[0]["question_id"] == "OLD"
+               for name in kept)
+    assert len(list(tmp_path.glob("run_meta.before_*.json"))) == 1
+
+
 # --- A1: per-question raw fields -----------------------------------------------------------
 
 def test_each_record_keeps_intent_stats_mode_time_and_latency(monkeypatch, tmp_path):

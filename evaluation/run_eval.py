@@ -126,7 +126,8 @@ def _parse_args() -> argparse.Namespace:
                              "(relative paths resolve under evaluation/)")
     parser.add_argument("--overwrite", action="store_true",
                         help="with --results-dir: collect even though it already holds "
-                             "raw_responses.json (replaced)")
+                             "raw_responses.json (kept beside the new one as "
+                             "raw_responses.before_<time>.json)")
     args = parser.parse_args()
     _check_args(parser, args)
     return args

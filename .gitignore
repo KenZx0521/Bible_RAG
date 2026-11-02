@@ -30,3 +30,8 @@ paper/**/*.log
 paper/**/*.out
 paper/**/*.toc
 paper/**/*.synctex.gz
+
+# Evaluation output (results_quick stays tracked)
+evaluation/results/
+evaluation/results_*/
+!evaluation/results_quick/
