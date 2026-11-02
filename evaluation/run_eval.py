@@ -3,21 +3,25 @@
 Bible RAG Evaluation CLI
 
 Usage:
-    uv run python run_eval.py                 # Full pipeline (uses backend RAG_USE_GRAPH)
+    uv run python run_eval.py                 # Full pipeline on the main architecture
     uv run python run_eval.py --collect-only  # Only collect RAG responses + inline eval
     uv run python run_eval.py --eval-only     # Only run batch evaluation (needs responses)
     uv run python run_eval.py --eval-only --rebuild-contexts  # legacy checkpoint: rebuild
                                               # generator-format judge contexts from PostgreSQL
     uv run python run_eval.py --visualize-only # Only generate dashboard
 
-    Graph-retrieval A/B (backend does NOT need restart between runs):
-        uv run python run_eval.py --graph       # results_graph/
-        uv run python run_eval.py --no-graph    # results_no_graph/
+    Arms (backend does NOT need restart between runs):
+        uv run python run_eval.py               # results/          the main architecture
+        uv run python run_eval.py --no-graph    # results_no_graph/ main without its graph side
         uv run python run_eval.py --semantic    # results_semantic/ (pure semantic baseline)
 
-    --graph runs only the backend's RAG_GRAPH_STRATEGIES; the R1/R2 backend has
-    one graph strategy, the event_registry auxiliary lane (default). Round 3's
-    archives (archive/round3_2026-09/) ran the legacy strategies (graph_event, 'all', ...), which
+    The main architecture runs the backend's RAG_GRAPH_STRATEGIES. Today that is one
+    strategy, the event_registry auxiliary lane (default), plus the two generation-side
+    cards, which walk an ordered chain when their question types fire (on none of the 500 GT
+    questions). Retrieval walks no graph since the 2026-10-08 R1 backend, so on the 500
+    questions a main-vs-semantic gap is a routing and lookup gap, not a graph gain. Each
+    question's graph_trace and the run's total in run_meta.json say what ran. Round 3's archives
+    (archive/round3_2026-09/) ran the legacy strategies (graph_event, 'all', ...), which
     that backend rejects; the legacy image alone reproduces them.
     A pre-2026-10 archive in the output dir is never overwritten: move it first.
 
@@ -75,18 +79,19 @@ def _setup_logging() -> None:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Bible RAG Evaluation System")
+    # allow_abbrev off: "--graph" (removed) would otherwise expand to --graph-strategies with
+    # no value, which silently turns every graph strategy off.
+    parser = argparse.ArgumentParser(description="Bible RAG Evaluation System", allow_abbrev=False)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--collect-only", action="store_true", help="Only collect RAG responses + inline eval")
     group.add_argument("--eval-only", action="store_true", help="Only run batch evaluation metrics")
     group.add_argument("--visualize-only", action="store_true", help="Only generate dashboard")
     parser.add_argument(
-        "--graph",
-        action=argparse.BooleanOptionalAction,
-        default=None,
-        help="Enable (--graph) or disable (--no-graph) graph retrieval for this run. "
-             "Default: use backend RAG_USE_GRAPH env. Also routes output to "
-             "results_graph/ or results_no_graph/ (vs plain results/).",
+        "--no-graph",
+        dest="use_graph",
+        action="store_false",
+        help="Run the main architecture without its graph side (the same flow, for attribution). "
+             "Outputs to results_no_graph/. No flag = the main architecture, in results/.",
     )
     parser.add_argument(
         "--semantic",
@@ -131,8 +136,8 @@ def _check_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> No
     """Refuse flag combinations that do not add up; read the ids file into ``args.ids``."""
     from src.id_selection import IdsFileError, read_ids_file
 
-    if args.semantic and args.graph is not None:
-        parser.error("--semantic cannot be combined with --graph / --no-graph")
+    if args.semantic and not args.use_graph:
+        parser.error("--semantic cannot be combined with --no-graph")
     if args.rebuild_contexts and not args.eval_only:
         parser.error("--rebuild-contexts requires --eval-only")
     if args.ids_file is not None and (args.eval_only or args.visualize_only):
@@ -140,6 +145,9 @@ def _check_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> No
                      "with --eval-only / --visualize-only")
     if args.overwrite and args.results_dir is None:
         parser.error("--overwrite requires --results-dir")
+    if args.results_dir is None and (args.ids_file is not None or args.graph_strategies is not None):
+        parser.error("--ids-file / --graph-strategies collect a subset or variant, which would "
+                     "replace this arm's full run; choose a --results-dir")
     args.ids = None
     if args.ids_file is not None:
         try:
@@ -156,15 +164,21 @@ def _refuse_overwrite(args: argparse.Namespace, results_dir: Path) -> None:
                          "or choose another --results-dir")
 
 
-def _print_banner(args: argparse.Namespace, results_dir: Path) -> None:
+def _arm_label(args: argparse.Namespace) -> str:
+    """The arm a collection will run; a run that only reads a checkpoint has the checkpoint's."""
+    if args.eval_only or args.visualize_only:
+        return "as collected (mode in raw_responses.json)"
     if args.semantic:
-        mode_label = "semantic-only"
-    else:
-        mode_label = {True: "graph", False: "no-graph", None: "default (backend env)"}[args.graph]
+        return "semantic-only"
+    return "main" if args.use_graph else "no-graph"
+
+
+def _print_banner(args: argparse.Namespace, results_dir: Path) -> None:
+    mode_label = _arm_label(args)
     strategies = args.graph_strategies if args.graph_strategies is not None else "backend default"
     console.print(Panel.fit(
         "[bold blue]Bible RAG Evaluation System[/bold blue]\n"
-        f"[dim]RAGAS + Custom Metrics | Graph mode: {mode_label} | "
+        f"[dim]RAGAS + Custom Metrics | Arm: {mode_label} | "
         f"graph strategies: {strategies}[/dim]\n"
         f"[dim]Output dir: {results_dir}[/dim]",
         border_style="blue",
@@ -187,12 +201,19 @@ def _run_context(args: argparse.Namespace, live: bool):
     return ctx
 
 
+def _request_use_graph(args: argparse.Namespace) -> bool | None:
+    """The request's use_graph: explicit on the main and no-graph arms, so a backend's
+    RAG_USE_GRAPH cannot change the arm; absent on the semantic arm, which has no graph side."""
+    return None if args.semantic else args.use_graph
+
+
 def _collect(args: argparse.Namespace, ctx):
     from src.evaluator import run_collection
     from src.id_selection import IdsFileError
 
     try:
-        return asyncio.run(run_collection(ctx, use_graph=args.graph, semantic_only=args.semantic,
+        return asyncio.run(run_collection(ctx, use_graph=_request_use_graph(args),
+                                          semantic_only=args.semantic,
                                           graph_strategies=args.graph_strategies,
                                           question_ids=args.ids, ids_file=args.ids_file,
                                           argv=sys.argv))
@@ -217,7 +238,7 @@ def main() -> None:
     # Configure evaluation output dir based on graph mode. Must happen before any
     # function below reads settings.results_dir.
     from src.config import settings
-    settings.set_graph_mode(args.graph)
+    settings.set_graph_mode(args.use_graph)
     settings.set_semantic_mode(args.semantic)
     settings.set_results_dir(None if args.results_dir is None
                              else (EVAL_ROOT / args.results_dir).resolve())

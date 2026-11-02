@@ -17,7 +17,7 @@ class QueryRequest(BaseModel):
     )
     use_graph: bool | None = Field(
         default=None,
-        description="覆寫 RAG_USE_GRAPH 預設值(只控制 event_registry 附加槽);None 表示沿用 backend 設定",
+        description="覆寫 RAG_USE_GRAPH 預設值(控制 event_registry 附加槽與王朝、創世記兩張卡);None 表示沿用 backend 設定",
     )
     graph_strategies: list[GraphStrategyName] | None = Field(
         default=None,

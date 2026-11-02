@@ -31,6 +31,7 @@ from .context_blocks import (
     aux_context_block,
     contexts_from_raw_item,
 )
+from .graph_usage import report_lines, summarize
 from .models import EvalSample, GroundTruthItem, MetricResult
 from .provenance import Provenance, write_run_meta
 from .rag_client import NO_KEEPALIVE, parse_sources, query_rag, response_audit_fields
@@ -54,7 +55,7 @@ def _clear_previous_results() -> None:
 
     Refuses to delete an archive written before per-strategy graph gating
     (records carry no `graph_strategies`): those are the Round 3 run-of-record
-    files, and `--graph` no longer means every graph strategy, so a rerun would
+    files, and the graph side no longer means every graph strategy, so a rerun would
     silently replace them with a different condition. Move or commit it first.
     """
     path = _raw_responses_path()
@@ -139,6 +140,7 @@ async def _answered(gt: GroundTruthItem, resp: dict, pool, mode: str,
         ground_truth=gt, reference_answer=gt.reference_answer, route_used=route_used,
         strategies_used=strategies_used, strategy_errors=strategy_errors,
         intent=audit["intent"] if isinstance(audit["intent"], dict) else None, mode=mode,
+        graph_trace=audit["graph_trace"],
     )
     if route_used:
         strats = ", ".join(strategies_used) if strategies_used else "none"
@@ -206,12 +208,13 @@ def _start_run_meta(provenance: Provenance | None, mode: str, graph_strategies: 
 
 
 def _finish_run_meta(provenance: Provenance | None, record: dict | None,
-                     collected: list[dict]) -> None:
+                     collected: list[dict], usage: dict[str, Any]) -> None:
     if provenance is None or record is None:
         return
     failures = sum(1 for r in collected if "request" in (r.get("strategy_errors") or {}))
     write_run_meta(settings.results_dir, provenance,
-                   finish_record(record, n_collected=len(collected), n_request_failures=failures))
+                   finish_record(record, n_collected=len(collected), n_request_failures=failures,
+                                 graph_usage=usage))
 
 
 async def collect_responses(
@@ -273,6 +276,9 @@ async def collect_responses(
             await asyncio.sleep(settings.request_delay)
 
     await pool.close()
-    _finish_run_meta(provenance, record, collected_raw)
+    usage = summarize(collected_raw)
+    _finish_run_meta(provenance, record, collected_raw, usage)
+    for line in report_lines(usage, mode):
+        console.print(line)
     console.print(f"\n[bold green]Collected and evaluated {len(samples)}/{total} responses.[/bold green]")
     return samples, {}

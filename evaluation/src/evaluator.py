@@ -23,6 +23,7 @@ from rich.table import Table
 from .config import settings
 from .models import EvalSample, MetricResult, EvalReport, AggregatedReport, Rationale
 from .data_loader import GroundTruthSet, load_gt
+from .graph_usage import csv_columns
 from .collector import collect_responses
 from .id_selection import select_questions
 from .provenance import RunContext
@@ -80,6 +81,7 @@ def _aggregate(
             strategy_errors=sample.strategy_errors,
             intent=sample.intent,
             mode=sample.mode,
+            graph_trace=sample.graph_trace,
         )
         if rationales and sample.question_id in rationales:
             report.rationale = rationales[sample.question_id]
@@ -506,6 +508,7 @@ def load_samples_from_checkpoint(
             # null for checkpoints collected before 2026-10-28
             intent=intent if isinstance(intent, dict) else None,
             mode=item.get("mode"),
+            graph_trace=item.get("graph_trace"),
         ))
 
     return samples
@@ -526,10 +529,11 @@ def export_csv(report: AggregatedReport) -> Path:
                 all_metric_names.append(m.name)
                 seen.add(m.name)
 
-    # intent_type / mode go last (2026-10-28) so every earlier column keeps its position.
+    # intent_type / mode (2026-10-28), then the graph columns (2026-11-02), go last so every
+    # earlier column keeps its position.
     fieldnames = [
         "question_id", "question_type", "family", "route_used", "strategies_used",
-    ] + all_metric_names + ["intent_type", "mode"]
+    ] + all_metric_names + ["intent_type", "mode", "graph_ops", "graph_max_hops"]
 
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -549,6 +553,7 @@ def export_csv(report: AggregatedReport) -> Path:
                 row[name] = metric_map.get(name, "")
             row["intent_type"] = (sample.intent or {}).get("type") or ""
             row["mode"] = sample.mode or ""
+            row["graph_ops"], row["graph_max_hops"] = csv_columns(sample.graph_trace)
             writer.writerow(row)
 
     return out_path

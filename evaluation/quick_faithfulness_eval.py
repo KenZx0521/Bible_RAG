@@ -7,7 +7,7 @@ Use it to A/B judge prompts / context format without the full 4-metric RAGAS
 run, or to re-judge a run of record after a judge fix.
 
 Usage:
-    uv run python quick_faithfulness_eval.py --results-dir results_graph \
+    uv run python quick_faithfulness_eval.py --results-dir results \
         --out results_quick/faith_metric_validation.json [--limit N] \
         [--ids A,B | --ids-file IDS] [--coverage] [--gt v1|v2] [--contracts-dir DIR]
 
@@ -107,7 +107,7 @@ def _load_stored_faithfulness(results_dir: Path) -> dict[str, float]:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Faithfulness-only re-judge over a raw_responses checkpoint")
-    parser.add_argument("--results-dir", default="results_graph", help="directory holding raw_responses.json")
+    parser.add_argument("--results-dir", default="results", help="directory holding raw_responses.json")
     parser.add_argument("--out", required=True,
                         help="output JSON path (relative to evaluation/, or absolute)")
     parser.add_argument("--limit", type=positive_int, default=0, help="only the first N samples")

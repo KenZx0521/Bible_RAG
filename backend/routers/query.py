@@ -12,7 +12,7 @@ from config import settings
 from models.request import QueryRequest
 from models.response import AuxCard, QueryResponse, Source, IntentInfo, RetrievalStats
 from serving import context
-from utils import gen_card
+from utils import gen_card, graph_trace
 from utils.citations import fix_block_chapters
 from utils.intent_classifier import classify_intent
 from utils.regnal.card import Card, chronology_card
@@ -159,4 +159,5 @@ async def rag_query(req: QueryRequest):
                           rejected_refs=intent.get("rejected_refs", [])),
         retrieval_stats=RetrievalStats(**stats),
         aux_card=_aux_card(card),
+        graph_trace=graph_trace.of(stats, results, card),
     )

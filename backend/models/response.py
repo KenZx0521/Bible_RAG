@@ -84,12 +84,25 @@ class AuxCard(BaseModel):
     seed_source: str | None = None  # "rule" (seeds read from the question) or "gemma" (the seed call)
 
 
+class GraphOp(BaseModel):
+    """One graph-side operation a request ran (utils.graph_trace). hops: the longest stretch of
+    explicit edges its derivation covered; two or more is a graph walk, less is a lookup."""
+    op: str                        # event_registry | regnal_card | gen_card
+    hops: int = 0
+    nodes: list[str] = []          # what it visited: event ids, or chain node ids in chain order
+    edges: list[list[str]] = []    # [from, type, to]
+    injected: str = "none"         # where its result went: context | prompt | none
+    passages: list[str] = []       # the passages it added to the context
+
+
 class QueryResponse(BaseModel):
     answer: str
     sources: list[Source] = []
     intent: IntentInfo
     retrieval_stats: RetrievalStats
     aux_card: AuxCard | None = None
+    # Every graph-side operation that ran for this request; empty when none did.
+    graph_trace: list[GraphOp] = []
 
 
 class MidHeading(BaseModel):

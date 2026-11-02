@@ -95,8 +95,8 @@ def test_backend_runtime_records_image_start_and_the_allowlisted_env(monkeypatch
 def test_no_secret_reaches_run_meta(monkeypatch, tmp_path):
     _fake_run(monkeypatch, {"docker": json.dumps(INSPECT), "git rev-parse": "abc\n", "git status": ""})
     _fake_tags(monkeypatch)
-    record = rr.start_record(mode="graph", graph_strategies=["event_registry"], n_questions=1,
-                             inputs=rr.CollectionInputs(argv=("run_eval.py", "--graph")))
+    record = rr.start_record(mode="main", graph_strategies=["event_registry"], n_questions=1,
+                             inputs=rr.CollectionInputs(argv=("run_eval.py",)))
 
     pv.write_run_meta(tmp_path, pv.Provenance(BUILD, FINGERPRINT), record)
 
@@ -365,7 +365,7 @@ def test_health_summary_keeps_the_handshake_not_build_or_encoder():
 
 
 @pytest.mark.parametrize("use_graph, semantic, mode", [
-    (True, False, "graph"), (False, False, "no_graph"), (None, False, "default"),
+    (True, False, "main"), (False, False, "no_graph"), (None, False, "default"),
     (None, True, "semantic")])
 def test_collection_mode_follows_the_cli_flags(use_graph, semantic, mode):
     assert rr.collection_mode(use_graph, semantic) == mode
@@ -381,10 +381,10 @@ def test_start_record_then_finish_record(monkeypatch, tmp_path):
     monkeypatch.setattr(rr.settings, "top_k", 5)
     ids = tmp_path / "ids.txt"
     ids.write_text("VERSE_LOOKUP_001\n", encoding="utf-8")
-    inputs = rr.CollectionInputs(argv=("run_eval.py", "--graph"), ids_file=ids,
+    inputs = rr.CollectionInputs(argv=("run_eval.py",), ids_file=ids,
                                  health={"status": "ok", "handshake": {"ok": True}})
 
-    record = rr.start_record(mode="graph", graph_strategies=None, n_questions=3, inputs=inputs)
+    record = rr.start_record(mode="main", graph_strategies=None, n_questions=3, inputs=inputs)
     done = rr.finish_record(record, n_collected=3, n_request_failures=1)
 
     col = record["collection"]
@@ -392,7 +392,7 @@ def test_start_record_then_finish_record(monkeypatch, tmp_path):
     assert _iso_with_tz(col["started_at"]) and col["finished_at"] is None
     assert {k: col[k] for k in ("mode", "argv", "top_k", "graph_strategies_requested", "ids_file",
                                 "ids_file_sha256", "n_questions", "resumed")} == {
-        "mode": "graph", "argv": ["run_eval.py", "--graph"], "top_k": 5,
+        "mode": "main", "argv": ["run_eval.py"], "top_k": 5,
         "graph_strategies_requested": None, "ids_file": str(ids),
         "ids_file_sha256": hashlib.sha256(ids.read_bytes()).hexdigest(), "n_questions": 3,
         "resumed": []}

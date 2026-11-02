@@ -294,6 +294,7 @@ flowchart TD
 - `retrieval_stats.event_registry_events` 回報觸發的事件 ev id。
 - top-k 本身與關閉附加槽時逐位相同。
 - 註冊表是契約檔 `event_registry.json`，不查 Neo4j。
+- 回應的 `graph_trace` 逐項記錄圖譜側實際執行的操作（附加槽、王朝年表卡、GEN 卡）；≥2 跳才算圖譜走訪，附加槽是一跳查表。
 
 依據：2026-10 的圖譜稽核發現，人工整理的事件錨點是唯一量得到價值的圖譜訊號；讓圖譜候選進池競爭，擠掉的 gold 和帶進來的一樣多。見 [records/2026-10-03_graph_auxiliary_review.md](records/2026-10-03_graph_auxiliary_review.md)。
 

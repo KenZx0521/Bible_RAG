@@ -42,8 +42,10 @@ evaluation/
 ├── templates/
 │   └── dashboard.html.j2       # 儀表板模板
 ├── tests/                       # pytest(uv run python -m pytest tests -q)
-├── results/                     # 預設輸出目錄(無 --graph/--no-graph)
-├── results_graph/               # --graph 模式輸出(--no-graph → results_no_graph/)
+├── results/                     # 主架構輸出(不帶旗標)
+├── results_no_graph/            # --no-graph 輸出
+├── results_semantic/            # --semantic 輸出
+├── results_graph/               # 舊存檔:--graph 移除前(2026-11-02 前)的主架構輸出
 ├── results_*_answer/            # 生成端 LLM 對照組(claude/gemma × graph/semantic)
 ├── results_quick/               # quick_retrieval_eval.py / quick_faithfulness_eval.py 輸出
 └── archive/round3_2026-09/      # Round 3 三組態 500 題存檔(legacy build;d248f18)
@@ -84,22 +86,26 @@ uv run python run_eval.py --visualize-only    # 只產生視覺化（需先評�
 uv run python run_eval.py --eval-only --rebuild-contexts
 ```
 
-### Graph 檢索 A/B 比較
+### 三個臂
 
-支援透過 CLI 旗標切換「有/無 Graph 檢索」模式，**不需要重啟或重建 docker container**(透過 per-request HTTP payload 覆寫實現):
+不帶旗標就是主架構,`--no-graph`、`--semantic` 是它的對照。切換**不需要重啟或重建 docker container**(透過 per-request HTTP payload 覆寫實現):
 
 ```bash
-# 跑「有 Graph」模式 → results_graph/
-uv run python run_eval.py --graph
+# 主架構 → results/
+uv run python run_eval.py
 
-# 跑「無 Graph」模式 → results_no_graph/
+# 主架構去掉圖譜(同流程,用來歸因) → results_no_graph/
 uv run python run_eval.py --no-graph
 
-# 不指定 → results/，沿用 backend RAG_USE_GRAPH 預設
-uv run python run_eval.py
+# 純語意基準 → results_semantic/
+uv run python run_eval.py --semantic
 ```
 
-> **2026-10 起 `--graph` 不再等於「全部圖譜策略」**:backend 預設 `RAG_GRAPH_STRATEGIES=["event_registry"]`(2026-10-04 起;只在 top-k 後附加 curated 事件錨點,之前是 `["graph_event"]`)。附加軌會讓部分題的 sources 多一段,檢索指標要用 `--metric-k 6` 並以 `ab_compare.py --control-ext` 對 k 對齊的 dense 比較。
+> **現況(2026-11-02)**:主架構預定要走知識圖譜,但目前檢索路徑還沒有圖走訪。Neo4j 策略已隨 R1(2026-10-08)移除,圖譜側只剩事件附加槽(一跳查表)與王朝、GEN 兩張計算卡;兩張卡在題型觸發時會走有序鏈(≥2 跳),但 500 題 GT 不會觸發。修復進行中。在接回之前,500 題上主架構對 `--semantic` 的差距是路由與查表的差距,不能寫成圖譜增益。
+> `--ids-file`、`--graph-strategies` 收的是子集或變體,必須帶 `--results-dir`,否則會蓋掉該臂的完整結果。
+> `--graph` 旗標已移除(2026-11-02)。主架構的請求內容和舊 `--graph` 相同,只是輸出改到 `results/`、臂標記改為 `main`;`results_graph/` 留作舊存檔,要讀它用 `--results-dir results_graph`。
+
+> 圖譜側目前的策略:backend 預設 `RAG_GRAPH_STRATEGIES=["event_registry"]`(2026-10-04 起;只在 top-k 後附加 curated 事件錨點,之前是 `["graph_event"]`)。附加軌會讓部分題的 sources 多一段,檢索指標要用 `--metric-k 6` 並以 `ab_compare.py --control-ext` 對 k 對齊的 dense 比較。
 > R1/R2 的 backend 只有 `event_registry` 這一條圖譜策略:`--graph-strategies event_registry` 指定它,只寫 `--graph-strategies` 不帶值 = 全關;`all`、`graph_event` 等舊策略會被拒絕。Round 3 的三組態存檔(全開,2026-09)已搬到 `archive/round3_2026-09/`,只能用 legacy 映像重現。
 > 輸出目錄裡若有 2026-10 前的存檔(記錄沒有 `graph_strategies` 欄位),collector 會拒絕覆寫,請先移走或 commit。
 > 每筆 `raw_responses.json` 記錄另帶 `graph_strategies`(backend 實際生效的策略;缺欄位 = 舊版全開)。
@@ -108,31 +114,27 @@ uv run python run_eval.py
 
 ```bash
 # 比較兩組 CSV
-diff <(cut -d, -f1-10 results_graph/evaluation_results.csv) \
+diff <(cut -d, -f1-10 results/evaluation_results.csv) \
      <(cut -d, -f1-10 results_no_graph/evaluation_results.csv)
 
 # 確認模式正確標記(mode = 收集時的 CLI 旗標,是權威的臂標記)
-jq '[.[] | .mode] | unique' results_graph/raw_responses.json     # → ["graph"]
+jq '[.[] | .mode] | unique' results/raw_responses.json            # → ["main"]
 jq '[.[] | .mode] | unique' results_no_graph/raw_responses.json  # → ["no_graph"]
 jq '[.[] | .mode] | unique' results_semantic/raw_responses.json  # → ["semantic"]
-jq '.collection.mode' results_graph/run_meta.json                 # → "graph"
+jq '.collection.mode' results/run_meta.json                       # → "main"
 ```
 
 > `use_graph` 是 backend 回報的 per-request graph 開關,不是臂標記:`--semantic` 的請求不帶 `use_graph`,backend 就回報 `RAG_USE_GRAPH`(true),所以不論新舊 checkpoint,semantic 臂的 `use_graph` 都是 true(10-26 的 `results_semantic` 500/500 為 true),不能拿來分臂。分臂一律看 `mode`;2026-10-28 前的 checkpoint 沒有 `mode`,只能靠輸出目錄分臂。
 
-**閘道規則**(`--no-graph` 時跳過):
-- R3 person → 略過 `graph_person`，保留 semantic + SQL supplement
-- R4 event → 略過 `graph_event`
-- R5 cross-ref → 略過 `cross_reference` 與 `graph`(以及 `graph_event`)
-- R3/R4/R5/R6 的 `entity_path`、`cross_ref_expand`、`entity_query` 也一併略過
-- R6 place → 略過 `graph_place`
-- R1/R2/fallback 不受影響(本來就沒用 Neo4j)
+**`--no-graph` 目前跳過的東西**:R4/R5 的事件附加槽、王朝年表卡、GEN 卡。路由、SQL 查表、book_anchor、章區塊都不受影響。
 
-每筆 `raw_responses.json` 記錄帶 `mode`(graph / no_graph / semantic / default,依 CLI 旗標)標記這次收集的臂,`use_graph` 則是 backend 回報的值(見下節「事後稽核紀錄」)。
+**逐題圖譜紀錄(2026-11-02 起)**:每筆 `raw_responses.json` 帶 backend 回報的 `graph_trace`(實際走過的節點、邊、跳數、結果進了 context 或 prompt;舊 backend 或舊 checkpoint 為 null),CSV 多 `graph_ops`、`graph_max_hops` 兩欄,`run_meta.json` 的 `collection.graph_usage` 是整輪總數。≥2 跳且結果有進答案才算走訪(判準 D3)。收集結束會印出總數;主架構沒有任何題走到圖譜時會印紅字警告。
+
+每筆 `raw_responses.json` 記錄帶 `mode`(main / no_graph / semantic / default,依 CLI 旗標)標記這次收集的臂,`use_graph` 則是 backend 回報的值(見下節「事後稽核紀錄」)。
 
 > **首次部署**：backend 需要重建一次以載入 `use_graph` payload 處理邏輯：
 > `docker compose up -d --build backend`
-> 之後切換 `--graph / --no-graph` 完全不需要動 container。
+> 之後切換臂完全不需要動 container。
 
 ### 快速檢索評估迴圈（quick_retrieval_eval.py）
 
@@ -148,7 +150,7 @@ uv run python quick_retrieval_eval.py --no-use-graph --label nograph
 uv run python quick_retrieval_eval.py --only EVENT PERSON --label ev_only
 
 # 用舊 raw_responses.json 以 byte-identical 指標碼重算(建基線)
-uv run python quick_retrieval_eval.py --from-raw results_graph/raw_responses.json --label p0_baseline
+uv run python quick_retrieval_eval.py --from-raw results/raw_responses.json --label p0_baseline
 
 # 差異比較:逐題型 Δ + hit_rate 翻轉題清單
 uv run python quick_retrieval_eval.py --compare results_quick/a.json results_quick/b.json
@@ -191,10 +193,10 @@ uv run python ab_compare.py results_quick/control.json results_quick/treatment.j
 
 ```bash
 # 對 run of record 重判(舊 checkpoint 會自動用 DB 重建含標頭 context)
-uv run python quick_faithfulness_eval.py --results-dir results_graph --out results_quick/faith_metric_validation.json
+uv run python quick_faithfulness_eval.py --results-dir results --out results_quick/faith_metric_validation.json
 
 # 只重判幾題(除錯 judge)
-uv run python quick_faithfulness_eval.py --results-dir results_graph --out results_quick/faith_smoke.json --ids VERSE_LOOKUP_017,VERSE_LOOKUP_067
+uv run python quick_faithfulness_eval.py --results-dir results --out results_quick/faith_smoke.json --ids VERSE_LOOKUP_017,VERSE_LOOKUP_067
 ```
 
 輸出含 `stored_faithfulness`(該目錄 evaluation_results.json 裡的舊值,只在新 judge 有效評分的題目上配對平均)方便看修前修後差異;`meta.context_format` 記錄 judge 看到的 context 形式。
@@ -212,7 +214,7 @@ build 取自 checkpoint 旁的 `run_meta.json`(沒有此檔即 legacy);新 build
 | 因子 | 現值 | 可掃範圍 | 工具旗標 |
 |------|------|----------|----------|
 | `fusion_alpha` | 0.3 | 0 ~ 1.0 連續（0 = 純 reranker） | `--alpha` |
-| `use_graph` | on | on/off（一鍵關 graph + cross_ref + EQ + entity_path） | `--use-graph / --no-use-graph` |
+| `use_graph` | on | on/off（關事件附加槽；retrieval_only 本來就不跑兩張卡） | `--use-graph / --no-use-graph` |
 | `semantic_only` | off | 純語意基線，連 6 路由都繞過 | `run_eval.py --semantic`（quick 工具尚未接此欄位，加一行 payload 即可） |
 | `top_k` | 5 | 3 / 5 / 10（@k 截斷） | `--top-k` |
 | 題型子集 | 全 100 題 | EVENT / PERSON / … 前綴過濾 | `--only` |
@@ -316,7 +318,7 @@ RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` �
 
 ## 結果
 
-評估完成後，在輸出目錄(預設 `results/`，依 `--graph/--no-graph` 切換為 `results_graph/` 或 `results_no_graph/`)會產生：
+評估完成後，在輸出目錄(主架構 `results/`，`--no-graph` 為 `results_no_graph/`，`--semantic` 為 `results_semantic/`)會產生：
 - `raw_responses.json` — RAG 原始回應(含 `mode` 臂標記、intent、檢索統計、收集時間與耗時)
 - `run_meta.json` — 這次收集的紀錄(build、編碼指紋;v2 起另有收集參數、程式版本、backend 容器快照)
 - `evaluation_results.json` — 完整評估結果
@@ -333,7 +335,8 @@ RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` �
 
 | 欄位 | 來源 | 說明 |
 |------|------|------|
-| `mode` | CLI 旗標 | `graph` / `no_graph` / `semantic` / `default`;**權威的臂標記** |
+| `mode` | CLI 旗標 | `main` / `no_graph` / `semantic` / `default`(2026-11-02 前的 checkpoint 主架構標 `graph`);**權威的臂標記** |
+| `graph_trace` | backend `graph_trace` | 圖譜側實際執行的操作:`op`、`hops`、`nodes`、`edges`、`injected`、`passages`;`[]` 是回報了但沒執行,null 是舊 backend 沒回報或請求失敗 |
 | `use_graph` | backend `retrieval_stats.use_graph` | 原樣記錄,缺欄位記 null(不再預設 true);請求失敗的題記 null。**semantic 臂會是 true**(請求不帶 `use_graph`,backend 回報 `RAG_USE_GRAPH`),不能分臂 |
 | `intent` | backend `intent` | `{type, entities, verse_refs, rejected_refs}` 原樣 |
 | `fusion_alpha`、`total_candidates`、`reranked_top_k`、`event_registry_events` | backend `retrieval_stats` | 原樣,缺欄位記 null |
@@ -348,6 +351,7 @@ RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` �
 | 欄位 | 說明 |
 |------|------|
 | `run_meta_version` | 2 |
+| `collection.graph_usage` | 整輪圖譜使用總數(`src/graph_usage.py`):`n_walk`(≥2 跳且結果有進答案的題數)、`n_injected`、`n_with_op`、`n_failed`、`n_trace_reported`、`n_hops_unknown`、`n_nodes`、`n_edges`、`by_op`;收集結束才寫 |
 | `collection` | `started_at`、`finished_at`、`mode`、`argv`、`top_k`、`graph_strategies_requested`、`ids_file` 與 `ids_file_sha256`、`n_questions`、`n_collected`、`n_request_failures`、`resumed`(collector 每次從頭收集,沒有續收,恆為 `[]`) |
 | `eval_code` | `git_head`、`git_dirty`、`dirty_paths`(`git status --porcelain` 在 evaluation/ 底下的路徑,最多 50 條)、`n_dirty_paths`;未追蹤的 `results*/` 輸出目錄會列出但不算 dirty |
 | `backend_runtime` | `docker inspect`(唯讀)backend 容器:`container`、`container_from`(容器名從哪來:`BACKEND_URL` 或 `EVAL_BACKEND_CONTAINER`)、`image`(Config.Image)、`image_id`、`started_at`、`env`(白名單,見下) |
@@ -398,4 +402,4 @@ RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` �
 - **Answer Point Coverage > 0.6**: 回答涵蓋了大部分關鍵要點
 - **Semantic Similarity > 0.7**: 回答與參考答案語意接近
 - 比較不同 Question Type 的表現差異，找出系統弱點
-- 比較 `--graph` vs `--no-graph` 結果可量化 Neo4j 知識圖譜對檢索品質的貢獻
+- 比較主架構與 `--no-graph` 量的是圖譜側的貢獻;現況圖譜側只有事件附加槽與兩張計算卡,500 題上沒有圖走訪

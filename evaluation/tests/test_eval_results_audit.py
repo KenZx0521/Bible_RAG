@@ -165,8 +165,8 @@ def test_csv_appends_intent_type_and_mode_after_every_existing_column(monkeypatc
         rows = list(csv.reader(f))
     header = rows[0]
     assert header[:5] == ["question_id", "question_type", "family", "route_used", "strategies_used"]
-    assert header[-2:] == ["intent_type", "mode"]
-    assert rows[1][-2:] == ["verse_lookup", "graph"] and rows[2][-2:] == ["", ""]
+    assert header[-4:-2] == ["intent_type", "mode"]
+    assert rows[1][-4:-2] == ["verse_lookup", "graph"] and rows[2][-4:-2] == ["", ""]
 
 
 def test_report_samples_carry_the_samples_strategy_errors(monkeypatch, tmp_path):

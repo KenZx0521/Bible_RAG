@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     )
 
     # Run mode state: set by CLI at startup (not an env var).
-    # None → results/, True → results_graph/, False → results_no_graph/
+    # True or None → results/ (the main architecture), False → results_no_graph/
     _graph_mode: bool | None = PrivateAttr(default=None)
     # When True, overrides graph mode and routes output to results_semantic/.
     _semantic_only: bool = PrivateAttr(default=False)
@@ -122,8 +122,6 @@ class Settings(BaseSettings):
             return self._results_dir_override
         if self._semantic_only:
             return _EVAL_ROOT / "results_semantic"
-        if self._graph_mode is True:
-            return _EVAL_ROOT / "results_graph"
         if self._graph_mode is False:
             return _EVAL_ROOT / "results_no_graph"
         return _EVAL_ROOT / "results"

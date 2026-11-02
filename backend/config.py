@@ -88,8 +88,8 @@ class Settings(BaseSettings):
         "R6": {"semantic": 0.65, "sql": 0.5},
     }
 
-    # Graph toggle. With Neo4j gone it gates only the event_registry lane;
-    # overridable per request via `use_graph`.
+    # Graph toggle: the event_registry lane and the regnal and Genesis cards (no graph store
+    # is read since R1); overridable per request via `use_graph`.
     rag_use_graph: bool = True
 
     # Graph strategies in effect when use_graph is on: ["event_registry"] (the

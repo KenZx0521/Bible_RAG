@@ -84,7 +84,7 @@ def collection_mode(use_graph: bool | None, semantic_only: bool) -> str:
     """The arm a collection ran, from the CLI flags (not from what the backend reports)."""
     if semantic_only:
         return "semantic"
-    return {True: "graph", False: "no_graph", None: "default"}[use_graph]
+    return {True: "main", False: "no_graph", None: "default"}[use_graph]
 
 
 def _run(cmd: list[str], timeout: float) -> str:
@@ -381,9 +381,10 @@ def start_record(*, mode: str, graph_strategies: list[str] | None, n_questions: 
     }
 
 
-def finish_record(record: Mapping[str, Any], *, n_collected: int,
-                  n_request_failures: int) -> dict[str, Any]:
-    """A copy of ``record`` stamped finished, with what was collected."""
+def finish_record(record: Mapping[str, Any], *, n_collected: int, n_request_failures: int,
+                  graph_usage: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """A copy of ``record`` stamped finished, with what was collected and what its graph side
+    did (src.graph_usage.summarize)."""
     collection = {**record["collection"], "finished_at": now_iso(), "n_collected": n_collected,
-                  "n_request_failures": n_request_failures}
+                  "n_request_failures": n_request_failures, "graph_usage": graph_usage}
     return {**record, "collection": collection}

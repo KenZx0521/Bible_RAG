@@ -241,7 +241,7 @@ Bible_RAG/
 | `include_context` | 每個 source 附上交給生成器的區塊（`[i] 書卷 第N章 - 標題 (節)` 加經文），供評估端 judge 使用 |
 | `retrieval_only` | 只跑檢索與重排，不生成 |
 | `semantic_only` | 只走 dense 基線，不經路由 |
-| `use_graph` | 只控制事件附加槽，覆寫設定 |
+| `use_graph` | 控制事件附加槽與王朝、GEN 兩張卡，覆寫設定 |
 | `graph_strategies` | `["event_registry"]` 或 `[]`，覆寫設定 |
 | `fusion_alpha` | 覆寫融合 α，0 表示純 reranker 排序 |
 
@@ -280,12 +280,18 @@ Bible_RAG/
     "graph_strategies": ["event_registry"],
     "fusion_alpha": 0.3,
     "event_registry_events": ["ev0002"]
-  }
+  },
+  "graph_trace": [
+    {"op": "event_registry", "hops": 1, "nodes": ["ev0002"],
+     "edges": [["ev0002", "anchor", "ps:act.9.1"]], "injected": "context",
+     "passages": ["ps:act.9.1"]}
+  ]
 }
 ```
 
 - `id` 依 `ragcommon.ids` 的文法：`ps:` 是 passage，`ck:` 是 chunk，`vs:` 是 verse 記錄，`vr:` 是節範圍。
 - 事件附加槽附加的段落 `strategy` 是 `event_registry`，沒有分數。
+- `graph_trace` 逐項列出這次請求圖譜側實際執行的操作：`nodes`、`edges`（`[起點, 型別, 終點]`）、`hops`（沿明確邊讀到的最遠距離，≥2 才算圖譜走訪）、`injected`（結果進了 `context`、`prompt` 或 `none`）、`passages`（它加進 context 的段落）。沒有執行就是空陣列。
 
 ## Configuration
 
@@ -320,7 +326,7 @@ Bible_RAG/
 
 | 變數 | 說明 | 預設值 |
 |------|------|--------|
-| `RAG_USE_GRAPH` | 事件附加槽總開關（可逐請求以 `use_graph` 覆寫） | `true` |
+| `RAG_USE_GRAPH` | 事件附加槽與王朝、GEN 兩張卡的總開關（可逐請求以 `use_graph` 覆寫） | `true` |
 | `RAG_GRAPH_STRATEGIES` | JSON 陣列：`["event_registry"]` 或 `[]` | `["event_registry"]` |
 | `RAG_EVENT_REGISTRY_SLOTS` | 附加槽最多附加幾段 | `1` |
 | `RAG_RANK_FUSION_ENABLED`／`RAG_RANK_FUSION_ALPHA` | 排序融合 | `true`／`0.3` |

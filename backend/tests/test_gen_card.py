@@ -99,6 +99,18 @@ def _context(body: dict) -> str:
     return "\n\n".join(s["context"] for s in body["sources"])
 
 
+def test_query_reports_the_card_in_its_graph_trace(client):
+    http, _ = client
+    assert [op["op"] for op in _ask(http, F.FIRES)["graph_trace"]] == ["gen_card"]
+
+
+def test_query_graph_trace_is_empty_without_a_graph_side(client):
+    http, _ = client
+    assert _ask(http, F.SILENT)["graph_trace"] == []
+    assert _ask(http, F.FIRES, use_graph=False)["graph_trace"] == []
+    assert _ask(http, F.FIRES, semantic_only=True)["graph_trace"] == []
+
+
 def test_query_attaches_the_card_and_the_prompt_is_build_messages_on_the_responses_context(client, gen):
     http, seen = client
     body = _ask(http, F.FIRES)

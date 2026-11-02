@@ -76,10 +76,13 @@ class EvalSample(BaseModel):
     strategies_used: list[str] = []
     strategy_errors: dict[str, str] = {}
     # The backend's IntentInfo for the question ({type, entities, verse_refs,
-    # rejected_refs}) and the arm it was collected under (graph / no_graph /
+    # rejected_refs}) and the arm it was collected under (main / no_graph /
     # semantic / default); None for checkpoints collected before 2026-10-28.
     intent: dict[str, Any] | None = None
     mode: str | None = None
+    # The backend's graph_trace (src.graph_usage); None when it did not report one, [] when it
+    # ran no graph operation.
+    graph_trace: list[dict[str, Any]] | None = None
 
 
 class MetricResult(BaseModel):
@@ -130,6 +133,7 @@ class EvalReport(BaseModel):
     strategy_errors: dict[str, str] = {}
     intent: dict[str, Any] | None = None    # as EvalSample
     mode: str | None = None
+    graph_trace: list[dict[str, Any]] | None = None    # as EvalSample
 
 
 class AggregatedReport(BaseModel):

@@ -112,10 +112,12 @@ def response_audit_fields(resp: Mapping[str, Any]) -> dict[str, Any]:
     """What /api/v1/query said about a question beyond answer and sources, kept as returned.
 
     ``intent`` is the backend's IntentInfo ({type, entities, verse_refs, rejected_refs});
-    the rest are RetrievalStats fields. A field the backend did not send is None.
+    ``graph_trace`` is what its graph side ran (src.graph_usage reads it); the rest are
+    RetrievalStats fields. A field the backend did not send is None.
     """
     stats = resp.get("retrieval_stats") or {}
-    return {"intent": resp.get("intent"), **{k: stats.get(k) for k in RETRIEVAL_AUDIT_FIELDS}}
+    return {"intent": resp.get("intent"), "graph_trace": resp.get("graph_trace"),
+            **{k: stats.get(k) for k in RETRIEVAL_AUDIT_FIELDS}}
 
 
 def parse_sources(raw_sources: list[dict]) -> list[SourceInfo]:

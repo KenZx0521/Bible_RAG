@@ -4,7 +4,7 @@
 Collects top-k sources for all ground-truth questions via the backend's
 ``retrieval_only`` mode and computes the same 7 retrieval metrics as the full
 pipeline (src.metrics.retrieval — identical reference parsing and relevance
-judging, so numbers are directly comparable with results_graph/ runs). The
+judging, so numbers are directly comparable with full-pipeline runs). The
 R1/R2 backend has one graph strategy, the event_registry auxiliary lane
 (--graph-strategies event_registry, or none); the legacy strategies Round 3's
 results_graph/ ran (graph_event, 'all', ...) no longer exist and are rejected.
@@ -18,7 +18,7 @@ Usage (from evaluation/):
     uv run python quick_retrieval_eval.py --label fixes_a03            # live run
     uv run python quick_retrieval_eval.py --alpha 0.0 --label alpha0   # sweep point
     uv run python quick_retrieval_eval.py --graph-strategies --label none  # no graph strategy
-    uv run python quick_retrieval_eval.py --from-raw results_graph/raw_responses.json --label p0_baseline
+    uv run python quick_retrieval_eval.py --from-raw results/raw_responses.json --label p0_baseline
     uv run python quick_retrieval_eval.py --compare out_a.json out_b.json
     # auxiliary arm (event_registry appends after top-5) and its k-aligned controls
     uv run python quick_retrieval_eval.py --graph-strategies event_registry --metric-k 6 --label aux
@@ -399,7 +399,9 @@ def compare(path_a: Path, path_b: Path) -> None:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
+    # allow_abbrev off: "--graph" would expand to --graph-strategies with no value, every graph
+    # strategy silently off.
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--label", default="run")
     parser.add_argument("--alpha", type=float, default=None,
                         help="fusion_alpha override (omit = backend default)")

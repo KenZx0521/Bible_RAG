@@ -92,12 +92,12 @@ def test_each_record_keeps_intent_stats_mode_time_and_latency(monkeypatch, tmp_p
                                 "event_registry_events")} == {
         "fusion_alpha": 0.3, "total_candidates": 17, "reranked_top_k": 5,
         "event_registry_events": ["ev:jhn.3"]}
-    assert rec["mode"] == "graph"
+    assert rec["mode"] == "main"
     assert rec["use_graph"] is False             # what the backend reported, not the CLI flag
     assert _has_tz(rec["collected_at"])
     assert isinstance(rec["latency_ms"], (int, float)) and rec["latency_ms"] >= 0
     assert rec["request_attempts"] == 1
-    assert (samples[0].intent, samples[0].mode) == (INTENT, "graph")
+    assert (samples[0].intent, samples[0].mode) == (INTENT, "main")
 
 
 SEMANTIC_STATS = {**STATS, "route_used": "semantic_only", "strategies_used": ["semantic"],
@@ -133,7 +133,7 @@ def test_a_use_graph_the_backend_does_not_report_is_null(monkeypatch, tmp_path):
     _collect(list(GT.items[:1]), use_graph=True)
 
     rec = _raw(tmp_path)[0]
-    assert rec["mode"] == "graph" and rec["use_graph"] is None and rec["intent"] is None
+    assert rec["mode"] == "main" and rec["use_graph"] is None and rec["intent"] is None
 
 
 @pytest.mark.parametrize("use_graph, semantic, mode", [
@@ -158,7 +158,7 @@ def test_a_failed_request_keeps_the_same_fields_null(monkeypatch, tmp_path):
     _collect(list(GT.items[:1]), use_graph=True, graph_strategies=["event_registry"])
 
     rec = _raw(tmp_path)[0]
-    assert rec["mode"] == "graph" and rec["use_graph"] is None
+    assert rec["mode"] == "main" and rec["use_graph"] is None
     assert rec["graph_strategies"] == ["event_registry"]       # unchanged: what was asked
     assert all(rec[k] is None for k in ("intent", "fusion_alpha", "total_candidates",
                                         "reranked_top_k", "event_registry_events"))
@@ -192,14 +192,14 @@ def test_run_meta_is_on_disk_before_the_first_question_and_finished_after(monkey
         return _answer()
 
     _offline(monkeypatch, tmp_path, query)
-    inputs = rr.CollectionInputs(argv=("run_eval.py", "--graph"), health={"handshake": {"ok": True}})
+    inputs = rr.CollectionInputs(argv=("run_eval.py",), health={"handshake": {"ok": True}})
 
     _collect(list(GT.items[:2]), provenance=Provenance(BUILD), use_graph=True, inputs=inputs)
 
     first = seen[0]
     assert first["data_build_id"] == BUILD and first["run_meta_version"] == 2
     assert first["collection"]["finished_at"] is None and _has_tz(first["collection"]["started_at"])
-    assert first["collection"]["mode"] == "graph" and first["collection"]["n_questions"] == 2
+    assert first["collection"]["mode"] == "main" and first["collection"]["n_questions"] == 2
     assert first["backend_health"]["ok"] is True
     done = json.loads((tmp_path / RUN_META).read_text(encoding="utf-8"))
     assert _has_tz(done["collection"]["finished_at"])
@@ -290,7 +290,7 @@ def test_cli_collection_records_mode_argv_ids_file_and_health(monkeypatch, tmp_p
     ids = tmp_path / "ids.txt"
     ids.write_text("VERSE_LOOKUP_001\n", encoding="utf-8")
     out = tmp_path / "arm"
-    argv = ["run_eval.py", "--collect-only", "--graph", "--gt", "v2", "--contracts-dir",
+    argv = ["run_eval.py", "--collect-only", "--gt", "v2", "--contracts-dir",
             str(write_contracts(tmp_path / "contracts")), "--ids-file", str(ids),
             "--results-dir", str(out)]
     monkeypatch.setattr(sys, "argv", argv)
@@ -300,11 +300,11 @@ def test_cli_collection_records_mode_argv_ids_file_and_health(monkeypatch, tmp_p
     meta = json.loads((out / RUN_META).read_text(encoding="utf-8"))
     col = meta["collection"]
     assert (col["mode"], col["argv"], col["ids_file"], col["n_questions"]) == (
-        "graph", argv, str(ids), 1)
+        "main", argv, str(ids), 1)
     assert col["ids_file_sha256"] and _has_tz(col["finished_at"])
     assert meta["backend_health"] == {"status": "ok", "services": None, "ok": True,
                                       "strict": True, "mismatches": []}
-    assert _raw(out)[0]["mode"] == "graph"
+    assert _raw(out)[0]["mode"] == "main"
 
 
 def test_eval_only_on_an_old_checkpoint_is_not_refused(monkeypatch, tmp_path):
