@@ -1,0 +1,358 @@
+/* 關聯圖面板：分段、說明、舞台、邊、圖例、推算文字。節點在 graph-nodes.css */
+
+/* ---- 關聯圖面板 ---- */
+
+.result-side {
+  grid-area: side;
+  min-width: 0;
+}
+
+.graph-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 跳過關聯圖：平常不佔版面，鍵盤走到才出現 */
+.skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link:focus {
+  position: static;
+  align-self: flex-start;
+  width: auto;
+  height: auto;
+  margin: 0 -4px var(--space-2);
+  padding: 2px 4px;
+  clip-path: none;
+}
+
+.graph-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.segments {
+  display: flex;
+  gap: var(--space-4);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
+}
+
+.segment {
+  padding: var(--space-2) 0 calc(var(--space-2) - 2px);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  letter-spacing: 0.06em;
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.segment:hover {
+  color: var(--ink);
+  border-bottom-color: var(--rule);
+}
+
+.segment:active {
+  color: var(--ink-soft);
+}
+
+.segment[aria-pressed="true"] {
+  color: var(--ink);
+  font-weight: 500;
+  border-bottom-color: var(--ink);
+}
+
+.graph-caption {
+  margin-top: var(--space-3);
+  max-width: var(--measure);
+  font-size: var(--text-small);
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+
+.graph-note {
+  margin-top: var(--space-3);
+  max-width: var(--measure);
+  font-size: var(--text-small);
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+
+.prune-hint {
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.hint-toggle {
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.graph-canvas {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 內距留給節點的 focus 外框，負邊距抵銷，圖的左右仍對齊欄線 */
+.graph-scroll {
+  margin: var(--space-2) -4px 0;
+  padding: 4px;
+  min-height: 0;
+}
+
+.graph-stage {
+  position: relative;
+  width: 100%;
+  height: var(--stage-height, 0);
+  animation: stage-in var(--duration-normal) ease-out;
+}
+
+@keyframes stage-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.graph-edges {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.edge {
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 1;
+  transition: opacity var(--duration-normal) ease-out;
+}
+
+.edge--brought {
+  stroke: var(--rubric);
+  stroke-opacity: 0.7;
+}
+
+.edge--anchor {
+  stroke: var(--ink-soft);
+  stroke-dasharray: 3 3;
+}
+
+.has-focus .edge {
+  opacity: 0.12;
+}
+
+.has-focus .edge.is-linked {
+  opacity: 1;
+  stroke: var(--ink);
+  stroke-opacity: 1;
+  stroke-width: 1.5;
+}
+
+.graph-status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding-block: var(--space-1);
+}
+
+.graph-status {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-soft);
+}
+
+.graph-clear {
+  flex: none;
+  padding-block: 0;
+  margin-inline-end: 0;
+  line-height: var(--leading-ui);
+  white-space: nowrap;
+}
+
+/* 單欄時圖可能比視窗長：說明列黏在視窗底，點名字時不用捲動就看得到 */
+@media (max-width: 1023px) {
+  .graph-status-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    background: var(--paper);
+    border-top: 1px solid var(--rule);
+  }
+}
+
+/* 不在圖上的段落：寫在圖下方，和圖例同一層，但是一句話，字要讀得舒服 */
+.graph-offgraph {
+  margin-top: var(--space-2);
+  font-size: var(--text-ui);
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--space-3);
+  margin-top: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.graph-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.swatch {
+  flex: none;
+  width: 14px;
+  height: 9px;
+  border: 1px solid var(--ink-faint);
+  border-radius: 1px;
+  background: var(--paper-lift);
+}
+
+.swatch--asked {
+  border-color: var(--rubric);
+  border-radius: 999px;
+  background: var(--rubric);
+}
+
+/* 親屬圖的人物是方角，圖例要和實物同形 */
+.swatch--focus {
+  border-color: var(--rubric);
+  background: var(--rubric);
+}
+
+.swatch--name {
+  border-color: var(--edge);
+  border-radius: 999px;
+}
+
+.swatch--event {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.swatch--brought {
+  border: 1.5px solid var(--rubric);
+}
+
+.swatch--anchored {
+  border: 1px solid var(--ink);
+  border-left-width: 3px;
+}
+
+.swatch--unused {
+  border: 1px dashed var(--edge);
+  background: transparent;
+}
+
+/* 推算文字：像年表，一行一筆 */
+.chrono {
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+  overflow: auto;
+  min-height: 0;
+}
+
+.chrono-row {
+  display: grid;
+  gap: 0 var(--space-3);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--rule);
+}
+
+.chrono-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.chrono-value {
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+  .chrono-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: baseline;
+  }
+}
+
+@media (min-width: 1024px) {
+  .result-side {
+    padding-inline-start: var(--space-5);
+    border-inline-start: 1px solid var(--rule);
+  }
+
+  .result-side-inner {
+    position: sticky;
+    top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 2 * var(--space-4));
+  }
+
+  .graph-panel,
+  .graph-body,
+  .graph-canvas {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* 完整圖譜夠長時不能被擠扁；卡片少的小圖不必撐高，圖和下方的句子之間才不會空一塊（8px 是上下內距） */
+  .graph-scroll {
+    flex: 1 1 auto;
+    min-height: min(14rem, calc(var(--stage-height, 14rem) + 8px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  /* 側欄在頁面頂端時，底部可能超出視窗，所以說明列排在圖的上方。
+     預留兩行、最多兩行（全文在 title 與 aria-live 裡）：點名字時圖不會跳動。 */
+  .graph-status-row {
+    order: -1;
+  }
+
+  .graph-status {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-height: calc(2em * var(--leading-ui));
+  }
+
+  .graph-body.is-full .graph-scroll {
+    scrollbar-gutter: stable;
+  }
+}

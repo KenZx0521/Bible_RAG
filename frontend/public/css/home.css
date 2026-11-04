@@ -1,0 +1,260 @@
+/* 首屏與提問後的共用頭：問題、等待、錯誤 */
+
+/* ---- 首屏：不對稱雙欄，中間一條欄線，像攤開的書頁 ---- */
+
+.home {
+  display: grid;
+  gap: var(--space-6);
+  padding-block: var(--space-6) var(--space-6);
+}
+
+.ask-title {
+  font-size: var(--text-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.ask-lede {
+  margin-top: var(--space-3);
+  max-width: 30em;
+  color: var(--ink-soft);
+  font-size: var(--text-read);
+  line-height: 1.8;
+}
+
+.ask-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: var(--space-2);
+}
+
+.ask-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: var(--space-1) var(--space-1);
+  font-family: var(--font-serif);
+  font-size: clamp(1.125rem, 1rem + 0.8vw, 1.5rem);
+  line-height: 1.6;
+  text-overflow: ellipsis;
+}
+
+.ask-input::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
+.ask-input:hover {
+  background: var(--paper-lift);
+}
+
+.ask-input:focus {
+  background: var(--paper-lift);
+  outline: none;
+}
+
+.ask-row:focus-within {
+  border-bottom-width: 3px;
+  padding-bottom: calc(var(--space-2) - 1px);
+}
+
+.ask-message {
+  min-height: 1.55em;
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.ask-message.is-error {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.example {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-1);
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  background: none;
+  text-align: left;
+}
+
+.example-question {
+  font-size: var(--text-read);
+  line-height: 1.65;
+}
+
+.example-tag {
+  grid-row: 2;
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  letter-spacing: 0.06em;
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.example-arrow {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: center;
+  font-family: var(--font-sans);
+  color: var(--ink-faint);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.example:hover {
+  background: var(--paper-shade);
+}
+
+.example:hover .example-arrow {
+  color: var(--ink);
+  transform: translateX(4px);
+}
+
+.example:active {
+  background: var(--rule);
+}
+
+.example:active .example-arrow {
+  transform: translateX(8px);
+}
+
+.example:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ---- 問題：等待、錯誤、結果共用，不會跳動 ---- */
+
+.asked {
+  padding-top: var(--space-5);
+}
+
+.question {
+  font-size: var(--text-question);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  max-width: 30em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.question:focus {
+  outline: none;
+}
+
+/* 長問題：小字、限高，可在框內捲動看全文；刻意露出半行，看得出下面還有 */
+.question.is-long {
+  font-size: var(--text-read);
+  line-height: 1.6;
+  max-height: 7.2em;
+  overflow-y: auto;
+  text-wrap: pretty;
+}
+
+.waiting,
+.failure {
+  margin-top: var(--space-5);
+  max-width: 34rem;
+  padding-bottom: var(--space-7);
+}
+
+.waiting-line {
+  font-size: var(--text-read);
+  line-height: 1.8;
+}
+
+.waiting-rule {
+  height: 2px;
+  margin-top: var(--space-3);
+  background: linear-gradient(var(--rule), var(--rule)) center / 100% 1px no-repeat;
+  overflow: hidden;
+}
+
+/* 來回移動的細線：沒有終點、不暗示進度，只表示還在做事 */
+.waiting-rule span {
+  display: block;
+  width: 22%;
+  height: 100%;
+  background: var(--ink);
+  animation: leaf-through 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes leaf-through {
+  from { transform: translateX(0); }
+  to { transform: translateX(355%); }
+}
+
+.waiting-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.waiting-foot .link-button {
+  color: var(--ink);
+}
+
+.failure-message {
+  font-size: var(--text-read);
+  line-height: 1.8;
+}
+
+.failure-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .home {
+    padding-block: clamp(var(--space-5), 14vh, 150px) var(--space-6);
+  }
+
+  .example {
+    padding-block: var(--space-3);
+  }
+}
+
+@media (min-width: 1024px) {
+  .home {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 0;
+  }
+
+  .ask {
+    padding-inline-end: var(--space-6);
+  }
+
+  .examples {
+    padding-inline-start: var(--space-5);
+    border-inline-start: 1px solid var(--rule);
+  }
+}
+
+/* 不動的黑線看起來就是卡在兩成的進度條，只留文字和秒數 */
+@media (prefers-reduced-motion: reduce) {
+  .waiting-rule span {
+    display: none;
+  }
+}

@@ -1,0 +1,279 @@
+/* 聖經問答：印刷聖經的版面。
+   紙、墨、硃紅三色；硃紅只用於語意（問題裡的名字、圖譜帶進來的段落、引用、節號）。
+   標題與經文用襯線且大，介面字用黑體且小，靠字級反差分層，不靠陰影卡片。 */
+
+:root {
+  color-scheme: light;
+
+  /* 紙與墨 */
+  --paper: #f6f0e4;
+  --paper-lift: #fcf8f0;
+  --paper-shade: #ebe2d0;
+  --ink: #1d1813;
+  --ink-soft: #4a4238;
+  --ink-faint: #6e6455;
+  --rule: #d2c8b4;
+  --edge: #8f8270; /* 表達關係的線與外框，對紙色要 ≥ 3:1 */
+
+  /* 硃紅：唯一的強調色 */
+  --rubric: #a32517;
+  --rubric-deep: #7e1a0f;
+  --rubric-wash: #f2dccd;
+
+  /* 字 */
+  --font-serif: "Noto Serif TC", "Noto Serif CJK TC", "Source Han Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-sans: "Noto Sans TC", "Noto Sans CJK TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --text-display: clamp(2.25rem, 1.15rem + 4.6vw, 4.75rem);
+  --text-question: clamp(1.5rem, 1.1rem + 1.8vw, 2.625rem);
+  --text-read: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --text-small: 0.9375rem;
+  --text-ui: 0.8125rem;
+  --text-micro: 0.6875rem;
+  --leading-read: 1.95;
+  --leading-ui: 1.55;
+
+  /* 間距節奏：不等距，段落內緊、區塊間鬆 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 20px;
+  --space-5: 32px;
+  --space-6: 52px;
+  --space-7: 84px;
+  --gutter: clamp(16px, 4vw, 56px);
+  --measure: 38em;
+
+  /* 動態 */
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--paper);
+  /* 極淡的紙紋 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: var(--text-read);
+  line-height: var(--leading-read);
+  overflow-wrap: break-word;
+}
+
+h1, h2, h3, p, ul, ol {
+  margin: 0;
+  padding: 0;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button, input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: min(100%, 92rem);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* ---- 刊頭：粗細雙線 ---- */
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-4) var(--space-2);
+  border-bottom: 2px solid var(--ink);
+  position: relative;
+  margin-bottom: 5px;
+}
+
+.masthead::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--ink);
+}
+
+.nameplate {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-decoration: none;
+}
+
+.nameplate:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+
+.masthead-note {
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+.ask-again {
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: 1px;
+  padding: var(--space-1) var(--space-2);
+  margin-inline-end: calc(var(--space-2) * -1);
+}
+
+.ask-again:hover {
+  background: var(--paper-shade);
+}
+
+/* ---- 共用小元件 ---- */
+
+.slug {
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: var(--leading-ui);
+  border-top: 2px solid var(--ink);
+  padding-top: var(--space-2);
+}
+
+.button {
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 0.85em 1.5em;
+  border: 1px solid var(--ink);
+  border-radius: 1px;
+  background: var(--ink);
+  color: var(--paper-lift);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.button:hover {
+  background: var(--ink-soft);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.link-button {
+  border: 0;
+  padding: 2px 4px;
+  margin-inline: -4px;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+
+.link-button:hover {
+  background: var(--paper-shade);
+}
+
+.link-button:active {
+  background: var(--rule);
+}
+
+/* ---- 頁尾 ---- */
+
+.colophon {
+  flex: none;
+  padding-block: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.colophon-build {
+  margin-top: 2px;
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .reader::backdrop {
+    animation: none !important;
+  }
+
+  .example:hover .example-arrow,
+  .example:active .example-arrow {
+    transform: none;
+  }
+
+  .button:active {
+    transform: none;
+  }
+
+  .node:active {
+    transform: translate(var(--x), var(--y));
+  }
+}

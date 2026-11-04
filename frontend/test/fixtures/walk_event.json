@@ -1,0 +1,1025 @@
+{
+ "question": "保羅第一次宣教旅程中經過哪些城市，巴拿巴和他的關係是什麼？",
+ "answer": "根據提供的經文段落，保羅和巴拿巴的關係以及他們所經過的城市資訊如下：\n\n**關於巴拿巴和保羅的關係：**\n\n*   在安提阿的教會中，巴拿巴和掃羅（保羅）是先知和教師之一，他們一同事奉主，禁食時，聖靈差遣他們去執行上帝所召的工（使徒行傳 13:1-3）。\n*   他們曾一同在塞浦路斯傳道，在帕弗遇見了猶太人巴‧耶穌（使徒行傳 13:7）。\n*   然而，後來他們因關於馬可的約翰是否一同去工的問題而起了爭論，最終彼此分開（使徒行傳 15:38-39）。巴拿巴帶著馬可坐船前往塞浦路斯，而保羅則揀選了西拉一同出發（使徒行傳 15:39-40）。\n\n**關於宣教旅程經過的城市：**\n\n*   他們最初被聖靈差遣，下到西流基，從那裡坐船前往塞浦路斯（使徒行傳 13:4）。\n*   在塞浦路斯，他們到了撒拉米，在猶太人各會堂裡傳講上帝的道（使徒行傳 13:5）。\n*   他們經過全島，直到帕弗（使徒行傳 13:6）。\n*   在後續的旅程中，保羅則走遍敘利亞、基利家，堅固眾教會（使徒行傳 15:41）。",
+ "route": "R4",
+ "intent": {
+  "type": "event",
+  "entities": [
+   "保羅",
+   "巴拿巴",
+   "第一次宣教旅程"
+  ],
+  "verse_refs": [],
+  "rejected_refs": []
+ },
+ "sources": [
+  {
+   "id": "ps:act.15.36",
+   "book": "使徒行傳",
+   "chapter": 15,
+   "title": "保羅和巴拿巴分手",
+   "verse_range": "36-41",
+   "score": 0.8529785847663879,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.9185408353805542,
+   "found_by": [
+    "hybrid_hybrid",
+    "graph_walk"
+   ],
+   "context": "[1] 使徒行傳 第15章 - 保羅和巴拿巴分手 (36-41節)\n**36** 過了些日子，保羅對巴拿巴說：「我們可以回到從前宣傳主道的各城，看望弟兄們景況如何。」\n\n**37** 巴拿巴有意要帶稱呼馬可的約翰同去；\n\n**38** 但保羅因為馬可從前在旁非利亞離開他們，不和他們同去做工，就以為不可帶他去。\n\n**39** 於是二人起了爭論，甚至彼此分開。巴拿巴帶着馬可，坐船往塞浦路斯去；\n\n**40** 保羅揀選了西拉，也出去，蒙弟兄們把他交於主的恩中。\n\n**41** 他就走遍敘利亞、基利家，堅固眾教會。",
+   "kind": "passage",
+   "start_key": "act.15.36",
+   "end_key": "act.15.41",
+   "passage_id": "ps:act.15.36",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:act.13.4",
+   "book": "使徒行傳",
+   "chapter": 13,
+   "title": "在塞浦路斯傳道",
+   "verse_range": "4-12",
+   "score": 0.702859411239624,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.7040848731994629,
+   "found_by": [
+    "hybrid_hybrid",
+    "graph_walk"
+   ],
+   "context": "[2] 使徒行傳 第13章 - 在塞浦路斯傳道 (4-12節)\n**4** 他們既被聖靈差遣，就下到西流基，從那裏坐船往塞浦路斯去。\n\n**5** 到了撒拉米，就在猶太人各會堂裏傳講上帝的道，也有約翰作他們的幫手。\n\n**6** 經過全島，直到帕弗，在那裏遇見一個有法術、假充先知的猶太人，名叫巴‧耶穌。\n\n**7** 這人常和方伯士求‧保羅同在。士求‧保羅是個通達人，他請了巴拿巴和掃羅來，要聽上帝的道。\n\n**8** 只是那行法術的以呂馬（這名翻出來就是行法術的意思）敵擋使徒，要叫方伯不信真道。\n\n**9** 掃羅又名保羅，被聖靈充滿，定睛看他，\n\n**10** 說：「你這充滿各樣詭詐奸惡，魔鬼的兒子，眾善的仇敵，你混亂主的正道還不止住嗎？\n\n**11** 現在主的手加在你身上，你要瞎眼，暫且不見日光。」他的眼睛立刻昏蒙黑暗，四下裏求人拉着手領他。\n\n**12** 方伯看見所做的事，很希奇主的道，就信了。",
+   "kind": "passage",
+   "start_key": "act.13.4",
+   "end_key": "act.13.12",
+   "passage_id": "ps:act.13.4",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:act.9.26",
+   "book": "使徒行傳",
+   "chapter": 9,
+   "title": "掃羅在耶路撒冷",
+   "verse_range": "26-31",
+   "score": 0.6450400805473328,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.6214858293533325,
+   "found_by": [
+    "hybrid_hybrid"
+   ],
+   "context": "[3] 使徒行傳 第9章 - 掃羅在耶路撒冷 (26-31節)\n**26** 掃羅到了耶路撒冷，想與門徒結交，他們卻都怕他，不信他是門徒。\n\n**27** 惟有巴拿巴接待他，領去見使徒，把他在路上怎麼看見主，主怎麼向他說話，他在大馬士革怎麼奉耶穌的名放膽傳道，都述說出來。\n\n**28** 於是掃羅在耶路撒冷和門徒出入來往，\n\n**29** 奉主的名放膽傳道，並與說希臘話的猶太人講論辯駁；他們卻想法子要殺他。\n\n**30** 弟兄們知道了就送他下凱撒利亞，打發他往大數去。\n\n**31** 那時，猶太、加利利、撒馬利亞各處的教會都得平安，被建立；凡事敬畏主，蒙聖靈的安慰，人數就增多了。",
+   "kind": "passage",
+   "start_key": "act.9.26",
+   "end_key": "act.9.31",
+   "passage_id": "ps:act.9.26",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:act.15.1",
+   "book": "使徒行傳",
+   "chapter": 15,
+   "title": "耶路撒冷會議",
+   "verse_range": "1-21",
+   "score": 0.6203903973102569,
+   "strategy": "sql_supplement",
+   "rerank_score": 0.6719862818717957,
+   "found_by": [
+    "sql_supplement",
+    "graph_walk"
+   ],
+   "context": "[4] 使徒行傳 第15章 - 耶路撒冷會議 (1-21節)\n**1** 有幾個人從猶太下來，教訓弟兄們說：「你們若不按摩西的規條受割禮，不能得救。」\n\n**2** 保羅、巴拿巴與他們大大地紛爭辯論；眾門徒就定規，叫保羅、巴拿巴和本會中幾個人，為所辯論的，上耶路撒冷去見使徒和長老。\n\n**3** 於是教會送他們起行。他們經過腓尼基、撒馬利亞，隨處傳說外邦人歸主的事，叫眾弟兄都甚歡喜。\n\n**4** 到了耶路撒冷，教會和使徒並長老都接待他們，他們就述說上帝同他們所行的一切事。\n\n**5** 惟有幾個信徒，是法利賽教門的人，起來說：「必須給外邦人行割禮，吩咐他們遵守摩西的律法。」\n\n**6** 使徒和長老聚會商議這事；\n\n**7** 辯論已經多了，彼得就起來，說：「諸位弟兄，你們知道上帝早已在你們中間揀選了我，叫外邦人從我口中得聽福音之道，而且相信。\n\n**8** 知道人心的上帝也為他們作了見證，賜聖靈給他們，正如給我們一樣；\n\n**9** 又藉着信潔淨了他們的心，並不分他們我們。\n\n**10** 現在為甚麼試探上帝，要把我們祖宗和我們所不能負的軛放在門徒的頸項上呢？\n\n**11** 我們得救乃是因主耶穌的恩，和他們一樣，這是我們所信的。」\n\n**12** 眾人都默默無聲，聽巴拿巴和保羅述說上帝藉他們在外邦人中所行的神蹟奇事。\n\n**13** 他們住了聲，雅各就說：「諸位弟兄，請聽我的話。\n\n**14** 方才西門述說上帝當初怎樣眷顧外邦人，從他們中間選取百姓歸於自己的名下；\n\n**15** 眾先知的話也與這意思相合。\n\n**16** 正如經上所寫的：此後，我要回來，重新修造大衛倒塌的帳幕，把那破壞的重新修造建立起來，\n\n**17** 叫餘剩的人，\n就是凡稱為我名下的外邦人，\n都尋求主。\n\n**18** 這話是從創世以來顯明這事的主說的。\n\n**19** 「所以據我的意見，不可難為那歸服上帝的外邦人；\n\n**20** 只要寫信，吩咐他們禁戒偶像的污穢和姦淫，並勒死的牲畜和血。\n\n**21** 因為從古以來，摩西的書在各城有人傳講，每逢安息日，在會堂裏誦讀。」",
+   "kind": "passage",
+   "start_key": "act.15.1",
+   "end_key": "act.15.21",
+   "passage_id": "ps:act.15.1",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:act.11.19",
+   "book": "使徒行傳",
+   "chapter": 11,
+   "title": "安提阿的教會",
+   "verse_range": "19-30",
+   "score": 0.381434890627861,
+   "strategy": "graph_walk",
+   "rerank_score": 0.33062127232551575,
+   "found_by": [
+    "graph_walk"
+   ],
+   "context": "[5] 使徒行傳 第11章 - 安提阿的教會 (19-30節)\n**19** 那些因司提反的事遭患難四散的門徒直走到腓尼基和塞浦路斯，並安提阿；他們不向別人講道，只向猶太人講。\n\n**20** 但內中有塞浦路斯和古利奈人，他們到了安提阿也向希臘人傳講主耶穌。\n\n**21** 主與他們同在，信而歸主的人就很多了。\n\n**22** 這風聲傳到耶路撒冷教會人的耳中，他們就打發巴拿巴出去，走到安提阿為止。\n\n**23** 他到了那裏，看見上帝所賜的恩就歡喜，勸勉眾人，立定心志，恆久靠主。\n\n**24** 這巴拿巴原是個好人，被聖靈充滿，大有信心。於是有許多人歸服了主。\n\n**25** 他又往大數去找掃羅，\n\n**26** 找着了，就帶他到安提阿去。他們足有一年的工夫和教會一同聚集，教訓了許多人。門徒稱為「基督徒」是從安提阿起首。\n\n**27** 當那些日子，有幾位先知從耶路撒冷下到安提阿。\n\n**28** 內中有一位，名叫亞迦布，站起來，藉着聖靈指明天下將有大饑荒。（這事到克勞第年間果然有了。）\n\n**29** 於是門徒定意照各人的力量捐錢，送去供給住在猶太的弟兄。\n\n**30** 他們就這樣行，把捐項託巴拿巴和掃羅送到眾長老那裏。",
+   "kind": "passage",
+   "start_key": "act.11.19",
+   "end_key": "act.11.30",
+   "passage_id": "ps:act.11.19",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:act.13.1",
+   "book": "使徒行傳",
+   "chapter": 13,
+   "title": "巴拿巴和掃羅奉差遣",
+   "verse_range": "1-3",
+   "score": null,
+   "strategy": "event_registry",
+   "rerank_score": null,
+   "found_by": [
+    "event_registry"
+   ],
+   "context": "[6] 使徒行傳 第13章 - 巴拿巴和掃羅奉差遣 (1-3節)\n**1** 在安提阿的教會中，有幾位先知和教師，就是巴拿巴和稱呼尼結的西面、古利奈人路求，與分封之王希律同養的馬念，並掃羅。\n\n**2** 他們事奉主、禁食的時候，聖靈說：「要為我分派巴拿巴和掃羅，去做我召他們所做的工。」\n\n**3** 於是禁食禱告，按手在他們頭上，就打發他們去了。",
+   "kind": "passage",
+   "start_key": "act.13.1",
+   "end_key": "act.13.3",
+   "passage_id": "ps:act.13.1",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  }
+ ],
+ "aux_card": null,
+ "graph_trace": [
+  {
+   "op": "event_registry",
+   "hops": 1,
+   "nodes": [
+    "ev0009"
+   ],
+   "edges": [
+    [
+     "ev0009",
+     "anchor",
+     "ps:act.13.1"
+    ]
+   ],
+   "injected": "context",
+   "passages": [
+    "ps:act.13.1"
+   ],
+   "confirmed": [],
+   "seeds": [],
+   "names": [],
+   "walked": [],
+   "n_cypher": 0,
+   "ms": null,
+   "skip_reason": null
+  },
+  {
+   "op": "graph_walk",
+   "hops": 2,
+   "nodes": [
+    "nm:1216b4d0d4c6",
+    "nm:a4601de1b669",
+    "nm:24fc57664df0",
+    "nm:4f660443eaf4",
+    "nm:d45a0ffedf6f",
+    "nm:be47f0c78e9f",
+    "nm:d757b5eaa52f",
+    "nm:df750d11320c",
+    "nm:ec8a86828d50",
+    "nm:d83e4cd1c672",
+    "nm:eccbf10cb033",
+    "nm:71c1e5993e39",
+    "nm:2bb408155e79",
+    "nm:615957eb6e8b",
+    "nm:3d51e8a964b6",
+    "nm:4180f03b7fc8",
+    "nm:842eea1aea08",
+    "nm:86bf4b3df271",
+    "nm:a2ad4bdccd95",
+    "nm:9aff58dd3c97",
+    "nm:1a812a94f9e0",
+    "nm:386eb8670fe7",
+    "nm:59ba86e5ff5a",
+    "nm:67f7420560f3",
+    "nm:f425b0205082",
+    "nm:6cfeae0865ac",
+    "nm:a4e6975c2cc6",
+    "nm:611e10103109",
+    "nm:c32446846c88",
+    "nm:fbde8ecbf72a",
+    "nm:3373e831a050",
+    "nm:575a379023da",
+    "nm:6663874a4e02",
+    "nm:c21faeeef08a",
+    "nm:c3255401525e",
+    "nm:5985a7f58753",
+    "ps:act.15.36",
+    "ps:act.13.4",
+    "ps:act.21.1",
+    "ps:act.15.22",
+    "ps:act.13.13",
+    "ps:act.11.19",
+    "ps:act.27.1",
+    "ps:col.4.7",
+    "ps:gal.1.11",
+    "ps:act.15.1"
+   ],
+   "edges": [],
+   "injected": "context",
+   "passages": [
+    "ps:act.11.19"
+   ],
+   "confirmed": [
+    "ps:act.15.36",
+    "ps:act.13.4",
+    "ps:act.15.1"
+   ],
+   "seeds": [
+    "ps:act.15.36",
+    "ps:gal.1.11",
+    "ps:act.21.17",
+    "ps:act.13.4",
+    "ps:act.21.1",
+    "ps:act.15.22",
+    "ps:act.18.1",
+    "ps:gal.2.1",
+    "ps:rom.1.8",
+    "ps:act.19.1",
+    "nm:a4601de1b669",
+    "nm:1216b4d0d4c6"
+   ],
+   "names": [
+    "巴拿巴",
+    "保羅",
+    "敘利亞",
+    "基利家",
+    "塞浦路斯",
+    "西拉",
+    "旁非利亞",
+    "馬可",
+    "約翰",
+    "猶太",
+    "磯法",
+    "阿拉伯",
+    "大馬士革",
+    "希臘",
+    "巴‧耶穌",
+    "西流基",
+    "撒拉米",
+    "士求‧保羅",
+    "以呂馬",
+    "帕弗",
+    "哥士",
+    "帕大喇",
+    "拿孫",
+    "多利買",
+    "羅底",
+    "哥林多",
+    "亞迦布",
+    "腓尼基",
+    "羅馬",
+    "腓利",
+    "安提阿",
+    "亞里達古",
+    "凱撒利亞",
+    "掃羅",
+    "大數",
+    "馬其頓"
+   ],
+   "walked": [
+    "ps:act.15.36",
+    "ps:act.13.4",
+    "ps:act.21.1",
+    "ps:act.15.22",
+    "ps:act.13.13",
+    "ps:act.11.19",
+    "ps:act.27.1",
+    "ps:col.4.7",
+    "ps:gal.1.11",
+    "ps:act.15.1"
+   ],
+   "n_cypher": 2,
+   "ms": 5.17,
+   "skip_reason": null
+  }
+ ],
+ "build_id": "b20261103_615c1ceb",
+ "kg": {
+  "status": "ok",
+  "reason": null,
+  "names": [
+   {
+    "id": "nm:1216b4d0d4c6",
+    "label": "巴拿巴",
+    "df": 16,
+    "idf": 5.155096,
+    "in_question": true
+   },
+   {
+    "id": "nm:1a812a94f9e0",
+    "label": "哥士",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:24fc57664df0",
+    "label": "敘利亞",
+    "df": 9,
+    "idf": 5.73046,
+    "in_question": false
+   },
+   {
+    "id": "nm:2bb408155e79",
+    "label": "大馬士革",
+    "df": 37,
+    "idf": 4.316767,
+    "in_question": false
+   },
+   {
+    "id": "nm:3373e831a050",
+    "label": "安提阿",
+    "df": 10,
+    "idf": 5.6251,
+    "in_question": false
+   },
+   {
+    "id": "nm:386eb8670fe7",
+    "label": "帕大喇",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:3d51e8a964b6",
+    "label": "巴‧耶穌",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:4180f03b7fc8",
+    "label": "西流基",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:4f660443eaf4",
+    "label": "基利家",
+    "df": 8,
+    "idf": 5.848244,
+    "in_question": false
+   },
+   {
+    "id": "nm:575a379023da",
+    "label": "亞里達古",
+    "df": 5,
+    "idf": 6.318247,
+    "in_question": false
+   },
+   {
+    "id": "nm:5985a7f58753",
+    "label": "馬其頓",
+    "df": 18,
+    "idf": 5.037313,
+    "in_question": false
+   },
+   {
+    "id": "nm:59ba86e5ff5a",
+    "label": "拿孫",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:611e10103109",
+    "label": "腓尼基",
+    "df": 3,
+    "idf": 6.829073,
+    "in_question": false
+   },
+   {
+    "id": "nm:615957eb6e8b",
+    "label": "希臘",
+    "df": 31,
+    "idf": 4.493698,
+    "in_question": false
+   },
+   {
+    "id": "nm:6663874a4e02",
+    "label": "凱撒利亞",
+    "df": 10,
+    "idf": 5.6251,
+    "in_question": false
+   },
+   {
+    "id": "nm:67f7420560f3",
+    "label": "多利買",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:6cfeae0865ac",
+    "label": "哥林多",
+    "df": 7,
+    "idf": 5.981775,
+    "in_question": false
+   },
+   {
+    "id": "nm:71c1e5993e39",
+    "label": "阿拉伯",
+    "df": 16,
+    "idf": 5.155096,
+    "in_question": false
+   },
+   {
+    "id": "nm:842eea1aea08",
+    "label": "撒拉米",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:86bf4b3df271",
+    "label": "士求‧保羅",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:9aff58dd3c97",
+    "label": "帕弗",
+    "df": 2,
+    "idf": 7.234538,
+    "in_question": false
+   },
+   {
+    "id": "nm:a2ad4bdccd95",
+    "label": "以呂馬",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:a4601de1b669",
+    "label": "保羅",
+    "df": 70,
+    "idf": 3.67919,
+    "in_question": true
+   },
+   {
+    "id": "nm:a4e6975c2cc6",
+    "label": "亞迦布",
+    "df": 2,
+    "idf": 7.234538,
+    "in_question": false
+   },
+   {
+    "id": "nm:be47f0c78e9f",
+    "label": "西拉",
+    "df": 17,
+    "idf": 5.094472,
+    "in_question": false
+   },
+   {
+    "id": "nm:c21faeeef08a",
+    "label": "掃羅",
+    "df": 84,
+    "idf": 3.496868,
+    "in_question": false
+   },
+   {
+    "id": "nm:c32446846c88",
+    "label": "羅馬",
+    "df": 16,
+    "idf": 5.155096,
+    "in_question": false
+   },
+   {
+    "id": "nm:c3255401525e",
+    "label": "大數",
+    "df": 5,
+    "idf": 6.318247,
+    "in_question": false
+   },
+   {
+    "id": "nm:d45a0ffedf6f",
+    "label": "塞浦路斯",
+    "df": 6,
+    "idf": 6.135926,
+    "in_question": false
+   },
+   {
+    "id": "nm:d757b5eaa52f",
+    "label": "旁非利亞",
+    "df": 5,
+    "idf": 6.318247,
+    "in_question": false
+   },
+   {
+    "id": "nm:d83e4cd1c672",
+    "label": "猶太",
+    "df": 138,
+    "idf": 3.000431,
+    "in_question": false
+   },
+   {
+    "id": "nm:df750d11320c",
+    "label": "馬可",
+    "df": 7,
+    "idf": 5.981775,
+    "in_question": false
+   },
+   {
+    "id": "nm:ec8a86828d50",
+    "label": "約翰",
+    "df": 74,
+    "idf": 3.62362,
+    "in_question": false
+   },
+   {
+    "id": "nm:eccbf10cb033",
+    "label": "磯法",
+    "df": 8,
+    "idf": 5.848244,
+    "in_question": false
+   },
+   {
+    "id": "nm:f425b0205082",
+    "label": "羅底",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:fbde8ecbf72a",
+    "label": "腓利",
+    "df": 4,
+    "idf": 6.541391,
+    "in_question": false
+   }
+  ],
+  "passages": [
+   {
+    "id": "ps:act.11.19",
+    "title": "安提阿的教會",
+    "book_id": "act",
+    "chapter": 11,
+    "start_key": "act.11.19",
+    "end_key": "act.11.30",
+    "walked": true
+   },
+   {
+    "id": "ps:act.13.1",
+    "title": "巴拿巴和掃羅奉差遣",
+    "book_id": "act",
+    "chapter": 13,
+    "start_key": "act.13.1",
+    "end_key": "act.13.3",
+    "walked": false
+   },
+   {
+    "id": "ps:act.13.13",
+    "title": "在彼西底的安提阿傳道",
+    "book_id": "act",
+    "chapter": 13,
+    "start_key": "act.13.13",
+    "end_key": "act.13.52",
+    "walked": true
+   },
+   {
+    "id": "ps:act.13.4",
+    "title": "在塞浦路斯傳道",
+    "book_id": "act",
+    "chapter": 13,
+    "start_key": "act.13.4",
+    "end_key": "act.13.12",
+    "walked": true
+   },
+   {
+    "id": "ps:act.15.1",
+    "title": "耶路撒冷會議",
+    "book_id": "act",
+    "chapter": 15,
+    "start_key": "act.15.1",
+    "end_key": "act.15.21",
+    "walked": true
+   },
+   {
+    "id": "ps:act.15.22",
+    "title": "會議的覆函",
+    "book_id": "act",
+    "chapter": 15,
+    "start_key": "act.15.22",
+    "end_key": "act.15.35",
+    "walked": true
+   },
+   {
+    "id": "ps:act.15.36",
+    "title": "保羅和巴拿巴分手",
+    "book_id": "act",
+    "chapter": 15,
+    "start_key": "act.15.36",
+    "end_key": "act.15.41",
+    "walked": true
+   },
+   {
+    "id": "ps:act.21.1",
+    "title": "保羅上耶路撒冷",
+    "book_id": "act",
+    "chapter": 21,
+    "start_key": "act.21.1",
+    "end_key": "act.21.16",
+    "walked": true
+   },
+   {
+    "id": "ps:act.27.1",
+    "title": "保羅坐船往羅馬",
+    "book_id": "act",
+    "chapter": 27,
+    "start_key": "act.27.1",
+    "end_key": "act.27.12",
+    "walked": true
+   },
+   {
+    "id": "ps:act.9.26",
+    "title": "掃羅在耶路撒冷",
+    "book_id": "act",
+    "chapter": 9,
+    "start_key": "act.9.26",
+    "end_key": "act.9.31",
+    "walked": false
+   },
+   {
+    "id": "ps:col.4.7",
+    "title": "最後的問候",
+    "book_id": "col",
+    "chapter": 4,
+    "start_key": "col.4.7",
+    "end_key": "col.4.18",
+    "walked": true
+   },
+   {
+    "id": "ps:gal.1.11",
+    "title": "保羅怎樣成為使徒",
+    "book_id": "gal",
+    "chapter": 1,
+    "start_key": "gal.1.11",
+    "end_key": "gal.1.24",
+    "walked": true
+   }
+  ],
+  "mentions": [
+   [
+    "ps:act.11.19",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:3373e831a050"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:611e10103109"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:615957eb6e8b"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:a4e6975c2cc6"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:c21faeeef08a"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:c3255401525e"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:d45a0ffedf6f"
+   ],
+   [
+    "ps:act.11.19",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:act.13.1",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.13.1",
+    "nm:3373e831a050"
+   ],
+   [
+    "ps:act.13.1",
+    "nm:c21faeeef08a"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:3373e831a050"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:9aff58dd3c97"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:c21faeeef08a"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:d757b5eaa52f"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:3d51e8a964b6"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:4180f03b7fc8"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:842eea1aea08"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:86bf4b3df271"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:9aff58dd3c97"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:a2ad4bdccd95"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:c21faeeef08a"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:d45a0ffedf6f"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:act.13.4",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:act.15.1",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.15.1",
+    "nm:611e10103109"
+   ],
+   [
+    "ps:act.15.1",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.15.1",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:act.15.22",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.15.22",
+    "nm:24fc57664df0"
+   ],
+   [
+    "ps:act.15.22",
+    "nm:3373e831a050"
+   ],
+   [
+    "ps:act.15.22",
+    "nm:4f660443eaf4"
+   ],
+   [
+    "ps:act.15.22",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.15.22",
+    "nm:be47f0c78e9f"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:24fc57664df0"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:4f660443eaf4"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:be47f0c78e9f"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:d45a0ffedf6f"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:d757b5eaa52f"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:df750d11320c"
+   ],
+   [
+    "ps:act.15.36",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:1a812a94f9e0"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:24fc57664df0"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:386eb8670fe7"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:59ba86e5ff5a"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:611e10103109"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:6663874a4e02"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:67f7420560f3"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:a4e6975c2cc6"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:d45a0ffedf6f"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:f425b0205082"
+   ],
+   [
+    "ps:act.21.1",
+    "nm:fbde8ecbf72a"
+   ],
+   [
+    "ps:act.27.1",
+    "nm:4f660443eaf4"
+   ],
+   [
+    "ps:act.27.1",
+    "nm:575a379023da"
+   ],
+   [
+    "ps:act.27.1",
+    "nm:5985a7f58753"
+   ],
+   [
+    "ps:act.27.1",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.27.1",
+    "nm:d45a0ffedf6f"
+   ],
+   [
+    "ps:act.27.1",
+    "nm:d757b5eaa52f"
+   ],
+   [
+    "ps:act.9.26",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:act.9.26",
+    "nm:2bb408155e79"
+   ],
+   [
+    "ps:act.9.26",
+    "nm:6663874a4e02"
+   ],
+   [
+    "ps:act.9.26",
+    "nm:c21faeeef08a"
+   ],
+   [
+    "ps:act.9.26",
+    "nm:c3255401525e"
+   ],
+   [
+    "ps:act.9.26",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:col.4.7",
+    "nm:1216b4d0d4c6"
+   ],
+   [
+    "ps:col.4.7",
+    "nm:575a379023da"
+   ],
+   [
+    "ps:col.4.7",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:col.4.7",
+    "nm:df750d11320c"
+   ],
+   [
+    "ps:gal.1.11",
+    "nm:24fc57664df0"
+   ],
+   [
+    "ps:gal.1.11",
+    "nm:2bb408155e79"
+   ],
+   [
+    "ps:gal.1.11",
+    "nm:4f660443eaf4"
+   ],
+   [
+    "ps:gal.1.11",
+    "nm:71c1e5993e39"
+   ],
+   [
+    "ps:gal.1.11",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:gal.1.11",
+    "nm:eccbf10cb033"
+   ]
+  ],
+  "events": [
+   {
+    "id": "ev0009",
+    "name": "第一次宣教旅程",
+    "passage": "ps:act.13.1"
+   }
+  ]
+ }
+}

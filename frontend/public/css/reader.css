@@ -1,0 +1,254 @@
+/* 經文閱讀面板 */
+
+/* ---- 經文閱讀面板：桌機右側，手機底部 ---- */
+
+/* 面板開著時背景不跟著捲；捲軸消失讓出的寬度（reader.js 量好）補回來，版面才不會橫移、圖才不用重畫 */
+html:has(.reader[open]) {
+  overflow: hidden;
+}
+
+html:has(.reader[open]) body {
+  padding-inline-end: var(--scrollbar-width, 0);
+}
+
+.reader {
+  width: 100%;
+  max-width: 100%;
+  max-height: 88dvh;
+  height: auto;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+  border-top: 2px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.reader[open] {
+  animation: sheet-in var(--duration-normal) var(--ease-out);
+}
+
+.reader::backdrop {
+  background: rgb(29 24 19 / 0.32);
+  animation: fade-in var(--duration-normal) ease-out;
+}
+
+@keyframes sheet-in {
+  from { transform: translateY(32px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes drawer-in {
+  from { transform: translateX(32px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.reader-sheet {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: inherit;
+}
+
+/* 手機：章號、書名、關閉同一列，標題獨佔一列才不會擠 */
+.reader-head {
+  flex: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "numeral book close"
+    "title title title"
+    "ref ref ref";
+  align-items: center;
+  column-gap: var(--space-3);
+  padding: var(--space-3) var(--gutter);
+  border-bottom: 1px solid var(--rule);
+}
+
+.reader-titles {
+  display: contents;
+}
+
+.reader-numeral {
+  grid-area: numeral;
+  font-size: clamp(2.25rem, 2rem + 2vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: lining-nums;
+}
+
+.reader-numeral:empty {
+  display: none;
+}
+
+.reader-book {
+  grid-area: book;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  letter-spacing: 0.1em;
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.reader-title {
+  grid-area: title;
+  font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.reader-ref {
+  grid-area: ref;
+  margin-top: 2px;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.reader-close {
+  grid-area: close;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--ink-faint);
+  border-radius: 1px;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+}
+
+.reader-close:hover {
+  border-color: var(--ink);
+  background: var(--paper-shade);
+}
+
+.reader-close:active {
+  background: var(--rule);
+}
+
+.reader-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-4) var(--gutter) var(--space-5);
+}
+
+.reader-body:focus-visible {
+  outline-offset: -2px;
+}
+
+.scripture {
+  font-size: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem);
+  line-height: 2.05;
+  text-align: justify;
+  text-justify: inter-character;
+}
+
+.scripture + .scripture,
+.scripture-heading + .scripture {
+  margin-top: var(--space-2);
+}
+
+.scripture-heading {
+  margin-top: var(--space-4);
+  font-size: var(--text-read);
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.scripture-heading:first-child {
+  margin-top: 0;
+}
+
+.verse {
+  white-space: pre-line;
+}
+
+.verse.is-cited {
+  background: var(--rubric-wash);
+  color: inherit;
+  padding: 0.12em 0.1em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.verse-no {
+  margin-inline: 0.1em 0.2em;
+  font-family: var(--font-sans);
+  font-size: 0.62em;
+  font-weight: 500;
+  line-height: 0;
+  color: var(--rubric);
+  font-variant-numeric: tabular-nums;
+}
+
+.reader-message {
+  font-size: var(--text-read);
+  line-height: 1.8;
+}
+
+.reader-message.is-loading {
+  color: var(--ink-faint);
+}
+
+.reader-note {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.reader-foot {
+  flex: none;
+  padding: var(--space-2) var(--gutter);
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  letter-spacing: 0.08em;
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+@media (min-width: 768px) {
+  .reader-head {
+    grid-template-areas:
+      "numeral book close"
+      "numeral title close"
+      "numeral ref close";
+    align-items: start;
+    padding-block: var(--space-4) var(--space-3);
+  }
+
+  .reader-numeral {
+    align-self: center;
+  }
+
+  .reader {
+    width: min(40rem, 100%);
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0 0 0 auto;
+    border-top: 0;
+    border-left: 2px solid var(--ink);
+  }
+
+  .reader[open] {
+    animation-name: drawer-in;
+  }
+
+  .reader-head,
+  .reader-body,
+  .reader-foot {
+    padding-inline: var(--space-5);
+  }
+}

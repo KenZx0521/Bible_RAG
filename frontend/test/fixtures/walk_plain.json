@@ -1,0 +1,964 @@
+{
+ "question": "耶穌在哪裡受洗？",
+ "answer": "根據提供的經文段落，耶穌在約旦河受洗。\n\n*   馬可福音 第1章 9節記載：「那時，耶穌從加利利的拿撒勒來，在約旦河裏受了約翰的洗。」\n*   馬太福音 第3章 13節也提到：「當下，耶穌從加利利來到約旦河，見了約翰，要受他的洗。」",
+ "route": "R4",
+ "intent": {
+  "type": "event",
+  "entities": [
+   "耶穌"
+  ],
+  "verse_refs": [],
+  "rejected_refs": []
+ },
+ "sources": [
+  {
+   "id": "ps:mrk.1.9",
+   "book": "馬可福音",
+   "chapter": 1,
+   "title": "耶穌受洗",
+   "verse_range": "9-11",
+   "score": 0.9019008493423462,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.9884297847747803,
+   "found_by": [
+    "hybrid_hybrid",
+    "graph_walk"
+   ],
+   "context": "[1] 馬可福音 第1章 - 耶穌受洗 (9-11節)\n**9** 那時，耶穌從加利利的拿撒勒來，在約旦河裏受了約翰的洗。\n\n**10** 他從水裏一上來，就看見天裂開了，聖靈彷彿鴿子，降在他身上。\n\n**11** 又有聲音從天上來，說：「你是我的愛子，我喜悅你。」",
+   "kind": "passage",
+   "start_key": "mrk.1.9",
+   "end_key": "mrk.1.11",
+   "passage_id": "ps:mrk.1.9",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:mat.3.13",
+   "book": "馬太福音",
+   "chapter": 3,
+   "title": "耶穌受洗",
+   "verse_range": "13-17",
+   "score": 0.8907588219642638,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.9725126028060913,
+   "found_by": [
+    "hybrid_hybrid"
+   ],
+   "context": "[2] 馬太福音 第3章 - 耶穌受洗 (13-17節)\n**13** 當下，耶穌從加利利來到約旦河，見了約翰，要受他的洗。\n\n**14** 約翰想要攔住他，說：「我當受你的洗，你反倒上我這裏來嗎？」\n\n**15** 耶穌回答說：「你暫且許我，因為我們理當這樣盡諸般的義。」於是約翰許了他。\n\n**16** 耶穌受了洗，隨即從水裏上來。天忽然為他開了，他就看見上帝的靈彷彿鴿子降下，落在他身上。\n\n**17** 從天上有聲音說：「這是我的愛子，我所喜悅的。」",
+   "kind": "passage",
+   "start_key": "mat.3.13",
+   "end_key": "mat.3.17",
+   "passage_id": "ps:mat.3.13",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:jhn.3.22",
+   "book": "約翰福音",
+   "chapter": 3,
+   "title": "耶穌和施洗約翰",
+   "verse_range": "22-30",
+   "score": 0.8704145228862762,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.9434493184089661,
+   "found_by": [
+    "hybrid_hybrid",
+    "graph_walk"
+   ],
+   "context": "[3] 約翰福音 第3章 - 耶穌和施洗約翰 (22-30節)\n**22** 這事以後，耶穌和門徒到了猶太地，在那裏居住，施洗。\n\n**23** 約翰在靠近撒冷的哀嫩也施洗；因為那裏水多，眾人都去受洗。（\n\n**24** 那時約翰還沒有下在監裏。）\n\n**25** 約翰的門徒和一個猶太人辯論潔淨的禮，\n\n**26** 就來見約翰，說：「拉比，從前同你在約旦河外、你所見證的那位，現在施洗，眾人都往他那裏去了。」\n\n**27** 約翰說：「若不是從天上賜的，人就不能得甚麼。\n\n**28** 我曾說：『我不是基督，是奉差遣在他前面的』，你們自己可以給我作見證。\n\n**29** 娶新婦的就是新郎；新郎的朋友站着，聽見新郎的聲音就甚喜樂。故此，我這喜樂滿足了。\n\n**30** 他必興旺，我必衰微。」",
+   "kind": "passage",
+   "start_key": "jhn.3.22",
+   "end_key": "jhn.3.30",
+   "passage_id": "ps:jhn.3.22",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ps:mrk.1.1",
+   "book": "馬可福音",
+   "chapter": 1,
+   "title": "施洗約翰傳道",
+   "verse_range": "1-8",
+   "score": 0.8516078090667724,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.9165825843811035,
+   "found_by": [
+    "hybrid_hybrid"
+   ],
+   "context": "[4] 馬可福音 第1章 - 施洗約翰傳道 (1-8節)\n**1** 上帝的兒子，耶穌基督福音的起頭。\n\n**2** 正如先知以賽亞書上記着說：看哪，我要差遣我的使者在你前面，預備道路。\n\n**3** 在曠野有人聲喊着說：\n預備主的道，\n修直他的路。\n\n**4** 照這話，約翰來了，在曠野施洗，傳悔改的洗禮，使罪得赦。\n\n**5** 猶太全地和耶路撒冷的人都出去到約翰那裏，承認他們的罪，在約旦河裏受他的洗。\n\n**6** 約翰穿駱駝毛的衣服，腰束皮帶，吃的是蝗蟲、野蜜。\n\n**7** 他傳道說：「有一位在我以後來的，能力比我更大，我就是彎腰給他解鞋帶也是不配的。\n\n**8** 我是用水給你們施洗，他卻要用聖靈給你們施洗。」",
+   "kind": "passage",
+   "start_key": "mrk.1.1",
+   "end_key": "mrk.1.8",
+   "passage_id": "ps:mrk.1.1",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  },
+  {
+   "id": "ck:jhn.4.1~jhn.4.20",
+   "book": "約翰福音",
+   "chapter": 4,
+   "title": "耶穌和撒馬利亞婦人",
+   "verse_range": "1-20",
+   "score": 0.7476772856712341,
+   "strategy": "hybrid_hybrid",
+   "rerank_score": 0.7895389795303345,
+   "found_by": [
+    "hybrid_hybrid",
+    "graph_walk"
+   ],
+   "context": "[5] 約翰福音 第4章 - 耶穌和撒馬利亞婦人 (1-20節)\n**1** 主知道法利賽人聽見他收門徒，施洗，比約翰還多，（\n\n**2** 其實不是耶穌親自施洗，乃是他的門徒施洗，）\n\n**3** 他就離了猶太，又往加利利去。\n\n**4** 必須經過撒馬利亞，\n\n**5** 於是到了撒馬利亞的一座城，名叫敘加，靠近雅各給他兒子約瑟的那塊地。\n\n**6** 在那裏有雅各井；耶穌因走路困乏，就坐在井旁。那時約有午正。\n\n**7** 有一個撒馬利亞的婦人來打水。耶穌對她說：「請你給我水喝。」（\n\n**8** 那時門徒進城買食物去了。）\n\n**9** 撒馬利亞的婦人對他說：「你既是猶太人，怎麼向我一個撒馬利亞婦人要水喝呢？」原來猶太人和撒馬利亞人沒有來往。\n\n**10** 耶穌回答說：「你若知道上帝的恩賜，和對你說『給我水喝』的是誰，你必早求他，他也必早給了你活水。」\n\n**11** 婦人說：「先生，沒有打水的器具，井又深，你從哪裏得活水呢？\n\n**12** 我們的祖宗雅各將這井留給我們，他自己和兒子並牲畜也都喝這井裏的水，難道你比他還大嗎？」\n\n**13** 耶穌回答說：「凡喝這水的還要再渴；\n\n**14** 人若喝我所賜的水就永遠不渴。我所賜的水要在他裏頭成為泉源，直湧到永生。」\n\n**15** 婦人說：「先生，請把這水賜給我，叫我不渴，也不用來這麼遠打水。」\n\n**16** 耶穌說：「你去叫你丈夫也到這裏來。」\n\n**17** 婦人說：「我沒有丈夫。」耶穌說：「你說沒有丈夫是不錯的。\n\n**18** 你已經有五個丈夫，你現在有的並不是你的丈夫。你這話是真的。」\n\n**19** 婦人說：「先生，我看出你是先知。\n\n**20** 我們的祖宗在這山上禮拜，你們倒說，應當禮拜的地方是在耶路撒冷。」",
+   "kind": "chunk",
+   "start_key": "jhn.4.1",
+   "end_key": "jhn.4.20",
+   "passage_id": "ps:jhn.4.1",
+   "split_passage_ids": [],
+   "member_ids": [],
+   "build_id": "b20261103_615c1ceb"
+  }
+ ],
+ "aux_card": null,
+ "graph_trace": [
+  {
+   "op": "graph_walk",
+   "hops": 5,
+   "nodes": [
+    "nm:ec8a86828d50",
+    "nm:cf9dbf34319d",
+    "nm:4d090f99b9c1",
+    "nm:b1a6354a4252",
+    "nm:d83e4cd1c672",
+    "nm:7be1a8e4db3d",
+    "nm:591098837545",
+    "nm:dca0e6589c2b",
+    "nm:3a9dd3b4145d",
+    "nm:c2adb04894f2",
+    "nm:6cfeae0865ac",
+    "nm:f389e0f5cc01",
+    "nm:084234887696",
+    "nm:97622a66cc3d",
+    "nm:c450909b4347",
+    "nm:ff6b6f752d31",
+    "nm:615957eb6e8b",
+    "nm:a4601de1b669",
+    "nm:9ff65d277b78",
+    "nm:5c12c8f54d5e",
+    "nm:94843a9a410c",
+    "nm:bb37f7ddbba8",
+    "nm:ff28b14dd70f",
+    "nm:0b7b8a5b237d",
+    "nm:ede1c7c32910",
+    "nm:f4fdf9b49a85",
+    "nm:b69da322832e",
+    "nm:521b9aa124f3",
+    "nm:355d6da9f825",
+    "nm:4604220b3d28",
+    "nm:59993340fc0e",
+    "nm:845a3fd0a01d",
+    "nm:dd84f0b2c93a",
+    "nm:0496d00605a4",
+    "nm:24fc57664df0",
+    "nm:3904c9f0fb76",
+    "nm:1511282ced8e",
+    "nm:3d16c8b94577",
+    "nm:f01771782499",
+    "nm:529fee8016ab",
+    "nm:9aff58dd3c97",
+    "ps:luk.3.1",
+    "ps:mat.4.12",
+    "ps:jhn.4.1",
+    "ps:mrk.1.9",
+    "ps:act.10.34",
+    "ps:act.13.13",
+    "ps:jhn.3.22",
+    "ps:mrk.6.14",
+    "ps:mat.3.1",
+    "ps:jhn.1.19"
+   ],
+   "edges": [],
+   "injected": "none",
+   "passages": [],
+   "confirmed": [
+    "ps:mrk.1.9",
+    "ps:jhn.3.22",
+    "ck:jhn.4.1~jhn.4.20"
+   ],
+   "seeds": [
+    "ps:mrk.1.9",
+    "ps:mat.3.13",
+    "ps:jhn.3.22",
+    "ps:luk.3.21",
+    "ps:mrk.1.1",
+    "ps:act.19.1",
+    "ps:jhn.5.1",
+    "ps:jhn.4.1",
+    "ps:mat.3.1",
+    "ps:jhn.13.1"
+   ],
+   "names": [
+    "約翰",
+    "約旦河",
+    "加利利",
+    "拿撒勒",
+    "猶太",
+    "哀嫩",
+    "撒冷",
+    "以賽亞",
+    "推喇奴",
+    "畢士大",
+    "哥林多",
+    "亞波羅",
+    "雅各井",
+    "敘加",
+    "以弗所",
+    "亞細亞",
+    "希臘",
+    "保羅",
+    "加略",
+    "西門‧彼得",
+    "西門",
+    "撒馬利亞",
+    "約瑟",
+    "亞伯拉罕",
+    "彼得",
+    "希羅底",
+    "希律",
+    "腓力",
+    "以土利亞",
+    "呂撒聶",
+    "亞比利尼",
+    "特拉可尼",
+    "提庇留",
+    "本丟‧彼拉多",
+    "敘利亞",
+    "亞那",
+    "該亞法",
+    "以利亞",
+    "迦百農",
+    "別加",
+    "帕弗"
+   ],
+   "walked": [
+    "ps:luk.3.1",
+    "ps:mat.4.12",
+    "ps:jhn.4.1",
+    "ps:mrk.1.9",
+    "ps:act.10.34",
+    "ps:act.13.13",
+    "ps:jhn.3.22",
+    "ps:mrk.6.14",
+    "ps:mat.3.1",
+    "ps:jhn.1.19"
+   ],
+   "n_cypher": 2,
+   "ms": 6.76,
+   "skip_reason": null
+  }
+ ],
+ "build_id": "b20261103_615c1ceb",
+ "kg": {
+  "status": "ok",
+  "reason": null,
+  "names": [
+   {
+    "id": "nm:0496d00605a4",
+    "label": "本丟‧彼拉多",
+    "df": 3,
+    "idf": 6.829073,
+    "in_question": false
+   },
+   {
+    "id": "nm:084234887696",
+    "label": "雅各井",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:0b7b8a5b237d",
+    "label": "亞伯拉罕",
+    "df": 98,
+    "idf": 3.342718,
+    "in_question": false
+   },
+   {
+    "id": "nm:1511282ced8e",
+    "label": "該亞法",
+    "df": 8,
+    "idf": 5.848244,
+    "in_question": false
+   },
+   {
+    "id": "nm:24fc57664df0",
+    "label": "敘利亞",
+    "df": 9,
+    "idf": 5.73046,
+    "in_question": false
+   },
+   {
+    "id": "nm:355d6da9f825",
+    "label": "以土利亞",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:3904c9f0fb76",
+    "label": "亞那",
+    "df": 4,
+    "idf": 6.541391,
+    "in_question": false
+   },
+   {
+    "id": "nm:3a9dd3b4145d",
+    "label": "推喇奴",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:3d16c8b94577",
+    "label": "以利亞",
+    "df": 35,
+    "idf": 4.372337,
+    "in_question": false
+   },
+   {
+    "id": "nm:4604220b3d28",
+    "label": "呂撒聶",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:4d090f99b9c1",
+    "label": "加利利",
+    "df": 63,
+    "idf": 3.78455,
+    "in_question": false
+   },
+   {
+    "id": "nm:521b9aa124f3",
+    "label": "腓力",
+    "df": 11,
+    "idf": 5.52979,
+    "in_question": false
+   },
+   {
+    "id": "nm:529fee8016ab",
+    "label": "別加",
+    "df": 2,
+    "idf": 7.234538,
+    "in_question": false
+   },
+   {
+    "id": "nm:591098837545",
+    "label": "撒冷",
+    "df": 4,
+    "idf": 6.541391,
+    "in_question": false
+   },
+   {
+    "id": "nm:59993340fc0e",
+    "label": "亞比利尼",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:5c12c8f54d5e",
+    "label": "西門‧彼得",
+    "df": 15,
+    "idf": 5.219635,
+    "in_question": false
+   },
+   {
+    "id": "nm:615957eb6e8b",
+    "label": "希臘",
+    "df": 31,
+    "idf": 4.493698,
+    "in_question": false
+   },
+   {
+    "id": "nm:6cfeae0865ac",
+    "label": "哥林多",
+    "df": 7,
+    "idf": 5.981775,
+    "in_question": false
+   },
+   {
+    "id": "nm:7be1a8e4db3d",
+    "label": "哀嫩",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:845a3fd0a01d",
+    "label": "特拉可尼",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:94843a9a410c",
+    "label": "西門",
+    "df": 32,
+    "idf": 4.461949,
+    "in_question": false
+   },
+   {
+    "id": "nm:97622a66cc3d",
+    "label": "敘加",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:9aff58dd3c97",
+    "label": "帕弗",
+    "df": 2,
+    "idf": 7.234538,
+    "in_question": false
+   },
+   {
+    "id": "nm:9ff65d277b78",
+    "label": "加略",
+    "df": 14,
+    "idf": 5.288628,
+    "in_question": false
+   },
+   {
+    "id": "nm:a4601de1b669",
+    "label": "保羅",
+    "df": 70,
+    "idf": 3.67919,
+    "in_question": false
+   },
+   {
+    "id": "nm:b1a6354a4252",
+    "label": "拿撒勒",
+    "df": 28,
+    "idf": 4.595481,
+    "in_question": false
+   },
+   {
+    "id": "nm:b69da322832e",
+    "label": "希律",
+    "df": 23,
+    "idf": 4.792191,
+    "in_question": false
+   },
+   {
+    "id": "nm:bb37f7ddbba8",
+    "label": "撒馬利亞",
+    "df": 80,
+    "idf": 3.545658,
+    "in_question": false
+   },
+   {
+    "id": "nm:c2adb04894f2",
+    "label": "畢士大",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:c450909b4347",
+    "label": "以弗所",
+    "df": 16,
+    "idf": 5.155096,
+    "in_question": false
+   },
+   {
+    "id": "nm:cf9dbf34319d",
+    "label": "約旦河",
+    "df": 112,
+    "idf": 3.209186,
+    "in_question": false
+   },
+   {
+    "id": "nm:d83e4cd1c672",
+    "label": "猶太",
+    "df": 138,
+    "idf": 3.000431,
+    "in_question": false
+   },
+   {
+    "id": "nm:dca0e6589c2b",
+    "label": "以賽亞",
+    "df": 35,
+    "idf": 4.372337,
+    "in_question": false
+   },
+   {
+    "id": "nm:dd84f0b2c93a",
+    "label": "提庇留",
+    "df": 1,
+    "idf": 7.927685,
+    "in_question": false
+   },
+   {
+    "id": "nm:ec8a86828d50",
+    "label": "約翰",
+    "df": 74,
+    "idf": 3.62362,
+    "in_question": false
+   },
+   {
+    "id": "nm:ede1c7c32910",
+    "label": "彼得",
+    "df": 69,
+    "idf": 3.693579,
+    "in_question": false
+   },
+   {
+    "id": "nm:f01771782499",
+    "label": "迦百農",
+    "df": 15,
+    "idf": 5.219635,
+    "in_question": false
+   },
+   {
+    "id": "nm:f389e0f5cc01",
+    "label": "亞波羅",
+    "df": 7,
+    "idf": 5.981775,
+    "in_question": false
+   },
+   {
+    "id": "nm:f4fdf9b49a85",
+    "label": "希羅底",
+    "df": 3,
+    "idf": 6.829073,
+    "in_question": false
+   },
+   {
+    "id": "nm:ff28b14dd70f",
+    "label": "約瑟",
+    "df": 87,
+    "idf": 3.461777,
+    "in_question": false
+   },
+   {
+    "id": "nm:ff6b6f752d31",
+    "label": "亞細亞",
+    "df": 17,
+    "idf": 5.094472,
+    "in_question": false
+   }
+  ],
+  "passages": [
+   {
+    "id": "ps:act.10.34",
+    "title": "在哥尼流家中講道",
+    "book_id": "act",
+    "chapter": 10,
+    "start_key": "act.10.34",
+    "end_key": "act.10.43",
+    "walked": true
+   },
+   {
+    "id": "ps:act.13.13",
+    "title": "在彼西底的安提阿傳道",
+    "book_id": "act",
+    "chapter": 13,
+    "start_key": "act.13.13",
+    "end_key": "act.13.52",
+    "walked": true
+   },
+   {
+    "id": "ps:jhn.1.19",
+    "title": "施洗約翰的見證",
+    "book_id": "jhn",
+    "chapter": 1,
+    "start_key": "jhn.1.19",
+    "end_key": "jhn.1.28",
+    "walked": true
+   },
+   {
+    "id": "ps:jhn.3.22",
+    "title": "耶穌和施洗約翰",
+    "book_id": "jhn",
+    "chapter": 3,
+    "start_key": "jhn.3.22",
+    "end_key": "jhn.3.30",
+    "walked": true
+   },
+   {
+    "id": "ps:jhn.4.1",
+    "title": "耶穌和撒馬利亞婦人",
+    "book_id": "jhn",
+    "chapter": 4,
+    "start_key": "jhn.4.1",
+    "end_key": "jhn.4.42",
+    "walked": true
+   },
+   {
+    "id": "ps:luk.3.1",
+    "title": "施洗約翰傳道",
+    "book_id": "luk",
+    "chapter": 3,
+    "start_key": "luk.3.1",
+    "end_key": "luk.3.20",
+    "walked": true
+   },
+   {
+    "id": "ps:mat.3.1",
+    "title": "施洗約翰傳道",
+    "book_id": "mat",
+    "chapter": 3,
+    "start_key": "mat.3.1",
+    "end_key": "mat.3.12",
+    "walked": true
+   },
+   {
+    "id": "ps:mat.3.13",
+    "title": "耶穌受洗",
+    "book_id": "mat",
+    "chapter": 3,
+    "start_key": "mat.3.13",
+    "end_key": "mat.3.17",
+    "walked": false
+   },
+   {
+    "id": "ps:mat.4.12",
+    "title": "開始在加利利傳道",
+    "book_id": "mat",
+    "chapter": 4,
+    "start_key": "mat.4.12",
+    "end_key": "mat.4.17",
+    "walked": true
+   },
+   {
+    "id": "ps:mrk.1.1",
+    "title": "施洗約翰傳道",
+    "book_id": "mrk",
+    "chapter": 1,
+    "start_key": "mrk.1.1",
+    "end_key": "mrk.1.8",
+    "walked": false
+   },
+   {
+    "id": "ps:mrk.1.9",
+    "title": "耶穌受洗",
+    "book_id": "mrk",
+    "chapter": 1,
+    "start_key": "mrk.1.9",
+    "end_key": "mrk.1.11",
+    "walked": true
+   },
+   {
+    "id": "ps:mrk.6.14",
+    "title": "施洗約翰的死",
+    "book_id": "mrk",
+    "chapter": 6,
+    "start_key": "mrk.6.14",
+    "end_key": "mrk.6.29",
+    "walked": true
+   }
+  ],
+  "mentions": [
+   [
+    "ps:act.10.34",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:act.10.34",
+    "nm:b1a6354a4252"
+   ],
+   [
+    "ps:act.10.34",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:act.10.34",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:act.10.34",
+    "nm:ede1c7c32910"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:0b7b8a5b237d"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:529fee8016ab"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:9aff58dd3c97"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:a4601de1b669"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:act.13.13",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:jhn.1.19",
+    "nm:3d16c8b94577"
+   ],
+   [
+    "ps:jhn.1.19",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:jhn.1.19",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:jhn.1.19",
+    "nm:dca0e6589c2b"
+   ],
+   [
+    "ps:jhn.1.19",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:jhn.3.22",
+    "nm:591098837545"
+   ],
+   [
+    "ps:jhn.3.22",
+    "nm:7be1a8e4db3d"
+   ],
+   [
+    "ps:jhn.3.22",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:jhn.3.22",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:jhn.3.22",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:jhn.4.1",
+    "nm:084234887696"
+   ],
+   [
+    "ps:jhn.4.1",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:jhn.4.1",
+    "nm:97622a66cc3d"
+   ],
+   [
+    "ps:jhn.4.1",
+    "nm:bb37f7ddbba8"
+   ],
+   [
+    "ps:jhn.4.1",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:jhn.4.1",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:jhn.4.1",
+    "nm:ff28b14dd70f"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:0496d00605a4"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:0b7b8a5b237d"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:1511282ced8e"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:355d6da9f825"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:3904c9f0fb76"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:4604220b3d28"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:521b9aa124f3"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:59993340fc0e"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:845a3fd0a01d"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:b69da322832e"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:dca0e6589c2b"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:dd84f0b2c93a"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:luk.3.1",
+    "nm:f4fdf9b49a85"
+   ],
+   [
+    "ps:mat.3.1",
+    "nm:0b7b8a5b237d"
+   ],
+   [
+    "ps:mat.3.1",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:mat.3.1",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:mat.3.1",
+    "nm:dca0e6589c2b"
+   ],
+   [
+    "ps:mat.3.1",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:mat.3.13",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:mat.3.13",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:mat.3.13",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:mat.4.12",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:mat.4.12",
+    "nm:b1a6354a4252"
+   ],
+   [
+    "ps:mat.4.12",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:mat.4.12",
+    "nm:dca0e6589c2b"
+   ],
+   [
+    "ps:mat.4.12",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:mat.4.12",
+    "nm:f01771782499"
+   ],
+   [
+    "ps:mrk.1.1",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:mrk.1.1",
+    "nm:d83e4cd1c672"
+   ],
+   [
+    "ps:mrk.1.1",
+    "nm:dca0e6589c2b"
+   ],
+   [
+    "ps:mrk.1.1",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:mrk.1.9",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:mrk.1.9",
+    "nm:b1a6354a4252"
+   ],
+   [
+    "ps:mrk.1.9",
+    "nm:cf9dbf34319d"
+   ],
+   [
+    "ps:mrk.1.9",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:mrk.6.14",
+    "nm:3d16c8b94577"
+   ],
+   [
+    "ps:mrk.6.14",
+    "nm:4d090f99b9c1"
+   ],
+   [
+    "ps:mrk.6.14",
+    "nm:521b9aa124f3"
+   ],
+   [
+    "ps:mrk.6.14",
+    "nm:b69da322832e"
+   ],
+   [
+    "ps:mrk.6.14",
+    "nm:ec8a86828d50"
+   ],
+   [
+    "ps:mrk.6.14",
+    "nm:f4fdf9b49a85"
+   ]
+  ],
+  "events": []
+ }
+}

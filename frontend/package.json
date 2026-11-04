@@ -1,0 +1,16 @@
+{
+  "name": "bible-rag-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Bible RAG 前端 demo：提問、答案、經文來源、剪枝後的知識圖譜（零 runtime 依賴）",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test --experimental-test-coverage test/*.test.mjs",
+    "test:e2e": "node --test test/e2e/*.e2e.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}

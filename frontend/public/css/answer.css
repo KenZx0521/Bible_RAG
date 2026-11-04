@@ -1,0 +1,246 @@
+/* 結果頁的版面、答案、引用、經文來源 */
+
+/* ---- 結果 ---- */
+
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "answer" "side" "sources";
+  row-gap: var(--space-6);
+  margin-top: var(--space-5);
+  padding-bottom: var(--space-6);
+}
+
+.answer {
+  grid-area: answer;
+  border-top: 1px solid var(--rule);
+  padding-top: var(--space-4);
+}
+
+.answer > * {
+  max-width: var(--measure);
+}
+
+.answer > * + * {
+  margin-top: var(--space-3);
+}
+
+.answer-line {
+  display: block;
+}
+
+.answer-line.is-step {
+  display: grid;
+  grid-template-columns: 1.6em minmax(0, 1fr);
+  align-items: baseline;
+}
+
+.step-no {
+  font-family: var(--font-sans);
+  font-size: 0.8em;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.answer-lead {
+  margin-top: var(--space-4);
+  font-weight: 600;
+}
+
+.answer-lead:first-child {
+  margin-top: 0;
+}
+
+.answer-lead strong {
+  font-weight: 600;
+}
+
+.answer strong {
+  font-weight: 700;
+}
+
+.answer-list > li {
+  position: relative;
+  padding-inline-start: 1.1em;
+}
+
+.answer-list > li + li {
+  margin-top: var(--space-2);
+}
+
+.answer-list > li::before {
+  content: "·";
+  position: absolute;
+  inset-inline-start: 0.2em;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.answer-list .answer-list {
+  margin-top: var(--space-2);
+}
+
+.answer-list .answer-list > li::before {
+  content: "–";
+  inset-inline-start: 0;
+}
+
+.cite-group {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* 引用：硃紅細底線；像印刷聖經的旁註引得 */
+.cite {
+  max-width: 100%;
+  padding: 0 1px;
+  white-space: normal;
+  border: 0;
+  background: none;
+  color: var(--rubric);
+  font-family: var(--font-serif);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--rubric) 45%, transparent);
+  text-underline-offset: 0.25em;
+}
+
+.cite:hover {
+  background: var(--rubric-wash);
+  color: var(--rubric-deep);
+  text-decoration-color: currentColor;
+}
+
+.cite:active {
+  background: var(--paper-shade);
+}
+
+.cite:focus-visible {
+  outline-offset: 1px;
+}
+
+/* ---- 經文來源 ---- */
+
+.sources {
+  grid-area: sources;
+}
+
+.sources-empty {
+  padding-top: var(--space-3);
+  color: var(--ink-soft);
+  font-size: var(--text-small);
+}
+
+.source {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  column-gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-3) var(--space-1);
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  background: none;
+  text-align: left;
+}
+
+.source-no {
+  grid-row: 1 / span 2;
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: 1.9;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.source-title {
+  font-size: var(--text-read);
+  line-height: 1.6;
+}
+
+.source-meta {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-faint);
+}
+
+.source-flag {
+  color: var(--rubric);
+  font-weight: 500;
+}
+
+.source:hover {
+  background: var(--paper-shade);
+}
+
+.source:hover .source-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+
+.source:active {
+  background: var(--rule);
+}
+
+.source:focus-visible {
+  outline-offset: -2px;
+}
+
+/* 讀完就想再問：手機上不必捲回頂端 */
+.result-foot {
+  padding-top: var(--space-4);
+}
+
+.ask-again-foot {
+  display: inline-block;
+  margin-inline: calc(var(--space-2) * -1) 0;
+  font-size: var(--text-small);
+}
+
+@media (min-width: 768px) {
+  .source {
+    grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+    align-items: baseline;
+  }
+
+  .source-no {
+    grid-row: auto;
+  }
+
+  .source-meta {
+    grid-column: 3;
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 1024px) {
+  .result {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "answer side"
+      "sources side";
+    row-gap: var(--space-5);
+    padding-bottom: 0;
+  }
+
+  .answer,
+  .sources {
+    padding-inline-end: var(--space-5);
+    max-width: none;
+  }
+
+  .sources {
+    padding-bottom: var(--space-6);
+  }
+
+  .answer {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
