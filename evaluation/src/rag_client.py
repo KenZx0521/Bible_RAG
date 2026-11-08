@@ -49,8 +49,8 @@ async def query_rag(
             the generator per source (header + text), so the judge sees the
             same text. Older backends ignore the field.
         graph_strategies: Per-request override for which graph strategies run:
-            ["event_registry"] (the only one the R1/R2 backend has) or [] for
-            none. None = backend default.
+            any of event_registry, graph_walk, kin_card, or [] for none.
+            None = backend default.
         use_regnal_card: Per-request override for the chronology card (backend
             utils/regnal). None = backend default, which is off for
             semantic_only and use_graph=False.

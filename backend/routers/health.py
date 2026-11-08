@@ -1,7 +1,9 @@
 """
-Health check endpoint: services, encoder fingerprints and the build handshake.
+Health check endpoint: services, encoder fingerprints, the build handshake and the graph.
 
-Any handshake mismatch (design §7.8) answers 503 and lists the mismatches.
+Any handshake mismatch (design §7.8) answers 503 and lists the mismatches. ``graph`` is not a
+service: Neo4j being down or holding another graph only keeps walks off (serving.graph), so it
+changes neither the status nor the status code.
 """
 
 from fastapi import APIRouter
@@ -10,6 +12,7 @@ from fastapi.responses import JSONResponse
 from database import postgres, qdrant_db
 from models.response import HealthResponse
 from serving import context
+from serving import graph as serving_graph
 from utils import embedder, reranker
 from utils.llm import get_llm_client
 
@@ -33,5 +36,6 @@ async def health_check():
         encoder={"embedder": embedder.get_fingerprint(), "reranker": reranker.get_fingerprint()},
         build_id=handshake.build_id if handshake else None,
         handshake=handshake.to_json() if handshake else {"ok": False, "mismatches": ["not started"]},
+        graph=(await serving_graph.status()).to_json(),
     )
     return JSONResponse(body.model_dump(), status_code=200 if shook else 503)

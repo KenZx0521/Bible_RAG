@@ -6,7 +6,10 @@ optional relations layer (L3, which holds only the data of two cards: the regnal
 Kay's P5 exception of 2026-10-19, and the GEN card's files of 2026-10-21). A release
 without it is what it was (``relations`` stays null, contract version 1.1.0, the same
 bytes); one with it is contract version 1.2.0 and carries ``regnal_layer.json``, and 1.3.0
-when it also carries ``gen_layer.json`` and ``gen_names.json``. The versions given
+when it also carries ``gen_layer.json`` and ``gen_names.json``. It may also name the optional graph
+layer (the knowledge graph, 2026-11-02): then ``layers`` gains a ``graph`` key, ``kg_enabled`` is
+true, the contract version is 1.4.0 and the contract files gain ``kg_meta.json``; a release without
+it has no such key, so its bytes do not change. The versions given
 need not be all of them: the rest follow from each layer's ``depends_on``, and the
 closure must agree, by content hash, everywhere: a layer built on another version
 of a layer the release names is refused. Every layer is read through the store,
@@ -46,6 +49,7 @@ from ragdata.release.gating import ReleaseChecks
 from ragdata.stages.errors import StageError
 from ragdata.store import LayerData, StoreError, layer_digest, read_layer
 from ragdata.store.cas import sha256_bytes
+from ragdata.store.versions import GRAPH, layer_of
 
 __all__ = ["CORE", "NAMING", "OPTIONAL", "Release", "ReleaseChecks", "ReleaseError", "assemble", "encode",
            "git_date", "read_release", "resolve_layers", "sha256_bytes", "write_release"]
@@ -54,8 +58,9 @@ RELEASE_SCHEMA = "ragdata.release.v1"
 CONTRACT_VERSION = "1.1.0"
 CONTRACT_VERSION_REGNAL = "1.2.0"       # with the optional relations (regnal) layer
 CONTRACT_VERSION_GEN = "1.3.0"          # whose contract files include the GEN card's
+CONTRACT_VERSION_GRAPH = "1.4.0"        # with the optional graph layer
 CORE = ("text", "struct", "emb", "kg0", "events", "route")
-OPTIONAL = ("relations",)
+OPTIONAL = ("relations", GRAPH)
 NAMING = ("build_id", "build_date", "release_sha")    # what the body's sha names
 
 
@@ -74,9 +79,10 @@ class Release:
 
 
 def _layer_of(version: str) -> str:
-    if not isinstance(version, str) or not ids.is_valid(version, "layer_version"):
+    layer = layer_of(version)
+    if layer is None:
         raise ReleaseError(f"{version!r} is not a layer version")
-    return ids.parse(version).text
+    return layer
 
 
 def _load(store_root: Path, version: str) -> LayerData:
@@ -143,6 +149,8 @@ def _counts(layers: Mapping[str, LayerData]) -> dict[str, int]:
 
 
 def _contract_version(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> str:
+    if GRAPH in layers:
+        return CONTRACT_VERSION_GRAPH
     if GEN_LAYER in contracts:
         return CONTRACT_VERSION_GEN
     return CONTRACT_VERSION_REGNAL if "relations" in layers else CONTRACT_VERSION
@@ -156,11 +164,12 @@ def _body(layers: Mapping[str, LayerData], contracts: Mapping[str, bytes]) -> di
     version = _contract_version(layers, contracts)
     return {
         "schema": RELEASE_SCHEMA, "contract_version": version, "template_id": template,
-        "layers": {layer: (layers[layer].version if layer in layers else None)
-                   for layer in ids.LAYERS},
+        "layers": {**{layer: (layers[layer].version if layer in layers else None)
+                      for layer in ids.LAYERS},
+                   **({GRAPH: layers[GRAPH].version} if GRAPH in layers else {})},
         "layer_digests": {k: layer_digest(v.file_shas) for k, v in sorted(layers.items())},
         "depends_on": {k: dict(sorted(v.depends_on.items())) for k, v in sorted(layers.items())},
-        "kg_enabled": False,
+        "kg_enabled": GRAPH in layers,
         "encoder_fingerprint_sha": emb.file_shas[ENCODER_FINGERPRINT],
         "contracts": {name: sha256_bytes(data) for name, data in sorted(contracts.items())},
         "counts": dict(sorted(_counts(layers).items())),

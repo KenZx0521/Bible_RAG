@@ -1,4 +1,4 @@
-"""Where the loader connects: POSTGRES_* and QDRANT_* from the environment or an env file.
+"""Where the loader connects: POSTGRES_*, QDRANT_*, NEO4J_* from the environment or an env file.
 
 Secrets stay in the environment (or the repository's ``.env``); nothing here has a
 default password. A missing setting raises instead of falling back to a default
@@ -13,6 +13,7 @@ from typing import Mapping
 
 PG_KEYS = ("POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD")
 QDRANT_KEYS = ("QDRANT_HOST", "QDRANT_HTTP_PORT", "QDRANT_GRPC_PORT")
+NEO4J_KEYS = ("NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD")
 
 
 class ConfigError(ValueError):
@@ -36,6 +37,16 @@ class QdrantSettings:
     host: str
     http_port: int
     grpc_port: int
+
+
+@dataclass(frozen=True)
+class Neo4jSettings:
+    uri: str
+    user: str
+    password: str
+
+    def __repr__(self) -> str:      # never print the password
+        return f"Neo4jSettings({self.user}@{self.uri})"
 
 
 def read_env_file(path: Path) -> dict[str, str]:
@@ -76,3 +87,8 @@ def pg_settings(env: Mapping[str, str]) -> PgSettings:
 def qdrant_settings(env: Mapping[str, str]) -> QdrantSettings:
     host, http, grpc = _need(env, QDRANT_KEYS)
     return QdrantSettings(host, _port(http, "QDRANT_HTTP_PORT"), _port(grpc, "QDRANT_GRPC_PORT"))
+
+
+def neo4j_settings(env: Mapping[str, str]) -> Neo4jSettings:
+    uri, user, password = _need(env, NEO4J_KEYS)
+    return Neo4jSettings(uri, user, password)

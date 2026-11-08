@@ -82,6 +82,7 @@ def _route(root: Path, store: Path, layers: Mapping[str, StoredLayer]) -> Stored
     repo's normalization.yaml beside them: the release gates G-TEXT with that directory)."""
     mini_route.write_query_aliases(root / "registries")
     shutil.copy(paths.REGISTRIES / "normalization.yaml", root / "registries")
+    mini_kg.write_person_aliases(root / "registries")
     return _built(k4_build.build_route(layers["text"].path, layers["kg0"].path,
                                        layers["events"].path, store, root / "registries",
                                        MINI_COUNTS), "route")

@@ -68,31 +68,43 @@ class RetrievalStats(BaseModel):
     # retired[].merged_into map R1 ids to them) the question triggered; their anchors
     # appear as extra sources (strategy "event_registry") after the top-k.
     event_registry_events: list[str] = []
+    # What the graph walk did (utils.retrieval.graph_walk.Walk.to_stats); None when it did not run.
+    graph_walk: dict | None = None
+    # What the kinship card did (utils.kg.kin_card.KinCard.to_stats); None when it did not run.
+    kin_card: dict | None = None
 
 
 class AuxCard(BaseModel):
     """The card the generator answered with: kind "regnal", the chronology card (utils.regnal),
-    or "gen", the Genesis age card (utils.gen_card). text is the block exactly as the prompt held
-    it, evidence the verse keys its rows rest on."""
+    "gen", the Genesis age card (utils.gen_card), or "kin", the kinship card (utils.kg.kin_card).
+    text is the block exactly as the prompt held it, evidence the verse keys its rows rest on."""
     kind: str = "regnal"
     text: str
-    seeds: list[str] = []          # 「國別｜王名」 (the seed call's, or the rule-seeded nodes'); gen: the two names
-    kings: list[str] = []          # chain node ids: the regnal layer's, or the Genesis layer's (G05.xx, G11.xx)
+    seeds: list[str] = []          # 「國別｜王名」 (the seed call's, or the rule-seeded nodes'); gen: the two names; kin: the people asked about
+    kings: list[str] = []          # chain node ids: the regnal layer's, the Genesis layer's (G05.xx, G11.xx); kin: Person ids
     lines: int = 0                 # derivation lines
     evidence: list[str] = []
-    layer_sha256: str              # regnal_layer.json's sha256, or gen_layer.json's
+    layer_sha256: str              # regnal_layer.json's sha256, gen_layer.json's, or kg_meta.json's
     seed_source: str | None = None  # "rule" (seeds read from the question) or "gemma" (the seed call)
 
 
 class GraphOp(BaseModel):
     """One graph-side operation a request ran (utils.graph_trace). hops: the longest stretch of
     explicit edges its derivation covered; two or more is a graph walk, less is a lookup."""
-    op: str                        # event_registry | regnal_card | gen_card
-    hops: int = 0
-    nodes: list[str] = []          # what it visited: event ids, or chain node ids in chain order
-    edges: list[list[str]] = []    # [from, type, to]
+    op: str                        # event_registry | graph_walk | kin_card | regnal_card | gen_card
+    hops: int = 0                  # graph_walk: how far the passages it brought in were, else its longest path
+    nodes: list[str] = []          # what it visited: event ids, chain node ids in chain order; graph_walk: Name ids
+                                   # then passage ids; kin_card: Person ids
+    edges: list[list[str]] = []    # [from, type, to]; kin_card: [from, type, to, verse key]
     injected: str = "none"         # where its result went: context | prompt | none
-    passages: list[str] = []       # the passages it added to the context
+    passages: list[str] = []       # the passages it put in the context: graph_walk, those it brought into the top-k
+    confirmed: list[str] = []      # graph_walk: what it reached too and dense had found: no change to the context
+    seeds: list[str] = []          # graph_walk: its seed passages, then the question's Name ids
+    names: list[str] = []          # graph_walk: the Names it crossed; kin_card: the labels of nodes
+    walked: list[str] = []         # graph_walk: every passage it scored, best first
+    n_cypher: int = 0              # Cypher queries it sent
+    ms: float | None = None        # how long those took; None for what reads no graph
+    skip_reason: str | None = None  # why it found nothing to give: Neo4j not answering, no person, no edge
 
 
 class QueryResponse(BaseModel):
@@ -153,3 +165,6 @@ class HealthResponse(BaseModel):
     build_id: str | None = None
     # {build_id, ok, strict, mismatches}: any mismatch makes /health answer 503
     handshake: dict = {}
+    # {state, reason, build_id, kg_sha256, nodes, edges, complete, neo4j_version} (serving.graph):
+    # never changes the status
+    graph: dict = {}

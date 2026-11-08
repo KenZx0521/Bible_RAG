@@ -52,15 +52,17 @@ def fake_pipeline(monkeypatch):
 
 
 @pytest.mark.parametrize("strategies", [["graph_event"], ["all"], ["event_registry"] * 2,
-                                        ["cross_ref_expand"], "event_registry"])
-def test_graph_strategies_other_than_the_event_lane_are_422(client, strategies):
+                                        ["graph_walk", "graph_walk"], ["cross_ref_expand"], "event_registry"])
+def test_graph_strategies_unknown_or_repeated_are_422(client, strategies):
     response = client.post("/api/v1/query", json={"question": "q", "graph_strategies": strategies})
 
     assert response.status_code == 422
 
 
-@pytest.mark.parametrize("strategies", [[], ["event_registry"], None])
-def test_the_event_lane_or_nothing_is_accepted(client, serving, fake_pipeline, strategies):
+@pytest.mark.parametrize("strategies", [
+    [], ["event_registry"], ["graph_walk"], ["kin_card"], ["event_registry", "graph_walk"],
+    ["kin_card", "event_registry"], ["graph_walk", "kin_card"], ["event_registry", "graph_walk", "kin_card"], None])
+def test_any_subset_of_the_three_strategies_is_accepted(client, serving, fake_pipeline, strategies):
     response = client.post("/api/v1/query", json={"question": "q", "retrieval_only": True,
                                                   "graph_strategies": strategies})
 
@@ -121,6 +123,7 @@ def test_health_is_200_with_the_build_when_the_handshake_passed(client, serving,
     assert body["build_id"] == BUILD.build_id and body["handshake"]["ok"] is True
     assert body["encoder"] == {"embedder": {"probe_ids_sha": "p"}, "reranker": None}
     assert set(body["services"]) == {"postgres", "qdrant", "llm"}
+    assert body["graph"] == {"state": "off"}
 
 
 def test_health_is_503_listing_every_mismatch(client, services):

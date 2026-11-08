@@ -88,8 +88,10 @@ def test_load_and_verify_are_wired_only_when_asked(monkeypatch):
     p = pipeline_cli.default_pipeline(_args(date=None, load=True))
     assert dated == [paths.REPO]
     assert p.databases.load is not None and p.databases.verify is None
+    assert p.databases.project is not None
     p = pipeline_cli.default_pipeline(_args(verify=True))
     assert p.databases.load is None and p.databases.verify is not None
+    assert p.databases.project is None
 
 
 def test_the_databases_come_from_the_repository_env_file(monkeypatch):

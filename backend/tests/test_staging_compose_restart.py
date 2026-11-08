@@ -26,3 +26,11 @@ def test_no_staging_backend_restarts_after_a_refused_handshake():
 
     assert "backend-stg" in policies
     assert policies == dict.fromkeys(policies, "no")
+
+
+def test_staging_reaches_neo4j_on_the_compose_network_and_never_depends_on_it():
+    service = _backends()["backend-stg"]
+
+    assert service["environment"]["NEO4J_URI"] == "bolt://neo4j:7687"
+    assert "NEO4J_PASSWORD" not in service["environment"]  # from env_file .env
+    assert "depends_on" not in service

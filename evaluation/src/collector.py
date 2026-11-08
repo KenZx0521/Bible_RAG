@@ -256,7 +256,7 @@ async def collect_responses(
         semantic_only: When True, bypass backend routing / SQL / the
             event_registry lane and run pure semantic retrieval only.
         graph_strategies: Per-request override for which graph strategies run:
-            ["event_registry"] (the only one the R1/R2 backend has) or [].
+            any of event_registry, graph_walk, kin_card, or [].
             None = backend RAG_GRAPH_STRATEGIES default.
         provenance: The backend's build and encoder (from /health), written
             to run_meta.json beside the checkpoint for --eval-only reruns.

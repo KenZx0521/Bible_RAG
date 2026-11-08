@@ -9,6 +9,7 @@ from qdrant_client import QdrantClient
 
 import mini_loaded
 from fake_dbapi import FakeConn
+from fake_neo4j import FakeNeo4j
 from ragdata import cli
 from ragdata.loader import cli as loader_cli
 from ragdata.loader import load as loader
@@ -168,3 +169,81 @@ def test_the_command_reports_what_it_removed(loaded, monkeypatch, capsys, tmp_pa
     assert cli.main(["unload", "b20261008_0123abcd", "--contracts", str(loaded.contracts),
                      "--env-file", str(tmp_path / "none")]) == 2
     assert "serving" in capsys.readouterr().err
+
+
+# ------------------------------------------------------------------ a build with a graph in Neo4j
+
+
+@pytest.fixture()
+def kg_loaded(tmp_path):
+    """A build ``rag_meta.builds`` says has a graph, projected (a small stand-in graph)."""
+    found = mini_loaded.load(tmp_path)
+    found.pg.builds[found.release.build_id]["kg_enabled"] = True
+    db = FakeNeo4j()
+    db.ensure_schema()
+    db.open_build(found.release.build_id, {"kg_sha256": "x"})
+    db.merge_nodes(found.release.build_id, "Book", [{"id": "gen", "props": {"name": "創世記"}}])
+    db.merge_nodes("b20261008_0badcafe", "Book", [{"id": "gen", "props": {"name": "別的"}}])
+    return found, db
+
+
+def _unload_kg(found, db):
+    return unloader.unload(found.release.build_id, found.pg, found.qdrant, found.contracts, db)
+
+
+def test_unload_also_clears_the_builds_nodes_and_no_other_builds(kg_loaded):
+    found, db = kg_loaded
+    report = _unload_kg(found, db)
+    assert report["neo4j_nodes"] == 1 and report["removed"] == list(unloader.OWNED)
+    assert db.build_info(found.release.build_id) is None
+    assert list(db.nodes) == [("b20261008_0badcafe", "Book", "gen")]
+
+
+def test_a_kg_build_without_a_neo4j_connection_is_refused_and_kept_whole(kg_loaded):
+    found, _ = kg_loaded
+    with pytest.raises(unloader.UnloadError, match="NEO4J"):
+        _unload_kg(found, None)
+    assert _present(found, found.targets) == dict.fromkeys(unloader.OWNED, True)
+
+
+def test_neo4j_down_stops_the_unload_before_anything_is_deleted(kg_loaded):
+    found, db = kg_loaded
+    db.unreachable = True
+    with pytest.raises(unloader.UnloadError, match="PG rolled back.*ServiceUnavailable"):
+        _unload_kg(found, db)
+    assert _present(found, found.targets) == dict.fromkeys(unloader.OWNED, True)
+
+
+def test_a_serving_kg_build_keeps_its_nodes(kg_loaded):
+    found, db = kg_loaded
+    found.pg.serving_rows["prod"] = found.release.build_id
+    with pytest.raises(unloader.UnloadError, match="serving"):
+        _unload_kg(found, db)
+    assert db.build_info(found.release.build_id) is not None
+    assert (found.release.build_id, "Book", "gen") in db.nodes
+
+
+def test_a_build_without_a_graph_never_touches_neo4j(loaded):
+    db = FakeNeo4j()
+    db.unreachable = True
+    report = _unload_kg(loaded, db)
+    assert db.calls == [] and report["neo4j_nodes"] is None
+    assert report["removed"] == list(unloader.OWNED)
+
+
+def test_an_unload_interrupted_after_pg_still_clears_the_nodes(kg_loaded):
+    found, db = kg_loaded
+    found.pg.builds.pop(found.release.build_id)
+    assert _unload_kg(found, db)["neo4j_nodes"] == 1
+    assert db.build_info(found.release.build_id) is None
+
+
+def test_the_command_clears_the_nodes_when_neo4j_is_configured(kg_loaded, monkeypatch, capsys, tmp_path):
+    found, db = kg_loaded
+    monkeypatch.setattr(loader_cli, "connect", lambda env: (found.pg, found.qdrant))
+    monkeypatch.setattr(loader_cli, "neo4j_if_configured", lambda env: db)
+    found.pg.close = found.qdrant.close = lambda: None
+    argv = ["unload", found.release.build_id, "--contracts", str(found.contracts),
+            "--env-file", str(tmp_path / "none")]
+    assert cli.main(argv) == 0
+    assert json.loads(capsys.readouterr().out)["neo4j_nodes"] == 1 and db.closed

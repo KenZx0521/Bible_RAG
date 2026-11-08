@@ -80,7 +80,7 @@ def test_an_anchor_from_the_pool_keeps_its_dense_provenance(forced, scores):
     assert ranked[5]["found_by"] == ["semantic", "event_registry"]
 
 
-@pytest.mark.parametrize("use_graph, listed", [(True, ["event_registry"]), (False, [])])
+@pytest.mark.parametrize("use_graph, listed", [(True, ["event_registry", "graph_walk", "kin_card"]), (False, [])])
 def test_stats_list_graph_strategies_only_when_the_graph_is_on(forced, use_graph, listed):
     forced.route(QuerySignals(route="R3"))
 

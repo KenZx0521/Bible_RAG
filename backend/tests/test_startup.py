@@ -210,11 +210,58 @@ def test_an_encoder_probe_that_differs_is_refused(stores):
     assert "reranker probe_ids_sha" in problem
 
 
-def test_a_kg_build_is_refused(stores):
+KG_META = {"schema_version": "ragdata.kg.v1", "nodes_sha256": "a" * 64, "edges_sha256": "b" * 64,
+           "counts": {"nodes": {"Person": 2}, "edges": {"PARENT_OF": 1}}}
+
+
+def _kg_build(stores, meta=None):
+    """Turn the build into a KG build: the row, the manifest and (unless None) its kg_meta.json."""
+    stores.builds[BUILD_ID]["kg_enabled"] = True
+    path = stores.contracts / "manifest.json"
+    path.write_text(json.dumps({**json.loads(path.read_text(encoding="utf-8")), "kg_enabled": True}),
+                    encoding="utf-8")
+    if meta is not None:
+        _rewrite(stores, "kg_meta.json", meta)
+
+
+def test_a_kg_build_whose_manifest_says_otherwise_is_refused(stores):
     stores.builds[BUILD_ID]["kg_enabled"] = True
 
     [problem] = _mismatches()
-    assert "kg_enabled=True" in problem
+    assert "manifest kg_enabled=False" in problem and "rag_meta.builds says True" in problem
+
+
+def test_a_kg_build_without_kg_meta_is_refused(stores):
+    _kg_build(stores)
+
+    [problem] = _mismatches()
+    assert "does not list kg_meta.json" in problem
+
+
+def test_a_kg_meta_that_does_not_parse_is_refused(stores):
+    _kg_build(stores, b"{}")
+
+    [problem] = _mismatches()
+    assert problem.startswith("contracts: kg_meta.json: ")
+
+
+def test_a_kg_build_is_served_without_asking_neo4j(stores, monkeypatch):
+    data = json.dumps(KG_META).encode("utf-8")
+    _kg_build(stores, data)
+
+    def never(*args):
+        raise AssertionError("the handshake does not reach Neo4j")
+    monkeypatch.setattr(startup.neo4j_db, "build_info", never)
+    active, handshake = _start()
+
+    assert handshake.ok and active.kg.nodes == {"Person": 2}
+    assert active.kg.sha256 == hashlib.sha256(data).hexdigest()
+
+
+def test_a_build_without_a_graph_has_no_kg_meta(stores):
+    active, handshake = _start()
+
+    assert handshake.ok and active.kg is None
 
 
 def test_unreachable_postgres_is_a_mismatch(stores):

@@ -1,7 +1,8 @@
 """``ragdata pipeline run``: from the PDFs to a release, and optionally loaded and verified.
 
 Order: text (with src), struct, the derived-file check and G-GT, emb, kg0, events, route, relations,
-then the release (S12), ``load`` into a new namespace (S13) and ``verify`` (S14, G-PROJ).
+graph, then the release (S12), ``load`` into a new namespace (S13), the graph's projection into
+Neo4j (``kg-project``, after a ``load`` and for a release with a graph) and ``verify`` (S14, G-PROJ).
 Each layer is built and stored only when its build gates pass, then gated again with
 every gate it requires (``steps``). The first red gate, stale derived file or bad input
 stops the run: nothing after it runs, and the report names the step and the gates.
@@ -42,6 +43,7 @@ from ragdata.store import MANIFEST, StoreError, StoredLayer, attach, vectors
 REPORT_SCHEMA = "ragdata.pipeline_report.v1"
 GATE, INPUT = "gate", "input"           # a red gate; bad input (or stale derived files)
 CHECK_AFTER = "struct"                  # the derived files name text and struct
+KG_PROJECT = "kg-project"               # where a run stops when Neo4j does not take the graph
 INPUT_ERRORS = (StageError, StoreError, GateInputError, CountsError, ReleaseError, LoaderError,
                 ConfigError, derived.DerivedError, OSError, yaml.YAMLError,
                 json.JSONDecodeError, *GT_ERRORS)
@@ -66,11 +68,12 @@ class Stop(Exception):
 
 @dataclass(frozen=True)
 class Databases:
-    """Where ``load`` and ``verify`` go: ``connect()`` gives (pg, qdrant)."""
+    """Where ``load``, ``project`` and ``verify`` go: ``connect()`` gives (pg, qdrant)."""
 
     connect: Callable[[], tuple[Any, Any]]
     load: Callable[[Release, Any, Any], Mapping[str, Any]] | None
     verify: Callable[[Release, Any, Any], Any] | None
+    project: Callable[[Release], Mapping[str, Any]] | None = None
 
 
 @dataclass(frozen=True)
@@ -175,6 +178,9 @@ def _databases(dbs: Databases, release: Release, doc: dict[str, Any]) -> None:
         if dbs.load is not None:
             with phase("load"):
                 doc["load"] = dict(dbs.load(release, pg, qdrant))
+        if dbs.project is not None and release.doc["kg_enabled"]:
+            with phase(KG_PROJECT):
+                doc["kg_project"] = dict(dbs.project(release))
         if dbs.verify is not None:
             with phase("verify"):
                 report = dbs.verify(release, pg, qdrant)

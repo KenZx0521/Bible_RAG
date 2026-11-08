@@ -7,7 +7,7 @@ chunks, emb's old vectors), the stand-in token counter and encoder, the mini reg
 (with query_aliases.yaml) and event registry (``mini_release.build`` lays those out).
 The derived files are mini ones naming the mini text and struct layers; G-GT is a
 stand-in (the mini GT v2 holds only slots). Load and verify go to a FakePg, an in-memory
-Qdrant and a contract directory under ``root``.
+Qdrant and a contract directory under ``root``, the graph to a FakeNeo4j.
 """
 
 from __future__ import annotations
@@ -30,6 +30,7 @@ import mini_kg
 import mini_release
 import mini_route
 import ref_dirs
+from fake_neo4j import FakeNeo4j
 from fake_pg import FakePg
 from ragdata import paths
 from ragdata.gates.base import GateResult
@@ -38,6 +39,7 @@ from ragdata.gates.regnal import expectation_doc
 from ragdata.gates.runner import GateInputs, gate_layer
 from ragdata.kg.regnal_build import regnal_files
 from ragdata.gt.gate import GtReport
+from ragdata.loader import graph_load
 from ragdata.loader.qdrant import QdrantDb
 from ragdata.loader.verify import VerifyInputs, verify
 from ragdata.pipeline import derived
@@ -92,6 +94,7 @@ class Mini:
     struct_version: str
     pg: FakePg
     qdrant: QdrantDb
+    neo4j: FakeNeo4j
 
     @property
     def contracts(self) -> Path:
@@ -110,7 +113,9 @@ class Mini:
         inputs = verify_inputs or self.verify_inputs()
         return Databases(connect or (lambda: (self.pg, self.qdrant)),
                          load_once(self.contracts) if load else None,
-                         lambda r, pg, q: verify(r, pg, q, self.contracts, inputs))
+                         lambda r, pg, q: verify(r, pg, q, self.contracts, inputs, self.neo4j),
+                         (lambda r: graph_load.project(graph_load.source_of_release(r), self.neo4j))
+                         if load else None)
 
     def pipeline(self, store: str = "store", gt: Callable | None = None,
                  sources: Sources | None = None, databases: Databases | None = None,
@@ -135,6 +140,7 @@ def _files(root: Path, text: str, struct: str) -> derived.DerivedFiles:
     versions = mini_kg.write_registries(root / "registries")
     mini_route.write_query_aliases(root / "registries")
     shutil.copy(paths.REGISTRIES / "normalization.yaml", root / "registries")  # G-TEXT
+    mini_kg.write_person_aliases(root / "registries")
     kg0 = root / "kg0_counts.yaml"
     kg0.write_bytes(mini_kg.dump(mini_kg.kg0_counts(versions, text, struct)))
     grid = root / "versification.json"
@@ -178,5 +184,5 @@ def make(root: Path) -> Mini:
     sources = Sources(gate=gate, counts=mini_release.MINI_COUNTS, events_yaml=ref / "events.yaml")
     pg, qdrant = FakePg(), QdrantDb(QdrantClient(location=":memory:"))
     pg.close = qdrant.close = lambda: None
-    return Mini(root, sources, files, text, struct, pg, qdrant)
+    return Mini(root, sources, files, text, struct, pg, qdrant, FakeNeo4j())
 

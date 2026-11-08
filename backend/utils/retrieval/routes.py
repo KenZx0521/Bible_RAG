@@ -203,7 +203,7 @@ async def _dense_route(inp: RouteInput, route: str) -> Pool:
 
 
 async def route_r3(inp: RouteInput) -> Pool:
-    """R3: two or more persons (no person graph in R1: dense + anchors + supplement)."""
+    """R3: two or more persons: dense + anchors + supplement (the graph side runs on the pool after)."""
     return await _dense_route(inp, "R3")
 
 
@@ -213,7 +213,7 @@ async def route_r4(inp: RouteInput) -> Pool:
 
 
 async def route_r6(inp: RouteInput) -> Pool:
-    """R6: place name (no place graph in R1)."""
+    """R6: place name: dense + anchors + supplement (the graph side runs on the pool after)."""
     return await _dense_route(inp, "R6")
 
 

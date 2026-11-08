@@ -33,6 +33,9 @@ services:
     environment:
       POSTGRES_HOST: postgres
       QDRANT_HOST: qdrant
+      # A KG build's graph (the password comes from .env; no depends_on: Neo4j being down only
+      # keeps walks off, /api/v1/health says so).
+      NEO4J_URI: bolt://neo4j:7687
       # The production vllm service. Images before r9 only know ollama: run them
       # with STG_LLM_PROVIDER=ollama (and `--profile ollama up -d ollama`).
       LLM_PROVIDER: ${STG_LLM_PROVIDER:-vllm}

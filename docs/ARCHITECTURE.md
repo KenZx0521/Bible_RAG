@@ -176,7 +176,7 @@ backend 只在啟動時讀一次 `rag_meta.serving` 中 `RAG_ENV` 那一列。`R
 2. schema 的 `build_info` 指名這個 build；
 3. Qdrant collection 存在，點數等於 `rag_meta.builds.points`；
 4. 契約目錄的 manifest 指名這個 build，每個檔都符合 manifest 的 sha256；
-5. 不是 KG build（backend 沒有 Neo4j driver）；
+5. KG build 要帶得出 `kg_meta.json`；Neo4j 不在握手內，連不上或沒有這個 build 的圖都照常服務，只是不走圖（`/api/v1/health` 的 `graph` 欄位回報）；
 6. 編碼器探針等於契約的指紋，包括 tokenizer sha、probe ids sha、unk 數與句對模板；
 7. 路由詞表（v2）、查詢別名表與事件註冊表（variant R2）都能解析。
 
@@ -341,9 +341,34 @@ Kay 2026-10-08 決定：**P5 取消**，KG 只到 L0 與 L1。舊的身分層與
 - 實體 9,124 個、MENTIONS、37 型語意邊、CROSS_REFERENCES 250,418 條（多數是 TSK 串珠），以及實體向量（`bible_entities`）。
 - 稽核（REPORT G37、G50）指出：沒有身分層；語意邊的精確率約 0.25。
 
-**現況**：
+**prod 現況（r9＋`b20261021_dfa1e3e3`）**：
 - 服務端不讀 Neo4j（D-09），`/api/v1/entity` 回 410（D-08）。
-- Neo4j 容器、volume 與 compose 服務已在 R1 上線後刪除（2026-10-08）。
+- 舊的 Neo4j 容器、volume 與 compose 服務已在 R1 上線後刪除（2026-10-08）。
+
+### 7.1 圖譜線（2026-11-03，只在 staging，尚未上 prod）
+
+Kay 2026-11-02 定的架構是一條直線：PDF → 階層 chunking → 知識圖譜＋metadata＋向量庫 → 路由＋走圖＋semantic → 生成。只用 PDF，不用外部人物資料。現況：build `b20261103_615c1ceb`（多一層 `graph`，節點 42,504、邊 95,573，其中 Person 1,888、PARENT_OF 1,494），映像 r12，Neo4j 5.26 存圖（`ragdata kg-project` 投影，只綁 loopback）。
+
+查詢時在 R3–R6 與 fallback、排序之前跑兩件事；`use_graph=false`、`semantic_only`、R1、R2、不帶圖譜的 build 都送 0 條 Cypher。Neo4j 不可用時照常回答，`retrieval_stats` 記下 `skip_reason`。
+
+- **走圖（`utils/retrieval/graph_walk.py`）**：種子是問題字面專名與 dense 前 10 段，兩輪 spreading activation，最多回 10 段進候選池。重排照常決定排序，但滿額時第 k 名讓給重排最看好、且和其餘段落不重疊的走圖段落（`with_slot`）。第二跳的段落和問題字面不像，只靠重排進不來；只換一格，所以 context 大小仍是 k。
+- **親屬卡（`utils/kg/kin_card.py`）**：親屬線索要緊接問題寫出的人名（「耶戶的曾孫」）才出卡。代名詞不算：問題用描述指人時，「他」不是題目寫出來的任何一個名字。卡片走生成端的 `aux_card`，和王朝卡、GEN 卡互斥。
+
+**模型不在 event loop 上跑**（`utils/model_thread.py`）：嵌入和重排在單一專用執行緒。放在 event loop 上時，併發 3 題就有 72% 的走圖逾時（`QUERY_S` 0.8 s 被別題的模型計算耗盡，Neo4j 本身只要約 8 ms）。任何圖譜臂的數字都先看 `graph_usage` 的實際走圖題數，主架構跳過超過 5% 會紅字警告。
+
+已知資料限制：誤併（亞撒利雅、約哈難、以實瑪利、沙龍、基納斯）、未併（可拉、以利加拿）；同名跨約群分開（大衛 2 筆、雅各 9 筆）；卡片分不出父母（寫「父母之一」）；葉忒羅、保羅、巴拿巴沒有 Person。
+
+**量測（開發集，設計就是看這批題選的）**：`evaluation/experiments/2026-11-03_kg_walk_eval/complex_eval.py`，113 題複雜關係題，G、G2 與 N、N2 各兩輪取平均，判分 Haiku 5.5：答案涵蓋率對「同流程不走圖」+0.045（CI .009～.082），對 semantic +0.048（CI .009～.086）。結果在 store `reports/kg_walk_eval_20261103/complex_r12/`。
+
+**500 題（一般題，各臂一輪，與 113 題無重疊）**：`run_eval.py`，r12，結果與分析腳本在 store `reports/kg_walk_eval_20261103/r500/`。
+
+| 答案涵蓋率 | 主架構 G | 不走圖 N | semantic S | G−N | G−S |
+|---|---|---|---|---|---|
+| 全部 500 題 | .6753 | .6814 | .6401 | −.0061（CI −.017～+.005） | +.0352（CI .016～.055） |
+| R1、R2 179 題（不走圖） | .8335 | .8388 | .7220 | −.0054 | +.1115（CI .069～.157） |
+| R3–R6、fallback 321 題 | .5871 | .5936 | .5944 | −.0065（CI −.022～+.008） | −.0072（CI −.024～+.009） |
+
+321 題全部走到圖、沒有跳過，197 題走圖段落進了前 k。節召回 G−N −.0132（CI −.022～−.006，12 升 32 降）；走圖段落進前 k 的 197 題中 26 題下降、7 題上升（例：「好撒馬利亞人」排第 5 的 `luk.10.25` 被換成 `1ki.21.1`，答案變拒答）。所以對 semantic 的勝出來自明寫引用的路由，不是走圖；走圖那一格只在複雜關係題有增益，對一般題檢索有小幅傷害。輸入相同的 232 題 G−N +.0035（CI −.011～+.018）。
 
 ---
 

@@ -8,10 +8,12 @@ from typing import Literal
 from pydantic_settings import BaseSettings
 from pathlib import Path
 
-# The only graph strategy R1 has: the event_registry auxiliary lane, which
-# appends a curated event anchor AFTER the finished top-k (never competes for a
-# slot). Every Neo4j-backed strategy was removed with R1 (D-09: no Neo4j).
-GraphStrategyName = Literal["event_registry"]
+# The graph side of a request: the event_registry auxiliary lane, which appends a curated event
+# anchor AFTER the finished top-k (never competes for a slot); graph_walk (utils.retrieval.graph_walk),
+# whose passages join the candidate pool before ranking; and kin_card (utils.kg.kin_card), a kinship
+# card for the prompt. The last two read the build's graph in Neo4j, so they do nothing on a build
+# without one.
+GraphStrategyName = Literal["event_registry", "graph_walk", "kin_card"]
 
 
 class Settings(BaseSettings):
@@ -38,6 +40,12 @@ class Settings(BaseSettings):
     qdrant_host: str = "localhost"
     qdrant_http_port: int = 6333
     qdrant_grpc_port: int = 6334
+
+    # Neo4j, only for a build with a graph (database.neo4j_db); no defaults: a build with a
+    # graph on a backend without these reports graph state "unavailable" on /api/v1/health
+    neo4j_uri: str = ""
+    neo4j_user: str = ""
+    neo4j_password: str = ""
 
     # LLM Provider: vllm | ollama | claude | openai | gemini
     llm_provider: str = "vllm"
@@ -88,13 +96,33 @@ class Settings(BaseSettings):
         "R6": {"semantic": 0.65, "sql": 0.5},
     }
 
-    # Graph toggle: the event_registry lane and the regnal and Genesis cards (no graph store
-    # is read since R1); overridable per request via `use_graph`.
+    # Graph toggle: the event_registry lane, the graph walk and the three cards; overridable per
+    # request via `use_graph`.
     rag_use_graph: bool = True
 
-    # Graph strategies in effect when use_graph is on: ["event_registry"] (the
-    # default since 2026-10-04) or []. Env value is a JSON array.
-    rag_graph_strategies: list[GraphStrategyName] = ["event_registry"]
+    # Graph strategies in effect when use_graph is on: any of the three names, [] for none.
+    # Env value is a JSON array.
+    rag_graph_strategies: list[GraphStrategyName] = ["event_registry", "graph_walk", "kin_card"]
+
+    # Graph walk (utils.retrieval.graph_walk). Its seeds: this many of the dense arm's passages.
+    walk_seed_passages: int = 10
+    # A name in more passages than this is a hub: the walk does not cross it.
+    walk_max_df: int = 150
+    # Names kept per round, first-round passages that seed the second, passages a walk returns.
+    walk_top_names: int = 30
+    walk_round2_seeds: int = 20
+    walk_k: int = 10
+    # A seed's PARALLEL pericope's passages get this much of its weight; s = s1 + this·s2.
+    walk_parallel_factor: float = 0.5
+    walk_round2_factor: float = 0.5
+    # A walked passage's weight in the pool: below the dense arm's (0.65-0.7), so it gets in on the reranker's
+    # word and not on its own. One already in the pool keeps its weight.
+    walk_weight: float = 0.5
+
+    # Kinship card (utils.kg.kin_card): its size, and the weight of the passages holding its verses.
+    kin_card_max_rows: int = 12
+    kin_card_max_chars: int = 700
+    kin_evidence_weight: float = 0.75
 
     # Chronology card (utils.regnal): on dynasty-chronology questions the generator gets the
     # regnal layer's derivation card (Kay 2026-10-19: on by default). Needs a build with

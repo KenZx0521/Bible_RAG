@@ -4,19 +4,20 @@ Checks, each a handshake mismatch when it fails: the build resolves
 (rag_meta.serving for RAG_ENV, equal to RAG_BUILD_ID when that is set); the
 schema's build_info names it; its Qdrant collection exists with
 ``rag_meta.builds.points`` points; its contract directory's manifest names it
-and every file hashes to the manifest (and agrees with the build row); it is not
-a KG build (no Neo4j driver exists in this backend); the encoder probes equal
-the contract fingerprint; the routing lexicon (v2), the query-alias table and the
-event registry (variant R2) parse, and so does the regnal layer when the build has
-one (contract 1.2.0; without it the chronology card is off and startup says so), and
+and every file hashes to the manifest (and agrees with the build row); the build row
+and the manifest agree on kg_enabled, and a KG build's manifest lists kg_meta.json; the
+encoder probes equal the contract fingerprint; the routing lexicon (v2), the query-alias
+table and the event registry (variant R2) parse, and so does the regnal layer when the
+build has one (contract 1.2.0; without it the chronology card is off and startup says so),
 the Genesis layer when it has one (contract 1.3.0: gen_layer.json and gen_names.json
 together, of this build's text layer and routing lexicon; without them the GEN card is
-off). A contract that fails to parse is a mismatch like any other, so an R1 build is
-refused through the handshake.
+off), and kg_meta.json (contract 1.4.0). A contract that fails to parse is a mismatch like
+any other, so an R1 build is refused through the handshake.
 
 Any mismatch: /api/v1/health answers 503 with the list, no data is served, and
 with STRICT_BUILD_CHECK (the default) startup fails. A build that passes still
-fails startup when an event-registry anchor is missing from its passages.
+fails startup when an event-registry anchor is missing from its passages. Neo4j is not
+reached here: what it holds only decides whether the graph is used (``serving.graph``).
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ import logging
 from typing import Any, Mapping
 
 from config import settings
-from database import postgres, qdrant_db
+from database import neo4j_db, postgres, qdrant_db
 from ragcommon import routing
 from serving import build as build_mod
 from serving import context
@@ -101,6 +102,11 @@ def _parsed_contracts(found: contracts_mod.Contracts) -> tuple[dict[str, Any], l
             parsed[gen_card.LAYER_FILE] = gen
     except ValueError as exc:
         problems.append(f"contracts: gen_*.json: {exc}")
+    if contracts_mod.KG_META in found.files:   # only a contract 1.4.0 build has one
+        try:
+            parsed[contracts_mod.KG_META] = contracts_mod.parse_kg_meta(found.files[contracts_mod.KG_META])
+        except ValueError as exc:
+            problems.append(f"contracts: {contracts_mod.KG_META}: {exc}")
     return parsed, problems
 
 
@@ -122,7 +128,8 @@ async def _activate(build: build_mod.Build, parsed: Mapping[str, Any]) -> contex
         raise StartupError(f"event registry anchors missing from {build.pg_schema}.passages: "
                            f"{missing}")
     active = context.make_active(build, parsed["routing_lexicon.json"], registry, parsed.get(REGNAL_FILE),
-                                 parsed.get(gen_card.LAYER_FILE))
+                                 parsed.get(gen_card.LAYER_FILE),
+                                 parsed.get(contracts_mod.KG_META) if build.kg_enabled else None)
     regnal, gen = active.regnal, active.gen
     if regnal is None:
         logger.warning("Build %s has no %s: the chronology card is off", build.build_id, REGNAL_FILE)
@@ -169,5 +176,6 @@ async def run(fingerprints: Mapping[str, Any]) -> hs.Handshake:
 
 async def stop() -> None:
     context.reset()
+    await neo4j_db.close_driver()
     await postgres.close_pool()
     qdrant_db.close_client()

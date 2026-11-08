@@ -89,9 +89,11 @@ def test_fusion_blends_rerank_and_weight():
     assert [c["id"] for c in out] == ["lo", "hi"]
 
 
-def test_graph_strategies_accept_only_the_event_lane():
+def test_graph_strategies_accept_any_of_the_three():
     assert router.resolve_graph_strategies(None) == frozenset(settings.rag_graph_strategies)
+    assert frozenset(settings.rag_graph_strategies) == {"event_registry", "graph_walk", "kin_card"}
     assert router.resolve_graph_strategies([]) == frozenset()
+    assert router.resolve_graph_strategies(["kin_card"]) == {"kin_card"}
     with pytest.raises(ValueError, match="graph_event"):
         router.resolve_graph_strategies(["graph_event"])
 

@@ -54,9 +54,15 @@ def _imported_roots(path: Path) -> set[str]:
     return roots
 
 
+def _importers(roots: set[str]) -> list[str]:
+    return [p.relative_to(BACKEND).as_posix() for p in BACKEND.rglob("*.py")
+            if ".venv" not in p.parts and _imported_roots(p) & roots]
+
+
 def test_backend_imports_neither_scripts_nor_bible_chunking():
     """R1: the image no longer carries scripts/ or bible_chunking/ (design §11.1)."""
-    offenders = [p.relative_to(BACKEND).as_posix() for p in BACKEND.rglob("*.py")
-                 if ".venv" not in p.parts
-                 and _imported_roots(p) & {"scripts", "bible_chunking", "neo4j"}]
-    assert offenders == []
+    assert _importers({"scripts", "bible_chunking"}) == []
+
+
+def test_only_the_neo4j_module_imports_the_driver():
+    assert _importers({"neo4j"}) == ["database/neo4j_db.py"]

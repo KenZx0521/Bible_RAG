@@ -13,6 +13,7 @@ from .validity import GENERATION_ERROR_PREFIX
 
 # D3 (evaluation/experiments/2026-10-18_kg_cards/prereg.md): one edge is a lookup, not a graph walk
 WALK_MIN_HOPS = 2
+MAX_SKIPPED_SHARE = 0.05
 
 
 def _read_back(record: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -64,6 +65,17 @@ def _by_op(per_question: list[list[dict[str, Any]]]) -> dict[str, dict[str, Any]
     return usage
 
 
+def _skipped(per_question: list[list[dict[str, Any]]]) -> dict[str, dict[str, int]]:
+    """Operation -> why it gave nothing -> how many questions (graph_walk, kin_card report a reason)."""
+    found: dict[str, dict[str, int]] = {}
+    for ops in per_question:
+        for op in ops:
+            if op.get("skip_reason"):
+                reasons = found.setdefault(op["op"], {})
+                reasons[op["skip_reason"]] = reasons.get(op["skip_reason"], 0) + 1
+    return found
+
+
 def summarize(records: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
     """Counts of questions, not of operations; ``n_walk`` is the one that says a graph was walked.
     A question with no answer (``n_failed``) is in no other count: nothing reached an answer."""
@@ -80,6 +92,8 @@ def summarize(records: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         "n_hops_unknown": sum(any(op.get("hops") is None for op in ops) for ops in per_question),
         "n_nodes": sum(len(op.get("nodes") or []) for ops in per_question for op in ops),
         "n_edges": sum(len(op.get("edges") or []) for ops in per_question for op in ops),
+        "n_cypher": sum(op.get("n_cypher") or 0 for ops in per_question for op in ops),
+        "skipped": _skipped(per_question),
         "by_op": _by_op(per_question),
     }
 
@@ -95,6 +109,8 @@ def report_lines(usage: Mapping[str, Any], mode: str) -> list[str]:
     lines += [f"  {name}：{op['n_questions']} 題，進到答案 {op['n_injected']} 題，"
               f"最長 {'未知' if op['max_hops'] is None else op['max_hops']} 跳"
               for name, op in usage["by_op"].items()]
+    lines += [f"  {name} 沒有結果：" + "、".join(f"{why} {n} 題" for why, n in reasons.items())
+              for name, reasons in usage["skipped"].items()]
     if usage["n_failed"]:
         lines.append(f"  另有 {usage['n_failed']} 題請求或生成失敗，不計入")
     if usage["n_trace_reported"] < n:
@@ -102,7 +118,17 @@ def report_lines(usage: Mapping[str, Any], mode: str) -> list[str]:
                      f"其餘由 sources、aux_card 推得（{usage['n_hops_unknown']} 題卡片跳數未知）")
     if mode == "main" and usage["n_walk"] == 0 and usage["n_hops_unknown"] == 0:
         lines.append("[bold red]主架構這次沒有任何題走到圖譜走訪，這輪數字不含圖譜走訪的效果。[/bold red]")
+    lines += _skip_warnings(usage, mode, n)
     return lines
+
+
+def _skip_warnings(usage: Mapping[str, Any], mode: str, n: int) -> list[str]:
+    """A main arm whose graph was off for many questions measures something else (2026-11-03: 81 of 112)."""
+    if mode != "main":
+        return []
+    skipped = {name: sum(reasons.values()) for name, reasons in usage["skipped"].items()}
+    return [f"[bold red]{name} 有 {count}/{n} 題沒跑成，這輪數字低估圖譜，先查原因再看結果。[/bold red]"
+            for name, count in skipped.items() if count / n > MAX_SKIPPED_SHARE]
 
 
 def csv_columns(trace: list[dict[str, Any]] | None) -> tuple[str, int | str]:

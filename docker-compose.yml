@@ -98,6 +98,41 @@ services:
       timeout: 5s
       retries: 5
 
+  # Neo4j holding the knowledge graph (`ragdata kg-project` projects the graph layer into
+  # it, one build_id per build). The backend walks it per request and answers without the
+  # walk when it is down, so nothing depends_on it. Bound to loopback: Community has no roles.
+  neo4j:
+    image: neo4j:5.26.32-community
+    pull_policy: never
+    container_name: bible_rag_neo4j
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 524288
+    mem_limit: 3g
+    ports:
+      - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
+      - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}
+      NEO4J_dbms_usage__report_enabled: "false"
+      NEO4J_server_memory_heap_initial__size: 1g
+      NEO4J_server_memory_heap_max__size: 1g
+      NEO4J_server_memory_pagecache_size: 512m
+      NEO4J_db_transaction_timeout: 30s
+      NEO4J_server_jvm_additional: -XX:+ExitOnOutOfMemoryError
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    stop_grace_period: 60s
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   # vLLM serving the generator: gemma-4-E4B-it, the model Ollama served as
   # gemma4:e4b-it-q8_0, here as Google's BF16 safetensors (not the Q8_0 GGUF).
   # Weights load from the shared HF cache only (`hf download google/gemma-4-E4B-it
@@ -194,3 +229,5 @@ volumes:
   qdrant_data:
   model_cache:
   vllm_cache:
+  neo4j_data:
+  neo4j_logs:

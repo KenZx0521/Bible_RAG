@@ -103,8 +103,8 @@ def _parse_args() -> argparse.Namespace:
         "--graph-strategies",
         nargs="*",
         default=None,
-        help="Graph strategies the backend may run: event_registry (the only one "
-             "the R1/R2 backend has) or no values = none. "
+        help="Graph strategies the backend may run: any of event_registry, graph_walk, "
+             "kin_card, or no values = none. "
              "Omit = backend RAG_GRAPH_STRATEGIES default.",
     )
     parser.add_argument(

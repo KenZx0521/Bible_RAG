@@ -5,8 +5,9 @@ Runs ``pipeline.run`` over the default inputs (``ragdata.paths``): the PDFs in b
 the registries and expectations, the store's reference copies (bible_md, the old output/,
 the old backend's frozen route matches) and the pinned models (offline). ``--load``
 writes the release to PG, Qdrant and ``contracts/`` (a new namespace; a build already
-registered with this release is not loaded again) and ``--verify`` runs G-PROJ over it;
-both connect with the repository's ``.env``. Without ``--date`` the build date is the
+registered with this release is not loaded again) and projects its graph into Neo4j
+(``kg-project``, a no-op when it is there), and ``--verify`` runs G-PROJ over it;
+they connect with the repository's ``.env``. Without ``--date`` the build date is the
 commit date of HEAD, so a rerun on the same commit names the same build.
 """
 
@@ -19,8 +20,9 @@ from typing import Any, Callable, Mapping
 from ragdata import paths
 from ragdata.gates.runner import GateInputs
 from ragdata.loader import cli as loader_cli
+from ragdata.loader import graph_load
 from ragdata.loader.load import load
-from ragdata.loader.verify import VerifyInputs, verify
+from ragdata.loader.verify import VerifyInputs
 from ragdata.pipeline import derived
 from ragdata.pipeline.run import Databases, Pipeline, PipelineReport, Stop, run
 from ragdata.pipeline.steps import Built, Sources, layer_steps
@@ -69,11 +71,17 @@ def _databases(args: argparse.Namespace) -> Databases | None:
     if not (args.load or args.verify):
         return None
     inputs = VerifyInputs(device=args.device)
+
+    def env() -> Mapping[str, str]:     # read when connecting
+        return loader_cli.environment(paths.REPO / ".env")
+
     return Databases(
-        connect=lambda: loader_cli.connect(loader_cli.environment(paths.REPO / ".env")),
+        connect=lambda: loader_cli.connect(env()),
         load=load_once(paths.CONTRACTS) if args.load else None,
-        verify=(lambda release, pg, qdrant: verify(release, pg, qdrant, paths.CONTRACTS, inputs))
-        if args.verify else None)
+        verify=(lambda release, pg, qdrant: loader_cli.verify_release(
+            release, pg, qdrant, paths.CONTRACTS, inputs, env())) if args.verify else None,
+        project=(lambda release: loader_cli.project_source(
+            graph_load.source_of_release(release), env())) if args.load else None)
 
 
 def default_pipeline(args: argparse.Namespace) -> Pipeline:

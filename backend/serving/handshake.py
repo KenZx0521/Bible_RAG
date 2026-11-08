@@ -3,7 +3,8 @@
 Each check takes what was observed and returns its mismatches as sentences; none
 raises and none repairs. ``serving.startup`` gathers them: any mismatch makes
 /api/v1/health answer 503, and with STRICT_BUILD_CHECK the startup fails. There is
-no image-digest check (rag_meta.serving only records the digest).
+no image-digest check (rag_meta.serving only records the digest), and none of Neo4j: what it
+holds never fails the handshake (``serving.graph``).
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from serving.build import Build
+from serving.contracts import KG_META
 
 FINGERPRINT_KEYS = ("tokenizer_sha", "probe_ids_sha", "unk_count", "pair_template_ok")
 ENCODERS = ("bge_m3", "reranker")
@@ -60,12 +62,15 @@ def check_manifest(build: Build, manifest: Mapping[str, Any]) -> list[str]:
 
 
 def check_kg(build: Build, manifest: Mapping[str, Any]) -> list[str]:
-    """This backend has no KG: a build that enables it cannot be served (D-09)."""
-    flags = {"rag_meta.builds": build.kg_enabled}
-    if "kg_enabled" in manifest:
-        flags["manifest"] = manifest["kg_enabled"]
-    return [f"kg: {where} kg_enabled={flag!r}, this backend serves only kg_enabled=false"
-            for where, flag in flags.items() if flag is not False]
+    """The build row and the manifest agree on kg_enabled, and a KG build lists ``kg_meta.json``
+    (``serving.startup`` parses it). Neo4j itself is no part of this: see ``serving.graph``."""
+    found = manifest.get("kg_enabled", False)
+    if found is not build.kg_enabled:
+        return [f"kg: manifest kg_enabled={found!r}, rag_meta.builds says {build.kg_enabled!r}"]
+    files = manifest.get("files")
+    if build.kg_enabled and not (isinstance(files, Mapping) and KG_META in files):
+        return [f"kg: the manifest of a KG build does not list {KG_META}"]
+    return []
 
 
 def _fingerprint(name: str, contract: Any, runtime: Any) -> list[str]:

@@ -20,7 +20,10 @@ with the release's snapshot (its layers, verified by the store):
 - C6 GT: the frozen GT v2 (sha and slot universe as its freeze record says, the
   universe being the release's text layer) has its gold slots among PG's present
   or merged slots and its omitted slots among the omitted ones;
-- G-SCHEMA.pg: every table has its primary key, unique and foreign key constraints.
+- G-SCHEMA.pg: every table has its primary key, unique and foreign key constraints;
+- C8 graph, only for a build with a graph layer: Neo4j's BuildInfo says complete and names this
+  graph and its counts, the constraints and indexes are there, and every node and edge read back
+  and hashed gives ``kg_meta.json`` (``graph_load``). Without a connection it is red.
 C7 (roles) is not built: this setup has one database role (精簡版).
 """
 
@@ -39,10 +42,11 @@ from ragdata import paths
 from ragdata.contract.kg import ROUTE_CATEGORIES
 from ragdata.gates.base import GateResult, capped
 from ragdata.gates.vectors import DET_COS, query_rows, rowwise_cos
+from ragdata.loader import graph_load
 from ragdata.loader import projection as proj_mod
 from ragdata.loader.contracts_emit import MANIFEST, read_contracts
 from ragdata.loader.load import Targets, read_vectors, record_files, targets
-from ragdata.loader.plan import Point
+from ragdata.loader.plan import LoaderError, Point
 from ragdata.loader.sql import unique_name
 from ragdata.loader.tables import BUILD_INFO, TABLES, Table
 from ragdata.release.assemble import Release
@@ -328,8 +332,21 @@ def check_pg_schema(proj: Projection) -> GateResult:
                  {"constraints": len(want)})
 
 
+def check_c8(release: Release, neo4j: Any | None) -> GateResult:
+    observed: dict[str, Any] = {}
+    if neo4j is None:
+        return _gate("G-PROJ.C8", ["no Neo4j connection: NEO4J_* are not set"], observed)
+    try:
+        source = graph_load.source_of_release(release)
+        observed = {"kg_sha256": source.kg_sha256, "counts": source.meta["counts"]}
+        out = graph_load.projection_violations(source, neo4j)
+    except LoaderError as exc:
+        out = [str(exc)]
+    return _gate("G-PROJ.C8", out, observed)
+
+
 def verify(release: Release, pg: Any, qdrant: Any, contracts_root: Path = paths.CONTRACTS,
-           inputs: VerifyInputs = VerifyInputs()) -> ProjectionReport:
+           inputs: VerifyInputs = VerifyInputs(), neo4j: Any | None = None) -> ProjectionReport:
     t = targets(release.build_id, contracts_root)
     files = record_files(release)
     proj = read_projection(t, pg, qdrant)
@@ -338,4 +355,6 @@ def verify(release: Release, pg: Any, qdrant: Any, contracts_root: Path = paths.
     gates = (check_pg_schema(proj), check_c1(release, t, proj), check_c2(files, proj),
              check_c3(files, proj, exempt), check_c4(files, proj, matrix, inputs),
              check_c5(release, proj), check_c6(release, proj, inputs))
+    if release.doc["kg_enabled"]:
+        gates = (*gates, check_c8(release, neo4j))
     return ProjectionReport(release.build_id, gates)

@@ -21,6 +21,8 @@ MANIFEST = "manifest.json"
 # registry (variant R2) and the encoder fingerprint the startup probes are compared with.
 REQUIRED = ("routing_lexicon.json", "query_aliases.json", "event_registry.json",
             "encoder_fingerprint.json")
+KG_META = "kg_meta.json"                # only a KG build's manifest lists it (handshake.check_kg)
+KG_SCHEMA = "ragdata.kg.v1"
 
 
 @dataclass(frozen=True)
@@ -33,6 +35,48 @@ class Contracts:
 
     def json(self, name: str) -> Any:
         return json.loads(self.files[name])
+
+
+@dataclass(frozen=True)
+class KgMeta:
+    """``kg_meta.json``: what the build's graph holds. ``sha256`` is the file's, which the projection
+    in Neo4j names as ``kg_sha256``."""
+
+    schema_version: str
+    nodes: Mapping[str, int]
+    edges: Mapping[str, int]
+    nodes_sha256: str
+    edges_sha256: str
+    sha256: str
+
+
+def _kg_counts(counts: Any, key: str) -> Mapping[str, int]:
+    found = counts.get(key) if isinstance(counts, dict) else None
+    if not isinstance(found, dict) or any(type(n) is not int for n in found.values()):
+        raise ValueError(f"{KG_META}: counts.{key} is not a table of counts")
+    return MappingProxyType(found)
+
+
+def _kg_sha(doc: Mapping[str, Any], key: str) -> str:
+    found = doc.get(key)
+    if not (isinstance(found, str) and len(found) == 64):
+        raise ValueError(f"{KG_META}: {key} is not a sha256")
+    return found
+
+
+def parse_kg_meta(data: bytes) -> KgMeta:
+    """Raises ``ValueError`` for anything but the graph layer's meta document."""
+    try:
+        doc = json.loads(data)
+    except ValueError as exc:
+        raise ValueError(f"{KG_META} is not JSON: {exc}") from None
+    if not isinstance(doc, dict):
+        raise ValueError(f"{KG_META} is not an object")
+    if doc.get("schema_version") != KG_SCHEMA:
+        raise ValueError(f"{KG_META}: schema_version must be {KG_SCHEMA}, got {doc.get('schema_version')!r}")
+    return KgMeta(KG_SCHEMA, _kg_counts(doc.get("counts"), "nodes"), _kg_counts(doc.get("counts"), "edges"),
+                  _kg_sha(doc, "nodes_sha256"), _kg_sha(doc, "edges_sha256"),
+                  hashlib.sha256(data).hexdigest())
 
 
 def resolve_dir(contracts_dir: str, contracts_root: str | None) -> Path:

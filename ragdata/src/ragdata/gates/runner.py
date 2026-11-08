@@ -12,7 +12,8 @@ not given fails closed. Any other declared dependency must be a record layer,
 or the layer is refused. Whether src came from the pinned PDFs and tools is
 G-SRC/G-TOOL's job at build time, and ``build`` stores nothing when they fail.
 Besides its records a layer may hold the reports its build wrote
-(``LAYER_REPORTS``), nothing else.
+(``LAYER_REPORTS``), nothing else; a ``.jsonl`` listed there (the graph layer's nodes and edges)
+holds no records either, so it stays out of G-SCHEMA.
 
 ``REQUIRED_GATES`` lists, per layer, every gate of design §8 whose subject is
 that layer (G-DET compares two runs and has its own command). A gate that is
@@ -47,7 +48,8 @@ from ragdata.contract.counts import (
 )
 from ragdata.contract.registry import (
     EMB_REPORT, ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, GEN_LAYER, GEN_NAMES, KG0_REPORT,
-    LAYER_REPORTS, QUERY_ALIASES, REGNAL_LAYER, REGNAL_REPORT, ROUTING_LEXICON, XCHECK_REPORT,
+    KG_EDGES, KG_META, KG_NODES, LAYER_REPORTS, QUERY_ALIASES, REGNAL_LAYER, REGNAL_REPORT,
+    ROUTING_LEXICON, XCHECK_REPORT,
 )
 from ragdata.gates import emb_legacy, sourced
 from ragdata.gates.base import GateInputError, GateResult, Snapshot
@@ -56,6 +58,7 @@ from ragdata.gates.emb import EmbFiles, check_emb
 from ragdata.gates.enc import REENCODE, EncOptions, StoredEncoding, run_enc
 from ragdata.gates.events import check_event
 from ragdata.gates.gen import GEN_EXPECT_PATH, check_gen, load_gen_expect
+from ragdata.gates.graph import check_graph
 from ragdata.gates.kg0 import check_kg0
 from ragdata.gates.prov import check_prov
 from ragdata.gates.regnal import REGNAL_EXPECT_PATH, check_regnal, load_regnal_expect
@@ -79,6 +82,7 @@ REPORT_SCHEMA = "ragdata.gate_report.v1"
 REQUIRED_DEPS: Mapping[str, tuple[str, ...]] = {
     "text": (), "struct": ("text",), "emb": ("struct", "text"), "kg0": ("text", "struct"),
     "events": ("text", "struct"), "route": ("text", "kg0", "events"), "relations": ("text",),
+    "graph": ("text", "struct", "kg0", "events"),
 }
 OPTIONAL_DEPS: Mapping[str, tuple[str, ...]] = {"relations": ("route",)}   # GEN: the lexicon
 REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
@@ -89,6 +93,7 @@ REQUIRED_GATES: Mapping[str, tuple[str, ...]] = MappingProxyType({
     "events": ("G-SCHEMA", "G-COUNT", "G-REFINT", "G-EVENT", "G-PROV"),
     "route": ("G-SCHEMA", "G-COUNT", "G-ROUTE", "G-PROV"),
     "relations": ("G-REGNAL", "G-GEN"),   # the regnal formulas and the GEN card's files (P5)
+    "graph": ("G-GRAPH",),
 })
 NOT_IMPLEMENTED = "not implemented"
 UNLOADED_DEPS = frozenset({"src"})
@@ -283,6 +288,14 @@ def _gen_gate(ctx: GateContext) -> GateResult:
                      load_gen_expect(ctx.inputs.gen_expect))
 
 
+def _graph_gate(ctx: GateContext) -> GateResult:
+    missing = [n for n in (KG_NODES, KG_EDGES, KG_META) if n not in ctx.target.file_shas]
+    if missing:
+        return missing_input("G-GRAPH", f"the layer's {missing}")
+    return check_graph(ctx.target.rows[KG_NODES], ctx.target.rows[KG_EDGES],
+                       stored_json(ctx, KG_META), ctx.snapshot)
+
+
 GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-SCHEMA": lambda ctx: ctx.schema,
     "G-COUNT": _count_gate,
@@ -301,6 +314,7 @@ GATES: Mapping[str, Callable[[GateContext], GateResult]] = MappingProxyType({
     "G-PROV": lambda ctx: check_prov(dict(ctx.target.rows)),
     "G-REGNAL": _regnal_gate,
     "G-GEN": _gen_gate,
+    "G-GRAPH": _graph_gate,
 })
 SOURCED = frozenset({"G-CONSERVE", "G-XCHECK"})  # gates that re-read the sources
 
@@ -416,6 +430,8 @@ def merge_files(layers: Sequence[LayerData]) -> dict[str, tuple[dict[str, Any], 
     for data in layers:
         _check_layer_files(data)
         for name, rows in data.rows.items():
+            if name in LAYER_REPORTS.get(data.layer, ()):
+                continue
             if name in files:
                 raise GateInputError(f"{name} is given twice (again by {data.path})")
             files[name] = rows

@@ -1,20 +1,23 @@
-"""``python -m ragdata load|verify`` (S13, S14).
+"""``python -m ragdata load|verify|kg-project`` (S13, S14 and the graph's projection).
 
     load RELEASE_JSON --slot inactive [--store DIR] [--contracts DIR] [--env-file F]
                       [--tokenizer F]
     verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F] [--tokenizer F]
                         [--gt F] [--freeze F] [--device DEV] [--sample N] [--report F]
+    kg-project --build BUILD_ID [--store DIR] [--releases DIR] [--env-file F]
     unload BUILD_ID [--contracts DIR] [--env-file F]
     promote --env staging|prod --build BUILD_ID --image IMAGE_REF [--yes-prod] [--env-file F]
     promote --env staging|prod --rollback [--yes-prod] [--env-file F]
 
 Both read the release through the store (``read_release``: every layer verified and
 gated again, the file assembled again byte for byte; ``--tokenizer`` is BGE-M3's
-tokenizer.json, default the HF cache). Connections come from POSTGRES_* and
-QDRANT_* in the environment, or else from ``--env-file`` (the repository's
+tokenizer.json, default the HF cache). Connections come from POSTGRES_*, QDRANT_* and
+NEO4J_* in the environment, or else from ``--env-file`` (the repository's
 ``.env``). ``load`` writes only a new schema, ``rag_meta.builds``, a new collection
 and a new contract directory; ``--slot inactive`` is the only slot it accepts.
-``unload`` deletes one build's schema, builds row, collection and contract directory
+``kg-project`` projects a loaded build's graph layer into Neo4j (``ragdata.loader.graph_load``);
+``verify`` compares it (G-PROJ.C8) when the build has one.
+``unload`` deletes one build's schema, builds row, collection, contract directory and graph nodes
 (``ragdata.loader.unload``); it refuses a serving build. ``promote`` writes
 ``rag_meta.serving`` (``ragdata.loader.promote``): IMAGE_REF is the backend image's
 digest (``docker image inspect --format '{{.Id}}' IMAGE``), ``--rollback`` steps the env
@@ -29,7 +32,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from ragdata import paths
-from ragdata.loader import config
+from ragdata.loader import config, graph_load
 from ragdata.loader import promote as promoter
 from ragdata.loader.load import load
 from ragdata.loader.unload import unload
@@ -58,6 +61,11 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
     check.add_argument("--device", help="where BGE-M3 re-encodes (default cuda if available)")
     check.add_argument("--sample", type=int, default=200)
     check.add_argument("--report", type=Path)
+    project = sub.add_parser("kg-project", help="project a build's graph layer into Neo4j")
+    project.add_argument("--build", metavar="BUILD_ID", required=True)
+    project.add_argument("--store", type=Path, default=DEFAULT_ROOT)
+    project.add_argument("--releases", type=Path, default=paths.RELEASES)
+    project.add_argument("--env-file", type=Path, default=paths.REPO / ".env")
     drop = sub.add_parser("unload", help="delete a loaded build that nothing serves")
     drop.add_argument("build_id")
     drop.add_argument("--contracts", type=Path, default=paths.CONTRACTS)
@@ -75,9 +83,9 @@ def add_parsers(sub: argparse._SubParsersAction) -> None:
 
 
 def environment(env_file: Path) -> dict[str, str]:
-    """POSTGRES_*/QDRANT_* settings: the process environment over the env file."""
+    """POSTGRES_*/QDRANT_*/NEO4J_* settings: the process environment over the env file."""
     found = config.read_env_file(env_file) if env_file.is_file() else {}
-    keys = (*config.PG_KEYS, *config.QDRANT_KEYS)
+    keys = (*config.PG_KEYS, *config.QDRANT_KEYS, *config.NEO4J_KEYS)
     return {**found, **{k: os.environ[k] for k in keys if os.environ.get(k)}}
 
 
@@ -99,6 +107,17 @@ def connect_pg(env: Mapping[str, str]) -> Any:
     return PgDb.connect(config.pg_settings(env))
 
 
+def connect_neo4j(env: Mapping[str, str]) -> Any:
+    """The Neo4j adapter (its driver loads only here)."""
+    from ragdata.loader.neo4j_db import Neo4jDb
+    return Neo4jDb.connect(config.neo4j_settings(env))
+
+
+def neo4j_if_configured(env: Mapping[str, str]) -> Any | None:
+    """The Neo4j adapter when NEO4J_* are all set; what needs it fails closed on None."""
+    return connect_neo4j(env) if all(env.get(k) for k in config.NEO4J_KEYS) else None
+
+
 def release_of(args: argparse.Namespace) -> Release:
     """The release file, verified against the store and its layers gated again."""
     return read_release(args.release, args.store, gating.default_checks(args.tokenizer))
@@ -114,25 +133,54 @@ def run_load(args: argparse.Namespace) -> dict[str, Any]:
         qdrant.close()
 
 
+def project_source(source: graph_load.GraphSource, env: Mapping[str, str]) -> dict[str, Any]:
+    neo4j = connect_neo4j(env)
+    try:
+        return graph_load.project(source, neo4j)
+    finally:
+        neo4j.close()
+
+
+def run_project(args: argparse.Namespace) -> dict[str, Any]:
+    source = graph_load.source_of_build(args.build, args.releases, args.store)
+    return project_source(source, environment(args.env_file))
+
+
+def verify_release(release: Release, pg: Any, qdrant: Any, contracts: Path, inputs: VerifyInputs,
+                   env: Mapping[str, str]) -> ProjectionReport:
+    """G-PROJ; Neo4j is reached only for a build with a graph."""
+    neo4j = neo4j_if_configured(env) if release.doc["kg_enabled"] else None
+    try:
+        return verify(release, pg, qdrant, contracts, inputs, neo4j)
+    finally:
+        if neo4j is not None:
+            neo4j.close()
+
+
 def run_verify(args: argparse.Namespace) -> ProjectionReport:
     release = release_of(args)
     inputs = VerifyInputs(gt=args.gt, freeze=args.freeze, sample=args.sample,
                           device=args.device, tokenizer=args.tokenizer)
-    pg, qdrant = connect(environment(args.env_file))
+    env = environment(args.env_file)
+    pg, qdrant = connect(env)
     try:
-        return verify(release, pg, qdrant, args.contracts, inputs)
+        return verify_release(release, pg, qdrant, args.contracts, inputs, env)
     finally:
         pg.close()
         qdrant.close()
 
 
 def run_unload(args: argparse.Namespace) -> dict[str, Any]:
-    pg, qdrant = connect(environment(args.env_file))
+    env = environment(args.env_file)
+    pg, qdrant = connect(env)
+    neo4j = neo4j_if_configured(env)
     try:
-        return unload(args.build_id, pg, qdrant, args.contracts)
+        return unload(args.build_id, pg, qdrant, args.contracts, neo4j)
     finally:
         pg.close()
         qdrant.close()
+        if neo4j is not None:
+            neo4j.close()
 
 
 def _check_promote(args: argparse.Namespace) -> None:

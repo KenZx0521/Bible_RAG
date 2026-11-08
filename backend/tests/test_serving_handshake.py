@@ -127,10 +127,22 @@ def test_the_manifest_must_describe_the_registered_build():
     assert "qdrant_collection" in hs.check_manifest(build, {**manifest, "qdrant_collection": "x"})[0]
 
 
-def test_a_kg_build_cannot_be_served_by_this_backend():
-    assert hs.check_kg(_build(), {"kg_enabled": False}) == []
-    assert "kg_enabled" in hs.check_kg(_build(kg_enabled=True), {"kg_enabled": False})[0]
-    assert "kg_enabled" in hs.check_kg(_build(), {"kg_enabled": True})[0]
+def test_a_build_without_a_graph_needs_nothing_of_it():
+    assert hs.check_kg(_build(), {"kg_enabled": False, "files": {}}) == []
+
+
+def test_the_build_row_and_the_manifest_must_agree_on_kg_enabled():
+    [problem] = hs.check_kg(_build(kg_enabled=True), {"kg_enabled": False, "files": {"kg_meta.json": "s"}})
+    assert "manifest kg_enabled=False" in problem and "rag_meta.builds says True" in problem
+    [problem] = hs.check_kg(_build(), {"kg_enabled": True, "files": {"kg_meta.json": "s"}})
+    assert "manifest kg_enabled=True" in problem and "rag_meta.builds says False" in problem
+
+
+def test_a_kg_build_with_kg_meta_listed_passes_and_without_it_does_not():
+    good = {"kg_enabled": True, "files": {"kg_meta.json": "s"}}
+    assert hs.check_kg(_build(kg_enabled=True), good) == []
+    [problem] = hs.check_kg(_build(kg_enabled=True), {"kg_enabled": True, "files": {}})
+    assert "does not list kg_meta.json" in problem
 
 
 def test_encoder_probes_must_equal_the_contract_fingerprint():

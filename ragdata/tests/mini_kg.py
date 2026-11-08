@@ -78,6 +78,12 @@ def write_registries(directory: Path, **docs: dict) -> dict[str, str]:
     return versions
 
 
+def write_person_aliases(directory: Path) -> None:
+    """The graph layer's alias registry; the mini text names no kin, so it holds no pair."""
+    doc = {"schema": "ragdata.person_aliases.v1", "rename": [], "footnote": []}
+    (directory / "person_aliases.yaml").write_bytes(dump(doc))
+
+
 # ------------------------------------------------------------------ kg0 oracle
 
 

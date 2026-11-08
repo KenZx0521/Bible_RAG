@@ -20,7 +20,7 @@ from typing import Any
 
 from config import settings
 from database import postgres, qdrant_db
-from utils import embedder
+from utils import embedder, model_thread
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ def _target(payload: dict[str, Any]) -> tuple[str, str]:
 async def retrieve_dense(query: str, arm: DenseArm, top_k: int | None = None,
                          book_ids: list[str] | None = None) -> list[dict]:
     """Candidates for ``query`` in hit order; ``book_ids`` restricts the search."""
-    vector = embedder.encode_query(query)
+    vector = await model_thread.run(embedder.encode_query, query)
     hits = qdrant_db.search(vector, top_k=top_k or settings.semantic_search_top_k,
                             book_ids=book_ids)
     targets = [_target(h["payload"]) for h in hits]

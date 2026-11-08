@@ -1,6 +1,6 @@
 """G-IMPORT (design §8): build modules import no database driver, no ``scripts.*``, none of
 the legacy tools that run inside the backend venv and not the loader; outside the loader's
-two database adapters no ragdata module imports a driver at all."""
+three database adapters no ragdata module imports a driver at all."""
 
 from __future__ import annotations
 
@@ -15,7 +15,8 @@ ROOT = Path(ragdata.__file__).resolve().parent
 DRIVERS = ("psycopg", "psycopg2", "neo4j", "qdrant_client")
 FORBIDDEN = (*DRIVERS, "scripts", "ragdata.legacy", "ragdata.loader", "utils")
 BUILD_PACKAGES = ("stages", "kg")
-DRIVER_MODULES = {"loader/pg.py", "loader/qdrant.py"}    # the only modules that may import one
+# the only modules that may import one
+DRIVER_MODULES = {"loader/pg.py", "loader/qdrant.py", "loader/neo4j_db.py"}
 
 
 def _imports(path: Path) -> set[str]:

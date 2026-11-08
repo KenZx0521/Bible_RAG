@@ -24,6 +24,9 @@
         (the relations layer holds only the regnal formulas and the GEN card's files: Kay's
         P5 exception, 2026-10-19, and the GEN plan of 2026-10-21; a text with Genesis 5 and 11
         needs --route, whose routing lexicon gen_names.json reads)
+    python -m ragdata build graph --text DIR --struct DIR --kg0 DIR --events DIR [--registries DIR]
+        (the knowledge graph: kg_nodes.jsonl, kg_edges.jsonl, kg_meta.json; the registries give
+        person_aliases.yaml)
     python -m ragdata gate LAYER LAYER_DIR [--dep DIR ...] [--pdf-dir DIR] [--counts YAML]
                                  [--source-expect YAML] [--registries DIR] [--tokenizer FILE]
                                  [--reranker-tokenizer FILE] [--legacy-dir DIR] [--device DEV]
@@ -38,6 +41,9 @@
     python -m ragdata verify RELEASE_JSON [--store DIR] [--contracts DIR] [--env-file F]
                                  [--tokenizer F] [--gt F] [--freeze F] [--device DEV]
                                  [--sample N] [--report F]
+    python -m ragdata kg-project --build BUILD_ID [--store DIR] [--releases DIR] [--env-file F]
+        (after load: projects the release's graph layer into Neo4j; rerunnable, and a build
+        already complete is only read back)
     python -m ragdata unload BUILD_ID [--contracts DIR] [--env-file F]
     python -m ragdata promote --env staging|prod --build BUILD_ID --image IMAGE_REF
                                  [--yes-prod] [--env-file F]
@@ -62,7 +68,8 @@ reports ``sampled: true``. ``det`` on two emb layers also
 compares their vectors and probe vectors within G-DET's tolerance. kg0 and events
 are built from, and gated with, text and struct; route with text, kg0 and events, and
 the registries kg0 was built with plus ``query_aliases.yaml`` (``--registries``); relations
-with text, and route when it was built on it (``gate relations DIR --dep TEXT --dep ROUTE``).
+with text, and route when it was built on it (``gate relations DIR --dep TEXT --dep ROUTE``);
+graph with text, struct, kg0 and events.
 ``release``, ``load`` and ``verify`` gate every layer of the release again (all but
 G-ENC, G-CONSERVE and G-XCHECK) and refuse it (status 2) when one is red.
 
@@ -92,7 +99,7 @@ from ragdata.gates.diff import EXPECT_PATH as DIFF_EXPECT_PATH
 from ragdata.gates.gen import GEN_EXPECT_PATH
 from ragdata.gates.regnal import REGNAL_EXPECT_PATH
 from ragdata.gates.runner import GateInputError, GateInputs, gate_layer
-from ragdata.kg import k0_build, k1_build, k4_build, regnal_build
+from ragdata.kg import graph_build, k0_build, k1_build, k4_build, regnal_build
 from ragdata.loader import cli as loader_cli
 from ragdata.loader.config import ConfigError
 from ragdata.loader.plan import LoaderError
@@ -137,9 +144,9 @@ def _build_parser(sub: Any) -> None:
     build.add_argument("--pdf-dir", type=Path, help="the PDFs (text)")
     build.add_argument("--text", type=Path, help="the text layer to build on")
     build.add_argument("--struct", type=Path,
-                       help="the struct layer to build on (emb, kg0, events)")
-    build.add_argument("--kg0", type=Path, help="the kg0 layer to build on (route)")
-    build.add_argument("--events", type=Path, help="the events layer to build on (route)")
+                       help="the struct layer to build on (emb, kg0, events, graph)")
+    build.add_argument("--kg0", type=Path, help="the kg0 layer to build on (route, graph)")
+    build.add_argument("--events", type=Path, help="the events layer to build on (route, graph)")
     build.add_argument("--route", type=Path,
                        help="the route layer to build on (relations: the GEN card's lexicon)")
     build.add_argument("--legacy-dir", type=Path, default=paths.LEGACY_OUTPUT,
@@ -262,9 +269,16 @@ def _build_regnal(args: argparse.Namespace) -> stages.BuildResult:
                                      route_dir=route, gen_expect=args.gen_expect)
 
 
+def _build_graph(args: argparse.Namespace) -> stages.BuildResult:
+    return graph_build.build_graph(_need_dir(args.text, "--text"), _need_dir(args.struct, "--struct"),
+                                   _need_dir(args.kg0, "--kg0"), _need_dir(args.events, "--events"),
+                                   args.store, args.registries)
+
+
 BUILDERS: dict[str, Callable[[argparse.Namespace], stages.BuildResult]] = {
     "text": _build_text, "struct": _build_struct, "emb": _build_emb, "kg0": _build_kg0,
     "events": _build_events, "route": _build_route, "relations": _build_regnal,
+    "graph": _build_graph,
 }
 
 
@@ -324,6 +338,11 @@ def _load(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _kg_project(args: argparse.Namespace) -> int:
+    _emit(loader_cli.run_project(args), None)
+    return EXIT_OK
+
+
 def _pipeline(args: argparse.Namespace) -> int:
     report = pipeline_cli.run_pipeline(args)
     _emit(report.to_json(), args.report)
@@ -355,7 +374,7 @@ HANDLED = (CliError, CountsError, GateInputError, StoreError, StageError, OSErro
 COMMANDS: dict[str, Callable[[argparse.Namespace], int]] = {
     "build": _build, "gate": _gate, "det": _det, "expect": _expect,
     "gt": _gt, "release": _release, "load": _load, "verify": _verify,
-    "unload": _unload, "promote": _promote, "pipeline": _pipeline,
+    "unload": _unload, "promote": _promote, "pipeline": _pipeline, "kg-project": _kg_project,
 }
 
 

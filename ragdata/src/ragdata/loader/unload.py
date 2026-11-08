@@ -2,7 +2,8 @@
 
 A loaded build owns four things, each named after its build id (``load.targets``): the
 PG schema ``b{build_id}``, its ``rag_meta.builds`` row, the Qdrant collection
-``passages__{build_id}`` and ``contracts/{build_id}/``. Unload deletes exactly those:
+``passages__{build_id}`` and ``contracts/{build_id}/``, and, when ``rag_meta.builds`` says it has a
+graph, the nodes and edges carrying its ``build_id`` in Neo4j. Unload deletes exactly those:
 
 - only for a build id of the release grammar (``b{YYYYMMDD}_{8 hex}``), so the legacy
   build, the public schema and the legacy collections can never be named;
@@ -11,18 +12,20 @@ PG schema ``b{build_id}``, its ``rag_meta.builds`` row, the Qdrant collection
 - not at all when the builds row records another schema, collection or contract
   directory than the build id's own.
 
-One PG transaction drops the schema and deletes the row; before it commits, the
-collection and then the contract directory are deleted (a failure there rolls PG back).
+One PG transaction drops the schema and deletes the row; before it commits, the graph's nodes,
+the collection and then the contract directory are deleted (a failure there rolls PG back).
 A piece that is already gone is skipped, so running unload again finishes one that was
-interrupted. The release file in ``releases/`` is the store's, not the build's: unload
-leaves it.
+interrupted (a build whose row is gone may still have nodes, so Neo4j is asked then too; a build
+whose row says it has no graph never reaches Neo4j). A build with a graph and no connection to
+Neo4j is refused before anything is deleted. The release file in ``releases/`` is the store's, not
+the build's: unload leaves it.
 """
 
 from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 from ragcommon import ids
 from ragdata import paths
@@ -60,28 +63,39 @@ def _refuse_serving(t: Targets, pg: Any) -> None:
         raise UnloadError(f"{t.build_id} is serving {envs}; promote another build first")
 
 
-def _outside_pg(t: Targets, qdrant: Any) -> None:
+def _outside_pg(t: Targets, qdrant: Any, clear_graph: Callable[[], None]) -> None:
+    clear_graph()
     if qdrant.exists(t.collection):
         qdrant.delete(t.collection)
     if t.contracts_dir.exists():
         shutil.rmtree(t.contracts_dir)
 
 
-def unload(build_id: str, pg: Any, qdrant: Any,
-           contracts_root: Path = paths.CONTRACTS) -> dict[str, Any]:
-    """Delete the build's four targets; return which were there (``removed``) and not."""
+def unload(build_id: str, pg: Any, qdrant: Any, contracts_root: Path = paths.CONTRACTS,
+           neo4j: Any | None = None) -> dict[str, Any]:
+    """Delete the build's targets; return which were there (``removed``) and not, and how many
+    graph nodes went (``neo4j_nodes``, None when Neo4j was not asked)."""
     t = owned_targets(build_id, contracts_root)
     row = pg.build_row(build_id)
     _check_row(t, row)
     _refuse_serving(t, pg)
+    has_graph = bool(row and row.get("kg_enabled"))
+    if has_graph and neo4j is None:
+        raise UnloadError(f"{build_id} has a graph and NEO4J_* are not set; nothing was deleted")
+    asks_neo4j = neo4j is not None and (has_graph or row is None)
+    cleared: list[int] = []
+
+    def clear_graph() -> None:
+        if asks_neo4j:
+            cleared.append(neo4j.delete_build(build_id))
     present = {"pg_schema": pg.schema_exists(t.schema), "builds_row": row is not None,
                "qdrant_collection": qdrant.exists(t.collection),
                "contracts_dir": t.contracts_dir.exists()}
     try:
-        pg.drop_build(t.schema, build_id, lambda: _outside_pg(t, qdrant))
+        pg.drop_build(t.schema, build_id, lambda: _outside_pg(t, qdrant, clear_graph))
     except LoaderError as exc:
         raise UnloadError(f"unload of {build_id} stopped, PG rolled back: {exc}") from exc
     return {"build_id": build_id, "pg_schema": t.schema, "qdrant_collection": t.collection,
-            "contracts_dir": str(t.contracts_dir),
+            "contracts_dir": str(t.contracts_dir), "neo4j_nodes": cleared[0] if cleared else None,
             "removed": [k for k in OWNED if present[k]],
             "absent": [k for k in OWNED if not present[k]]}

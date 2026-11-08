@@ -48,6 +48,49 @@ def test_a_run_builds_every_layer_then_releases_loads_and_verifies(mini):
     assert mini.pg.build_row(build_id) is not None
 
 
+def test_a_run_with_load_projects_the_graph_between_load_and_verify(mini):
+    report = run(mini.pipeline())
+    assert report.passed, report.stop and report.stop.to_json()
+    doc = report.to_json()
+    build_id = doc["release"]["build_id"]
+    assert doc["kg_project"]["written"] is True and doc["kg_project"]["build_id"] == build_id
+    assert mini.neo4j.build_info(build_id)["complete"] is True
+    assert doc["verify"]["gates"]["G-PROJ.C8"] is True
+    assert list(doc).index("load") < list(doc).index("kg_project") < list(doc).index("verify")
+
+
+def test_a_second_run_finds_the_graph_projected_and_writes_nothing(mini):
+    run(mini.pipeline())
+    writes = len(mini.neo4j.writes)
+    second = run(mini.pipeline()).to_json()
+    assert second["pass"] is True and second["kg_project"]["written"] is False
+    assert len(mini.neo4j.writes) == writes
+
+
+def test_neo4j_down_stops_at_kg_project_after_the_load(mini):
+    mini.neo4j.unreachable = True
+    report = run(mini.pipeline())
+    stop = _stopped(report)
+    assert (stop.where, stop.kind) == ("kg-project", INPUT)
+    assert "ServiceUnavailable" in stop.red[0]
+    doc = report.to_json()
+    assert doc["load"]["reused"] is False and "verify" not in doc
+
+
+def test_verify_alone_does_not_project(mini):
+    run(mini.pipeline())
+    writes = len(mini.neo4j.writes)
+    doc = run(mini.pipeline(databases=mini.databases(load=False))).to_json()
+    assert "kg_project" not in doc and len(mini.neo4j.writes) == writes
+    assert doc["verify"]["gates"]["G-PROJ.C8"] is True
+
+
+def test_verify_of_a_build_never_projected_stops_at_c8(mini):
+    report = run(mini.pipeline(databases=mini.databases(load=False)))
+    stop = _stopped(report)
+    assert stop.where == "verify" and any(r.startswith("G-PROJ.C8") for r in stop.red)
+
+
 def test_a_second_run_reuses_every_layer_and_names_the_same_build(mini):
     first = run(mini.pipeline()).to_json()
     second = run(mini.pipeline()).to_json()

@@ -9,7 +9,8 @@ from typing import Any
 from ragdata.contract import emb, kg, struct, text
 from ragdata.contract.fields import Record, parse
 
-LAYERS = ("text", "struct", "emb", "kg0", "events", "route", "relations")   # relations: no records
+LAYERS = ("text", "struct", "emb", "kg0", "events", "route", "relations",
+          "graph")   # relations and graph: no records
 # non-record files a layer's build writes beside its records (S3, S4 and the diff reports)
 XCHECK_REPORT = "xcheck_report.json"
 OVERLAY_REPORT = "overlay_report.json"
@@ -29,13 +30,18 @@ REGNAL_LAYER = "regnal_layer.json"             # the chronology card's contract 
 REGNAL_REPORT = "regnal_report.json"
 GEN_LAYER = "gen_layer.json"                   # the GEN card's contract files (2026-10-21)
 GEN_NAMES = "gen_names.json"
+KG_NODES = "kg_nodes.jsonl"                    # the knowledge graph (2026-11-02): not records, so
+KG_EDGES = "kg_edges.jsonl"                    # G-SCHEMA does not read them and no PG table holds them
+KG_META = "kg_meta.json"                       # its contract file: counts and content shas
+GRAPH_REPORT = "graph_report.json"
 LAYER_REPORTS = {"text": (XCHECK_REPORT, OVERLAY_REPORT, DIFF_MD_REPORT, DIFF_CANONICAL_REPORT,
                           DIFF_SUMMARY_REPORT), "struct": (STRUCT_REPORT,),
                  "emb": (EMB_REPORT, ENCODER_FINGERPRINT),
                  "kg0": (KG0_REPORT,),
                  "events": (EVENT_REGISTRY_V2, EVENTS_REPORT),
                  "route": (ROUTING_LEXICON, QUERY_ALIASES, ROUTE_REPORT),
-                 "relations": (REGNAL_LAYER, REGNAL_REPORT, GEN_LAYER, GEN_NAMES)}
+                 "relations": (REGNAL_LAYER, REGNAL_REPORT, GEN_LAYER, GEN_NAMES),
+                 "graph": (KG_NODES, KG_EDGES, KG_META, GRAPH_REPORT)}
 
 
 @dataclass(frozen=True)

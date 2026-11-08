@@ -54,10 +54,52 @@ def test_summarize_counts_questions_not_operations():
 
     assert usage == {
         "n_questions": 5, "n_failed": 0, "n_trace_reported": 4, "n_with_op": 4, "n_injected": 3, "n_walk": 1,
-        "n_hops_unknown": 1, "n_nodes": 7, "n_edges": 4,
+        "n_hops_unknown": 1, "n_nodes": 7, "n_edges": 4, "n_cypher": 0, "skipped": {},
         "by_op": {"event_registry": {"n_questions": 3, "n_injected": 2, "max_hops": 1},
                   "gen_card": {"n_questions": 1, "n_injected": 1, "max_hops": 2},
                   "regnal_card": {"n_questions": 1, "n_injected": 1, "max_hops": None}}}
+
+
+GRAPH_WALK = {"op": "graph_walk", "hops": 4, "nodes": ["nm:x", "ps:a"], "edges": [], "injected": "context",
+              "passages": ["ps:a"], "seeds": ["ps:a"], "names": ["甲"], "walked": ["ps:a"], "n_cypher": 2, "ms": 3.0,
+              "skip_reason": None}
+KIN_CARD = {"op": "kin_card", "hops": 3, "nodes": ["e1", "e2"], "edges": [["e1", "PARENT_OF", "e2", "gen.1.1"]],
+            "injected": "prompt", "passages": ["ps:gen.1.1"], "seeds": [], "names": ["甲", "乙"], "walked": [],
+            "n_cypher": 3, "ms": 2.0, "skip_reason": None}
+SKIPPED_WALK = {"op": "graph_walk", "hops": 0, "nodes": [], "edges": [], "injected": "none", "passages": [],
+                "seeds": [], "names": [], "walked": [], "n_cypher": 0, "ms": 0.0, "skip_reason": "unavailable"}
+NO_EDGE = {**KIN_CARD, "hops": 0, "nodes": [], "edges": [], "injected": "none", "passages": [], "names": [],
+           "skip_reason": "no_edge"}
+
+
+def test_a_graph_walk_and_a_kinship_card_count_as_walks():
+    assert graph_usage.is_walk(GRAPH_WALK) and graph_usage.is_walk(KIN_CARD)
+    assert not graph_usage.is_walk(SKIPPED_WALK) and not graph_usage.is_walk(NO_EDGE)
+
+
+def test_summarize_counts_the_new_operations_their_cypher_and_why_they_gave_nothing():
+    usage = graph_usage.summarize([{"graph_trace": [GRAPH_WALK, KIN_CARD]}, {"graph_trace": [SKIPPED_WALK, NO_EDGE]}])
+
+    assert (usage["n_walk"], usage["n_injected"], usage["n_with_op"], usage["n_cypher"]) == (1, 1, 2, 8)
+    assert usage["skipped"] == {"graph_walk": {"unavailable": 1}, "kin_card": {"no_edge": 1}}
+    assert usage["by_op"]["graph_walk"] == {"n_questions": 2, "n_injected": 1, "max_hops": 4}
+    assert usage["by_op"]["kin_card"] == {"n_questions": 2, "n_injected": 1, "max_hops": 3}
+
+
+def test_the_report_says_why_an_operation_gave_nothing():
+    usage = graph_usage.summarize([{"graph_trace": [SKIPPED_WALK]}, {"graph_trace": [SKIPPED_WALK]}])
+    lines = graph_usage.report_lines(usage, "main")
+    assert any("graph_walk" in line and "unavailable" in line and "2" in line for line in lines)
+
+
+def test_a_main_arm_whose_neo4j_was_down_is_warned_that_nothing_walked():
+    usage = graph_usage.summarize([{"graph_trace": [SKIPPED_WALK]}])
+    assert any("沒有任何題走到圖譜走訪" in line for line in graph_usage.report_lines(usage, "main"))
+
+
+def test_an_old_checkpoints_kinship_card_is_read_back():
+    ops = graph_usage.ops_of({"graph_trace": None, "sources": [], "aux_card": {"kind": "kin", "kings": ["e1"]}})
+    assert [(op["op"], op["hops"], op["injected"]) for op in ops] == [("kin_card", None, "prompt")]
 
 
 def test_the_main_arm_is_warned_when_nothing_walked():
@@ -200,3 +242,24 @@ def test_csv_appends_the_graph_columns_last(monkeypatch, tmp_path, trace, ops, h
 def test_eval_sample_defaults_to_unreported():
     assert EvalSample(question_id="Q", question="q", question_type="X", rag_answer="a", contexts=[],
                       sources=[], ground_truth=GT).graph_trace is None
+
+
+def _usage_skipping(n_skipped: int, n: int = 100) -> dict:
+    return {"n_questions": n, "n_failed": 0, "n_walk": n - n_skipped, "n_injected": n - n_skipped,
+            "n_with_op": n, "n_nodes": 0, "n_edges": 0, "by_op": {}, "n_trace_reported": n, "n_hops_unknown": 0,
+            "skipped": {"graph_walk": {"timeout": n_skipped}} if n_skipped else {}}
+
+
+def test_the_main_arm_is_warned_when_the_graph_was_off_for_many_questions():
+    lines = graph_usage.report_lines(_usage_skipping(6), "main")
+    assert any("graph_walk 有 6/100 題沒跑成" in line for line in lines)
+
+
+def test_a_few_skips_are_listed_but_do_not_warn():
+    lines = graph_usage.report_lines(_usage_skipping(5), "main")
+    assert not any("沒跑成" in line for line in lines)
+    assert any("graph_walk 沒有結果：timeout 5 題" in line for line in lines)
+
+
+def test_a_control_arm_is_not_warned_about_skips():
+    assert not any("沒跑成" in line for line in graph_usage.report_lines(_usage_skipping(50), "no_graph"))

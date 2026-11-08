@@ -17,11 +17,11 @@ class QueryRequest(BaseModel):
     )
     use_graph: bool | None = Field(
         default=None,
-        description="覆寫 RAG_USE_GRAPH 預設值(控制 event_registry 附加槽與王朝、創世記兩張卡);None 表示沿用 backend 設定",
+        description="覆寫 RAG_USE_GRAPH 預設值(控制 event_registry 附加槽、走圖檢索與王朝、創世記、親屬三張卡);None 表示沿用 backend 設定",
     )
     graph_strategies: list[GraphStrategyName] | None = Field(
         default=None,
-        description="覆寫 RAG_GRAPH_STRATEGIES:只接受 ['event_registry'] 或 [];None 沿用 backend 設定",
+        description="覆寫 RAG_GRAPH_STRATEGIES:event_registry、graph_walk、kin_card 的任意子集,[] 表示都不跑;None 沿用 backend 設定",
     )
     use_regnal_card: bool | None = Field(
         default=None,
@@ -50,7 +50,7 @@ class QueryRequest(BaseModel):
 
     @field_validator("graph_strategies")
     @classmethod
-    def _one_lane_at_most(cls, value: list[str] | None) -> list[str] | None:
-        if value is not None and len(value) > 1:
-            raise ValueError("graph_strategies must be ['event_registry'] or []")
+    def _each_at_most_once(cls, value: list[str] | None) -> list[str] | None:
+        if value is not None and len(set(value)) != len(value):
+            raise ValueError("graph_strategies must name each strategy at most once")
         return value

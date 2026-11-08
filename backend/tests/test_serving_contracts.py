@@ -100,3 +100,37 @@ def test_an_unreadable_manifest_is_a_mismatch(directory):
 def test_resolve_dir_reroots_under_the_mount(tmp_path):
     assert contracts.resolve_dir("/mnt/store/contracts/b1", None) == Path("/mnt/store/contracts/b1")
     assert contracts.resolve_dir("/mnt/store/contracts/b1", str(tmp_path)) == tmp_path / "b1"
+
+
+# ---------------------------------------------------------------- kg_meta.json
+KG_META = {"schema_version": "ragdata.kg.v1", "nodes_sha256": "a" * 64, "edges_sha256": "b" * 64,
+           "counts": {"nodes": {"Person": 2, "Verse": 3}, "edges": {"PARENT_OF": 1}}}
+
+
+def _kg_bytes(**changes) -> bytes:
+    return json.dumps({**KG_META, **changes}).encode("utf-8")
+
+
+def test_kg_meta_parses_into_its_counts_shas_and_file_sha():
+    data = _kg_bytes()
+    meta = contracts.parse_kg_meta(data)
+    assert meta.schema_version == "ragdata.kg.v1"
+    assert meta.nodes == {"Person": 2, "Verse": 3} and meta.edges == {"PARENT_OF": 1}
+    assert (meta.nodes_sha256, meta.edges_sha256) == ("a" * 64, "b" * 64)
+    assert meta.sha256 == contracts.hashlib.sha256(data).hexdigest()
+
+
+@pytest.mark.parametrize("data, message", [
+    (b"not json", "kg_meta.json"),
+    (b"[]", "object"),
+    (_kg_bytes(schema_version="ragdata.kg.v0"), "schema_version"),
+    (_kg_bytes(counts={"nodes": {"Person": 2}}), "counts"),
+    (_kg_bytes(counts={"nodes": {"Person": "2"}, "edges": {}}), "counts"),
+    (_kg_bytes(counts={"nodes": {"Person": True}, "edges": {}}), "counts"),
+    (_kg_bytes(counts=None), "counts"),
+    (_kg_bytes(nodes_sha256="short"), "nodes_sha256"),
+    (_kg_bytes(edges_sha256=None), "edges_sha256"),
+])
+def test_a_kg_meta_that_does_not_parse_is_a_value_error(data, message):
+    with pytest.raises(ValueError, match=message):
+        contracts.parse_kg_meta(data)

@@ -15,6 +15,8 @@ from serving import context
 from utils import gen_card, graph_trace
 from utils.citations import fix_block_chapters
 from utils.intent_classifier import classify_intent
+from utils.kg import kin_card
+from utils.kg.kin_card import KinCard
 from utils.regnal.card import Card, chronology_card
 from utils.regnal.trigger import trigger as regnal_trigger
 from utils.retrieval.router import retrieve_and_rerank
@@ -50,7 +52,10 @@ def _sources(req: QueryRequest, results: list[dict]) -> list[Source]:
     return [_source(r, block, build_id) for r, block in zip(results, blocks)]
 
 
-def _evidence(card: Card | gen_card.Card | None) -> tuple[str, ...]:
+AnyCard = Card | gen_card.Card | KinCard
+
+
+def _evidence(card: AnyCard | None) -> tuple[str, ...]:
     """The verse keys the card's rows rest on."""
     if card is None:
         return ()
@@ -59,9 +64,13 @@ def _evidence(card: Card | gen_card.Card | None) -> tuple[str, ...]:
     return tuple(card.evidence)
 
 
-def _aux_card(card: Card | gen_card.Card | None) -> AuxCard | None:
+def _aux_card(card: AnyCard | None) -> AuxCard | None:
     if card is None:
         return None
+    if isinstance(card, KinCard):
+        return AuxCard(kind="kin", text=card.text, seeds=list(card.seeds), kings=list(card.persons),
+                       lines=card.lines, evidence=list(card.evidence),
+                       layer_sha256=context.active().kg.sha256, seed_source="rule")
     if isinstance(card, gen_card.Card):
         gen = context.active().gen
         return AuxCard(kind="gen", text=card.g_block, seeds=[gen.name[x] for x in card.seeds],
@@ -73,7 +82,7 @@ def _aux_card(card: Card | gen_card.Card | None) -> AuxCard | None:
                    layer_sha256=card.layer_sha256, seed_source=card.seed_source)
 
 
-async def _answer(req: QueryRequest, results: list[dict], card: Card | gen_card.Card | None) -> str:
+async def _answer(req: QueryRequest, results: list[dict], card: AnyCard | None) -> str:
     """The generated answer, block numbers cited as chapters put right (utils.citations)."""
     if req.retrieval_only:
         return ""
@@ -81,7 +90,7 @@ async def _answer(req: QueryRequest, results: list[dict], card: Card | gen_card.
     return fix_block_chapters(answer, results, req.question, _evidence(card))
 
 
-def _aux_block(card: Card | gen_card.Card | None) -> str | None:
+def _aux_block(card: AnyCard | None) -> str | None:
     if isinstance(card, gen_card.Card):
         return card.g_block
     return card.text if card else None
@@ -133,8 +142,9 @@ async def rag_query(req: QueryRequest):
     """
     主 RAG 查詢端點。
 
-    流程: 經文引用偵測 → 意圖分類 → 路由檢索 → 去重 → 重排序 → 上下文組裝 →
-    （王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡 → 回答生成 → 段號誤當章號的引用改正。
+    流程: 經文引用偵測 → 意圖分類 → 路由檢索 →（無明寫引用的路由）走圖與親屬卡 → 去重 → 重排序 →
+    上下文組裝 →（王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡,（親屬題）親屬卡 → 回答生成 →
+    段號誤當章號的引用改正。
     """
     context.active()  # 503 before any work when no build is served
     if req.semantic_only:
@@ -149,7 +159,10 @@ async def rag_query(req: QueryRequest):
         use_graph=req.use_graph, semantic_only=req.semantic_only,
         fusion_alpha=req.fusion_alpha, graph_strategies=req.graph_strategies,
     )
-    card = await _card(req, results) or _gen_card(req, results)
+    # the kinship card was made during retrieval, and never for a question the other two claim; with no prompt
+    # to go to (retrieval_only) it stays in the stats, as the other two are not even built then
+    card = await _card(req, results) or _gen_card(req, results) or (
+        None if req.retrieval_only else kin_card.from_stats(stats))
     answer = await _answer(req, results, card)
     return QueryResponse(
         answer=answer,
@@ -159,5 +172,5 @@ async def rag_query(req: QueryRequest):
                           rejected_refs=intent.get("rejected_refs", [])),
         retrieval_stats=RetrievalStats(**stats),
         aux_card=_aux_card(card),
-        graph_trace=graph_trace.of(stats, results, card),
+        graph_trace=graph_trace.of(stats, results, card, generated=not req.retrieval_only),
     )

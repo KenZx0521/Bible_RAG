@@ -16,9 +16,17 @@ from qdrant_client import models
 import fake_encoder
 import mini_loaded
 import mini_release
+from fake_neo4j import FakeNeo4j
+from fake_pg import FakePg
+from qdrant_client import QdrantClient
 from ragcommon import ids
+from ragdata.kg.graph_build import build_graph
+from ragdata.loader import graph_load
+from ragdata.loader import load as loader
 from ragdata.loader.plan import Point
+from ragdata.loader.qdrant import QdrantDb
 from ragdata.loader import verify as verifier
+from ragdata.release import assemble as rel
 
 pytestmark = pytest.mark.filterwarnings("ignore:Payload indexes")
 
@@ -309,3 +317,84 @@ def test_the_report_is_json(loaded):
 def test_point_vectors_are_compared_row_by_row(loaded):
     rows = np.stack([p.vector for p in loaded.qdrant.points(loaded.targets.collection)])
     assert rows.shape == (22, fake_encoder.DIM)
+
+
+# ---------------------------------------------------------------- C8: the graph in Neo4j
+
+
+@pytest.fixture(scope="module")
+def kg_release(mini):
+    dirs = (mini.layers[k].path for k in ("text", "struct", "kg0", "events"))
+    graph = build_graph(*dirs, mini.store, mini.root / "registries").layers["graph"]
+    return rel.assemble(mini.store, [*mini.top, graph.version], mini_loaded.DATE, mini.checks)
+
+
+@pytest.fixture()
+def kg_loaded(tmp_path, mini, kg_release):
+    pg, qdrant, contracts = FakePg(), QdrantDb(QdrantClient(location=":memory:")), tmp_path / "c"
+    report = loader.load(kg_release, pg, qdrant, contracts)
+    return mini_loaded.Loaded(mini, kg_release, pg, qdrant, contracts, report)
+
+
+def _c8(found, neo4j):
+    report = verifier.verify(found.release, found.pg, found.qdrant, found.contracts, found.inputs(),
+                             neo4j)
+    return report, mini_loaded.red_details(report).get("G-PROJ.C8", ())
+
+
+def _projected(found):
+    db = FakeNeo4j()
+    graph_load.project(graph_load.source_of_release(found.release), db)
+    return db
+
+
+def test_a_kg_build_with_its_graph_projected_passes_c8(kg_loaded):
+    report, red = _c8(kg_loaded, _projected(kg_loaded))
+    assert report.passed and red == ()
+    gate = next(g for g in report.gates if g.name == "G-PROJ.C8")
+    assert gate.observed["kg_sha256"] == kg_loaded.release.doc["contracts"]["kg_meta.json"]
+
+
+def test_a_build_without_a_graph_has_no_c8_and_never_touches_neo4j(loaded):
+    db = FakeNeo4j()
+    report = verifier.verify(loaded.release, loaded.pg, loaded.qdrant, loaded.contracts,
+                             loaded.inputs(), db)
+    assert report.passed and "G-PROJ.C8" not in {g.name for g in report.gates}
+    assert db.calls == []
+
+
+def test_c8_fails_closed_without_a_connection(kg_loaded):
+    assert mini_loaded.turned_red({"G-PROJ.C8": _c8(kg_loaded, None)[1]}, "G-PROJ.C8",
+                                  "no Neo4j connection")
+
+
+def test_c8_says_when_the_server_cannot_be_reached(kg_loaded):
+    db = _projected(kg_loaded)
+    db.unreachable = True
+    assert any("ServiceUnavailable" in d for d in _c8(kg_loaded, db)[1])
+
+
+def test_c8_is_red_before_kg_project_ran(kg_loaded):
+    assert any("no BuildInfo" in d for d in _c8(kg_loaded, FakeNeo4j())[1])
+
+
+def test_c8_is_red_for_an_incomplete_projection(kg_loaded):
+    db = _projected(kg_loaded)
+    build = kg_loaded.release.build_id
+    db.infos[build] = {**db.infos[build], "complete": False}
+    assert any("complete" in d for d in _c8(kg_loaded, db)[1])
+
+
+def test_c8_is_red_when_a_stored_node_differs_from_the_layer(kg_loaded):
+    db = _projected(kg_loaded)
+    build = kg_loaded.release.build_id
+    key = next(k for k in db.nodes if k[0] == build and k[1] == "Book")
+    db.nodes[key]["name"] = "別的書"
+    assert any("nodes_sha256" in d for d in _c8(kg_loaded, db)[1])
+
+
+def test_c8_is_red_when_an_edge_is_gone(kg_loaded):
+    db = _projected(kg_loaded)
+    key = next(k for k in db.edges if k[1] == "HAS_VERSE")
+    del db.edges[key]
+    assert any("edges HAS_VERSE" in d for d in _c8(kg_loaded, db)[1])

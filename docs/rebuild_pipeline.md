@@ -7,7 +7,7 @@
 - 工具：`mutool` 1.23.10、`pdftotext` 24.02.0（G-TOOL 逐一比對版本）。
 - Python：只用 `scripts/.venv` 跑 ragdata。管線不跑 backend，也不需要 backend 的 venv。
 - 模型一律離線：BGE-M3 在 `HF_HOME=/mnt/ollama-data/huggingface`，reranker tokenizer 在 `/mnt/ollama-data/bible_rag_store/models/`。建議有 GPU（emb 編碼與 G-ENC 全量重編碼）。
-- repo 內的輸入：`bible_pdf/`（66 卷）、`config/registries/`（K0 註冊表；K1 讀 `events.yaml` v2；K4 另讀 `query_aliases.yaml`）、`ragdata/src/ragdata/contract/expectations/`、`ground_truth.json`（GT v1，G-GT 核對 GT v2 變更紀錄用）。
+- repo 內的輸入：`bible_pdf/`（66 卷）、`config/registries/`（K0 註冊表；K1 讀 `events.yaml` v2；K4 另讀 `query_aliases.yaml`；graph 讀 `person_aliases.yaml`）、`ragdata/src/ragdata/contract/expectations/`、`ground_truth.json`（GT v1，G-GT 核對 GT v2 變更紀錄用）。
   - R1 的 `config/registries/routing_lexicon.legacy.json` 與 `backend/data/event_registry.json` 已刪除（R2 管線與 backend 都不讀）；要重現 R1，從 R1 的 commit（1618cbd）跑。
 - store `reference/` 的輸入：舊系統留下的唯讀副本。bible_md、legacy_output 兩個目錄各有 `SHA256SUMS`，讀取端逐檔核對，任何一檔不符就停，不會默默換掉某一層。
   - `reference/bible_md/`：66 卷 md，只做 G-DIFF 對帳。text 層 `diff_summary.json` 的 `inputs.bible_md` 記著它的摘要。
@@ -19,7 +19,7 @@
     - 2026-10-08 從主 checkout 的 `output/` 複製，與 `/mnt/ollama-data/bible_rag_bak/20261007/output/` 逐位元相同。
   - `reference/route_live/`：只是 R1 的產物（R1 的 G-ROUTE 拿舊 backend 的凍結比對結果對帳）。R2 的 route 層沒有 live 比對，管線不讀它；要重驗 R1 的 route 層，從 R1 的 commit（e7b1173）跑。
 - Store：`/mnt/ollama-data/bible_rag_store/`，底下 `layers/`、`releases/`、`contracts/`、`reference/`。
-- `--load`／`--verify` 讀 repo 的 `.env`（`POSTGRES_*`、`QDRANT_*`）。
+- `--load`／`--verify`、`kg-project` 讀 repo 的 `.env`（`POSTGRES_*`、`QDRANT_*`、`NEO4J_URI`、`NEO4J_USER`、`NEO4J_PASSWORD`；環境變數優先，都沒有預設值）。
 
 ```bash
 export HF_HOME=/mnt/ollama-data/huggingface HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
@@ -32,12 +32,13 @@ RAGDATA="env PYTHONPATH=ragdata/src:packages scripts/.venv/bin/python -m ragdata
 $RAGDATA pipeline run [--date YYYYMMDD] [--load] [--verify] [--report pipeline.json]
 ```
 
-- 依序：text（含 src）→ struct →〔推導檔檢查、G-GT〕→ emb → kg0 → events → route → relations → release →（`--load`）→（`--verify`）。
+- 依序：text（含 src）→ struct →〔推導檔檢查、G-GT〕→ emb → kg0 → events → route → relations → graph → release →（`--load` → `kg-project`）→（`--verify`）。
 - 每層先跑 build 閘門，全綠才寫入 store；寫入後立刻用該層**全部** required 閘門再驗一次。
 - 任何紅燈立即停止：stderr 印出停在哪一層（含版本）、哪個閘門與前幾筆細節；stdout／`--report` 是完整 JSON 報告。
 - 結束碼：0 全綠；1 硬閘門紅燈；2 輸入錯誤或推導檔過期；3 程式錯誤（附 traceback，不寫報告）。
 - `--date` 預設是 HEAD 的 commit 日期；`build_id = b{date}_{release_sha 前 8 碼}`。
-- 單步指令（`build`、`gate`、`det`、`release`、`load`、`verify`、`unload`）仍在，只供除錯；見 `$RAGDATA --help`。
+- `--date` 的格式是 YYYYMMDD（`20261102`，不是 `2026-11-02`）。
+- 單步指令（`build`、`gate`、`det`、`release`、`load`、`kg-project`、`verify`、`unload`）仍在，只供除錯；見 `$RAGDATA --help`。
 
 ## 3. 各層產出與閘門
 
@@ -50,6 +51,7 @@ $RAGDATA pipeline run [--date YYYYMMDD] [--load] [--verify] [--report pipeline.j
 | events（K1） | text、struct、`events.yaml`（R2 人工註冊表，以 pericope 宣告錨點） | events、event_registry_v2.json、events_report.json | G-SCHEMA、G-COUNT、G-REFINT、G-EVENT、G-PROV | 同左 |
 | route（K4） | text、kg0、events、kg0 綁定的 `divine_refs`／`name_normalization`、`query_aliases.yaml`、`ragcommon` 書名 | routing_terms、routing_lexicon.json（v2）、query_aliases.json、route_report.json | G-SCHEMA、G-COUNT、G-ROUTE、G-PROV | 同左 |
 | relations（王朝層＋GEN 卡，選用） | text（列王紀上 11:41 起、列王紀下、歷代志下 9:29 起的經節與又名／就是註腳；創世記的經節、人名與書名）、route 的 `routing_lexicon.json`、`regnal_expect.yaml`、`gen_expect.yaml` | regnal_layer.json、regnal_report.json；text 有創世記 5、11 章時另有 gen_layer.json、gen_names.json（沒有記錄檔） | G-REGNAL、G-GEN | 同左 |
+| graph（知識圖譜，選用） | text、struct、kg0、events、`person_aliases.yaml` | kg_nodes.jsonl、kg_edges.jsonl、kg_meta.json、graph_report.json（不是記錄檔，不進 PG） | G-GRAPH | 同左 |
 
 R2 的事件與路由層（R1 的轉換路徑已移除）：
 - **K1**：`events.yaml` v2 是人工註冊表本體，不再從舊 backend 的事件註冊表轉換。錨點以 pericope 宣告，建置時展開成它的全部 passage，證據取 pericope 標題；觸發詞只有 `pdf_terms`（附 PDF 位置）與 `external_aliases`；併掉的 id 列在 `retired`（`merged_into`）。契約只剩一份 `event_registry.json`（variant R2）。
@@ -67,6 +69,20 @@ R2 的事件與路由層（R1 的轉換路徑已移除）：
   - G-GEN 釘住兩個 sha（`expectations/gen_expect.yaml`）。兩個檔要一起出現，只有一個就紅燈。有檔時：層要依賴 route，route 的 `routing_lexicon.json` sha 要等於 gen_names `sources` 記的那一項，gen_layer 的 `text_digest` 要是它依賴的 text 層。沒檔時：只放行依賴正好是 {text}、而且 `regnal_layer.json` 的 sha 在 `absent_ok_regnal` 裡的層，也就是 GEN 之前就有的 relations@ee8e78c043d2 與 relations@a04b67a301dc；依賴 route 的新層一定要帶 GEN 檔。
   - contract_version：只有 regnal＝1.2.0（不變），契約有 `gen_layer.json`、`gen_names.json` 時＝1.3.0。兩個檔依「層裡有沒有這個檔」複製，所以 GEN 之前的層組出的 release（`b20261019_a86f2b06`）位元組不變。
   - backend（r5 起）：manifest 有兩個檔時才讀，讀不起來算 handshake mismatch；沒有檔時 GEN 卡關閉並記 warning（r4 不讀這兩個檔，配新 build 時行為等於沒有 GEN）。開關是請求參數 `use_gen_card`，沒帶時看 `RAG_GEN_CARD`（預設 true）且 `use_graph`、非 `semantic_only`；王朝觸發時不算 GEN。
+- **graph（知識圖譜，2026-11-02）**：`kg/kin_*` 是 PDF 規則親屬抽取，`kg/person_*` 是身分（同 pericope、親屬簽章相同才併；只有舊約敘事卷可憑同書併；父親、母親、性別、王號或同節角色相衝就拒併，併入後不得成為自己的祖先；親屬列以外的提及，新約與名單卷只掛自己 pericope 的那個人），`kg/graph_*` 依 schema 產生節點與邊（`kg/graph_schema.py`）。只讀 PDF 來的層與 `person_aliases.yaml`（每一對都帶節號或註腳，建置時核對兩個名字都寫在那裏）；王朝同名表在層內用 `regnal_files(text)` 算，不依賴 relations。
+  - 層名不在 `ragcommon.ids.LAYERS`：改 `ids.py` 會動 metric_version 4d0826bb8d14。`store/versions.py` 在 ragdata 內多認 `graph`，`ids.parse("graph@…")` 仍會丟錯，所以 backend 不要用 ids 解這個版本。
+  - G-GRAPH：id 唯一、端點不懸空、結構邊與節點數等於 struct／text／kg0／events 層、MENTIONS 總數等於 text 層 body 提及數、親屬邊只收 PDF 類 provenance、兩端字面都在 evidence 節、SPOUSE_OF 與 SIBLING_OF 由小 id 指向大 id、PARENT_OF 無環、`kg_meta.json` 與內容相符。
+  - release 的選用層：有它時 `layers.graph` 出現、`kg_enabled` 為 true、contract_version 1.4.0、契約多 `kg_meta.json`；沒有它的 release 位元組不變。`pipeline run` 一定會建 graph 層，所以組出的 release 帶著它；r9 以前的 backend 看到 `kg_enabled=true` 會握手失敗，要先上認得它的映像。手動組不帶圖譜的 release：`$RAGDATA release <各層版本，不含 graph>`。
+  - 單步：`$RAGDATA build graph --text <text> --struct <struct> --kg0 <kg0> --events <events>`；`$RAGDATA gate graph <層目錄> --dep <text> --dep <struct> --dep <kg0> --dep <events>`。
+  - Neo4j 投影：`$RAGDATA kg-project --build <build_id>`（`loader/graph_load.py` 是邏輯，`loader/neo4j_db.py` 是唯一 import driver 的檔）。Neo4j 不在 `load` 的 PG 交易內，所以是 `load` 之後獨立一步；`pipeline run --load` 成功後也跑它。
+    - 同一個容器放多個 build：節點與邊都帶 `build_id`，每個 label 有複合唯一約束 `(build_id, id)`，`Name`、`Person` 另有 `(build_id, label)` 索引。`Name.surfaces`、`Person.surfaces` 是清單，索引答不了清單成員：查的時候帶 `p.id IS NOT NULL` 走複合鍵找到該 build，再過濾 surfaces。
+    - 流程：建約束與索引 → 讀 `(:BuildInfo {build_id})` → 其 `kg_sha256` 與 release 釘的 `kg_meta.json` sha 不同就拒絕 → 已 complete 就只讀回比對（`written: false`）→ 否則 `complete=false`、UNWIND 批次 MERGE（每批 500 列）、讀回全部節點與邊，排序後編碼，sha 與逐型計數都等於 `kg_meta.json` 才設 `complete=true`。中斷了就重跑，MERGE 冪等。
+    - Neo4j 不存 null，所以 `graph_schema.NULLABLE_PROPS` 列的屬性讀回時補 null；`PARALLEL` 同一對 pericope 可有兩條，MERGE 鍵多帶 `pr_id`（`EDGE_KEY_PROPS`）。
+    - `verify` 對帶圖譜的 build 多一個 G-PROJ.C8（complete、kg_sha256、計數、約束與索引、讀回比對）；連不上算紅燈。不帶圖譜的 build 不連 Neo4j。
+    - `unload` 也刪該 build 的節點與邊（在 PG commit 前、Qdrant 之前，失敗就全部不動）。build 帶圖譜卻沒設 `NEO4J_*` 時拒絕。投影已讀不回（有人手動改過）時 `kg-project` 拒絕並標 `complete=false`；有多出來的列要先手動刪，或 `unload` 後重載。
+    - backend：`check_kg` 只比 `rag_meta.builds` 與 manifest 的 `kg_enabled`，true 時 manifest 要列 `kg_meta.json` 且能解析。Neo4j 端（連不上、BuildInfo 不在或不符）不算握手失敗，只有 `/api/v1/health` 的 `graph.state`（`off`／`ready`／`unavailable`／`mismatch`）回報，status 與狀態碼都不變；健康檢查只讀 BuildInfo，列被刪掉要靠 `ragdata verify` 才查得到。`serving/graph.py` 的 `usable()`（同一個判定，30 秒問一次）是走圖要問的那個。`backend/database/neo4j_db.py` 是 backend 唯一 import driver 的檔，只收 `database/cypher.py` 的模板名。
+    - 線上用圖譜：R3–R6、fallback 在候選池收集後、排序前跑 `utils/retrieval/graph_stage.py`：走圖（`graph_walk`，新段落以 `WALK_WEIGHT`＝0.5 併入候選池，已在池內的權重不變，名次交給 reranker）與親屬卡（`kin_card`，`utils/kg/`，進 prompt，證據段落也併入候選池；同名且父母不同、候選池又分不出是誰時，列出各筆，不併入段落）。`graph_trace` 的 `passages` 只算走圖新帶進 top-k 的段落，`confirmed` 是 dense 本來就找到的；`retrieval_only` 沒有 prompt，所以 `aux_card` 是 null、`injected` 是 none，卡片內容留在 `retrieval_stats.kin_card`。R1、R2、`semantic_only`、`use_graph=false`、策略未開、不帶圖譜的 build 都是 0 條 Cypher。Neo4j 不回應只記 `skip_reason`（逐題 `graph_trace`），答案照舊：連線或認證錯誤後 30 秒不再試；單次逾時只跳過該題（rerank 卡 event loop 時也會逾時，`usable()` 那一讀逾時也不快取），連續 2 次才停 30 秒。常數在 `backend/config.py`（`WALK_MAX_DF`、`WALK_K`…）。
+    - Browser：`:7474`（只綁 loopback，走 SSH tunnel，7474 與 7687 都要轉）。
 - **契約握手**：R2 的 backend 映像不接受 R1 build（詞表 v1、registry variant R1、沒有 `query_aliases.json`）。R1 映像也讀不了 v2 詞表。
 
 之後：

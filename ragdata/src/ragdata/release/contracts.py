@@ -7,7 +7,8 @@ layers. Layer files that already are contracts are copied byte for byte
 legacy_ids);
 and, each when the release's relations layer holds it, ``regnal_layer.json`` (the regnal
 formulas), ``gen_layer.json`` and ``gen_names.json`` (the GEN card; a relations layer from
-before GEN has neither); the rest are canonical JSON over the text and struct rows:
+before GEN has neither), and ``kg_meta.json`` when the release holds the graph layer; the rest are
+canonical JSON over the text and struct rows:
 
 - ``books.json``: the text layer's book rows in canon order;
 - ``verse_index.json``: every slot (canon order) with its status, unit, variant
@@ -22,8 +23,8 @@ import json
 from typing import Any, Mapping
 
 from ragdata.contract.registry import (
-    ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, GEN_LAYER, GEN_NAMES, QUERY_ALIASES, REGNAL_LAYER,
-    ROUTING_LEXICON,
+    ENCODER_FINGERPRINT, EVENT_REGISTRY_V2, GEN_LAYER, GEN_NAMES, KG_META, QUERY_ALIASES,
+    REGNAL_LAYER, ROUTING_LEXICON,
 )
 from ragdata.store import LayerData
 from ragdata.store.cas import sha256_bytes
@@ -39,7 +40,8 @@ COPIED = {
 # (G-REGNAL wants regnal_layer.json, G-GEN both GEN files or neither)
 COPIED_OPTIONAL = {"regnal_layer.json": ("relations", REGNAL_LAYER),
                    "gen_layer.json": ("relations", GEN_LAYER),
-                   "gen_names.json": ("relations", GEN_NAMES)}
+                   "gen_names.json": ("relations", GEN_NAMES),
+                   "kg_meta.json": ("graph", KG_META)}
 DERIVED = ("books.json", "verse_index.json", "ref_aliases.json")
 CONTRACT_FILES = (*DERIVED, *COPIED)          # every release's; optional ones come on top
 

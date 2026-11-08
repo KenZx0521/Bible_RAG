@@ -1,0 +1,30 @@
+# Two names of one person, as the PDF itself says. The kinship identity (ragdata.kg.person_identity)
+# reads this table: a rename joins the two names' people, a footnote pair only lets a child's two
+# fathers agree (亞比央 and 亞比雅 are one father, not a conflict). Every pair names where the PDF says it,
+# and the build checks that both names are written there: a verse for a rename, a footnote and its
+# verse for a footnote pair.
+schema: ragdata.person_aliases.v1
+rename:           # scope: where the pair holds, O Old Testament, N New Testament narrative
+  - {old: 亞伯蘭, new: 亞伯拉罕, scope: O, evidence: gen.17.5}
+  - {old: 撒萊, new: 撒拉, scope: O, evidence: gen.17.15}
+  - {old: 雅各, new: 以色列, scope: O, evidence: gen.32.28}
+  - {old: 耶路‧巴力, new: 基甸, scope: O, evidence: jdg.6.32}
+  - {old: 掃羅, new: 保羅, scope: N, evidence: act.13.9}
+  - {old: 西門, new: 彼得, scope: N, evidence: mat.10.2}
+  - {old: 西門‧彼得, new: 彼得, scope: N, evidence: jhn.1.40}
+  - {old: 瑪探雅, new: 西底家, scope: O, evidence: 2ki.24.17}
+footnote:
+  - {name: 耶路‧比設, other: 耶路‧巴力, evidence: "fn:2sa.11.21#1"}
+  - {name: 亞比央, other: 亞比雅, evidence: "fn:1ki.14.31#1"}
+  - {name: 亞撒利雅, other: 烏西雅, evidence: "fn:2ki.14.21#1"}
+  - {name: 示米亞, other: 沙瑪, evidence: "fn:1ch.2.13#1"}
+  - {name: 米力‧巴力, other: 米非波設, evidence: "fn:1ch.8.34#1"}
+  - {name: 米該亞, other: 瑪迦, evidence: "fn:2ch.13.2#1"}
+  - {name: 約哈斯, other: 亞哈謝, evidence: "fn:2ch.21.17#1"}
+  - {name: 亞撒利雅, other: 亞哈謝, evidence: "fn:2ch.22.6#1"}
+  - {name: 耶哥尼雅, other: 約雅斤, evidence: "fn:est.2.6#1"}
+  - {name: 哥尼雅, other: 耶哥尼雅, evidence: "fn:jer.22.24#1"}
+  - {name: 耶撒尼亞, other: 亞撒利雅, evidence: "fn:jer.42.1#1"}
+  - {name: 賢, other: 約西亞, evidence: "fn:zec.6.14#2"}
+  - {name: 希連, other: 黑玳, evidence: "fn:zec.6.14#1"}
+  - {name: 迦施慕, other: 基善, evidence: "fn:neh.6.6#1"}

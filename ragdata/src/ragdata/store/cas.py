@@ -27,6 +27,7 @@ from types import MappingProxyType
 from typing import Any, Mapping
 
 from ragcommon import ids
+from ragdata.store import versions
 from ragdata.store.jsonl import StoreError, decode_jsonl
 
 DEFAULT_ROOT = Path("/mnt/ollama-data/bible_rag_store/layers")
@@ -73,7 +74,7 @@ def layer_digest(file_shas: Mapping[str, str]) -> str:
 
 
 def _check_layer(layer: str) -> None:
-    if layer not in ids.LAYERS:
+    if layer not in versions.LAYERS:
         raise StoreError(f"unknown layer {layer!r}")
 
 
@@ -86,7 +87,7 @@ def _check_file_name(name: str) -> None:
 def _check_depends(depends_on: Mapping[str, str]) -> dict[str, str]:
     for layer, version in depends_on.items():
         _check_layer(layer)
-        if not ids.is_valid(version, "layer_version") or ids.parse(version).text != layer:
+        if versions.layer_of(version) != layer:
             raise StoreError(f"depends_on[{layer!r}] is not a {layer} version: {version!r}")
     return dict(sorted(depends_on.items()))
 
@@ -152,7 +153,7 @@ def write_layer(root: Path | str, layer: str, files: Mapping[str, bytes],
     contents = {**files, DEPENDS_ON: encode_depends_on(deps)}
     shas = {name: sha256_bytes(contents[name]) for name in sorted(contents)}
     digest = layer_digest(shas)
-    version = ids.layer_version(layer, digest)
+    version = versions.layer_version(layer, digest)
     layer_dir = Path(root) / layer
     target = layer_dir / version
     if target.exists() and exist_ok:
@@ -200,7 +201,7 @@ def verify_layer(path: Path | str) -> tuple[dict[str, Any], dict[str, bytes]]:
             raise IntegrityError(f"{path / name}: sha256 differs from manifest")
     digest = layer_digest(listed)
     try:
-        version = ids.layer_version(manifest["layer"], digest)
+        version = versions.layer_version(manifest["layer"], digest)
     except ids.IdError as exc:
         raise IntegrityError(f"{path}: {exc}") from None
     if (manifest["digest"], manifest["layer_version"], path.name) != (digest, version, version):

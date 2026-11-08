@@ -18,8 +18,13 @@ the range or the top-k's gaps call for it), and on R4/R5 the event registry
 auxiliary lane, which appends one curated anchor AFTER the finished top-k when
 use_graph is on and "event_registry" is among the graph strategies (the default).
 A verse lookup (R1 that found its verses) keeps the verse records and their
-passages in front, unranked and unpinned, and ranks only the rest. R1 has no
-Neo4j-backed strategy (D-09).
+passages in front, unranked and unpinned, and ranks only the rest.
+
+On R3-R6 and fallback the graph side (utils.retrieval.graph_stage) runs between the
+gathering and the ranking: the graph walk's passages and the kinship card's evidence
+join the pool, and the reranker decides as for any other candidate, but for the last
+place of a full top-k, which goes to the walk (``graph_walk.with_slot``). R1, R2 and
+semantic_only send no Cypher.
 """
 
 import logging
@@ -28,9 +33,10 @@ from dataclasses import dataclass
 from config import settings
 from database import postgres
 from serving import context
+from utils import model_thread
 from utils import reranker as reranker_mod
 from utils.retrieval import candidates as cands
-from utils.retrieval import chapter_blocks, event_registry, routes, verse_retriever
+from utils.retrieval import chapter_blocks, event_registry, graph_stage, graph_walk, routes, verse_retriever
 from utils.retrieval.dense import SEMANTIC_ARM, retrieve_dense
 from utils.retrieval.pins import (cap_book_anchor_entries, chapter_targets, fuse_and_rank,
                                   pin_book_anchor_candidates, pin_chapters)
@@ -39,7 +45,7 @@ from utils.verse_parser import VerseRef
 
 logger = logging.getLogger(__name__)
 
-AUXILIARY_STRATEGIES = frozenset({"event_registry"})
+AUXILIARY_STRATEGIES = frozenset({"event_registry", graph_stage.WALK, graph_stage.KIN})
 # R1's verse records and the passages they belong to: ahead of every ranked candidate
 _VERSE_LEAD = (verse_retriever.SOURCE, verse_retriever.OWNER)
 _EVENT_REGISTRY_ROUTES = ("R4", "R5")
@@ -72,6 +78,7 @@ class Gathered:
     candidates: list[dict]
     strategies: list[str]
     errors: dict[str, str]
+    graph: graph_stage.GraphSide = graph_stage.GraphSide()
 
     @property
     def multi_book(self) -> bool:
@@ -94,23 +101,33 @@ async def _semantic_only(query: str) -> Gathered:
     return Gathered("semantic_only", None, cands.dedup(raw), ["semantic"], errors)
 
 
+async def _graph_side(query: str, route: str, entity_names: list[str], pool: list[dict],
+                      strategies: list[str], errors: dict[str, str], use_graph: bool,
+                      allowed: frozenset[str], active: context.Active) -> graph_stage.GraphSide:
+    if not use_graph or active.kg is None or route not in graph_stage.ROUTES:
+        return graph_stage.GraphSide()
+    return await graph_stage.run(query, entity_names, pool, strategies, errors, allowed, active)
+
+
 async def _gather(query: str, verse_refs: list[VerseRef], intent_type: str,
                   entity_names: list[str], keywords: list[str] | None,
-                  active: context.Active) -> Gathered:
+                  active: context.Active, use_graph: bool, allowed: frozenset[str]) -> Gathered:
     signals = detect_signals(query=query, verse_refs=verse_refs, intent_type=intent_type,
                              entity_names=entity_names, keywords=keywords,
                              lexicon=active.lexicon, book_ids=active.book_ids)
     handler = routes.ROUTES.get(signals.route, routes.route_fallback)
     pool, strategies, errors = await handler(routes.RouteInput(query, verse_refs, signals))
-    return Gathered(signals.route, signals, pool, strategies, errors)
+    graph = await _graph_side(query, signals.route, entity_names, pool, strategies, errors, use_graph,
+                              allowed, active)
+    return Gathered(signals.route, signals, pool, strategies, errors, graph)
 
 
-def _ranked(query: str, pool: list[dict], g: Gathered, k: int, fusion: Fusion) -> list[dict]:
+async def _ranked(query: str, pool: list[dict], g: Gathered, k: int, fusion: Fusion) -> list[dict]:
     try:
         if not fusion.active:
-            return reranker_mod.rerank(query, pool, top_k=k, text_key="content")
+            return await model_thread.run(reranker_mod.rerank, query, pool, top_k=k, text_key="content")
         # score the whole pool, then blend each rerank_score with the strategy prior
-        scored = reranker_mod.rerank(query, pool, top_k=len(pool), text_key="content")
+        scored = await model_thread.run(reranker_mod.rerank, query, pool, top_k=len(pool), text_key="content")
         ranked = fuse_and_rank(scored, top_k=len(scored), alpha=fusion.alpha)
         return (cap_book_anchor_entries(ranked) if g.multi_book else ranked)[:k]
     except Exception as exc:  # noqa: BLE001
@@ -119,7 +136,7 @@ def _ranked(query: str, pool: list[dict], g: Gathered, k: int, fusion: Fusion) -
         return sorted(pool, key=lambda x: x.get("weight", 0), reverse=True)[:k]
 
 
-def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
+async def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
     """The verse records and their passages, then the best of the rest that repeats none
     of those passages' verses (a chunk of an owning passage would).
 
@@ -132,15 +149,15 @@ def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) -> list[
             and not any(cands.shares_verse(c, x) for x in held)]
     if len(lead) >= k or not rest:
         return lead[:k]
-    return lead + _ranked(query, rest, g, k - len(lead), fusion)
+    return lead + await _ranked(query, rest, g, k - len(lead), fusion)
 
 
-def _rank(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
+async def _rank(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
     if not g.candidates:
         return []
     if g.verse_lookup:
-        return _rank_verse_lookup(query, g, k, fusion)
-    return _ranked(query, g.candidates, g, k, fusion)
+        return await _rank_verse_lookup(query, g, k, fusion)
+    return await _ranked(query, g.candidates, g, k, fusion)
 
 
 def _pin(ranked: list[dict], pool: list[dict], targets: list[tuple[str, int]], g: Gathered,
@@ -187,7 +204,7 @@ async def _scope_chapters(query: str, ranked: list[dict], g: Gathered,
     rest_k = k - len(blocks)
     if rest_k <= 0 or not pool:
         return blocks
-    rest = _pin(_ranked(query, pool, g, rest_k, fusion), pool,
+    rest = _pin(await _ranked(query, pool, g, rest_k, fusion), pool,
                 chapter_blocks.pin_targets(verse_refs, blocked, too_long), g, rest_k, fusion,
                 chapter_blocks.present_books(blocks))
     return blocks + rest
@@ -240,6 +257,8 @@ def _stats(g: Gathered, total: int, reranked: int, use_graph: bool,
                              else []),
         "fusion_alpha": fusion.alpha if fusion.active else None,
         "event_registry_events": events,
+        "graph_walk": g.graph.walk.to_stats() if g.graph.walk else None,
+        "kin_card": g.graph.kin.to_stats() if g.graph.kin else None,
     }
 
 
@@ -262,12 +281,14 @@ async def retrieve_and_rerank(
     fusion = Fusion(fusion_alpha is not None or settings.rag_rank_fusion_enabled,
                     settings.rag_rank_fusion_alpha if fusion_alpha is None else fusion_alpha)
     g = (await _semantic_only(query) if semantic_only else
-         await _gather(query, verse_refs, intent_type, entity_names, keywords, active))
+         await _gather(query, verse_refs, intent_type, entity_names, keywords, active, use, allowed))
     for c in g.candidates:
         c.setdefault("found_by", cands.labels_of(c))
-    ranked = _pin(_rank(query, g, k, fusion), g.candidates, chapter_targets(verse_refs), g, k,
+    ranked = _pin(await _rank(query, g, k, fusion), g.candidates, chapter_targets(verse_refs), g, k,
                   fusion)
     ranked = await _scope_chapters(query, ranked, g, verse_refs, k, fusion)
+    if g.graph.walk is not None:
+        ranked = graph_walk.with_slot(ranked, g.candidates, k)
     reranked, events = len(ranked), []
     if (g.route in _EVENT_REGISTRY_ROUTES and len(ranked) >= k and use
             and "event_registry" in allowed):

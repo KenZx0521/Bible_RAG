@@ -11,6 +11,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "packages"))
 
 
+@pytest.fixture(autouse=True)
+def _graph_state_forgotten():
+    """What neo4j_db and serving.graph remember between requests does not cross tests."""
+    from database import neo4j_db
+    from serving import graph
+
+    neo4j_db.reset()
+    graph.forget()
+    yield
+
+
 @pytest.fixture
 def active():
     """A served build with the router_fakes lexicon (v2) and the router_fakes.EVENT registry."""

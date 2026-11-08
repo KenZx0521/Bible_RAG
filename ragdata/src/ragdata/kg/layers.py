@@ -37,6 +37,16 @@ def load_inputs(text_dir: Path, struct_dir: Path | None = None
     return layers, snap
 
 
+def load_built_on(path: Path, kind: str, bases: Sequence[LayerData]) -> LayerData:
+    """A stored ``kind`` layer that must be built on exactly the ``bases`` layers."""
+    data = _layer(Path(path), kind)
+    for base in bases:
+        if data.depends_on.get(base.layer) != base.version:
+            raise StageError(f"{path} was built on {data.depends_on.get(base.layer)}, "
+                             f"not on {base.version}")
+    return data
+
+
 def with_records(base: Snapshot, own: Snapshot) -> Snapshot:
     return Snapshot({**base.records, **own.records})
 

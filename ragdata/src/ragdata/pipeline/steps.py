@@ -21,14 +21,14 @@ from typing import Callable, Mapping
 from ragdata import paths, stages
 from ragdata.contract.counts import PDF_COUNTS_PATH
 from ragdata.gates.runner import OPTIONAL_DEPS, REQUIRED_DEPS, GateInputs, GateReport, gate_layer
-from ragdata.kg import k0_build, k1_build, k4_build, regnal_build
+from ragdata.kg import graph_build, k0_build, k1_build, k4_build, regnal_build
 from ragdata.stages.errors import StageError
 from ragdata.stages.result import BuildResult
 from ragdata.stages.s05_struct.build import StructInputs, build_struct
 from ragdata.stages.s06_emb.build import EmbInputs, build_emb
 from ragdata.store import MANIFEST, StoredLayer
 
-ORDER = ("text", "struct", "emb", "kg0", "events", "route", "relations")
+ORDER = ("text", "struct", "emb", "kg0", "events", "route", "relations", "graph")
 # what a stored layer may be gated with; it gets those its manifest declares
 GATE_DEPS: Mapping[str, tuple[str, ...]] = {
     **{layer: (*deps, *OPTIONAL_DEPS.get(layer, ())) for layer, deps in REQUIRED_DEPS.items()},
@@ -114,9 +114,14 @@ def _regnal(built: Built, store: Path, s: Sources) -> BuildResult:
                                      route_dir=built["route"].path, gen_expect=s.gate.gen_expect)
 
 
+def _graph(built: Built, store: Path, s: Sources) -> BuildResult:
+    return graph_build.build_graph(built["text"].path, built["struct"].path, built["kg0"].path,
+                                   built["events"].path, store, s.gate.registries)
+
+
 BUILDERS: Mapping[str, Callable[[Built, Path, Sources], BuildResult]] = {
     "text": _text, "struct": _struct, "emb": _emb, "kg0": _kg0, "events": _events,
-    "route": _route, "relations": _regnal,
+    "route": _route, "relations": _regnal, "graph": _graph,
 }
 
 
@@ -127,5 +132,5 @@ def layer_step(layer: str, store: Path, sources: Sources) -> Step:
 
 
 def layer_steps(store: Path, sources: Sources) -> tuple[Step, ...]:
-    """The seven layer steps in build order."""
+    """The layer steps in build order."""
     return tuple(layer_step(layer, Path(store), sources) for layer in ORDER)

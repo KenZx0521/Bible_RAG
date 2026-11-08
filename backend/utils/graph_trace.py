@@ -1,15 +1,19 @@
 """What one request's graph side did, for the response's ``graph_trace``.
 
 One entry per graph-side operation that ran, whether or not it changed the answer: the event
-registry lane and the two cards, which walk an ordered chain. A new graph operation adds its
-entry here, so a run can tell a graph walk from a table lookup question by question.
+registry lane, the graph walk, the kinship card and the two cards that walk an ordered chain. A new
+graph operation adds its entry here, so a run can tell a graph walk from a table lookup question by
+question.
 
 ``hops`` is the longest stretch of explicit edges the operation's derivation covered from one
 start: a seed's own reach along its chain, the distance between two seeds, the Genesis flood line's
 walk from its anchor row. The project counts two or more as a graph operation (D3,
 evaluation/experiments/2026-10-18_kg_cards/prereg.md), so an event's anchor, one edge away, stays a
 lookup. ``edges`` lists the edges joining the visited nodes, so a distance two seeds' positions give
-without visiting what lies between (a regnal gap line) has more hops than edges.
+without visiting what lies between (a regnal gap line) has more hops than edges. For the graph walk it is
+how far the passages it brought into the top-k were (``Walk.reach``), or, if none, its longest path; ``passages``
+are those it brought in, and ``injected`` is "context" only if there are any: a passage dense had found
+anyway (``confirmed``) changes nothing.
 """
 
 from __future__ import annotations
@@ -20,6 +24,7 @@ from models.response import GraphOp
 from serving import context
 from utils import gen_card
 from utils.gencard import engine as gen_engine
+from utils.kg.kin_card import KinCard
 from utils.regnal import engine
 from utils.regnal.card import Card as RegnalCard
 
@@ -52,6 +57,43 @@ def _event_registry(stats: Mapping, results: Sequence[dict]) -> GraphOp | None:
                    injected="context" if appended else "none", passages=[r["id"] for r in appended])
 
 
+def _reached(results: Sequence[dict], label: str) -> list[str]:
+    """The passages of ``results`` that strategy ``label`` returned."""
+    return [r["id"] for r in results if label in (r.get("found_by") or ())]
+
+
+def _walked_results(results: Sequence[dict], walked: Sequence[str]) -> tuple[list[dict], list[dict]]:
+    """Of the top-k, what the walk brought in, and what it reached too but dense had found (any chunk of a
+    walked passage counts as that passage): only the first changes the context."""
+    held = [r for r in results if (r.get("passage_id") or r["id"]) in walked]
+    return ([r for r in held if r.get("source_strategy") == "graph_walk"],
+            [r for r in held if r.get("source_strategy") != "graph_walk"])
+
+
+def _graph_walk(stats: Mapping, results: Sequence[dict]) -> GraphOp | None:
+    walk = stats.get("graph_walk")
+    if walk is None:
+        return None
+    walked = [p[0] for p in walk["passages"]]
+    added, also = _walked_results(results, walked)
+    reach = walk.get("reach") or {}
+    hops = max((reach.get(r.get("passage_id") or r["id"], walk["hops"]) for r in added), default=walk["hops"])
+    return GraphOp(op="graph_walk", hops=hops, nodes=[*walk["name_ids"], *walked], seeds=walk["seeds"],
+                   names=walk["names"], walked=walked, passages=[r["id"] for r in added],
+                   confirmed=[r["id"] for r in also], injected="context" if added else "none",
+                   n_cypher=walk["n_cypher"], ms=walk["ms"], skip_reason=walk["skip_reason"])
+
+
+def _kin_card(stats: Mapping, results: Sequence[dict], generated: bool) -> GraphOp | None:
+    card = stats.get("kin_card")
+    if card is None:
+        return None
+    return GraphOp(op="kin_card", hops=card["hops"], nodes=list(card["nodes"]), names=list(card["names"]),
+                   edges=[list(e) for e in card["edges"]], injected="prompt" if card["text"] and generated else "none",
+                   passages=_reached(results, "kin_evidence"), n_cypher=card["n_cypher"], ms=card["ms"],
+                   skip_reason=card["skip_reason"])
+
+
 def _regnal_card(card: RegnalCard) -> GraphOp:
     view = context.active().regnal.view
 
@@ -81,13 +123,15 @@ def _gen_card(card: gen_card.Card) -> GraphOp:
                    edges=_chain_edges(nodes, edge_type), injected="prompt")
 
 
-def of(stats: Mapping, results: Sequence[dict],
-       card: RegnalCard | gen_card.Card | None) -> list[GraphOp]:
+def of(stats: Mapping, results: Sequence[dict], card: RegnalCard | gen_card.Card | KinCard | None,
+       generated: bool = True) -> list[GraphOp]:
     """The request's graph operations, retrieval first. ``stats``: ``retrieve_and_rerank``'s;
-    ``results``: its passages; ``card``: the card the generator answered with."""
-    ops = [_event_registry(stats, results)]
+    ``results``: its passages; ``card``: the card the generator answered with (a kinship card is
+    reported from ``stats``, where a question that got none says why); ``generated``: False for
+    retrieval_only, which has no prompt for a card to go to."""
+    ops = [_event_registry(stats, results), _graph_walk(stats, results), _kin_card(stats, results, generated)]
     if isinstance(card, gen_card.Card):
         ops.append(_gen_card(card))
-    elif card is not None:
+    elif card is not None and not isinstance(card, KinCard):
         ops.append(_regnal_card(card))
     return [op for op in ops if op is not None]
