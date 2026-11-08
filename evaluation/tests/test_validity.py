@@ -80,6 +80,14 @@ def test_failed_auxiliary_lane_is_an_infra_failure():
     assert is_infra_failure(sample)
 
 
+def test_the_keyword_slot_is_an_auxiliary_lane_too():
+    """Its passage is appended after the top-k; its failure means the slot was not applied."""
+    hidden = _sample("Q", errors={"semantic": "ConnectTimeout()"})
+    hidden.sources = [_src("ps:exo.20.1", "keyword")]
+    assert is_infra_failure(hidden)
+    assert is_infra_failure(_sample("Q", sources=["ps:eph.6.1"], errors={"keyword": "pg down"}))
+
+
 GENERATION_ERRORS = ("生成回答時發生錯誤：ReadTimeout('')", "生成回答時發生錯誤。")
 
 

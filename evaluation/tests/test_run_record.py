@@ -109,7 +109,8 @@ def test_no_secret_reaches_run_meta(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize("name, kept", [
     ("RAG_GRAPH_STRATEGIES", True), ("RAG_X_PASSPHRASE", False), ("RAG_TOKENIZER", False),
-    ("RAG_KEYWORD_PIN", False), ("LLM_MAX_TOKENS", True), ("ANTHROPIC_API_KEY", False),
+    ("RAG_KEYWORD_PIN", False), ("RAG_KEYWORD_SLOT", True), ("LLM_MAX_TOKENS", True),
+    ("ANTHROPIC_API_KEY", False),
     ("OLLAMA_BASE_URL", False), ("PATH", False)])
 def test_the_allowlist_and_the_rag_prefix_rule(name, kept):
     assert (name in rr.safe_env([f"{name}=v"])) is kept

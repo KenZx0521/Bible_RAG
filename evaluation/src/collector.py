@@ -5,7 +5,8 @@ Each execution starts fresh (no resume). Saves raw_responses.json after each
 question for crash recovery.
 
 Each raw record also keeps (2026-10-28) what the backend said about the question
-(intent, fusion_alpha, total_candidates, reranked_top_k, event_registry_events), the
+(intent, fusion_alpha, total_candidates, reranked_top_k, event_registry_events, and from
+2026-11-06 keyword_slot), the
 arm it was asked under (``mode``, from the CLI flags), ``collected_at``, ``latency_ms``
 and ``request_attempts``; ``use_graph`` is what the backend reported (null when it did
 not say). run_meta.json v2 (src/run_record.py) is written when collection starts and

@@ -18,9 +18,10 @@ from __future__ import annotations
 from .models import EvalSample, MetricResult
 
 
-# Sources appended after the top-k (graph auxiliary lanes); they say nothing
-# about whether core retrieval worked.
-AUXILIARY_STRATEGIES = frozenset({"event_registry"})
+# Sources appended after the top-k (the event registry lane, the keyword slot of
+# backend/utils/retrieval/keyword_slot.py); they say nothing about whether core
+# retrieval worked.
+AUXILIARY_STRATEGIES = frozenset({"event_registry", "keyword"})
 
 # backend/utils/generator.py: "生成回答時發生錯誤：{e}" when the LLM call raised,
 # "生成回答時發生錯誤。" when it came back empty.

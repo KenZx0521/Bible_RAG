@@ -17,7 +17,9 @@ any other, so an R1 build is refused through the handshake.
 Any mismatch: /api/v1/health answers 503 with the list, no data is served, and
 with STRICT_BUILD_CHECK (the default) startup fails. A build that passes still
 fails startup when an event-registry anchor is missing from its passages. Neo4j is not
-reached here: what it holds only decides whether the graph is used (``serving.graph``).
+reached here: what it holds only decides whether the graph is used (``serving.graph``). A build
+that passes gets the keyword slot's BM25 index, built from its embedding_records whether or not
+the slot is on (utils.retrieval.keyword_slot).
 """
 
 from __future__ import annotations
@@ -35,7 +37,7 @@ from serving import handshake as hs
 from utils import gen_card
 from utils.regnal.layer import LAYER_FILE as REGNAL_FILE
 from utils.regnal.layer import parse_layer as parse_regnal
-from utils.retrieval import event_registry
+from utils.retrieval import event_registry, keyword_slot
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +131,8 @@ async def _activate(build: build_mod.Build, parsed: Mapping[str, Any]) -> contex
                            f"{missing}")
     active = context.make_active(build, parsed["routing_lexicon.json"], registry, parsed.get(REGNAL_FILE),
                                  parsed.get(gen_card.LAYER_FILE),
-                                 parsed.get(contracts_mod.KG_META) if build.kg_enabled else None)
+                                 parsed.get(contracts_mod.KG_META) if build.kg_enabled else None,
+                                 await keyword_slot.load())
     regnal, gen = active.regnal, active.gen
     if regnal is None:
         logger.warning("Build %s has no %s: the chronology card is off", build.build_id, REGNAL_FILE)

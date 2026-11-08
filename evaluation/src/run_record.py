@@ -54,6 +54,8 @@ ENV_ALLOWLIST = frozenset({
     "LLM_PROVIDER", "VLLM_MODEL", "OLLAMA_MODEL", "CLAUDE_MODEL", "OPENAI_MODEL", "GEMINI_MODEL",
     "LLM_TEMPERATURE", "LLM_MAX_TOKENS", "RAG_RANK_FUSION_ALPHA", "RAG_USE_GRAPH",
     "RAG_GRAPH_STRATEGIES", "RAG_ENTITY_QUERY_TOP_K", "STRICT_BUILD_CHECK",
+    # a switch whose name holds "KEY" without holding a secret
+    "RAG_KEYWORD_SLOT",
     # retrieval switches the README's ablation tables name
     "HYBRID_SEARCH_ENABLED", "HYBRID_FUSION_METHOD", "HYBRID_PREFETCH_LIMIT",
 })

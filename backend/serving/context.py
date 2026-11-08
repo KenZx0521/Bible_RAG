@@ -22,6 +22,7 @@ from serving.handshake import Handshake
 from utils.gencard import Layer as GenLayer
 from utils.regnal.layer import RegnalLayer, with_lexicon
 from utils.retrieval.event_registry import RegistryEvent
+from utils.retrieval.keyword_slot import Index as KeywordIndex
 
 
 class NoActiveBuild(RuntimeError):
@@ -37,6 +38,7 @@ class Active:
     regnal: Optional[RegnalLayer] = None  # contract regnal_layer.json (contract 1.2.0 on)
     gen: Optional[GenLayer] = None        # contract gen_layer.json + gen_names.json (contract 1.3.0 on)
     kg: Optional[KgMeta] = None           # contract kg_meta.json (contract 1.4.0, kg_enabled)
+    keywords: Optional[KeywordIndex] = None  # the keyword slot's BM25 index, built at startup
 
     @property
     def book_names(self) -> tuple[str, ...]:
@@ -47,14 +49,14 @@ class Active:
 
 def make_active(build: Build, lexicon: RoutingLexicon, registry: tuple[RegistryEvent, ...],
                 regnal: Optional[RegnalLayer] = None, gen: Optional[GenLayer] = None,
-                kg: Optional[KgMeta] = None) -> Active:
+                kg: Optional[KgMeta] = None, keywords: Optional[KeywordIndex] = None) -> Active:
     """The regnal layer gets the lexicon (``with_lexicon``): the chronology card's trigger and
     rule seeds skip its blockers (names holding a chain king's name that are none, 押沙龍 for
     沙龍), and the rule seeds trust a written father that ends in one of its names."""
     names = {b.full_name: b.book_id for b in lexicon.books}
     if regnal is not None:
         regnal = with_lexicon(regnal, lexicon)
-    return Active(build, lexicon, registry, MappingProxyType(names), regnal, gen, kg)
+    return Active(build, lexicon, registry, MappingProxyType(names), regnal, gen, kg, keywords)
 
 
 _active: Optional[Active] = None

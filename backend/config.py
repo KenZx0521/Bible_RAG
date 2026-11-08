@@ -139,6 +139,12 @@ class Settings(BaseSettings):
     # after the top-k. The 2026-10 simulation found no gain from a second slot.
     rag_event_registry_slots: int = 1
 
+    # Keyword slot (utils.retrieval.keyword_slot): BM25's best passage that shares no verse with
+    # the results, appended after everything else (never in the reranker's pool). Off by default;
+    # staging turns it on (docker-compose.staging.yml). Never for semantic_only unless asked;
+    # overridable per request via `use_keyword_slot`.
+    rag_keyword_slot: bool = False
+
     # Rank fusion: final ranking sorts by
     #     fused = (1 - alpha) * rerank_score + alpha * strategy_weight
     # instead of rerank_score alone (alpha=0 is pure reranker ordering).

@@ -116,6 +116,14 @@ async def missing_passages(passage_ids: Sequence[str]) -> list[str]:
     return [p for p in passage_ids if p not in found]
 
 
+async def keyword_records() -> list[tuple[str, str, str]]:
+    """(record_id, kind, text) of every passage and chunk record, by record id: what the
+    keyword slot's index is built from (utils.retrieval.keyword_slot)."""
+    rows = await _fetch("SELECT record_id, kind, text FROM embedding_records "
+                        "WHERE kind IN ('passage', 'chunk') ORDER BY record_id")
+    return [(r["record_id"], r["kind"], r["text"]) for r in rows]
+
+
 # --- passages and chunks ---
 
 def _passage(row: asyncpg.Record) -> dict[str, Any]:

@@ -72,6 +72,10 @@ class RetrievalStats(BaseModel):
     graph_walk: dict | None = None
     # What the kinship card did (utils.kg.kin_card.KinCard.to_stats); None when it did not run.
     kin_card: dict | None = None
+    # What the keyword slot did (utils.retrieval.keyword_slot.Slot.to_stats): {id, rank, score,
+    # looked_at}, id None when it appended nothing; None when it was off. Its passage is the last
+    # source (strategy "keyword").
+    keyword_slot: dict | None = None
 
 
 class AuxCard(BaseModel):

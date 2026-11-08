@@ -19,6 +19,7 @@ from utils.kg import kin_card
 from utils.kg.kin_card import KinCard
 from utils.regnal.card import Card, chronology_card
 from utils.regnal.trigger import trigger as regnal_trigger
+from utils.retrieval import keyword_slot
 from utils.retrieval.router import retrieve_and_rerank
 from utils.generator import build_context, build_context_blocks, generate_answer
 
@@ -133,6 +134,23 @@ def _gen_card(req: QueryRequest, results: list[dict]) -> gen_card.Card | None:
     return gen_card.card_of(req.question, active.gen)
 
 
+def _keyword_slot_on(req: QueryRequest) -> bool:
+    """``use_keyword_slot`` when given; else RAG_KEYWORD_SLOT, but never for semantic_only (the
+    dense-only baseline stays dense-only). Not a graph operation: use_graph does not touch it."""
+    if req.use_keyword_slot is not None:
+        return req.use_keyword_slot
+    return settings.rag_keyword_slot and not req.semantic_only
+
+
+async def _with_keyword_slot(req: QueryRequest, results: list[dict], stats: dict
+                             ) -> tuple[list[dict], dict]:
+    """The results with the keyword slot's passage last, when it is on (utils.retrieval.keyword_slot)."""
+    if not _keyword_slot_on(req):
+        return results, stats
+    slot = await keyword_slot.pick(req.question, results, context.active().keywords)
+    return keyword_slot.apply(results, stats, slot)
+
+
 @router.post(
     "/query",
     response_model=QueryResponse,
@@ -143,8 +161,8 @@ async def rag_query(req: QueryRequest):
     主 RAG 查詢端點。
 
     流程: 經文引用偵測 → 意圖分類 → 路由檢索 →（無明寫引用的路由）走圖與親屬卡 → 去重 → 重排序 →
-    上下文組裝 →（王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡,（親屬題）親屬卡 → 回答生成 →
-    段號誤當章號的引用改正。
+    上下文組裝 →（王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡,（親屬題）親屬卡 →（開啟時）
+    關鍵字留一格 → 回答生成 → 段號誤當章號的引用改正。
     """
     context.active()  # 503 before any work when no build is served
     if req.semantic_only:
@@ -163,6 +181,10 @@ async def rag_query(req: QueryRequest):
     # to go to (retrieval_only) it stays in the stats, as the other two are not even built then
     card = await _card(req, results) or _gen_card(req, results) or (
         None if req.retrieval_only else kin_card.from_stats(stats))
+    # after the cards: the chronology card's seeds read the results without the keyword slot, and so
+    # does the graph trace (a walked passage the slot brought in is no passage the walk confirmed)
+    retrieved = results
+    results, stats = await _with_keyword_slot(req, results, stats)
     answer = await _answer(req, results, card)
     return QueryResponse(
         answer=answer,
@@ -172,5 +194,5 @@ async def rag_query(req: QueryRequest):
                           rejected_refs=intent.get("rejected_refs", [])),
         retrieval_stats=RetrievalStats(**stats),
         aux_card=_aux_card(card),
-        graph_trace=graph_trace.of(stats, results, card, generated=not req.retrieval_only),
+        graph_trace=graph_trace.of(stats, retrieved, card, generated=not req.retrieval_only),
     )

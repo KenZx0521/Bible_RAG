@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # backend/models/response.py RetrievalStats fields the collector keeps per question
 # (route_used, strategies_used, strategy_errors, use_graph, graph_strategies are kept already).
 RETRIEVAL_AUDIT_FIELDS = ("fusion_alpha", "total_candidates", "reranked_top_k",
-                          "event_registry_events")
+                          "event_registry_events", "keyword_slot")
 
 # uvicorn closes an idle connection after 5 s and httpx keeps one for 5 s, so a
 # reused connection can be closed under a request (httpx.ReadError mid-run, R1

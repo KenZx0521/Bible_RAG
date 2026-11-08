@@ -248,7 +248,7 @@ flowchart TD
 - 舊系統宣稱 dense＋BM25 sparse 以 RRF 融合（collection `bible_embeddings_hybrid`，`HYBRID_SEARCH_ENABLED=true`），但實際上**從沒跑過**。backend 的 qdrant-client 限 `<1.9.0`（實裝 1.8.2），沒有 `query_points`；日誌顯示 541/541 次都退回 dense，標籤卻仍寫 hybrid（REPORT G28）。
 - 所以 Rounds 0–3 全部是 dense-only。
 - E0a 正式退役 sparse 臂：與 prod 比 500 題，路由相同的 497/497 題結果逐位相同。
-- 服務路徑不再有 BM25 詞表、sparse 向量與 CKIP 斷詞。
+- 服務路徑不再有 sparse 向量與 CKIP 斷詞。BM25 只剩關鍵字留一格（§6.5.1，預設關閉，只在 staging 開），不進候選池。
 
 ### 6.4 重排、融合與 pin
 
@@ -297,6 +297,16 @@ flowchart TD
 - 回應的 `graph_trace` 逐項記錄圖譜側實際執行的操作（附加槽、王朝年表卡、GEN 卡）；≥2 跳才算圖譜走訪，附加槽是一跳查表。
 
 依據：2026-10 的圖譜稽核發現，人工整理的事件錨點是唯一量得到價值的圖譜訊號；讓圖譜候選進池競爭，擠掉的 gold 和帶進來的一樣多。見 [records/2026-10-03_graph_auxiliary_review.md](records/2026-10-03_graph_auxiliary_review.md)。
+
+#### 6.5.1 關鍵字留一格（`utils/retrieval/keyword_slot.py`，2026-11-06，只在 staging）
+
+- 在所有結果（top-k、走圖那一格、事件附加段）**之後**再接一段：BM25 前 30 名中，第一個不與結果共節的段落或 chunk。標成 `strategy="keyword"`、`found_by=["keyword"]`，weight 0，沒有 rerank 或 fused 分數。
+- 不進重排候選池，top-k、排序與重排次數都和關閉時相同。
+- 卡片做完才接上：年表卡的種子讀的是沒有這一格的結果。
+- 索引：啟動時從該 build 的 `embedding_records`（passage 與 chunk，3,037 筆）建 Okapi BM25（k1 1.2、b 0.75），詞是每段連續中文或英數字的相鄰兩字。文字和嵌入用的相同，含「書名 第N章 標題 (a-b節)：」表頭。只用 numpy。
+- 開關：`RAG_KEYWORD_SLOT`（預設 false；`docker-compose.staging.yml` 設 true，`STG_KEYWORD_SLOT=false` 可關）；單次請求可用 `use_keyword_slot` 覆寫；semantic_only 預設不加；與 `use_graph` 無關。
+- `retrieval_stats.keyword_slot` 回報 `{id, rank, score, looked_at}`，關閉時是 null；查 PG 失敗記在 `strategy_errors["keyword"]`，不加這一格。評估端把 `keyword` 當附加來源（`evaluation/src/validity.py`）。
+- 依據（開發集探索性，store `reports/keyword_eval_20261104/`）：113 題複雜題 coverage +0.054（全在 new82），一般題 +0.008（區間含 0），faithfulness 未見下降。與實驗 a1／ha1 逐題重放 1,252 列，挑到的段落全部相同。
 
 ### 6.6 生成與其他端點
 
@@ -347,7 +357,7 @@ Kay 2026-10-08 決定：**P5 取消**，KG 只到 L0 與 L1。舊的身分層與
 
 ### 7.1 圖譜線（2026-11-03，只在 staging，尚未上 prod）
 
-Kay 2026-11-02 定的架構是一條直線：PDF → 階層 chunking → 知識圖譜＋metadata＋向量庫 → 路由＋走圖＋semantic → 生成。只用 PDF，不用外部人物資料。現況：build `b20261103_615c1ceb`（多一層 `graph`，節點 42,504、邊 95,573，其中 Person 1,888、PARENT_OF 1,494），映像 r12，Neo4j 5.26 存圖（`ragdata kg-project` 投影，只綁 loopback）。
+Kay 2026-11-02 定的架構是一條直線：PDF → 階層 chunking → 知識圖譜＋metadata＋向量庫 → 路由＋走圖＋semantic → 生成。只用 PDF，不用外部人物資料。現況：build `b20261103_615c1ceb`（多一層 `graph`，節點 42,504、邊 95,573，其中 Person 1,888、PARENT_OF 1,494），映像 r12（2026-11-06 起 staging 換成 r13＝r12 加關鍵字留一格，見 §6.5.1；回滾用 r12，`bible_rag_backend_r12_pin` 釘住），Neo4j 5.26 存圖（`ragdata kg-project` 投影，只綁 loopback）。
 
 查詢時在 R3–R6 與 fallback、排序之前跑兩件事；`use_graph=false`、`semantic_only`、R1、R2、不帶圖譜的 build 都送 0 條 Cypher。Neo4j 不可用時照常回答，`retrieval_stats` 記下 `skip_reason`。
 

@@ -50,6 +50,8 @@ class Stores:
         self.build_info = [BUILD_ID]
         self.exists, self.points = True, META["points"]
         self.passages = set(ANCHORS)
+        self.keyword_records = [("ps:act.10.1", "passage", "使徒行傳 第10章 天上的光 (1)：哥尼流"),
+                                ("ps:eph.6.1", "passage", "以弗所書 第6章 兒女和父母 (1-3)：孝敬父母")]
         self.unreachable = False
         self.pool_schema = None
 
@@ -90,10 +92,14 @@ def stores(monkeypatch, tmp_path):
     async def missing_passages(ids):
         return [i for i in ids if i not in s.passages]
 
+    async def keyword_records():
+        return list(s.keyword_records)
+
     monkeypatch.setattr(pg, "connect_meta", connect_meta)
     monkeypatch.setattr(pg, "init_pool", init_pool)
     monkeypatch.setattr(pg, "build_info_ids", build_info_ids)
     monkeypatch.setattr(pg, "missing_passages", missing_passages)
+    monkeypatch.setattr(pg, "keyword_records", keyword_records)
     monkeypatch.setattr(qd, "init_client", lambda name: None)
     monkeypatch.setattr(qd, "collection_exists", lambda: s.exists)
     monkeypatch.setattr(qd, "count", lambda: s.points)
@@ -122,6 +128,8 @@ def test_a_consistent_build_is_served(stores):
     assert active.book_ids["使徒行傳"] == "act"
     assert set(active.book_names) == set(active.book_ids) and "撒上" not in active.book_names
     assert active.lexicon.terms
+    assert active.keywords.ids == ("ps:act.10.1", "ps:eph.6.1")
+    assert [h.record_id for h in active.keywords.top("哥尼流是誰", 5)] == ["ps:act.10.1"]
 
 
 def test_rag_build_id_equal_to_the_serving_build_is_served(stores, monkeypatch):
