@@ -24,7 +24,8 @@ import re
 from functools import lru_cache
 from typing import Iterable
 
-from ragcommon import books, refs
+from ragcommon import books
+from utils.question_refs import read_question
 
 _SPAN = re.compile(r"^(\d+)(?:-(\d+))?$")
 # the verses before 節 (V, V-W, V、W) and after a colon (V, V-W)
@@ -73,7 +74,7 @@ def _question_chapters(question: str) -> set[tuple[str, int]]:
     named = {by_name[m.group(g)] for m in pattern.finditer(question)
              for g in ("b1", "b2", "bk") if m.group(g)}
     numbers = {int(a or b) for a, b in _QUESTION_CHAPTER.findall(question)}
-    found = {(r.book_id, ch) for r in refs.find_refs(question).refs
+    found = {(r.book_id, ch) for r in read_question(question).refs
              for ch in range(r.ch, r.ch_end + 1)}
     return found | {(b, n) for b in named for n in numbers}
 

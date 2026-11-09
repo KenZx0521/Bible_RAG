@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from ragcommon import routing
-from ragcommon.tests.lexicon_doc import document, event, exclusion, name, target, term
+from ragcommon.tests.lexicon_doc import book, document, event, exclusion, name, target, term
 from router_fakes import BOOK_TERMS
 from utils.signal_detector import QuerySignals, detect_signals, select_route
 from utils.verse_parser import VerseRef
@@ -55,6 +55,69 @@ def _signals(lexicon, text, verse_refs=(), intent="topic", entities=(), keywords
     book_ids = {b.full_name: b.book_id for b in lexicon.books}
     return detect_signals(text, list(verse_refs), intent, list(entities), lexicon, book_ids,
                           keywords)
+
+
+@pytest.fixture(scope="module")
+def form_lexicon():
+    forms = [book(s, bid, full) for s, bid, full in (
+        ("提前", "1ti", "提摩太前書"), ("王上", "1ki", "列王紀上"), ("王下", "2ki", "列王紀下"),
+        ("撒上", "1sa", "撒母耳記上"), ("撒下", "2sa", "撒母耳記下"), ("林前", "1co", "哥林多前書"),
+        ("林後", "2co", "哥林多後書"), ("代上", "1ch", "歷代志上"), ("代下", "2ch", "歷代志下"),
+        ("帖前", "1th", "帖撒羅尼迦前書"), ("彼後", "2pe", "彼得後書"), ("提後", "2ti", "提摩太後書"),
+        ("約一", "1jn", "約翰一書"), ("約二", "2jn", "約翰二書"),
+        ("約三", "3jn", "約翰三書"), ("尼西米記", "neh", "尼希米記"))]
+    return routing.parse_lexicon(document(names=NAMES, divine=DIVINE, aliases=ALIASES, events=EVENTS,
+                                          books=[*BOOK_TERMS, *forms]))
+
+
+@pytest.mark.parametrize("text, books", [
+    ("耶穌提前告訴門徒會發生什麼？", ()), ("大衛王下令攻城", ()), ("把種子撒下", ()), ("樹林前面有什麼", ()),
+    ("殺王上位的人", ()), ("約翰福音記載約三千人", ("約翰福音",))])
+def test_a_short_book_form_inside_ordinary_words_names_no_book(form_lexicon, text, books):
+    assert _signals(form_lexicon, text).detected_book_names == books
+
+
+@pytest.mark.parametrize("text, books", [
+    ("撒上記載大衛的事", ("撒母耳記上",)), ("王上如何記載所羅門？", ("列王紀上",)), ("林前13章講什麼", ("哥林多前書",)),
+    ("提前3:16說什麼", ("提摩太前書",)), ("尼西米記的作者是誰", ("尼希米記",))])
+def test_a_book_form_used_as_a_book_still_names_it(form_lexicon, text, books):
+    assert _signals(form_lexicon, text).detected_book_names == books
+
+
+@pytest.mark.parametrize("text, books", [
+    ("林前和林後的差別", {"哥林多前書", "哥林多後書"}), ("撒上和撒下的主題", {"撒母耳記上", "撒母耳記下"}),
+    ("代上和代下有哪些差異？", {"歷代志上", "歷代志下"}), ("約一、約二、約三的作者", {"約翰一書", "約翰二書", "約翰三書"}),
+    ("提前、提後的作者", {"提摩太前書", "提摩太後書"}), ("帖前的再來", {"帖撒羅尼迦前書"}), ("彼後的假教師", {"彼得後書"}),
+    ("王上哪一章講以利亞？", {"列王紀上"}), ("林前13講什麼", {"哥林多前書"}), ("《林前》13章", {"哥林多前書"}),
+    ("約三4節的意思", {"約翰三書"}), ("保羅在林前說什麼", {"哥林多前書"}), ("歷代下的作者是誰", {"歷代志下"})])
+def test_short_forms_people_really_use_as_books_name_them(form_lexicon, text, books):
+    assert set(_signals(form_lexicon, text).detected_book_names) == books
+
+
+@pytest.mark.parametrize("text, books", [
+    ("時代上的差異", ()), ("世代下的人", ()), ("耶穌提前提到自己要受難嗎？", ()), ("以斯帖記裡王下書廢除計謀", ("以斯帖記",)),
+    ("詩篇約一百五十篇", ("詩篇",)), ("以賽亞書大約三十章以前", ("以賽亞書",))])
+def test_short_forms_inside_ordinary_words_stay_unread(form_lexicon, text, books):
+    assert _signals(form_lexicon, text).detected_book_names == books
+
+
+def test_a_misspelt_book_name_is_read(lexicon):
+    assert _signals(lexicon, "創世紀的主旨是什麼").detected_book_names == ("創世記",)
+
+
+def test_books_named_only_by_their_references_count_as_several_books(lexicon):
+    refs = [VerseRef("mat", "馬太福音", 5), VerseRef("rom", "羅馬書", 8)]
+
+    signals = _signals(lexicon, "太5章和羅8章如何呼應？", verse_refs=refs)
+
+    assert signals.has_multi_book and signals.route == "R5"
+    assert signals.detected_book_ids == ("mat", "rom")
+
+
+def test_a_reference_to_a_book_the_question_names_counts_once(lexicon):
+    signals = _signals(lexicon, "羅馬書8章說什麼", verse_refs=[VerseRef("rom", "羅馬書", 8)])
+
+    assert signals.detected_book_ids == ("rom",) and signals.route == "R2"
 
 
 def test_abraham_is_not_abel(lexicon):

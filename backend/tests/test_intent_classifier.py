@@ -2,6 +2,8 @@
 
 import asyncio
 
+import pytest
+
 from utils import intent_classifier
 
 
@@ -38,6 +40,43 @@ def test_a_verse_reference_makes_it_verse_lookup_even_when_the_llm_fails(monkeyp
 def test_an_unknown_intent_or_garbage_falls_back_to_topic(monkeypatch):
     assert _classify(monkeypatch, "q", Llm('{"intent": "poetry"}'))["type"] == "topic"
     assert _classify(monkeypatch, "q", Llm("no json at all"))["type"] == "topic"
+
+
+@pytest.mark.parametrize("field", ["null", '"保羅"', '{"a": 1}', "3", "true"])
+def test_entities_or_keywords_that_are_not_a_list_become_empty(monkeypatch, field):
+    out = _classify(monkeypatch, "q", Llm(
+        f'{{"intent": "event", "entities": {field}, "keywords": {field}}}'))
+
+    assert (out["type"], out["entities"], out["keywords"]) == ("event", [], [])
+
+
+def test_only_non_blank_strings_are_kept_from_entities_and_keywords(monkeypatch):
+    out = _classify(monkeypatch, "q", Llm(
+        '{"intent": "person", "entities": [1, "保羅", null, "", "  ", ["x"]], "keywords": [2, "歸主"]}'))
+
+    assert (out["entities"], out["keywords"]) == (["保羅"], ["歸主"])
+
+
+@pytest.mark.parametrize("answer", ['["event"]', "3", '"event"', "null"])
+def test_json_that_is_not_an_object_is_a_parse_failure_not_an_llm_failure(monkeypatch, caplog, answer):
+    with caplog.at_level("WARNING", logger=intent_classifier.__name__):
+        out = _classify(monkeypatch, "q", Llm(answer))
+
+    assert (out["type"], out["entities"], out["keywords"]) == ("topic", [], [])
+    assert "not parseable" in caplog.text and "classification failed" not in caplog.text
+
+
+def test_an_object_wrapped_in_an_array_is_still_read(monkeypatch):
+    out = _classify(monkeypatch, "q", Llm('[{"intent": "event", "entities": ["保羅"], "keywords": ["歸主"]}]'))
+
+    assert (out["type"], out["entities"], out["keywords"]) == ("event", ["保羅"], ["歸主"])
+
+
+def test_output_with_no_json_is_logged_as_unparseable(monkeypatch, caplog):
+    with caplog.at_level("WARNING", logger=intent_classifier.__name__):
+        out = _classify(monkeypatch, "q", Llm(""))
+
+    assert out["type"] == "topic" and "not parseable" in caplog.text
 
 
 def test_a_reference_to_no_verse_is_reported_not_routed(monkeypatch):

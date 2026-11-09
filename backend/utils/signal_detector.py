@@ -15,13 +15,24 @@ LLM's keywords feed events (hits of kind event, reported by ev id).
 """
 
 import logging
+import re
 from dataclasses import dataclass, replace
 from typing import Iterable, Mapping
 
 from ragcommon.routing import Hit, RoutingLexicon
+from utils.question_refs import correct_book_names
 from utils.verse_parser import VerseRef
 
 logger = logging.getLogger(__name__)
+
+# A two-character book form (提前, 王上, 約三) is also everyday words, so it names a book only
+# when it is used as one: a reference follows, or it starts a word and words about a book follow.
+_SHORT_FORM = 2
+_NO_EVERYDAY_USE = frozenset({"帖前", "帖後", "彼前", "彼後", "提後"})
+_CITES = re.compile(r"\s*(?:第\s*)?[0-9０-９一二兩三四五六七八九十百]+\s*(?:章|篇|節|:|：)")
+_SPOKEN_OF = re.compile(r"\s*(?:[0-9０-９]|[的和與及跟或有、,，》」]|記載|如何記|提到|作者|是|講|說|論|哪|書|中|裡|裏)")
+_BEFORE_A_WORD = frozenset("見參在和與及或讀寫從較查看對於關據依照按問歷列")
+_LARGE_NUMERALS = tuple("十百千萬")   # 約三十, 約一百: about thirty, not 約翰三書
 
 
 @dataclass(frozen=True)
@@ -64,13 +75,46 @@ def _events(hits: Iterable[Hit], intent_type: str, keywords: list[str]) -> tuple
     return tuple(dict.fromkeys(found))
 
 
+def _starts_word(query: str, start: int) -> bool:
+    before = query[start - 1:start] if start else ""
+    return not before or before in _BEFORE_A_WORD or not "一" <= before <= "鿿"
+
+
+def _names_a_book_here(form: str, query: str, start: int, end: int) -> bool:
+    if form[-1] in "一二三" and query.startswith(_LARGE_NUMERALS, end):
+        return False
+    return (_CITES.match(query, end) is not None
+            or (_starts_word(query, start) and _SPOKEN_OF.match(query, end) is not None))
+
+
+def _used_as_book(form: str, query: str) -> bool:
+    return len(form) > _SHORT_FORM or form in _NO_EVERYDAY_USE or any(
+        _names_a_book_here(form, query, m.start(), m.end()) for m in re.finditer(re.escape(form), query))
+
+
+def _named_books(query: str, lexicon: RoutingLexicon) -> list[str]:
+    """The lexicon's books for this question, without short forms that are only everyday words."""
+    def named(full_name: str) -> bool:
+        return full_name in query or any(
+            _used_as_book(b.name, query) for b in lexicon.books
+            if b.full_name == full_name and b.name != full_name and b.name in query)
+    return [full_name for full_name in lexicon.match_books(query) if named(full_name)]
+
+
+def _books_of(query: str, verse_refs: list[VerseRef], lexicon: RoutingLexicon,
+              book_ids: Mapping[str, str]) -> tuple[str, ...]:
+    """Books the question names, then those only its references name (太5章, 羅8章)."""
+    cited = (r.book_name for r in verse_refs if r.book_name in book_ids)
+    return tuple(dict.fromkeys([*_named_books(correct_book_names(query), lexicon), *cited]))
+
+
 def detect_signals(query: str, verse_refs: list[VerseRef], intent_type: str,
                    entity_names: list[str], lexicon: RoutingLexicon,
                    book_ids: Mapping[str, str], keywords: list[str] | None = None
                    ) -> QuerySignals:
     """Signals of one query; ``book_ids`` maps the lexicon's full book names to book ids."""
     has_verse = any(ref.verse_start is not None for ref in verse_refs)
-    books = tuple(lexicon.match_books(query))
+    books = _books_of(query, verse_refs, lexicon, book_ids)
     query_hits = lexicon.match(query)
     named = query_hits + _hits(lexicon, entity_names)
     persons, places = _typed(named, "Person"), _typed(named, "Place")

@@ -148,6 +148,31 @@ def test_r1_leads_with_the_verse_and_its_passage_and_ranks_dense_for_the_rest(
     assert stats["strategies_used"] == ["verse_direct", "verse_owner", "semantic"]
 
 
+def test_r1_with_a_chapter_and_a_verse_puts_the_verse_before_the_chapter_passages(
+        active, monkeypatch, scores):
+    chapter = [_c(f"ps:mat.5.{i}", "verse_direct", 1.0, book="mat", chapter=5, start_key=f"mat.5.{i}",
+                  end_key=f"mat.5.{i}") for i in range(1, 7)]
+    _verse_lookup(monkeypatch, [*chapter, _verse("vs:jhn.3.16")], [_owner("ps:jhn.3.16")])
+    _dense(monkeypatch, hits=[])
+
+    ranked, _ = _run(query="馬太福音5章與約翰福音3:16的關係", verse_refs=[JHN_3_16], top_k=5)
+
+    assert [c["id"] for c in ranked] == ["vs:jhn.3.16", "ps:jhn.3.16", "ps:mat.5.1", "ps:mat.5.2",
+                                         "ps:mat.5.3"]
+
+
+def test_r1_with_a_chapter_and_a_verse_in_it_puts_the_verses_passage_next(active, monkeypatch, scores):
+    chapter = [_c(f"ps:mat.5.{i}", "verse_direct", 1.0, book="mat", chapter=5, start_key=f"mat.5.{i}",
+                  end_key=f"mat.5.{i}") for i in range(1, 7)]
+    _verse_lookup(monkeypatch, [*chapter, _verse("vs:mat.5.5", book="mat", chapter=5, start=5, end=5,
+                                                 passage="ps:mat.5.5")], [])
+    _dense(monkeypatch, hits=[])
+
+    ranked, _ = _run(query="馬太福音5章和5:5", verse_refs=[JHN_3_16], top_k=3)
+
+    assert [c["id"] for c in ranked] == ["vs:mat.5.5", "ps:mat.5.5", "ps:mat.5.1"]
+
+
 def test_r1_with_k_verse_records_returns_just_those(active, monkeypatch, scores):
     verses = [_verse(f"vs:jhn.3.{v}", start=v, end=v) for v in range(14, 18)]
     _verse_lookup(monkeypatch, verses, [_owner("ps:jhn.3.14", start=14)])

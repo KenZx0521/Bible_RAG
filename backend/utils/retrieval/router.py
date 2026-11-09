@@ -136,6 +136,18 @@ async def _ranked(query: str, pool: list[dict], g: Gathered, k: int, fusion: Fus
         return sorted(pool, key=lambda x: x.get("weight", 0), reverse=True)[:k]
 
 
+def _lead(candidates: list[dict]) -> list[dict]:
+    """Verse records, then the passages they belong to, then a chapter-only reference's passages
+    (one of which may be such a passage: its owner is then not looked up separately)."""
+    lead = [c for c in candidates if c["source_strategy"] in _VERSE_LEAD]
+    owned = {p for c in lead if c.get("kind") == "verse"
+             for p in (c.get("passage_id"), *(c.get("split_passage_ids") or ()))}
+
+    def order(c: dict) -> int:
+        return 0 if c.get("kind") == "verse" else 1 if c["id"] in owned else 2
+    return sorted(lead, key=order)
+
+
 async def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
     """The verse records and their passages, then the best of the rest that repeats none
     of those passages' verses (a chunk of an owning passage would).
@@ -143,7 +155,7 @@ async def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) ->
     Only passages exclude: an owner covers its verse records, and a verse with no owner
     (an omitted verse, a failed owner lookup) keeps the passage dense found eligible.
     """
-    lead = [c for c in g.candidates if c["source_strategy"] in _VERSE_LEAD]
+    lead = _lead(g.candidates)
     held = [c for c in lead if c.get("kind") != "verse"]
     rest = [c for c in g.candidates if c["source_strategy"] not in _VERSE_LEAD
             and not any(cands.shares_verse(c, x) for x in held)]

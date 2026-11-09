@@ -7,7 +7,7 @@ import json
 import logging
 
 from utils.llm import get_llm_client
-from utils.verse_parser import find_verse_references
+from utils.question_refs import find_verse_references
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +64,18 @@ async def _llm_intent(question: str) -> tuple[str, list[str], list[str]]:
     )
     parsed = _extract_json(response_text)
     if not parsed:
+        logger.warning("Intent LLM output not parseable: %r", response_text[:200])
         return "topic", [], []
     raw_intent = parsed.get("intent", "topic")
     intent_type = raw_intent if raw_intent in INTENT_TYPES else "topic"
-    return intent_type, parsed.get("entities", []), parsed.get("keywords", [])
+    return intent_type, _strings(parsed.get("entities")), _strings(parsed.get("keywords"))
+
+
+def _strings(value: object) -> list[str]:
+    """The non-blank strings of what the LLM gave for a list field; nothing when it is not a list."""
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str) and item.strip()]
 
 
 async def classify_intent(question: str) -> dict:
@@ -112,22 +120,21 @@ async def classify_intent(question: str) -> dict:
     }
 
 
-def _extract_json(text: str) -> dict | None:
-    """Extract first JSON object from text."""
-    # Try direct parse
-    text = text.strip()
+def _object(text: str) -> dict | None:
+    """``text`` read as a JSON object; None when it is invalid or any other JSON value."""
     try:
-        return json.loads(text)
+        parsed = json.loads(text)
     except json.JSONDecodeError:
-        pass
+        return None
+    return parsed if isinstance(parsed, dict) else None
 
-    # Try to find JSON in text
+
+def _extract_json(text: str) -> dict | None:
+    """The JSON object in the text: the whole text, else its first ``{`` to last ``}``."""
+    text = text.strip()
+    found = _object(text)
+    if found is not None:
+        return found
     start = text.find("{")
     end = text.rfind("}") + 1
-    if start >= 0 and end > start:
-        try:
-            return json.loads(text[start:end])
-        except json.JSONDecodeError:
-            pass
-
-    return None
+    return _object(text[start:end]) if start >= 0 and end > start else None

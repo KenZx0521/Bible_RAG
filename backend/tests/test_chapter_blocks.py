@@ -355,7 +355,7 @@ def test_an_r1_question_that_also_names_a_chapter_range_keeps_r1_s_lookup(
     ranked, stats = run(**_ask(question, top_k=5))
 
     assert stats["route_used"] == "R1"
-    assert _ids(ranked) == before == ["vs:jhn.3.16", "ps:rom.1.1", "ps:rom.1.18", "ps:jhn.3.16",
+    assert _ids(ranked) == before == ["vs:jhn.3.16", "ps:jhn.3.16", "ps:rom.1.1", "ps:rom.1.18",
                                       "ps:heb.1.1"]
     assert verse_pg["asked"] == [("rom", 1)]  # the verse lookup's first chapter, nothing more
     assert "chapter_block" not in stats["strategies_used"]
