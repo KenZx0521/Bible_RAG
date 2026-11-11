@@ -43,7 +43,7 @@ services:
       VLLM_MODEL: ${VLLM_MODEL:-google/gemma-4-E4B-it}
       OLLAMA_BASE_URL: http://ollama:11434
       RAG_ENV: staging
-      # The keyword slot (backend utils/retrieval/keyword_slot.py, r13 on): on in staging only;
+      # The keyword slot (backend utils/retrieval/keyword_slot.py, r13 on): on, as in prod;
       # STG_KEYWORD_SLOT=false turns it off without another image. Older images ignore it.
       RAG_KEYWORD_SLOT: ${STG_KEYWORD_SLOT:-true}
       HF_HUB_OFFLINE: "1"

@@ -9,7 +9,7 @@ services:
   # a new tag with `docker build --build-context uvcache=$HOME/.cache/uv-bible-rag-backend
   # -t bible_rag-backend:<tag> .`, promote it, then point `image` at it.
   backend:
-    image: bible_rag-backend:r9
+    image: bible_rag-backend:r14
     pull_policy: never
     container_name: bible_rag_backend
     restart: unless-stopped
@@ -21,6 +21,10 @@ services:
       # Override hosts to use Docker service names
       POSTGRES_HOST: postgres
       QDRANT_HOST: qdrant
+      # A KG build's graph (.env's NEO4J_URI is the host's localhost, unreachable from here;
+      # the password comes from .env). No depends_on: Neo4j being down only keeps walks off,
+      # /api/v1/health says so.
+      NEO4J_URI: bolt://neo4j:7687
       # The generator pairs with the image: r9 on serves through the vllm service
       # (LLM_PROVIDER vllm); r8 and older only know ollama (and need the ollama profile up).
       LLM_PROVIDER: vllm
@@ -31,6 +35,8 @@ services:
       # its contract files from the read-only mount below.
       RAG_ENV: prod
       STRICT_BUILD_CHECK: "true"
+      # The keyword slot (backend utils/retrieval/keyword_slot.py, r13 on). Older images ignore it.
+      RAG_KEYWORD_SLOT: "true"
       CONTRACTS_ROOT: /contracts
       # Models load from the model_cache volume only (host link ~50 KB/s).
       HF_HUB_OFFLINE: "1"

@@ -15,7 +15,7 @@ cd frontend && node server.mjs   # 開 http://127.0.0.1:5173（Node 18 以上）
 | `DEMO_HOST` | `127.0.0.1` | 綁定位址 |
 | `DEMO_PORT` | `5173` | 埠號 |
 | `DEMO_ALLOWED_HOSTS` | 空 | 逗號分隔的網域白名單，用網域連才要設；IP 與 `localhost` 不必列。沒列的網域一律 403，用來擋 DNS rebinding |
-| `DEMO_BACKEND_URL` | `http://localhost:8002` | backend（staging r12） |
+| `DEMO_BACKEND_URL` | `http://localhost:8002` | backend（staging r14；prod `:8000` 是同一版） |
 | `NEO4J_HTTP_URL` | `http://127.0.0.1:7474/db/neo4j/query/v2` | Neo4j Query API，只送唯讀查詢 |
 | `NEO4J_USER`、`NEO4J_PASSWORD` | 讀 repo 根目錄 `.env` | 只留在 server，不會送到瀏覽器；讀不到時答案照常，只是沒有關聯圖 |
 
@@ -41,7 +41,6 @@ ssh -L 5173:127.0.0.1:5173 <遠端主機>
 
 ## 已知限制
 
-- 只有 staging 有圖譜；prod（`:8000`）沒有，指過去會沒有關聯圖。
 - 年表卡與年歲卡只顯示推算文字、不畫圖，因為回應裡的鏈節點只有代號沒有名字。
 - 這是 demo，不是正式部署：沒有登入、沒有 HTTPS，限流在 server 記憶體裡，重啟就歸零。
 - 一題通常要 12–30 秒，機器忙時實測到 50 秒；同時最多問 2 題，每個 IP 每分鐘 20 題。

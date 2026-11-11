@@ -1,7 +1,7 @@
 # Bible RAG 系統架構
 
-> **文件日期**：2026-10-08。描述分支 `rebuild/r2`（在 R1 重建之上實作 R2）上的系統。
-> **數字來源**：store `/mnt/ollama-data/bible_rag_store/` 的層檔案與 release 逐檔計數，每個數字都標明出自哪個 build 或哪一層版本。R1 build 是 `b20261008_6daa4f31`；R2 build 是 `b20261008_e05d3e55`（2026-10-08 由本分支建置、載入並通過 verify，尚未 promote）。
+> **文件日期**：2026-10-08，2026-11-11 更新線上現況（prod 與 staging 都是映像 r14＋`b20261103_615c1ceb`）。
+> **數字來源**：store `/mnt/ollama-data/bible_rag_store/` 的層檔案與 release 逐檔計數，每個數字都標明出自哪個 build 或哪一層版本。R1 build 是 `b20261008_6daa4f31`；R2 build 是 `b20261008_e05d3e55`（2026-10-08 建置、載入並通過 verify）。
 > **相關文件**：操作手冊 [rebuild_pipeline.md](rebuild_pipeline.md)；現況與交接 [records/2026-10-08_rebuild_handoff.md](records/2026-10-08_rebuild_handoff.md)；設計書與稽核報告在 store 的 `reference/DESIGN.md`（v1.1）、`reference/REPORT.md`。
 
 ---
@@ -32,7 +32,7 @@ Bible RAG 是繁體中文聖經問答系統。所有資料都從 66 卷 PDF 重�
 - 一個 loader 把 release 投影到三處：PostgreSQL schema `b{build_id}`、Qdrant collection `passages__{build_id}`、契約目錄 `contracts/{build_id}/`。
 - `rag_meta.serving` 決定 backend 服務哪個 build；backend 啟動時與三處做嚴格握手，不符就不服務。
 
-線上檢索是 BGE-M3 dense 檢索加 cross-encoder 重排與排序融合，依 R1–R6 路由組合候選。圖譜衍生的訊號只剩事件註冊表附加槽，它讀靜態契約檔。服務端沒有 Neo4j。
+線上檢索是 BGE-M3 dense 檢索加 cross-encoder 重排與排序融合，依 R1–R6 路由組合候選。R3–R6 與 fallback 另外透過 Neo4j 走圖並產生親屬卡（§7.1）；事件註冊表附加槽讀靜態契約檔。現行 build 比下圖多 relations 與 graph 兩層，見 [rebuild_pipeline.md §3](rebuild_pipeline.md)。
 
 ```mermaid
 flowchart LR
@@ -195,17 +195,20 @@ backend 只在啟動時讀一次 `rag_meta.serving` 中 `RAG_ENV` 那一列。`R
 
 ```mermaid
 flowchart TD
-    Q["問題"] --> REF["經文引用偵測<br/>ragcommon.refs"]
+    Q["問題"] --> REF["經文引用偵測<br/>utils/question_refs.py＋ragcommon.refs"]
     REF --> SIG["信號偵測<br/>契約的路由詞表 v2 + ragcommon.routing 比對器"]
     SIG --> RT{"R1–R6 / fallback"}
     RT --> POOL["候選池<br/>（各帶策略先驗 weight）"]
-    POOL --> RR["bge-reranker-v2-m3<br/>對整個候選池打分"]
+    POOL --> WALK["R3–R6、fallback：走圖與親屬卡<br/>走到的段落併入候選池（§7.1）"]
+    WALK --> RR["bge-reranker-v2-m3<br/>對整個候選池打分"]
     RR --> FUSE["排序融合<br/>fused = 0.7·rerank + 0.3·weight"]
     FUSE --> PIN["chapter pin、book_anchor pin"]
     PIN --> TOPK["top-k（預設 5）"]
     TOPK --> BLK["R2／R5：章級 block（B-lite）<br/>觸發時整章排最前，其餘重排"]
-    BLK --> AUX["R4／R5：事件註冊表附加槽<br/>在 top-k 之後最多附加 1 段"]
-    AUX --> GEN["LLM 依 context 生成"]
+    BLK --> SLOT["R3–R6、fallback：滿額時<br/>第 k 名讓給走圖段落（§7.1）"]
+    SLOT --> AUX["R4／R5：事件註冊表附加槽<br/>在 top-k 之後最多附加 1 段"]
+    AUX --> KW["關鍵字留一格（§6.5.1）<br/>卡片做完後最後再接 1 段"]
+    KW --> GEN["LLM 依 context 生成"]
 ```
 
 ### 6.1 路由信號
@@ -247,7 +250,7 @@ flowchart TD
 - 舊系統宣稱 dense＋BM25 sparse 以 RRF 融合（collection `bible_embeddings_hybrid`，`HYBRID_SEARCH_ENABLED=true`），但實際上**從沒跑過**。backend 的 qdrant-client 限 `<1.9.0`（實裝 1.8.2），沒有 `query_points`；日誌顯示 541/541 次都退回 dense，標籤卻仍寫 hybrid（REPORT G28）。
 - 所以 Rounds 0–3 全部是 dense-only。
 - E0a 正式退役 sparse 臂：與 prod 比 500 題，路由相同的 497/497 題結果逐位相同。
-- 服務路徑不再有 sparse 向量與 CKIP 斷詞。BM25 只剩關鍵字留一格（§6.5.1，預設關閉，只在 staging 開），不進候選池。
+- 服務路徑不再有 sparse 向量與 CKIP 斷詞。BM25 只剩關鍵字留一格（§6.5.1，程式預設關閉，prod 與 staging 由 compose 開啟），不進候選池。
 
 ### 6.4 重排、融合與 pin
 
@@ -283,7 +286,7 @@ flowchart TD
 
 - 路由是 R4 或 R5；
 - top-k 已滿；
-- `use_graph` 開啟，且 `graph_strategies` 含 `"event_registry"`（預設 `["event_registry"]`）；
+- `use_graph` 開啟，且 `graph_strategies` 含 `"event_registry"`（預設 `["event_registry", "graph_walk", "kin_card"]`）；
 - 問題原文（遮掉書名後）含有註冊表的觸發詞：先比 `pdf_terms`，再比外部別名。
 
 行為：
@@ -293,17 +296,17 @@ flowchart TD
 - `retrieval_stats.event_registry_events` 回報觸發的事件 ev id。
 - top-k 本身與關閉附加槽時逐位相同。
 - 註冊表是契約檔 `event_registry.json`，不查 Neo4j。
-- 回應的 `graph_trace` 逐項記錄圖譜側實際執行的操作（附加槽、王朝年表卡、GEN 卡）；≥2 跳才算圖譜走訪，附加槽是一跳查表。
+- 回應的 `graph_trace` 逐項記錄圖譜側實際執行的操作（走圖、親屬卡、附加槽、王朝年表卡、GEN 卡）；≥2 跳才算圖譜走訪，附加槽是一跳查表。
 
 依據：2026-10 的圖譜稽核發現，人工整理的事件錨點是唯一量得到價值的圖譜訊號；讓圖譜候選進池競爭，擠掉的 gold 和帶進來的一樣多。見 [records/2026-10-03_graph_auxiliary_review.md](records/2026-10-03_graph_auxiliary_review.md)。
 
-#### 6.5.1 關鍵字留一格（`utils/retrieval/keyword_slot.py`，2026-11-06，只在 staging）
+#### 6.5.1 關鍵字留一格（`utils/retrieval/keyword_slot.py`，2026-11-06 上 staging，2026-11-11 上 prod）
 
 - 在所有結果（top-k、走圖那一格、事件附加段）**之後**再接一段：BM25 前 30 名中，第一個不與結果共節的段落或 chunk。標成 `strategy="keyword"`、`found_by=["keyword"]`，weight 0，沒有 rerank 或 fused 分數。
 - 不進重排候選池，top-k、排序與重排次數都和關閉時相同。
 - 卡片做完才接上：年表卡的種子讀的是沒有這一格的結果。
 - 索引：啟動時從該 build 的 `embedding_records`（passage 與 chunk，3,037 筆）建 Okapi BM25（k1 1.2、b 0.75），詞是每段連續中文或英數字的相鄰兩字。文字和嵌入用的相同，含「書名 第N章 標題 (a-b節)：」表頭。只用 numpy。
-- 開關：`RAG_KEYWORD_SLOT`（預設 false；`docker-compose.staging.yml` 設 true，`STG_KEYWORD_SLOT=false` 可關）；單次請求可用 `use_keyword_slot` 覆寫；semantic_only 預設不加；與 `use_graph` 無關。
+- 開關：`RAG_KEYWORD_SLOT`（程式預設 false；`docker-compose.yml` 與 `docker-compose.staging.yml` 都設 true，staging 可用 `STG_KEYWORD_SLOT=false` 關）；單次請求可用 `use_keyword_slot` 覆寫；semantic_only 預設不加；與 `use_graph` 無關。
 - `retrieval_stats.keyword_slot` 回報 `{id, rank, score, looked_at}`，關閉時是 null；查 PG 失敗記在 `strategy_errors["keyword"]`，不加這一格。評估端把 `keyword` 當附加來源（`evaluation/src/validity.py`）。
 - 依據（開發集探索性，store `reports/keyword_eval_20261104/`）：113 題複雜題 coverage +0.054（全在 new82），一般題 +0.008（區間含 0），faithfulness 未見下降。與實驗 a1／ha1 逐題重放 1,252 列，挑到的段落全部相同。
 
@@ -337,7 +340,7 @@ embedder 查詢端與 reranker 的 tokenizer 已在 E0b 修正，見 §10。
 
 ## 7. KG 的範圍
 
-Kay 2026-10-08 決定：**P5 取消**，KG 只到 L0 與 L1。舊的身分層與關係層退役，不重建。
+Kay 2026-10-08 決定：**P5 取消**，KG 只到 L0 與 L1。舊的身分層與關係層退役，不重建。2026-11-02 Kay 重開圖譜線，從 PDF 另建 graph 層，見 §7.1。
 
 | 層 | 內容 | 狀態 |
 |---|---|---|
@@ -350,13 +353,13 @@ Kay 2026-10-08 決定：**P5 取消**，KG 只到 L0 與 L1。舊的身分層與
 - 實體 9,124 個、MENTIONS、37 型語意邊、CROSS_REFERENCES 250,418 條（多數是 TSK 串珠），以及實體向量（`bible_entities`）。
 - 稽核（REPORT G37、G50）指出：沒有身分層；語意邊的精確率約 0.25。
 
-**prod 現況（r9＋`b20261021_dfa1e3e3`）**：
-- 服務端不讀 Neo4j（D-09），`/api/v1/entity` 回 410（D-08）。
-- 舊的 Neo4j 容器、volume 與 compose 服務已在 R1 上線後刪除（2026-10-08）。
+**prod 現況（2026-11-11 起 r14＋`b20261103_615c1ceb`）**：
+- 服務端透過 Neo4j 走圖與查親屬（§7.1），`/api/v1/entity` 仍回 410（D-08）。
+- 舊的 Neo4j 容器、volume 與 compose 服務已在 R1 上線後刪除（2026-10-08）；現在的 Neo4j 是 2026-11-02 新建的，只存 `ragdata kg-project` 的投影。
 
-### 7.1 圖譜線（2026-11-03，只在 staging，尚未上 prod）
+### 7.1 圖譜線（2026-11-03 上 staging，2026-11-11 上 prod）
 
-Kay 2026-11-02 定的架構是一條直線：PDF → 階層 chunking → 知識圖譜＋metadata＋向量庫 → 路由＋走圖＋semantic → 生成。只用 PDF，不用外部人物資料。現況：build `b20261103_615c1ceb`（多一層 `graph`，節點 42,504、邊 95,573，其中 Person 1,888、PARENT_OF 1,494），映像 r12（2026-11-06 起 staging 換成 r13＝r12 加關鍵字留一格，見 §6.5.1；回滾用 r12，`bible_rag_backend_r12_pin` 釘住），Neo4j 5.26 存圖（`ragdata kg-project` 投影，只綁 loopback）。
+Kay 2026-11-02 定的架構是一條直線：PDF → 階層 chunking → 知識圖譜＋metadata＋向量庫 → 路由＋走圖＋semantic → 生成。只用 PDF，不用外部人物資料。現況：build `b20261103_615c1ceb`（多一層 `graph`，節點 42,504、邊 95,573，其中 Person 1,888、PARENT_OF 1,494），prod 與 staging 都是映像 r14（r12 加關鍵字留一格是 r13，見 §6.5.1；r13 再加問句引用解析、拿掉意圖 LLM 是 r14），Neo4j 5.26 存圖（`ragdata kg-project` 投影，只綁 loopback）。下面的量測都在 r12，r14 的答案層還沒量。
 
 查詢時在 R3–R6 與 fallback、排序之前跑兩件事；`use_graph=false`、`semantic_only`、R1、R2、不帶圖譜的 build 都送 0 條 Cypher。Neo4j 不可用時照常回答，`retrieval_stats` 記下 `skip_reason`。
 
@@ -390,9 +393,10 @@ flowchart TB
         PG[("postgres<br/>pgvector/pgvector:pg15 :5432")]
         QD[("qdrant v1.13.2<br/>:6333/:6334")]
         OL["vllm :8000（GPU）<br/>gemma-4-E4B-it"]
+        NEO[("neo4j 5.26<br/>只綁 loopback")]
     end
     STORE["store contracts/<br/>唯讀掛載到 /contracts"] --> BE
-    BE --> PG & QD & OL
+    BE --> PG & QD & OL & NEO
 ```
 
 | 要點 | 說明 |
@@ -401,12 +405,12 @@ flowchart TB
 | 改程式 | 映像內含程式，改 `backend/` 後要重建映像。只 restart 會跑舊映像 |
 | 建置快取 | `uv sync` 掛主機 `~/.cache/uv-bible-rag-backend`（`BACKEND_UV_CACHE_DIR`），uv 釘 0.12.0；主機頻寬約 50 KB/s，沒有快取建不起來 |
 | 三套環境 | `backend/`（容器）、`scripts/`（ragdata 的執行環境）、`evaluation/` 各有 pyproject.toml |
-| staging | `docker-compose.staging.yml` 的 `backend-stg`：:8002，映像由 `STG_IMAGE` 指定（預設 r2），restart `"no"`，握手不符就停在 exited |
+| staging | `docker-compose.staging.yml` 的 `backend-stg`：:8002，映像由 `STG_IMAGE` 指定（預設 r9），restart `"no"`，握手不符就停在 exited |
 
-2026-10-09 起的容器：
+2026-11-11 起的容器：
 
-- :8000 是線上 prod：映像 `bible_rag-backend:r2`，服務 R2 build；
-- staging（`backend-stg`，:8002）平時不開，要驗下一個 build 時再起。
+- :8000 是線上 prod：映像 `bible_rag-backend:r14`，服務 `b20261103_615c1ceb`；
+- staging（`backend-stg`，:8002）目前是同一配對，要驗下一個 build 時再換。
 
 legacy 的容器、映像、`public` 舊表、舊 Qdrant collection 與 Neo4j 已在 R1 上線、20 題 smoke 通過後刪除（Kay 的決定）。要回到 legacy 只能從 `/mnt/ollama-data/bible_rag_bak/20261007/` 還原。
 
@@ -461,11 +465,13 @@ E0b 修正了 embedder 查詢端與 reranker 的 tokenizer。500 題配對比較
 
 ## 11. 版本現況
 
-| 版本 | 內容 | 狀態（2026-10-09） |
+| 版本 | 內容 | 狀態（2026-11-11） |
 |---|---|---|
 | legacy（`legacy-20261004`） | 舊轉換器語料、`public` schema、`bible_embeddings*`、`bible_entities`、Neo4j | 2026-10-08 R1 上線後刪除；備份在 bak/20261007 |
 | R1 `b20261008_6daa4f31` | 全部資料從 PDF 重建；路由詞表是 legacy 凍結版；事件註冊表是機械轉換版（33 事件）；sparse 退役；embedder 查詢端與 reranker 的 tokenizer 已修正；不讀 Neo4j | 2026-10-08 22:40 至 2026-10-09 上 prod，現為 R2 的回滾配對（保留 build 與映像）；評估見下，C2 經 Kay 依揭露值接受 |
-| R2 `b20261008_e05d3e55` | 事件註冊表修正版（31 事件）；路由詞表改為 PDF 版加查詢別名（契約 v2）；其餘五層與 R1 相同 | **線上 prod（:8000，映像 r2），2026-10-09 起**；評估見下，G-HELDOUT 經 Kay 簽核；prod 20 題 smoke 20/20 |
+| R2 `b20261008_e05d3e55` | 事件註冊表修正版（31 事件）；路由詞表改為 PDF 版加查詢別名（契約 v2）；其餘五層與 R1 相同 | 2026-10-09 至 2026-10-19 上 prod（映像 r2）；評估見下，G-HELDOUT 經 Kay 簽核；prod 20 題 smoke 20/20 |
+| `b20261021_dfa1e3e3` | R2 各層加 relations 層（王朝年表卡、GEN 卡）；中間的 `b20261019_*` 見 [rebuild_pipeline.md §6](rebuild_pipeline.md) | 2026-10-21 至 2026-11-11 上 prod（映像 r5 到 r9）；現為回滾配對（映像 r9） |
+| `b20261103_615c1ceb` | 上一版各層加 graph 層（節點 42,504、邊 95,573），其餘各層相同 | **線上 prod（:8000，映像 r14），2026-11-11 起**；staging 同一配對；量測見 §7.1 |
 
 R1 評估結果（2026-10-08，store `reports/r1eval/`）：
 
