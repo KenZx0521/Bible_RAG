@@ -101,11 +101,11 @@ uv run python run_eval.py --no-graph
 uv run python run_eval.py --semantic
 ```
 
-> **現況(2026-11-02)**:主架構預定要走知識圖譜,但目前檢索路徑還沒有圖走訪。Neo4j 策略已隨 R1(2026-10-08)移除,圖譜側只剩事件附加槽(一跳查表)與王朝、GEN 兩張計算卡;兩張卡在題型觸發時會走有序鏈(≥2 跳),但 500 題 GT 不會觸發。修復進行中。在接回之前,500 題上主架構對 `--semantic` 的差距是路由與查表的差距,不能寫成圖譜增益。
+> **現況(2026-11-11)**:prod(`:8000`,評估的預設 backend)與 staging 都是 r14＋`b20261103_615c1ceb`。主架構在 R3–R6 與 fallback 透過 Neo4j 走圖,另有親屬卡、事件附加槽(一跳查表)、王朝與 GEN 兩張計算卡,以及關鍵字留一格。`--no-graph` 關圖譜側,但不關留一格(留一格與 `use_graph` 無關,`--semantic` 預設不加)。500 題(r12)上主架構對 `--semantic` 的差距全來自 R1/R2 的路由與查表,不能寫成圖譜增益。讀圖譜臂數字前先看 `graph_usage` 的實際走圖題數。
 > `--ids-file`、`--graph-strategies` 收的是子集或變體,必須帶 `--results-dir`,否則會蓋掉該臂的完整結果。
 > `--graph` 旗標已移除(2026-11-02)。主架構的請求內容和舊 `--graph` 相同,只是輸出改到 `results/`、臂標記改為 `main`;`results_graph/` 留作舊存檔,要讀它用 `--results-dir results_graph`。
 
-> 圖譜側目前的策略:backend 預設 `RAG_GRAPH_STRATEGIES=["event_registry"]`(2026-10-04 起;只在 top-k 後附加 curated 事件錨點,之前是 `["graph_event"]`)。附加軌會讓部分題的 sources 多一段,檢索指標要用 `--metric-k 6` 並以 `ab_compare.py --control-ext` 對 k 對齊的 dense 比較。
+> 圖譜側目前的策略:backend 預設 `RAG_GRAPH_STRATEGIES=["event_registry","graph_walk","kin_card"]`(r10 起;`event_registry` 只在 top-k 後附加 curated 事件錨點)。附加軌會讓部分題的 sources 多一段,檢索指標要用 `--metric-k 6` 並以 `ab_compare.py --control-ext` 對 k 對齊的 dense 比較。
 > R1/R2 的 backend 只有 `event_registry` 這一條圖譜策略:`--graph-strategies event_registry` 指定它,只寫 `--graph-strategies` 不帶值 = 全關;`all`、`graph_event` 等舊策略會被拒絕。Round 3 的三組態存檔(全開,2026-09)已搬到 `archive/round3_2026-09/`,只能用 legacy 映像重現。
 > 輸出目錄裡若有 2026-10 前的存檔(記錄沒有 `graph_strategies` 欄位),collector 會拒絕覆寫,請先移走或 commit。
 > 每筆 `raw_responses.json` 記錄另帶 `graph_strategies`(backend 實際生效的策略;缺欄位 = 舊版全開)。
@@ -402,4 +402,4 @@ RAGAS 會在每次呼叫時把 judge 溫度覆寫為 ~0.01,`langchain_factory` �
 - **Answer Point Coverage > 0.6**: 回答涵蓋了大部分關鍵要點
 - **Semantic Similarity > 0.7**: 回答與參考答案語意接近
 - 比較不同 Question Type 的表現差異，找出系統弱點
-- 比較主架構與 `--no-graph` 量的是圖譜側的貢獻;現況圖譜側只有事件附加槽與兩張計算卡,500 題上沒有圖走訪
+- 比較主架構與 `--no-graph` 量的是圖譜側的貢獻;現況圖譜側有走圖、親屬卡、事件附加槽與兩張計算卡

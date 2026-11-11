@@ -2,13 +2,13 @@
 
 繁體中文聖經問答系統。語料是 66 卷 PDF：和合本修訂版（RCUV）上帝版。PDF 版權頁寫「新標點和合本」，但內文是 RCUV。
 
-所有資料都從 PDF 決定性地重建成版本化的 build，backend 只服務 `rag_meta.serving` 指定的 build。檢索以 BGE-M3 dense 檢索、cross-encoder 重排與 R1–R6 路由組合候選，再由 LLM 依檢索到的經文回答。
+所有資料都從 PDF 決定性地重建成版本化的 build，backend 只服務 `rag_meta.serving` 指定的 build。檢索以 BGE-M3 dense 檢索、cross-encoder 重排與 R1–R6 路由組合候選，沒有明寫引用的問題另外走知識圖譜，再由 LLM 依檢索到的經文回答。
 
 完整架構見 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 ## Features
 
-- **從 PDF 重建**：`ragdata` 建出 7 個內容定址的資料層（src、text、struct、emb、kg0、events、route），每層都要過閘門。同一個 commit 會建出同一個 `build_id`。
+- **從 PDF 重建**：`ragdata` 建出內容定址的資料層（src、text、struct、emb、kg0、events、route、relations、graph），每層都要過閘門。同一個 commit 會建出同一個 `build_id`。
 - **版本化服務**：一份 release 投影到三處：
   - PG schema `b{build_id}`；
   - Qdrant collection `passages__{build_id}`；
@@ -18,27 +18,30 @@
 - **節位模型**：合併節、缺號槽（「本譯本此節從缺」加註腳）、詩篇篇題、標題與註腳都是一級資料。
 - **信號驅動路由**：R1–R6 加 fallback。路由詞表由 PDF 的名稱層、事件註冊表與查詢別名編出（R2）。
 - **檢索**：BGE-M3 dense 檢索，bge-reranker-v2-m3 重排，排序融合 α=0.3，加 chapter 與 book_anchor 兩種 pin。
+- **知識圖譜**：R3–R6 與 fallback 透過 Neo4j 走圖，滿額時第 k 名讓給走圖段落；親屬題另有親屬卡。
 - **事件註冊表附加槽**：R4、R5 的問題命中事件觸發詞時，在 top-k 之後附加 1 段人工整理的事件錨點。
+- **關鍵字留一格**：所有結果之後再接 1 段 BM25 找到、且不與結果共節的段落。
 - **多 LLM**：vLLM、Ollama、Claude、OpenAI、Gemini。
 - **評估**：500 題五類型題庫（GT v1／v2），每份結果記錄 build、GT 版本與編碼指紋。
 
-服務端不使用 Neo4j，也沒有 sparse／hybrid 檢索；知識圖譜只到 L0 名稱與 L1 事件（見 [ARCHITECTURE §7](docs/ARCHITECTURE.md#7-kg-的範圍)）。
+沒有 sparse／hybrid 檢索，BM25 只用於關鍵字留一格。圖譜的範圍與量測見 [ARCHITECTURE §7](docs/ARCHITECTURE.md#7-kg-的範圍)。
 
 ## Architecture
 
 ```
 資料（離線，ragdata）
 bible_pdf/ ─→ src → text → struct → emb
-                       └→ kg0、events → route
+                       └→ kg0、events → route → relations、graph
            ─→ release（releases/{build_id}.json）
            ─→ loader ─→ PG schema b{build_id}
                      ├→ Qdrant passages__{build_id}
-                     └→ contracts/{build_id}/
+                     ├→ contracts/{build_id}/
+                     └→ Neo4j（kg-project，帶圖譜的 build）
 rag_meta.serving（env → build_id, 映像）─→ backend 啟動時讀取並握手
 
 查詢（線上，backend）
 使用者查詢
-    ├─ 經文引用偵測（ragcommon.refs）
+    ├─ 經文引用偵測（utils/question_refs.py＋ragcommon.refs）
     ▼
 信號偵測（契約的路由詞表）
     ├─ 書＋章＋節            → R1: PG 直查，不重排
@@ -50,7 +53,10 @@ rag_meta.serving（env → build_id, 映像）─→ backend 啟動時讀取並�
     ├─ 地名                  → R6: 同 R3
     └─ （無）                → fallback: dense ＋ book_anchor
     ▼
-去重 → BGE Reranker → 排序融合 → pins → top-k →（R4/R5）事件附加槽 → LLM 生成
+（R3–R6、fallback）走圖與親屬卡，走到的段落併入候選池
+    ▼
+去重 → BGE Reranker → 排序融合 → pins → top-k →（R3–R6、fallback）第 k 名讓給走圖段落
+    →（R4/R5）事件附加槽 → 年表／年歲／親屬卡 → 關鍵字留一格 → LLM 生成
 ```
 
 ## Tech Stack
@@ -61,6 +67,7 @@ rag_meta.serving（env → build_id, 映像）─→ backend 啟動時讀取並�
 | 資料管線 | `ragdata`（共用程式 `packages/ragcommon`） |
 | 結構化資料 | PostgreSQL 15（pgvector 映像） |
 | 向量搜尋 | Qdrant v1.13.2（dense） |
+| 知識圖譜 | Neo4j 5.26 community |
 | 嵌入模型 | BAAI/bge-m3（1024 維） |
 | 重排序 | BAAI/bge-reranker-v2-m3 |
 | 生成模型 | vLLM（google/gemma-4-E4B-it，BF16；映像 r9 起）／Ollama（r8 以前：gemma4:e4b-it-q8_0）／Claude／OpenAI／Gemini |
@@ -86,7 +93,7 @@ rag_meta.serving（env → build_id, 映像）─→ backend 啟動時讀取並�
 cp .env.example .env
 ```
 
-依需求編輯 `.env`，設定 LLM provider 與 API key。`.env.example` 仍留著舊管線的鍵（`NEO4J_*`、`HYBRID_*`、`ENTITY_EXTRACT_*`、`RE_*`、`DESC_*` 等），backend 不讀它們。
+依需求編輯 `.env`，設定 LLM provider、API key 與 `NEO4J_PASSWORD`（compose 的 neo4j 服務必填）。`.env.example` 仍留著舊管線的鍵（`HYBRID_*`、`ENTITY_EXTRACT_*`、`RE_*`、`DESC_*` 等），backend 不讀它們。
 
 ### 2. 建資料並指定服務的 build
 
@@ -119,9 +126,10 @@ docker compose up -d
 | postgres | 5432 | PostgreSQL 15（pgvector 映像） |
 | qdrant | 6333／6334 | 向量資料庫 |
 | vllm | 127.0.0.1:8010 | 本地 LLM（GPU）：vLLM 服務 google/gemma-4-E4B-it |
+| neo4j | 127.0.0.1:7687／7474 | 知識圖譜，只存 `ragdata kg-project` 的投影 |
 | ollama | 11434 | 只留給回滾 r8；在 profile `ollama` 裡，`up` 不會啟動 |
 
-compose 已沒有 Neo4j；legacy 資料與 Neo4j 在 R1 上線後（2026-10-08）刪除，備份在 `/mnt/ollama-data/bible_rag_bak/20261007/`。
+legacy 資料與舊 Neo4j 在 R1 上線後（2026-10-08）刪除，備份在 `/mnt/ollama-data/bible_rag_bak/20261007/`。現在的 Neo4j 是 2026-11-02 新建的。
 
 **backend 怎麼選 build**：
 - 啟動時依 `RAG_ENV`（prod／staging）讀一次 `rag_meta.serving`。`RAG_BUILD_ID` 只能核對，不能改選。
@@ -185,8 +193,8 @@ Bible_RAG/
 ├── figures/                    # 論文圖
 ├── ground_truth.json           # GT v1：500 題（5 類型 × 100）
 ├── ground_truth.v2.json        # GT v2：同 500 題，引用對齊重建後的文字層
-├── docker-compose.yml          # backend（prod，已建好的映像）、postgres、qdrant、vllm（ollama 在 profile 裡）
-├── docker-compose.staging.yml  # staging backend（R1：:8002）
+├── docker-compose.yml          # backend（prod，已建好的映像）、postgres、qdrant、vllm、neo4j（ollama 在 profile 裡）
+├── docker-compose.staging.yml  # staging backend（:8002）
 ├── Dockerfile                  # backend 映像
 └── .env.example                # 環境變數範例
 ```
