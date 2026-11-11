@@ -324,9 +324,9 @@ def _walkers(question: Question, picked: Mapping[str, Person]) -> list[tuple[Per
     return list({person.id: (person, cue) for person, cue in walkers}.values())
 
 
-async def _card(question_text: str, entities: Sequence[str], pool: Sequence[Mapping[str, Any]],
+async def _card(question_text: str, pool: Sequence[Mapping[str, Any]],
                 lexicon: RoutingLexicon, reads: neo4j_db.Reads) -> KinCard:
-    question = kin_people.read_question(question_text, entities, lexicon)
+    question = kin_people.read_question(question_text, lexicon)
     cue = question.reading.cue
     if cue is None:
         return KinCard(skip_reason=NO_CUE)
@@ -363,21 +363,21 @@ async def _picked_card(question: Question, picked: Mapping[str, Person], found_o
     return replace(card, passages=await _passages(card.evidence, reads))
 
 
-async def build(question: str, entities: Sequence[str], pool: Sequence[Mapping[str, Any]],
+async def build(question: str, pool: Sequence[Mapping[str, Any]],
                 lexicon: RoutingLexicon, build_id: str) -> KinCard:
     """The card of a question ``wants`` said asks about kinship, or why there is none; Neo4j not
     answering is one such reason, and whatever was found before it is dropped."""
     started = time.perf_counter()
     reads = neo4j_db.Reads(build_id)
     try:
-        card = await _card(question, entities, pool, lexicon, reads)
+        card = await _card(question, pool, lexicon, reads)
     except neo4j_db.Skipped as exc:
         card = KinCard(skip_reason=exc.reason)
     return replace(card, n_cypher=reads.n, ms=round((time.perf_counter() - started) * 1000, 2))
 
 
-def wants(question: str, entities: Sequence[str], lexicon: RoutingLexicon) -> bool:
+def wants(question: str, lexicon: RoutingLexicon) -> bool:
     """Whether the question asks about kinship (the cue, and for 關係 alone two names): no Neo4j."""
-    read = kin_people.read_question(question, entities, lexicon)
+    read = kin_people.read_question(question, lexicon)
     cue = read.reading.cue
     return cue is not None and kin_cues.takes(cue, len(read.ends))

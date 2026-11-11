@@ -277,8 +277,7 @@ def test_dense_routes_add_book_anchors_and_a_sql_supplement(active, monkeypatch,
                 for v in (1, 20)]
     monkeypatch.setattr(routes.postgres, "chapter_passages", chapter_passages)
 
-    ranked, stats = _run(query="使徒行傳裡掃羅與巴拿巴", top_k=3,
-                         entity_names=["掃羅", "巴拿巴"])
+    ranked, stats = _run(query="使徒行傳裡掃羅與巴拿巴", top_k=3)
 
     assert stats["route_used"] == "R3"
     assert stats["strategies_used"] == ["semantic", "book_anchor", "sql_supplement"]

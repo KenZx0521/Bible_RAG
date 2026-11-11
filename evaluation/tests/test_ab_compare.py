@@ -530,7 +530,7 @@ def test_ab_compare_cli_pass_says_route_mismatches_were_not_judged(tmp_path, mon
                         "Q2": _ident_entry(CORE5)})
 
     assert _cli(tmp_path, monkeypatch, control, treat) == 0
-    assert "identity: PASS (1 route mismatch not judged; re-ask them)" in capsys.readouterr().out
+    assert "identity: PASS (1 route mismatch not judged; check them)" in capsys.readouterr().out
 
     assert _cli(tmp_path, monkeypatch, control, copy.deepcopy(control)) == 0
     assert capsys.readouterr().out.rstrip().endswith("identity: PASS")

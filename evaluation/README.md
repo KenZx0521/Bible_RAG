@@ -181,7 +181,7 @@ uv run python quick_retrieval_eval.py --no-use-graph --top-k 6 --metric-k 6 --id
 uv run python ab_compare.py results_quick/dense5.json results_quick/aux.json --control-ext results_quick/dense6.json --label aux_vs_dense
 ```
 
-`--require-identical` 改跑一致性檢查(不出統計報告):同路由題的 core(前 top_k 段)、附加段落(超過 top_k 的段落)與 `context_sha` 必須全部相同,兩邊逐題與整體的 `graph_strategies_applied` 也必須相同;invalid 題、只出現在一邊的題同樣算失敗。任何不同都列出明細並以結束碼 1 結束。路由不同的題另外列出,不判失敗:這時 PASS 會註明有幾題沒判(`identity: PASS (N route mismatches not judged; re-ask them)`),要先用 `--ids-file` 重問這些題,才能把 PASS 當成「完全相同」。沒有 `context_sha` 的舊檔(沒用 `--include-context` 跑的)直接拒絕。
+`--require-identical` 改跑一致性檢查(不出統計報告):同路由題的 core(前 top_k 段)、附加段落(超過 top_k 的段落)與 `context_sha` 必須全部相同,兩邊逐題與整體的 `graph_strategies_applied` 也必須相同;invalid 題、只出現在一邊的題同樣算失敗。任何不同都列出明細並以結束碼 1 結束。路由不同的題另外列出,不判失敗:這時 PASS 會註明有幾題沒判(`identity: PASS (N route mismatches not judged; check them)`)。有意圖 LLM 的 backend(bd8f8dc 以前)要先用 `--ids-file` 重問這些題,才能把 PASS 當成「完全相同」;拿掉之後路由只隨程式碼或詞庫改變,路由不同就是真的不同。沒有 `context_sha` 的舊檔(沒用 `--include-context` 跑的)直接拒絕。
 
 ```bash
 uv run python ab_compare.py results_quick/control.json results_quick/treatment.json --require-identical

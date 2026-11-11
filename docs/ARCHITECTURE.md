@@ -196,8 +196,7 @@ backend 只在啟動時讀一次 `rag_meta.serving` 中 `RAG_ENV` 那一列。`R
 ```mermaid
 flowchart TD
     Q["問題"] --> REF["經文引用偵測<br/>ragcommon.refs"]
-    Q --> INT["意圖分類（LLM）<br/>偵測到節引用時強制 verse_lookup"]
-    REF & INT --> SIG["信號偵測<br/>契約的路由詞表 v2 + ragcommon.routing 比對器"]
+    REF --> SIG["信號偵測<br/>契約的路由詞表 v2 + ragcommon.routing 比對器"]
     SIG --> RT{"R1–R6 / fallback"}
     RT --> POOL["候選池<br/>（各帶策略先驗 weight）"]
     POOL --> RR["bge-reranker-v2-m3<br/>對整個候選池打分"]
@@ -230,7 +229,7 @@ flowchart TD
 | R1 | 有「書＋章＋節」 | `verse_direct`（PG 直查）＋所屬段落 `verse_owner` ＋ dense 補滿 k；查無結果時改走 R2 |
 | R5 | 有章引用且點名多卷 | 同下方 R5 |
 | R2 | 有「書＋章」、沒有節 | `sql_chapter`（設定 0.9，實際 1.0）＋ dense（0.6）；再依 §6.4 換成章級 block |
-| R5 | 點名多卷，或意圖是 cross_reference | dense（0.65）＋只有章的引用時加 `sql_chapter`（設定 0.85，實際 1.0）＋ `book_anchor` ＋ `sql_supplement`（0.4）；再依 §6.4 換成章級 block |
+| R5 | 點名多卷 | dense（0.65）＋只有章的引用時加 `sql_chapter`（設定 0.85，實際 1.0）＋ `book_anchor` ＋ `sql_supplement`（0.4）；再依 §6.4 換成章級 block |
 | R3 | 兩個以上人物 | dense（0.65，不拉平 dense 臂的先驗）＋ `book_anchor` ＋ `sql_supplement`（0.5） |
 | R4 | 事件觸發詞 | 同 R3，另外啟用事件附加槽 |
 | R6 | 地名 | 同 R3 |
@@ -285,7 +284,7 @@ flowchart TD
 - 路由是 R4 或 R5；
 - top-k 已滿；
 - `use_graph` 開啟，且 `graph_strategies` 含 `"event_registry"`（預設 `["event_registry"]`）；
-- 問題原文（遮掉書名後）含有註冊表的觸發詞：先比 `pdf_terms`，再比外部別名。LLM 的 keywords 不能觸發。
+- 問題原文（遮掉書名後）含有註冊表的觸發詞：先比 `pdf_terms`，再比外部別名。
 
 行為：
 

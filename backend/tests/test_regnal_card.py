@@ -136,8 +136,8 @@ def client(layer, monkeypatch):
     context.install(context.make_active(BUILD, LEXICON, (), layer), Handshake(BUILD.build_id, (), True))
     seen = {"chats": []}
 
-    async def intent(question):
-        return {"type": "person", "entities": [], "verse_refs": [], "keywords": [], "rejected_refs": []}
+    def intent(question):
+        return {"type": "person", "verse_refs": [], "rejected_refs": []}
 
     async def retrieve(**kwargs):
         hit = {"id": "ps:2ki.8.16", "kind": "passage", "book_name": "列王紀下", "chapter_num": 8,

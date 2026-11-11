@@ -38,14 +38,13 @@ rag_meta.serving（env → build_id, 映像）─→ backend 啟動時讀取並�
 
 查詢（線上，backend）
 使用者查詢
-    ├─ 1. 經文引用偵測（ragcommon.refs）
-    ├─ 2. 意圖分類（LLM）
+    ├─ 經文引用偵測（ragcommon.refs）
     ▼
 信號偵測（契約的路由詞表）
     ├─ 書＋章＋節            → R1: PG 直查，不重排
     ├─ 書＋章，且點名多卷     → R5
     ├─ 書＋章                → R2: 該章段落 ＋ dense
-    ├─ 多卷或 cross_reference → R5: dense ＋ 章段落 ＋ book_anchor ＋ SQL 補充
+    ├─ 多卷                  → R5: dense ＋ 章段落 ＋ book_anchor ＋ SQL 補充
     ├─ 兩個以上人物          → R3: dense ＋ book_anchor ＋ SQL 補充
     ├─ 事件觸發詞            → R4: 同 R3 ＋ 事件附加槽
     ├─ 地名                  → R6: 同 R3
@@ -166,7 +165,7 @@ Bible_RAG/
 │   ├── database/               # PG（search_path = b{build_id}）、Qdrant、節單位組裝
 │   └── utils/
 │       ├── signal_detector.py  # 路由信號（契約的路由詞表）與決策樹
-│       ├── intent_classifier.py# LLM 意圖分類
+│       ├── intent_classifier.py# 依問句的經文引用判定 verse_lookup／topic（不呼叫 LLM）
 │       ├── verse_parser.py     # 經文引用解析（ragcommon.refs）
 │       ├── embedder.py         # BGE-M3 查詢編碼
 │       ├── reranker.py         # BGE Reranker v2
@@ -271,7 +270,7 @@ Bible_RAG/
       "context": null
     }
   ],
-  "intent": {"type": "event", "entities": ["保羅"], "verse_refs": [], "rejected_refs": []},
+  "intent": {"type": "topic", "entities": [], "verse_refs": [], "rejected_refs": []},
   "retrieval_stats": {
     "route_used": "R4",
     "strategies_used": ["semantic", "sql_supplement"],

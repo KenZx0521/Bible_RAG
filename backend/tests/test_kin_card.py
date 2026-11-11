@@ -51,8 +51,8 @@ def _graph(monkeypatch, **answers) -> G.FakeGraph:
     return G.use(monkeypatch, G.FakeGraph(answers))
 
 
-def _build(question, entities=(), pool=(), lexicon=LEXICON):
-    return asyncio.run(kin_card.build(question, list(entities), list(pool), lexicon, "b1"))
+def _build(question, pool=(), lexicon=LEXICON):
+    return asyncio.run(kin_card.build(question, list(pool), lexicon, "b1"))
 
 
 def _masked(question):
@@ -213,14 +213,6 @@ def test_the_question_literal_names_are_looked_up_in_the_persons_surfaces(monkey
     _build("雅各的父親是誰")
 
     assert graph.calls[0][0] == "kin_persons" and graph.calls[0][1]["surfaces"] == ["雅各"]
-
-
-def test_an_intent_entity_counts_only_when_it_is_exactly_a_name(monkeypatch):
-    graph = _graph(monkeypatch)
-
-    _build("以掃的父親是誰", entities=["雅各", "雅各的家", "以色列人的祖先", "雅"])
-
-    assert graph.calls[0][1]["surfaces"] == ["以掃", "雅各"]
 
 
 def test_no_name_at_all_sends_no_cypher(monkeypatch):
@@ -580,14 +572,6 @@ def test_a_name_with_nothing_asked_of_it_is_not_walked(monkeypatch):
     _build("約瑟的兒子瑪拿西的兒子是誰")
 
     assert [params["x"] for name, params in graph.calls if name == "kin_down"] == [ISAAC]
-
-
-def test_a_pronoun_sends_no_cypher_whoever_the_intent_names(monkeypatch):
-    graph = _graph(monkeypatch, kin_persons=[_person(JACOB, "雅各")], kin_up=[_path(UP["isaac"])])
-
-    outcome = _build("他的父親是誰", entities=["雅各"])
-
-    assert graph.calls == [] and outcome.skip_reason == kin_card.NO_CUE
 
 
 def test_same_name_lists_everyone_and_walks_no_edge_template(monkeypatch):

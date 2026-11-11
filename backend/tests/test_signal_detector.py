@@ -51,10 +51,9 @@ def lexicon():
     return routing.parse_lexicon(DOC)
 
 
-def _signals(lexicon, text, verse_refs=(), intent="topic", entities=(), keywords=None):
+def _signals(lexicon, text, verse_refs=()):
     book_ids = {b.full_name: b.book_id for b in lexicon.books}
-    return detect_signals(text, list(verse_refs), intent, list(entities), lexicon, book_ids,
-                          keywords)
+    return detect_signals(text, list(verse_refs), lexicon, book_ids)
 
 
 @pytest.fixture(scope="module")
@@ -170,15 +169,14 @@ def test_divine_titles_count_by_their_route_types(lexicon):
     assert _signals(lexicon, "耶穌和摩西").route == "R3"
 
 
-@pytest.mark.parametrize("question, entities, event", [
-    ("救主耶穌被釘十字架的經過？", [], "ev0027"),
-    ("耶穌在山上寶訓中對基督徒有何教導？", [], "ev0016"),
-    ("人子耶穌在客西馬尼禱告的內容？", [], "ev0011"),
-    ("主耶穌在客西馬尼禱告時說了什麼？", ["耶穌"], "ev0011"),
+@pytest.mark.parametrize("question, event", [
+    ("救主耶穌被釘十字架的經過？", "ev0027"),
+    ("耶穌在山上寶訓中對基督徒有何教導？", "ev0016"),
+    ("人子耶穌在客西馬尼禱告的內容？", "ev0011"),
+    ("主耶穌在客西馬尼禱告時說了什麼？", "ev0011"),
 ])
-def test_two_titles_of_jesus_are_one_person_and_keep_the_event_route(lexicon, question,
-                                                                       entities, event):
-    s = _signals(lexicon, question, intent="event", entities=entities)
+def test_two_titles_of_jesus_are_one_person_and_keep_the_event_route(lexicon, question, event):
+    s = _signals(lexicon, question)
 
     assert s.detected_persons == ("耶穌",) and s.detected_events == (event,)
     assert s.route == "R4"
@@ -191,19 +189,10 @@ def test_a_name_inside_an_event_phrase_is_not_counted(lexicon):
     assert s.route == "R4"
 
 
-def test_llm_entities_feed_names_and_keywords_feed_events(lexicon):
-    s = _signals(lexicon, "他們的關係如何？", intent="person", entities=["摩西", "亞倫", "十誡"],
-                 keywords=["十誡", "猶大"])
+def test_a_question_with_no_event_term_is_no_event_however_it_is_worded(lexicon):
+    s = _signals(lexicon, "那件事怎麼發生的")
 
-    assert s.detected_persons == ("摩西", "亞倫")
-    assert s.detected_events == ("ev0018",)
-    assert s.route == "R3"
-
-
-def test_an_event_intent_without_an_event_term_keeps_the_llm_keywords(lexicon):
-    s = _signals(lexicon, "那件事怎麼發生的", intent="event", keywords=["某事"])
-
-    assert s.detected_events == ("某事",) and s.route == "R4"
+    assert s.detected_events == () and s.route == "fallback"
 
 
 def test_book_ids_follow_the_detected_names(lexicon):
@@ -214,25 +203,25 @@ def test_book_ids_follow_the_detected_names(lexicon):
     assert s.route == "R5"
 
 
-def test_an_empty_lexicon_routes_on_verse_references_and_intent_only():
+def test_an_empty_lexicon_routes_on_verse_references_only():
     lexicon = routing.parse_lexicon(document())
 
     assert _signals(lexicon, "亞伯拉罕和大衛").route == "fallback"
-    assert _signals(lexicon, "q", intent="cross_reference").route == "R5"
+    assert _signals(lexicon, "q", [VerseRef("jhn", "約翰福音", 3, 16, 16)]).route == "R1"
 
 
-@pytest.mark.parametrize("signals, intent, route", [
-    (QuerySignals(has_book_chapter_verse=True, has_multi_book=True), "", "R1"),
-    (QuerySignals(has_book_chapter=True, has_multi_book=True), "", "R5"),
-    (QuerySignals(has_book_chapter=True), "", "R2"),
-    (QuerySignals(), "cross_reference", "R5"),
-    (QuerySignals(has_multi_person=True, has_event_keyword=True), "", "R3"),
-    (QuerySignals(has_event_keyword=True, has_place=True), "", "R4"),
-    (QuerySignals(has_place=True), "", "R6"),
-    (QuerySignals(), "topic", "fallback"),
+@pytest.mark.parametrize("signals, route", [
+    (QuerySignals(has_book_chapter_verse=True, has_multi_book=True), "R1"),
+    (QuerySignals(has_book_chapter=True, has_multi_book=True), "R5"),
+    (QuerySignals(has_book_chapter=True), "R2"),
+    (QuerySignals(has_multi_book=True), "R5"),
+    (QuerySignals(has_multi_person=True, has_event_keyword=True), "R3"),
+    (QuerySignals(has_event_keyword=True, has_place=True), "R4"),
+    (QuerySignals(has_place=True), "R6"),
+    (QuerySignals(), "fallback"),
 ])
-def test_route_priority(signals, intent, route):
-    assert select_route(signals, intent) == route
+def test_route_priority(signals, route):
+    assert select_route(signals) == route
 
 
 def test_verse_references_set_the_verse_signals(lexicon):
@@ -248,8 +237,7 @@ def test_detected_signals_are_identical_across_hash_seeds(tmp_path):
         "from utils.signal_detector import detect_signals\n"
         f"lex = routing.load_lexicon({str(path)!r})\n"
         "ids = {b.full_name: b.book_id for b in lex.books}\n"
-        "s = detect_signals('摩西和亞倫在亞伯拉罕與猶大經歷十誡、大衛與歌利亞', [], 'event',\n"
-        "                   ['摩西', '大利烏', '古列'], lex, ids, ['十誡', '保羅歸主'])\n"
+        "s = detect_signals('摩西和亞倫在亞伯拉罕與猶大經歷十誡、大衛與歌利亞', [], lex, ids)\n"
         "print(s.detected_events, s.detected_places, s.detected_persons)\n"
     )
     pythonpath = os.pathsep.join([str(BACKEND), str(REPO / "packages")])

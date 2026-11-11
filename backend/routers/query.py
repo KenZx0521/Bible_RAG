@@ -160,20 +160,18 @@ async def rag_query(req: QueryRequest):
     """
     主 RAG 查詢端點。
 
-    流程: 經文引用偵測 → 意圖分類 → 路由檢索 →（無明寫引用的路由）走圖與親屬卡 → 去重 → 重排序 →
+    流程: 經文引用偵測 → 路由檢索 →（無明寫引用的路由）走圖與親屬卡 → 去重 → 重排序 →
     上下文組裝 →（王朝年代題）年表卡,（其餘的創世記年歲題）年歲卡,（親屬題）親屬卡 →（開啟時）
     關鍵字留一格 → 回答生成 → 段號誤當章號的引用改正。
     """
     context.active()  # 503 before any work when no build is served
     if req.semantic_only:
-        intent = {"type": "semantic_only", "entities": [], "verse_refs": [], "keywords": [],
-                  "rejected_refs": []}
+        intent = {"type": "semantic_only", "verse_refs": [], "rejected_refs": []}
     else:
-        intent = await classify_intent(req.question)
+        intent = classify_intent(req.question)
 
     results, stats = await retrieve_and_rerank(
-        query=req.question, verse_refs=intent["verse_refs"], intent_type=intent["type"],
-        entity_names=intent["entities"], top_k=req.top_k, keywords=intent.get("keywords"),
+        query=req.question, verse_refs=intent["verse_refs"], top_k=req.top_k,
         use_graph=req.use_graph, semantic_only=req.semantic_only,
         fusion_alpha=req.fusion_alpha, graph_strategies=req.graph_strategies,
     )
@@ -189,7 +187,7 @@ async def rag_query(req: QueryRequest):
     return QueryResponse(
         answer=answer,
         sources=_sources(req, results),
-        intent=IntentInfo(type=intent["type"], entities=intent["entities"],
+        intent=IntentInfo(type=intent["type"],
                           verse_refs=[ref.display for ref in intent["verse_refs"]],
                           rejected_refs=intent.get("rejected_refs", [])),
         retrieval_stats=RetrievalStats(**stats),

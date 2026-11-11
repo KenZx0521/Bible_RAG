@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Bible RAG API",
     description="聖經 RAG 後端 API — 讀取 rag_meta.serving 指定的 build（PostgreSQL schema、"
-                "Qdrant collection、契約檔），透過意圖偵測路由多策略檢索並生成回答。",
+                "Qdrant collection、契約檔），依問句的經文引用與路由詞表選擇多策略檢索並生成回答。",
     version="0.2.0",
     lifespan=lifespan,
 )

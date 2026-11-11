@@ -220,8 +220,8 @@ def pipeline(monkeypatch, lookups):
     context.install(context.make_active(BUILD, LEXICON, (), keywords=ks.build(RECORDS)),
                     Handshake(BUILD.build_id, (), strict=True))
 
-    async def intent(question):
-        return {"type": "topic", "entities": [], "verse_refs": [], "keywords": [], "rejected_refs": []}
+    def intent(question):
+        return {"type": "topic", "verse_refs": [], "rejected_refs": []}
 
     async def retrieve(**kwargs):
         return [dict(EPH, source_strategy="hybrid_hybrid", found_by=["hybrid_hybrid"])], {

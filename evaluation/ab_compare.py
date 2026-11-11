@@ -22,8 +22,10 @@ same-route question must keep its core top-k, its appended passages and its
 context digest (runs need quick_retrieval_eval.py --include-context), and both
 runs must apply the same graph strategies. Differences are listed and the exit
 code is 1. Route mismatches are listed apart and not judged: PASS (exit 0)
-names how many there were; re-ask them (quick_retrieval_eval.py --ids-file)
-before reading the PASS as "identical".
+names how many there were; check them before reading the PASS as "identical":
+on a backend with the intent LLM (bd8f8dc and earlier) re-ask them
+(quick_retrieval_eval.py --ids-file), without it a route differs only when the
+code or the lexicon does.
 
 Usage (from evaluation/):
     uv run python ab_compare.py results_quick/dense5.json results_quick/aux.json \\
@@ -112,7 +114,7 @@ def _identity_verdict(report: dict) -> str:
     n = len(report["route_mismatch"])
     if not n:
         return "PASS"
-    return f"PASS ({n} route mismatch{'es' if n > 1 else ''} not judged; re-ask them)"
+    return f"PASS ({n} route mismatch{'es' if n > 1 else ''} not judged; check them)"
 
 
 def _save(report: dict, label: str | None) -> None:

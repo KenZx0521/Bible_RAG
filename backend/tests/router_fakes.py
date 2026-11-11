@@ -70,5 +70,5 @@ def no_supplement(monkeypatch) -> None:
 
 
 def run(**kwargs) -> tuple[list[dict], dict]:
-    defaults = {"verse_refs": [], "intent_type": "topic", "entity_names": []}
+    defaults = {"verse_refs": []}
     return asyncio.run(router.retrieve_and_rerank(**{**defaults, **kwargs}))

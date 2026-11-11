@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Sequence
 
 from config import settings
 from database import neo4j_db
@@ -70,10 +69,10 @@ async def _walk(query: str, pool: list[dict], strategies: list[str], errors: dic
     return walk
 
 
-async def _kin(query: str, entities: Sequence[str], pool: list[dict], strategies: list[str],
-               errors: dict[str, str], active: context.Active) -> KinCard:
+async def _kin(query: str, pool: list[dict], strategies: list[str], errors: dict[str, str],
+               active: context.Active) -> KinCard:
     try:
-        card = await kin_card.build(query, entities, pool, active.lexicon, active.build.build_id)
+        card = await kin_card.build(query, pool, active.lexicon, active.build.build_id)
     except Exception as exc:  # noqa: BLE001 — the question goes on without the card
         logger.warning("kin_card failed: %r", exc)
         return kin_card.skipped(ERROR)
@@ -90,21 +89,21 @@ async def _ready_or_skip() -> str | None:
     return None if status.ready else status.state
 
 
-async def run(query: str, entities: Sequence[str], pool: list[dict], strategies: list[str],
-              errors: dict[str, str], allowed: frozenset[str], active: context.Active) -> GraphSide:
+async def run(query: str, pool: list[dict], strategies: list[str], errors: dict[str, str],
+              allowed: frozenset[str], active: context.Active) -> GraphSide:
     """What the graph adds to ``pool`` (in place) and the card it found for the prompt. Never raises."""
     try:
-        return await _run(query, entities, pool, strategies, errors, allowed, active)
+        return await _run(query, pool, strategies, errors, allowed, active)
     except Exception as exc:  # noqa: BLE001 — the question goes on without the graph
         logger.warning("graph side failed: %r", exc)
         return GraphSide(Walk(skip_reason=ERROR) if WALK in allowed else None,
                          kin_card.skipped(ERROR) if KIN in allowed else None)
 
 
-async def _run(query: str, entities: Sequence[str], pool: list[dict], strategies: list[str],
-               errors: dict[str, str], allowed: frozenset[str], active: context.Active) -> GraphSide:
+async def _run(query: str, pool: list[dict], strategies: list[str], errors: dict[str, str],
+               allowed: frozenset[str], active: context.Active) -> GraphSide:
     walks = WALK in allowed
-    asks = (KIN in allowed and kin_card.wants(query, entities, active.lexicon)
+    asks = (KIN in allowed and kin_card.wants(query, active.lexicon)
             and not other_card_claims(query, active))
     if not walks and not asks:
         return GraphSide()
@@ -117,4 +116,4 @@ async def _run(query: str, entities: Sequence[str], pool: list[dict], strategies
         return GraphSide(walk)
     if walk is not None and walk.skip_reason == neo4j_db.TIMEOUT:      # one timeout skips the whole question
         return GraphSide(walk, kin_card.skipped(neo4j_db.TIMEOUT))
-    return GraphSide(walk, await _kin(query, entities, pool, strategies, errors, active))
+    return GraphSide(walk, await _kin(query, pool, strategies, errors, active))

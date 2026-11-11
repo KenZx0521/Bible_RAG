@@ -57,7 +57,7 @@ def _forced(monkeypatch, route, pool=None):
 
 
 def _run(**kwargs):
-    defaults = {"query": KIN_QUESTION, "verse_refs": [], "intent_type": "topic", "entity_names": [], "top_k": 5}
+    defaults = {"query": KIN_QUESTION, "verse_refs": [], "top_k": 5}
     return asyncio.run(router.retrieve_and_rerank(**{**defaults, **kwargs}))
 
 
@@ -335,8 +335,8 @@ def test_a_graph_that_is_not_ready_is_not_walked(served, monkeypatch, state, rea
 def http(served, monkeypatch):
     seen = {"chats": []}
 
-    async def intent(question):
-        return {"type": "person", "entities": [], "verse_refs": [], "keywords": [], "rejected_refs": []}
+    def intent(question):
+        return {"type": "person", "verse_refs": [], "rejected_refs": []}
 
     class FakeLlm:
         async def chat(self, messages, temperature, max_tokens):
