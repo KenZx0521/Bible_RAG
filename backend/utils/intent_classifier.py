@@ -1,88 +1,19 @@
-"""
-Intent classifier using the configured LLM provider.
-Hybrid approach: regex for verse refs + LLM for semantic intent.
-"""
+"""What a question asks for, read from its text: the scripture references it writes."""
 
-import json
 import logging
 
-from utils.llm import get_llm_client
-from utils.verse_parser import find_verse_references
+from utils.question_refs import find_verse_references
 
 logger = logging.getLogger(__name__)
 
-INTENT_TYPES = ["verse_lookup", "topic", "person", "event", "cross_reference"]
 
-CLASSIFICATION_PROMPT = """你是一個聖經問題分類器。根據使用者的問題，回傳 JSON 格式的分類結果。
-
-分類類型:
-- verse_lookup: 查詢特定經文內容（包含明確經文引用）
-- topic: 查詢聖經主題、教義、概念
-- person: 查詢聖經人物相關資訊
-- event: 查詢聖經事件
-- cross_reference: 涉及不同書卷間的對照、引用、預表
-
-請回傳以下 JSON 格式（不要包含其他文字）:
-{
-  "intent": "類型",
-  "entities": ["相關人名/地名/事件名"],
-  "keywords": ["關鍵詞"]
-}
-
-範例:
-問題: "保羅歸主的經過為何？"
-{"intent": "event", "entities": ["保羅"], "keywords": ["歸主", "經過"]}
-
-問題: "摩西與葉忒羅的關係如何影響以色列人的治理？"
-{"intent": "person", "entities": ["摩西", "葉忒羅", "以色列人"], "keywords": ["關係", "治理"]}
-
-問題: "彼得前書如何引用以賽亞書論房角石？"
-{"intent": "cross_reference", "entities": ["彼得前書", "以賽亞書"], "keywords": ["引用", "房角石"]}
-
-問題: "根據創世記第1章，神如何按次序創造天地萬物？"
-{"intent": "topic", "entities": [], "keywords": ["創造", "次序", "天地萬物"]}
-
-問題: "根據羅馬書3:23-24，保羅如何描述世人的光景和神的救贖？"
-{"intent": "verse_lookup", "entities": ["保羅"], "keywords": ["世人", "光景", "救贖"]}
-
-現在分類這個問題:
-"""
-
-
-async def _llm_intent(question: str) -> tuple[str, list[str], list[str]]:
-    """(intent, entities, keywords) from the LLM; raises when the call fails."""
-    llm = get_llm_client()
-    response_text = await llm.chat(
-        messages=[
-            {"role": "user", "content": CLASSIFICATION_PROMPT + f'問題: "{question}"'},
-        ],
-        temperature=0.1,
-        # gemma4 *-it 是 reasoning LLM，會先產出約 800-900 個隱藏 thinking
-        # token 才輸出 content。上限太低會讓 thinking 吃光額度、content 回空
-        # 字串，導致下方靜默 fallback 成預設的 "topic"。
-        max_tokens=4096,
-    )
-    parsed = _extract_json(response_text)
-    if not parsed:
-        return "topic", [], []
-    raw_intent = parsed.get("intent", "topic")
-    intent_type = raw_intent if raw_intent in INTENT_TYPES else "topic"
-    return intent_type, parsed.get("entities", []), parsed.get("keywords", [])
-
-
-async def classify_intent(question: str) -> dict:
+def classify_intent(question: str) -> dict:
     """
-    Classify the user's question intent.
-
-    Hybrid approach:
-    1. Reference detection (ragcommon.refs, checked against the PDF verse grid)
-    2. LLM classification for semantic intent
+    The question's references (ragcommon.refs, checked against the PDF verse grid).
 
     Returns:
         {
-            "type": str,  # one of INTENT_TYPES
-            "entities": list[str],
-            "keywords": list[str],
+            "type": str,  # "verse_lookup" when a reference was read, else "topic"
             "verse_refs": list[VerseRef],
             "rejected_refs": list[str],  # reference-shaped text naming no verse
         }
@@ -92,42 +23,8 @@ async def classify_intent(question: str) -> dict:
     rejected = [r.raw for r in found.rejected]
     if rejected:
         logger.warning("References naming no verse, not routed: %s", rejected)
-
-    try:
-        intent_type, entities, keywords = await _llm_intent(question)
-    except Exception as e:
-        logger.warning(f"LLM intent classification failed: {e}")
-        intent_type, entities, keywords = "topic", [], []
-
-    # A verse reference makes it verse_lookup unless the LLM said cross_reference
-    if verse_refs and intent_type not in ("verse_lookup", "cross_reference"):
-        intent_type = "verse_lookup"
-
     return {
-        "type": intent_type,
-        "entities": entities,
-        "keywords": keywords,
+        "type": "verse_lookup" if verse_refs else "topic",
         "verse_refs": verse_refs,
         "rejected_refs": rejected,
     }
-
-
-def _extract_json(text: str) -> dict | None:
-    """Extract first JSON object from text."""
-    # Try direct parse
-    text = text.strip()
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        pass
-
-    # Try to find JSON in text
-    start = text.find("{")
-    end = text.rfind("}") + 1
-    if start >= 0 and end > start:
-        try:
-            return json.loads(text[start:end])
-        except json.JSONDecodeError:
-            pass
-
-    return None

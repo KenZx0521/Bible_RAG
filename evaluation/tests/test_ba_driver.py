@@ -18,6 +18,7 @@ import ast
 import asyncio
 import io
 import json
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -33,11 +34,13 @@ import _ba_checks as ck  # noqa: E402
 import _ba_io as bio  # noqa: E402
 import ba_driver as drv  # noqa: E402
 
+LAST_LLM_INTENT = "bd8f8dc"   # the classifier this experiment ran on; the backend has no intent LLM since
 
-def backend_module(rel, name, **inject):
-    """A backend module from its repo source; imports of config / utils.* are dropped and
-    the names they bound come from ``inject``."""
-    tree = ast.parse((_REPO / "backend" / rel).read_text(encoding="utf-8"))
+
+def backend_module(rel, name, source=None, **inject):
+    """A backend module from its repo source (or ``source``); imports of config / utils.* are
+    dropped and the names they bound come from ``inject``."""
+    tree = ast.parse(source or (_REPO / "backend" / rel).read_text(encoding="utf-8"))
     tree.body = [n for n in tree.body if not (
         isinstance(n, ast.ImportFrom) and (n.module or "").split(".")[0] in ("config", "utils"))]
     mod = types.ModuleType(name)
@@ -67,7 +70,9 @@ def generator_module(client):
 
 def intent_module(client):
     found = types.SimpleNamespace(refs=[], rejected=[])
-    return backend_module("utils/intent_classifier.py", "fake_intent",
+    source = subprocess.run(["git", "show", f"{LAST_LLM_INTENT}:backend/utils/intent_classifier.py"],
+                            cwd=_REPO, check=True, capture_output=True, text=True).stdout
+    return backend_module("utils/intent_classifier.py", "fake_intent", source=source,
                           get_llm_client=lambda: client,
                           find_verse_references=lambda q: found)
 

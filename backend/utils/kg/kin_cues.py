@@ -127,9 +127,9 @@ class Reading:
     cue: Cue | None = None                        # everything it asks; None: no kinship
     of_name: Mapping[int, Cue] | None = None      # the offset a masked name ends at -> what is asked of it
 
-    def of(self, end: int | None) -> Cue | None:
-        """What is asked of the name ending at ``end`` (None: an intent entity the question does not write)."""
-        return (self.of_name or {}).get(end) if end is not None else None
+    def of(self, end: int) -> Cue | None:
+        """What is asked of the name ending at ``end``."""
+        return (self.of_name or {}).get(end)
 
 
 def _asks_relation(text: str) -> bool:

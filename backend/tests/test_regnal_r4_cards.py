@@ -89,8 +89,8 @@ def serve(name: str, layer, gen_layer=None) -> dict:
     seeds = {r["item"]: r.get("content") or "" for r in _jsonl(d / "gen_seed.jsonl") if r.get("type") == "answer"}
     now: dict = {}
 
-    async def intent(question):
-        return {"type": "person", "entities": [], "verse_refs": [], "keywords": [], "rejected_refs": []}
+    def intent(question):
+        return {"type": "person", "verse_refs": [], "rejected_refs": []}
 
     async def retrieve(**kwargs):
         return [dict(s) for s in now["sources"]], {"strategies_used": ["semantic"], "route_used": "R4"}

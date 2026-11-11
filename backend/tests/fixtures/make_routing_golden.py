@@ -2,8 +2,8 @@
 
 The golden (``routing_r2_gt.json``) names the route layer whose ``routing_lexicon.json``
 it was computed on, and holds per question the persons, places, events and books the
-detector found and the route they select with the parsed verse references but no
-LLM output (intent "", no entities, no keywords). test_routing_golden.py replays it.
+detector found and the route they select with the parsed verse references.
+test_routing_golden.py replays it.
 Regenerate it when a new route layer is meant to change routing, and review the diff.
 
 Run it with the backend environment, from the repository root, on the route layer
@@ -33,7 +33,7 @@ OUT = Path(__file__).resolve().parent / "routing_r2_gt.json"
 
 def signals_row(lexicon: routing.RoutingLexicon, question: str) -> dict:
     book_ids = {b.full_name: b.book_id for b in lexicon.books}
-    s = detect_signals(question, parse_verse_references(question), "", [], lexicon, book_ids)
+    s = detect_signals(question, parse_verse_references(question), lexicon, book_ids)
     return {"persons": list(s.detected_persons), "places": list(s.detected_places),
             "events": list(s.detected_events), "books": list(s.detected_book_names),
             "route": s.route}

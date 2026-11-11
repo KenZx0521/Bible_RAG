@@ -98,7 +98,7 @@ def test_the_walk_on_the_server_is_the_arithmetic_on_the_files(small, monkeypatc
 def test_a_card_on_the_real_graph_says_what_the_text_says(question, says, verses):
     pool = [{"id": "x", "unit_refs": [{"unit_key": unit} for unit in verses]}]
 
-    card = _live(lambda: kin_card.build(question, [], pool, _lexicon(), BUILD))
+    card = _live(lambda: kin_card.build(question, pool, _lexicon(), BUILD))
 
     assert card.skip_reason is None and says in card.text and len(card.text) <= settings.kin_card_max_chars
     assert "父親" not in card.text and card.evidence and card.passages
@@ -114,7 +114,7 @@ def test_a_card_on_the_real_graph_says_what_the_text_says(question, says, verses
     ("閃的兒子是誰", "以攔", "迦南"),
 ])
 def test_what_review_caught_the_card_getting_wrong(question, says, never):
-    card = _live(lambda: kin_card.build(question, [], [], _lexicon(), BUILD))
+    card = _live(lambda: kin_card.build(question, [], _lexicon(), BUILD))
     assert card.skip_reason is None and says in card.text and never not in card.text
 
 
@@ -123,22 +123,22 @@ def test_what_review_caught_the_card_getting_wrong(question, says, never):
     ("羅波安和亞比雅是什麼關係", "羅波安", "亞比雅"), ("撒迦利亞和約翰是什麼關係", "撒迦利亞", "約翰"),
 ])
 def test_two_names_get_the_pair_one_edge_apart(question, first, second):
-    card = _live(lambda: kin_card.build(question, [], [], _lexicon(), BUILD))
+    card = _live(lambda: kin_card.build(question, [], _lexicon(), BUILD))
     assert card.hops == 1 and "共 1 跳" in card.text and first in card.text and second in card.text
 
 
 def test_the_cited_verse_of_absalom_writes_both_names():
-    card = _live(lambda: kin_card.build("押沙龍的父親是誰", [], [], _lexicon(), BUILD))
+    card = _live(lambda: kin_card.build("押沙龍的父親是誰", [], _lexicon(), BUILD))
     assert "大衛 是 押沙龍 的父母之一（撒母耳記下 3:2）" not in card.text
 
 
 def test_no_person_of_that_name_gives_no_card():
-    card = _live(lambda: kin_card.build("葉忒羅的父親是誰", [], [], _lexicon(), BUILD))
+    card = _live(lambda: kin_card.build("葉忒羅的父親是誰", [], _lexicon(), BUILD))
     assert card.text is None and card.skip_reason == kin_card.NO_PERSON and card.n_cypher == 1
 
 
 def test_a_large_family_still_fits_the_card():
-    card = _live(lambda: kin_card.build("雅各的後代有誰", [], [], _lexicon(), BUILD))
+    card = _live(lambda: kin_card.build("雅各的後代有誰", [], _lexicon(), BUILD))
     assert card.lines <= settings.kin_card_max_rows and len(card.text) <= settings.kin_card_max_chars
 
 

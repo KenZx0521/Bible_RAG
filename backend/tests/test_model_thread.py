@@ -46,7 +46,7 @@ def test_ranking_leaves_the_event_loop_free(active, monkeypatch):
     monkeypatch.setattr(reranker, "rerank", slow)
 
     (ranked, _), stall = asyncio.run(_longest_stall_during(router.retrieve_and_rerank(
-        "平安是什麼", [], "topic", [])))
+        "平安是什麼", [])))
 
     assert [c["id"] for c in ranked] == ["ps:a.1.1"]
     assert stall < BLOCK_S / 2

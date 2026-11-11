@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from ragcommon import routing
-from ragcommon.tests.lexicon_doc import document, event, exclusion, name, target, term
+from ragcommon.tests.lexicon_doc import book, document, event, exclusion, name, target, term
 from router_fakes import BOOK_TERMS
 from utils.signal_detector import QuerySignals, detect_signals, select_route
 from utils.verse_parser import VerseRef
@@ -51,10 +51,72 @@ def lexicon():
     return routing.parse_lexicon(DOC)
 
 
-def _signals(lexicon, text, verse_refs=(), intent="topic", entities=(), keywords=None):
+def _signals(lexicon, text, verse_refs=()):
     book_ids = {b.full_name: b.book_id for b in lexicon.books}
-    return detect_signals(text, list(verse_refs), intent, list(entities), lexicon, book_ids,
-                          keywords)
+    return detect_signals(text, list(verse_refs), lexicon, book_ids)
+
+
+@pytest.fixture(scope="module")
+def form_lexicon():
+    forms = [book(s, bid, full) for s, bid, full in (
+        ("提前", "1ti", "提摩太前書"), ("王上", "1ki", "列王紀上"), ("王下", "2ki", "列王紀下"),
+        ("撒上", "1sa", "撒母耳記上"), ("撒下", "2sa", "撒母耳記下"), ("林前", "1co", "哥林多前書"),
+        ("林後", "2co", "哥林多後書"), ("代上", "1ch", "歷代志上"), ("代下", "2ch", "歷代志下"),
+        ("帖前", "1th", "帖撒羅尼迦前書"), ("彼後", "2pe", "彼得後書"), ("提後", "2ti", "提摩太後書"),
+        ("約一", "1jn", "約翰一書"), ("約二", "2jn", "約翰二書"),
+        ("約三", "3jn", "約翰三書"), ("尼西米記", "neh", "尼希米記"))]
+    return routing.parse_lexicon(document(names=NAMES, divine=DIVINE, aliases=ALIASES, events=EVENTS,
+                                          books=[*BOOK_TERMS, *forms]))
+
+
+@pytest.mark.parametrize("text, books", [
+    ("耶穌提前告訴門徒會發生什麼？", ()), ("大衛王下令攻城", ()), ("把種子撒下", ()), ("樹林前面有什麼", ()),
+    ("殺王上位的人", ()), ("約翰福音記載約三千人", ("約翰福音",))])
+def test_a_short_book_form_inside_ordinary_words_names_no_book(form_lexicon, text, books):
+    assert _signals(form_lexicon, text).detected_book_names == books
+
+
+@pytest.mark.parametrize("text, books", [
+    ("撒上記載大衛的事", ("撒母耳記上",)), ("王上如何記載所羅門？", ("列王紀上",)), ("林前13章講什麼", ("哥林多前書",)),
+    ("提前3:16說什麼", ("提摩太前書",)), ("尼西米記的作者是誰", ("尼希米記",))])
+def test_a_book_form_used_as_a_book_still_names_it(form_lexicon, text, books):
+    assert _signals(form_lexicon, text).detected_book_names == books
+
+
+@pytest.mark.parametrize("text, books", [
+    ("林前和林後的差別", {"哥林多前書", "哥林多後書"}), ("撒上和撒下的主題", {"撒母耳記上", "撒母耳記下"}),
+    ("代上和代下有哪些差異？", {"歷代志上", "歷代志下"}), ("約一、約二、約三的作者", {"約翰一書", "約翰二書", "約翰三書"}),
+    ("提前、提後的作者", {"提摩太前書", "提摩太後書"}), ("帖前的再來", {"帖撒羅尼迦前書"}), ("彼後的假教師", {"彼得後書"}),
+    ("王上哪一章講以利亞？", {"列王紀上"}), ("林前13講什麼", {"哥林多前書"}), ("《林前》13章", {"哥林多前書"}),
+    ("約三4節的意思", {"約翰三書"}), ("保羅在林前說什麼", {"哥林多前書"}), ("歷代下的作者是誰", {"歷代志下"})])
+def test_short_forms_people_really_use_as_books_name_them(form_lexicon, text, books):
+    assert set(_signals(form_lexicon, text).detected_book_names) == books
+
+
+@pytest.mark.parametrize("text, books", [
+    ("時代上的差異", ()), ("世代下的人", ()), ("耶穌提前提到自己要受難嗎？", ()), ("以斯帖記裡王下書廢除計謀", ("以斯帖記",)),
+    ("詩篇約一百五十篇", ("詩篇",)), ("以賽亞書大約三十章以前", ("以賽亞書",))])
+def test_short_forms_inside_ordinary_words_stay_unread(form_lexicon, text, books):
+    assert _signals(form_lexicon, text).detected_book_names == books
+
+
+def test_a_misspelt_book_name_is_read(lexicon):
+    assert _signals(lexicon, "創世紀的主旨是什麼").detected_book_names == ("創世記",)
+
+
+def test_books_named_only_by_their_references_count_as_several_books(lexicon):
+    refs = [VerseRef("mat", "馬太福音", 5), VerseRef("rom", "羅馬書", 8)]
+
+    signals = _signals(lexicon, "太5章和羅8章如何呼應？", verse_refs=refs)
+
+    assert signals.has_multi_book and signals.route == "R5"
+    assert signals.detected_book_ids == ("mat", "rom")
+
+
+def test_a_reference_to_a_book_the_question_names_counts_once(lexicon):
+    signals = _signals(lexicon, "羅馬書8章說什麼", verse_refs=[VerseRef("rom", "羅馬書", 8)])
+
+    assert signals.detected_book_ids == ("rom",) and signals.route == "R2"
 
 
 def test_abraham_is_not_abel(lexicon):
@@ -107,15 +169,14 @@ def test_divine_titles_count_by_their_route_types(lexicon):
     assert _signals(lexicon, "耶穌和摩西").route == "R3"
 
 
-@pytest.mark.parametrize("question, entities, event", [
-    ("救主耶穌被釘十字架的經過？", [], "ev0027"),
-    ("耶穌在山上寶訓中對基督徒有何教導？", [], "ev0016"),
-    ("人子耶穌在客西馬尼禱告的內容？", [], "ev0011"),
-    ("主耶穌在客西馬尼禱告時說了什麼？", ["耶穌"], "ev0011"),
+@pytest.mark.parametrize("question, event", [
+    ("救主耶穌被釘十字架的經過？", "ev0027"),
+    ("耶穌在山上寶訓中對基督徒有何教導？", "ev0016"),
+    ("人子耶穌在客西馬尼禱告的內容？", "ev0011"),
+    ("主耶穌在客西馬尼禱告時說了什麼？", "ev0011"),
 ])
-def test_two_titles_of_jesus_are_one_person_and_keep_the_event_route(lexicon, question,
-                                                                       entities, event):
-    s = _signals(lexicon, question, intent="event", entities=entities)
+def test_two_titles_of_jesus_are_one_person_and_keep_the_event_route(lexicon, question, event):
+    s = _signals(lexicon, question)
 
     assert s.detected_persons == ("耶穌",) and s.detected_events == (event,)
     assert s.route == "R4"
@@ -128,19 +189,10 @@ def test_a_name_inside_an_event_phrase_is_not_counted(lexicon):
     assert s.route == "R4"
 
 
-def test_llm_entities_feed_names_and_keywords_feed_events(lexicon):
-    s = _signals(lexicon, "他們的關係如何？", intent="person", entities=["摩西", "亞倫", "十誡"],
-                 keywords=["十誡", "猶大"])
+def test_a_question_with_no_event_term_is_no_event_however_it_is_worded(lexicon):
+    s = _signals(lexicon, "那件事怎麼發生的")
 
-    assert s.detected_persons == ("摩西", "亞倫")
-    assert s.detected_events == ("ev0018",)
-    assert s.route == "R3"
-
-
-def test_an_event_intent_without_an_event_term_keeps_the_llm_keywords(lexicon):
-    s = _signals(lexicon, "那件事怎麼發生的", intent="event", keywords=["某事"])
-
-    assert s.detected_events == ("某事",) and s.route == "R4"
+    assert s.detected_events == () and s.route == "fallback"
 
 
 def test_book_ids_follow_the_detected_names(lexicon):
@@ -151,25 +203,25 @@ def test_book_ids_follow_the_detected_names(lexicon):
     assert s.route == "R5"
 
 
-def test_an_empty_lexicon_routes_on_verse_references_and_intent_only():
+def test_an_empty_lexicon_routes_on_verse_references_only():
     lexicon = routing.parse_lexicon(document())
 
     assert _signals(lexicon, "亞伯拉罕和大衛").route == "fallback"
-    assert _signals(lexicon, "q", intent="cross_reference").route == "R5"
+    assert _signals(lexicon, "q", [VerseRef("jhn", "約翰福音", 3, 16, 16)]).route == "R1"
 
 
-@pytest.mark.parametrize("signals, intent, route", [
-    (QuerySignals(has_book_chapter_verse=True, has_multi_book=True), "", "R1"),
-    (QuerySignals(has_book_chapter=True, has_multi_book=True), "", "R5"),
-    (QuerySignals(has_book_chapter=True), "", "R2"),
-    (QuerySignals(), "cross_reference", "R5"),
-    (QuerySignals(has_multi_person=True, has_event_keyword=True), "", "R3"),
-    (QuerySignals(has_event_keyword=True, has_place=True), "", "R4"),
-    (QuerySignals(has_place=True), "", "R6"),
-    (QuerySignals(), "topic", "fallback"),
+@pytest.mark.parametrize("signals, route", [
+    (QuerySignals(has_book_chapter_verse=True, has_multi_book=True), "R1"),
+    (QuerySignals(has_book_chapter=True, has_multi_book=True), "R5"),
+    (QuerySignals(has_book_chapter=True), "R2"),
+    (QuerySignals(has_multi_book=True), "R5"),
+    (QuerySignals(has_multi_person=True, has_event_keyword=True), "R3"),
+    (QuerySignals(has_event_keyword=True, has_place=True), "R4"),
+    (QuerySignals(has_place=True), "R6"),
+    (QuerySignals(), "fallback"),
 ])
-def test_route_priority(signals, intent, route):
-    assert select_route(signals, intent) == route
+def test_route_priority(signals, route):
+    assert select_route(signals) == route
 
 
 def test_verse_references_set_the_verse_signals(lexicon):
@@ -185,8 +237,7 @@ def test_detected_signals_are_identical_across_hash_seeds(tmp_path):
         "from utils.signal_detector import detect_signals\n"
         f"lex = routing.load_lexicon({str(path)!r})\n"
         "ids = {b.full_name: b.book_id for b in lex.books}\n"
-        "s = detect_signals('摩西和亞倫在亞伯拉罕與猶大經歷十誡、大衛與歌利亞', [], 'event',\n"
-        "                   ['摩西', '大利烏', '古列'], lex, ids, ['十誡', '保羅歸主'])\n"
+        "s = detect_signals('摩西和亞倫在亞伯拉罕與猶大經歷十誡、大衛與歌利亞', [], lex, ids)\n"
         "print(s.detected_events, s.detected_places, s.detected_persons)\n"
     )
     pythonpath = os.pathsep.join([str(BACKEND), str(REPO / "packages")])

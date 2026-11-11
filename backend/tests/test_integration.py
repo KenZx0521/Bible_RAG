@@ -28,7 +28,6 @@ from config import settings
 from ragcommon import ids
 from serving import context, startup
 from utils import embedder, reranker
-from utils import intent_classifier
 from routers import health
 
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "mini_build"
@@ -109,9 +108,6 @@ class FakeLlm:
     async def health_check(self):
         return True
 
-    async def chat(self, messages, temperature=0.1, max_tokens=512):
-        return '{"intent": "topic", "entities": [], "keywords": []}'
-
 
 @pytest.fixture
 def backend(pg_server, monkeypatch):
@@ -126,7 +122,6 @@ def backend(pg_server, monkeypatch):
     monkeypatch.setattr(startup.qdrant_db, "make_client", lambda: state.qdrant)
     monkeypatch.setattr(main, "load_models", lambda: FP)
     monkeypatch.setattr(embedder, "encode_query", lambda text: state.query_vector)
-    monkeypatch.setattr(intent_classifier, "get_llm_client", lambda: FakeLlm())
     monkeypatch.setattr(main, "get_llm_client", lambda: FakeLlm())
     monkeypatch.setattr(health, "get_llm_client", lambda: FakeLlm())
 

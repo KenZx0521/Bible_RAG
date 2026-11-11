@@ -195,8 +195,9 @@ def compare(
     )
     _require_consistent_scores(valid, base, pt)
 
-    # Every arm a question's comparison uses must share its route: the intent
-    # classifier samples at temperature 0.1, so routes drift between requests.
+    # Every arm a question's comparison uses must share its route. Backends with the
+    # intent LLM (bd8f8dc and earlier) drift between requests; without it a route
+    # differs only when the code or the lexicon does.
     route_mismatch = [
         q for q in valid
         if len({pc[q].get("route"), pt[q].get("route"), base[q].get("route")}) > 1
@@ -298,9 +299,10 @@ def identity_report(control: dict, treatment: dict) -> dict:
     """Do two runs retrieve identically? (ab_compare --require-identical).
 
     Same-route questions must agree on the top_k core passages, the passages
-    appended after it, and the context digest. Route mismatches (the intent
-    classifier samples at temperature 0.1) are listed apart for the caller to
-    re-ask. Invalid or unpaired questions and differing applied graph
+    appended after it, and the context digest. Route mismatches are listed apart
+    for the caller to check: sampling noise a re-ask can clear on a backend with
+    the intent LLM (bd8f8dc and earlier), a real difference without it. Invalid
+    or unpaired questions and differing applied graph
     strategies also fail. Runs without context digests are refused.
     """
     _require_context(control, "control")
@@ -335,7 +337,7 @@ def identity_report(control: dict, treatment: dict) -> dict:
         "identical": len(same) - len(mismatches),
         "mismatches": mismatches,
         "strategies": strategies,
-        # Route mismatches do not fail here; the caller re-asks them.
+        # Route mismatches do not fail here; the caller checks them.
         "passed": (not mismatches and not invalid and strategies["identical"]
                    and not unpaired["control_only"] and not unpaired["treatment_only"]),
     }

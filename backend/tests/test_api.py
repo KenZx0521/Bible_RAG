@@ -33,9 +33,8 @@ def serving():
 def fake_pipeline(monkeypatch):
     seen = {}
 
-    async def intent(question):
-        return {"type": "topic", "entities": [], "verse_refs": [], "keywords": [],
-                "rejected_refs": ["約翰福音3:99"]}
+    def intent(question):
+        return {"type": "topic", "verse_refs": [], "rejected_refs": ["約翰福音3:99"]}
 
     async def retrieve(**kwargs):
         seen.update(kwargs)

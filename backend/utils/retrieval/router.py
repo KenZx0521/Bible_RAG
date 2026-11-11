@@ -101,24 +101,21 @@ async def _semantic_only(query: str) -> Gathered:
     return Gathered("semantic_only", None, cands.dedup(raw), ["semantic"], errors)
 
 
-async def _graph_side(query: str, route: str, entity_names: list[str], pool: list[dict],
+async def _graph_side(query: str, route: str, pool: list[dict],
                       strategies: list[str], errors: dict[str, str], use_graph: bool,
                       allowed: frozenset[str], active: context.Active) -> graph_stage.GraphSide:
     if not use_graph or active.kg is None or route not in graph_stage.ROUTES:
         return graph_stage.GraphSide()
-    return await graph_stage.run(query, entity_names, pool, strategies, errors, allowed, active)
+    return await graph_stage.run(query, pool, strategies, errors, allowed, active)
 
 
-async def _gather(query: str, verse_refs: list[VerseRef], intent_type: str,
-                  entity_names: list[str], keywords: list[str] | None,
-                  active: context.Active, use_graph: bool, allowed: frozenset[str]) -> Gathered:
-    signals = detect_signals(query=query, verse_refs=verse_refs, intent_type=intent_type,
-                             entity_names=entity_names, keywords=keywords,
-                             lexicon=active.lexicon, book_ids=active.book_ids)
+async def _gather(query: str, verse_refs: list[VerseRef], active: context.Active, use_graph: bool,
+                  allowed: frozenset[str]) -> Gathered:
+    signals = detect_signals(query=query, verse_refs=verse_refs, lexicon=active.lexicon,
+                             book_ids=active.book_ids)
     handler = routes.ROUTES.get(signals.route, routes.route_fallback)
     pool, strategies, errors = await handler(routes.RouteInput(query, verse_refs, signals))
-    graph = await _graph_side(query, signals.route, entity_names, pool, strategies, errors, use_graph,
-                              allowed, active)
+    graph = await _graph_side(query, signals.route, pool, strategies, errors, use_graph, allowed, active)
     return Gathered(signals.route, signals, pool, strategies, errors, graph)
 
 
@@ -136,6 +133,18 @@ async def _ranked(query: str, pool: list[dict], g: Gathered, k: int, fusion: Fus
         return sorted(pool, key=lambda x: x.get("weight", 0), reverse=True)[:k]
 
 
+def _lead(candidates: list[dict]) -> list[dict]:
+    """Verse records, then the passages they belong to, then a chapter-only reference's passages
+    (one of which may be such a passage: its owner is then not looked up separately)."""
+    lead = [c for c in candidates if c["source_strategy"] in _VERSE_LEAD]
+    owned = {p for c in lead if c.get("kind") == "verse"
+             for p in (c.get("passage_id"), *(c.get("split_passage_ids") or ()))}
+
+    def order(c: dict) -> int:
+        return 0 if c.get("kind") == "verse" else 1 if c["id"] in owned else 2
+    return sorted(lead, key=order)
+
+
 async def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) -> list[dict]:
     """The verse records and their passages, then the best of the rest that repeats none
     of those passages' verses (a chunk of an owning passage would).
@@ -143,7 +152,7 @@ async def _rank_verse_lookup(query: str, g: Gathered, k: int, fusion: Fusion) ->
     Only passages exclude: an owner covers its verse records, and a verse with no owner
     (an omitted verse, a failed owner lookup) keeps the passage dense found eligible.
     """
-    lead = [c for c in g.candidates if c["source_strategy"] in _VERSE_LEAD]
+    lead = _lead(g.candidates)
     held = [c for c in lead if c.get("kind") != "verse"]
     rest = [c for c in g.candidates if c["source_strategy"] not in _VERSE_LEAD
             and not any(cands.shares_verse(c, x) for x in held)]
@@ -229,9 +238,9 @@ async def _append_event_registry(query: str, ranked: list[dict], g: Gathered, sl
                                  active: context.Active) -> tuple[list[dict], list[str]]:
     """Curated event anchors to append after the finished top-k, and the triggered events.
 
-    Triggers are registry words literally in the question (book names masked),
-    never LLM keywords. Events are reported by ev id (via_event_id too); their
-    legacy ids are only logged. Appended passages carry no rerank/fused score.
+    Triggers are registry words literally in the question (book names masked).
+    Events are reported by ev id (via_event_id too); their legacy ids are only
+    logged. Appended passages carry no rerank/fused score.
     A chapter block covers its member passages.
     """
     events = event_registry.match_events(query, active.registry, active.book_names)
@@ -263,8 +272,7 @@ def _stats(g: Gathered, total: int, reranked: int, use_graph: bool,
 
 
 async def retrieve_and_rerank(
-    query: str, verse_refs: list[VerseRef], intent_type: str, entity_names: list[str],
-    top_k: int | None = None, keywords: list[str] | None = None, use_graph: bool | None = None,
+    query: str, verse_refs: list[VerseRef], top_k: int | None = None, use_graph: bool | None = None,
     semantic_only: bool = False, fusion_alpha: float | None = None,
     graph_strategies: list[str] | None = None,
 ) -> tuple[list[dict], dict]:
@@ -281,7 +289,7 @@ async def retrieve_and_rerank(
     fusion = Fusion(fusion_alpha is not None or settings.rag_rank_fusion_enabled,
                     settings.rag_rank_fusion_alpha if fusion_alpha is None else fusion_alpha)
     g = (await _semantic_only(query) if semantic_only else
-         await _gather(query, verse_refs, intent_type, entity_names, keywords, active, use, allowed))
+         await _gather(query, verse_refs, active, use, allowed))
     for c in g.candidates:
         c.setdefault("found_by", cands.labels_of(c))
     ranked = _pin(await _rank(query, g, k, fusion), g.candidates, chapter_targets(verse_refs), g, k,

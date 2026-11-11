@@ -19,7 +19,6 @@ from ragcommon.routing import MASK, Hit, RoutingLexicon
 from utils.kg import kin_cues
 from utils.kg.kin_cues import SIBLING, SPOUSE, Cue, Reading
 
-_ENTITY_KINDS = ("name", "dotless")
 _PERSON_KINDS = ("name", "dotless", "alias", "divine")
 _A_PEOPLE_AFTER = ("人", "支派", "地", "國", "家", "族", "城")
 _KINGDOM_BEFORE = "王"
@@ -51,12 +50,12 @@ class Person:
 
 @dataclass(frozen=True)
 class End:
-    """A name the question writes, or an intent entity (``start`` None)."""
+    """A name the question writes, and where."""
 
     surface: str
     lookups: tuple[str, ...]
-    start: int | None = None
-    end: int | None = None
+    start: int
+    end: int
 
 
 @dataclass(frozen=True)
@@ -94,26 +93,24 @@ def _is_a_people(question: str, hit: Hit, hits: Sequence[Hit]) -> bool:
     return after.startswith(_KINGDOM_BEFORE) and any(h.start == hit.end + len(_KINGDOM_BEFORE) for h in hits)
 
 
-def _end_of(hit: Hit, written: bool) -> End:
+def _end_of(hit: Hit) -> End:
     lookups = tuple(dict.fromkeys([hit.surface, *(t.label for t in hit.targets)]))
-    return End(hit.surface, lookups, hit.start if written else None, hit.end if written else None)
+    return End(hit.surface, lookups, hit.start, hit.end)
 
 
-def ends_of(question: str, hits: Sequence[Hit], entities: Iterable[str], lexicon: RoutingLexicon) -> tuple[End, ...]:
-    """The names the question writes, then the intent entities that are exactly a name."""
-    found = [_end_of(h, True) for h in hits if h.kind in _PERSON_KINDS and not _is_a_people(question, h, hits)]
-    for entity in entities:
-        found += [_end_of(h, False) for h in lexicon.match(entity) if h.surface == entity and h.kind in _ENTITY_KINDS]
+def ends_of(question: str, hits: Sequence[Hit]) -> tuple[End, ...]:
+    """The names the question writes."""
+    found = [_end_of(h) for h in hits if h.kind in _PERSON_KINDS and not _is_a_people(question, h, hits)]
     unique: dict[str, End] = {}
     for end in found:
         unique.setdefault(end.surface, end)
     return tuple(unique.values())
 
 
-def read_question(question: str, entities: Sequence[str], lexicon: RoutingLexicon) -> Question:
+def read_question(question: str, lexicon: RoutingLexicon) -> Question:
     hits = names_read(question, lexicon)
     masked = kin_cues.masked(question, hits, lexicon)
-    return Question(question, masked, kin_cues.reading(masked), ends_of(question, hits, entities, lexicon))
+    return Question(question, masked, kin_cues.reading(masked), ends_of(question, hits))
 
 
 def _person(row: Mapping[str, Any]) -> Person:
@@ -139,7 +136,7 @@ async def candidates(ends: Sequence[End], reads: neo4j_db.Reads) -> dict[str, li
 
 def _qualified(question: Question, end: End, people: Sequence[Person]) -> list[Person]:
     """The people left once what is written right before the name has spoken."""
-    before = question.text[:end.start] if end.start is not None else ""
+    before = question.text[:end.start]
     for qualifier, name, parent in _QUALIFIERS:
         if end.surface == name and before.endswith(qualifier):
             return [p for p in people if any(x[1] == parent for x in p.parents)]

@@ -120,8 +120,8 @@ def through_query(build, regnal_layer: bytes, lexicon: Path, gen) -> dict:
     assert (n, same) == (58, 58)
     now: dict = {}
 
-    async def intent(question):
-        return {"type": "person", "entities": [], "verse_refs": [], "keywords": [], "rejected_refs": []}
+    def intent(question):
+        return {"type": "person", "verse_refs": [], "rejected_refs": []}
 
     async def retrieve(**kwargs):
         return [dict(s) for s in now["sources"]], {"strategies_used": ["semantic"], "route_used": "R4"}

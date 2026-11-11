@@ -2,7 +2,7 @@
 
 R1 exact verses, their passages, then dense to fill k (falls back to R2 when
 empty); R2 chapter passages + dense;
-R5 dense + chapter passages (multi-book or cross-reference questions); R3/R4/R6
+R5 dense + chapter passages (multi-book questions); R3/R4/R6
 and fallback dense alone. Every route but R1/R2 adds book anchors when the
 question names books, and R3–R6 a SQL supplement from the pool's first chapters.
 Each returns (pool, strategies used, strategy errors); a failing strategy is
@@ -218,7 +218,7 @@ async def route_r6(inp: RouteInput) -> Pool:
 
 
 async def route_r5(inp: RouteInput) -> Pool:
-    """R5: multi-book or cross-reference → dense (0.65) + chapter passages (0.85) + anchors.
+    """R5: multi-book → dense (0.65) + chapter passages (0.85) + anchors.
 
     Chapter-only references are pulled as sql_chapter after dense, so dedup's
     strict-greater weight keeps the sql_chapter copy and chapter-pin can see it.

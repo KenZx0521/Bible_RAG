@@ -72,8 +72,8 @@ def client(gen, monkeypatch):
     context.install(context.make_active(BUILD, LEXICON, (), None, gen), Handshake(BUILD.build_id, (), True))
     seen = {"chats": [], "results": PASSAGES}
 
-    async def intent(question):
-        return {"type": "person", "entities": [], "verse_refs": [], "keywords": [], "rejected_refs": []}
+    def intent(question):
+        return {"type": "person", "verse_refs": [], "rejected_refs": []}
 
     async def retrieve(**kwargs):
         return [dict(p) for p in seen["results"]], {"strategies_used": ["semantic"], "route_used": "R4"}
